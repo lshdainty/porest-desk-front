@@ -1,6 +1,29 @@
 import { apiClient } from '@/shared/api'
 import type { ApiResponse } from '@/shared/types'
 
+export interface UpcomingEvent {
+  rowId: number
+  title: string
+  eventType: string
+  color: string
+  startDate: string
+  daysUntil: number
+}
+
+export interface RecentTodo {
+  rowId: number
+  title: string
+  priority: string
+  status: string
+  dueDate: string | null
+}
+
+export interface DailyExpenseTrend {
+  date: string
+  income: number
+  expense: number
+}
+
 export interface DashboardSummary {
   todoSummary: {
     totalCount: number
@@ -30,6 +53,9 @@ export interface DashboardSummary {
     pinnedCount: number
     recentMemoTitle: string | null
   }
+  upcomingEvents: UpcomingEvent[]
+  recentTodos: RecentTodo[]
+  expenseTrend: DailyExpenseTrend[]
 }
 
 export const dashboardApi = {

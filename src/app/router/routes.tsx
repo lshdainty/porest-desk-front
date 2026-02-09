@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 
+const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => ({ default: m.AppLayout })))
 const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const TodoPage = lazy(() => import('@/pages/todo/ui/TodoPage').then(m => ({ default: m.TodoPage })))
 const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(m => ({ default: m.CalendarPage })))
@@ -20,13 +21,15 @@ export const AppRouter = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/desk" element={<DashboardPage />} />
-          <Route path="/desk/todo" element={<TodoPage />} />
-          <Route path="/desk/calendar" element={<CalendarPage />} />
-          <Route path="/desk/calculator" element={<CalculatorPage />} />
-          <Route path="/desk/memo" element={<MemoPage />} />
-          <Route path="/desk/timer" element={<TimerPage />} />
-          <Route path="/desk/expense" element={<ExpensePage />} />
+          <Route element={<AppLayout />}>
+            <Route path="/desk" element={<DashboardPage />} />
+            <Route path="/desk/todo" element={<TodoPage />} />
+            <Route path="/desk/calendar" element={<CalendarPage />} />
+            <Route path="/desk/calculator" element={<CalculatorPage />} />
+            <Route path="/desk/memo" element={<MemoPage />} />
+            <Route path="/desk/timer" element={<TimerPage />} />
+            <Route path="/desk/expense" element={<ExpensePage />} />
+          </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
           <Route path="*" element={<Navigate to="/desk" replace />} />
         </Routes>

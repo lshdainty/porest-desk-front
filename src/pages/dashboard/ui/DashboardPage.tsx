@@ -1,13 +1,36 @@
 import { useTranslation } from 'react-i18next'
-import { DashboardGrid } from '@/widgets/dashboard-grid'
+import { useQuery } from '@tanstack/react-query'
+import { dashboardApi } from '@/features/dashboard/api/dashboardApi'
+import { GreetingSection } from '@/widgets/dashboard-grid/ui/GreetingSection'
+import { SummaryCardsRow } from '@/widgets/dashboard-grid/ui/SummaryCardsRow'
+import { QuickStatsRow } from '@/widgets/dashboard-grid/ui/QuickStatsRow'
+import { ScheduleSection } from '@/widgets/dashboard-grid/ui/ScheduleSection'
+import { ExpenseChartSection } from '@/widgets/dashboard-grid/ui/ExpenseChartSection'
 
 export const DashboardPage = () => {
-  const { t } = useTranslation('dashboard')
+  const { t } = useTranslation('common')
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard', 'summary'],
+    queryFn: dashboardApi.getSummary,
+  })
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-muted-foreground">{t('loading')}</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
-      <DashboardGrid />
+    <div className="space-y-6 p-4 md:p-6">
+      <GreetingSection />
+      <SummaryCardsRow data={data} />
+      <QuickStatsRow data={data} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ScheduleSection data={data} />
+        <ExpenseChartSection data={data} />
+      </div>
     </div>
   )
 }

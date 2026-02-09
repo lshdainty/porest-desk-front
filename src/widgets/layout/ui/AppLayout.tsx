@@ -1,32 +1,21 @@
 import { Outlet } from 'react-router-dom'
-import { useIsMobile } from '@/shared/hooks'
-import { DesktopSidebar } from './DesktopSidebar'
-import { MobileBottomNav } from './MobileBottomNav'
+import {
+  SidebarInset,
+  SidebarProvider,
+} from '@/shared/ui/sidebar'
+import { AppSidebar } from '@/widgets/sidebar'
 import { LayoutHeader } from './LayoutHeader'
 
 export const AppLayout = () => {
-  const isMobile = useIsMobile()
-
-  if (isMobile) {
-    return (
-      <div className="flex h-screen flex-col">
-        <div className="flex-1 overflow-auto pb-16">
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <LayoutHeader />
+        <div className="flex flex-1 flex-col overflow-auto">
           <Outlet />
         </div>
-        <MobileBottomNav />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex h-screen">
-      <DesktopSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <LayoutHeader />
-        <main className="flex-1 overflow-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
