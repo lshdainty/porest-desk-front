@@ -7,10 +7,9 @@ import { useMemo } from 'react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { getEventsCount, navigateDate, rangeText } from '@/features/calendar/lib/helpers'
-import { cn } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
-import type { TCalendarView } from '@/features/calendar/model/types'
 
 interface IProps {
   events: IEvent[]
@@ -33,14 +32,6 @@ const CalendarHeader = ({ events }: IProps) => {
   const handleNext = () => setSelectedDate(navigateDate(selectedDate, view, 'next'))
 
   const handleTodayClick = () => setSelectedDate(new Date())
-
-  const viewButtons: { key: TCalendarView, icon: typeof List, label: string, roundedClass: string }[] = [
-    { key: 'day', icon: List, label: 'View by day', roundedClass: 'rounded-r-none' },
-    { key: 'week', icon: Columns, label: 'View by week', roundedClass: '-ml-px rounded-none' },
-    { key: 'month', icon: Grid2x2, label: 'View by month', roundedClass: '-ml-px rounded-none' },
-    { key: 'year', icon: Grid3x3, label: 'View by year', roundedClass: '-ml-px rounded-none' },
-    { key: 'agenda', icon: CalendarRange, label: 'View by agenda', roundedClass: '-ml-px rounded-l-none' },
-  ]
 
   return (
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
@@ -70,45 +61,78 @@ const CalendarHeader = ({ events }: IProps) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              className="inline-flex size-6.5 items-center justify-center rounded-md border px-0 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_svg]:size-4.5"
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-6.5 px-0 [&_svg]:size-4.5"
               onClick={handlePrevious}
             >
               <ChevronLeft />
-            </button>
+            </Button>
 
             <p className="text-sm text-muted-foreground">
               {rangeText(view, selectedDate, locale)}
             </p>
 
-            <button
-              className="inline-flex size-6.5 items-center justify-center rounded-md border px-0 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_svg]:size-4.5"
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-6.5 px-0 [&_svg]:size-4.5"
               onClick={handleNext}
             >
               <ChevronRight />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5">
         <div className="inline-flex">
-          {viewButtons.map(({ key, icon: Icon, label, roundedClass }) => (
-            <button
-              key={key}
-              aria-label={label}
-              className={cn(
-                'inline-flex size-9 items-center justify-center border text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&_svg]:size-10',
-                roundedClass,
-                view === key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-background hover:bg-accent'
-              )}
-              onClick={() => setView(key)}
-            >
-              <Icon strokeWidth={1.8} />
-            </button>
-          ))}
+          <Button
+            aria-label="View by day"
+            size="icon"
+            variant={view === 'day' ? 'default' : 'outline'}
+            className="rounded-r-none"
+            onClick={() => setView('day')}
+          >
+            <List strokeWidth={1.8} />
+          </Button>
+          <Button
+            aria-label="View by week"
+            size="icon"
+            variant={view === 'week' ? 'default' : 'outline'}
+            className="-ml-px rounded-none"
+            onClick={() => setView('week')}
+          >
+            <Columns strokeWidth={1.8} />
+          </Button>
+          <Button
+            aria-label="View by month"
+            size="icon"
+            variant={view === 'month' ? 'default' : 'outline'}
+            className="-ml-px rounded-none"
+            onClick={() => setView('month')}
+          >
+            <Grid2x2 strokeWidth={1.8} />
+          </Button>
+          <Button
+            aria-label="View by year"
+            size="icon"
+            variant={view === 'year' ? 'default' : 'outline'}
+            className="-ml-px rounded-none"
+            onClick={() => setView('year')}
+          >
+            <Grid3x3 strokeWidth={1.8} />
+          </Button>
+          <Button
+            aria-label="View by agenda"
+            size="icon"
+            variant={view === 'agenda' ? 'default' : 'outline'}
+            className="-ml-px rounded-l-none"
+            onClick={() => setView('agenda')}
+          >
+            <CalendarRange strokeWidth={1.8} />
+          </Button>
         </div>
       </div>
     </div>
