@@ -8,6 +8,8 @@ import {
   Timer,
   Wallet,
 } from 'lucide-react'
+import Logo from '@/shared/assets/img/porest.svg'
+import LogoIcon from '@/shared/assets/img/porest_logo.svg'
 import {
   Sidebar,
   SidebarContent,
@@ -16,12 +18,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/shared/ui/sidebar'
 import { NavMain, type NavItem } from './NavMain'
 import { NavUser } from './NavUser'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation('layout')
+  const { state } = useSidebar()
 
   const navItems: NavItem[] = [
     { title: t('dashboard'), url: '/desk', icon: LayoutDashboard },
@@ -38,15 +42,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
               <a href="/desk">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <LayoutDashboard className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">POREST Desk</span>
-                  <span className="truncate text-xs">Personal workspace</span>
-                </div>
+                <img
+                  src={state === 'collapsed' ? LogoIcon : Logo}
+                  alt="POREST Desk"
+                  className="h-8"
+                />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
