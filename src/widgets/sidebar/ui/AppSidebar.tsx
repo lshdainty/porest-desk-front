@@ -9,6 +9,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import Logo from '@/shared/assets/img/porest.svg'
+import LogoDark from '@/shared/assets/img/porest_dark.svg'
 import LogoIcon from '@/shared/assets/img/porest_logo.svg'
 import {
   Sidebar,
@@ -20,12 +21,19 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/shared/ui/sidebar'
+import { useTheme } from '@/shared/ui/theme-provider'
 import { NavMain, type NavItem } from './NavMain'
 import { NavUser } from './NavUser'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation('layout')
   const { state } = useSidebar()
+  const { theme } = useTheme()
+
+  const handleLogo = () => {
+    if (state === 'collapsed') return LogoIcon
+    return theme === 'light' ? Logo : LogoDark
+  }
 
   const navItems: NavItem[] = [
     { title: t('dashboard'), url: '/desk', icon: LayoutDashboard },
@@ -49,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/desk">
                 <img
-                  src={state === 'collapsed' ? LogoIcon : Logo}
+                  src={handleLogo()}
                   alt="POREST Desk"
                   className="h-8"
                 />

@@ -6,6 +6,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from '@/shared/ui/breadcrumb'
+import { ModeToggle } from '@/shared/ui/mode-toggle'
 import { Separator } from '@/shared/ui/separator'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 
@@ -26,12 +27,12 @@ export const LayoutHeader = () => {
   const titleKey = pageTitleMap[location.pathname] ?? 'dashboard'
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-      <div className="flex w-full items-center gap-2 px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
-          className="mr-2 data-[orientation=vertical]:h-4"
+          className="mx-2 data-[orientation=vertical]:h-4"
         />
         <Breadcrumb>
           <BreadcrumbList>
@@ -40,6 +41,9 @@ export const LayoutHeader = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+        <div className="ml-auto flex items-center gap-2">
+          <ModeToggle />
+        </div>
       </div>
     </header>
   )
