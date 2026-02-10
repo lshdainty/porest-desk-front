@@ -1,5 +1,5 @@
 export { expenseApi } from './api/expenseApi'
-export type { ExpenseListParams } from './api/expenseApi'
+export type { ExpenseListParams, ExpenseSearchParams } from './api/expenseApi'
 export { expenseCategoryApi } from './api/expenseCategoryApi'
 export { expenseBudgetApi } from './api/expenseBudgetApi'
 export type { BudgetListParams } from './api/expenseBudgetApi'
@@ -10,6 +10,13 @@ export {
   useDeleteExpense,
   useDailySummary,
   useMonthlySummary,
+  useWeeklySummary,
+  useYearlySummary,
+  useMerchantSummary,
+  useAssetExpenseSummary,
+  useSearchExpenses,
+  useExpensesByCalendarEvent,
+  useExpensesByTodo,
 } from './model/useExpenses'
 export {
   useExpenseCategories,

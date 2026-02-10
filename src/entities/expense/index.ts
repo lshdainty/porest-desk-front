@@ -10,4 +10,9 @@ export type {
   DailySummary,
   MonthlySummary,
   CategoryBreakdown,
+  WeeklySummary,
+  YearlySummary,
+  MonthlyAmount,
+  MerchantSummary,
+  AssetExpenseSummary,
 } from './model/types'

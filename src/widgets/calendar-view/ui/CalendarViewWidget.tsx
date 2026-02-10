@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Loader2, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn, getLocale } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
@@ -11,6 +11,7 @@ import {
   useDeleteEvent,
 } from '@/features/calendar'
 import { useCalendarAggregate } from '@/features/calendar'
+import { useEventLabels } from '@/features/event-label'
 import { useTodos, useToggleTodoStatus } from '@/features/todo'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import { useCalendarNavigation } from '../model/useCalendarNavigation'
@@ -19,6 +20,7 @@ import { MonthView } from './MonthView'
 import { WeekView } from './WeekView'
 import { IntegratedEventList } from './IntegratedEventList'
 import { EventForm } from './EventForm'
+import { LabelManagementDialog } from './LabelManagementDialog'
 
 export const CalendarViewWidget = () => {
   const { t } = useTranslation('calendar')
@@ -40,11 +42,14 @@ export const CalendarViewWidget = () => {
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+  const [showLabelDialog, setShowLabelDialog] = useState(false)
 
   const { data: events = [], isLoading: eventsLoading } = useCalendarEvents(
     dateRange.startDate,
     dateRange.endDate
   )
+
+  const { data: labels = [] } = useEventLabels()
 
   const { data: todos = [] } = useTodos({
     startDate: dateRange.startDate,
@@ -134,6 +139,13 @@ export const CalendarViewWidget = () => {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowLabelDialog(true)}
+            className="rounded-md p-1.5 hover:bg-muted transition-colors text-muted-foreground"
+            title={t('labels')}
+          >
+            <Tag size={16} />
+          </button>
+          <button
             onClick={goToToday}
             className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
           >
@@ -221,11 +233,18 @@ export const CalendarViewWidget = () => {
         <EventForm
           event={editingEvent}
           selectedDate={selectedDate}
+          labels={labels}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createEvent.isPending || updateEvent.isPending}
         />
       )}
+
+      {/* Label management dialog */}
+      <LabelManagementDialog
+        open={showLabelDialog}
+        onClose={() => setShowLabelDialog(false)}
+      />
 
       {/* Delete confirmation */}
       {showDeleteConfirm !== null && (

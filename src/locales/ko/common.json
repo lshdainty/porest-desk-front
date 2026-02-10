@@ -1,0 +1,13 @@
+{
+  "app.title": "POREST Desk",
+  "save": "저장",
+  "cancel": "취소",
+  "delete": "삭제",
+  "edit": "수정",
+  "create": "생성",
+  "search": "검색",
+  "confirm": "확인",
+  "loading": "로딩 중...",
+  "noData": "데이터가 없습니다",
+  "error": "오류가 발생했습니다"
+}

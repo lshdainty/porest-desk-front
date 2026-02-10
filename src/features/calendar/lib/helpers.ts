@@ -309,5 +309,12 @@ export function convertCalendarEventToIEvent(calendarEvent: CalendarEvent): IEve
     color: calendarEvent.color,
     isAllDay: calendarEvent.isAllDay,
     type: calendarType,
+    labelRowId: calendarEvent.labelRowId ?? null,
+    labelName: calendarEvent.labelName ?? null,
+    labelColor: calendarEvent.labelColor ?? null,
+    location: calendarEvent.location ?? null,
+    rrule: calendarEvent.rrule ?? null,
+    recurrenceId: calendarEvent.recurrenceId ?? null,
+    reminders: calendarEvent.reminders ?? [],
   }
 }

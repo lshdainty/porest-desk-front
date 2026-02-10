@@ -9,6 +9,7 @@ import {
 import { ModeToggle } from '@/shared/ui/mode-toggle'
 import { Separator } from '@/shared/ui/separator'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
+import { NotificationBell } from '@/features/notification'
 
 const pageTitleMap: Record<string, string> = {
   '/desk': 'dashboard',
@@ -17,6 +18,8 @@ const pageTitleMap: Record<string, string> = {
   '/desk/timer': 'timer',
   '/desk/memo': 'memo',
   '/desk/expense': 'expense',
+  '/desk/group': 'group',
+  '/desk/album': 'album',
   '/desk/calculator': 'calculator',
 }
 
@@ -42,6 +45,7 @@ export const LayoutHeader = () => {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <ModeToggle />
         </div>
       </div>

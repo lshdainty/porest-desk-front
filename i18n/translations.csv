@@ -1,0 +1,479 @@
+namespace,key,ko,en
+common,app.title,POREST Desk,POREST Desk
+common,save,저장,Save
+common,cancel,취소,Cancel
+common,delete,삭제,Delete
+common,edit,수정,Edit
+common,create,생성,Create
+common,search,검색,Search
+common,confirm,확인,Confirm
+common,loading,로딩 중...,Loading...
+common,noData,데이터가 없습니다,No data
+common,error,오류가 발생했습니다,An error occurred
+layout,dashboard,대시보드,Dashboard
+layout,todo,할일,Todo
+layout,calendar,캘린더,Calendar
+layout,calculator,계산기,Calculator
+layout,memo,메모,Memo
+layout,timer,타이머,Timer
+layout,expense,가계부,Expense
+layout,asset,자산,Assets
+layout,dutchPay,더치페이,Dutch Pay
+layout,group,그룹,Groups
+layout,album,앨범,Albums
+layout,settings,설정,Settings
+layout,more,더보기,More
+layout,menu,메뉴,Menu
+layout,logout,로그아웃,Log out
+todo,title,할일,Todo
+todo,createTodo,할일 추가,Add Todo
+todo,editTodo,할일 수정,Edit Todo
+todo,deleteTodo,할일 삭제,Delete Todo
+todo,addTodo,새 할일 추가,Add new todo
+todo,createFirst,첫 번째 할일을 만들어 보세요,Create your first todo
+todo,empty,할일이 없습니다,No todos yet
+todo,status.ALL,전체,All
+todo,status.PENDING,대기,Pending
+todo,status.IN_PROGRESS,진행 중,In Progress
+todo,status.COMPLETED,완료,Completed
+todo,priority.ALL,전체,All
+todo,priority.HIGH,높음,High
+todo,priority.MEDIUM,보통,Medium
+todo,priority.LOW,낮음,Low
+todo,form.title,제목,Title
+todo,form.titlePlaceholder,할일 제목을 입력하세요,Enter todo title
+todo,form.titleRequired,제목을 입력해주세요,Title is required
+todo,form.content,내용,Content
+todo,form.contentPlaceholder,상세 내용을 입력하세요,Enter details
+todo,form.priority,우선순위,Priority
+todo,form.category,카테고리,Category
+todo,form.categoryPlaceholder,카테고리를 입력하세요,Enter category
+todo,form.dueDate,마감일,Due Date
+todo,deleteConfirm.title,할일 삭제,Delete Todo
+todo,deleteConfirm.message,"이 할일을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this todo? This action cannot be undone."
+todo,deleteConfirm.cancel,취소,Cancel
+todo,deleteConfirm.confirm,삭제,Delete
+todo,project,프로젝트,Project
+todo,projects,프로젝트,Projects
+todo,addProject,프로젝트 추가,Add Project
+todo,editProject,프로젝트 수정,Edit Project
+todo,allProjects,전체 프로젝트,All Projects
+todo,noProjects,프로젝트가 없습니다,No projects yet
+todo,form.projectName,프로젝트 이름,Project Name
+todo,form.projectNamePlaceholder,프로젝트 이름을 입력하세요,Enter project name
+todo,form.project,프로젝트,Project
+todo,form.color,색상,Color
+todo,form.description,설명,Description
+todo,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+todo,tag,태그,Tag
+todo,tags,태그 관리,Manage Tags
+todo,addTag,태그 추가,Add Tag
+todo,editTag,태그 수정,Edit Tag
+todo,form.tagName,태그 이름,Tag Name
+todo,form.tagNamePlaceholder,태그 이름을 입력하세요,Enter tag name
+todo,form.tags,태그,Tags
+todo,subtask,서브태스크,Subtask
+todo,subtasks,서브태스크,Subtasks
+todo,addSubtask,서브태스크 추가,Add Subtask
+todo,subtaskProgress,{{completed}}/{{total}},{{completed}}/{{total}}
+todo,stats,통계,Stats
+todo,overdue,기한 초과,Overdue
+todo,completionRate,완료율,Completion Rate
+calendar,title,캘린더,Calendar
+calendar,addEvent,일정 추가,Add Event
+calendar,editEvent,일정 수정,Edit Event
+calendar,deleteEvent,일정 삭제,Delete Event
+calendar,today,오늘,Today
+calendar,allDay,종일,All Day
+calendar,noEvents,이 날짜에 일정이 없습니다,No events for this date
+calendar,events,일정,Events
+calendar,todos,할일,Todos
+calendar,expenses,지출,Expenses
+calendar,timerSessions,타이머 세션,Timer Sessions
+calendar,view.month,월,Month
+calendar,view.week,주,Week
+calendar,eventType.PERSONAL,개인,Personal
+calendar,eventType.WORK,업무,Work
+calendar,eventType.BIRTHDAY,생일,Birthday
+calendar,eventType.HOLIDAY,휴일,Holiday
+calendar,form.title,제목,Title
+calendar,form.titlePlaceholder,일정 제목을 입력하세요,Enter event title
+calendar,form.titleRequired,제목을 입력해주세요,Title is required
+calendar,form.description,설명,Description
+calendar,form.descriptionPlaceholder,일정 설명을 입력하세요,Enter event description
+calendar,form.eventType,일정 유형,Event Type
+calendar,form.color,색상,Color
+calendar,form.allDay,종일,All Day
+calendar,form.startDate,시작일,Start Date
+calendar,form.endDate,종료일,End Date
+calendar,deleteConfirm.title,일정 삭제,Delete Event
+calendar,deleteConfirm.message,"이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this event? This action cannot be undone."
+calendar,deleteConfirm.cancel,취소,Cancel
+calendar,deleteConfirm.confirm,삭제,Delete
+calendar,label,라벨,Label
+calendar,labels,라벨 관리,Manage Labels
+calendar,addLabel,라벨 추가,Add Label
+calendar,editLabel,라벨 수정,Edit Label
+calendar,noLabels,라벨이 없습니다,No labels yet
+calendar,form.labelName,라벨 이름,Label Name
+calendar,form.labelNamePlaceholder,라벨 이름을 입력하세요,Enter label name
+calendar,form.label,라벨,Label
+calendar,form.location,장소,Location
+calendar,form.locationPlaceholder,장소를 입력하세요,Enter location
+calendar,form.recurrence,반복,Recurrence
+calendar,form.reminder,알림,Reminder
+calendar,form.addReminder,알림 추가,Add Reminder
+calendar,recurrence.none,반복 없음,No repeat
+calendar,recurrence.daily,매일,Daily
+calendar,recurrence.weekly,매주,Weekly
+calendar,recurrence.monthly,매월,Monthly
+calendar,recurrence.yearly,매년,Yearly
+calendar,reminder.5min,5분 전,5 min before
+calendar,reminder.15min,15분 전,15 min before
+calendar,reminder.30min,30분 전,30 min before
+calendar,reminder.1hour,1시간 전,1 hour before
+calendar,reminder.1day,1일 전,1 day before
+memo,title,메모,Memo
+memo,createMemo,메모 작성,New Memo
+memo,editMemo,메모 수정,Edit Memo
+memo,deleteMemo,메모 삭제,Delete Memo
+memo,newMemo,새 메모,New Memo
+memo,untitled,제목 없음,Untitled
+memo,empty,메모가 없습니다,No memos yet
+memo,createFirst,첫 번째 메모를 작성해 보세요,Create your first memo
+memo,pinned,고정됨,Pinned
+memo,pin,고정,Pin
+memo,unpin,고정 해제,Unpin
+memo,search,메모 검색,Search memos
+memo,searchPlaceholder,제목 또는 내용으로 검색,Search by title or content
+memo,allMemos,전체 메모,All Memos
+memo,preview,미리보기,Preview
+memo,editor,편집,Editor
+memo,markdown,마크다운으로 작성,Write in markdown
+memo,folder.title,폴더,Folders
+memo,folder.create,새 폴더,New Folder
+memo,folder.rename,폴더 이름 변경,Rename Folder
+memo,folder.delete,폴더 삭제,Delete Folder
+memo,folder.name,폴더 이름,Folder Name
+memo,folder.namePlaceholder,폴더 이름을 입력하세요,Enter folder name
+memo,deleteConfirm.title,메모 삭제,Delete Memo
+memo,deleteConfirm.message,"이 메모를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this memo? This action cannot be undone."
+memo,deleteConfirm.cancel,취소,Cancel
+memo,deleteConfirm.confirm,삭제,Delete
+memo,folderDeleteConfirm.title,폴더 삭제,Delete Folder
+memo,folderDeleteConfirm.message,"이 폴더를 삭제하시겠습니까? 폴더 내 메모는 이동됩니다.","Are you sure you want to delete this folder? Memos inside will be moved."
+calculator,title,계산기,Calculator
+calculator,history,계산 기록,History
+calculator,clearHistory,기록 삭제,Clear History
+calculator,noHistory,계산 기록이 없습니다,No calculation history
+calculator,scientific,공학용,Scientific
+calculator,standard,일반,Standard
+calculator,clearAll,AC,AC
+calculator,clear,C,C
+calculator,equals,=,=
+calculator,error,오류,Error
+calculator,clearHistoryConfirm.title,기록 삭제,Clear History
+calculator,clearHistoryConfirm.message,모든 계산 기록을 삭제하시겠습니까?,Are you sure you want to clear all calculation history?
+calculator,clearHistoryConfirm.cancel,취소,Cancel
+calculator,clearHistoryConfirm.confirm,삭제,Clear
+timer,title,타이머,Timer
+timer,pomodoro,뽀모도로,Pomodoro
+timer,stopwatch,스톱워치,Stopwatch
+timer,countdown,카운트다운,Countdown
+timer,start,시작,Start
+timer,pause,일시정지,Pause
+timer,resume,재개,Resume
+timer,stop,정지,Stop
+timer,reset,초기화,Reset
+timer,lap,랩,Lap
+timer,laps,랩 기록,Laps
+timer,noLaps,랩 기록이 없습니다,No laps recorded
+timer,session,세션,Session
+timer,label,라벨,Label
+timer,labelPlaceholder,타이머 라벨을 입력하세요,Enter timer label
+timer,setTime,시간 설정,Set Time
+timer,hours,시간,Hours
+timer,minutes,분,Minutes
+timer,seconds,초,Seconds
+timer,focusTime,집중 시간,Focus Time
+timer,todayFocus,오늘의 집중,Today's Focus
+timer,totalSessions,총 세션,Total Sessions
+timer,totalTime,총 시간,Total Time
+timer,noSessions,아직 세션이 없습니다,No sessions yet
+timer,work,작업,Work
+timer,break,휴식,Break
+timer,completed,완료!,Completed!
+timer,deleteConfirm.title,세션 삭제,Delete Session
+timer,deleteConfirm.message,이 세션을 삭제하시겠습니까?,Are you sure you want to delete this session?
+timer,deleteConfirm.cancel,취소,Cancel
+timer,deleteConfirm.confirm,삭제,Delete
+expense,title,가계부,Expense
+expense,income,수입,Income
+expense,expense,지출,Expense
+expense,addTransaction,거래 추가,Add Transaction
+expense,editTransaction,거래 수정,Edit Transaction
+expense,list,내역,Transactions
+expense,summary,요약,Summary
+expense,budget,예산,Budget
+expense,daily,일별,Daily
+expense,monthly,월별,Monthly
+expense,totalIncome,총 수입,Total Income
+expense,totalExpense,총 지출,Total Expense
+expense,net,순수익,Net
+expense,noTransactions,거래 내역이 없습니다,No transactions yet
+expense,createFirst,첫 번째 거래를 기록해 보세요,Record your first transaction
+expense,category,카테고리,Category
+expense,categories,카테고리 관리,Manage Categories
+expense,addCategory,카테고리 추가,Add Category
+expense,editCategory,카테고리 수정,Edit Category
+expense,categoryName,카테고리 이름,Category Name
+expense,categoryNamePlaceholder,카테고리 이름을 입력하세요,Enter category name
+expense,form.amount,금액,Amount
+expense,form.amountPlaceholder,금액을 입력하세요,Enter amount
+expense,form.description,설명,Description
+expense,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+expense,form.date,날짜,Date
+expense,form.paymentMethod,결제 방법,Payment Method
+expense,form.paymentMethod.CASH,현금,Cash
+expense,form.paymentMethod.CARD,카드,Card
+expense,form.paymentMethod.TRANSFER,이체,Transfer
+expense,form.paymentMethod.OTHER,기타,Other
+expense,budget.title,예산 관리,Budget Management
+expense,budget.set,예산 설정,Set Budget
+expense,budget.amount,예산 금액,Budget Amount
+expense,budget.remaining,남은 예산,Remaining
+expense,budget.exceeded,초과,Exceeded
+expense,budget.noBudget,설정된 예산이 없습니다,No budget set
+expense,categoryBreakdown,카테고리별 분석,Category Breakdown
+expense,deleteConfirm.title,거래 삭제,Delete Transaction
+expense,deleteConfirm.message,"이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this transaction? This action cannot be undone."
+expense,deleteConfirm.cancel,취소,Cancel
+expense,deleteConfirm.confirm,삭제,Delete
+expense,form.merchant,거래처,Merchant
+expense,form.merchantPlaceholder,거래처를 입력하세요,Enter merchant name
+expense,form.asset,자산,Asset
+expense,weekly,주간,Weekly
+expense,yearly,연간,Yearly
+expense,byMerchant,거래처별,By Merchant
+expense,byAsset,자산별,By Asset
+expense,template,템플릿,Template
+expense,templates,자주 쓰는 내역,Templates
+expense,addTemplate,템플릿 추가,Add Template
+expense,editTemplate,템플릿 수정,Edit Template
+expense,useTemplate,템플릿 사용,Use Template
+expense,templateName,템플릿 이름,Template Name
+expense,templateNamePlaceholder,템플릿 이름을 입력하세요,Enter template name
+expense,recurring,반복 거래,Recurring
+expense,addRecurring,반복 거래 추가,Add Recurring
+expense,editRecurring,반복 거래 수정,Edit Recurring
+expense,frequency.DAILY,매일,Daily
+expense,frequency.WEEKLY,매주,Weekly
+expense,frequency.MONTHLY,매월,Monthly
+expense,frequency.YEARLY,매년,Yearly
+expense,nextExecution,다음 실행일,Next Execution
+expense,active,활성,Active
+expense,inactive,비활성,Inactive
+expense,searchExpenses,거래 검색,Search Transactions
+expense,searchPlaceholder,검색어를 입력하세요,Enter search keyword
+expense,linkedEvent,연결된 일정,Linked Event
+expense,linkedTodo,연결된 할일,Linked Todo
+expense,form.calendarEvent,일정 연결,Link Event
+expense,form.todo,할일 연결,Link Todo
+expense,linkExpense,지출 추가,Add Expense
+expense,noLinkedExpenses,연결된 지출이 없습니다,No linked expenses
+asset,title,자산 관리,Asset Management
+asset,assets,자산,Assets
+asset,transfers,이체,Transfers
+asset,addAsset,자산 추가,Add Asset
+asset,editAsset,자산 수정,Edit Asset
+asset,addTransfer,이체 추가,Add Transfer
+asset,totalBalance,총 자산,Total Balance
+asset,count,개,
+asset,noAssets,등록된 자산이 없습니다,No assets registered
+asset,createFirst,첫 번째 자산을 등록해 보세요,Register your first asset
+asset,noTransfers,이체 내역이 없습니다,No transfers yet
+asset,fee,수수료,Fee
+asset,loading,로딩 중...,Loading...
+asset,assetType.bankaccount,은행 계좌,Bank Account
+asset,assetType.creditcard,신용카드,Credit Card
+asset,assetType.checkcard,체크카드,Check Card
+asset,assetType.cash,현금,Cash
+asset,assetType.savings,적금,Savings
+asset,assetType.loan,대출,Loan
+asset,assetType.investment,투자,Investment
+asset,form.assetName,자산명,Asset Name
+asset,form.assetNamePlaceholder,자산명을 입력하세요,Enter asset name
+asset,form.assetType,자산 유형,Asset Type
+asset,form.balance,잔액,Balance
+asset,form.institution,금융기관,Institution
+asset,form.institutionPlaceholder,금융기관명을 입력하세요,Enter institution name
+asset,form.color,색상,Color
+asset,form.memo,메모,Memo
+asset,form.memoPlaceholder,메모를 입력하세요,Enter memo
+asset,form.fromAsset,출금 자산,From Asset
+asset,form.toAsset,입금 자산,To Asset
+asset,form.amount,금액,Amount
+asset,form.amountPlaceholder,금액을 입력하세요,Enter amount
+asset,form.fee,수수료,Fee
+asset,form.date,날짜,Date
+asset,form.description,설명,Description
+asset,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+asset,deleteConfirm.title,자산 삭제,Delete Asset
+asset,deleteConfirm.message,"이 자산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this asset? This action cannot be undone."
+asset,deleteConfirm.cancel,취소,Cancel
+asset,deleteConfirm.confirm,삭제,Delete
+dashboard,title,대시보드,Dashboard
+dashboard,welcome,환영합니다,Welcome
+dashboard,overview,개요,Overview
+dashboard,viewAll,전체 보기,View All
+dashboard,todayOverview,오늘의 요약,Today's Overview
+dashboard,todo.title,할일,Todo
+dashboard,todo.total,전체,Total
+dashboard,todo.pending,대기,Pending
+dashboard,todo.inProgress,진행 중,In Progress
+dashboard,todo.completed,완료,Completed
+dashboard,todo.todayDue,오늘 마감,Due Today
+dashboard,todo.completionRate,완료율,Completion Rate
+dashboard,calendar.title,캘린더,Calendar
+dashboard,calendar.todayEvents,오늘 일정,Today's Events
+dashboard,calendar.upcoming,다가오는 일정,Upcoming Events
+dashboard,calendar.nextEvent,다음 일정,Next Event
+dashboard,calendar.noUpcoming,예정된 일정 없음,No upcoming events
+dashboard,timer.title,타이머,Timer
+dashboard,timer.todayFocus,오늘 집중,Today's Focus
+dashboard,timer.sessions,세션,Sessions
+dashboard,timer.weeklyFocus,주간 집중,Weekly Focus
+dashboard,timer.startTimer,타이머 시작,Start Timer
+dashboard,expense.title,가계부,Expense
+dashboard,expense.todayIncome,오늘 수입,Today's Income
+dashboard,expense.todayExpense,오늘 지출,Today's Expense
+dashboard,expense.monthlyIncome,이번 달 수입,Monthly Income
+dashboard,expense.monthlyExpense,이번 달 지출,Monthly Expense
+dashboard,expense.net,순수익,Net
+dashboard,memo.title,메모,Memo
+dashboard,memo.total,전체 메모,Total Memos
+dashboard,memo.pinned,고정됨,Pinned
+dashboard,memo.recent,최근 메모,Recent Memo
+dashboard,memo.noRecent,최근 메모 없음,No recent memos
+dashboard,calculator.title,계산기,Calculator
+dashboard,calculator.quickCalc,빠른 계산,Quick Calculate
+dashboard,calculator.openFull,계산기 열기,Open Calculator
+dashboard,greeting.morning,좋은 아침이에요,Good morning
+dashboard,greeting.afternoon,좋은 오후예요,Good afternoon
+dashboard,greeting.evening,좋은 저녁이에요,Good evening
+dashboard,greeting.subtitle,오늘도 알찬 하루 보내세요!,Have a productive day!
+dashboard,summary.todoProgress,할일 진행률,Todo Progress
+dashboard,summary.monthlyExpense,이번 달 지출,Monthly Expense
+dashboard,summary.focusTime,오늘 집중 시간,Today's Focus
+dashboard,quick.dueToday,오늘 마감,Due Today
+dashboard,quick.todayEvents,오늘 일정,Today's Events
+dashboard,quick.pinnedMemos,고정 메모,Pinned Memos
+dashboard,quick.timerSessions,타이머 세션,Timer Sessions
+dashboard,schedule.title,다가오는 일정,Upcoming Events
+dashboard,schedule.daysLeft,D-{{days}},D-{{days}}
+dashboard,schedule.today,오늘,Today
+dashboard,schedule.tomorrow,내일,Tomorrow
+dashboard,chart.title,지출 추이,Expense Trend
+dashboard,chart.last30days,최근 30일,Last 30 days
+dashboard,chart.income,수입,Income
+dashboard,chart.expense,지출,Expense
+dutchPay,title,더치페이,Dutch Pay
+dutchPay,addDutchPay,더치페이 추가,Add Dutch Pay
+dutchPay,editDutchPay,더치페이 수정,Edit Dutch Pay
+dutchPay,empty,더치페이 내역이 없습니다,No dutch pay records
+dutchPay,settled,정산 완료,Settled
+dutchPay,participants,명,
+dutchPay,count,건,
+dutchPay,currency,원,
+dutchPay,perPerson,인당,per person
+dutchPay,settleAll,전체 정산,Settle All
+dutchPay,filter.all,전체,All
+dutchPay,filter.active,진행 중,Active
+dutchPay,filter.settled,정산 완료,Settled
+dutchPay,splitMethod.EQUAL,균등 분할,Equal Split
+dutchPay,splitMethod.CUSTOM,직접 입력,Custom
+dutchPay,splitMethod.RATIO,비율 분할,Ratio
+dutchPay,form.title,제목,Title
+dutchPay,form.titlePlaceholder,더치페이 제목을 입력하세요,Enter title
+dutchPay,form.titleRequired,제목을 입력해주세요,Title is required
+dutchPay,form.description,설명,Description
+dutchPay,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+dutchPay,form.totalAmount,총 금액,Total Amount
+dutchPay,form.date,날짜,Date
+dutchPay,form.splitMethod,분할 방식,Split Method
+dutchPay,form.participants,참가자,Participants
+dutchPay,form.participantName,이름,Name
+dutchPay,form.addParticipant,참가자 추가,Add Participant
+dutchPay,deleteConfirm.title,더치페이 삭제,Delete Dutch Pay
+dutchPay,deleteConfirm.message,"이 더치페이를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this? This action cannot be undone."
+notification,title,알림,Notifications
+notification,empty,알림이 없습니다,No notifications
+notification,markAllRead,모두 읽음,Mark all read
+notification,type.EVENT_REMINDER,일정 알림,Event Reminder
+notification,type.BUDGET_ALERT,예산 알림,Budget Alert
+notification,type.TODO_REMINDER,할일 알림,Todo Reminder
+notification,type.SYSTEM,시스템 알림,System
+group,title,그룹,Groups
+group,addGroup,그룹 추가,Add Group
+group,editGroup,그룹 수정,Edit Group
+group,joinGroup,그룹 참가,Join Group
+group,empty,그룹이 없습니다,No groups yet
+group,createFirst,첫 번째 그룹을 만들어 보세요,Create your first group
+group,backToList,목록으로,Back to list
+group,inviteCode,초대 코드,Invite Code
+group,inviteCodePlaceholder,초대 코드를 입력하세요,Enter invite code
+group,inviteCodeCopied,초대 코드가 복사되었습니다,Invite code copied
+group,inviteCodeRegenerated,초대 코드가 재생성되었습니다,Invite code regenerated
+group,join,참가,Join
+group,members,멤버,Members
+group,memberCount,명,
+group,createSuccess,그룹이 생성되었습니다,Group created
+group,updateSuccess,그룹이 수정되었습니다,Group updated
+group,deleteSuccess,그룹이 삭제되었습니다,Group deleted
+group,joinSuccess,그룹에 참가했습니다,Joined group successfully
+group,joinError,그룹 참가에 실패했습니다,Failed to join group
+group,memberRemoved,멤버가 제거되었습니다,Member removed
+group,roleChanged,역할이 변경되었습니다,Role changed
+group,groupType.FAMILY,가족,Family
+group,groupType.COUPLE,커플,Couple
+group,groupType.FRIENDS,친구,Friends
+group,groupType.CUSTOM,기타,Custom
+group,role.OWNER,소유자,Owner
+group,role.ADMIN,관리자,Admin
+group,role.MEMBER,멤버,Member
+group,form.groupName,그룹 이름,Group Name
+group,form.groupNamePlaceholder,그룹 이름을 입력하세요,Enter group name
+group,form.description,설명,Description
+group,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+group,form.groupType,그룹 유형,Group Type
+group,deleteConfirm.title,그룹 삭제,Delete Group
+group,deleteConfirm.message,"이 그룹을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this group? This action cannot be undone."
+group,comment,댓글,Comment
+group,comments,댓글,Comments
+group,addComment,댓글 추가,Add Comment
+group,editComment,댓글 수정,Edit Comment
+group,noComments,댓글이 없습니다,No comments yet
+group,commentPlaceholder,댓글을 입력하세요,Enter a comment
+group,reply,답글,Reply
+album,title,앨범,Albums
+album,addAlbum,앨범 추가,Add Album
+album,editAlbum,앨범 수정,Edit Album
+album,empty,앨범이 없습니다,No albums yet
+album,createFirst,첫 번째 앨범을 만들어 보세요,Create your first album
+album,selectGroup,그룹을 선택하세요,Select a group
+album,backToList,목록으로,Back to list
+album,photos,장,
+album,addPhoto,사진 추가,Add Photo
+album,removePhoto,사진 삭제,Remove Photo
+album,noPhotos,사진이 없습니다,No photos yet
+album,photoAdded,사진이 추가되었습니다,Photo added
+album,photoRemoved,사진이 삭제되었습니다,Photo removed
+album,createSuccess,앨범이 생성되었습니다,Album created
+album,updateSuccess,앨범이 수정되었습니다,Album updated
+album,deleteSuccess,앨범이 삭제되었습니다,Album deleted
+album,form.albumName,앨범 이름,Album Name
+album,form.albumNamePlaceholder,앨범 이름을 입력하세요,Enter album name
+album,form.description,설명,Description
+album,form.descriptionPlaceholder,설명을 입력하세요,Enter description
+album,deleteConfirm.title,앨범 삭제,Delete Album
+album,deleteConfirm.message,"이 앨범을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this album? This action cannot be undone."

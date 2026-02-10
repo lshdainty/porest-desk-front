@@ -34,7 +34,7 @@ export const useUpdateTodo = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number, data: TodoFormValues }) =>
+    mutationFn: ({ id, data }: { id: number; data: TodoFormValues }) =>
       todoApi.updateTodo(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: todoKeys.all })
@@ -57,7 +57,7 @@ export const useReorderTodos = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (items: { rowId: number, sortOrder: number }[]) =>
+    mutationFn: (items: { todoId: number; sortOrder: number }[]) =>
       todoApi.reorderTodos(items),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: todoKeys.all })
@@ -73,5 +73,32 @@ export const useDeleteTodo = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: todoKeys.all })
     },
+  })
+}
+
+export const useSubtasks = (parentId: number) => {
+  return useQuery({
+    queryKey: todoKeys.subtasks(parentId),
+    queryFn: () => todoApi.getSubtasks(parentId),
+    enabled: parentId > 0,
+  })
+}
+
+export const useUpdateTodoTags = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ todoId, tagIds }: { todoId: number; tagIds: number[] }) =>
+      todoApi.updateTags(todoId, tagIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: todoKeys.all })
+    },
+  })
+}
+
+export const useTodoStats = () => {
+  return useQuery({
+    queryKey: todoKeys.stats(),
+    queryFn: () => todoApi.getStats(),
   })
 }

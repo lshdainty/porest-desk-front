@@ -1,0 +1,16 @@
+{
+  "title": "Calculator",
+  "history": "History",
+  "clearHistory": "Clear History",
+  "noHistory": "No calculation history",
+  "scientific": "Scientific",
+  "standard": "Standard",
+  "clearAll": "AC",
+  "clear": "C",
+  "equals": "=",
+  "error": "Error",
+  "clearHistoryConfirm.title": "Clear History",
+  "clearHistoryConfirm.message": "Are you sure you want to clear all calculation history?",
+  "clearHistoryConfirm.cancel": "Cancel",
+  "clearHistoryConfirm.confirm": "Clear"
+}

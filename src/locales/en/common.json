@@ -1,0 +1,13 @@
+{
+  "app.title": "POREST Desk",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "search": "Search",
+  "confirm": "Confirm",
+  "loading": "Loading...",
+  "noData": "No data",
+  "error": "An error occurred"
+}

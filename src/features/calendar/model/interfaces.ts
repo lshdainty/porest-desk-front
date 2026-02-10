@@ -1,4 +1,5 @@
 import type { TCalendarType } from './types'
+import type { EventReminderInfo } from '@/entities/calendar'
 
 export interface IEvent {
   id: number
@@ -9,6 +10,13 @@ export interface IEvent {
   color: string
   isAllDay: boolean
   type: TCalendarType
+  labelRowId: number | null
+  labelName: string | null
+  labelColor: string | null
+  location: string | null
+  rrule: string | null
+  recurrenceId: number | null
+  reminders: EventReminderInfo[]
 }
 
 export interface ICalendarCell {

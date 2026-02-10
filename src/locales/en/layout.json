@@ -1,0 +1,17 @@
+{
+  "dashboard": "Dashboard",
+  "todo": "Todo",
+  "calendar": "Calendar",
+  "calculator": "Calculator",
+  "memo": "Memo",
+  "timer": "Timer",
+  "expense": "Expense",
+  "asset": "Assets",
+  "dutchPay": "Dutch Pay",
+  "group": "Groups",
+  "album": "Albums",
+  "settings": "Settings",
+  "more": "More",
+  "menu": "Menu",
+  "logout": "Log out"
+}

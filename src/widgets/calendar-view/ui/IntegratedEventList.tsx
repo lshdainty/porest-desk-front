@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Calendar, CheckSquare, Wallet, Timer } from 'lucide-react'
+import { Calendar, CheckSquare, Wallet, Timer, MapPin, Repeat } from 'lucide-react'
 import { cn, formatDate, formatCurrency, formatDuration } from '@/shared/lib'
 import { isSameDay } from '@/shared/lib/date'
 import type { CalendarEvent } from '@/entities/calendar'
@@ -89,7 +89,17 @@ export const IntegratedEventList = ({
                   style={{ backgroundColor: event.color }}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{event.title}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate text-sm font-medium">{event.title}</p>
+                    {event.labelName && (
+                      <span
+                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
+                        style={{ backgroundColor: event.labelColor ?? '#6b7280' }}
+                      >
+                        {event.labelName}
+                      </span>
+                    )}
+                  </div>
                   {event.description && (
                     <p className="truncate text-xs text-muted-foreground">
                       {event.description}
@@ -106,6 +116,15 @@ export const IntegratedEventList = ({
                       color={event.color}
                       eventType={event.eventType}
                     />
+                    {event.rrule && (
+                      <Repeat size={10} className="text-muted-foreground" />
+                    )}
+                    {event.location && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                        <MapPin size={10} />
+                        <span className="truncate max-w-[80px]">{event.location}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
               </button>

@@ -8,4 +8,7 @@ export {
   useToggleTodoStatus,
   useReorderTodos,
   useDeleteTodo,
+  useSubtasks,
+  useUpdateTodoTags,
+  useTodoStats,
 } from './model/useTodos'

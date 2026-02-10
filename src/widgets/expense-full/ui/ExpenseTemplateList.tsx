@@ -1,0 +1,226 @@
+import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Plus, Play, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { cn } from '@/shared/lib'
+import { useIsMobile } from '@/shared/hooks'
+import {
+  useExpenseTemplates,
+  useCreateExpenseTemplate,
+  useUpdateExpenseTemplate,
+  useDeleteExpenseTemplate,
+  useUseExpenseTemplate,
+} from '@/features/expense-template'
+import { useExpenseCategories } from '@/features/expense'
+import { useAssets } from '@/features/asset'
+import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
+import { ExpenseTemplateForm } from './ExpenseTemplateForm'
+
+export const ExpenseTemplateList = () => {
+  const { t } = useTranslation('expense')
+  const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
+
+  const [showForm, setShowForm] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<ExpenseTemplate | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+
+  const { data: templates, isLoading } = useExpenseTemplates()
+  const { data: categories } = useExpenseCategories()
+  const { data: assets } = useAssets()
+  const createTemplate = useCreateExpenseTemplate()
+  const updateTemplate = useUpdateExpenseTemplate()
+  const deleteTemplate = useDeleteExpenseTemplate()
+  const useTemplate = useUseExpenseTemplate()
+
+  const handleCreate = useCallback((data: ExpenseTemplateFormValues) => {
+    createTemplate.mutate(data, {
+      onSuccess: () => setShowForm(false),
+    })
+  }, [createTemplate])
+
+  const handleUpdate = useCallback((data: ExpenseTemplateFormValues) => {
+    if (!editingTemplate) return
+    updateTemplate.mutate(
+      { id: editingTemplate.rowId, data },
+      {
+        onSuccess: () => {
+          setEditingTemplate(null)
+          setShowForm(false)
+        },
+      }
+    )
+  }, [editingTemplate, updateTemplate])
+
+  const handleUse = useCallback((template: ExpenseTemplate) => {
+    useTemplate.mutate({
+      id: template.rowId,
+      data: { expenseDate: new Date().toISOString().split('T')[0] },
+    })
+  }, [useTemplate])
+
+  const handleEdit = useCallback((template: ExpenseTemplate) => {
+    setEditingTemplate(template)
+    setShowForm(true)
+  }, [])
+
+  const confirmDelete = useCallback(() => {
+    if (showDeleteConfirm === null) return
+    deleteTemplate.mutate(showDeleteConfirm, {
+      onSuccess: () => setShowDeleteConfirm(null),
+    })
+  }, [showDeleteConfirm, deleteTemplate])
+
+  const handleFormClose = useCallback(() => {
+    setShowForm(false)
+    setEditingTemplate(null)
+  }, [])
+
+  const handleFormSubmit = useCallback((data: ExpenseTemplateFormValues) => {
+    if (editingTemplate) {
+      handleUpdate(data)
+    } else {
+      handleCreate(data)
+    }
+  }, [editingTemplate, handleUpdate, handleCreate])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Template list */}
+      {templates && templates.length > 0 ? (
+        <div className="space-y-2">
+          {templates.map((template) => (
+            <div
+              key={template.rowId}
+              className="flex items-center justify-between rounded-lg border p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium truncate">{template.templateName}</span>
+                  <span
+                    className={cn(
+                      'shrink-0 rounded px-1.5 py-0.5 text-xs font-medium',
+                      template.expenseType === 'EXPENSE'
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    )}
+                  >
+                    {t(template.expenseType === 'EXPENSE' ? 'expense' : 'income')}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  {template.categoryName && <span>{template.categoryName}</span>}
+                  {template.amount && (
+                    <span>{template.amount.toLocaleString()}원</span>
+                  )}
+                  {template.merchant && <span>· {template.merchant}</span>}
+                  <span className="ml-auto">사용 {template.useCount}회</span>
+                </div>
+              </div>
+              <div className="ml-2 flex shrink-0 gap-1">
+                <button
+                  onClick={() => handleUse(template)}
+                  disabled={useTemplate.isPending}
+                  className="rounded-md p-1.5 text-primary hover:bg-primary/10 transition-colors"
+                  title={t('useTemplate')}
+                >
+                  <Play size={14} />
+                </button>
+                <button
+                  onClick={() => handleEdit(template)}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(template.rowId)}
+                  className="rounded-md p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-12 text-center text-sm text-muted-foreground">
+          {t('noTransactions')}
+        </div>
+      )}
+
+      {/* Add button */}
+      {!isMobile ? (
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+        >
+          <Plus size={16} />
+          {t('addTemplate')}
+        </button>
+      ) : (
+        <button
+          onClick={() => setShowForm(true)}
+          className={cn(
+            'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
+            'rounded-full bg-primary text-primary-foreground shadow-lg',
+            'hover:bg-primary/90 active:scale-95 transition-all'
+          )}
+        >
+          <Plus size={24} />
+        </button>
+      )}
+
+      {/* Template form */}
+      {showForm && (
+        <ExpenseTemplateForm
+          template={editingTemplate}
+          categories={categories || []}
+          assets={assets || []}
+          onSubmit={handleFormSubmit}
+          onClose={handleFormClose}
+          isLoading={createTemplate.isPending || updateTemplate.isPending}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowDeleteConfirm(null)}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t('deleteConfirm.message')}
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
+              >
+                {tc('cancel')}
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteTemplate.isPending}
+                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              >
+                {deleteTemplate.isPending ? '...' : tc('delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

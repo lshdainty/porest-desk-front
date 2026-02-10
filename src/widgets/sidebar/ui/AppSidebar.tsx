@@ -7,6 +7,8 @@ import {
   FileText,
   Timer,
   Wallet,
+  UsersRound,
+  ImageIcon,
 } from 'lucide-react'
 import Logo from '@/shared/assets/img/porest.svg'
 import LogoDark from '@/shared/assets/img/porest_dark.svg'
@@ -42,6 +44,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     { title: t('timer'), url: '/desk/timer', icon: Timer },
     { title: t('memo'), url: '/desk/memo', icon: FileText },
     { title: t('expense'), url: '/desk/expense', icon: Wallet },
+    { title: t('group'), url: '/desk/group', icon: UsersRound },
+    { title: t('album'), url: '/desk/album', icon: ImageIcon },
     { title: t('calculator'), url: '/desk/calculator', icon: Calculator },
   ]
 

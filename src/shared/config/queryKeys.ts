@@ -12,12 +12,29 @@ export const todoKeys = {
   all: ['todos'] as const,
   list: (filters?: Record<string, unknown>) => [...todoKeys.all, 'list', filters] as const,
   detail: (id: number) => [...todoKeys.all, 'detail', id] as const,
+  subtasks: (parentId: number) => [...todoKeys.all, 'subtasks', parentId] as const,
+  stats: () => [...todoKeys.all, 'stats'] as const,
+}
+
+export const todoProjectKeys = {
+  all: ['todo-projects'] as const,
+  list: () => [...todoProjectKeys.all, 'list'] as const,
+}
+
+export const todoTagKeys = {
+  all: ['todo-tags'] as const,
+  list: () => [...todoTagKeys.all, 'list'] as const,
 }
 
 export const calendarKeys = {
   all: ['calendar'] as const,
   events: (params?: Record<string, unknown>) => [...calendarKeys.all, 'events', params] as const,
   aggregate: (params?: Record<string, unknown>) => [...calendarKeys.all, 'aggregate', params] as const,
+}
+
+export const eventLabelKeys = {
+  all: ['event-labels'] as const,
+  list: () => [...eventLabelKeys.all, 'list'] as const,
 }
 
 export const memoKeys = {
@@ -45,6 +62,65 @@ export const expenseKeys = {
   budgets: (params?: Record<string, unknown>) => [...expenseKeys.all, 'budgets', params] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
   monthlySummary: (year: number, month: number) => [...expenseKeys.all, 'monthly-summary', year, month] as const,
+  weeklySummary: (weekStart: string, weekEnd: string) => [...expenseKeys.all, 'weekly-summary', weekStart, weekEnd] as const,
+  yearlySummary: (year: number) => [...expenseKeys.all, 'yearly-summary', year] as const,
+  merchantSummary: (params?: Record<string, unknown>) => [...expenseKeys.all, 'merchant-summary', params] as const,
+  assetSummary: (params?: Record<string, unknown>) => [...expenseKeys.all, 'asset-summary', params] as const,
+  search: (params?: Record<string, unknown>) => [...expenseKeys.all, 'search', params] as const,
+  byCalendarEvent: (eventId: number) => [...expenseKeys.all, 'by-calendar-event', eventId] as const,
+  byTodo: (todoId: number) => [...expenseKeys.all, 'by-todo', todoId] as const,
+}
+
+export const assetKeys = {
+  all: ['assets'] as const,
+  list: () => [...assetKeys.all, 'list'] as const,
+  detail: (id: number) => [...assetKeys.all, 'detail', id] as const,
+  summary: () => [...assetKeys.all, 'summary'] as const,
+  transfers: (params?: Record<string, unknown>) => [...assetKeys.all, 'transfers', params] as const,
+}
+
+export const expenseTemplateKeys = {
+  all: ['expense-templates'] as const,
+  list: () => [...expenseTemplateKeys.all, 'list'] as const,
+}
+
+export const recurringTransactionKeys = {
+  all: ['recurring-transactions'] as const,
+  list: () => [...recurringTransactionKeys.all, 'list'] as const,
+}
+
+export const notificationKeys = {
+  all: ['notifications'] as const,
+  list: () => [...notificationKeys.all, 'list'] as const,
+  unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
+}
+
+export const dutchPayKeys = {
+  all: ['dutch-pay'] as const,
+  list: () => [...dutchPayKeys.all, 'list'] as const,
+  detail: (id: number) => [...dutchPayKeys.all, 'detail', id] as const,
+}
+
+export const groupKeys = {
+  all: ['groups'] as const,
+  list: () => [...groupKeys.all, 'list'] as const,
+  detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
+}
+
+export const eventCommentKeys = {
+  all: ['event-comments'] as const,
+  list: (eventId: number) => [...eventCommentKeys.all, 'list', eventId] as const,
+}
+
+export const fileKeys = {
+  all: ['files'] as const,
+  byReference: (referenceType: string, referenceRowId: number) => [...fileKeys.all, 'by-reference', referenceType, referenceRowId] as const,
+}
+
+export const albumKeys = {
+  all: ['albums'] as const,
+  list: (groupRowId: number) => [...albumKeys.all, 'list', groupRowId] as const,
+  detail: (id: number) => [...albumKeys.all, 'detail', id] as const,
 }
 
 export const dashboardKeys = {

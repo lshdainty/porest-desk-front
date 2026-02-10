@@ -1,0 +1,9 @@
+{
+  "title": "Notifications",
+  "empty": "No notifications",
+  "markAllRead": "Mark all read",
+  "type.EVENT_REMINDER": "Event Reminder",
+  "type.BUDGET_ALERT": "Budget Alert",
+  "type.TODO_REMINDER": "Todo Reminder",
+  "type.SYSTEM": "System"
+}

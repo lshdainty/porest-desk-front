@@ -10,6 +10,7 @@ import {
   useDeleteExpense,
   useExpenseCategories,
 } from '@/features/expense'
+import { useAssets } from '@/features/asset'
 import type { Expense, ExpenseFormValues } from '@/entities/expense'
 import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
@@ -17,8 +18,12 @@ import { ExpenseCategoryManager } from './ExpenseCategoryManager'
 import { DailySummaryCard } from './DailySummary'
 import { MonthlySummaryCard } from './MonthlySummary'
 import { BudgetProgress } from './BudgetProgress'
+import { ExpenseTemplateList } from './ExpenseTemplateList'
+import { RecurringTransactionList } from './RecurringTransactionList'
+import { AssetFullWidget } from '@/widgets/asset-full'
+import { DutchPayFullWidget } from '@/widgets/dutch-pay-full'
 
-type TabType = 'list' | 'summary' | 'budget'
+type TabType = 'list' | 'summary' | 'budget' | 'asset' | 'dutchPay' | 'template' | 'recurring'
 
 export const ExpenseFullWidget = () => {
   const { t } = useTranslation('expense')
@@ -37,6 +42,7 @@ export const ExpenseFullWidget = () => {
 
   const { data: expenses, isLoading } = useExpenses()
   const { data: categories } = useExpenseCategories()
+  const { data: assets } = useAssets()
   const createExpense = useCreateExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
@@ -93,10 +99,17 @@ export const ExpenseFullWidget = () => {
     }
   }, [editingExpense, handleUpdate, handleCreate])
 
+  const { t: tAsset } = useTranslation('asset')
+  const { t: tDutchPay } = useTranslation('dutchPay')
+
   const tabs: { key: TabType; label: string }[] = [
     { key: 'list', label: t('list') },
     { key: 'summary', label: t('summary') },
     { key: 'budget', label: t('budget') },
+    { key: 'asset', label: tAsset('title') },
+    { key: 'dutchPay', label: tDutchPay('title') },
+    { key: 'template', label: t('template') },
+    { key: 'recurring', label: t('recurring') },
   ]
 
   return (
@@ -104,13 +117,13 @@ export const ExpenseFullWidget = () => {
       <div className="space-y-4">
         {/* Tabs + category manager button */}
         <div className="flex items-center gap-2">
-          <div className="flex flex-1 rounded-lg border bg-muted/30 p-1">
+          <div className="flex flex-1 overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                   activeTab === tab.key
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -154,6 +167,22 @@ export const ExpenseFullWidget = () => {
         {activeTab === 'budget' && (
           <BudgetProgress year={currentYear} month={currentMonth} />
         )}
+
+        {activeTab === 'template' && (
+          <ExpenseTemplateList />
+        )}
+
+        {activeTab === 'recurring' && (
+          <RecurringTransactionList />
+        )}
+
+        {activeTab === 'asset' && (
+          <AssetFullWidget />
+        )}
+
+        {activeTab === 'dutchPay' && (
+          <DutchPayFullWidget />
+        )}
       </div>
 
       {/* FAB for add on mobile, dashed button on desktop */}
@@ -189,6 +218,7 @@ export const ExpenseFullWidget = () => {
         <ExpenseForm
           expense={editingExpense}
           categories={categories || []}
+          assets={assets || []}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createExpense.isPending || updateExpense.isPending}

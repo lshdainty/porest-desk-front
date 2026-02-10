@@ -1,0 +1,9 @@
+{
+  "title": "알림",
+  "empty": "알림이 없습니다",
+  "markAllRead": "모두 읽음",
+  "type.EVENT_REMINDER": "일정 알림",
+  "type.BUDGET_ALERT": "예산 알림",
+  "type.TODO_REMINDER": "할일 알림",
+  "type.SYSTEM": "시스템 알림"
+}

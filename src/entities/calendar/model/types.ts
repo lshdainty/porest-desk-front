@@ -4,6 +4,14 @@ import type { TimerSession } from '@/entities/timer'
 
 export type CalendarEventType = 'PERSONAL' | 'WORK' | 'BIRTHDAY' | 'HOLIDAY'
 
+export interface EventReminderInfo {
+  rowId: number
+  eventRowId: number
+  reminderType: string
+  minutesBefore: number
+  isSent: boolean
+}
+
 export interface CalendarEvent {
   rowId: number
   title: string
@@ -13,6 +21,14 @@ export interface CalendarEvent {
   startDate: string
   endDate: string
   isAllDay: boolean
+  labelRowId: number | null
+  labelName: string | null
+  labelColor: string | null
+  location: string | null
+  rrule: string | null
+  recurrenceId: number | null
+  isException: boolean
+  reminders: EventReminderInfo[]
   createAt: string
   modifyAt: string
 }
@@ -25,6 +41,10 @@ export interface CalendarEventFormValues {
   startDate: string
   endDate: string
   isAllDay: boolean
+  labelRowId?: number
+  location?: string
+  rrule?: string
+  reminderMinutes?: number[]
 }
 
 export interface CalendarAggregateData {

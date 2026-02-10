@@ -4,10 +4,12 @@ import { X } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import type { Expense, ExpenseFormValues, ExpenseType, ExpenseCategory } from '@/entities/expense'
+import type { Asset } from '@/entities/asset'
 
 interface ExpenseFormProps {
   expense?: Expense | null
   categories: ExpenseCategory[]
+  assets?: Asset[]
   onSubmit: (data: ExpenseFormValues) => void
   onClose: () => void
   isLoading: boolean
@@ -18,6 +20,7 @@ const PAYMENT_METHODS = ['CASH', 'CARD', 'TRANSFER', 'OTHER'] as const
 export const ExpenseForm = ({
   expense,
   categories,
+  assets = [],
   onSubmit,
   onClose,
   isLoading,
@@ -34,6 +37,8 @@ export const ExpenseForm = ({
     expense?.expenseDate ?? new Date().toISOString().split('T')[0]
   )
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
+  const [assetRowId, setAssetRowId] = useState<number>(expense?.assetRowId ?? 0)
+  const [merchant, setMerchant] = useState(expense?.merchant ?? '')
 
   const filteredCategories = categories.filter((c) => c.expenseType === expenseType)
 
@@ -47,14 +52,16 @@ export const ExpenseForm = ({
     if (!categoryRowId || !amount) return
     const data: ExpenseFormValues = {
       categoryRowId,
+      assetRowId: assetRowId || undefined,
       expenseType,
       amount: parseFloat(amount),
       description: description || undefined,
       expenseDate,
+      merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
     }
     onSubmit(data)
-  }, [categoryRowId, expenseType, amount, description, expenseDate, paymentMethod, onSubmit])
+  }, [categoryRowId, assetRowId, expenseType, amount, description, expenseDate, merchant, paymentMethod, onSubmit])
 
   const formContent = (
     <div className="space-y-4">
@@ -142,6 +149,36 @@ export const ExpenseForm = ({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Asset */}
+      {assets.length > 0 && (
+        <div>
+          <label className="mb-1 block text-sm font-medium">{t('form.asset')}</label>
+          <select
+            value={assetRowId}
+            onChange={(e) => setAssetRowId(parseInt(e.target.value))}
+            className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
+          >
+            <option value={0}>{t('form.asset')}</option>
+            {assets.map((asset) => (
+              <option key={asset.rowId} value={asset.rowId}>
+                {asset.assetName}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Merchant */}
+      <div>
+        <label className="mb-1 block text-sm font-medium">{t('form.merchant')}</label>
+        <input
+          value={merchant}
+          onChange={(e) => setMerchant(e.target.value)}
+          placeholder={t('form.merchantPlaceholder')}
+          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
+        />
       </div>
 
       {/* Description */}
