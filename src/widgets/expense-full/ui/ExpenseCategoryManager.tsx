@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Edit3, Trash2, X } from 'lucide-react'
-import { cn } from '@/shared/lib'
+import { Plus, Edit3, Trash2 } from 'lucide-react'
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -9,6 +8,16 @@ import {
   useDeleteExpenseCategory,
 } from '@/features/expense'
 import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/shared/ui/dialog'
 
 export const ExpenseCategoryManager = () => {
   const { t } = useTranslation('expense')
@@ -96,18 +105,22 @@ export const ExpenseCategoryManager = () => {
               />
               {cat.icon && <span className="text-sm">{cat.icon}</span>}
               <span className="flex-1 text-sm">{cat.categoryName}</span>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => openEditForm(cat)}
-                className="rounded p-1 text-muted-foreground hover:text-foreground"
               >
                 <Edit3 size={12} />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => handleDelete(cat.rowId)}
-                className="rounded p-1 text-muted-foreground hover:text-destructive"
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -120,72 +133,55 @@ export const ExpenseCategoryManager = () => {
       {renderCategoryList(expenseCategories, 'EXPENSE')}
       {renderCategoryList(incomeCategories, 'INCOME')}
 
-      {showForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowForm(false)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                {editing ? t('editCategory') : t('addCategory')}
-              </h3>
-              <button onClick={() => setShowForm(false)} className="rounded-md p-1 hover:bg-muted">
-                <X size={18} />
-              </button>
+      <Dialog open={showForm} onOpenChange={(open) => { if (!open) setShowForm(false) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {editing ? t('editCategory') : t('addCategory')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{t('categoryName')}</Label>
+              <Input
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder={t('categoryNamePlaceholder')}
+              />
             </div>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">{t('categoryName')}</label>
-                <input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder={t('categoryNamePlaceholder')}
-                  className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Label>Icon</Label>
+                <Input
+                  value={formIcon}
+                  onChange={(e) => setFormIcon(e.target.value)}
+                  placeholder="e.g. emoji"
                 />
               </div>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="mb-1 block text-sm font-medium">Icon</label>
-                  <input
-                    value={formIcon}
-                    onChange={(e) => setFormIcon(e.target.value)}
-                    placeholder="e.g. emoji"
-                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Color</label>
-                  <input
-                    type="color"
-                    value={formColor}
-                    onChange={(e) => setFormColor(e.target.value)}
-                    className="h-10 w-12 cursor-pointer rounded-lg border bg-background p-1"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  {t('deleteConfirm.cancel')}
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}
-                  className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-                >
-                  {(createCategory.isPending || updateCategory.isPending) ? '...' : t('deleteConfirm.confirm')}
-                </button>
+              <div>
+                <Label>Color</Label>
+                <input
+                  type="color"
+                  value={formColor}
+                  onChange={(e) => setFormColor(e.target.value)}
+                  className="h-10 w-12 cursor-pointer rounded-lg border bg-background p-1"
+                />
               </div>
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowForm(false)}>
+              {t('deleteConfirm.cancel')}
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}
+            >
+              {(createCategory.isPending || updateCategory.isPending) ? '...' : t('deleteConfirm.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

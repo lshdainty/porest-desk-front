@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { X, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Textarea } from '@/shared/ui/textarea'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/shared/ui/select'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/shared/ui/dialog'
 import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import type { TodoProject } from '@/entities/todo-project'
 import type { TodoTag } from '@/entities/todo-tag'
@@ -23,7 +32,6 @@ const priorityOptions: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
 export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, isLoading }: TodoFormProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 
@@ -48,6 +56,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
   })
 
   const selectedPriority = watch('priority')
+  const projectRowId = watch('projectRowId')
 
   useEffect(() => {
     if (todo) {
@@ -100,49 +109,24 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
   }
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-md rounded-lg'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
             {parentId
               ? t('addSubtask')
               : todo
                 ? t('editTodo')
                 : t('createTodo')}
-          </h3>
-          <button
-            onClick={onClose}
-            className="rounded-full p-1 hover:bg-muted"
-          >
-            <X size={20} />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 p-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.title')}</label>
-            <input
+            <Label>{t('form.title')}</Label>
+            <Input
               {...register('title', { required: t('form.titleRequired') })}
-              className={cn(
-                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-                errors.title && 'border-destructive'
-              )}
+              className={cn(errors.title && 'border-destructive')}
               placeholder={t('form.titlePlaceholder')}
             />
             {errors.title && (
@@ -151,17 +135,17 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.content')}</label>
-            <textarea
+            <Label>{t('form.content')}</Label>
+            <Textarea
               {...register('content')}
               rows={3}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              className="resize-none"
               placeholder={t('form.contentPlaceholder')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.priority')}</label>
+            <Label>{t('form.priority')}</Label>
             <div className="flex gap-2">
               {priorityOptions.map((priority) => (
                 <button
@@ -187,24 +171,29 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
 
           {!parentId && projects.length > 0 && (
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('form.project')}</label>
-              <select
-                {...register('projectRowId', { valueAsNumber: true })}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              <Label>{t('form.project')}</Label>
+              <Select
+                value={projectRowId ? String(projectRowId) : '__none__'}
+                onValueChange={(val) => setValue('projectRowId', val === '__none__' ? undefined : Number(val))}
               >
-                <option value="">{t('allProjects')}</option>
-                {projects.map((project) => (
-                  <option key={project.rowId} value={project.rowId}>
-                    {project.projectName}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('allProjects')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('allProjects')}</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.rowId} value={String(project.rowId)}>
+                      {project.projectName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {tags.length > 0 && (
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('form.tags')}</label>
+              <Label>{t('form.tags')}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => {
                   const isSelected = selectedTagIds.includes(tag.rowId)
@@ -237,41 +226,31 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
           )}
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.category')}</label>
-            <input
+            <Label>{t('form.category')}</Label>
+            <Input
               {...register('category')}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder={t('form.categoryPlaceholder')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.dueDate')}</label>
-            <input
+            <Label>{t('form.dueDate')}</Label>
+            <Input
               {...register('dueDate')}
               type="date"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               {tc('cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? tc('loading') : tc('save')}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

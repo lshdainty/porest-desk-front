@@ -10,6 +10,23 @@ import {
   useMonthlySummary,
 } from '@/features/expense'
 import type { ExpenseBudgetFormValues } from '@/entities/expense'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/shared/ui/dialog'
 
 interface BudgetProgressProps {
   year: number
@@ -48,79 +65,72 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
     })
   }, [budgetAmount, budgetCategoryId, year, month, createBudget])
 
+  const budgetFormDialog = (
+    <Dialog open={showForm} onOpenChange={(open) => { if (!open) setShowForm(false) }}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('budget.set')}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>{t('category')}</Label>
+            <Select
+              value={budgetCategoryId !== null ? String(budgetCategoryId) : '__none__'}
+              onValueChange={(value) => setBudgetCategoryId(value === '__none__' ? null : Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Overall" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Overall</SelectItem>
+                {categories
+                  ?.filter((c) => c.expenseType === 'EXPENSE')
+                  .map((cat) => (
+                    <SelectItem key={cat.rowId} value={String(cat.rowId)}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t('budget.amount')}</Label>
+            <Input
+              type="number"
+              value={budgetAmount}
+              onChange={(e) => setBudgetAmount(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowForm(false)}>
+            {t('deleteConfirm.cancel')}
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!budgetAmount || createBudget.isPending}
+          >
+            {createBudget.isPending ? '...' : t('deleteConfirm.confirm')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
   if (!budgets || budgets.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
           <p className="text-sm">{t('budget.noBudget')}</p>
-          <button
+          <Button
             onClick={() => setShowForm(true)}
-            className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="mt-3"
           >
             {t('budget.set')}
-          </button>
+          </Button>
         </div>
 
-        {showForm && renderBudgetForm()}
-      </div>
-    )
-  }
-
-  function renderBudgetForm() {
-    return (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-        onClick={() => setShowForm(false)}
-      >
-        <div
-          className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h3 className="mb-4 text-lg font-semibold">{t('budget.set')}</h3>
-          <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium">{t('category')}</label>
-              <select
-                value={budgetCategoryId ?? ''}
-                onChange={(e) => setBudgetCategoryId(e.target.value ? parseInt(e.target.value) : null)}
-                className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-              >
-                <option value="">Overall</option>
-                {categories
-                  ?.filter((c) => c.expenseType === 'EXPENSE')
-                  .map((cat) => (
-                    <option key={cat.rowId} value={cat.rowId}>
-                      {cat.categoryName}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">{t('budget.amount')}</label>
-              <input
-                type="number"
-                value={budgetAmount}
-                onChange={(e) => setBudgetAmount(e.target.value)}
-                className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-              />
-            </div>
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setShowForm(false)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!budgetAmount || createBudget.isPending}
-                className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {createBudget.isPending ? '...' : t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
+        {budgetFormDialog}
       </div>
     )
   }
@@ -156,12 +166,14 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
                 <span className={cn('text-xs', isExceeded ? 'text-red-600 font-bold' : 'text-muted-foreground')}>
                   {formatCurrency(catSpend)} / {formatCurrency(budget.budgetAmount)}
                 </span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
                   onClick={() => deleteBudget.mutate(budget.rowId)}
-                  className="rounded p-1 text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 size={12} />
-                </button>
+                </Button>
               </div>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -187,7 +199,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
         )
       })}
 
-      {showForm && renderBudgetForm()}
+      {budgetFormDialog}
     </div>
   )
 }

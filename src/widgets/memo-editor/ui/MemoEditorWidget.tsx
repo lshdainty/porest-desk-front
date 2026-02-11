@@ -12,6 +12,14 @@ import {
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from '@/shared/ui/sheet'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useMemos,
   useCreateMemo,
@@ -185,12 +193,14 @@ export const MemoEditorWidget = () => {
           <div className="space-y-3">
             {/* Folder drawer toggle + search */}
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => setShowSidebar(true)}
-                className="rounded-md border p-2 hover:bg-muted"
               >
                 <Menu size={18} />
-              </button>
+              </Button>
               <div className="flex-1">
                 <MemoSearch value={searchQuery} onChange={setSearchQuery} />
               </div>
@@ -227,52 +237,60 @@ export const MemoEditorWidget = () => {
           /* Mobile editor view */
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b px-2 py-2">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={handleBackToList}
-                className="flex items-center gap-1 rounded-md p-2 text-sm hover:bg-muted"
               >
                 <ArrowLeft size={18} />
-              </button>
+              </Button>
               <div className="flex items-center gap-1">
                 {selectedMemo && (
                   <>
-                    <button
-                      onClick={() => handleTogglePin(selectedMemo.rowId)}
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className={cn(
-                        'rounded-md p-2',
+                        'h-8 w-8',
                         selectedMemo.isPinned
                           ? 'text-primary'
                           : 'text-muted-foreground hover:text-foreground'
                       )}
+                      onClick={() => handleTogglePin(selectedMemo.rowId)}
                     >
                       <Pin size={18} />
-                    </button>
-                    <button
-                      onClick={() => setShowPreview(!showPreview)}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className={cn(
-                        'rounded-md p-2',
+                        'h-8 w-8',
                         showPreview
                           ? 'text-primary'
                           : 'text-muted-foreground hover:text-foreground'
                       )}
+                      onClick={() => setShowPreview(!showPreview)}
                     >
                       {showPreview ? <Edit3 size={18} /> : <Eye size={18} />}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(selectedMemo.rowId)}
-                      className="rounded-md p-2 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 size={18} />
-                    </button>
+                    </Button>
                   </>
                 )}
-                <button
+                <Button
+                  size="sm"
                   onClick={handleSave}
                   disabled={!isDirty || updateMemo.isPending}
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   {updateMemo.isPending ? tc('loading') : tc('save')}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -307,15 +325,12 @@ export const MemoEditorWidget = () => {
         )}
 
         {/* Mobile folder drawer */}
-        {showSidebar && (
-          <div
-            className="fixed inset-0 z-50 bg-black/40"
-            onClick={() => setShowSidebar(false)}
-          >
-            <div
-              className="h-full w-72 bg-background p-4 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+          <SheetContent side="left" className="w-72 p-0">
+            <SheetHeader className="p-4">
+              <SheetTitle>{t('folders')}</SheetTitle>
+            </SheetHeader>
+            <div className="p-4 pt-0">
               <MemoFolderTree
                 folders={folders || []}
                 selectedFolderId={selectedFolderId}
@@ -328,41 +343,30 @@ export const MemoEditorWidget = () => {
                 onDeleteFolder={handleDeleteFolder}
               />
             </div>
-          </div>
-        )}
+          </SheetContent>
+        </Sheet>
 
         {/* Delete confirmation modal */}
-        {showDeleteConfirm !== null && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            onClick={() => setShowDeleteConfirm(null)}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+        <AlertDialog open={showDeleteConfirm !== null} onOpenChange={(open) => { if (!open) setShowDeleteConfirm(null) }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+              <AlertDialogDescription>
                 {t('deleteConfirm.message')}
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  {t('deleteConfirm.cancel')}
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={deleteMemo.isPending}
-                  className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-                >
-                  {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                disabled={deleteMemo.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     )
   }
@@ -418,54 +422,59 @@ export const MemoEditorWidget = () => {
             {/* Editor toolbar */}
             <div className="flex items-center justify-between border-b px-4 py-2">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleTogglePin(selectedMemo.rowId)}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className={cn(
-                    'rounded-md p-1.5 transition-colors',
+                    'h-8 w-8',
                     selectedMemo.isPinned
                       ? 'text-primary hover:bg-primary/10'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
+                  onClick={() => handleTogglePin(selectedMemo.rowId)}
                   title={selectedMemo.isPinned ? t('unpin') : t('pin')}
                 >
                   <Pin size={16} />
-                </button>
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={cn(
-                    'flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
                     showPreview
                       ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
+                  onClick={() => setShowPreview(!showPreview)}
                 >
                   {showPreview ? (
                     <>
-                      <Edit3 size={14} />
+                      <Edit3 size={14} className="mr-1" />
                       {t('editor')}
                     </>
                   ) : (
                     <>
-                      <Eye size={14} />
+                      <Eye size={14} className="mr-1" />
                       {t('preview')}
                     </>
                   )}
-                </button>
+                </Button>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
                   onClick={() => handleDelete(selectedMemo.rowId)}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                 >
                   <Trash2 size={16} />
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
                   onClick={handleSave}
                   disabled={!isDirty || updateMemo.isPending}
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {updateMemo.isPending ? tc('loading') : tc('save')}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -499,48 +508,37 @@ export const MemoEditorWidget = () => {
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
             <p className="text-sm">{t('empty')}</p>
-            <button
+            <Button
+              className="mt-3"
               onClick={handleCreateMemo}
-              className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               {t('createFirst')}
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {/* Delete confirmation modal */}
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={(open) => { if (!open) setShowDeleteConfirm(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
               {t('deleteConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteMemo.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteMemo.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

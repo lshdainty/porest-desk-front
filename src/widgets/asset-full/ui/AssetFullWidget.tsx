@@ -1,6 +1,17 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useAssets,
   useAssetSummary,
@@ -107,12 +118,9 @@ export const AssetFullWidget = () => {
       {activeTab === 'assets' && (
         <>
           <div className="flex justify-end">
-            <button
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              onClick={() => { setEditingAsset(null); setShowForm(true) }}
-            >
+            <Button onClick={() => { setEditingAsset(null); setShowForm(true) }}>
               {t('addAsset')}
-            </button>
+            </Button>
           </div>
 
           {isLoading ? (
@@ -126,12 +134,9 @@ export const AssetFullWidget = () => {
       {activeTab === 'transfers' && (
         <>
           <div className="flex justify-end">
-            <button
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              onClick={() => setShowTransferForm(true)}
-            >
+            <Button onClick={() => setShowTransferForm(true)}>
               {t('addTransfer')}
-            </button>
+            </Button>
           </div>
           <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} />
         </>
@@ -155,28 +160,20 @@ export const AssetFullWidget = () => {
         />
       )}
 
-      {showDeleteConfirm !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg">
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{t('deleteConfirm.message')}</p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded-md px-4 py-2 text-sm hover:bg-muted"
-                onClick={() => setShowDeleteConfirm(null)}
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                className="rounded-md bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90"
-                onClick={confirmDelete}
-              >
-                {t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              {t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -41,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import { useToast } from '@/shared/ui/use-toast'
+import { toast } from 'sonner'
 import {
   useGroups,
   useGroup,
@@ -64,7 +64,7 @@ const roleIcons: Record<GroupRole, typeof Crown> = {
 
 export const GroupFullWidget = () => {
   const { t } = useTranslation('group')
-  const { toast } = useToast()
+
 
   const { data: groups = [], isLoading } = useGroups()
   const createGroup = useCreateGroup()
@@ -88,7 +88,7 @@ export const GroupFullWidget = () => {
     createGroup.mutate(data, {
       onSuccess: () => {
         setShowCreateDialog(false)
-        toast({ description: t('createSuccess') })
+        toast.success(t('createSuccess'))
       },
     })
   }
@@ -100,7 +100,7 @@ export const GroupFullWidget = () => {
       {
         onSuccess: () => {
           setEditingGroup(null)
-          toast({ description: t('updateSuccess') })
+          toast.success(t('updateSuccess'))
         },
       }
     )
@@ -112,7 +112,7 @@ export const GroupFullWidget = () => {
       onSuccess: () => {
         setDeleteTargetId(null)
         if (selectedGroupId === deleteTargetId) setSelectedGroupId(null)
-        toast({ description: t('deleteSuccess') })
+        toast.success(t('deleteSuccess'))
       },
     })
   }
@@ -123,10 +123,10 @@ export const GroupFullWidget = () => {
       onSuccess: () => {
         setShowJoinDialog(false)
         setInviteCode('')
-        toast({ description: t('joinSuccess') })
+        toast.success(t('joinSuccess'))
       },
       onError: () => {
-        toast({ description: t('joinError'), variant: 'destructive' })
+        toast.error(t('joinError'))
       },
     })
   }
@@ -134,14 +134,14 @@ export const GroupFullWidget = () => {
   const handleRegenerateCode = (groupId: number) => {
     regenerateInviteCode.mutate(groupId, {
       onSuccess: () => {
-        toast({ description: t('inviteCodeRegenerated') })
+        toast.success(t('inviteCodeRegenerated'))
       },
     })
   }
 
   const handleCopyInviteCode = (code: string) => {
     navigator.clipboard.writeText(code)
-    toast({ description: t('inviteCodeCopied') })
+    toast.success(t('inviteCodeCopied'))
   }
 
   const handleRemoveMember = (groupId: number, memberId: number) => {
@@ -149,7 +149,7 @@ export const GroupFullWidget = () => {
       { groupId, memberId },
       {
         onSuccess: () => {
-          toast({ description: t('memberRemoved') })
+          toast.success(t('memberRemoved'))
         },
       }
     )
@@ -160,7 +160,7 @@ export const GroupFullWidget = () => {
       { groupId, memberId, role },
       {
         onSuccess: () => {
-          toast({ description: t('roleChanged') })
+          toast.success(t('roleChanged'))
         },
       }
     )

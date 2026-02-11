@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/shared/ui/dialog'
 import { format } from 'date-fns'
 import type { DutchPay, DutchPayFormValues, SplitMethod, ParticipantFormValues } from '@/entities/dutch-pay'
 
@@ -24,7 +29,6 @@ export const DutchPayForm = ({
 }: DutchPayFormProps) => {
   const { t } = useTranslation('dutchPay')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const defaultDate = format(new Date(), 'yyyy-MM-dd')
 
@@ -125,43 +129,21 @@ export const DutchPayForm = ({
   }
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-md rounded-lg max-h-[90vh] overflow-y-auto'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
             {dutchPay ? t('editDutchPay') : t('addDutchPay')}
-          </h3>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
-            <X size={20} />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 p-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.title')}</label>
-            <input
+            <Label>{t('form.title')}</Label>
+            <Input
               {...register('title', { required: t('form.titleRequired') })}
-              className={cn(
-                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-                errors.title && 'border-destructive'
-              )}
+              className={cn(errors.title && 'border-destructive')}
               placeholder={t('form.titlePlaceholder')}
             />
             {errors.title && (
@@ -171,42 +153,36 @@ export const DutchPayForm = ({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.description')}</label>
-            <input
+            <Label>{t('form.description')}</Label>
+            <Input
               {...register('description')}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder={t('form.descriptionPlaceholder')}
             />
           </div>
 
           {/* Total Amount */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.totalAmount')}</label>
-            <input
+            <Label>{t('form.totalAmount')}</Label>
+            <Input
               {...register('totalAmount', { required: true, valueAsNumber: true, min: 1 })}
               type="number"
-              className={cn(
-                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-                errors.totalAmount && 'border-destructive'
-              )}
+              className={cn(errors.totalAmount && 'border-destructive')}
               placeholder="0"
             />
           </div>
 
           {/* Date */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.date')}</label>
-            <input
+            <Label>{t('form.date')}</Label>
+            <Input
               {...register('dutchPayDate', { required: true })}
               type="date"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
-          {/* Split Method */}
+          {/* Split Method - KEEP custom pill buttons */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.splitMethod')}</label>
+            <Label>{t('form.splitMethod')}</Label>
             <div className="flex flex-wrap gap-1.5">
               {splitMethodOptions.map(method => (
                 <button
@@ -226,23 +202,23 @@ export const DutchPayForm = ({
             </div>
           </div>
 
-          {/* Participants */}
+          {/* Participants - KEEP custom participant remove/add buttons */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('form.participants')}</label>
+            <Label>{t('form.participants')}</Label>
             {participants.map((p, index) => (
               <div key={index} className="flex items-center gap-2">
-                <input
+                <Input
                   value={p.participantName}
                   onChange={(e) => updateParticipant(index, 'participantName', e.target.value)}
-                  className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="flex-1"
                   placeholder={t('form.participantName')}
                 />
                 {splitMethod !== 'EQUAL' && (
-                  <input
+                  <Input
                     value={p.amount || ''}
                     onChange={(e) => updateParticipant(index, 'amount', e.target.value)}
                     type="number"
-                    className="w-24 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-24"
                     placeholder="0"
                   />
                 )}
@@ -272,24 +248,16 @@ export const DutchPayForm = ({
           </div>
 
           {/* Submit */}
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               {tc('cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? tc('loading') : tc('save')}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -4,6 +4,17 @@ import { ChevronLeft, ChevronRight, Plus, Loader2, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn, getLocale } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useCalendarEvents,
   useCreateEvent,
@@ -122,35 +133,33 @@ export const CalendarViewWidget = () => {
       {/* Navigation header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button
-            onClick={navigateBackward}
-            className="rounded-md p-1.5 hover:bg-muted transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={navigateBackward}>
             <ChevronLeft size={18} />
-          </button>
+          </Button>
           <h2 className="text-base font-semibold md:text-lg">{headerTitle}</h2>
-          <button
-            onClick={navigateForward}
-            className="rounded-md p-1.5 hover:bg-muted transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={navigateForward}>
             <ChevronRight size={18} />
-          </button>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
             onClick={() => setShowLabelDialog(true)}
-            className="rounded-md p-1.5 hover:bg-muted transition-colors text-muted-foreground"
             title={t('labels')}
           >
             <Tag size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
             onClick={goToToday}
-            className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
           >
             {t('today')}
-          </button>
+          </Button>
           <div className="flex rounded-md border">
             {(['month', 'week'] as CalendarViewMode[]).map((mode) => (
               <button
@@ -247,37 +256,20 @@ export const CalendarViewWidget = () => {
       />
 
       {/* Delete confirmation */}
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t('deleteConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={handleDeleteEvent}
-                disabled={deleteEvent.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteEvent.isPending ? '...' : t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEvent} disabled={deleteEvent.isPending}>
+              {deleteEvent.isPending ? '...' : t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

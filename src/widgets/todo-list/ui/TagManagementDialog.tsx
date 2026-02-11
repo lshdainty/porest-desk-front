@@ -1,8 +1,16 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/shared/ui/dialog'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useTodoTags,
   useCreateTodoTag,
@@ -23,7 +31,6 @@ const COLOR_OPTIONS = [
 export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const { data: tags = [], isLoading } = useTodoTags()
   const createTag = useCreateTodoTag()
@@ -74,46 +81,25 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
   }
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-md rounded-lg'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">{t('tags')}</h3>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('tags')}</DialogTitle>
+        </DialogHeader>
 
-        <div className="p-4">
+        <div>
           {showForm ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('form.tagName')}</label>
-                <input
+                <Input
                   value={formData.tagName}
                   onChange={(e) => setFormData({ ...formData, tagName: e.target.value })}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder={t('form.tagNamePlaceholder')}
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('form.color')}</label>
                 <div className="flex flex-wrap gap-2">
                   {COLOR_OPTIONS.map((color) => (
                     <button
@@ -131,19 +117,20 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
+                <Button
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
                 >
                   {tc('cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  className="flex-1"
                   onClick={handleSave}
                   disabled={createTag.isPending || updateTag.isPending}
-                  className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {(createTag.isPending || updateTag.isPending) ? tc('loading') : tc('save')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -172,18 +159,22 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                         style={{ backgroundColor: tag.color || '#6b7280' }}
                       />
                       <span className="text-sm font-medium">{tag.tagName}</span>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
                         onClick={() => openEditForm(tag)}
-                        className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                       >
                         <Pencil size={12} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                         onClick={() => setDeleteConfirm(tag.rowId)}
-                        className="rounded p-0.5 text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 size={12} />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -200,38 +191,27 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
           )}
         </div>
 
-        {deleteConfirm !== null && (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => setDeleteConfirm(null)}
-          >
-            <div
-              className="mx-4 w-full max-w-xs rounded-lg bg-background p-5 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h4 className="font-semibold">{tc('delete')}</h4>
-              <p className="mt-1.5 text-sm text-muted-foreground">
+        <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{tc('delete')}</AlertDialogTitle>
+              <AlertDialogDescription>
                 {t('deleteConfirm.message')}
-              </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
-                >
-                  {tc('cancel')}
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  disabled={deleteTag.isPending}
-                  className="flex-1 rounded-md bg-destructive px-3 py-1.5 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
-                >
-                  {deleteTag.isPending ? '...' : tc('delete')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
+                disabled={deleteTag.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteTag.isPending ? '...' : tc('delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
   )
 }

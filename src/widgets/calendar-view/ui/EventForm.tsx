@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { X, MapPin, Repeat, Bell, Tag, ChevronDown, Check } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, ChevronDown, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Textarea } from '@/shared/ui/textarea'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/shared/ui/dialog'
 import type { CalendarEvent, CalendarEventFormValues, CalendarEventType } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
 import { format } from 'date-fns'
@@ -61,7 +67,6 @@ export const EventForm = ({
 }: EventFormProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const defaultDate = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
@@ -170,45 +175,20 @@ export const EventForm = ({
   }
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-md rounded-lg max-h-[90vh] overflow-y-auto'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
             {event ? t('editEvent') : t('addEvent')}
-          </h3>
-          <button
-            onClick={onClose}
-            className="rounded-full p-1 hover:bg-muted"
-          >
-            <X size={20} />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 p-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.title')}</label>
-            <input
+            <Label>{t('form.title')}</Label>
+            <Input
               {...register('title', { required: t('form.titleRequired') })}
-              className={cn(
-                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-                errors.title && 'border-destructive'
-              )}
+              className={cn(errors.title && 'border-destructive')}
               placeholder={t('form.titlePlaceholder')}
             />
             {errors.title && (
@@ -217,17 +197,18 @@ export const EventForm = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.description')}</label>
-            <textarea
+            <Label>{t('form.description')}</Label>
+            <Textarea
               {...register('description')}
               rows={2}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              className="resize-none"
               placeholder={t('form.descriptionPlaceholder')}
             />
           </div>
 
+          {/* Event type pills - KEEP custom */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.eventType')}</label>
+            <Label>{t('form.eventType')}</Label>
             <div className="flex flex-wrap gap-1.5">
               {eventTypeOptions.map((type) => (
                 <button
@@ -247,13 +228,13 @@ export const EventForm = ({
             </div>
           </div>
 
-          {/* Label selector */}
+          {/* Label selector - KEEP custom dropdown */}
           {labels.length > 0 && (
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">
+              <Label>
                 <Tag size={14} className="inline mr-1" />
                 {t('form.label')}
-              </label>
+              </Label>
               <div className="relative">
                 <button
                   type="button"
@@ -313,8 +294,9 @@ export const EventForm = ({
             </div>
           )}
 
+          {/* Color swatches - KEEP custom */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('form.color')}</label>
+            <Label>{t('form.color')}</Label>
             <div className="flex flex-wrap gap-2">
               {colorOptions.map((color) => (
                 <button
@@ -331,6 +313,7 @@ export const EventForm = ({
             </div>
           </div>
 
+          {/* All-day toggle - KEEP custom */}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -347,47 +330,44 @@ export const EventForm = ({
                 )}
               />
             </button>
-            <label className="text-sm">{t('form.allDay')}</label>
+            <Label className="font-normal">{t('form.allDay')}</Label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('form.startDate')}</label>
-              <input
+              <Label>{t('form.startDate')}</Label>
+              <Input
                 {...register('startDate', { required: true })}
                 type={isAllDay ? 'date' : 'datetime-local'}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t('form.endDate')}</label>
-              <input
+              <Label>{t('form.endDate')}</Label>
+              <Input
                 {...register('endDate', { required: true })}
                 type={isAllDay ? 'date' : 'datetime-local'}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
           </div>
 
           {/* Location */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <Label>
               <MapPin size={14} className="inline mr-1" />
               {t('form.location')}
-            </label>
-            <input
+            </Label>
+            <Input
               {...register('location')}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder={t('form.locationPlaceholder')}
             />
           </div>
 
-          {/* Recurrence */}
+          {/* Recurrence pills - KEEP custom */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <Label>
               <Repeat size={14} className="inline mr-1" />
               {t('form.recurrence')}
-            </label>
+            </Label>
             <div className="flex flex-wrap gap-1.5">
               {(['none', 'daily', 'weekly', 'monthly', 'yearly'] as RecurrenceOption[]).map(option => (
                 <button
@@ -407,12 +387,12 @@ export const EventForm = ({
             </div>
           </div>
 
-          {/* Reminders */}
+          {/* Reminder pills - KEEP custom */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <Label>
               <Bell size={14} className="inline mr-1" />
               {t('form.reminder')}
-            </label>
+            </Label>
             <div className="flex flex-wrap gap-1.5">
               {reminderOptions.map(minutes => (
                 <button
@@ -435,24 +415,16 @@ export const EventForm = ({
             </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               {tc('cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? tc('loading') : tc('save')}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

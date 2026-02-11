@@ -1,11 +1,26 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
 import type { ExpenseType, ExpenseCategory } from '@/entities/expense'
 import type { Asset } from '@/entities/asset'
 import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/shared/ui/dialog'
 
 interface ExpenseTemplateFormProps {
   template?: ExpenseTemplate | null
@@ -28,7 +43,6 @@ export const ExpenseTemplateForm = ({
 }: ExpenseTemplateFormProps) => {
   const { t } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const [templateName, setTemplateName] = useState(template?.templateName ?? '')
   const [expenseType, setExpenseType] = useState<ExpenseType>(template?.expenseType ?? 'EXPENSE')
@@ -56,192 +70,159 @@ export const ExpenseTemplateForm = ({
     onSubmit(data)
   }, [templateName, categoryRowId, assetRowId, expenseType, amount, description, merchant, paymentMethod, onSubmit])
 
-  const formContent = (
-    <div className="space-y-4">
-      {/* Template name */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('templateName')}</label>
-        <input
-          value={templateName}
-          onChange={(e) => setTemplateName(e.target.value)}
-          placeholder={t('templateNamePlaceholder')}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-      </div>
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {template ? t('editTemplate') : t('addTemplate')}
+          </DialogTitle>
+        </DialogHeader>
 
-      {/* Type toggle */}
-      <div className="flex rounded-lg border bg-muted/30 p-1">
-        <button
-          onClick={() => setExpenseType('EXPENSE')}
-          className={cn(
-            'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
-            expenseType === 'EXPENSE'
-              ? 'bg-red-500 text-white shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          {t('expense')}
-        </button>
-        <button
-          onClick={() => setExpenseType('INCOME')}
-          className={cn(
-            'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
-            expenseType === 'INCOME'
-              ? 'bg-green-500 text-white shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          {t('income')}
-        </button>
-      </div>
+        <div className="space-y-4">
+          {/* Template name */}
+          <div>
+            <Label>{t('templateName')}</Label>
+            <Input
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder={t('templateNamePlaceholder')}
+            />
+          </div>
 
-      {/* Amount */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('form.amount')}</label>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder={t('form.amountPlaceholder')}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-      </div>
-
-      {/* Category */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('category')}</label>
-        <select
-          value={categoryRowId}
-          onChange={(e) => setCategoryRowId(parseInt(e.target.value))}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        >
-          <option value={0}>{t('category')}</option>
-          {filteredCategories.map((cat) => (
-            <option key={cat.rowId} value={cat.rowId}>
-              {cat.icon ? `${cat.icon} ` : ''}{cat.categoryName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Asset */}
-      {assets.length > 0 && (
-        <div>
-          <label className="mb-1 block text-sm font-medium">{t('form.asset')}</label>
-          <select
-            value={assetRowId}
-            onChange={(e) => setAssetRowId(parseInt(e.target.value))}
-            className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-          >
-            <option value={0}>{t('form.asset')}</option>
-            {assets.map((asset) => (
-              <option key={asset.rowId} value={asset.rowId}>
-                {asset.assetName}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Payment Method */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('form.paymentMethod')}</label>
-        <select
-          value={paymentMethod}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        >
-          <option value="">{t('form.paymentMethod')}</option>
-          {PAYMENT_METHODS.map((method) => (
-            <option key={method} value={method}>
-              {t(`form.paymentMethod.${method}`)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Merchant */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('form.merchant')}</label>
-        <input
-          value={merchant}
-          onChange={(e) => setMerchant(e.target.value)}
-          placeholder={t('form.merchantPlaceholder')}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="mb-1 block text-sm font-medium">{t('form.description')}</label>
-        <input
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('form.descriptionPlaceholder')}
-          className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 pt-2">
-        <button
-          onClick={onClose}
-          className="flex-1 rounded-md border px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
-        >
-          {tc('cancel')}
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading || !templateName}
-          className="flex-1 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-        >
-          {isLoading ? tc('loading') : tc('save')}
-        </button>
-      </div>
-    </div>
-  )
-
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black/40" onClick={onClose}>
-        <div
-          className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-background p-4 shadow-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              {template ? t('editTemplate') : t('addTemplate')}
-            </h3>
-            <button onClick={onClose} className="rounded-md p-1 hover:bg-muted">
-              <X size={20} />
+          {/* Type toggle */}
+          <div className="flex rounded-lg border bg-muted/30 p-1">
+            <button
+              onClick={() => setExpenseType('EXPENSE')}
+              className={cn(
+                'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
+                expenseType === 'EXPENSE'
+                  ? 'bg-red-500 text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('expense')}
+            </button>
+            <button
+              onClick={() => setExpenseType('INCOME')}
+              className={cn(
+                'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
+                expenseType === 'INCOME'
+                  ? 'bg-green-500 text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('income')}
             </button>
           </div>
-          {formContent}
-        </div>
-      </div>
-    )
-  }
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={onClose}
-    >
-      <div
-        className="mx-4 w-full max-w-md rounded-lg bg-background p-6 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">
-            {template ? t('editTemplate') : t('addTemplate')}
-          </h3>
-          <button onClick={onClose} className="rounded-md p-1 hover:bg-muted">
-            <X size={20} />
-          </button>
+          {/* Amount */}
+          <div>
+            <Label>{t('form.amount')}</Label>
+            <Input
+              type="number"
+              inputMode="numeric"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder={t('form.amountPlaceholder')}
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <Label>{t('category')}</Label>
+            <Select
+              value={categoryRowId ? String(categoryRowId) : '__none__'}
+              onValueChange={(value) => setCategoryRowId(value === '__none__' ? 0 : Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('category')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t('category')}</SelectItem>
+                {filteredCategories.map((cat) => (
+                  <SelectItem key={cat.rowId} value={String(cat.rowId)}>
+                    {cat.icon ? `${cat.icon} ` : ''}{cat.categoryName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Asset */}
+          {assets.length > 0 && (
+            <div>
+              <Label>{t('form.asset')}</Label>
+              <Select
+                value={assetRowId ? String(assetRowId) : '__none__'}
+                onValueChange={(value) => setAssetRowId(value === '__none__' ? 0 : Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('form.asset')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('form.asset')}</SelectItem>
+                  {assets.map((asset) => (
+                    <SelectItem key={asset.rowId} value={String(asset.rowId)}>
+                      {asset.assetName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Payment Method */}
+          <div>
+            <Label>{t('form.paymentMethod')}</Label>
+            <Select
+              value={paymentMethod || '__none__'}
+              onValueChange={(value) => setPaymentMethod(value === '__none__' ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('form.paymentMethod')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t('form.paymentMethod')}</SelectItem>
+                {PAYMENT_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {t(`form.paymentMethod.${method}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Merchant */}
+          <div>
+            <Label>{t('form.merchant')}</Label>
+            <Input
+              value={merchant}
+              onChange={(e) => setMerchant(e.target.value)}
+              placeholder={t('form.merchantPlaceholder')}
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <Label>{t('form.description')}</Label>
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('form.descriptionPlaceholder')}
+            />
+          </div>
         </div>
-        {formContent}
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            {tc('cancel')}
+          </Button>
+          <Button onClick={handleSubmit} disabled={isLoading || !templateName}>
+            {isLoading ? tc('loading') : tc('save')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

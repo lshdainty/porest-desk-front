@@ -13,6 +13,17 @@ import {
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import type { DutchPay, DutchPayFormValues } from '@/entities/dutch-pay'
 import {
   useDutchPays,
@@ -245,29 +256,34 @@ export const DutchPayFullWidget = () => {
                     {/* Actions */}
                     <div className="flex gap-2 pt-1">
                       {!dp.isSettled && (
-                        <button
+                        <Button
+                          size="sm"
+                          className="h-7 bg-green-600 text-xs hover:bg-green-700"
                           onClick={() => handleSettleAll(dp.rowId)}
                           disabled={settleAll.isPending}
-                          className="flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors disabled:opacity-50"
                         >
                           <CheckCheck size={12} />
                           {t('settleAll')}
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => handleEdit(dp)}
-                        className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
                       >
                         <Pencil size={12} />
                         {tc('edit')}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs text-destructive hover:bg-destructive/10"
                         onClick={() => setShowDeleteConfirm(dp.rowId)}
-                        className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
                       >
                         <Trash2 size={12} />
                         {tc('delete')}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -310,35 +326,20 @@ export const DutchPayFullWidget = () => {
       )}
 
       {/* Delete confirmation */}
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{t('deleteConfirm.message')}</p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {tc('cancel')}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteDutchPay.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteDutchPay.isPending ? '...' : tc('delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleteDutchPay.isPending}>
+              {deleteDutchPay.isPending ? '...' : tc('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

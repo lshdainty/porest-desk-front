@@ -23,7 +23,7 @@ import {
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
-import { useToast } from '@/shared/ui/use-toast'
+import { toast } from 'sonner'
 import { useIsMobile } from '@/shared/hooks/use-mobile'
 import {
   useAlbums,
@@ -41,7 +41,7 @@ import type { Album, AlbumPhoto } from '@/entities/album'
 
 export function AlbumFullWidget() {
   const { t } = useTranslation('album')
-  const { toast } = useToast()
+
   const isMobile = useIsMobile()
 
   const [selectedGroupId, setSelectedGroupId] = useState<number>(0)
@@ -88,7 +88,7 @@ export function AlbumFullWidget() {
       { groupRowId: selectedGroupId, albumName, description },
       {
         onSuccess: () => {
-          toast({ title: t('createSuccess') })
+          toast.success(t('createSuccess'))
           setIsCreateOpen(false)
         },
       }
@@ -101,7 +101,7 @@ export function AlbumFullWidget() {
       { id: editAlbum.rowId, data: { albumName, description } },
       {
         onSuccess: () => {
-          toast({ title: t('updateSuccess') })
+          toast.success(t('updateSuccess'))
           setEditAlbum(null)
         },
       }
@@ -112,7 +112,7 @@ export function AlbumFullWidget() {
     if (!deleteAlbum) return
     deleteAlbumMutation.mutate(deleteAlbum.rowId, {
       onSuccess: () => {
-        toast({ title: t('deleteSuccess') })
+        toast.success(t('deleteSuccess'))
         setDeleteAlbum(null)
         if (selectedAlbumId === deleteAlbum.rowId) {
           setSelectedAlbumId(null)
@@ -133,7 +133,7 @@ export function AlbumFullWidget() {
             { albumId: selectedAlbumId, data: { fileRowId: fileInfo.rowId } },
             {
               onSuccess: () => {
-                toast({ title: t('photoAdded') })
+                toast.success(t('photoAdded'))
               },
             }
           )
@@ -146,7 +146,7 @@ export function AlbumFullWidget() {
   const handleRemovePhoto = (photoId: number) => {
     removePhoto.mutate(photoId, {
       onSuccess: () => {
-        toast({ title: t('photoRemoved') })
+        toast.success(t('photoRemoved'))
         setViewPhoto(null)
       },
     })

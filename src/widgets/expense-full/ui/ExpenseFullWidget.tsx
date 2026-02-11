@@ -3,6 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Loader2, Settings } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/shared/ui/dialog'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useExpenses,
   useCreateExpense,
@@ -133,13 +141,15 @@ export const ExpenseFullWidget = () => {
               </button>
             ))}
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
             onClick={() => setShowCategoryManager(true)}
-            className="rounded-md border p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             title={t('categories')}
           >
             <Settings size={16} />
-          </button>
+          </Button>
         </div>
 
         {/* Tab content */}
@@ -185,7 +195,7 @@ export const ExpenseFullWidget = () => {
         )}
       </div>
 
-      {/* FAB for add on mobile, dashed button on desktop */}
+      {/* FAB for add on mobile, dashed button on desktop - KEEP custom */}
       {activeTab === 'list' && (
         <>
           {!isMobile && (
@@ -226,66 +236,38 @@ export const ExpenseFullWidget = () => {
       )}
 
       {/* Category manager modal */}
-      {showCategoryManager && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40"
-          onClick={() => setShowCategoryManager(false)}
-        >
-          <div
-            className={cn(
-              'bg-background shadow-lg overflow-y-auto',
-              isMobile
-                ? 'absolute bottom-0 left-0 right-0 max-h-[80vh] rounded-t-2xl p-4'
-                : 'absolute left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg p-6'
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{t('categories')}</h3>
-              <button
-                onClick={() => setShowCategoryManager(false)}
-                className="rounded-md p-1 hover:bg-muted"
-              >
-                &times;
-              </button>
-            </div>
-            <ExpenseCategoryManager />
-          </div>
-        </div>
-      )}
+      <Dialog open={showCategoryManager} onOpenChange={setShowCategoryManager}>
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('categories')}</DialogTitle>
+          </DialogHeader>
+          <ExpenseCategoryManager />
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation modal */}
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={(open) => { if (!open) setShowDeleteConfirm(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
               {t('deleteConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteExpense.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteExpense.isPending ? '...' : t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirm(null)}>
+              {t('deleteConfirm.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteExpense.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteExpense.isPending ? '...' : t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

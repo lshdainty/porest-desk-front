@@ -1,6 +1,23 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Asset, AssetTransferFormValues } from '@/entities/asset'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/shared/ui/dialog'
 
 interface AssetTransferFormProps {
   assets: Asset[]
@@ -34,42 +51,45 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
   }, [fromAssetRowId, toAssetRowId, amount, fee, description, transferDate, onSubmit])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-        <h2 className="mb-4 text-lg font-semibold">{t('addTransfer')}</h2>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('addTransfer')}</DialogTitle>
+        </DialogHeader>
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.fromAsset')}</label>
-            <select
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-              value={fromAssetRowId}
-              onChange={(e) => setFromAssetRowId(Number(e.target.value))}
-            >
-              {assets.map((asset) => (
-                <option key={asset.rowId} value={asset.rowId}>{asset.assetName}</option>
-              ))}
-            </select>
+            <Label>{t('form.fromAsset')}</Label>
+            <Select value={String(fromAssetRowId)} onValueChange={(value) => setFromAssetRowId(Number(value))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {assets.map((asset) => (
+                  <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.toAsset')}</label>
-            <select
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-              value={toAssetRowId}
-              onChange={(e) => setToAssetRowId(Number(e.target.value))}
-            >
-              {assets.map((asset) => (
-                <option key={asset.rowId} value={asset.rowId}>{asset.assetName}</option>
-              ))}
-            </select>
+            <Label>{t('form.toAsset')}</Label>
+            <Select value={String(toAssetRowId)} onValueChange={(value) => setToAssetRowId(Number(value))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {assets.map((asset) => (
+                  <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.amount')}</label>
-            <input
+            <Label>{t('form.amount')}</Label>
+            <Input
               type="number"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={t('form.amountPlaceholder')}
@@ -77,10 +97,9 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.fee')}</label>
-            <input
+            <Label>{t('form.fee')}</Label>
+            <Input
               type="number"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               value={fee}
               onChange={(e) => setFee(e.target.value)}
               placeholder="0"
@@ -88,20 +107,18 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.date')}</label>
-            <input
+            <Label>{t('form.date')}</Label>
+            <Input
               type="date"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               value={transferDate}
               onChange={(e) => setTransferDate(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('form.description')}</label>
-            <input
+            <Label>{t('form.description')}</Label>
+            <Input
               type="text"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('form.descriptionPlaceholder')}
@@ -109,23 +126,15 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
           </div>
         </div>
 
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            className="rounded-md px-4 py-2 text-sm hover:bg-muted"
-            onClick={onClose}
-            disabled={isLoading}
-          >
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {tc('cancel')}
-          </button>
-          <button
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
-            onClick={handleSubmit}
-            disabled={isLoading || !amount || fromAssetRowId === toAssetRowId}
-          >
+          </Button>
+          <Button onClick={handleSubmit} disabled={isLoading || !amount || fromAssetRowId === toAssetRowId}>
             {tc('save')}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

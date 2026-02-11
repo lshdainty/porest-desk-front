@@ -1,8 +1,17 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/shared/ui/dialog'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useTodoProjects,
   useCreateTodoProject,
@@ -23,7 +32,6 @@ const COLOR_OPTIONS = [
 export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const { data: projects = [], isLoading } = useTodoProjects()
   const createProject = useCreateTodoProject()
@@ -76,56 +84,36 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
   }
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-md rounded-lg'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">{t('projects')}</h3>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('projects')}</DialogTitle>
+        </DialogHeader>
 
-        <div className="p-4">
+        <div>
           {showForm ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('form.projectName')}</label>
-                <input
+                <Label>{t('form.projectName')}</Label>
+                <Input
                   value={formData.projectName}
                   onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder={t('form.projectNamePlaceholder')}
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('form.description')}</label>
-                <input
+                <Label>{t('form.description')}</Label>
+                <Input
                   value={formData.description || ''}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder={t('form.descriptionPlaceholder')}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">{t('form.color')}</label>
+                <Label>{t('form.color')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {COLOR_OPTIONS.map((color) => (
                     <button
@@ -143,19 +131,20 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
+                <Button
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
                 >
                   {tc('cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  className="flex-1"
                   onClick={handleSave}
                   disabled={createProject.isPending || updateProject.isPending}
-                  className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {(createProject.isPending || updateProject.isPending) ? tc('loading') : tc('save')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -187,18 +176,22 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={() => openEditForm(project)}
-                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <Pencil size={14} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => setDeleteConfirm(project.rowId)}
-                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 size={14} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -215,38 +208,27 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
           )}
         </div>
 
-        {deleteConfirm !== null && (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => setDeleteConfirm(null)}
-          >
-            <div
-              className="mx-4 w-full max-w-xs rounded-lg bg-background p-5 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h4 className="font-semibold">{tc('delete')}</h4>
-              <p className="mt-1.5 text-sm text-muted-foreground">
+        <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{tc('delete')}</AlertDialogTitle>
+              <AlertDialogDescription>
                 {t('deleteConfirm.message')}
-              </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
-                >
-                  {tc('cancel')}
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  disabled={deleteProject.isPending}
-                  className="flex-1 rounded-md bg-destructive px-3 py-1.5 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
-                >
-                  {deleteProject.isPending ? '...' : tc('delete')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
+                disabled={deleteProject.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteProject.isPending ? '...' : tc('delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
   )
 }

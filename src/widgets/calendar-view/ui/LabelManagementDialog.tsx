@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Plus, Pencil, Trash2, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/shared/ui/dialog'
 import type { EventLabel } from '@/entities/event-label'
 import {
   useEventLabels,
@@ -24,7 +28,6 @@ const labelColorOptions = [
 export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
 
   const { data: labels = [] } = useEventLabels()
   const createLabel = useCreateEventLabel()
@@ -76,34 +79,14 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
     if (editingLabel?.rowId === id) resetForm()
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center bg-black/40',
-        !isMobile && 'items-center'
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full bg-background shadow-lg',
-          isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
-            : 'max-w-sm rounded-lg max-h-[80vh] overflow-y-auto'
-        )}
-      >
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-semibold">{t('labels')}</h3>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('labels')}</DialogTitle>
+        </DialogHeader>
 
-        <div className="p-4 space-y-3">
+        <div className="space-y-3">
           {/* Existing labels */}
           {labels.map(label => (
             <div
@@ -115,20 +98,22 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 style={{ backgroundColor: label.color }}
               />
               <span className="flex-1 text-sm truncate">{label.labelName}</span>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => handleStartEdit(label)}
-                className="rounded p-1 hover:bg-muted text-muted-foreground"
               >
                 <Pencil size={14} />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => handleDelete(label.rowId)}
-                className="rounded p-1 hover:bg-destructive/10 text-destructive"
               >
                 <Trash2 size={14} />
-              </button>
+              </Button>
             </div>
           ))}
 
@@ -139,10 +124,9 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
           {/* Add/Edit form */}
           {(isAdding || editingLabel) && (
             <div className="space-y-2 rounded-md border p-3 bg-muted/30">
-              <input
+              <Input
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder={t('form.labelName')}
                 autoFocus
               />
@@ -161,22 +145,23 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 ))}
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  size="sm"
                   onClick={resetForm}
-                  className="flex-1 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
                 >
                   {tc('cancel')}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  className="flex-1"
+                  size="sm"
                   onClick={handleSave}
                   disabled={!formName.trim() || createLabel.isPending || updateLabel.isPending}
-                  className="flex-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  <Check size={12} className="inline mr-1" />
+                  <Check size={12} className="mr-1" />
                   {tc('save')}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -193,7 +178,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

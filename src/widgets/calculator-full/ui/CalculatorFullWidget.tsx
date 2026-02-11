@@ -1,8 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { History, ChevronUp, ChevronDown, FlaskConical } from 'lucide-react'
+import { History, FlaskConical } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from '@/shared/ui/sheet'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useCalculatorHistories,
   useSaveCalculatorHistory,
@@ -251,67 +258,43 @@ export const CalculatorFullWidget = () => {
         </div>
 
         {/* History bottom sheet */}
-        {showHistory && (
-          <div
-            className="fixed inset-0 z-50 bg-black/40"
-            onClick={() => setShowHistory(false)}
-          >
-            <div
-              className="absolute bottom-0 left-0 right-0 max-h-[60vh] rounded-t-2xl bg-background shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-center py-2">
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="rounded-full p-1 text-muted-foreground"
-                >
-                  <ChevronDown size={20} />
-                </button>
-              </div>
-              <div className="h-[50vh]">
-                <CalculatorHistory
-                  histories={histories || []}
-                  onSelectResult={handleSelectResult}
-                  onClearAll={handleClearAllHistories}
-                  isClearing={deleteAllHistories.isPending}
-                />
-              </div>
+        <Sheet open={showHistory} onOpenChange={setShowHistory}>
+          <SheetContent side="bottom" className="max-h-[60vh]">
+            <SheetHeader>
+              <SheetTitle>{t('history')}</SheetTitle>
+            </SheetHeader>
+            <div className="h-[50vh]">
+              <CalculatorHistory
+                histories={histories || []}
+                onSelectResult={handleSelectResult}
+                onClearAll={handleClearAllHistories}
+                isClearing={deleteAllHistories.isPending}
+              />
             </div>
-          </div>
-        )}
+          </SheetContent>
+        </Sheet>
 
         {/* Clear history confirmation */}
-        {showClearConfirm && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            onClick={() => setShowClearConfirm(false)}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-semibold">{t('clearHistoryConfirm.title')}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+        <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('clearHistoryConfirm.title')}</AlertDialogTitle>
+              <AlertDialogDescription>
                 {t('clearHistoryConfirm.message')}
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => setShowClearConfirm(false)}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  {t('clearHistoryConfirm.cancel')}
-                </button>
-                <button
-                  onClick={confirmClearHistories}
-                  disabled={deleteAllHistories.isPending}
-                  className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-                >
-                  {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('clearHistoryConfirm.cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmClearHistories}
+                disabled={deleteAllHistories.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     )
   }
@@ -386,37 +369,26 @@ export const CalculatorFullWidget = () => {
       </div>
 
       {/* Clear history confirmation */}
-      {showClearConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowClearConfirm(false)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('clearHistoryConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+      <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('clearHistoryConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
               {t('clearHistoryConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowClearConfirm(false)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('clearHistoryConfirm.cancel')}
-              </button>
-              <button
-                onClick={confirmClearHistories}
-                disabled={deleteAllHistories.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('clearHistoryConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmClearHistories}
+              disabled={deleteAllHistories.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -3,6 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useRecurringTransactions,
   useCreateRecurringTransaction,
@@ -134,31 +145,37 @@ export const RecurringTransactionList = () => {
                 </div>
               </div>
               <div className="ml-2 flex shrink-0 gap-1">
-                <button
-                  onClick={() => handleToggle(recurring.rowId)}
-                  disabled={toggleRecurring.isPending}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className={cn(
-                    'rounded-md p-1.5 transition-colors',
+                    'h-8 w-8',
                     recurring.isActive === 'Y'
                       ? 'text-primary hover:bg-primary/10'
-                      : 'text-muted-foreground hover:bg-muted'
+                      : 'text-muted-foreground'
                   )}
+                  onClick={() => handleToggle(recurring.rowId)}
+                  disabled={toggleRecurring.isPending}
                   title={recurring.isActive === 'Y' ? t('active') : t('inactive')}
                 >
                   {recurring.isActive === 'Y' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
                   onClick={() => handleEdit(recurring)}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted transition-colors"
                 >
                   <Pencil size={14} />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
                   onClick={() => setShowDeleteConfirm(recurring.rowId)}
-                  className="rounded-md p-1.5 text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   <Trash2 size={14} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -204,37 +221,20 @@ export const RecurringTransactionList = () => {
       )}
 
       {/* Delete confirmation */}
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t('deleteConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {tc('cancel')}
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteRecurring.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteRecurring.isPending ? '...' : tc('delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleteRecurring.isPending}>
+              {deleteRecurring.isPending ? '...' : tc('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

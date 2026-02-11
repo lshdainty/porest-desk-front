@@ -3,6 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Loader2, Settings2, Tags } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import {
   useTodos,
   useCreateTodo,
@@ -152,20 +163,24 @@ export const TodoListWidget = () => {
             />
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setShowProjectDialog(true)}
-              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               title={t('projects')}
             >
               <Settings2 size={16} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setShowTagDialog(true)}
-              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               title={t('tags')}
             >
               <Tags size={16} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -176,12 +191,12 @@ export const TodoListWidget = () => {
         ) : sortedTodos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <p className="text-sm">{t('empty')}</p>
-            <button
+            <Button
               onClick={() => setShowForm(true)}
-              className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="mt-3"
             >
               {t('createFirst')}
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -244,37 +259,20 @@ export const TodoListWidget = () => {
         />
       )}
 
-      {showDeleteConfirm !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowDeleteConfirm(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-lg bg-background p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold">{t('deleteConfirm.title')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t('deleteConfirm.message')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-              >
-                {t('deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteTodo.isPending}
-                className="flex-1 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteTodo.isPending ? '...' : t('deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleteTodo.isPending}>
+              {deleteTodo.isPending ? '...' : t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showProjectDialog && (
         <ProjectManagementDialog onClose={() => setShowProjectDialog(false)} />
