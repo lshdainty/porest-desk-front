@@ -1,0 +1,6 @@
+{
+  "sso.description": "로그인하려면 아래 버튼을 클릭하세요.",
+  "sso.login": "로그인",
+  "sso.redirecting": "로그인 페이지로 이동 중...",
+  "sso.notice": "통합 인증 시스템(SSO)을 통해 로그인합니다."
+}
