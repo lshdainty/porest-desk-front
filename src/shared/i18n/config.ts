@@ -16,7 +16,6 @@ import koDashboard from '@/locales/ko/dashboard.json'
 import koDutchPay from '@/locales/ko/dutchPay.json'
 import koNotification from '@/locales/ko/notification.json'
 import koGroup from '@/locales/ko/group.json'
-import koAlbum from '@/locales/ko/album.json'
 
 import enCommon from '@/locales/en/common.json'
 import enLayout from '@/locales/en/layout.json'
@@ -31,7 +30,6 @@ import enDashboard from '@/locales/en/dashboard.json'
 import enDutchPay from '@/locales/en/dutchPay.json'
 import enNotification from '@/locales/en/notification.json'
 import enGroup from '@/locales/en/group.json'
-import enAlbum from '@/locales/en/album.json'
 
 // 지원하는 언어 목록
 export const SUPPORTED_LANGUAGES = ['ko', 'en'] as const
@@ -41,7 +39,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo', 'calculator',
   'timer', 'expense', 'asset', 'dashboard', 'dutchPay',
-  'notification', 'group', 'album'
+  'notification', 'group'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
 
@@ -61,7 +59,6 @@ const resources = {
     dutchPay: koDutchPay,
     notification: koNotification,
     group: koGroup,
-    album: koAlbum,
   },
   en: {
     common: enCommon,
@@ -77,7 +74,6 @@ const resources = {
     dutchPay: enDutchPay,
     notification: enNotification,
     group: enGroup,
-    album: enAlbum,
   },
 }
 

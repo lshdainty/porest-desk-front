@@ -117,12 +117,6 @@ export const fileKeys = {
   byReference: (referenceType: string, referenceRowId: number) => [...fileKeys.all, 'by-reference', referenceType, referenceRowId] as const,
 }
 
-export const albumKeys = {
-  all: ['albums'] as const,
-  list: (groupRowId: number) => [...albumKeys.all, 'list', groupRowId] as const,
-  detail: (id: number) => [...albumKeys.all, 'detail', id] as const,
-}
-
 export const dashboardKeys = {
   all: ['dashboard'] as const,
   summary: () => [...dashboardKeys.all, 'summary'] as const,

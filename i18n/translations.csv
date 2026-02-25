@@ -20,7 +20,6 @@ layout,expense,가계부,Expense
 layout,asset,자산,Assets
 layout,dutchPay,더치페이,Dutch Pay
 layout,group,그룹,Groups
-layout,album,앨범,Albums
 layout,settings,설정,Settings
 layout,more,더보기,More
 layout,menu,메뉴,Menu
@@ -455,28 +454,6 @@ group,editComment,댓글 수정,Edit Comment
 group,noComments,댓글이 없습니다,No comments yet
 group,commentPlaceholder,댓글을 입력하세요,Enter a comment
 group,reply,답글,Reply
-album,title,앨범,Albums
-album,addAlbum,앨범 추가,Add Album
-album,editAlbum,앨범 수정,Edit Album
-album,empty,앨범이 없습니다,No albums yet
-album,createFirst,첫 번째 앨범을 만들어 보세요,Create your first album
-album,selectGroup,그룹을 선택하세요,Select a group
-album,backToList,목록으로,Back to list
-album,photos,장,
-album,addPhoto,사진 추가,Add Photo
-album,removePhoto,사진 삭제,Remove Photo
-album,noPhotos,사진이 없습니다,No photos yet
-album,photoAdded,사진이 추가되었습니다,Photo added
-album,photoRemoved,사진이 삭제되었습니다,Photo removed
-album,createSuccess,앨범이 생성되었습니다,Album created
-album,updateSuccess,앨범이 수정되었습니다,Album updated
-album,deleteSuccess,앨범이 삭제되었습니다,Album deleted
-album,form.albumName,앨범 이름,Album Name
-album,form.albumNamePlaceholder,앨범 이름을 입력하세요,Enter album name
-album,form.description,설명,Description
-album,form.descriptionPlaceholder,설명을 입력하세요,Enter description
-album,deleteConfirm.title,앨범 삭제,Delete Album
-album,deleteConfirm.message,"이 앨범을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this album? This action cannot be undone."
 login,sso.description,로그인하려면 아래 버튼을 클릭하세요.,Click the button below to log in.
 login,sso.login,로그인,Log in
 login,sso.redirecting,로그인 페이지로 이동 중...,Redirecting to login...
