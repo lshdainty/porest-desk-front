@@ -7,3 +7,4 @@ export {
   useDeleteEvent,
 } from './model/useCalendarEvents'
 export { useCalendarAggregate } from './model/useCalendarAggregate'
+export { useCalendarExpenses } from './model/useCalendarExpenses'

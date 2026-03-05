@@ -8,14 +8,8 @@ interface AssetListProps {
   onDelete: (id: number) => void
 }
 
-const assetTypeLabels: Record<string, string> = {
-  BANK_ACCOUNT: 'assetType.bankAccount',
-  CREDIT_CARD: 'assetType.creditCard',
-  CHECK_CARD: 'assetType.checkCard',
-  CASH: 'assetType.cash',
-  SAVINGS: 'assetType.savings',
-  LOAN: 'assetType.loan',
-  INVESTMENT: 'assetType.investment',
+const getAssetTypeLabel = (assetType: string): string => {
+  return `assetType.${assetType.toLowerCase().replace(/_/g, '')}`
 }
 
 export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
@@ -46,7 +40,7 @@ export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{asset.assetName}</span>
-              <span className="text-xs text-muted-foreground">{t(assetTypeLabels[asset.assetType] || asset.assetType)}</span>
+              <span className="text-xs text-muted-foreground">{t(getAssetTypeLabel(asset.assetType))}</span>
             </div>
             {asset.institution && (
               <p className="text-xs text-muted-foreground">{asset.institution}</p>

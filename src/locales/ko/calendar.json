@@ -52,5 +52,13 @@
   "reminder.15min": "15분 전",
   "reminder.30min": "30분 전",
   "reminder.1hour": "1시간 전",
-  "reminder.1day": "1일 전"
+  "reminder.1day": "1일 전",
+  "source.schedule": "일정",
+  "source.expense": "가계부",
+  "source.todo": "할일",
+  "quickAdd.title": "추가하기",
+  "quickAdd.addSchedule": "일정 추가",
+  "quickAdd.addTransaction": "거래 추가",
+  "quickAdd.scheduleDesc": "캘린더 일정을 추가합니다",
+  "quickAdd.transactionDesc": "수입/지출 거래를 기록합니다"
 }

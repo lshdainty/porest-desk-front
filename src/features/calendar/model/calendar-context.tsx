@@ -5,9 +5,11 @@ import type {
   TBadgeVariant,
   TWorkingHours,
   TVisibleHours,
+  TCalendarSourceType,
+  ICalendarSource,
 } from './types'
 import type { IEvent } from './interfaces'
-import { calendarTypes } from './types'
+import { calendarTypes, DEFAULT_CALENDAR_SOURCES } from './types'
 
 interface CalendarContextValue {
   selectedDate: Date
@@ -24,6 +26,9 @@ interface CalendarContextValue {
   setVisibleHours: (hours: TVisibleHours) => void
   events: IEvent[]
   setLocalEvents: (events: IEvent[]) => void
+  calendarSources: ICalendarSource[]
+  toggleCalendarSource: (sourceId: TCalendarSourceType) => void
+  isCalendarSourceEnabled: (sourceId: TCalendarSourceType) => boolean
 }
 
 const CalendarContext = createContext<CalendarContextValue | null>(null)
@@ -54,6 +59,9 @@ export const CalendarProvider = ({
     end: 24,
   })
   const [localEvents, setLocalEvents] = useState<IEvent[]>([])
+  const [calendarSources, setCalendarSources] = useState<ICalendarSource[]>(
+    DEFAULT_CALENDAR_SOURCES,
+  )
 
   const events = useMemo(() => {
     return localEvents.length > 0 ? localEvents : externalEvents
@@ -62,6 +70,23 @@ export const CalendarProvider = ({
   const handleSetLocalEvents = useCallback((newEvents: IEvent[]) => {
     setLocalEvents(newEvents)
   }, [])
+
+  const toggleCalendarSource = useCallback((sourceId: TCalendarSourceType) => {
+    setCalendarSources((prev) =>
+      prev.map((source) =>
+        source.id === sourceId
+          ? { ...source, enabled: !source.enabled }
+          : source,
+      ),
+    )
+  }, [])
+
+  const isCalendarSourceEnabled = useCallback(
+    (sourceId: TCalendarSourceType) => {
+      return calendarSources.find((s) => s.id === sourceId)?.enabled ?? false
+    },
+    [calendarSources],
+  )
 
   const value = useMemo<CalendarContextValue>(
     () => ({
@@ -79,6 +104,9 @@ export const CalendarProvider = ({
       setVisibleHours,
       events,
       setLocalEvents: handleSetLocalEvents,
+      calendarSources,
+      toggleCalendarSource,
+      isCalendarSourceEnabled,
     }),
     [
       selectedDate,
@@ -89,6 +117,9 @@ export const CalendarProvider = ({
       visibleHours,
       events,
       handleSetLocalEvents,
+      calendarSources,
+      toggleCalendarSource,
+      isCalendarSourceEnabled,
     ],
   )
 

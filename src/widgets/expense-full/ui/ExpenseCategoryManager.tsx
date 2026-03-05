@@ -7,8 +7,10 @@ import {
   useUpdateExpenseCategory,
   useDeleteExpenseCategory,
 } from '@/features/expense'
-import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
+import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType, ExpenseCategoryTreeNode } from '@/entities/expense'
+import { buildCategoryTree } from '@/entities/expense'
 import { Button } from '@/shared/ui/button'
+import { ColorPicker } from '@/shared/ui/color-picker'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
@@ -32,16 +34,21 @@ export const ExpenseCategoryManager = () => {
   const [formName, setFormName] = useState('')
   const [formIcon, setFormIcon] = useState('')
   const [formColor, setFormColor] = useState('#6b7280')
+  const [formParentRowId, setFormParentRowId] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const incomeCategories = categories?.filter((c) => c.expenseType === 'INCOME') ?? []
-  const expenseCategories = categories?.filter((c) => c.expenseType === 'EXPENSE') ?? []
+  const allCategories = categories ?? []
+  const incomeTree = buildCategoryTree(allCategories.filter((c) => c.expenseType === 'INCOME'))
+  const expenseTree = buildCategoryTree(allCategories.filter((c) => c.expenseType === 'EXPENSE'))
 
-  const openCreateForm = useCallback((type: ExpenseType) => {
+  const openCreateForm = useCallback((type: ExpenseType, parentRowId?: number) => {
     setEditing(null)
     setFormType(type)
     setFormName('')
     setFormIcon('')
     setFormColor('#6b7280')
+    setFormParentRowId(parentRowId ?? null)
+    setDeleteError(null)
     setShowForm(true)
   }, [])
 
@@ -51,6 +58,8 @@ export const ExpenseCategoryManager = () => {
     setFormName(cat.categoryName)
     setFormIcon(cat.icon ?? '')
     setFormColor(cat.color ?? '#6b7280')
+    setFormParentRowId(cat.parentRowId)
+    setDeleteError(null)
     setShowForm(true)
   }, [])
 
@@ -61,6 +70,7 @@ export const ExpenseCategoryManager = () => {
       icon: formIcon || undefined,
       color: formColor || undefined,
       expenseType: formType,
+      parentRowId: formParentRowId,
     }
     if (editing) {
       updateCategory.mutate(
@@ -70,13 +80,63 @@ export const ExpenseCategoryManager = () => {
     } else {
       createCategory.mutate(data, { onSuccess: () => setShowForm(false) })
     }
-  }, [formName, formIcon, formColor, formType, editing, createCategory, updateCategory])
+  }, [formName, formIcon, formColor, formType, formParentRowId, editing, createCategory, updateCategory])
 
-  const handleDelete = useCallback((id: number) => {
-    deleteCategory.mutate(id)
-  }, [deleteCategory])
+  const handleDelete = useCallback((cat: ExpenseCategory) => {
+    if (cat.hasChildren) {
+      setDeleteError(t('cannotDeleteParentCategory'))
+      return
+    }
+    setDeleteError(null)
+    deleteCategory.mutate(cat.rowId)
+  }, [deleteCategory, t])
 
-  const renderCategoryList = (items: ExpenseCategory[], type: ExpenseType) => (
+  const renderCategoryNode = (node: ExpenseCategoryTreeNode, isChild = false) => (
+    <div key={node.rowId}>
+      <div
+        className={`flex items-center gap-2 rounded-md border px-3 py-2 ${isChild ? 'ml-6' : ''}`}
+      >
+        <div
+          className="h-3 w-3 shrink-0 rounded-full"
+          style={{ backgroundColor: node.color || '#6b7280' }}
+        />
+        {node.icon && <span className="text-sm">{node.icon}</span>}
+        <span className="flex-1 text-sm">{node.categoryName}</span>
+        {!isChild && (
+          <button
+            onClick={() => openCreateForm(node.expenseType, node.rowId)}
+            className="flex items-center gap-0.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            title={t('addSubCategory')}
+          >
+            <Plus size={12} />
+          </button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => openEditForm(node)}
+        >
+          <Edit3 size={12} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          onClick={() => handleDelete(node)}
+        >
+          <Trash2 size={12} />
+        </Button>
+      </div>
+      {node.children.length > 0 && (
+        <div className="mt-1 space-y-1">
+          {node.children.map((child) => renderCategoryNode(child, true))}
+        </div>
+      )}
+    </div>
+  )
+
+  const renderCategoryList = (tree: ExpenseCategoryTreeNode[], type: ExpenseType) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">
@@ -90,39 +150,11 @@ export const ExpenseCategoryManager = () => {
           {t('addCategory')}
         </button>
       </div>
-      {items.length === 0 ? (
+      {tree.length === 0 ? (
         <p className="py-2 text-center text-xs text-muted-foreground">-</p>
       ) : (
         <div className="space-y-1">
-          {items.map((cat) => (
-            <div
-              key={cat.rowId}
-              className="flex items-center gap-2 rounded-md border px-3 py-2"
-            >
-              <div
-                className="h-3 w-3 shrink-0 rounded-full"
-                style={{ backgroundColor: cat.color || '#6b7280' }}
-              />
-              {cat.icon && <span className="text-sm">{cat.icon}</span>}
-              <span className="flex-1 text-sm">{cat.categoryName}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => openEditForm(cat)}
-              >
-                <Edit3 size={12} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDelete(cat.rowId)}
-              >
-                <Trash2 size={12} />
-              </Button>
-            </div>
-          ))}
+          {tree.map((node) => renderCategoryNode(node))}
         </div>
       )}
     </div>
@@ -130,14 +162,20 @@ export const ExpenseCategoryManager = () => {
 
   return (
     <div className="space-y-6">
-      {renderCategoryList(expenseCategories, 'EXPENSE')}
-      {renderCategoryList(incomeCategories, 'INCOME')}
+      {deleteError && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {deleteError}
+        </div>
+      )}
+
+      {renderCategoryList(expenseTree, 'EXPENSE')}
+      {renderCategoryList(incomeTree, 'INCOME')}
 
       <Dialog open={showForm} onOpenChange={(open) => { if (!open) setShowForm(false) }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>
-              {editing ? t('editCategory') : t('addCategory')}
+              {editing ? t('editCategory') : formParentRowId ? t('addSubCategory') : t('addCategory')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -160,12 +198,7 @@ export const ExpenseCategoryManager = () => {
               </div>
               <div>
                 <Label>{t('form.color')}</Label>
-                <input
-                  type="color"
-                  value={formColor}
-                  onChange={(e) => setFormColor(e.target.value)}
-                  className="h-10 w-12 cursor-pointer rounded-lg border bg-background p-1"
-                />
+                <ColorPicker value={formColor} onChange={setFormColor} />
               </div>
             </div>
           </div>

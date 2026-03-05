@@ -8,8 +8,14 @@ export interface ExpenseCategory {
   color: string | null
   expenseType: ExpenseType
   sortOrder: number
+  parentRowId: number | null
+  hasChildren: boolean
   createAt: string
   modifyAt: string
+}
+
+export interface ExpenseCategoryTreeNode extends ExpenseCategory {
+  children: ExpenseCategoryTreeNode[]
 }
 
 export interface Expense {
@@ -50,6 +56,8 @@ export interface ExpenseCategoryFormValues {
   icon?: string
   color?: string
   expenseType: ExpenseType
+  sortOrder?: number
+  parentRowId?: number | null
 }
 
 export interface ExpenseBudget {
@@ -86,6 +94,15 @@ export interface CategoryBreakdown {
   categoryRowId: number
   categoryName: string
   totalAmount: number
+  parentCategoryRowId: number | null
+  parentCategoryName: string | null
+}
+
+export interface ParentCategoryBreakdown {
+  categoryRowId: number
+  categoryName: string
+  totalAmount: number
+  children: CategoryBreakdown[]
 }
 
 export interface WeeklySummary {

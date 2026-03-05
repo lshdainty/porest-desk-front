@@ -28,6 +28,7 @@ import {
 } from 'date-fns'
 
 import type { CalendarEvent } from '@/entities/calendar'
+import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
 import type { TCalendarType, TCalendarView, TVisibleHours, TWorkingHours } from '@/features/calendar/model/types'
 import { calendarTypes } from '@/features/calendar/model/types'
@@ -294,6 +295,48 @@ export function getMonthCellEvents(date: Date, events: IEvent[], eventPositions:
 // ================ Data conversion functions ================ //
 
 /**
+ * Expense (가계부 데이터)를 IEvent 인터페이스로 변환
+ */
+export function convertExpenseToIEvent(expense: Expense): IEvent {
+  const isIncome = expense.expenseType === 'INCOME'
+  const color = isIncome ? '#22c55e' : '#ef4444'
+  const sign = isIncome ? '+' : '-'
+  const formattedAmount = new Intl.NumberFormat('ko-KR').format(expense.amount)
+  const categoryName = expense.categoryName || ''
+  const title = categoryName
+    ? `${categoryName} ${sign}${formattedAmount}원`
+    : `${sign}${formattedAmount}원`
+
+  // expense 전용 타입 (캘린더 이벤트 유형 필터 무시하기 위해 PERSONAL로 설정)
+  const expenseCalendarType: TCalendarType = {
+    id: 'PERSONAL',
+    name: '가계부',
+    nameKey: 'calendar.source.expense',
+    isDate: false,
+    color: isIncome ? 'green' : 'red',
+  }
+
+  return {
+    id: expense.rowId,
+    startDate: expense.expenseDate,
+    endDate: expense.expenseDate,
+    title,
+    description: expense.description || '',
+    color,
+    isAllDay: true,
+    type: expenseCalendarType,
+    calendarSource: 'expense',
+    labelRowId: null,
+    labelName: null,
+    labelColor: null,
+    location: null,
+    rrule: null,
+    recurrenceId: null,
+    reminders: [],
+  }
+}
+
+/**
  * CalendarEvent (API 응답)를 IEvent 인터페이스로 변환
  */
 export function convertCalendarEventToIEvent(calendarEvent: CalendarEvent): IEvent {
@@ -309,6 +352,7 @@ export function convertCalendarEventToIEvent(calendarEvent: CalendarEvent): IEve
     color: calendarEvent.color,
     isAllDay: calendarEvent.isAllDay,
     type: calendarType,
+    calendarSource: 'schedule',
     labelRowId: calendarEvent.labelRowId ?? null,
     labelName: calendarEvent.labelName ?? null,
     labelColor: calendarEvent.labelColor ?? null,

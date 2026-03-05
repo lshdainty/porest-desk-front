@@ -3,9 +3,7 @@ import {
   LayoutDashboard,
   CheckSquare,
   CalendarDays,
-  Calculator,
   FileText,
-  Timer,
   Wallet,
   UsersRound,
 } from 'lucide-react'
@@ -40,11 +38,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     { title: t('dashboard'), url: '/desk', icon: LayoutDashboard },
     { title: t('todo'), url: '/desk/todo', icon: CheckSquare },
     { title: t('calendar'), url: '/desk/calendar', icon: CalendarDays },
-    { title: t('timer'), url: '/desk/timer', icon: Timer },
     { title: t('memo'), url: '/desk/memo', icon: FileText },
     { title: t('expense'), url: '/desk/expense', icon: Wallet },
     { title: t('group'), url: '/desk/group', icon: UsersRound },
-    { title: t('calculator'), url: '/desk/calculator', icon: Calculator },
   ]
 
   return (

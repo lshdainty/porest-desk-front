@@ -27,6 +27,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/shared/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 
 interface BudgetProgressProps {
   year: number
@@ -44,6 +54,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
   const [showForm, setShowForm] = useState(false)
   const [budgetAmount, setBudgetAmount] = useState('')
   const [budgetCategoryId, setBudgetCategoryId] = useState<number | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
 
   const totalExpense = summary?.totalExpense ?? 0
   const breakdown = summary?.categoryBreakdown ?? []
@@ -64,6 +75,13 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
       },
     })
   }, [budgetAmount, budgetCategoryId, year, month, createBudget])
+
+  const handleDelete = useCallback(() => {
+    if (showDeleteConfirm === null) return
+    deleteBudget.mutate(showDeleteConfirm, {
+      onSuccess: () => setShowDeleteConfirm(null),
+    })
+  }, [showDeleteConfirm, deleteBudget])
 
   const budgetFormDialog = (
     <Dialog open={showForm} onOpenChange={(open) => { if (!open) setShowForm(false) }}>
@@ -170,7 +188,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  onClick={() => deleteBudget.mutate(budget.rowId)}
+                  onClick={() => setShowDeleteConfirm(budget.rowId)}
                 >
                   <Trash2 size={12} />
                 </Button>
@@ -200,6 +218,22 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
       })}
 
       {budgetFormDialog}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('budget.deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('budget.deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleteBudget.isPending}>
+              {deleteBudget.isPending ? '...' : t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

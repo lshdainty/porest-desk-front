@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Play, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -19,7 +19,6 @@ import {
   useCreateExpenseTemplate,
   useUpdateExpenseTemplate,
   useDeleteExpenseTemplate,
-  useUseExpenseTemplate,
 } from '@/features/expense-template'
 import { useExpenseCategories } from '@/features/expense'
 import { useAssets } from '@/features/asset'
@@ -41,7 +40,6 @@ export const ExpenseTemplateList = () => {
   const createTemplate = useCreateExpenseTemplate()
   const updateTemplate = useUpdateExpenseTemplate()
   const deleteTemplate = useDeleteExpenseTemplate()
-  const useTemplate = useUseExpenseTemplate()
 
   const handleCreate = useCallback((data: ExpenseTemplateFormValues) => {
     createTemplate.mutate(data, {
@@ -61,13 +59,6 @@ export const ExpenseTemplateList = () => {
       }
     )
   }, [editingTemplate, updateTemplate])
-
-  const handleUse = useCallback((template: ExpenseTemplate) => {
-    useTemplate.mutate({
-      id: template.rowId,
-      data: { expenseDate: new Date().toISOString().split('T')[0] },
-    })
-  }, [useTemplate])
 
   const handleEdit = useCallback((template: ExpenseTemplate) => {
     setEditingTemplate(template)
@@ -136,16 +127,6 @@ export const ExpenseTemplateList = () => {
                 </div>
               </div>
               <div className="ml-2 flex shrink-0 gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-primary hover:bg-primary/10"
-                  onClick={() => handleUse(template)}
-                  disabled={useTemplate.isPending}
-                  title={t('useTemplate')}
-                >
-                  <Play size={14} />
-                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

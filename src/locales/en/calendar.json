@@ -52,5 +52,13 @@
   "reminder.15min": "15 min before",
   "reminder.30min": "30 min before",
   "reminder.1hour": "1 hour before",
-  "reminder.1day": "1 day before"
+  "reminder.1day": "1 day before",
+  "source.schedule": "Schedule",
+  "source.expense": "Expense",
+  "source.todo": "Todo",
+  "quickAdd.title": "Add New",
+  "quickAdd.addSchedule": "Add Schedule",
+  "quickAdd.addTransaction": "Add Transaction",
+  "quickAdd.scheduleDesc": "Add a calendar event",
+  "quickAdd.transactionDesc": "Record an income/expense transaction"
 }

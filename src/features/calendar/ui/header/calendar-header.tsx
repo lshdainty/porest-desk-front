@@ -8,6 +8,7 @@ import { useMemo } from 'react'
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { getEventsCount, navigateDate, rangeText } from '@/features/calendar/lib/helpers'
 import { Button } from '@/shared/ui/button'
+import { CalendarSourceToggle } from '@/features/calendar/ui/header/calendar-source-toggle'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -86,7 +87,13 @@ const CalendarHeader = ({ events }: IProps) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-3">
+        {/* Calendar source toggles */}
+        <CalendarSourceToggle />
+
+        {/* Separator */}
+        <div className="hidden h-6 w-px bg-border lg:block" />
+
         <div className="inline-flex">
           <Button
             aria-label="View by day"

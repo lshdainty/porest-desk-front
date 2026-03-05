@@ -17,6 +17,7 @@ import { format } from 'date-fns'
 interface EventFormProps {
   event?: CalendarEvent | null
   selectedDate?: Date
+  selectedEndDate?: Date
   labels?: EventLabel[]
   onSubmit: (data: CalendarEventFormValues) => void
   onClose: () => void
@@ -60,6 +61,7 @@ const reminderOptions = [5, 15, 30, 60, 1440] // minutes
 export const EventForm = ({
   event,
   selectedDate,
+  selectedEndDate,
   labels = [],
   onSubmit,
   onClose,
@@ -71,6 +73,10 @@ export const EventForm = ({
   const defaultDate = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
     : format(new Date(), 'yyyy-MM-dd')
+
+  const defaultEndDate = selectedEndDate
+    ? format(selectedEndDate, 'yyyy-MM-dd')
+    : defaultDate
 
   const [recurrence, setRecurrence] = useState<RecurrenceOption>('none')
   const [selectedReminders, setSelectedReminders] = useState<number[]>([])
@@ -90,7 +96,7 @@ export const EventForm = ({
       eventType: 'PERSONAL',
       color: '#3b82f6',
       startDate: defaultDate,
-      endDate: defaultDate,
+      endDate: defaultEndDate,
       isAllDay: true,
       labelRowId: undefined,
       location: '',
@@ -131,7 +137,7 @@ export const EventForm = ({
         eventType: 'PERSONAL',
         color: '#3b82f6',
         startDate: defaultDate,
-        endDate: defaultDate,
+        endDate: defaultEndDate,
         isAllDay: true,
         labelRowId: undefined,
         location: '',
@@ -141,7 +147,7 @@ export const EventForm = ({
       setRecurrence('none')
       setSelectedReminders([])
     }
-  }, [event, reset, defaultDate])
+  }, [event, reset, defaultDate, defaultEndDate])
 
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option)

@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { Calculator, ArrowRight } from 'lucide-react'
+import { Calculator } from 'lucide-react'
 
 export const CalculatorMiniWidget = () => {
   const { t } = useTranslation('dashboard')
-  const navigate = useNavigate()
   const [display, setDisplay] = useState('0')
   const [expression, setExpression] = useState('')
 
@@ -81,13 +79,6 @@ export const CalculatorMiniWidget = () => {
         </div>
       </div>
 
-      <button
-        onClick={() => navigate('/desk/calculator')}
-        className="flex items-center justify-center gap-1 border-t p-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-      >
-        {t('calculator.openFull')}
-        <ArrowRight size={12} />
-      </button>
     </div>
   )
 }

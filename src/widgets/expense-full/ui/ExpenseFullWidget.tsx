@@ -163,6 +163,7 @@ export const ExpenseFullWidget = () => {
             ) : (
               <ExpenseList
                 expenses={expenses || []}
+                categories={categories || []}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />

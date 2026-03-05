@@ -25,12 +25,17 @@ interface IProps {
 }
 
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
-  const { selectedDate, selectedTypeIds, view } = useCalendar()
+  const { selectedDate, selectedTypeIds, view, isCalendarSourceEnabled } = useCalendar()
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.startDate)
       const eventEndDate = parseISO(event.endDate)
+
+      // 캘린더 소스 필터링: 해당 소스가 OFF면 이벤트 숨김
+      if (!isCalendarSourceEnabled(event.calendarSource)) {
+        return false
+      }
 
       const isTypeMatch = selectedTypeIds.length === 0 || selectedTypeIds.includes(event.type.id)
 
@@ -72,7 +77,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
 
       return isTypeMatch
     })
-  }, [selectedDate, selectedTypeIds, events, view])
+  }, [selectedDate, selectedTypeIds, events, view, isCalendarSourceEnabled])
 
   const singleDayEvents = filteredEvents.filter(event => {
     const startDate = parseISO(event.startDate)

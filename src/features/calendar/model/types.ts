@@ -1,5 +1,37 @@
 export type TCalendarView = 'day' | 'week' | 'month' | 'year' | 'agenda'
 
+// ================ Calendar Source (다중 캘린더) ================ //
+
+export type TCalendarSourceType = 'schedule' | 'expense' | 'todo'
+
+export interface ICalendarSource {
+  id: TCalendarSourceType
+  labelKey: string     // i18n 번역 키
+  color: string        // 대표 색상 (hex)
+  enabled: boolean     // ON/OFF 상태
+}
+
+export const DEFAULT_CALENDAR_SOURCES: ICalendarSource[] = [
+  {
+    id: 'schedule',
+    labelKey: 'calendar.source.schedule',
+    color: '#3b82f6',   // blue-500
+    enabled: true,
+  },
+  {
+    id: 'expense',
+    labelKey: 'calendar.source.expense',
+    color: '#22c55e',   // green-500
+    enabled: false,
+  },
+  {
+    id: 'todo',
+    labelKey: 'calendar.source.todo',
+    color: '#a855f7',   // purple-500
+    enabled: false,
+  },
+]
+
 export type TEventColor =
   | 'blue'
   | 'green'

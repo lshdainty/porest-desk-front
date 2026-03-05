@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { Edit3, Trash2 } from 'lucide-react'
+import { useMemo } from 'react'
 import { cn, formatCurrency } from '@/shared/lib'
-import type { Expense } from '@/entities/expense'
+import type { Expense, ExpenseCategory } from '@/entities/expense'
 
 interface ExpenseListProps {
   expenses: Expense[]
+  categories?: ExpenseCategory[]
   onEdit: (expense: Expense) => void
   onDelete: (id: number) => void
 }
@@ -28,8 +30,25 @@ const groupByDate = (expenses: Expense[]): GroupedExpenses[] => {
     .map(([date, items]) => ({ date, items }))
 }
 
-export const ExpenseList = ({ expenses, onEdit, onDelete }: ExpenseListProps) => {
+export const ExpenseList = ({ expenses, categories = [], onEdit, onDelete }: ExpenseListProps) => {
   const { t } = useTranslation('expense')
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<number, ExpenseCategory>()
+    categories.forEach((cat) => map.set(cat.rowId, cat))
+    return map
+  }, [categories])
+
+  const getCategoryDisplayName = (expense: Expense): string => {
+    const cat = categoryMap.get(expense.categoryRowId)
+    if (cat?.parentRowId) {
+      const parent = categoryMap.get(cat.parentRowId)
+      if (parent) {
+        return `${parent.categoryName} > ${cat.categoryName}`
+      }
+    }
+    return expense.categoryName || t('category')
+  }
 
   if (expenses.length === 0) {
     return (
@@ -65,7 +84,7 @@ export const ExpenseList = ({ expenses, onEdit, onDelete }: ExpenseListProps) =>
                       <span className="text-sm">{expense.categoryIcon}</span>
                     )}
                     <span className="text-sm font-medium">
-                      {expense.categoryName || t('category')}
+                      {getCategoryDisplayName(expense)}
                     </span>
                   </div>
                   {expense.description && (
