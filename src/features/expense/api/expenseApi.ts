@@ -13,7 +13,7 @@ import type {
 
 export interface ExpenseListParams {
   expenseType?: string
-  categoryRowId?: number
+  categoryId?: number
   startDate?: string
   endDate?: string
 }

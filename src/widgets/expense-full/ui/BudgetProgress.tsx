@@ -110,7 +110,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
             onClick={handleSubmit}
             disabled={!budgetAmount || createBudget.isPending}
           >
-            {createBudget.isPending ? '...' : t('deleteConfirm.confirm')}
+            {createBudget.isPending ? '...' : t('budget.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

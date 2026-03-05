@@ -151,15 +151,15 @@ export const ExpenseCategoryManager = () => {
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <Label>Icon</Label>
+                <Label>{t('form.icon')}</Label>
                 <Input
                   value={formIcon}
                   onChange={(e) => setFormIcon(e.target.value)}
-                  placeholder="e.g. emoji"
+                  placeholder={t('form.iconPlaceholder')}
                 />
               </div>
               <div>
-                <Label>Color</Label>
+                <Label>{t('form.color')}</Label>
                 <input
                   type="color"
                   value={formColor}
@@ -177,7 +177,7 @@ export const ExpenseCategoryManager = () => {
               onClick={handleSubmit}
               disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}
             >
-              {(createCategory.isPending || updateCategory.isPending) ? '...' : t('deleteConfirm.confirm')}
+              {(createCategory.isPending || updateCategory.isPending) ? '...' : t('form.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

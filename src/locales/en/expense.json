@@ -36,6 +36,7 @@
   "budget.remaining": "Remaining",
   "budget.exceeded": "Exceeded",
   "budget.noBudget": "No budget set",
+  "budget.save": "Save",
   "categoryBreakdown": "Category Breakdown",
   "deleteConfirm.title": "Delete Transaction",
   "deleteConfirm.message": "Are you sure you want to delete this transaction? This action cannot be undone.",
@@ -72,5 +73,9 @@
   "form.calendarEvent": "Link Event",
   "form.todo": "Link Todo",
   "linkExpense": "Add Expense",
-  "noLinkedExpenses": "No linked expenses"
+  "noLinkedExpenses": "No linked expenses",
+  "form.icon": "Icon",
+  "form.iconPlaceholder": "e.g. emoji",
+  "form.color": "Color",
+  "form.save": "Save"
 }

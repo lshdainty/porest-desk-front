@@ -36,6 +36,7 @@
   "budget.remaining": "남은 예산",
   "budget.exceeded": "초과",
   "budget.noBudget": "설정된 예산이 없습니다",
+  "budget.save": "저장",
   "categoryBreakdown": "카테고리별 분석",
   "deleteConfirm.title": "거래 삭제",
   "deleteConfirm.message": "이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
@@ -72,5 +73,9 @@
   "form.calendarEvent": "일정 연결",
   "form.todo": "할일 연결",
   "linkExpense": "지출 추가",
-  "noLinkedExpenses": "연결된 지출이 없습니다"
+  "noLinkedExpenses": "연결된 지출이 없습니다",
+  "form.icon": "아이콘",
+  "form.iconPlaceholder": "예: 이모지",
+  "form.color": "색상",
+  "form.save": "저장"
 }

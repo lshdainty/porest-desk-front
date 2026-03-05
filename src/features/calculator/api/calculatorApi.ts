@@ -4,13 +4,13 @@ import type { CalculatorHistory } from '@/entities/calculator'
 
 export const calculatorApi = {
   saveHistory: async (data: { expression: string; result: string }): Promise<CalculatorHistory> => {
-    const resp: ApiResponse<CalculatorHistory> = await apiClient.post('/v1/calculator/histories', data)
+    const resp: ApiResponse<CalculatorHistory> = await apiClient.post('/v1/calculator/history', data)
     return resp.data
   },
 
   getHistories: async (): Promise<CalculatorHistory[]> => {
-    const resp: ApiResponse<CalculatorHistory[]> = await apiClient.get('/v1/calculator/histories')
-    return resp.data
+    const resp: ApiResponse<{ histories: CalculatorHistory[] }> = await apiClient.get('/v1/calculator/histories')
+    return resp.data.histories
   },
 
   deleteAllHistories: async (): Promise<void> => {

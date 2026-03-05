@@ -9,17 +9,17 @@ export interface BudgetListParams {
 
 export const expenseBudgetApi = {
   createBudget: async (data: ExpenseBudgetFormValues): Promise<ExpenseBudget> => {
-    const resp: ApiResponse<ExpenseBudget> = await apiClient.post('/v1/expenses/budgets', data)
+    const resp: ApiResponse<ExpenseBudget> = await apiClient.post('/v1/expense/budget', data)
     return resp.data
   },
 
   getBudgets: async (params: BudgetListParams): Promise<ExpenseBudget[]> => {
-    const resp: ApiResponse<ExpenseBudget[]> = await apiClient.get('/v1/expenses/budgets', { params })
-    return resp.data
+    const resp: ApiResponse<{ budgets: ExpenseBudget[] }> = await apiClient.get('/v1/expense/budgets', { params })
+    return resp.data.budgets
   },
 
   deleteBudget: async (id: number): Promise<void> => {
-    const resp: ApiResponse<void> = await apiClient.delete(`/v1/expenses/budgets/${id}`)
+    const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/budget/${id}`)
     return resp.data
   },
 }

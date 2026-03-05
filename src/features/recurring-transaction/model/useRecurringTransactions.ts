@@ -6,7 +6,10 @@ import type { RecurringTransactionFormValues } from '@/entities/recurring-transa
 export const useRecurringTransactions = () => {
   return useQuery({
     queryKey: recurringTransactionKeys.list(),
-    queryFn: () => recurringTransactionApi.getRecurrings(),
+    queryFn: async () => {
+      const response = await recurringTransactionApi.getRecurrings()
+      return response.recurringTransactions
+    },
   })
 }
 

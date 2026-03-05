@@ -6,7 +6,10 @@ import type { ExpenseTemplateFormValues, ExpenseTemplateUseValues } from '@/enti
 export const useExpenseTemplates = () => {
   return useQuery({
     queryKey: expenseTemplateKeys.list(),
-    queryFn: () => expenseTemplateApi.getTemplates(),
+    queryFn: async () => {
+      const response = await expenseTemplateApi.getTemplates()
+      return response.templates
+    },
   })
 }
 
