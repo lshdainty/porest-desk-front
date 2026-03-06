@@ -60,5 +60,10 @@
   "quickAdd.addSchedule": "Add Schedule",
   "quickAdd.addTransaction": "Add Transaction",
   "quickAdd.scheduleDesc": "Add a calendar event",
-  "quickAdd.transactionDesc": "Record an income/expense transaction"
+  "quickAdd.transactionDesc": "Record an income/expense transaction",
+  "header.eventCount_one": "{{count}} event",
+  "header.eventCount_other": "{{count}} events",
+  "dayView.noAppointments": "No appointments right now",
+  "dayView.happeningNow": "Happening now",
+  "agenda.noEvents": "No events scheduled for the selected month"
 }

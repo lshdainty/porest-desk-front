@@ -60,5 +60,9 @@
   "quickAdd.addSchedule": "일정 추가",
   "quickAdd.addTransaction": "거래 추가",
   "quickAdd.scheduleDesc": "캘린더 일정을 추가합니다",
-  "quickAdd.transactionDesc": "수입/지출 거래를 기록합니다"
+  "quickAdd.transactionDesc": "수입/지출 거래를 기록합니다",
+  "header.eventCount": "{{count}}건",
+  "dayView.noAppointments": "현재 진행 중인 일정이 없습니다",
+  "dayView.happeningNow": "지금 진행 중",
+  "agenda.noEvents": "이 달에 예정된 일정이 없습니다"
 }

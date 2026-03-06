@@ -72,9 +72,11 @@ const DayViewMultiDayEventsRow = ({
                 <circle cx="4" cy="4" r="4" fill={event.color} />
               </svg>
               <p className="truncate font-semibold">
-                <span className="text-xs">
-                  Day {eventCurrentDay} of {eventTotalDays} &#8226;{' '}
-                </span>
+                {eventTotalDays > 1 && (
+                  <span className="text-xs">
+                    Day {eventCurrentDay} of {eventTotalDays} &#8226;{' '}
+                  </span>
+                )}
                 {event.title}
               </p>
             </div>

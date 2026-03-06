@@ -80,12 +80,14 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   }, [selectedDate, selectedTypeIds, events, view, isCalendarSourceEnabled])
 
   const singleDayEvents = filteredEvents.filter(event => {
+    if (event.isAllDay) return false
     const startDate = parseISO(event.startDate)
     const endDate = parseISO(event.endDate)
     return isSameDay(startDate, endDate)
   })
 
   const multiDayEvents = filteredEvents.filter(event => {
+    if (event.isAllDay) return true
     const startDate = parseISO(event.startDate)
     const endDate = parseISO(event.endDate)
     return !isSameDay(startDate, endDate)

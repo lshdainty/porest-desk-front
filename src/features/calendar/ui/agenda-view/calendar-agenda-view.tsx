@@ -54,12 +54,14 @@ const AgendaEventCard = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Clock className="size-3 shrink-0" />
-          <p className="text-xs text-foreground">
-            {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
-          </p>
-        </div>
+        {!event.isAllDay && (
+          <div className="flex items-center gap-1">
+            <Clock className="size-3 shrink-0" />
+            <p className="text-xs text-foreground">
+              {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
+            </p>
+          </div>
+        )}
 
         {event.description && (
           <div className="flex items-center gap-1">
@@ -112,8 +114,8 @@ const AgendaDayGroup = ({
               <AgendaEventCard
                 key={event.id}
                 event={event}
-                eventCurrentDay={eventCurrentDay}
-                eventTotalDays={eventTotalDays}
+                eventCurrentDay={eventTotalDays > 1 ? eventCurrentDay : undefined}
+                eventTotalDays={eventTotalDays > 1 ? eventTotalDays : undefined}
               />
             )
           })}
@@ -128,6 +130,7 @@ const AgendaDayGroup = ({
 // ---- Main agenda view ---- //
 
 const CalendarAgendaView = ({ singleDayEvents, multiDayEvents }: IProps) => {
+  const { t } = useTranslation('calendar')
   const { selectedDate } = useCalendar()
 
   const eventsByDay = useMemo(() => {
@@ -188,7 +191,7 @@ const CalendarAgendaView = ({ singleDayEvents, multiDayEvents }: IProps) => {
           {!hasAnyEvents && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
               <CalendarX2 className="size-10" />
-              <p className="text-sm md:text-base">No events scheduled for the selected month</p>
+              <p className="text-sm md:text-base">{t('agenda.noEvents')}</p>
             </div>
           )}
         </div>
