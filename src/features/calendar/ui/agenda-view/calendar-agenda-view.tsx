@@ -1,5 +1,5 @@
 import { differenceInDays, endOfDay, format, isSameMonth, parseISO, startOfDay } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { enUS, ko } from 'date-fns/locale'
 import { CalendarX2, Clock, Text } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +24,10 @@ const AgendaEventCard = ({
   eventCurrentDay?: number
   eventTotalDays?: number
 }) => {
+  const { t, i18n } = useTranslation('calendar')
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
+
   const startDate = parseISO(event.startDate)
   const endDate = parseISO(event.endDate)
 
@@ -47,7 +51,7 @@ const AgendaEventCard = ({
           <p className="font-medium">
             {eventCurrentDay && eventTotalDays && (
               <span className="mr-1 text-xs">
-                Day {eventCurrentDay} of {eventTotalDays} &#8226;{' '}
+                {t('event.dayOfTotal', { current: eventCurrentDay, total: eventTotalDays })} &#8226;{' '}
               </span>
             )}
             {event.title}
@@ -58,7 +62,7 @@ const AgendaEventCard = ({
           <div className="flex items-center gap-1">
             <Clock className="size-3 shrink-0" />
             <p className="text-xs text-foreground">
-              {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
+              {format(startDate, timeFormat, { locale })} - {format(endDate, timeFormat, { locale })}
             </p>
           </div>
         )}
@@ -90,8 +94,8 @@ const AgendaDayGroup = ({
     (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   )
 
-  const dateFormat = i18n.language === 'ko' ? 'yyyy년 M월 dd일 EEEE' : 'EEEE, MMMM d, yyyy'
-  const locale = i18n.language === 'ko' ? ko : undefined
+  const dateFormat = i18n.language.startsWith('ko') ? 'yyyy년 M월 dd일 EEEE' : 'EEEE, MMMM d, yyyy'
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
 
   return (
     <div className="space-y-4">

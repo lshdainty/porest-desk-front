@@ -20,8 +20,8 @@ const CalendarHeader = ({ events }: IProps) => {
   const { t, i18n } = useTranslation('calendar')
   const { selectedDate, setSelectedDate, view, setView } = useCalendar()
 
-  const locale = i18n.language === 'ko' ? ko : enUS
-  const dateFormat = i18n.language === 'ko' ? 'yyyy년 M월' : 'MMMM yyyy'
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const dateFormat = i18n.language.startsWith('ko') ? 'yyyy년 M월' : 'MMMM yyyy'
   const formattedDate = format(selectedDate, dateFormat, { locale })
 
   const eventCount = useMemo(
@@ -43,7 +43,7 @@ const CalendarHeader = ({ events }: IProps) => {
           onClick={handleTodayClick}
         >
           <p className="flex h-6 w-full items-center justify-center bg-primary text-center text-xs font-semibold text-primary-foreground">
-            {format(new Date(), 'MMM').toUpperCase()}
+            {format(new Date(), i18n.language.startsWith('ko') ? 'M월' : 'MMM', { locale }).toUpperCase()}
           </p>
           <p className="flex w-full items-center justify-center text-lg font-bold">
             {new Date().getDate()}
@@ -96,7 +96,7 @@ const CalendarHeader = ({ events }: IProps) => {
 
         <div className="inline-flex">
           <Button
-            aria-label="View by day"
+            aria-label={t('header.viewDay')}
             size="icon"
             variant={view === 'day' ? 'default' : 'outline'}
             className="rounded-r-none"
@@ -105,7 +105,7 @@ const CalendarHeader = ({ events }: IProps) => {
             <List strokeWidth={1.8} />
           </Button>
           <Button
-            aria-label="View by week"
+            aria-label={t('header.viewWeek')}
             size="icon"
             variant={view === 'week' ? 'default' : 'outline'}
             className="-ml-px rounded-none"
@@ -114,7 +114,7 @@ const CalendarHeader = ({ events }: IProps) => {
             <Columns strokeWidth={1.8} />
           </Button>
           <Button
-            aria-label="View by month"
+            aria-label={t('header.viewMonth')}
             size="icon"
             variant={view === 'month' ? 'default' : 'outline'}
             className="-ml-px rounded-none"
@@ -123,7 +123,7 @@ const CalendarHeader = ({ events }: IProps) => {
             <Grid2x2 strokeWidth={1.8} />
           </Button>
           <Button
-            aria-label="View by year"
+            aria-label={t('header.viewYear')}
             size="icon"
             variant={view === 'year' ? 'default' : 'outline'}
             className="-ml-px rounded-none"
@@ -132,7 +132,7 @@ const CalendarHeader = ({ events }: IProps) => {
             <Grid3x3 strokeWidth={1.8} />
           </Button>
           <Button
-            aria-label="View by agenda"
+            aria-label={t('header.viewAgenda')}
             size="icon"
             variant={view === 'agenda' ? 'default' : 'outline'}
             className="-ml-px rounded-l-none"

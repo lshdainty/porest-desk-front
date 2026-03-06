@@ -75,5 +75,14 @@
   "cannotDeleteDefault": "기본 캘린더는 삭제할 수 없습니다",
   "deleteConfirm": "이 캘린더를 삭제하시겠습니까? 일정은 기본 캘린더로 이동됩니다.",
   "otherSources": "기타 소스",
-  "form.calendar": "캘린더"
+  "form.calendar": "캘린더",
+  "monthView.more": "{{count}}개 더",
+  "event.dayOfTotal": "{{total}}일 중 {{current}}일차",
+  "weekView.notAvailable": "주간 뷰를 사용할 수 없습니다",
+  "weekView.switchView": "다른 뷰로 전환",
+  "header.viewDay": "일간 보기",
+  "header.viewWeek": "주간 보기",
+  "header.viewMonth": "월간 보기",
+  "header.viewYear": "연간 보기",
+  "header.viewAgenda": "아젠다 보기"
 }

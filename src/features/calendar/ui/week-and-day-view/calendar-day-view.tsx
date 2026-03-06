@@ -23,6 +23,7 @@ const DayViewMultiDayEventsRow = ({
   selectedDate: Date
   multiDayEvents: IEvent[]
 }) => {
+  const { t } = useTranslation('calendar')
   const dayStart = startOfDay(selectedDate)
   const dayEnd = endOfDay(selectedDate)
 
@@ -74,7 +75,7 @@ const DayViewMultiDayEventsRow = ({
               <p className="truncate font-semibold">
                 {eventTotalDays > 1 && (
                   <span className="text-xs">
-                    Day {eventCurrentDay} of {eventTotalDays} &#8226;{' '}
+                    {t('event.dayOfTotal', { current: eventCurrentDay, total: eventTotalDays })} &#8226;{' '}
                   </span>
                 )}
                 {event.title}
@@ -96,6 +97,10 @@ const CalendarTimeline = ({
   firstVisibleHour: number
   lastVisibleHour: number
 }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
+
   const now = new Date()
   const currentHour = now.getHours()
 
@@ -114,7 +119,7 @@ const CalendarTimeline = ({
     >
       <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
       <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-primary">
-        {format(now, 'h:mm a')}
+        {format(now, timeFormat, { locale })}
       </div>
     </div>
   )
@@ -123,6 +128,10 @@ const CalendarTimeline = ({
 // ---- Event block for time grid ---- //
 
 const EventBlock = ({ event }: { event: IEvent }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
+
   const start = parseISO(event.startDate)
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
@@ -152,7 +161,7 @@ const EventBlock = ({ event }: { event: IEvent }) => {
 
       {durationInMinutes > 25 && (
         <p>
-          {format(start, 'h:mm a')} - {format(end, 'h:mm a')}
+          {format(start, timeFormat, { locale })} - {format(end, timeFormat, { locale })}
         </p>
       )}
     </div>
@@ -165,7 +174,8 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
   const { t, i18n } = useTranslation('calendar')
   const { selectedDate, setSelectedDate, visibleHours, workingHours } = useCalendar()
 
-  const locale = i18n.language === 'ko' ? ko : enUS
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const hourFormat = i18n.language.startsWith('ko') ? 'a hh시' : 'hh a'
   const { hours, earliestEventHour, latestEventHour } = getVisibleHours(visibleHours, singleDayEvents)
 
   const currentEvents = getCurrentEvents(singleDayEvents)
@@ -211,7 +221,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date().setHours(hour, 0, 0, 0), 'hh a')}
+                        {format(new Date().setHours(hour, 0, 0, 0), hourFormat, { locale })}
                       </span>
                     )}
                   </div>
@@ -305,7 +315,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
                       <span className="text-sm">
                         {format(
                           new Date(),
-                          i18n.language === 'ko' ? 'yyyy년 M월 d일' : 'MMM d, yyyy',
+                          i18n.language.startsWith('ko') ? 'yyyy년 M월 d일' : 'MMM d, yyyy',
                           { locale }
                         )}
                       </span>
@@ -316,13 +326,13 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
                       <span className="text-sm">
                         {format(
                           parseISO(event.startDate),
-                          i18n.language === 'ko' ? 'a h:mm' : 'h:mm a',
+                          i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a',
                           { locale }
                         )}{' '}
                         -{' '}
                         {format(
                           parseISO(event.endDate),
-                          i18n.language === 'ko' ? 'a h:mm' : 'h:mm a',
+                          i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a',
                           { locale }
                         )}
                       </span>

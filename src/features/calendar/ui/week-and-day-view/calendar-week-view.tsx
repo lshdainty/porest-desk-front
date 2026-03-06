@@ -154,6 +154,10 @@ const CalendarTimeline = ({
   firstVisibleHour: number
   lastVisibleHour: number
 }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
+
   const now = new Date()
   const currentHour = now.getHours()
 
@@ -172,7 +176,7 @@ const CalendarTimeline = ({
     >
       <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
       <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-primary">
-        {format(now, 'h:mm a')}
+        {format(now, timeFormat, { locale })}
       </div>
     </div>
   )
@@ -181,6 +185,10 @@ const CalendarTimeline = ({
 // ---- Event block for time grid ---- //
 
 const EventBlock = ({ event }: { event: IEvent }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
+
   const start = parseISO(event.startDate)
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
@@ -210,7 +218,7 @@ const EventBlock = ({ event }: { event: IEvent }) => {
 
       {durationInMinutes > 25 && (
         <p>
-          {format(start, 'h:mm a')} - {format(end, 'h:mm a')}
+          {format(start, timeFormat, { locale })} - {format(end, timeFormat, { locale })}
         </p>
       )}
     </div>
@@ -223,7 +231,8 @@ const CalendarWeekView = ({ singleDayEvents, multiDayEvents }: IProps) => {
   const { t, i18n } = useTranslation()
   const { selectedDate, workingHours, visibleHours } = useCalendar()
 
-  const locale = i18n.language === 'ko' ? ko : enUS
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const hourFormat = i18n.language.startsWith('ko') ? 'a hh시' : 'hh a'
   const { hours, earliestEventHour, latestEventHour } = getVisibleHours(visibleHours, singleDayEvents)
 
   const weekStart = startOfWeek(selectedDate, { locale })
@@ -271,7 +280,7 @@ const CalendarWeekView = ({ singleDayEvents, multiDayEvents }: IProps) => {
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date().setHours(hour, 0, 0, 0), 'hh a')}
+                        {format(new Date().setHours(hour, 0, 0, 0), hourFormat, { locale })}
                       </span>
                     )}
                   </div>

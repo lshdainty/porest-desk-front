@@ -59,7 +59,7 @@ export function rangeText(view: TCalendarView, date: Date, locale?: Locale) {
     case 'day':
       return format(date, formatString, { locale })
     default:
-      return 'Error while formatting '
+      return ''
   }
 
   return `${format(start, formatString, { locale })} - ${format(end, formatString, { locale })}`

@@ -5,7 +5,7 @@ const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 const CalendarWeekViewSkeleton = () => {
   const { i18n } = useTranslation()
-  const weekDays = i18n.language === 'ko' ? WEEK_DAYS_KO : WEEK_DAYS_EN
+  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
   const hours = Array.from({ length: 11 }, (_, i) => i + 8)
 

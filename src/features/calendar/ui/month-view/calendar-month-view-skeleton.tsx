@@ -30,7 +30,7 @@ const DayCellSkeleton = ({ isSunday }: { isSunday: boolean }) => {
 
 const CalendarMonthViewSkeleton = () => {
   const { i18n } = useTranslation()
-  const weekDays = i18n.language === 'ko' ? WEEK_DAYS_KO : WEEK_DAYS_EN
+  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
   const cells = Array.from({ length: 42 }, (_, i) => i)
 

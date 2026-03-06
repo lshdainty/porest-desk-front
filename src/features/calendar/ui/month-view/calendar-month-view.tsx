@@ -1,4 +1,5 @@
 import { isToday, startOfDay, endOfDay, format, isSameDay, parseISO } from 'date-fns'
+import { enUS, ko } from 'date-fns/locale'
 import { useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -64,6 +65,7 @@ const MonthDayCell = ({
   eventPositions: Record<string, number>
   expenseSummary?: IDayExpenseSummary
 }) => {
+  const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
   const { startSelection, updateSelection, endSelection, isDateInSelection, isDragSelecting } = useDragSelect()
 
@@ -147,7 +149,7 @@ const MonthDayCell = ({
             )}
           >
             <span className="sm:hidden">+{cellEvents.length - MAX_VISIBLE_EVENTS}</span>
-            <span className="hidden sm:inline">{cellEvents.length - MAX_VISIBLE_EVENTS} more</span>
+            <span className="hidden sm:inline">{t('monthView.more', { count: cellEvents.length - MAX_VISIBLE_EVENTS })}</span>
           </button>
         )}
       </div>
@@ -203,6 +205,9 @@ const MonthEventBadge = ({
   cellDate: Date
   className?: string
 }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
   const itemStart = startOfDay(parseISO(event.startDate))
   const itemEnd = endOfDay(parseISO(event.endDate))
 
@@ -247,7 +252,7 @@ const MonthEventBadge = ({
     >
       {position === 'last' && (
         <div className="ml-auto">
-          <span>{format(new Date(event.startDate), 'h:mm a')}</span>
+          <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
         </div>
       )}
 
@@ -266,7 +271,7 @@ const MonthEventBadge = ({
           </div>
 
           {renderBadgeText && !isMultiDay && (
-            <span>{format(new Date(event.startDate), 'h:mm a')}</span>
+            <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
           )}
         </>
       )}
@@ -279,7 +284,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents }: IProps) => {
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
 
-  const weekDays = i18n.language === 'ko' ? WEEK_DAYS_KO : WEEK_DAYS_EN
+  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
   // expense 이벤트를 일반 이벤트와 분리 (expense는 이벤트 슬롯을 차지하지 않음)
   const regularSingleDayEvents = useMemo(

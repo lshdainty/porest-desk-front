@@ -93,8 +93,8 @@ const YearViewMonth = ({
   const { i18n } = useTranslation()
   const { setSelectedDate, setView } = useCalendar()
 
-  const locale = i18n.language === 'ko' ? ko : enUS
-  const weekDays = i18n.language === 'ko' ? WEEK_DAYS_KO : WEEK_DAYS_EN
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
   const monthName = format(month, 'MMMM', { locale })
 
   const daysInMonth = useMemo(() => {
