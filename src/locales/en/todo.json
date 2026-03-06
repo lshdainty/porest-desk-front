@@ -52,5 +52,15 @@
   "subtaskProgress": "{{completed}}/{{total}}",
   "stats": "Stats",
   "overdue": "Overdue",
-  "completionRate": "Completion Rate"
+  "completionRate": "Completion Rate",
+  "type.ALL": "All",
+  "type.TASK": "Task",
+  "type.NOTE": "Note",
+  "note.pin": "Pin",
+  "note.unpin": "Unpin",
+  "note.preview": "Preview",
+  "note.editor": "Edit",
+  "note.markdown": "Write in markdown",
+  "note.empty": "No notes yet",
+  "note.createFirst": "Create your first note"
 }

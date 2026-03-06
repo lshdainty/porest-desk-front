@@ -96,6 +96,17 @@ export const useUpdateTodoTags = () => {
   })
 }
 
+export const useToggleTodoPin = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => todoApi.togglePin(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: todoKeys.all })
+    },
+  })
+}
+
 export const useTodoStats = () => {
   return useQuery({
     queryKey: todoKeys.stats(),

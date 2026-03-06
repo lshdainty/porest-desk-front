@@ -28,7 +28,7 @@ export const QuickStatsRow = ({ data }: Props) => {
       label: t('quick.pinnedMemos'),
       value: data.memoSummary.pinnedCount,
       icon: <FileText size={16} />,
-      path: '/desk/memo',
+      path: '/desk/todo',
     },
     {
       label: t('quick.timerSessions'),

@@ -5,7 +5,7 @@ const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => (
 const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const TodoPage = lazy(() => import('@/pages/todo/ui/TodoPage').then(m => ({ default: m.TodoPage })))
 const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(m => ({ default: m.CalendarPage })))
-const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
+// MemoPage lazy import removed - memo is now integrated into todo
 const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
 const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -24,7 +24,7 @@ export const AppRouter = () => {
             <Route path="/desk" element={<DashboardPage />} />
             <Route path="/desk/todo" element={<TodoPage />} />
             <Route path="/desk/calendar" element={<CalendarPage />} />
-            <Route path="/desk/memo" element={<MemoPage />} />
+            <Route path="/desk/memo" element={<Navigate to="/desk/todo" replace />} />
             <Route path="/desk/expense" element={<ExpensePage />} />
             <Route path="/desk/asset" element={<Navigate to="/desk/expense" replace />} />
             <Route path="/desk/dutch-pay" element={<Navigate to="/desk/expense" replace />} />

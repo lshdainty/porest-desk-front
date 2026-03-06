@@ -1,5 +1,6 @@
 export type TodoPriority = 'HIGH' | 'MEDIUM' | 'LOW'
 export type TodoStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
+export type TodoType = 'TASK' | 'NOTE'
 
 export interface TodoTagInfo {
   rowId: number
@@ -14,6 +15,8 @@ export interface Todo {
   priority: TodoPriority
   category: string | null
   status: TodoStatus
+  type: TodoType
+  isPinned: boolean
   dueDate: string | null
   completedAt: string | null
   sortOrder: number
@@ -36,6 +39,7 @@ export interface TodoFormValues {
   projectRowId?: number
   parentRowId?: number
   tagIds?: number[]
+  type?: TodoType
 }
 
 export interface TodoStats {
@@ -45,4 +49,5 @@ export interface TodoStats {
   completedCount: number
   todayDueCount: number
   overDueCount: number
+  noteCount: number
 }

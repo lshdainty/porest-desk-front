@@ -6,6 +6,7 @@ export {
   useCreateTodo,
   useUpdateTodo,
   useToggleTodoStatus,
+  useToggleTodoPin,
   useReorderTodos,
   useDeleteTodo,
   useSubtasks,

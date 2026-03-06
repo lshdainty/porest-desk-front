@@ -45,6 +45,12 @@ export const TodoSummaryWidget = () => {
               <span>{t('todo.completed')}: {summary.completedCount}</span>
             </div>
 
+            {(summary.noteCount ?? 0) > 0 && (
+              <div className="text-xs text-muted-foreground">
+                <span>{t('todo.notes')}: {summary.noteCount}</span>
+              </div>
+            )}
+
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">{t('todo.completionRate')}</span>

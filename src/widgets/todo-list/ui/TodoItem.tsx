@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, ChevronDown, ChevronUp, Pencil, Trash2, Plus, ListTodo } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Pencil, Trash2, Plus, ListTodo, FileText, Pin } from 'lucide-react'
 import { cn, formatDate } from '@/shared/lib'
 import type { Todo } from '@/entities/todo'
 
@@ -11,6 +11,8 @@ interface TodoItemProps {
   onDelete: (id: number) => void
   onAddSubtask?: (parentId: number) => void
   onExpandSubtasks?: (todoId: number) => void
+  onTogglePin?: (id: number) => void
+  onNoteClick?: (todo: Todo) => void
   isSubtask?: boolean
 }
 
@@ -26,6 +28,21 @@ const priorityDotMap = {
   LOW: 'bg-blue-500',
 }
 
+const stripMarkdown = (text: string): string => {
+  return text
+    .replace(/#{1,6}\s/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/^[-*+]\s/gm, '')
+    .replace(/^\d+\.\s/gm, '')
+    .replace(/^>\s/gm, '')
+    .replace(/\n/g, ' ')
+    .trim()
+}
+
 export const TodoItem = ({
   todo,
   onToggle,
@@ -33,12 +50,101 @@ export const TodoItem = ({
   onDelete,
   onAddSubtask,
   onExpandSubtasks,
+  onTogglePin,
+  onNoteClick,
   isSubtask = false,
 }: TodoItemProps) => {
   const { t } = useTranslation('todo')
   const [expanded, setExpanded] = useState(false)
   const isCompleted = todo.status === 'COMPLETED'
   const hasSubtasks = todo.subtaskCount > 0
+  const isNote = todo.type === 'NOTE'
+
+  if (isNote) {
+    const contentPreview = todo.content
+      ? stripMarkdown(todo.content).slice(0, 80)
+      : ''
+
+    return (
+      <div
+        className={cn(
+          'rounded-lg border bg-card p-3 transition-all cursor-pointer hover:bg-accent/50',
+          todo.isPinned && 'border-primary/30 bg-primary/5'
+        )}
+        onClick={() => onNoteClick?.(todo)}
+      >
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground">
+            <FileText size={16} />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-medium">
+                {todo.title}
+              </span>
+              {todo.isPinned && (
+                <Pin size={12} className="shrink-0 text-primary" />
+              )}
+            </div>
+
+            {contentPreview && (
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {contentPreview}
+              </p>
+            )}
+
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              {todo.projectName && (
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400">
+                  {todo.projectName}
+                </span>
+              )}
+
+              {todo.tags?.map((tag) => (
+                <span
+                  key={tag.rowId}
+                  className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                  style={{
+                    backgroundColor: tag.color ? `${tag.color}20` : undefined,
+                    color: tag.color || undefined,
+                    border: `1px solid ${tag.color || 'var(--border)'}`,
+                  }}
+                >
+                  {tag.tagName}
+                </span>
+              ))}
+
+              <span className="text-[10px] text-muted-foreground">
+                {formatDate(todo.modifyAt, 'yyyy-MM-dd HH:mm')}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePin?.(todo.rowId) }}
+              className={cn(
+                'rounded p-1 transition-colors',
+                todo.isPinned
+                  ? 'text-primary hover:bg-primary/10'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+              title={todo.isPinned ? t('note.unpin') : t('note.pin')}
+            >
+              <Pin size={14} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(todo.rowId) }}
+              className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

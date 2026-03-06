@@ -19,27 +19,31 @@ import {
   useCreateTodo,
   useUpdateTodo,
   useToggleTodoStatus,
+  useToggleTodoPin,
   useDeleteTodo,
 } from '@/features/todo'
 import { useTodoProjects } from '@/features/todo-project'
 import { useTodoTags } from '@/features/todo-tag'
-import type { Todo, TodoFormValues, TodoStatus, TodoPriority } from '@/entities/todo'
+import type { Todo, TodoFormValues, TodoStatus, TodoPriority, TodoType } from '@/entities/todo'
 import { TodoFilters } from './TodoFilters'
 import { TodoItem } from './TodoItem'
 import { TodoForm } from './TodoForm'
 import { SubtaskList } from './SubtaskList'
 import { ProjectManagementDialog } from './ProjectManagementDialog'
 import { TagManagementDialog } from './TagManagementDialog'
+import { NoteEditorDialog } from './NoteEditorDialog'
 
 export const TodoListWidget = () => {
   const { t } = useTranslation('todo')
   const isMobile = useIsMobile()
 
+  const [typeFilter, setTypeFilter] = useState<TodoType | 'ALL'>('ALL')
   const [statusFilter, setStatusFilter] = useState<TodoStatus | 'ALL'>('ALL')
   const [priorityFilter, setPriorityFilter] = useState<TodoPriority | 'ALL'>('ALL')
   const [projectFilter, setProjectFilter] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [editingNote, setEditingNote] = useState<Todo | null>(null)
   const [subtaskParentId, setSubtaskParentId] = useState<number | undefined>(undefined)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [expandedSubtasks, setExpandedSubtasks] = useState<Set<number>>(new Set())
@@ -47,8 +51,9 @@ export const TodoListWidget = () => {
   const [showTagDialog, setShowTagDialog] = useState(false)
 
   const filters = {
-    ...(statusFilter !== 'ALL' && { status: statusFilter }),
-    ...(priorityFilter !== 'ALL' && { priority: priorityFilter }),
+    ...(typeFilter !== 'ALL' && { type: typeFilter }),
+    ...(statusFilter !== 'ALL' && typeFilter !== 'NOTE' && { status: statusFilter }),
+    ...(priorityFilter !== 'ALL' && typeFilter !== 'NOTE' && { priority: priorityFilter }),
     ...(projectFilter !== null && { projectRowId: projectFilter }),
   }
 
@@ -60,6 +65,7 @@ export const TodoListWidget = () => {
   const createTodo = useCreateTodo()
   const updateTodo = useUpdateTodo()
   const toggleStatus = useToggleTodoStatus()
+  const togglePin = useToggleTodoPin()
   const deleteTodo = useDeleteTodo()
 
   const handleCreate = useCallback((data: TodoFormValues) => {
@@ -88,10 +94,18 @@ export const TodoListWidget = () => {
     toggleStatus.mutate(id)
   }, [toggleStatus])
 
+  const handleTogglePin = useCallback((id: number) => {
+    togglePin.mutate(id)
+  }, [togglePin])
+
   const handleEdit = useCallback((todo: Todo) => {
     setEditingTodo(todo)
     setSubtaskParentId(undefined)
     setShowForm(true)
+  }, [])
+
+  const handleNoteClick = useCallback((todo: Todo) => {
+    setEditingNote(todo)
   }, [])
 
   const handleDelete = useCallback((id: number) => {
@@ -139,13 +153,46 @@ export const TodoListWidget = () => {
     })
   }, [])
 
+  const handleTypeFilterChange = useCallback((type: TodoType | 'ALL') => {
+    setTypeFilter(type)
+    if (type === 'NOTE') {
+      setStatusFilter('ALL')
+      setPriorityFilter('ALL')
+    }
+  }, [])
+
   const sortedTodos = todos
     ? [...todos].sort((a, b) => {
+        // Pinned items always come first
+        if (a.isPinned && !b.isPinned) return -1
+        if (!a.isPinned && b.isPinned) return 1
+
+        if (typeFilter === 'NOTE') {
+          // NOTE: sort by modifyAt desc
+          return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
+        }
+
+        if (typeFilter === 'TASK') {
+          // TASK: existing sort
+          if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
+          if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
+          return a.sortOrder - b.sortOrder
+        }
+
+        // ALL: mixed - TASK sort logic with pinned first
+        if (a.type === 'NOTE' && b.type === 'NOTE') {
+          return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
+        }
         if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
         if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
         return a.sortOrder - b.sortOrder
       })
     : []
+
+  const defaultFormType: TodoType = typeFilter === 'NOTE' ? 'NOTE' : 'TASK'
+  const emptyMessage = typeFilter === 'NOTE' ? t('note.empty') : t('empty')
+  const emptyAction = typeFilter === 'NOTE' ? t('note.createFirst') : t('createFirst')
+  const addButtonText = typeFilter === 'NOTE' ? t('type.NOTE') : t('addTodo')
 
   return (
     <div className="relative h-full">
@@ -153,10 +200,12 @@ export const TodoListWidget = () => {
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <TodoFilters
+              typeFilter={typeFilter}
               statusFilter={statusFilter}
               priorityFilter={priorityFilter}
               projectFilter={projectFilter}
               projects={projects}
+              onTypeChange={handleTypeFilterChange}
               onStatusChange={setStatusFilter}
               onPriorityChange={setPriorityFilter}
               onProjectChange={setProjectFilter}
@@ -190,12 +239,12 @@ export const TodoListWidget = () => {
           </div>
         ) : sortedTodos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <p className="text-sm">{t('empty')}</p>
+            <p className="text-sm">{emptyMessage}</p>
             <Button
               onClick={() => setShowForm(true)}
               className="mt-3"
             >
-              {t('createFirst')}
+              {emptyAction}
             </Button>
           </div>
         ) : (
@@ -209,6 +258,8 @@ export const TodoListWidget = () => {
                   onDelete={handleDelete}
                   onAddSubtask={handleAddSubtask}
                   onExpandSubtasks={handleExpandSubtasks}
+                  onTogglePin={handleTogglePin}
+                  onNoteClick={handleNoteClick}
                 />
                 {expandedSubtasks.has(todo.rowId) && todo.subtaskCount > 0 && (
                   <SubtaskList
@@ -230,7 +281,7 @@ export const TodoListWidget = () => {
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
         >
           <Plus size={16} />
-          {t('addTodo')}
+          {addButtonText}
         </button>
       )}
 
@@ -253,11 +304,20 @@ export const TodoListWidget = () => {
           projects={projects}
           tags={tags}
           parentId={subtaskParentId}
+          defaultType={defaultFormType}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createTodo.isPending || updateTodo.isPending}
         />
       )}
+
+      <NoteEditorDialog
+        todo={editingNote}
+        open={editingNote !== null}
+        onClose={() => setEditingNote(null)}
+        projects={projects}
+        tags={tags}
+      />
 
       <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
         <AlertDialogContent>

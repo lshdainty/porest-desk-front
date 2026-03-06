@@ -49,7 +49,7 @@ export const MemoQuickWidget = () => {
       </div>
 
       <button
-        onClick={() => navigate('/desk/memo')}
+        onClick={() => navigate('/desk/todo')}
         className="flex items-center justify-center gap-1 border-t p-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
       >
         {t('viewAll')}
