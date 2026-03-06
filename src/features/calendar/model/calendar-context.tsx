@@ -6,16 +6,16 @@ import type {
   TWorkingHours,
   TVisibleHours,
   TCalendarSourceType,
-  ICalendarSource,
+  IBuiltinSource,
 } from './types'
 import type { IEvent } from './interfaces'
-import { calendarTypes, DEFAULT_CALENDAR_SOURCES } from './types'
+import { BUILTIN_SOURCES } from './types'
+import { useUserCalendars, useToggleCalendarVisibility } from '@/features/user-calendar'
+import type { UserCalendar } from '@/entities/user-calendar'
 
 interface CalendarContextValue {
   selectedDate: Date
   setSelectedDate: (date: Date) => void
-  selectedTypeIds: string[]
-  setSelectedTypeIds: (ids: string[]) => void
   view: TCalendarView
   setView: (view: TCalendarView) => void
   badgeVariant: TBadgeVariant
@@ -26,9 +26,12 @@ interface CalendarContextValue {
   setVisibleHours: (hours: TVisibleHours) => void
   events: IEvent[]
   setLocalEvents: (events: IEvent[]) => void
-  calendarSources: ICalendarSource[]
-  toggleCalendarSource: (sourceId: TCalendarSourceType) => void
-  isCalendarSourceEnabled: (sourceId: TCalendarSourceType) => boolean
+  builtinSources: IBuiltinSource[]
+  toggleBuiltinSource: (sourceId: TCalendarSourceType) => void
+  isBuiltinSourceEnabled: (sourceId: TCalendarSourceType) => boolean
+  userCalendars: UserCalendar[]
+  isCalendarVisible: (calendarRowId: number) => boolean
+  toggleCalendarVisibility: (calendarRowId: number) => void
 }
 
 const CalendarContext = createContext<CalendarContextValue | null>(null)
@@ -45,9 +48,6 @@ export const CalendarProvider = ({
   initialView = 'month',
 }: CalendarProviderProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>(
-    calendarTypes.map((t) => t.id),
-  )
   const [view, setView] = useState<TCalendarView>(initialView)
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>('dot')
   const [workingHours, setWorkingHours] = useState<TWorkingHours>({
@@ -59,9 +59,15 @@ export const CalendarProvider = ({
     end: 24,
   })
   const [localEvents, setLocalEvents] = useState<IEvent[]>([])
-  const [calendarSources, setCalendarSources] = useState<ICalendarSource[]>(
-    DEFAULT_CALENDAR_SOURCES,
+  const [builtinSources, setBuiltinSources] = useState<IBuiltinSource[]>(
+    BUILTIN_SOURCES,
   )
+
+  // Fetch user calendars
+  const { data: userCalendarsData } = useUserCalendars()
+  const userCalendars = useMemo(() => userCalendarsData ?? [], [userCalendarsData])
+
+  const toggleVisibilityMutation = useToggleCalendarVisibility()
 
   const events = useMemo(() => {
     return localEvents.length > 0 ? localEvents : externalEvents
@@ -71,8 +77,8 @@ export const CalendarProvider = ({
     setLocalEvents(newEvents)
   }, [])
 
-  const toggleCalendarSource = useCallback((sourceId: TCalendarSourceType) => {
-    setCalendarSources((prev) =>
+  const toggleBuiltinSource = useCallback((sourceId: TCalendarSourceType) => {
+    setBuiltinSources((prev) =>
       prev.map((source) =>
         source.id === sourceId
           ? { ...source, enabled: !source.enabled }
@@ -81,19 +87,32 @@ export const CalendarProvider = ({
     )
   }, [])
 
-  const isCalendarSourceEnabled = useCallback(
+  const isBuiltinSourceEnabled = useCallback(
     (sourceId: TCalendarSourceType) => {
-      return calendarSources.find((s) => s.id === sourceId)?.enabled ?? false
+      return builtinSources.find((s) => s.id === sourceId)?.enabled ?? false
     },
-    [calendarSources],
+    [builtinSources],
+  )
+
+  const isCalendarVisible = useCallback(
+    (calendarRowId: number) => {
+      const cal = userCalendars.find((c) => c.rowId === calendarRowId)
+      return cal?.isVisible ?? true
+    },
+    [userCalendars],
+  )
+
+  const handleToggleCalendarVisibility = useCallback(
+    (calendarRowId: number) => {
+      toggleVisibilityMutation.mutate(calendarRowId)
+    },
+    [toggleVisibilityMutation],
   )
 
   const value = useMemo<CalendarContextValue>(
     () => ({
       selectedDate,
       setSelectedDate,
-      selectedTypeIds,
-      setSelectedTypeIds,
       view,
       setView,
       badgeVariant,
@@ -104,22 +123,27 @@ export const CalendarProvider = ({
       setVisibleHours,
       events,
       setLocalEvents: handleSetLocalEvents,
-      calendarSources,
-      toggleCalendarSource,
-      isCalendarSourceEnabled,
+      builtinSources,
+      toggleBuiltinSource,
+      isBuiltinSourceEnabled,
+      userCalendars,
+      isCalendarVisible,
+      toggleCalendarVisibility: handleToggleCalendarVisibility,
     }),
     [
       selectedDate,
-      selectedTypeIds,
       view,
       badgeVariant,
       workingHours,
       visibleHours,
       events,
       handleSetLocalEvents,
-      calendarSources,
-      toggleCalendarSource,
-      isCalendarSourceEnabled,
+      builtinSources,
+      toggleBuiltinSource,
+      isBuiltinSourceEnabled,
+      userCalendars,
+      isCalendarVisible,
+      handleToggleCalendarVisibility,
     ],
   )
 

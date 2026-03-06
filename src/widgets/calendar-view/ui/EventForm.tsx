@@ -10,8 +10,10 @@ import { Textarea } from '@/shared/ui/textarea'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/shared/ui/dialog'
-import type { CalendarEvent, CalendarEventFormValues, CalendarEventType } from '@/entities/calendar'
+import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
+import type { UserCalendar } from '@/entities/user-calendar'
+import { useUserCalendars } from '@/features/user-calendar'
 import { format } from 'date-fns'
 
 interface EventFormProps {
@@ -23,8 +25,6 @@ interface EventFormProps {
   onClose: () => void
   isLoading?: boolean
 }
-
-const eventTypeOptions: CalendarEventType[] = ['PERSONAL', 'WORK', 'BIRTHDAY', 'HOLIDAY']
 
 const colorOptions = [
   '#3b82f6', // blue
@@ -69,6 +69,7 @@ export const EventForm = ({
 }: EventFormProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
+  const { data: userCalendars = [] } = useUserCalendars()
 
   const defaultDate = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
@@ -78,9 +79,12 @@ export const EventForm = ({
     ? format(selectedEndDate, 'yyyy-MM-dd')
     : defaultDate
 
+  const defaultCalendar = userCalendars.find((c) => c.isDefault) ?? userCalendars[0]
+
   const [recurrence, setRecurrence] = useState<RecurrenceOption>('none')
   const [selectedReminders, setSelectedReminders] = useState<number[]>([])
   const [showLabelDropdown, setShowLabelDropdown] = useState(false)
+  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
 
   const {
     register,
@@ -94,7 +98,7 @@ export const EventForm = ({
       title: '',
       description: '',
       eventType: 'PERSONAL',
-      color: '#3b82f6',
+      color: defaultCalendar?.color ?? '#3b82f6',
       startDate: defaultDate,
       endDate: defaultEndDate,
       isAllDay: true,
@@ -102,15 +106,30 @@ export const EventForm = ({
       location: '',
       rrule: undefined,
       reminderMinutes: [],
+      calendarRowId: defaultCalendar?.rowId,
     },
   })
 
   const selectedColor = watch('color')
-  const selectedEventType = watch('eventType')
   const isAllDay = watch('isAllDay')
   const selectedLabelRowId = watch('labelRowId')
+  const selectedCalendarRowId = watch('calendarRowId')
 
   const selectedLabel = labels.find(l => l.rowId === selectedLabelRowId)
+  const selectedCalendar = userCalendars.find(c => c.rowId === selectedCalendarRowId)
+
+  // Update default calendar when userCalendars load
+  useEffect(() => {
+    if (userCalendars.length > 0 && !selectedCalendarRowId) {
+      const defCal = userCalendars.find((c) => c.isDefault) ?? userCalendars[0]
+      if (defCal) {
+        setValue('calendarRowId', defCal.rowId)
+        if (!event) {
+          setValue('color', defCal.color)
+        }
+      }
+    }
+  }, [userCalendars, selectedCalendarRowId, setValue, event])
 
   useEffect(() => {
     if (event) {
@@ -127,6 +146,7 @@ export const EventForm = ({
         location: event.location || '',
         rrule: event.rrule ?? undefined,
         reminderMinutes: reminderMins,
+        calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
       })
       setRecurrence(rruleToRecurrence(event.rrule))
       setSelectedReminders(reminderMins)
@@ -135,7 +155,7 @@ export const EventForm = ({
         title: '',
         description: '',
         eventType: 'PERSONAL',
-        color: '#3b82f6',
+        color: defaultCalendar?.color ?? '#3b82f6',
         startDate: defaultDate,
         endDate: defaultEndDate,
         isAllDay: true,
@@ -143,11 +163,18 @@ export const EventForm = ({
         location: '',
         rrule: undefined,
         reminderMinutes: [],
+        calendarRowId: defaultCalendar?.rowId,
       })
       setRecurrence('none')
       setSelectedReminders([])
     }
-  }, [event, reset, defaultDate, defaultEndDate])
+  }, [event, reset, defaultDate, defaultEndDate, defaultCalendar])
+
+  const handleCalendarSelect = (cal: UserCalendar) => {
+    setValue('calendarRowId', cal.rowId)
+    setValue('color', cal.color)
+    setShowCalendarDropdown(false)
+  }
 
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option)
@@ -177,6 +204,7 @@ export const EventForm = ({
       labelRowId: data.labelRowId || undefined,
       rrule: data.rrule || undefined,
       reminderMinutes: selectedReminders.length > 0 ? selectedReminders : undefined,
+      calendarRowId: data.calendarRowId || undefined,
     })
   }
 
@@ -212,27 +240,53 @@ export const EventForm = ({
             />
           </div>
 
-          {/* Event type pills - KEEP custom */}
-          <div className="space-y-1.5">
-            <Label>{t('form.eventType')}</Label>
-            <div className="flex flex-wrap gap-1.5">
-              {eventTypeOptions.map((type) => (
+          {/* Calendar selector dropdown */}
+          {userCalendars.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>{t('form.calendar')}</Label>
+              <div className="relative">
                 <button
-                  key={type}
                   type="button"
-                  onClick={() => setValue('eventType', type)}
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                    selectedEventType === type
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
+                  onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
+                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
                 >
-                  {t(`eventType.${type}`)}
+                  {selectedCalendar ? (
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: selectedCalendar.color }}
+                      />
+                      {selectedCalendar.calendarName}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                  <ChevronDown size={14} className="text-muted-foreground" />
                 </button>
-              ))}
+                {showCalendarDropdown && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
+                    {userCalendars.map(cal => (
+                      <button
+                        key={cal.rowId}
+                        type="button"
+                        onClick={() => handleCalendarSelect(cal)}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                      >
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: cal.color }}
+                        />
+                        {cal.calendarName}
+                        {selectedCalendarRowId === cal.rowId && (
+                          <Check size={14} className="ml-auto text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Label selector - KEEP custom dropdown */}
           {labels.length > 0 && (
@@ -323,7 +377,27 @@ export const EventForm = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setValue('isAllDay', !isAllDay)}
+              onClick={() => {
+                const newIsAllDay = !isAllDay
+                setValue('isAllDay', newIsAllDay)
+
+                const currentStart = watch('startDate')
+                const currentEnd = watch('endDate')
+
+                if (newIsAllDay) {
+                  // datetime-local → date: strip time
+                  setValue('startDate', currentStart.substring(0, 10))
+                  setValue('endDate', currentEnd.substring(0, 10))
+                } else {
+                  // date → datetime-local: add default time
+                  if (!currentStart.includes('T')) {
+                    setValue('startDate', `${currentStart}T09:00`)
+                  }
+                  if (!currentEnd.includes('T')) {
+                    setValue('endDate', `${currentEnd}T10:00`)
+                  }
+                }
+              }}
               className={cn(
                 'relative h-5 w-9 rounded-full transition-colors',
                 isAllDay ? 'bg-primary' : 'bg-muted'

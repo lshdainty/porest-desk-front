@@ -64,5 +64,16 @@
   "header.eventCount": "{{count}}건",
   "dayView.noAppointments": "현재 진행 중인 일정이 없습니다",
   "dayView.happeningNow": "지금 진행 중",
-  "agenda.noEvents": "이 달에 예정된 일정이 없습니다"
+  "agenda.noEvents": "이 달에 예정된 일정이 없습니다",
+  "manage": "캘린더 관리",
+  "add": "캘린더 추가",
+  "edit": "캘린더 수정",
+  "delete": "캘린더 삭제",
+  "name": "캘린더 이름",
+  "namePlaceholder": "캘린더 이름을 입력하세요",
+  "default": "기본 캘린더",
+  "cannotDeleteDefault": "기본 캘린더는 삭제할 수 없습니다",
+  "deleteConfirm": "이 캘린더를 삭제하시겠습니까? 일정은 기본 캘린더로 이동됩니다.",
+  "otherSources": "기타 소스",
+  "form.calendar": "캘린더"
 }

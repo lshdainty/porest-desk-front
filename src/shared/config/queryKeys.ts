@@ -32,6 +32,11 @@ export const calendarKeys = {
   aggregate: (params?: Record<string, unknown>) => [...calendarKeys.all, 'aggregate', params] as const,
 }
 
+export const userCalendarKeys = {
+  all: ['user-calendars'] as const,
+  list: () => [...userCalendarKeys.all, 'list'] as const,
+}
+
 export const eventLabelKeys = {
   all: ['event-labels'] as const,
   list: () => [...eventLabelKeys.all, 'list'] as const,

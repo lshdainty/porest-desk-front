@@ -1,5 +1,6 @@
-import type { TCalendarType, TCalendarSourceType } from './types'
 import type { EventReminderInfo } from '@/entities/calendar'
+
+export type TSourceType = 'calendar' | 'expense' | 'todo'
 
 export interface IEvent {
   id: number
@@ -9,8 +10,10 @@ export interface IEvent {
   description: string
   color: string
   isAllDay: boolean
-  type: TCalendarType
-  calendarSource: TCalendarSourceType
+  sourceType: TSourceType
+  calendarRowId: number | null
+  calendarName: string | null
+  calendarColor: string | null
   labelRowId: number | null
   labelName: string | null
   labelColor: string | null

@@ -29,6 +29,9 @@ export interface CalendarEvent {
   recurrenceId: number | null
   isException: boolean
   reminders: EventReminderInfo[]
+  calendarRowId: number | null
+  calendarName: string | null
+  calendarColor: string | null
   createAt: string
   modifyAt: string
 }
@@ -45,6 +48,7 @@ export interface CalendarEventFormValues {
   location?: string
   rrule?: string
   reminderMinutes?: number[]
+  calendarRowId?: number
 }
 
 export interface CalendarAggregateData {

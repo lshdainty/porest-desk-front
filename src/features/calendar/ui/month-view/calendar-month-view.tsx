@@ -283,15 +283,15 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents }: IProps) => {
 
   // expense 이벤트를 일반 이벤트와 분리 (expense는 이벤트 슬롯을 차지하지 않음)
   const regularSingleDayEvents = useMemo(
-    () => singleDayEvents.filter(e => e.calendarSource !== 'expense'),
+    () => singleDayEvents.filter(e => e.sourceType !== 'expense'),
     [singleDayEvents]
   )
   const regularMultiDayEvents = useMemo(
-    () => multiDayEvents.filter(e => e.calendarSource !== 'expense'),
+    () => multiDayEvents.filter(e => e.sourceType !== 'expense'),
     [multiDayEvents]
   )
   const expenseEvents = useMemo(
-    () => [...singleDayEvents, ...multiDayEvents].filter(e => e.calendarSource === 'expense'),
+    () => [...singleDayEvents, ...multiDayEvents].filter(e => e.sourceType === 'expense'),
     [singleDayEvents, multiDayEvents]
   )
 

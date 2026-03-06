@@ -8,9 +8,9 @@ import { convertCalendarEventToIEvent, convertExpenseToIEvent } from '@/features
 import { CalendarContainer } from '@/features/calendar/ui/CalendarContainer'
 
 const CalendarContent = () => {
-  const { selectedDate, view, isCalendarSourceEnabled } = useCalendar()
+  const { selectedDate, view, isBuiltinSourceEnabled } = useCalendar()
 
-  const isExpenseEnabled = isCalendarSourceEnabled('expense')
+  const isExpenseEnabled = isBuiltinSourceEnabled('expense')
 
   const eventRange = useMemo(() => {
     let start: Date

@@ -30,8 +30,7 @@ import {
 import type { CalendarEvent } from '@/entities/calendar'
 import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
-import type { TCalendarType, TCalendarView, TVisibleHours, TWorkingHours } from '@/features/calendar/model/types'
-import { calendarTypes } from '@/features/calendar/model/types'
+import type { TCalendarView, TVisibleHours, TWorkingHours } from '@/features/calendar/model/types'
 
 // ================ Header helper functions ================ //
 
@@ -307,15 +306,6 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
     ? `${categoryName} ${sign}${formattedAmount}원`
     : `${sign}${formattedAmount}원`
 
-  // expense 전용 타입 (캘린더 이벤트 유형 필터 무시하기 위해 PERSONAL로 설정)
-  const expenseCalendarType: TCalendarType = {
-    id: 'PERSONAL',
-    name: '가계부',
-    nameKey: 'calendar.source.expense',
-    isDate: false,
-    color: isIncome ? 'green' : 'red',
-  }
-
   return {
     id: expense.rowId,
     startDate: expense.expenseDate,
@@ -324,8 +314,10 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
     description: expense.description || '',
     color,
     isAllDay: true,
-    type: expenseCalendarType,
-    calendarSource: 'expense',
+    sourceType: 'expense',
+    calendarRowId: null,
+    calendarName: null,
+    calendarColor: null,
     labelRowId: null,
     labelName: null,
     labelColor: null,
@@ -340,19 +332,18 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
  * CalendarEvent (API 응답)를 IEvent 인터페이스로 변환
  */
 export function convertCalendarEventToIEvent(calendarEvent: CalendarEvent): IEvent {
-  const foundType = calendarTypes.find(type => type.id === calendarEvent.eventType)
-  const calendarType: TCalendarType = foundType ?? calendarTypes[0]
-
   return {
     id: calendarEvent.rowId,
     startDate: calendarEvent.startDate,
     endDate: calendarEvent.endDate,
     title: calendarEvent.title,
     description: calendarEvent.description ?? '',
-    color: calendarEvent.color,
+    color: calendarEvent.calendarColor || calendarEvent.color || '#3b82f6',
     isAllDay: calendarEvent.isAllDay,
-    type: calendarType,
-    calendarSource: 'schedule',
+    sourceType: 'calendar',
+    calendarRowId: calendarEvent.calendarRowId ?? null,
+    calendarName: calendarEvent.calendarName ?? null,
+    calendarColor: calendarEvent.calendarColor ?? null,
     labelRowId: calendarEvent.labelRowId ?? null,
     labelName: calendarEvent.labelName ?? null,
     labelColor: calendarEvent.labelColor ?? null,

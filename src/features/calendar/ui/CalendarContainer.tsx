@@ -25,32 +25,30 @@ interface IProps {
 }
 
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
-  const { selectedDate, selectedTypeIds, view, isCalendarSourceEnabled } = useCalendar()
+  const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } = useCalendar()
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.startDate)
       const eventEndDate = parseISO(event.endDate)
 
-      // 캘린더 소스 필터링: 해당 소스가 OFF면 이벤트 숨김
-      if (!isCalendarSourceEnabled(event.calendarSource)) {
-        return false
-      }
-
-      const isTypeMatch = selectedTypeIds.length === 0 || selectedTypeIds.includes(event.type.id)
+      // Source filtering
+      if (event.sourceType === 'expense' && !isBuiltinSourceEnabled('expense')) return false
+      if (event.sourceType === 'todo' && !isBuiltinSourceEnabled('todo')) return false
+      if (event.sourceType === 'calendar' && event.calendarRowId && !isCalendarVisible(event.calendarRowId)) return false
 
       if (view === 'year') {
         const yearStart = new Date(selectedDate.getFullYear(), 0, 1)
         const yearEnd = new Date(selectedDate.getFullYear(), 11, 31, 23, 59, 59, 999)
         const isInSelectedYear = eventStartDate <= yearEnd && eventEndDate >= yearStart
-        return isInSelectedYear && isTypeMatch
+        return isInSelectedYear
       }
 
       if (view === 'month' || view === 'agenda') {
         const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
         const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999)
         const isInSelectedMonth = eventStartDate <= monthEnd && eventEndDate >= monthStart
-        return isInSelectedMonth && isTypeMatch
+        return isInSelectedMonth
       }
 
       if (view === 'week') {
@@ -65,19 +63,19 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         weekEnd.setHours(23, 59, 59, 999)
 
         const isInSelectedWeek = eventStartDate <= weekEnd && eventEndDate >= weekStart
-        return isInSelectedWeek && isTypeMatch
+        return isInSelectedWeek
       }
 
       if (view === 'day') {
         const dayStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)
         const dayEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59)
         const isInSelectedDay = eventStartDate <= dayEnd && eventEndDate >= dayStart
-        return isInSelectedDay && isTypeMatch
+        return isInSelectedDay
       }
 
-      return isTypeMatch
+      return true
     })
-  }, [selectedDate, selectedTypeIds, events, view, isCalendarSourceEnabled])
+  }, [selectedDate, events, view, isBuiltinSourceEnabled, isCalendarVisible])
 
   const singleDayEvents = filteredEvents.filter(event => {
     if (event.isAllDay) return false
