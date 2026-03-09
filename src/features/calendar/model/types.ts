@@ -2,7 +2,7 @@ export type TCalendarView = 'day' | 'week' | 'month' | 'year' | 'agenda'
 
 // ================ Builtin Sources (가계부, 할일) ================ //
 
-export type TCalendarSourceType = 'expense' | 'todo'
+export type TCalendarSourceType = 'expense' | 'todo' | 'holiday'
 
 export interface IBuiltinSource {
   id: TCalendarSourceType
@@ -12,6 +12,7 @@ export interface IBuiltinSource {
 }
 
 export const BUILTIN_SOURCES: IBuiltinSource[] = [
+  { id: 'holiday', labelKey: 'calendar.source.holiday', color: '#ef4444', enabled: true },
   { id: 'expense', labelKey: 'calendar.source.expense', color: '#22c55e', enabled: false },
   { id: 'todo', labelKey: 'calendar.source.todo', color: '#a855f7', enabled: false },
 ]

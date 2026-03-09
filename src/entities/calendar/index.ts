@@ -4,4 +4,6 @@ export type {
   CalendarEventType,
   CalendarAggregateData,
   EventReminderInfo,
+  Holiday,
+  HolidayType,
 } from './model/types'

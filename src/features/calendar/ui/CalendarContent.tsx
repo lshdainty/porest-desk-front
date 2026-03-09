@@ -4,13 +4,15 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYea
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useCalendarEvents } from '@/features/calendar/model/useCalendarEvents'
 import { useCalendarExpenses } from '@/features/calendar/model/useCalendarExpenses'
-import { convertCalendarEventToIEvent, convertExpenseToIEvent } from '@/features/calendar/lib/helpers'
+import { useCalendarHolidays } from '@/features/calendar/model/useCalendarHolidays'
+import { convertCalendarEventToIEvent, convertExpenseToIEvent, convertHolidayToIEvent } from '@/features/calendar/lib/helpers'
 import { CalendarContainer } from '@/features/calendar/ui/CalendarContainer'
 
 const CalendarContent = () => {
   const { selectedDate, view, isBuiltinSourceEnabled } = useCalendar()
 
   const isExpenseEnabled = isBuiltinSourceEnabled('expense')
+  const isHolidayEnabled = isBuiltinSourceEnabled('holiday')
 
   const eventRange = useMemo(() => {
     let start: Date
@@ -55,15 +57,30 @@ const CalendarContent = () => {
     isExpenseEnabled,
   )
 
+  // holiday 캘린더가 ON일 때만 공휴일 데이터 조회 (성능 최적화)
+  const holidayDateRange = useMemo(() => ({
+    startDate: format(eventRange.start, 'yyyy-MM-dd'),
+    endDate: format(eventRange.end, 'yyyy-MM-dd'),
+  }), [eventRange])
+
+  const { data: holidayData, isLoading: isHolidaysLoading } = useCalendarHolidays(
+    holidayDateRange.startDate,
+    holidayDateRange.endDate,
+    isHolidayEnabled,
+  )
+
   const events = useMemo(() => {
     const scheduleEvents = apiEvents ? apiEvents.map(convertCalendarEventToIEvent) : []
     const expenseEvents = (isExpenseEnabled && expenseData)
       ? expenseData.map(convertExpenseToIEvent)
       : []
-    return [...scheduleEvents, ...expenseEvents]
-  }, [apiEvents, expenseData, isExpenseEnabled])
+    const holidayEvents = (isHolidayEnabled && holidayData)
+      ? holidayData.map(convertHolidayToIEvent)
+      : []
+    return [...scheduleEvents, ...expenseEvents, ...holidayEvents]
+  }, [apiEvents, expenseData, isExpenseEnabled, holidayData, isHolidayEnabled])
 
-  const isLoading = isEventsLoading || (isExpenseEnabled && isExpensesLoading)
+  const isLoading = isEventsLoading || (isExpenseEnabled && isExpensesLoading) || (isHolidayEnabled && isHolidaysLoading)
 
   return <CalendarContainer events={events} isLoading={isLoading} />
 }

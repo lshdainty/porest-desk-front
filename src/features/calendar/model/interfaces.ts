@@ -1,6 +1,6 @@
 import type { EventReminderInfo } from '@/entities/calendar'
 
-export type TSourceType = 'calendar' | 'expense' | 'todo'
+export type TSourceType = 'calendar' | 'expense' | 'todo' | 'holiday'
 
 export interface IEvent {
   id: number

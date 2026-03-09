@@ -57,3 +57,13 @@ export interface CalendarAggregateData {
   expenses: Expense[]
   timerSessions: TimerSession[]
 }
+
+export type HolidayType = 'PUBLIC' | 'SUBSTITUTE' | 'CUSTOM'
+
+export interface Holiday {
+  rowId: number
+  holidayDate: string  // 'yyyy-MM-dd'
+  holidayName: string
+  holidayType: HolidayType
+  isRecurring: boolean
+}

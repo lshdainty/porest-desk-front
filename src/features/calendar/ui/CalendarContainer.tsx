@@ -125,6 +125,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
       const eventEndDate = parseISO(event.endDate)
 
       // Source filtering
+      if (event.sourceType === 'holiday' && !isBuiltinSourceEnabled('holiday')) return false
       if (event.sourceType === 'expense' && !isBuiltinSourceEnabled('expense')) return false
       if (event.sourceType === 'todo' && !isBuiltinSourceEnabled('todo')) return false
       if (event.sourceType === 'calendar' && event.calendarRowId && !isCalendarVisible(event.calendarRowId)) return false

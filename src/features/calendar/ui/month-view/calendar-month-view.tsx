@@ -60,12 +60,14 @@ const MonthDayCell = ({
   events,
   eventPositions,
   expenseSummary,
+  holidayDateSet,
   onEventClick,
 }: {
   cell: ICalendarCell
   events: IEvent[]
   eventPositions: Record<string, number>
   expenseSummary?: IDayExpenseSummary
+  holidayDateSet: Set<string>
   onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { t } = useTranslation('calendar')
@@ -80,6 +82,7 @@ const MonthDayCell = ({
   )
   const isSunday = date.getDay() === 0
   const isSaturday = date.getDay() === 6
+  const isHoliday = holidayDateSet.has(startOfDay(date).toISOString())
 
   const isSelected = isDateInSelection(date)
 
@@ -136,7 +139,7 @@ const MonthDayCell = ({
               isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
             )}
             style={{
-              color: isToday(date) ? undefined : (isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
+              color: isToday(date) ? undefined : (isHoliday || isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
             }}
           >
             {day}
@@ -319,6 +322,17 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
     [expenseEvents]
   )
 
+  // 공휴일 날짜 셋
+  const holidayDateSet = useMemo(() => {
+    const set = new Set<string>()
+    for (const e of [...singleDayEvents, ...multiDayEvents]) {
+      if (e.sourceType === 'holiday') {
+        set.add(startOfDay(parseISO(e.startDate)).toISOString())
+      }
+    }
+    return set
+  }, [singleDayEvents, multiDayEvents])
+
   const cells = useMemo(() => getCalendarCells(selectedDate), [selectedDate])
 
   const eventPositions = useMemo(
@@ -371,6 +385,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 events={allRegularEvents}
                 eventPositions={eventPositions}
                 expenseSummary={expenseSummaryMap.get(dayKey)}
+                holidayDateSet={holidayDateSet}
                 onEventClick={onEventClick}
               />
             )

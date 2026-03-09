@@ -32,6 +32,7 @@ const YearViewDayCell = ({
   const eventCount = events.length
   const isSunday = date.getDay() === 0
   const isSaturday = date.getDay() === 6
+  const isHoliday = events.some(e => e.sourceType === 'holiday')
 
   const handleClick = () => {
     setSelectedDate(date)
@@ -50,7 +51,7 @@ const YearViewDayCell = ({
           isToday(date) && 'bg-primary font-semibold text-primary-foreground'
         )}
         style={{
-          color: isToday(date) ? undefined : (isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
+          color: isToday(date) ? undefined : (isHoliday || isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
         }}
       >
         {day}

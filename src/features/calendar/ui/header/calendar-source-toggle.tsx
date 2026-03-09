@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ListTodo, Plus, Settings } from 'lucide-react'
+import { Receipt, ListTodo, Flag, Plus, Settings } from 'lucide-react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -11,8 +11,10 @@ import { cn } from '@/shared/lib'
 import type { IBuiltinSource, TCalendarSourceType } from '@/features/calendar/model/types'
 import type { UserCalendar } from '@/entities/user-calendar'
 import { CalendarManagementDialog } from './CalendarManagementDialog'
+import { HolidayManagementDialog } from './HolidayManagementDialog'
 
 const SOURCE_ICONS: Record<TCalendarSourceType, React.ElementType> = {
+  holiday: Flag,
   expense: Receipt,
   todo: ListTodo,
 }
@@ -76,28 +78,39 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
   )
 }
 
-const BuiltinSourceItem = ({ source }: { source: IBuiltinSource }) => {
+const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onSettings?: () => void }) => {
   const { t } = useTranslation('calendar')
   const { toggleBuiltinSource } = useCalendar()
 
   const Icon = SOURCE_ICONS[source.id]
 
   return (
-    <button
-      type="button"
-      onClick={() => toggleBuiltinSource(source.id)}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-        'hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-        !source.enabled && 'opacity-50',
+    <div className="flex items-center gap-0.5">
+      <button
+        type="button"
+        onClick={() => toggleBuiltinSource(source.id)}
+        className={cn(
+          'flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+          'hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+          !source.enabled && 'opacity-50',
+        )}
+      >
+        <CheckboxIndicator checked={source.enabled} color={source.color} />
+        <Icon className="size-4 shrink-0" style={{ color: source.enabled ? source.color : undefined }} />
+        <span className="truncate">
+          {t(`source.${source.id}`)}
+        </span>
+      </button>
+      {onSettings && (
+        <button
+          type="button"
+          onClick={onSettings}
+          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        >
+          <Settings size={14} />
+        </button>
       )}
-    >
-      <CheckboxIndicator checked={source.enabled} color={source.color} />
-      <Icon className="size-4 shrink-0" style={{ color: source.enabled ? source.color : undefined }} />
-      <span className="truncate">
-        {t(`source.${source.id}`)}
-      </span>
-    </button>
+    </div>
   )
 }
 
@@ -105,6 +118,7 @@ const CalendarSourceToggle = () => {
   const { t } = useTranslation('calendar')
   const { builtinSources, userCalendars } = useCalendar()
   const [managementOpen, setManagementOpen] = useState(false)
+  const [holidayManagementOpen, setHolidayManagementOpen] = useState(false)
 
   return (
     <>
@@ -158,7 +172,11 @@ const CalendarSourceToggle = () => {
             </span>
             <div className="space-y-0.5">
               {builtinSources.map((source) => (
-                <BuiltinSourceItem key={source.id} source={source} />
+                <BuiltinSourceItem
+                  key={source.id}
+                  source={source}
+                  onSettings={source.id === 'holiday' ? () => setHolidayManagementOpen(true) : undefined}
+                />
               ))}
             </div>
           </div>
@@ -168,6 +186,11 @@ const CalendarSourceToggle = () => {
       <CalendarManagementDialog
         open={managementOpen}
         onOpenChange={setManagementOpen}
+      />
+
+      <HolidayManagementDialog
+        open={holidayManagementOpen}
+        onOpenChange={setHolidayManagementOpen}
       />
     </>
   )

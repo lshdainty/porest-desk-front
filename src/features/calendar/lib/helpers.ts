@@ -27,7 +27,7 @@ import {
   type Locale,
 } from 'date-fns'
 
-import type { CalendarEvent } from '@/entities/calendar'
+import type { CalendarEvent, Holiday } from '@/entities/calendar'
 import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
 import type { TCalendarView, TVisibleHours, TWorkingHours } from '@/features/calendar/model/types'
@@ -315,6 +315,32 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
     color,
     isAllDay: true,
     sourceType: 'expense',
+    calendarRowId: null,
+    calendarName: null,
+    calendarColor: null,
+    labelRowId: null,
+    labelName: null,
+    labelColor: null,
+    location: null,
+    rrule: null,
+    recurrenceId: null,
+    reminders: [],
+  }
+}
+
+/**
+ * Holiday (공휴일 데이터)를 IEvent 인터페이스로 변환
+ */
+export function convertHolidayToIEvent(holiday: Holiday): IEvent {
+  return {
+    id: holiday.rowId + 1000000,
+    startDate: `${holiday.holidayDate}T00:00:00`,
+    endDate: `${holiday.holidayDate}T23:59:59`,
+    title: holiday.holidayName,
+    description: '',
+    color: '#ef4444',
+    isAllDay: true,
+    sourceType: 'holiday',
     calendarRowId: null,
     calendarName: null,
     calendarColor: null,

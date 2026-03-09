@@ -1,8 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Wallet, ArrowRight } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/shared/ui/chart'
+import { Wallet, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react'
+import { AreaChart, Area, XAxis, CartesianGrid } from 'recharts'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from '@/shared/ui/chart'
 import type { DashboardSummary } from '@/features/dashboard/api/dashboardApi'
 
 interface Props {
@@ -36,6 +43,9 @@ export const ExpenseChartSection = ({ data }: Props) => {
     expense: d.expense,
   }))
 
+  const net = expenseSummary.monthlyIncome - expenseSummary.monthlyExpense
+  const isPositiveNet = net >= 0
+
   return (
     <div className="flex flex-col rounded-xl border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
@@ -52,66 +62,85 @@ export const ExpenseChartSection = ({ data }: Props) => {
           <ArrowRight size={12} />
         </button>
       </div>
-      <div className="flex-1 p-4">
-        <div className="h-48">
-          <ChartContainer config={chartConfig} className="h-full w-full">
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11 }}
-                interval="preserveStartEnd"
-              />
-              <YAxis tick={{ fontSize: 11 }} />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value, name) => {
-                      const label = name === 'income' ? t('chart.income') : t('chart.expense')
-                      return (
-                        <div className="flex flex-1 justify-between gap-4 leading-none">
-                          <span className="text-muted-foreground">{label}</span>
-                          <span className="font-mono font-medium tabular-nums text-foreground">
-                            {formatCurrency(value as number)}
-                          </span>
-                        </div>
-                      )
-                    }}
-                  />
-                }
-              />
-              <Area
-                type="monotone"
-                dataKey="income"
-                stroke="var(--color-income)"
-                fill="var(--color-income)"
-                fillOpacity={0.1}
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="expense"
-                stroke="var(--color-expense)"
-                fill="var(--color-expense)"
-                fillOpacity={0.1}
-                strokeWidth={2}
-              />
-            </AreaChart>
-          </ChartContainer>
+      <div className="flex-1 px-4 pt-4 pb-2">
+        <ChartContainer config={chartConfig} className="aspect-auto h-48 w-full">
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <defs>
+              <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.1} />
+              </linearGradient>
+              <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              interval="preserveStartEnd"
+              fontSize={11}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="line"
+                  formatter={(value, name) => {
+                    const label = name === 'income' ? t('chart.income') : t('chart.expense')
+                    return (
+                      <div className="flex flex-1 justify-between gap-4 leading-none">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono font-medium tabular-nums text-foreground">
+                          {formatCurrency(value as number)}
+                        </span>
+                      </div>
+                    )
+                  }}
+                />
+              }
+            />
+            <Area
+              dataKey="income"
+              type="natural"
+              fill="url(#fillIncome)"
+              fillOpacity={0.4}
+              stroke="var(--color-income)"
+              strokeWidth={2}
+            />
+            <Area
+              dataKey="expense"
+              type="natural"
+              fill="url(#fillExpense)"
+              fillOpacity={0.4}
+              stroke="var(--color-expense)"
+              strokeWidth={2}
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+          </AreaChart>
+        </ChartContainer>
+      </div>
+      <div className="flex items-center gap-4 border-t px-4 py-3 text-sm">
+        <div>
+          <span className="text-muted-foreground">{t('chart.income')}</span>
+          <p className="font-semibold text-accent-green">{formatCurrency(expenseSummary.monthlyIncome)}</p>
         </div>
-        <div className="mt-3 flex gap-4 border-t pt-3 text-sm">
-          <div>
-            <span className="text-muted-foreground">{t('chart.income')}</span>
-            <p className="font-semibold text-accent-green">{formatCurrency(expenseSummary.monthlyIncome)}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{t('chart.expense')}</span>
-            <p className="font-semibold text-accent-red">{formatCurrency(expenseSummary.monthlyExpense)}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{t('expense.net')}</span>
-            <p className="font-semibold">{formatCurrency(expenseSummary.monthlyIncome - expenseSummary.monthlyExpense)}</p>
-          </div>
+        <div>
+          <span className="text-muted-foreground">{t('chart.expense')}</span>
+          <p className="font-semibold text-accent-red">{formatCurrency(expenseSummary.monthlyExpense)}</p>
+        </div>
+        <div className="ml-auto flex items-center gap-1 text-xs font-medium">
+          {isPositiveNet ? (
+            <TrendingUp size={14} className="text-accent-green" />
+          ) : (
+            <TrendingDown size={14} className="text-accent-red" />
+          )}
+          <span className={isPositiveNet ? 'text-accent-green' : 'text-accent-red'}>
+            {isPositiveNet ? '+' : ''}{formatCurrency(net)}
+          </span>
         </div>
       </div>
     </div>
