@@ -12,6 +12,7 @@ import type { IEvent } from '@/features/calendar/model/interfaces'
 interface IProps {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }
 
 // ---- Multi-day events row for day view ---- //
@@ -19,9 +20,11 @@ interface IProps {
 const DayViewMultiDayEventsRow = ({
   selectedDate,
   multiDayEvents,
+  onEventClick,
 }: {
   selectedDate: Date
   multiDayEvents: IEvent[]
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { t } = useTranslation('calendar')
   const dayStart = startOfDay(selectedDate)
@@ -62,12 +65,16 @@ const DayViewMultiDayEventsRow = ({
           return (
             <div
               key={event.id}
-              className="mx-1 flex h-6.5 select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs"
+              role="button"
+              tabIndex={0}
+              className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               style={{
                 backgroundColor: `${event.color}15`,
                 borderColor: `${event.color}40`,
                 color: event.color,
               }}
+              onClick={(e) => onEventClick?.(event, e.currentTarget)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
             >
               <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
                 <circle cx="4" cy="4" r="4" fill={event.color} />
@@ -127,7 +134,7 @@ const CalendarTimeline = ({
 
 // ---- Event block for time grid ---- //
 
-const EventBlock = ({ event }: { event: IEvent }) => {
+const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (event: IEvent, el: HTMLElement) => void }) => {
   const { i18n } = useTranslation()
   const locale = i18n.language.startsWith('ko') ? ko : enUS
   const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
@@ -142,7 +149,7 @@ const EventBlock = ({ event }: { event: IEvent }) => {
       role="button"
       tabIndex={0}
       className={cn(
-        'flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         durationInMinutes < 35 && 'py-0 justify-center'
       )}
       style={{
@@ -151,6 +158,8 @@ const EventBlock = ({ event }: { event: IEvent }) => {
         borderColor: `${event.color}40`,
         color: event.color,
       }}
+      onClick={(e) => onEventClick?.(event, e.currentTarget)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
       <div className="flex items-center gap-1.5 truncate">
         <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
@@ -170,7 +179,7 @@ const EventBlock = ({ event }: { event: IEvent }) => {
 
 // ---- Main day view ---- //
 
-const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
+const CalendarDayView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
   const { t, i18n } = useTranslation('calendar')
   const { selectedDate, setSelectedDate, visibleHours, workingHours } = useCalendar()
 
@@ -198,7 +207,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
     <div className="w-full h-full flex">
       <div className="flex flex-1 flex-col h-full">
         <div>
-          <DayViewMultiDayEventsRow selectedDate={selectedDate} multiDayEvents={multiDayEvents} />
+          <DayViewMultiDayEventsRow selectedDate={selectedDate} multiDayEvents={multiDayEvents} onEventClick={onEventClick} />
 
           {/* Day header */}
           <div className="relative z-20 flex border-b">
@@ -273,7 +282,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents }: IProps) => {
 
                     return (
                       <div key={event.id} className="absolute p-1" style={style}>
-                        <EventBlock event={event} />
+                        <EventBlock event={event} onEventClick={onEventClick} />
                       </div>
                     )
                   })

@@ -11,6 +11,7 @@ import type { IEvent } from '@/features/calendar/model/interfaces'
 interface IProps {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }
 
 // ---- Agenda event card ---- //
@@ -19,10 +20,12 @@ const AgendaEventCard = ({
   event,
   eventCurrentDay,
   eventTotalDays,
+  onEventClick,
 }: {
   event: IEvent
   eventCurrentDay?: number
   eventTotalDays?: number
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { t, i18n } = useTranslation('calendar')
   const locale = i18n.language.startsWith('ko') ? ko : enUS
@@ -35,12 +38,14 @@ const AgendaEventCard = ({
     <div
       role="button"
       tabIndex={0}
-      className="flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       style={{
         backgroundColor: `${event.color}15`,
         borderColor: `${event.color}40`,
         color: event.color,
       }}
+      onClick={(e) => onEventClick?.(event, e.currentTarget)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-1.5">
@@ -84,10 +89,12 @@ const AgendaDayGroup = ({
   date,
   events,
   multiDayEvents,
+  onEventClick,
 }: {
   date: Date
   events: IEvent[]
   multiDayEvents: IEvent[]
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { i18n } = useTranslation()
   const sortedEvents = [...events].sort(
@@ -120,12 +127,13 @@ const AgendaDayGroup = ({
                 event={event}
                 eventCurrentDay={eventTotalDays > 1 ? eventCurrentDay : undefined}
                 eventTotalDays={eventTotalDays > 1 ? eventTotalDays : undefined}
+                onEventClick={onEventClick}
               />
             )
           })}
 
         {sortedEvents.length > 0 &&
-          sortedEvents.map(event => <AgendaEventCard key={event.id} event={event} />)}
+          sortedEvents.map(event => <AgendaEventCard key={event.id} event={event} onEventClick={onEventClick} />)}
       </div>
     </div>
   )
@@ -133,7 +141,7 @@ const AgendaDayGroup = ({
 
 // ---- Main agenda view ---- //
 
-const CalendarAgendaView = ({ singleDayEvents, multiDayEvents }: IProps) => {
+const CalendarAgendaView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
   const { t } = useTranslation('calendar')
   const { selectedDate } = useCalendar()
 
@@ -189,6 +197,7 @@ const CalendarAgendaView = ({ singleDayEvents, multiDayEvents }: IProps) => {
               date={dayGroup.date}
               events={dayGroup.events}
               multiDayEvents={dayGroup.multiDayEvents}
+              onEventClick={onEventClick}
             />
           ))}
 

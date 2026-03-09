@@ -1,9 +1,13 @@
 import { isSameDay, parseISO } from 'date-fns'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
+import { useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
+import { useEventLabels } from '@/features/event-label'
 
 import { DndProviderWrapper } from '@/features/calendar/ui/dnd/dnd-provider'
+import { EventDetailPopover } from '@/features/calendar/ui/EventDetailPopover'
 
 import { CalendarAgendaView } from '@/features/calendar/ui/agenda-view/calendar-agenda-view'
 import { CalendarAgendaViewSkeleton } from '@/features/calendar/ui/agenda-view/calendar-agenda-view-skeleton'
@@ -17,6 +21,15 @@ import { CalendarWeekViewSkeleton } from '@/features/calendar/ui/week-and-day-vi
 import { CalendarYearView } from '@/features/calendar/ui/year-view/calendar-year-view'
 import { CalendarYearViewSkeleton } from '@/features/calendar/ui/year-view/calendar-year-view-skeleton'
 
+import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
+import { Popover, PopoverAnchor, PopoverContent } from '@/shared/ui/popover'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
+
+import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
 interface IProps {
@@ -24,8 +37,87 @@ interface IProps {
   isLoading?: boolean
 }
 
+function iEventToCalendarEvent(event: IEvent): CalendarEvent {
+  return {
+    rowId: event.id,
+    title: event.title,
+    description: event.description || null,
+    eventType: 'PERSONAL',
+    color: event.color,
+    startDate: event.startDate,
+    endDate: event.endDate,
+    isAllDay: event.isAllDay,
+    labelRowId: event.labelRowId,
+    labelName: event.labelName,
+    labelColor: event.labelColor,
+    location: event.location,
+    rrule: event.rrule,
+    recurrenceId: event.recurrenceId,
+    isException: false,
+    reminders: event.reminders,
+    calendarRowId: event.calendarRowId,
+    calendarName: event.calendarName,
+    calendarColor: event.calendarColor,
+    createAt: '',
+    modifyAt: '',
+  }
+}
+
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
+  const { t } = useTranslation('calendar')
   const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } = useCalendar()
+  // Event detail popover state
+  const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
+
+  // Edit/Delete state
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [deletingEventId, setDeletingEventId] = useState<number | null>(null)
+
+  const updateEvent = useUpdateEvent()
+  const deleteEvent = useDeleteEvent()
+  const { data: labels = [] } = useEventLabels()
+
+  const handleEventClick = useCallback((event: IEvent, el: HTMLElement) => {
+    const rect = el.getBoundingClientRect()
+    if (anchorRef.current) {
+      anchorRef.current.style.top = `${rect.top}px`
+      anchorRef.current.style.left = `${rect.left}px`
+      anchorRef.current.style.width = `${rect.width}px`
+      anchorRef.current.style.height = `${rect.height}px`
+    }
+    setSelectedEvent(event)
+  }, [])
+
+  const handleClosePopover = useCallback(() => {
+    setSelectedEvent(null)
+  }, [])
+
+  const handleEditEvent = useCallback(() => {
+    if (!selectedEvent) return
+    setEditingEvent(iEventToCalendarEvent(selectedEvent))
+    setSelectedEvent(null)
+  }, [selectedEvent])
+
+  const handleDeleteEvent = useCallback(() => {
+    if (!selectedEvent) return
+    setDeletingEventId(selectedEvent.id)
+    setSelectedEvent(null)
+  }, [selectedEvent])
+
+  const handleSubmitEdit = useCallback((data: CalendarEventFormValues) => {
+    if (!editingEvent) return
+    updateEvent.mutate({ id: editingEvent.rowId, data }, {
+      onSuccess: () => setEditingEvent(null),
+    })
+  }, [editingEvent, updateEvent])
+
+  const handleConfirmDelete = useCallback(() => {
+    if (deletingEventId === null) return
+    deleteEvent.mutate(deletingEventId, {
+      onSuccess: () => setDeletingEventId(null),
+    })
+  }, [deletingEventId, deleteEvent])
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
@@ -104,17 +196,17 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           {view === 'day' && (
             isLoading
               ? <CalendarDayViewSkeleton />
-              : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} />
+              : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
           )}
           {view === 'month' && (
             isLoading
               ? <CalendarMonthViewSkeleton />
-              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} />
+              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
           )}
           {view === 'week' && (
             isLoading
               ? <CalendarWeekViewSkeleton />
-              : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} />
+              : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
           )}
           {view === 'year' && (
             isLoading
@@ -124,10 +216,53 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           {view === 'agenda' && (
             isLoading
               ? <CalendarAgendaViewSkeleton />
-              : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} />
+              : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
           )}
         </DndProviderWrapper>
       </div>
+
+      {/* Event Detail Popover */}
+      <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+        <PopoverAnchor asChild>
+          <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
+        </PopoverAnchor>
+        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
+          {selectedEvent && (
+            <EventDetailPopover
+              event={selectedEvent}
+              onEdit={handleEditEvent}
+              onDelete={handleDeleteEvent}
+            />
+          )}
+        </PopoverContent>
+      </Popover>
+
+      {/* Edit Event Form */}
+      {editingEvent && (
+        <EventForm
+          event={editingEvent}
+          labels={labels}
+          onSubmit={handleSubmitEdit}
+          onClose={() => setEditingEvent(null)}
+          isLoading={updateEvent.isPending}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deletingEventId !== null} onOpenChange={(open) => { if (!open) setDeletingEventId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

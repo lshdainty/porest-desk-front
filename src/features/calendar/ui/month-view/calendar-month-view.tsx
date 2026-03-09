@@ -47,6 +47,7 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
 interface IProps {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }
 
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -59,11 +60,13 @@ const MonthDayCell = ({
   events,
   eventPositions,
   expenseSummary,
+  onEventClick,
 }: {
   cell: ICalendarCell
   events: IEvent[]
   eventPositions: Record<string, number>
   expenseSummary?: IDayExpenseSummary
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
@@ -138,6 +141,18 @@ const MonthDayCell = ({
           >
             {day}
           </button>
+
+          {/* 수입/지출 합계 - 날짜 옆 인라인 (이벤트 배지 정렬에 영향 없음) */}
+          {hasExpense && (
+            <div className={cn('hidden lg:flex items-center gap-1.5 text-[10px] font-medium min-w-0 truncate', !currentMonth && 'opacity-50')}>
+              {expenseSummary.income > 0 && (
+                <span className="truncate" style={{ color: '#22c55e' }}>+{formatNumber(expenseSummary.income)}</span>
+              )}
+              {expenseSummary.expense > 0 && (
+                <span className="truncate" style={{ color: '#ef4444' }}>-{formatNumber(expenseSummary.expense)}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {cellEvents.length > MAX_VISIBLE_EVENTS && (
@@ -153,18 +168,6 @@ const MonthDayCell = ({
           </button>
         )}
       </div>
-
-      {/* 수입/지출 합계 표시 (날짜 헤더와 이벤트 뱃지 사이) */}
-      {hasExpense && (
-        <div className={cn('hidden lg:flex flex-col gap-0 px-2 text-[10px] leading-tight font-medium', !currentMonth && 'opacity-50')}>
-          {expenseSummary.income > 0 && (
-            <span style={{ color: '#22c55e' }}>+{formatNumber(expenseSummary.income)}</span>
-          )}
-          {expenseSummary.expense > 0 && (
-            <span style={{ color: '#ef4444' }}>-{formatNumber(expenseSummary.expense)}</span>
-          )}
-        </div>
-      )}
 
       <div className={cn('flex flex-1 h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0', !currentMonth && 'opacity-50')}>
         {[0, 1, 2].map(position => {
@@ -185,6 +188,7 @@ const MonthDayCell = ({
                     className="hidden lg:flex"
                     event={event}
                     cellDate={startOfDay(date)}
+                    onEventClick={onEventClick}
                   />
                 </>
               )}
@@ -200,10 +204,12 @@ const MonthEventBadge = ({
   event,
   cellDate,
   className,
+  onEventClick,
 }: {
   event: IEvent
   cellDate: Date
   className?: string
+  onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { i18n } = useTranslation()
   const locale = i18n.language.startsWith('ko') ? ko : enUS
@@ -226,7 +232,7 @@ const MonthEventBadge = ({
   }
 
   const renderBadgeText = ['first', 'none'].includes(position)
-  const isMultiDay = !isSameDay(itemStart, endOfDay(parseISO(event.endDate)) > itemEnd ? itemEnd : startOfDay(parseISO(event.endDate)))
+  const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
 
   const positionClasses = {
     first: 'relative z-10 mr-0 w-[calc(100%_-_3px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
@@ -240,7 +246,7 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
@@ -249,14 +255,16 @@ const MonthEventBadge = ({
         borderColor: `${event.color}40`,
         color: event.color,
       }}
+      onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
-      {position === 'last' && (
+      {position === 'last' && !event.isAllDay && (
         <div className="ml-auto">
           <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
         </div>
       )}
 
-      {position !== 'last' && (
+      {position !== 'last' && position !== 'middle' && (
         <>
           <div className="flex items-center gap-1.5 truncate">
             <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
@@ -270,7 +278,7 @@ const MonthEventBadge = ({
             )}
           </div>
 
-          {renderBadgeText && !isMultiDay && (
+          {renderBadgeText && !isMultiDay && !event.isAllDay && (
             <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
           )}
         </>
@@ -279,7 +287,7 @@ const MonthEventBadge = ({
   )
 }
 
-const MonthViewContent = ({ singleDayEvents, multiDayEvents }: IProps) => {
+const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
   const { i18n } = useTranslation()
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
@@ -363,6 +371,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents }: IProps) => {
                 events={allRegularEvents}
                 eventPositions={eventPositions}
                 expenseSummary={expenseSummaryMap.get(dayKey)}
+                onEventClick={onEventClick}
               />
             )
           })}
@@ -372,10 +381,10 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents }: IProps) => {
   )
 }
 
-const CalendarMonthView = ({ singleDayEvents, multiDayEvents }: IProps) => {
+const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
   return (
     <DragSelectProvider>
-      <MonthViewContent singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} />
+      <MonthViewContent singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={onEventClick} />
     </DragSelectProvider>
   )
 }
