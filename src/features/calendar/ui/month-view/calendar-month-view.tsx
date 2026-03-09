@@ -254,7 +254,9 @@ const MonthEventBadge = ({
         className
       )}
       style={{
-        backgroundColor: `${event.color}15`,
+        background: position !== 'none'
+          ? `linear-gradient(${event.color}15, ${event.color}15), var(--background)`
+          : `${event.color}15`,
         borderColor: `${event.color}40`,
         color: event.color,
       }}
