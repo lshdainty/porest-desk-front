@@ -238,9 +238,9 @@ const MonthEventBadge = ({
   const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
 
   const positionClasses = {
-    first: 'relative z-10 mr-0 w-[calc(100%_-_3px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
-    middle: 'relative z-10 mx-0 w-[calc(100%_+_1px)] rounded-none border-x-0',
-    last: 'ml-0 rounded-l-none border-l-0',
+    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
+    middle: 'relative z-10 -ml-px mr-0 w-[calc(100%_+_2px)] rounded-none border-x-0',
+    last: 'relative z-10 -ml-px rounded-l-none border-l-0',
     none: '',
   }
 
