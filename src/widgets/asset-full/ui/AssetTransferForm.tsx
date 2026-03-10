@@ -131,7 +131,7 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
             {tc('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading || !amount || fromAssetRowId === toAssetRowId}>
-            {tc('save')}
+            {isLoading ? tc('loading') : tc('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

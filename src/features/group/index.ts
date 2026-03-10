@@ -1,5 +1,6 @@
 export { groupApi } from './api/groupApi'
 export { eventCommentApi } from './api/eventCommentApi'
+export { groupTypeApi } from './api/groupTypeApi'
 export {
   useGroups,
   useGroup,
@@ -17,3 +18,9 @@ export {
   useUpdateEventComment,
   useDeleteEventComment,
 } from './model/useEventComment'
+export {
+  useGroupTypes,
+  useCreateGroupType,
+  useUpdateGroupType,
+  useDeleteGroupType,
+} from './model/useGroupType'

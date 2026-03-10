@@ -258,6 +258,7 @@ export const MemoEditorWidget = () => {
                           : 'text-muted-foreground hover:text-foreground'
                       )}
                       onClick={() => handleTogglePin(selectedMemo.rowId)}
+                      disabled={togglePin.isPending}
                     >
                       <Pin size={18} />
                     </Button>
@@ -433,6 +434,7 @@ export const MemoEditorWidget = () => {
                   )}
                   onClick={() => handleTogglePin(selectedMemo.rowId)}
                   title={selectedMemo.isPinned ? t('unpin') : t('pin')}
+                  disabled={togglePin.isPending}
                 >
                   <Pin size={16} />
                 </Button>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -11,32 +12,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import type { GroupFormValues, GroupType, UserGroup, UserGroupDetail } from '@/entities/group'
+import { useGroupTypes } from '@/features/group'
+import type { GroupFormValues, UserGroup, UserGroupDetail } from '@/entities/group'
 
 interface GroupFormProps {
   initialData?: UserGroup | UserGroupDetail | null
   onSubmit: (data: GroupFormValues) => void
   onCancel: () => void
+  isSubmitting?: boolean
 }
 
-const groupTypes: { value: GroupType; labelKey: string }[] = [
-  { value: 'FAMILY', labelKey: 'groupType.FAMILY' },
-  { value: 'COUPLE', labelKey: 'groupType.COUPLE' },
-  { value: 'FRIENDS', labelKey: 'groupType.FRIENDS' },
-  { value: 'CUSTOM', labelKey: 'groupType.CUSTOM' },
-]
+const NO_TYPE_VALUE = '__none__'
 
-export const GroupForm = ({ initialData, onSubmit, onCancel }: GroupFormProps) => {
+export const GroupForm = ({ initialData, onSubmit, onCancel, isSubmitting }: GroupFormProps) => {
   const { t } = useTranslation('group')
+  const { t: tc } = useTranslation('common')
+  const { data: groupTypes = [], isLoading: isLoadingTypes } = useGroupTypes()
+
   const [groupName, setGroupName] = useState('')
   const [description, setDescription] = useState('')
-  const [groupType, setGroupType] = useState<GroupType>('CUSTOM')
+  const [groupTypeId, setGroupTypeId] = useState<number | null>(null)
 
   useEffect(() => {
     if (initialData) {
       setGroupName(initialData.groupName)
       setDescription(initialData.description ?? '')
-      setGroupType(initialData.groupType)
+      setGroupTypeId(initialData.groupTypeId)
     }
   }, [initialData])
 
@@ -46,7 +47,7 @@ export const GroupForm = ({ initialData, onSubmit, onCancel }: GroupFormProps) =
     onSubmit({
       groupName: groupName.trim(),
       description: description.trim() || undefined,
-      groupType,
+      groupTypeId,
     })
   }
 
@@ -74,25 +75,45 @@ export const GroupForm = ({ initialData, onSubmit, onCancel }: GroupFormProps) =
 
       <div className="space-y-2">
         <Label>{t('form.groupType')}</Label>
-        <Select value={groupType} onValueChange={(v) => setGroupType(v as GroupType)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {groupTypes.map((gt) => (
-              <SelectItem key={gt.value} value={gt.value}>
-                {t(gt.labelKey)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isLoadingTypes ? (
+          <div className="flex items-center gap-2 py-2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Select
+            value={groupTypeId !== null ? String(groupTypeId) : NO_TYPE_VALUE}
+            onValueChange={(v) => setGroupTypeId(v === NO_TYPE_VALUE ? null : Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_TYPE_VALUE}>{t('noGroupType')}</SelectItem>
+              {groupTypes.map((gt) => (
+                <SelectItem key={gt.rowId} value={String(gt.rowId)}>
+                  <span className="flex items-center gap-2">
+                    {gt.color && (
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: gt.color }}
+                      />
+                    )}
+                    {gt.typeName}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {t('cancel', { ns: 'common' })}
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          {tc('cancel')}
         </Button>
-        <Button type="submit">{t('save', { ns: 'common' })}</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? tc('loading') : tc('save')}
+        </Button>
       </div>
     </form>
   )

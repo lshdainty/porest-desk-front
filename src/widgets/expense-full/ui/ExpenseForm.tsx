@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue,
 } from '@/shared/ui/select'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -228,14 +228,21 @@ export const ExpenseForm = ({
                 <SelectValue placeholder={t('category')} />
               </SelectTrigger>
               <SelectContent>
-                {categoryTree.map((node) =>
+                {categoryTree.map((node, index) =>
                   node.children.length > 0 ? (
                     <SelectGroup key={node.rowId}>
-                      <SelectLabel>
+                      {index > 0 && <SelectSeparator />}
+                      <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase tracking-wide">
+                        {node.color && (
+                          <span
+                            className="h-2 w-2 rounded-full shrink-0"
+                            style={{ backgroundColor: node.color }}
+                          />
+                        )}
                         {node.icon ? `${node.icon} ` : ''}{node.categoryName}
                       </SelectLabel>
                       {node.children.map((child) => (
-                        <SelectItem key={child.rowId} value={String(child.rowId)}>
+                        <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-11">
                           {child.icon ? `${child.icon} ` : ''}{child.categoryName}
                         </SelectItem>
                       ))}

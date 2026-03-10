@@ -1,4 +1,15 @@
-export type GroupType = 'FAMILY' | 'COUPLE' | 'FRIENDS' | 'CUSTOM'
+export interface GroupTypeItem {
+  rowId: number
+  typeName: string
+  color: string | null
+  sortOrder: number
+}
+
+export interface GroupTypeFormValues {
+  typeName: string
+  color?: string
+  sortOrder?: number
+}
 
 export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
@@ -15,7 +26,9 @@ export interface UserGroup {
   rowId: number
   groupName: string
   description: string | null
-  groupType: GroupType
+  groupTypeId: number | null
+  groupTypeName: string | null
+  groupTypeColor: string | null
   inviteCode: string
   memberCount: number
   createAt: string
@@ -25,7 +38,9 @@ export interface UserGroupDetail {
   rowId: number
   groupName: string
   description: string | null
-  groupType: GroupType
+  groupTypeId: number | null
+  groupTypeName: string | null
+  groupTypeColor: string | null
   inviteCode: string
   members: GroupMember[]
   createAt: string
@@ -34,7 +49,7 @@ export interface UserGroupDetail {
 export interface GroupFormValues {
   groupName: string
   description?: string
-  groupType: GroupType
+  groupTypeId?: number | null
 }
 
 export interface EventComment {

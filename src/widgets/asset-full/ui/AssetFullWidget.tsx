@@ -138,7 +138,7 @@ export const AssetFullWidget = () => {
               {t('addTransfer')}
             </Button>
           </div>
-          <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} />
+          <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
         </>
       )}
 
@@ -168,8 +168,12 @@ export const AssetFullWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              {t('deleteConfirm.confirm')}
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteAsset.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAsset.isPending ? '...' : t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

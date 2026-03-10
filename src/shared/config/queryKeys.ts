@@ -117,6 +117,11 @@ export const groupKeys = {
   detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
 }
 
+export const groupTypeKeys = {
+  all: ['group-types'] as const,
+  list: () => [...groupTypeKeys.all, 'list'] as const,
+}
+
 export const eventCommentKeys = {
   all: ['event-comments'] as const,
   list: (eventId: number) => [...eventCommentKeys.all, 'list', eventId] as const,

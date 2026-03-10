@@ -9,9 +9,11 @@ import {
   User,
   Copy,
   RefreshCw,
+  Loader2,
   Trash2,
   Pencil,
   ChevronRight,
+  Settings,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -54,6 +56,7 @@ import {
   useChangeMemberRole,
 } from '@/features/group'
 import { GroupForm } from './GroupForm'
+import { GroupTypeManagementDialog } from './GroupTypeManagementDialog'
 import type { GroupFormValues, UserGroup, GroupRole } from '@/entities/group'
 
 const roleIcons: Record<GroupRole, typeof Crown> = {
@@ -64,7 +67,7 @@ const roleIcons: Record<GroupRole, typeof Crown> = {
 
 export const GroupFullWidget = () => {
   const { t } = useTranslation('group')
-
+  const { t: tc } = useTranslation('common')
 
   const { data: groups = [], isLoading } = useGroups()
   const createGroup = useCreateGroup()
@@ -77,6 +80,7 @@ export const GroupFullWidget = () => {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
+  const [showTypeManagement, setShowTypeManagement] = useState(false)
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null)
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
@@ -139,9 +143,22 @@ export const GroupFullWidget = () => {
     })
   }
 
-  const handleCopyInviteCode = (code: string) => {
-    navigator.clipboard.writeText(code)
-    toast.success(t('inviteCodeCopied'))
+  const handleCopyInviteCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code)
+      toast.success(t('inviteCodeCopied'))
+    } catch {
+      // fallback for non-secure contexts
+      const textarea = document.createElement('textarea')
+      textarea.value = code
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      toast.success(t('inviteCodeCopied'))
+    }
   }
 
   const handleRemoveMember = (groupId: number, memberId: number) => {
@@ -188,7 +205,15 @@ export const GroupFullWidget = () => {
                 <p className="mt-1 text-sm text-muted-foreground">{groupDetail.description}</p>
               )}
             </div>
-            <Badge variant="outline">{t(`groupType.${groupDetail.groupType}`)}</Badge>
+            <Badge
+              variant="outline"
+              style={groupDetail.groupTypeColor ? {
+                borderColor: groupDetail.groupTypeColor,
+                color: groupDetail.groupTypeColor,
+              } : undefined}
+            >
+              {groupDetail.groupTypeName ?? t('noGroupType')}
+            </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 rounded-md bg-muted p-3">
@@ -209,8 +234,11 @@ export const GroupFullWidget = () => {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => handleRegenerateCode(groupDetail.rowId)}
+                disabled={regenerateInviteCode.isPending}
               >
-                <RefreshCw className="h-3.5 w-3.5" />
+                {regenerateInviteCode.isPending
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <RefreshCw className="h-3.5 w-3.5" />}
               </Button>
             </div>
 
@@ -243,6 +271,7 @@ export const GroupFullWidget = () => {
                               onValueChange={(v) =>
                                 handleChangeRole(groupDetail.rowId, member.rowId, v as GroupRole)
                               }
+                              disabled={changeMemberRole.isPending}
                             >
                               <SelectTrigger className="h-7 w-24 text-xs">
                                 <SelectValue />
@@ -257,6 +286,7 @@ export const GroupFullWidget = () => {
                               size="icon"
                               className="h-7 w-7 text-destructive"
                               onClick={() => handleRemoveMember(groupDetail.rowId, member.rowId)}
+                              disabled={removeMember.isPending}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -291,6 +321,10 @@ export const GroupFullWidget = () => {
           <LogIn className="mr-1.5 h-4 w-4" />
           {t('joinGroup')}
         </Button>
+        <Button size="sm" variant="outline" onClick={() => setShowTypeManagement(true)}>
+          <Settings className="mr-1.5 h-4 w-4" />
+          {t('groupTypeManagement')}
+        </Button>
       </div>
 
       {groups.length === 0 ? (
@@ -311,8 +345,15 @@ export const GroupFullWidget = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="truncate font-medium">{group.groupName}</h3>
-                    <Badge variant="outline" className="text-xs">
-                      {t(`groupType.${group.groupType}`)}
+                    <Badge
+                      variant="outline"
+                      className="text-xs"
+                      style={group.groupTypeColor ? {
+                        borderColor: group.groupTypeColor,
+                        color: group.groupTypeColor,
+                      } : undefined}
+                    >
+                      {group.groupTypeName ?? t('noGroupType')}
                     </Badge>
                   </div>
                   {group.description && (
@@ -362,7 +403,7 @@ export const GroupFullWidget = () => {
           <DialogHeader>
             <DialogTitle>{t('addGroup')}</DialogTitle>
           </DialogHeader>
-          <GroupForm onSubmit={handleCreate} onCancel={() => setShowCreateDialog(false)} />
+          <GroupForm onSubmit={handleCreate} onCancel={() => setShowCreateDialog(false)} isSubmitting={createGroup.isPending} />
         </DialogContent>
       </Dialog>
 
@@ -376,6 +417,7 @@ export const GroupFullWidget = () => {
             initialData={editingGroup}
             onSubmit={handleUpdate}
             onCancel={() => setEditingGroup(null)}
+            isSubmitting={updateGroup.isPending}
           />
         </DialogContent>
       </Dialog>
@@ -396,10 +438,12 @@ export const GroupFullWidget = () => {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowJoinDialog(false)}>
-                {t('cancel', { ns: 'common' })}
+              <Button variant="outline" onClick={() => setShowJoinDialog(false)} disabled={joinGroup.isPending}>
+                {tc('cancel')}
               </Button>
-              <Button onClick={handleJoin}>{t('join')}</Button>
+              <Button onClick={handleJoin} disabled={joinGroup.isPending}>
+                {joinGroup.isPending ? tc('loading') : t('join')}
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -413,11 +457,23 @@ export const GroupFullWidget = () => {
             <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel', { ns: 'common' })}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>{t('delete', { ns: 'common' })}</AlertDialogAction>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteGroup.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteGroup.isPending ? tc('loading') : tc('delete')}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Group Type Management Dialog */}
+      <GroupTypeManagementDialog
+        open={showTypeManagement}
+        onOpenChange={setShowTypeManagement}
+      />
     </div>
   )
 }

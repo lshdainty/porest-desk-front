@@ -111,6 +111,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => handleDelete(label.rowId)}
+                disabled={deleteLabel.isPending}
               >
                 <Trash2 size={14} />
               </Button>
@@ -160,7 +161,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                   disabled={!formName.trim() || createLabel.isPending || updateLabel.isPending}
                 >
                   <Check size={12} className="mr-1" />
-                  {tc('save')}
+                  {(createLabel.isPending || updateLabel.isPending) ? tc('loading') : tc('save')}
                 </Button>
               </div>
             </div>

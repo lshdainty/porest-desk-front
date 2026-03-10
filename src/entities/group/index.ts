@@ -1,5 +1,6 @@
 export type {
-  GroupType,
+  GroupTypeItem,
+  GroupTypeFormValues,
   GroupRole,
   GroupMember,
   UserGroup,
