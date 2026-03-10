@@ -59,9 +59,23 @@ export interface DashboardSummary {
   expenseTrend: DailyExpenseTrend[]
 }
 
+export interface LayoutResponse {
+  dashboard: string | null
+}
+
 export const dashboardApi = {
   getSummary: async (): Promise<DashboardSummary> => {
     const resp: ApiResponse<DashboardSummary> = await apiClient.get('/v1/dashboard/summary')
+    return resp.data
+  },
+
+  getLayout: async (): Promise<LayoutResponse> => {
+    const resp: ApiResponse<LayoutResponse> = await apiClient.get('/v1/dashboard/layout')
+    return resp.data
+  },
+
+  updateLayout: async (dashboard: string): Promise<LayoutResponse> => {
+    const resp: ApiResponse<LayoutResponse> = await apiClient.patch('/v1/dashboard/layout', { dashboard })
     return resp.data
   },
 }

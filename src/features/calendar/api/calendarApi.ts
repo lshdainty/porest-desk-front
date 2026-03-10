@@ -57,8 +57,11 @@ export const calendarApi = {
   },
 
   getEvents: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
+    // 백엔드는 LocalDateTime(ISO.DATE_TIME) 형식을 기대하므로 시간 부분 추가
+    const startDateTime = startDate.includes('T') ? startDate : `${startDate}T00:00:00`
+    const endDateTime = endDate.includes('T') ? endDate : `${endDate}T23:59:59`
     const resp: ApiResponse<{ events: CalendarEvent[] }> = await apiClient.get('/v1/calendar/events', {
-      params: { startDate, endDate },
+      params: { startDate: startDateTime, endDate: endDateTime },
     })
     return (resp.data.events as unknown as Record<string, unknown>[]).map(fromApiEvent)
   },

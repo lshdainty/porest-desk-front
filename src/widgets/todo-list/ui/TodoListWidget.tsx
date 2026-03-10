@@ -91,10 +91,12 @@ export const TodoListWidget = () => {
   }, [editingTodo, updateTodo])
 
   const handleToggle = useCallback((id: number) => {
+    if (toggleStatus.isPending) return
     toggleStatus.mutate(id)
   }, [toggleStatus])
 
   const handleTogglePin = useCallback((id: number) => {
+    if (togglePin.isPending) return
     togglePin.mutate(id)
   }, [togglePin])
 

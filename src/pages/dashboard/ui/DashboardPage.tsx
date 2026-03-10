@@ -1,23 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { dashboardApi } from '@/features/dashboard/api/dashboardApi'
-import { GreetingSection } from '@/widgets/dashboard-grid/ui/GreetingSection'
-import { SummaryCardsRow } from '@/widgets/dashboard-grid/ui/SummaryCardsRow'
-import { QuickStatsRow } from '@/widgets/dashboard-grid/ui/QuickStatsRow'
-import { ScheduleSection } from '@/widgets/dashboard-grid/ui/ScheduleSection'
-import { ExpenseChartSection } from '@/widgets/dashboard-grid/ui/ExpenseChartSection'
-import { TimerMiniWidget } from '@/widgets/timer-mini'
-import { CalculatorMiniWidget } from '@/widgets/calculator-mini'
-import { Card } from '@/shared/ui/card'
+import { dashboardKeys } from '@/shared/config'
+import { DashboardProvider } from '@/features/dashboard/model/DashboardContext'
+import DashboardContent from '@/features/dashboard/ui/DashboardContent'
 
 export const DashboardPage = () => {
   const { t } = useTranslation('common')
-  const { data, isLoading } = useQuery({
-    queryKey: ['dashboard', 'summary'],
-    queryFn: dashboardApi.getSummary,
+  const { data: layoutData, isLoading } = useQuery({
+    queryKey: dashboardKeys.layout(),
+    queryFn: () => dashboardApi.getLayout(),
+    staleTime: 5 * 60 * 1000,
   })
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">{t('loading')}</p>
@@ -26,22 +22,8 @@ export const DashboardPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <GreetingSection />
-      <SummaryCardsRow data={data} />
-      <QuickStatsRow data={data} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ScheduleSection data={data} />
-        <ExpenseChartSection data={data} />
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card className="overflow-hidden">
-          <TimerMiniWidget />
-        </Card>
-        <Card className="overflow-hidden">
-          <CalculatorMiniWidget />
-        </Card>
-      </div>
-    </div>
+    <DashboardProvider initialDashboard={layoutData?.dashboard ?? null}>
+      <DashboardContent />
+    </DashboardProvider>
   )
 }

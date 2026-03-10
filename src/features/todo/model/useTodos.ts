@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { todoKeys } from '@/shared/config'
 import { todoApi } from '../api/todoApi'
 import type { TodoListParams } from '../api/todoApi'
-import type { TodoFormValues } from '@/entities/todo'
+import type { Todo, TodoFormValues } from '@/entities/todo'
 
 export const useTodos = (filters?: TodoListParams) => {
   return useQuery({
@@ -47,7 +47,38 @@ export const useToggleTodoStatus = () => {
 
   return useMutation({
     mutationFn: (id: number) => todoApi.toggleTodoStatus(id),
-    onSuccess: () => {
+    onMutate: async (id: number) => {
+      // 진행 중인 refetch 취소하여 optimistic update 덮어쓰기 방지
+      await queryClient.cancelQueries({ queryKey: todoKeys.all })
+
+      // 현재 캐시된 모든 todo list 쿼리 스냅샷 저장
+      const previousQueries = queryClient.getQueriesData<Todo[]>({ queryKey: todoKeys.all })
+
+      // 모든 todo list 캐시에서 해당 항목의 status를 즉시 토글
+      queryClient.setQueriesData<Todo[]>({ queryKey: todoKeys.all }, (old) => {
+        if (!old) return old
+        return old.map((todo) =>
+          todo.rowId === id
+            ? {
+                ...todo,
+                status: todo.status === 'COMPLETED' ? 'PENDING' as const : 'COMPLETED' as const,
+                completedAt: todo.status === 'COMPLETED' ? null : new Date().toISOString(),
+              }
+            : todo
+        )
+      })
+
+      return { previousQueries }
+    },
+    onError: (_err, _id, context) => {
+      // 에러 시 이전 상태로 롤백
+      if (context?.previousQueries) {
+        for (const [queryKey, data] of context.previousQueries) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: todoKeys.all })
     },
   })
