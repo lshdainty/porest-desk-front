@@ -123,6 +123,16 @@ export interface MonthlyAmount {
   month: number
   totalIncome: number
   totalExpense: number
+  categoryBreakdown: CategoryBreakdown[]
+}
+
+export type StatsPeriod = '3m' | '6m' | '1y'
+
+export interface BudgetVsActualItem {
+  categoryName: string
+  budgetAmount: number
+  actualAmount: number
+  percentage: number
 }
 
 export interface MerchantSummary {

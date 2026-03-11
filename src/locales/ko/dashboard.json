@@ -120,5 +120,11 @@
   "widget.pinnedMemos": "고정 메모",
   "widget.weeklyFocus": "주간 집중 차트",
   "widget.timerMini": "미니 타이머",
-  "widget.calculatorMini": "계산기"
+  "widget.calculatorMini": "계산기",
+  "widget.monthlyTrend": "월별 추이",
+  "widget.yearOverYear": "전년 대비",
+  "widget.categoryTrend": "카테고리 추이",
+  "widget.budgetVsActual": "예산 대비 실적",
+  "widget.merchantAnalysis": "거래처 분석",
+  "widget.assetUsage": "자산별 사용"
 }

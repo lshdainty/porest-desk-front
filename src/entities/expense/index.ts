@@ -17,6 +17,8 @@ export type {
   MonthlyAmount,
   MerchantSummary,
   AssetExpenseSummary,
+  StatsPeriod,
+  BudgetVsActualItem,
 } from './model/types'
 
 export { buildCategoryTree, getSelectableCategories, aggregateByParent } from './lib/categoryUtils'

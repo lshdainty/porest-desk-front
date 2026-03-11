@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, TrendingDown, ChevronRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, ChevronRight } from 'lucide-react'
 import { cn, formatCurrency } from '@/shared/lib'
 import { useMonthlySummary } from '@/features/expense'
 import { aggregateByParent } from '@/entities/expense'
@@ -50,8 +50,9 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
           <p className="text-sm font-bold text-red-600">{formatCurrency(totalExpense)}</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
+          <Wallet size={16} className={cn('mx-auto mb-1', net >= 0 ? 'text-green-600' : 'text-red-600')} />
           <p className="text-xs text-muted-foreground">{t('net')}</p>
-          <p className={cn('mt-2 text-sm font-bold', net >= 0 ? 'text-green-600' : 'text-red-600')}>
+          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600' : 'text-red-600')}>
             {net >= 0 ? '+' : ''}{formatCurrency(net)}
           </p>
         </div>

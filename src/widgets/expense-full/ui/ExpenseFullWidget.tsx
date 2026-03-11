@@ -25,6 +25,7 @@ import { ExpenseList } from './ExpenseList'
 import { ExpenseCategoryManager } from './ExpenseCategoryManager'
 import { DailySummaryCard } from './DailySummary'
 import { MonthlySummaryCard } from './MonthlySummary'
+import { SummaryDashboard } from './summary/SummaryDashboard'
 import { BudgetProgress } from './BudgetProgress'
 import { ExpenseTemplateList } from './ExpenseTemplateList'
 import { RecurringTransactionList } from './RecurringTransactionList'
@@ -172,7 +173,7 @@ export const ExpenseFullWidget = () => {
         )}
 
         {activeTab === 'summary' && (
-          <MonthlySummaryCard year={currentYear} month={currentMonth} />
+          <SummaryDashboard year={currentYear} month={currentMonth} />
         )}
 
         {activeTab === 'budget' && (

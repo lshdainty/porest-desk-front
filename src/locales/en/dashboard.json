@@ -120,5 +120,11 @@
   "widget.pinnedMemos": "Pinned Memos",
   "widget.weeklyFocus": "Weekly Focus Chart",
   "widget.timerMini": "Mini Timer",
-  "widget.calculatorMini": "Calculator"
+  "widget.calculatorMini": "Calculator",
+  "widget.monthlyTrend": "Monthly Trend",
+  "widget.yearOverYear": "Year over Year",
+  "widget.categoryTrend": "Category Trend",
+  "widget.budgetVsActual": "Budget vs Actual",
+  "widget.merchantAnalysis": "Merchant Analysis",
+  "widget.assetUsage": "Asset Usage"
 }

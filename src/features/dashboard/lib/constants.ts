@@ -38,6 +38,14 @@ export const WIDGETS: Widget[] = [
   // 타이머 관련 신규
   { id: 'weekly-focus', labelKey: 'widget.weeklyFocus', defaultH: 7, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 10 },
 
+  // 통계 차트 위젯
+  { id: 'monthly-trend', labelKey: 'widget.monthlyTrend', defaultH: 8, defaultW: 6, minW: 4, maxW: 12, minH: 6, maxH: 14 },
+  { id: 'year-over-year', labelKey: 'widget.yearOverYear', defaultH: 8, defaultW: 6, minW: 4, maxW: 12, minH: 6, maxH: 14 },
+  { id: 'category-trend', labelKey: 'widget.categoryTrend', defaultH: 9, defaultW: 6, minW: 4, maxW: 12, minH: 7, maxH: 14 },
+  { id: 'budget-vs-actual', labelKey: 'widget.budgetVsActual', defaultH: 8, defaultW: 6, minW: 4, maxW: 12, minH: 6, maxH: 14 },
+  { id: 'merchant-analysis', labelKey: 'widget.merchantAnalysis', defaultH: 8, defaultW: 6, minW: 4, maxW: 12, minH: 6, maxH: 14 },
+  { id: 'asset-usage', labelKey: 'widget.assetUsage', defaultH: 8, defaultW: 4, minW: 3, maxW: 8, minH: 6, maxH: 12 },
+
   // 유틸리티
   { id: 'timer-mini', labelKey: 'widget.timerMini', defaultH: 6, defaultW: 3, minW: 3, maxW: 6, minH: 5, maxH: 10 },
   { id: 'calculator-mini', labelKey: 'widget.calculatorMini', defaultH: 8, defaultW: 3, minW: 3, maxW: 6, minH: 6, maxH: 12 },

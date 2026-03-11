@@ -32,6 +32,12 @@ import { PinnedMemosWidget } from '@/features/dashboard/ui/widgets/PinnedMemosWi
 import { WeeklyFocusWidget } from '@/features/dashboard/ui/widgets/WeeklyFocusWidget'
 import { TimerMiniWidgetWrapper } from '@/features/dashboard/ui/widgets/TimerMiniWidgetWrapper'
 import { CalculatorMiniWidgetWrapper } from '@/features/dashboard/ui/widgets/CalculatorMiniWidgetWrapper'
+import { MonthlyTrendDashWidget } from '@/features/dashboard/ui/widgets/MonthlyTrendDashWidget'
+import { YearOverYearDashWidget } from '@/features/dashboard/ui/widgets/YearOverYearDashWidget'
+import { CategoryTrendDashWidget } from '@/features/dashboard/ui/widgets/CategoryTrendDashWidget'
+import { BudgetVsActualDashWidget } from '@/features/dashboard/ui/widgets/BudgetVsActualDashWidget'
+import { MerchantAnalysisDashWidget } from '@/features/dashboard/ui/widgets/MerchantAnalysisDashWidget'
+import { AssetUsageDashWidget } from '@/features/dashboard/ui/widgets/AssetUsageDashWidget'
 
 const DashboardContent = () => {
   const { t } = useTranslation('dashboard')
@@ -109,6 +115,12 @@ const DashboardContent = () => {
     'recent-todos': { title: t('widget.recentTodos'), component: <RecentTodosWidget /> },
     'pinned-memos': { title: t('widget.pinnedMemos'), component: <PinnedMemosWidget /> },
     'weekly-focus': { title: t('widget.weeklyFocus'), component: <WeeklyFocusWidget /> },
+    'monthly-trend': { title: t('widget.monthlyTrend'), component: <MonthlyTrendDashWidget /> },
+    'year-over-year': { title: t('widget.yearOverYear'), component: <YearOverYearDashWidget /> },
+    'category-trend': { title: t('widget.categoryTrend'), component: <CategoryTrendDashWidget /> },
+    'budget-vs-actual': { title: t('widget.budgetVsActual'), component: <BudgetVsActualDashWidget /> },
+    'merchant-analysis': { title: t('widget.merchantAnalysis'), component: <MerchantAnalysisDashWidget /> },
+    'asset-usage': { title: t('widget.assetUsage'), component: <AssetUsageDashWidget /> },
     'timer-mini': { title: t('widget.timerMini'), component: <TimerMiniWidgetWrapper /> },
     'calculator-mini': { title: t('widget.calculatorMini'), component: <CalculatorMiniWidgetWrapper /> },
   }
