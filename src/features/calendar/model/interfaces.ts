@@ -21,6 +21,8 @@ export interface IEvent {
   rrule: string | null
   recurrenceId: number | null
   reminders: EventReminderInfo[]
+  groupRowId: number | null
+  groupName: string | null
 }
 
 export interface ICalendarCell {

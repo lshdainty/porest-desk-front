@@ -34,6 +34,8 @@ export interface Expense {
   paymentMethod: string | null
   calendarEventRowId: number | null
   todoRowId: number | null
+  groupRowId: number | null
+  groupName: string | null
   createAt: string
   modifyAt: string
 }
@@ -49,6 +51,7 @@ export interface ExpenseFormValues {
   paymentMethod?: string
   calendarEventRowId?: number
   todoRowId?: number
+  groupRowId?: number
 }
 
 export interface ExpenseCategoryFormValues {

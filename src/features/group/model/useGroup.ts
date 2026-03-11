@@ -104,3 +104,25 @@ export const useChangeMemberRole = () => {
     },
   })
 }
+
+export const useGroupEvents = (groupId: number, startDate: string, endDate: string) => {
+  return useQuery({
+    queryKey: ['group', groupId, 'events', startDate, endDate],
+    queryFn: async () => {
+      const response = await groupApi.getGroupEvents(groupId, startDate, endDate)
+      return response.data
+    },
+    enabled: !!groupId,
+  })
+}
+
+export const useGroupExpenses = (groupId: number, params?: { startDate?: string; endDate?: string }) => {
+  return useQuery({
+    queryKey: ['group', groupId, 'expenses', params],
+    queryFn: async () => {
+      const response = await groupApi.getGroupExpenses(groupId, params)
+      return response.data
+    },
+    enabled: !!groupId,
+  })
+}

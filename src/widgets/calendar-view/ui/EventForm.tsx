@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Repeat, Bell, Tag, ChevronDown, Check } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, ChevronDown, Check, Users } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -14,6 +14,7 @@ import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar
 import type { EventLabel } from '@/entities/event-label'
 import type { UserCalendar } from '@/entities/user-calendar'
 import { useUserCalendars } from '@/features/user-calendar'
+import { useGroups } from '@/features/group'
 import { format } from 'date-fns'
 
 interface EventFormProps {
@@ -70,6 +71,7 @@ export const EventForm = ({
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
   const { data: userCalendars = [] } = useUserCalendars()
+  const { data: groups = [] } = useGroups()
 
   const defaultDate = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
@@ -85,6 +87,7 @@ export const EventForm = ({
   const [selectedReminders, setSelectedReminders] = useState<number[]>([])
   const [showLabelDropdown, setShowLabelDropdown] = useState(false)
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
+  const [showGroupDropdown, setShowGroupDropdown] = useState(false)
 
   const {
     register,
@@ -107,6 +110,7 @@ export const EventForm = ({
       rrule: undefined,
       reminderMinutes: [],
       calendarRowId: defaultCalendar?.rowId,
+      groupRowId: undefined,
     },
   })
 
@@ -114,9 +118,11 @@ export const EventForm = ({
   const isAllDay = watch('isAllDay')
   const selectedLabelRowId = watch('labelRowId')
   const selectedCalendarRowId = watch('calendarRowId')
+  const selectedGroupRowId = watch('groupRowId')
 
   const selectedLabel = labels.find(l => l.rowId === selectedLabelRowId)
   const selectedCalendar = userCalendars.find(c => c.rowId === selectedCalendarRowId)
+  const selectedGroup = groups.find(g => g.rowId === selectedGroupRowId)
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -147,6 +153,7 @@ export const EventForm = ({
         rrule: event.rrule ?? undefined,
         reminderMinutes: reminderMins,
         calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
+        groupRowId: event.groupRowId ?? undefined,
       })
       setRecurrence(rruleToRecurrence(event.rrule))
       setSelectedReminders(reminderMins)
@@ -164,6 +171,7 @@ export const EventForm = ({
         rrule: undefined,
         reminderMinutes: [],
         calendarRowId: defaultCalendar?.rowId,
+        groupRowId: undefined,
       })
       setRecurrence('none')
       setSelectedReminders([])
@@ -205,6 +213,7 @@ export const EventForm = ({
       rrule: data.rrule || undefined,
       reminderMinutes: selectedReminders.length > 0 ? selectedReminders : undefined,
       calendarRowId: data.calendarRowId || undefined,
+      groupRowId: data.groupRowId || undefined,
     })
   }
 
@@ -278,6 +287,65 @@ export const EventForm = ({
                         />
                         {cal.calendarName}
                         {selectedCalendarRowId === cal.rowId && (
+                          <Check size={14} className="ml-auto text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Group selector dropdown */}
+          {groups.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>
+                <Users size={14} className="inline mr-1" />
+                {t('selectGroup')}
+              </Label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowGroupDropdown(!showGroupDropdown)}
+                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
+                >
+                  {selectedGroup ? (
+                    <span className="flex items-center gap-2">
+                      <Users size={14} className="text-primary" />
+                      {selectedGroup.groupName}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">{t('personal')}</span>
+                  )}
+                  <ChevronDown size={14} className="text-muted-foreground" />
+                </button>
+                {showGroupDropdown && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('groupRowId', undefined)
+                        setShowGroupDropdown(false)
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                    >
+                      {t('personal')}
+                      {!selectedGroupRowId && <Check size={14} className="ml-auto text-primary" />}
+                    </button>
+                    {groups.map(group => (
+                      <button
+                        key={group.rowId}
+                        type="button"
+                        onClick={() => {
+                          setValue('groupRowId', group.rowId)
+                          setShowGroupDropdown(false)
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                      >
+                        <Users size={14} className="text-muted-foreground" />
+                        {group.groupName}
+                        {selectedGroupRowId === group.rowId && (
                           <Check size={14} className="ml-auto text-primary" />
                         )}
                       </button>

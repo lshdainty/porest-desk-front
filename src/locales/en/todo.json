@@ -56,11 +56,11 @@
   "type.ALL": "All",
   "type.TASK": "Task",
   "type.NOTE": "Note",
-  "note.pin": "Pin",
-  "note.unpin": "Unpin",
-  "note.preview": "Preview",
-  "note.editor": "Edit",
-  "note.markdown": "Write in markdown",
   "note.empty": "No notes yet",
-  "note.createFirst": "Create your first note"
+  "note.createFirst": "Create your first note",
+  "note.editor": "Editor",
+  "note.preview": "Preview",
+  "note.markdown": "Write in markdown...",
+  "note.pin": "Pin",
+  "note.unpin": "Unpin"
 }

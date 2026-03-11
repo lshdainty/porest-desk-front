@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import { enUS, ko } from 'date-fns/locale'
-import { Bell, Calendar, Clock, MapPin, Pencil, Repeat, Tag, Trash2 } from 'lucide-react'
+import { Bell, Calendar, Clock, MapPin, Pencil, Repeat, Tag, Trash2, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/shared/ui/button'
@@ -88,6 +88,14 @@ const EventDetailPopover = ({ event, onEdit, onDelete }: EventDetailPopoverProps
             )}
             <span>{event.calendarName}</span>
           </div>
+        </div>
+      )}
+
+      {/* Group */}
+      {event.groupRowId && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Users className="size-3.5 shrink-0" />
+          <span className="rounded-full border px-2 py-0.5">{event.groupName}</span>
         </div>
       )}
 

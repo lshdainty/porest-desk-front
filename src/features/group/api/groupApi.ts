@@ -54,4 +54,10 @@ export const groupApi = {
     )
     return resp.data
   },
+
+  getGroupEvents: (groupId: number, startDate: string, endDate: string) =>
+    apiClient.get(`/v1/group/${groupId}/calendar/events`, { params: { startDate, endDate } }),
+
+  getGroupExpenses: (groupId: number, params?: { categoryId?: number; expenseType?: string; startDate?: string; endDate?: string }) =>
+    apiClient.get(`/v1/group/${groupId}/expenses`, { params }),
 }

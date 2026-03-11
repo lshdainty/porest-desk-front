@@ -36,9 +36,6 @@
   "budget.remaining": "남은 예산",
   "budget.exceeded": "초과",
   "budget.noBudget": "설정된 예산이 없습니다",
-  "budget.save": "저장",
-  "budget.deleteConfirm.title": "예산 삭제",
-  "budget.deleteConfirm.message": "이 예산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
   "categoryBreakdown": "카테고리별 분석",
   "deleteConfirm.title": "거래 삭제",
   "deleteConfirm.message": "이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
@@ -76,6 +73,9 @@
   "form.todo": "할일 연결",
   "linkExpense": "지출 추가",
   "noLinkedExpenses": "연결된 지출이 없습니다",
+  "budget.save": "저장",
+  "budget.deleteConfirm.title": "예산 삭제",
+  "budget.deleteConfirm.message": "이 예산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
   "form.icon": "아이콘",
   "form.iconPlaceholder": "예: 이모지",
   "form.color": "색상",
@@ -102,5 +102,8 @@
   "stats.transactionCount": "{{count}}건",
   "stats.thisYear": "올해",
   "stats.lastYear": "작년",
-  "stats.noData": "데이터가 없습니다"
+  "stats.noData": "데이터가 없습니다",
+  "selectGroup": "그룹 선택",
+  "personal": "개인",
+  "form.group": "그룹"
 }

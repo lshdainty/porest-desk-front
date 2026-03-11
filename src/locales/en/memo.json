@@ -27,5 +27,6 @@
   "deleteConfirm.cancel": "Cancel",
   "deleteConfirm.confirm": "Delete",
   "folderDeleteConfirm.title": "Delete Folder",
-  "folderDeleteConfirm.message": "Are you sure you want to delete this folder? Memos inside will be moved."
+  "folderDeleteConfirm.message": "Are you sure you want to delete this folder? Memos inside will be moved.",
+  "folders": "Folders"
 }

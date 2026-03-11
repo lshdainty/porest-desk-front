@@ -36,9 +36,6 @@
   "budget.remaining": "Remaining",
   "budget.exceeded": "Exceeded",
   "budget.noBudget": "No budget set",
-  "budget.save": "Save",
-  "budget.deleteConfirm.title": "Delete Budget",
-  "budget.deleteConfirm.message": "Are you sure you want to delete this budget? This action cannot be undone.",
   "categoryBreakdown": "Category Breakdown",
   "deleteConfirm.title": "Delete Transaction",
   "deleteConfirm.message": "Are you sure you want to delete this transaction? This action cannot be undone.",
@@ -76,6 +73,9 @@
   "form.todo": "Link Todo",
   "linkExpense": "Add Expense",
   "noLinkedExpenses": "No linked expenses",
+  "budget.save": "Save",
+  "budget.deleteConfirm.title": "Delete Budget",
+  "budget.deleteConfirm.message": "Are you sure you want to delete this budget? This action cannot be undone.",
   "form.icon": "Icon",
   "form.iconPlaceholder": "e.g. emoji",
   "form.color": "Color",
@@ -102,5 +102,8 @@
   "stats.transactionCount": "{{count}} transactions",
   "stats.thisYear": "This Year",
   "stats.lastYear": "Last Year",
-  "stats.noData": "No data available"
+  "stats.noData": "No data available",
+  "selectGroup": "Select Group",
+  "personal": "Personal",
+  "form.group": "Group"
 }

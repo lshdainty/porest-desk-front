@@ -43,6 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { toast } from 'sonner'
 import {
   useGroups,
@@ -57,6 +58,8 @@ import {
 } from '@/features/group'
 import { GroupForm } from './GroupForm'
 import { GroupTypeManagementDialog } from './GroupTypeManagementDialog'
+import { GroupScheduleTab } from './GroupScheduleTab'
+import { GroupExpenseTab } from './GroupExpenseTab'
 import type { GroupFormValues, UserGroup, GroupRole } from '@/entities/group'
 
 const roleIcons: Record<GroupRole, typeof Crown> = {
@@ -242,67 +245,85 @@ export const GroupFullWidget = () => {
               </Button>
             </div>
 
-            <div>
-              <h3 className="mb-2 font-medium">
-                {t('members')} ({groupDetail.members.length})
-              </h3>
-              <div className="space-y-2">
-                {groupDetail.members.map((member) => {
-                  const RoleIcon = roleIcons[member.role]
-                  return (
-                    <div
-                      key={member.rowId}
-                      className="flex items-center justify-between rounded-md border p-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                          <RoleIcon className="h-4 w-4 text-primary" />
+            <Tabs defaultValue="members">
+              <TabsList className="w-full">
+                <TabsTrigger value="members" className="flex-1">{t('tabs.members')}</TabsTrigger>
+                <TabsTrigger value="schedule" className="flex-1">{t('tabs.schedule')}</TabsTrigger>
+                <TabsTrigger value="expense" className="flex-1">{t('tabs.expense')}</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="members" className="mt-4">
+                <div>
+                  <h3 className="mb-2 font-medium">
+                    {t('members')} ({groupDetail.members.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {groupDetail.members.map((member) => {
+                      const RoleIcon = roleIcons[member.role]
+                      return (
+                        <div
+                          key={member.rowId}
+                          className="flex items-center justify-between rounded-md border p-3"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                              <RoleIcon className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{member.userName}</p>
+                              <p className="text-xs text-muted-foreground">{member.userEmail}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {member.role !== 'OWNER' && (
+                              <>
+                                <Select
+                                  value={member.role}
+                                  onValueChange={(v) =>
+                                    handleChangeRole(groupDetail.rowId, member.rowId, v as GroupRole)
+                                  }
+                                  disabled={changeMemberRole.isPending}
+                                >
+                                  <SelectTrigger className="h-7 w-24 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="ADMIN">{t('role.ADMIN')}</SelectItem>
+                                    <SelectItem value="MEMBER">{t('role.MEMBER')}</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive"
+                                  onClick={() => handleRemoveMember(groupDetail.rowId, member.rowId)}
+                                  disabled={removeMember.isPending}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </>
+                            )}
+                            {member.role === 'OWNER' && (
+                              <Badge variant="secondary" className="text-xs">
+                                {t('role.OWNER')}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">{member.userName}</p>
-                          <p className="text-xs text-muted-foreground">{member.userEmail}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {member.role !== 'OWNER' && (
-                          <>
-                            <Select
-                              value={member.role}
-                              onValueChange={(v) =>
-                                handleChangeRole(groupDetail.rowId, member.rowId, v as GroupRole)
-                              }
-                              disabled={changeMemberRole.isPending}
-                            >
-                              <SelectTrigger className="h-7 w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="ADMIN">{t('role.ADMIN')}</SelectItem>
-                                <SelectItem value="MEMBER">{t('role.MEMBER')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive"
-                              onClick={() => handleRemoveMember(groupDetail.rowId, member.rowId)}
-                              disabled={removeMember.isPending}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </>
-                        )}
-                        {member.role === 'OWNER' && (
-                          <Badge variant="secondary" className="text-xs">
-                            {t('role.OWNER')}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="schedule" className="mt-4">
+                <GroupScheduleTab groupId={groupDetail.rowId} />
+              </TabsContent>
+
+              <TabsContent value="expense" className="mt-4">
+                <GroupExpenseTab groupId={groupDetail.rowId} />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

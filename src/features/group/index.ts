@@ -11,6 +11,8 @@ export {
   useJoinGroup,
   useRemoveMember,
   useChangeMemberRole,
+  useGroupEvents,
+  useGroupExpenses,
 } from './model/useGroup'
 export {
   useEventComments,

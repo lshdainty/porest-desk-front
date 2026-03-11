@@ -27,5 +27,6 @@
   "deleteConfirm.cancel": "취소",
   "deleteConfirm.confirm": "삭제",
   "folderDeleteConfirm.title": "폴더 삭제",
-  "folderDeleteConfirm.message": "이 폴더를 삭제하시겠습니까? 폴더 내 메모는 이동됩니다."
+  "folderDeleteConfirm.message": "이 폴더를 삭제하시겠습니까? 폴더 내 메모는 이동됩니다.",
+  "folders": "폴더"
 }

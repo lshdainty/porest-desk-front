@@ -15,6 +15,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/shared/ui/popover'
 import { useExpenseTemplates } from '@/features/expense-template'
+import { useGroups } from '@/features/group'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import type { Expense, ExpenseFormValues, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { buildCategoryTree, getSelectableCategories } from '@/entities/expense'
@@ -43,6 +44,7 @@ export const ExpenseForm = ({
 }: ExpenseFormProps) => {
   const { t } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
+  const { data: groups = [] } = useGroups()
 
   const [expenseType, setExpenseType] = useState<ExpenseType>(expense?.expenseType ?? 'EXPENSE')
   const [categoryRowId, setCategoryRowId] = useState<number>(expense?.categoryRowId ?? 0)
@@ -54,6 +56,7 @@ export const ExpenseForm = ({
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
   const [assetRowId, setAssetRowId] = useState<number>(expense?.assetRowId ?? 0)
   const [merchant, setMerchant] = useState(expense?.merchant ?? '')
+  const [groupRowId, setGroupRowId] = useState<number>(expense?.groupRowId ?? 0)
 
   // Template loading
   const [templatePopoverOpen, setTemplatePopoverOpen] = useState(false)
@@ -97,9 +100,10 @@ export const ExpenseForm = ({
       expenseDate,
       merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
+      groupRowId: groupRowId || undefined,
     }
     onSubmit(data)
-  }, [categoryRowId, assetRowId, expenseType, amount, description, expenseDate, merchant, paymentMethod, onSubmit])
+  }, [categoryRowId, assetRowId, expenseType, amount, description, expenseDate, merchant, paymentMethod, groupRowId, onSubmit])
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
@@ -330,6 +334,29 @@ export const ExpenseForm = ({
               placeholder={t('form.descriptionPlaceholder')}
             />
           </div>
+
+          {/* Group */}
+          {groups.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>{t('selectGroup')}</Label>
+              <Select
+                value={groupRowId ? String(groupRowId) : '__none__'}
+                onValueChange={(val) => setGroupRowId(val === '__none__' ? 0 : Number(val))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('personal')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('personal')}</SelectItem>
+                  {groups.map((group) => (
+                    <SelectItem key={group.rowId} value={String(group.rowId)}>
+                      {group.groupName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Actions */}
           <DialogFooter>
