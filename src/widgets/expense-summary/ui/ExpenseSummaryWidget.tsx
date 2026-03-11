@@ -28,22 +28,22 @@ export const ExpenseSummaryWidget = () => {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-md bg-green-50 p-2 text-center dark:bg-green-950/30">
-                <p className="text-sm font-bold text-green-600">{formatCurrency(summary.todayIncome)}</p>
+                <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(summary.todayIncome)}</p>
                 <p className="text-[10px] text-muted-foreground">{t('expense.todayIncome')}</p>
               </div>
               <div className="rounded-md bg-red-50 p-2 text-center dark:bg-red-950/30">
-                <p className="text-sm font-bold text-red-600">{formatCurrency(summary.todayExpense)}</p>
+                <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(summary.todayExpense)}</p>
                 <p className="text-[10px] text-muted-foreground">{t('expense.todayExpense')}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-md bg-muted/50 p-2 text-center">
-                <p className="text-sm font-bold text-green-600">{formatCurrency(summary.monthlyIncome)}</p>
+                <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(summary.monthlyIncome)}</p>
                 <p className="text-[10px] text-muted-foreground">{t('expense.monthlyIncome')}</p>
               </div>
               <div className="rounded-md bg-muted/50 p-2 text-center">
-                <p className="text-sm font-bold text-red-600">{formatCurrency(summary.monthlyExpense)}</p>
+                <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(summary.monthlyExpense)}</p>
                 <p className="text-[10px] text-muted-foreground">{t('expense.monthlyExpense')}</p>
               </div>
             </div>
@@ -52,7 +52,7 @@ export const ExpenseSummaryWidget = () => {
               <p className="text-[10px] text-muted-foreground">{t('expense.net')}</p>
               <p className={cn(
                 'text-sm font-bold',
-                monthlyNet >= 0 ? 'text-green-600' : 'text-red-600'
+                monthlyNet >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               )}>
                 {monthlyNet >= 0 ? '+' : ''}{formatCurrency(monthlyNet)}
               </p>

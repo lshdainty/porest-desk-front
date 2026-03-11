@@ -181,7 +181,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium">{catName}</span>
               <div className="flex items-center gap-2">
-                <span className={cn('text-xs', isExceeded ? 'text-red-600 font-bold' : 'text-muted-foreground')}>
+                <span className={cn('text-xs', isExceeded ? 'text-red-600 dark:text-red-400 font-bold' : 'text-muted-foreground')}>
                   {formatCurrency(catSpend)} / {formatCurrency(budget.budgetAmount)}
                 </span>
                 <Button
@@ -204,7 +204,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
               />
             </div>
             {isExceeded && (
-              <p className="mt-1 text-xs font-medium text-red-600">
+              <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
                 {t('budget.exceeded')} ({Math.round(percentage - 100)}%)
               </p>
             )}

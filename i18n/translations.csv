@@ -639,3 +639,9 @@ todo,note.preview,미리보기,Preview
 todo,note.markdown,마크다운으로 작성하세요...,Write in markdown...
 todo,note.pin,고정,Pin
 todo,note.unpin,고정 해제,Unpin
+notification,connectionLost,알림 연결이 끊어졌습니다,Notification connection lost
+notification,connectionRestored,알림 연결이 복구되었습니다,Notification connection restored
+notification,newNotification,새 알림,New notification
+notification,eventReminder,일정 알림,Event Reminder
+notification,budgetAlert,예산 알림,Budget Alert
+notification,todoReminder,할 일 알림,Todo Reminder

@@ -201,7 +201,7 @@ export const GroupFullWidget = () => {
         </div>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-lg">{groupDetail.groupName}</CardTitle>
               {groupDetail.description && (
@@ -219,9 +219,9 @@ export const GroupFullWidget = () => {
             </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-2 rounded-md bg-muted p-3">
+            <div className="flex flex-wrap items-center gap-2 rounded-md bg-muted p-3">
               <span className="text-sm font-medium">{t('inviteCode')}:</span>
-              <code className="rounded bg-background px-2 py-0.5 text-sm font-mono">
+              <code className="truncate rounded bg-background px-2 py-0.5 text-sm font-mono">
                 {groupDetail.inviteCode}
               </code>
               <Button
@@ -263,18 +263,18 @@ export const GroupFullWidget = () => {
                       return (
                         <div
                           key={member.rowId}
-                          className="flex items-center justify-between rounded-md border p-3"
+                          className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                               <RoleIcon className="h-4 w-4 text-primary" />
                             </div>
-                            <div>
-                              <p className="text-sm font-medium">{member.userName}</p>
-                              <p className="text-xs text-muted-foreground">{member.userEmail}</p>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">{member.userName}</p>
+                              <p className="truncate text-xs text-muted-foreground">{member.userEmail}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex shrink-0 items-center gap-2">
                             {member.role !== 'OWNER' && (
                               <>
                                 <Select
@@ -333,7 +333,7 @@ export const GroupFullWidget = () => {
   // List view
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('addGroup')}

@@ -40,19 +40,19 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border p-3 text-center">
-          <TrendingUp size={16} className="mx-auto mb-1 text-green-600" />
+          <TrendingUp size={16} className="mx-auto mb-1 text-green-600 dark:text-green-400" />
           <p className="text-xs text-muted-foreground">{t('totalIncome')}</p>
-          <p className="text-sm font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+          <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <TrendingDown size={16} className="mx-auto mb-1 text-red-600" />
+          <TrendingDown size={16} className="mx-auto mb-1 text-red-600 dark:text-red-400" />
           <p className="text-xs text-muted-foreground">{t('totalExpense')}</p>
-          <p className="text-sm font-bold text-red-600">{formatCurrency(totalExpense)}</p>
+          <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(totalExpense)}</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <Wallet size={16} className={cn('mx-auto mb-1', net >= 0 ? 'text-green-600' : 'text-red-600')} />
+          <Wallet size={16} className={cn('mx-auto mb-1', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
           <p className="text-xs text-muted-foreground">{t('net')}</p>
-          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600' : 'text-red-600')}>
+          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
             {net >= 0 ? '+' : ''}{formatCurrency(net)}
           </p>
         </div>

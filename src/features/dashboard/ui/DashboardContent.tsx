@@ -204,7 +204,7 @@ const DashboardContent = () => {
       {/* Toolbox Panel */}
       <div
         className={cn(
-          'fixed bottom-0 right-0 top-0 z-40 w-80 transform overflow-y-auto border-l bg-background shadow-2xl transition-transform duration-300 ease-in-out',
+          'fixed bottom-0 right-0 top-0 z-40 w-full transform overflow-y-auto border-l bg-background shadow-2xl transition-transform duration-300 ease-in-out md:w-80',
           isEditing && isToolboxOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >

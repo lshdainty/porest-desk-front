@@ -5,5 +5,11 @@
   "type.EVENT_REMINDER": "Event Reminder",
   "type.BUDGET_ALERT": "Budget Alert",
   "type.TODO_REMINDER": "Todo Reminder",
-  "type.SYSTEM": "System"
+  "type.SYSTEM": "System",
+  "connectionLost": "Notification connection lost",
+  "connectionRestored": "Notification connection restored",
+  "newNotification": "New notification",
+  "eventReminder": "Event Reminder",
+  "budgetAlert": "Budget Alert",
+  "todoReminder": "Todo Reminder"
 }

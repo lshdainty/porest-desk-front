@@ -21,24 +21,24 @@ export const DailySummaryCard = ({ date }: DailySummaryProps) => {
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center">
           <div className="mb-1 flex justify-center">
-            <TrendingUp size={14} className="text-green-600" />
+            <TrendingUp size={14} className="text-green-600 dark:text-green-400" />
           </div>
           <p className="text-xs text-muted-foreground">{t('totalIncome')}</p>
-          <p className="text-sm font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+          <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="text-center">
           <div className="mb-1 flex justify-center">
-            <TrendingDown size={14} className="text-red-600" />
+            <TrendingDown size={14} className="text-red-600 dark:text-red-400" />
           </div>
           <p className="text-xs text-muted-foreground">{t('totalExpense')}</p>
-          <p className="text-sm font-bold text-red-600">{formatCurrency(totalExpense)}</p>
+          <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(totalExpense)}</p>
         </div>
         <div className="text-center">
           <div className="mb-1 flex justify-center">
-            <Minus size={14} className={cn(net >= 0 ? 'text-green-600' : 'text-red-600')} />
+            <Minus size={14} className={cn(net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
           </div>
           <p className="text-xs text-muted-foreground">{t('net')}</p>
-          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600' : 'text-red-600')}>
+          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
             {formatCurrency(Math.abs(net))}
           </p>
         </div>

@@ -9,7 +9,7 @@ import {
 import { ModeToggle } from '@/shared/ui/mode-toggle'
 import { Separator } from '@/shared/ui/separator'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
-import { NotificationBell } from '@/features/notification'
+import { NotificationBell, useNotificationSSE } from '@/features/notification'
 
 const pageTitleMap: Record<string, string> = {
   '/desk': 'dashboard',
@@ -25,6 +25,8 @@ const pageTitleMap: Record<string, string> = {
 export const LayoutHeader = () => {
   const { t } = useTranslation('layout')
   const location = useLocation()
+
+  useNotificationSSE()
 
   const titleKey = pageTitleMap[location.pathname] ?? 'dashboard'
 

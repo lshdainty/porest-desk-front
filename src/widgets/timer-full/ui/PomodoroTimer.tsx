@@ -121,7 +121,7 @@ export const PomodoroTimer = () => {
   return (
     <div className="flex flex-col items-center space-y-6">
       <div className="text-center">
-        <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${isBreak ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+        <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${isBreak ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
           {isBreak ? t('break') : t('work')} - {t('session')} {sessionCount + 1}
         </span>
       </div>

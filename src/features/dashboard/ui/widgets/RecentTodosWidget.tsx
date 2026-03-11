@@ -11,9 +11,9 @@ const PRIORITY_COLORS: Record<string, string> = {
 }
 
 const PRIORITY_BG: Record<string, string> = {
-  HIGH: 'bg-red-500/10 text-red-600',
-  MEDIUM: 'bg-yellow-500/10 text-yellow-600',
-  LOW: 'bg-blue-500/10 text-blue-600',
+  HIGH: 'bg-red-500/10 text-red-600 dark:text-red-400',
+  MEDIUM: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+  LOW: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
 }
 
 export const RecentTodosWidget = () => {

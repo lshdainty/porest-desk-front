@@ -42,7 +42,7 @@ export function SpeedDial({
   }
 
   return (
-    <div className={cn('fixed bottom-8 right-8 z-50 flex items-end justify-end', className)}>
+    <div className={cn('fixed bottom-6 right-4 z-50 flex items-end justify-end md:bottom-8 md:right-8', className)}>
       <div className="absolute bottom-[28px] right-[28px] flex h-0 w-0 items-center justify-center">
         {actions.map((action, index) => {
           const total = actions.length

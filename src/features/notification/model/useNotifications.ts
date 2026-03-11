@@ -13,7 +13,6 @@ export const useUnreadCount = () => {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: () => notificationApi.getUnreadCount(),
-    refetchInterval: 60000, // poll every 60 seconds
   })
 }
 
