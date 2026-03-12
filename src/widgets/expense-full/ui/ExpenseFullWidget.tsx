@@ -125,32 +125,31 @@ export const ExpenseFullWidget = () => {
     <div className="relative h-full">
       <div className="space-y-4">
         {/* Tabs + category manager button */}
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  activeTab === tab.key
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="flex items-center overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                activeTab === tab.key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <div className="ml-auto flex items-center pl-1">
+            <div className="mx-1 h-5 w-px bg-border" />
+            <button
+              onClick={() => setShowCategoryManager(true)}
+              title={t('categories')}
+              className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Settings size={16} />
+            </button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setShowCategoryManager(true)}
-            title={t('categories')}
-          >
-            <Settings size={16} />
-          </Button>
         </div>
 
         {/* Tab content */}
