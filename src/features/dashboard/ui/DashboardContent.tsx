@@ -151,8 +151,8 @@ const DashboardContent = () => {
   }, [layouts])
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
-      <div className="flex-1 overflow-y-auto" ref={containerRef}>
+    <div className="relative flex flex-col">
+      <div ref={containerRef}>
         {mounted && (
           <Responsive
             className="layout min-h-screen"
