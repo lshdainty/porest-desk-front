@@ -121,7 +121,7 @@ const MonthDayCell = ({
   return (
     <div
       className={cn(
-        'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
+        'flex h-full flex-col gap-1 overflow-hidden border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
         isSunday && 'border-l-0',
         isSelected && 'bg-blue-100/50 dark:bg-blue-900/20 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]'
       )}
@@ -374,7 +374,8 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
 
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div
-          className="grid grid-cols-7 auto-rows-fr h-full"
+          className="grid grid-cols-7 min-h-full"
+          style={{ gridAutoRows: 'minmax(120px, 1fr)' }}
           onMouseUp={handleGridMouseUp}
           onMouseLeave={handleGridMouseLeave}
         >
