@@ -125,8 +125,8 @@ export const ExpenseFullWidget = () => {
     <div className="relative h-full">
       <div className="space-y-4">
         {/* Tabs + category manager button */}
-        <div className="flex items-center rounded-lg border bg-muted/30 p-1">
-          <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none">
+        <div className="flex items-center rounded-lg border bg-muted/30 px-1">
+          <div className="flex min-w-0 flex-1 overflow-x-auto py-1 scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
