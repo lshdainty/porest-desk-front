@@ -152,15 +152,15 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
 
       <PeriodSelector value={period} onChange={setPeriod} />
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.monthlyTrend')}
         </h3>
         <MonthlyTrendChart monthlyAmounts={filteredMonthlyAmounts} />
       </div>
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.yearOverYear')}
         </h3>
         <YearOverYearChart
@@ -170,8 +170,8 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
         />
       </div>
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.budgetVsActual')}
         </h3>
         <BudgetVsActualChart
@@ -181,22 +181,22 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
         />
       </div>
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.categoryTrend')}
         </h3>
         <CategoryTrendChart monthlyAmounts={filteredMonthlyAmounts} />
       </div>
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.merchantAnalysis')}
         </h3>
         <MerchantAnalysisChart merchants={merchantData?.merchants ?? []} />
       </div>
 
-      <div className="rounded-lg border p-4">
-        <h3 className="mb-3 text-sm font-medium">
+      <div className="rounded-xl border p-5">
+        <h3 className="mb-3 text-sm font-semibold">
           {t('stats.assetUsage')}
         </h3>
         <AssetUsageChart assets={assetData?.assets ?? []} />

@@ -20,7 +20,7 @@ export const MerchantAnalysisChart = ({ merchants }: MerchantAnalysisChartProps)
   const chartConfig = {
     amount: {
       label: t('totalExpense'),
-      color: '#f97316',
+      color: '#f59e0b',
     },
   } satisfies ChartConfig
 
@@ -45,13 +45,13 @@ export const MerchantAnalysisChart = ({ merchants }: MerchantAnalysisChartProps)
   }
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
+    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
       <BarChart
         data={chartData}
         layout="vertical"
         margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
       >
-        <CartesianGrid horizontal={false} />
+        <CartesianGrid horizontal={false} strokeDasharray="3 3" strokeOpacity={0.3} />
         <YAxis
           dataKey="name"
           type="category"
@@ -86,7 +86,7 @@ export const MerchantAnalysisChart = ({ merchants }: MerchantAnalysisChartProps)
             />
           }
         />
-        <Bar dataKey="amount" fill="var(--color-amount)" radius={[0, 4, 4, 0]} barSize={14} />
+        <Bar dataKey="amount" fill="var(--color-amount)" radius={[0, 6, 6, 0]} barSize={18} />
       </BarChart>
     </ChartContainer>
   )

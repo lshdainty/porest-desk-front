@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart, Line, XAxis, CartesianGrid } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -75,17 +75,25 @@ export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) 
       </Select>
 
       {selectedCategoryId && chartData.length > 0 ? (
-        <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
-          <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid vertical={false} />
+        <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
+          <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={10}
               fontSize={11}
             />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              fontSize={11}
+              width={45}
+              tickFormatter={(v) => v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString()}
+            />
             <ChartTooltip
+              cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
               content={
                 <ChartTooltipContent
                   formatter={(value) => (
@@ -103,9 +111,9 @@ export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) 
               dataKey="amount"
               type="monotone"
               stroke="var(--color-amount)"
-              strokeWidth={2}
-              dot={{ fill: 'var(--color-amount)', r: 4 }}
-              activeDot={{ r: 6 }}
+              strokeWidth={2.5}
+              dot={{ r: 3, fill: 'white', strokeWidth: 2, stroke: 'var(--color-amount)' }}
+              activeDot={{ r: 6, strokeWidth: 2 }}
             />
           </LineChart>
         </ChartContainer>

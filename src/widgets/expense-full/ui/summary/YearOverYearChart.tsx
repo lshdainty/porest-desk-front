@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BarChart, Bar, XAxis, CartesianGrid } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -32,7 +32,7 @@ export const YearOverYearChart = ({
     },
     lastYear: {
       label: `${currentYear - 1}${t('stats.lastYear') === '작년' ? '년' : ''}`,
-      color: '#94a3b8',
+      color: '#cbd5e1',
     },
   } satisfies ChartConfig
 
@@ -58,15 +58,22 @@ export const YearOverYearChart = ({
   }
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
-      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-        <CartesianGrid vertical={false} />
+    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
+      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barGap={4} barCategoryGap="25%">
+        <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.3} />
         <XAxis
           dataKey="month"
           tickLine={false}
           axisLine={false}
-          tickMargin={8}
+          tickMargin={10}
           fontSize={11}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          fontSize={11}
+          width={45}
+          tickFormatter={(v) => v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString()}
         />
         <ChartTooltip
           content={
@@ -85,8 +92,8 @@ export const YearOverYearChart = ({
             />
           }
         />
-        <Bar dataKey="thisYear" fill="var(--color-thisYear)" radius={[4, 4, 0, 0]} barSize={14} />
-        <Bar dataKey="lastYear" fill="var(--color-lastYear)" radius={[4, 4, 0, 0]} barSize={14} />
+        <Bar dataKey="thisYear" fill="var(--color-thisYear)" radius={[6, 6, 0, 0]} barSize={20} />
+        <Bar dataKey="lastYear" fill="var(--color-lastYear)" radius={[6, 6, 0, 0]} barSize={20} />
         <ChartLegend content={<ChartLegendContent />} />
       </BarChart>
     </ChartContainer>

@@ -28,7 +28,7 @@ export const BudgetVsActualChart = ({
   const chartConfig = {
     budget: {
       label: t('budget.amount'),
-      color: '#94a3b8',
+      color: '#cbd5e1',
     },
     actual: {
       label: t('totalExpense'),
@@ -62,13 +62,14 @@ export const BudgetVsActualChart = ({
   }
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
+    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
       <BarChart
         data={chartData}
         layout="vertical"
         margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+        barGap={4}
       >
-        <CartesianGrid horizontal={false} />
+        <CartesianGrid horizontal={false} strokeDasharray="3 3" strokeOpacity={0.3} />
         <YAxis
           dataKey="name"
           type="category"
@@ -96,8 +97,8 @@ export const BudgetVsActualChart = ({
             />
           }
         />
-        <Bar dataKey="budget" fill="var(--color-budget)" radius={[0, 4, 4, 0]} barSize={12} />
-        <Bar dataKey="actual" fill="var(--color-actual)" radius={[0, 4, 4, 0]} barSize={12} />
+        <Bar dataKey="budget" fill="var(--color-budget)" radius={[0, 6, 6, 0]} barSize={18} />
+        <Bar dataKey="actual" fill="var(--color-actual)" radius={[0, 6, 6, 0]} barSize={18} />
         <ChartLegend content={<ChartLegendContent />} />
       </BarChart>
     </ChartContainer>

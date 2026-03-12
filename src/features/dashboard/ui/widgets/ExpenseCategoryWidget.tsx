@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { expenseApi } from '@/features/expense/api/expenseApi'
 import { expenseKeys } from '@/shared/config'
 
-const CHART_COLORS = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e', '#6366f1', '#84cc16', '#06b6d4']
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('ko-KR').format(amount) + '원'
@@ -91,9 +91,10 @@ export const ExpenseCategoryWidget = () => {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius="55%"
-              outerRadius="80%"
-              strokeWidth={2}
+              innerRadius="60%"
+              outerRadius="85%"
+              paddingAngle={3}
+              strokeWidth={3}
               stroke="hsl(var(--background))"
             >
               {chartData.map((entry, index) => (
@@ -105,7 +106,7 @@ export const ExpenseCategoryWidget = () => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-xs text-muted-foreground">{t('total')}</p>
-            <p className="text-sm font-bold">{formatCurrency(totalExpense)}</p>
+            <p className="text-base font-bold">{formatCurrency(totalExpense)}</p>
           </div>
         </div>
       </div>

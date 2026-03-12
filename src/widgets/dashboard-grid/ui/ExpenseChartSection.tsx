@@ -23,11 +23,11 @@ const formatCurrency = (amount: number) => {
 const chartConfig = {
   income: {
     label: '수입',
-    color: 'oklch(0.65 0.19 145)',
+    color: '#10b981',
   },
   expense: {
     label: '지출',
-    color: 'oklch(0.63 0.22 25)',
+    color: '#f43f5e',
   },
 } satisfies ChartConfig
 
@@ -63,29 +63,29 @@ export const ExpenseChartSection = ({ data }: Props) => {
         </button>
       </div>
       <div className="flex-1 px-4 pt-4 pb-2">
-        <ChartContainer config={chartConfig} className="aspect-auto h-48 w-full">
+        <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
             <defs>
-              <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.1} />
+              <linearGradient id="gridFillIncome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.1} />
+              <linearGradient id="gridFillExpense" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={10}
               interval="preserveStartEnd"
               fontSize={11}
             />
             <ChartTooltip
-              cursor={false}
+              cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
               content={
                 <ChartTooltipContent
                   indicator="line"
@@ -105,19 +105,23 @@ export const ExpenseChartSection = ({ data }: Props) => {
             />
             <Area
               dataKey="income"
-              type="natural"
-              fill="url(#fillIncome)"
+              type="monotone"
+              fill="url(#gridFillIncome)"
               fillOpacity={0.4}
               stroke="var(--color-income)"
-              strokeWidth={2}
+              strokeWidth={2.5}
+              dot={{ r: 0 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
             <Area
               dataKey="expense"
-              type="natural"
-              fill="url(#fillExpense)"
+              type="monotone"
+              fill="url(#gridFillExpense)"
               fillOpacity={0.4}
               stroke="var(--color-expense)"
-              strokeWidth={2}
+              strokeWidth={2.5}
+              dot={{ r: 0 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>

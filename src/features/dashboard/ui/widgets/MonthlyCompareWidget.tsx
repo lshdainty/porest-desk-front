@@ -18,11 +18,11 @@ export const MonthlyCompareWidget = () => {
   const chartConfig = {
     income: {
       label: t('chart.income'),
-      color: '#22c55e',
+      color: '#10b981',
     },
     expense: {
       label: t('chart.expense'),
-      color: '#ef4444',
+      color: '#f43f5e',
     },
   } satisfies ChartConfig
 
@@ -66,12 +66,12 @@ export const MonthlyCompareWidget = () => {
     <div className="flex h-full items-center justify-center p-3">
       <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
         <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-          <CartesianGrid vertical={false} />
+          <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.3} />
           <XAxis
             dataKey="month"
             tickLine={false}
             axisLine={false}
-            tickMargin={8}
+            tickMargin={10}
             fontSize={11}
           />
           <ChartTooltip
@@ -91,8 +91,8 @@ export const MonthlyCompareWidget = () => {
               />
             }
           />
-          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} barSize={14} />
-          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} barSize={14} />
+          <Bar dataKey="income" fill="var(--color-income)" radius={[6, 6, 0, 0]} barSize={20} />
+          <Bar dataKey="expense" fill="var(--color-expense)" radius={[6, 6, 0, 0]} barSize={20} />
         </BarChart>
       </ChartContainer>
     </div>

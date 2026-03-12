@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Wallet, TrendingDown, TrendingUp } from 'lucide-react'
-import { AreaChart, Area, XAxis, CartesianGrid } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -24,11 +24,11 @@ export const ExpenseTrendWidget = () => {
   const chartConfig = {
     income: {
       label: t('chart.income'),
-      color: 'oklch(0.65 0.19 145)',
+      color: '#10b981',
     },
     expense: {
       label: t('chart.expense'),
-      color: 'oklch(0.63 0.22 25)',
+      color: '#f43f5e',
     },
   } satisfies ChartConfig
 
@@ -69,29 +69,36 @@ export const ExpenseTrendWidget = () => {
       </div>
 
       <div className="mt-2 flex-1">
-        <ChartContainer config={chartConfig} className="aspect-auto h-48 w-full">
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+        <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.3} />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={10}
               interval="preserveStartEnd"
               fontSize={11}
             />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              fontSize={11}
+              width={45}
+              tickFormatter={(v) => v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString()}
+            />
             <ChartTooltip
-              cursor={false}
+              cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
               content={
                 <ChartTooltipContent
                   indicator="line"
@@ -111,19 +118,23 @@ export const ExpenseTrendWidget = () => {
             />
             <Area
               dataKey="income"
-              type="natural"
+              type="monotone"
               fill="url(#fillIncome)"
               fillOpacity={0.4}
               stroke="var(--color-income)"
-              strokeWidth={2}
+              strokeWidth={2.5}
+              dot={{ r: 0 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
             <Area
               dataKey="expense"
-              type="natural"
+              type="monotone"
               fill="url(#fillExpense)"
               fillOpacity={0.4}
               stroke="var(--color-expense)"
-              strokeWidth={2}
+              strokeWidth={2.5}
+              dot={{ r: 0 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>

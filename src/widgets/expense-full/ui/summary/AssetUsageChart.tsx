@@ -11,8 +11,8 @@ import { formatCurrency } from '@/shared/lib'
 import type { AssetExpenseSummary } from '@/entities/expense'
 
 const COLORS = [
-  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
-  '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
+  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+  '#14b8a6', '#f43f5e', '#6366f1', '#84cc16', '#06b6d4',
 ]
 
 interface AssetUsageChartProps {
@@ -53,17 +53,19 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
   }
 
   return (
-    <ChartContainer config={chartConfig} className="mx-auto aspect-square h-56">
+    <ChartContainer config={chartConfig} className="mx-auto aspect-square h-64">
       <PieChart>
         <Pie
           data={displayData}
           cx="50%"
           cy="50%"
-          innerRadius={45}
-          outerRadius={75}
-          paddingAngle={2}
+          innerRadius="60%"
+          outerRadius="85%"
+          paddingAngle={3}
           dataKey="value"
           nameKey="name"
+          strokeWidth={3}
+          stroke="hsl(var(--background))"
         >
           {displayData.map((_entry, index) => (
             <Cell key={`cell-${index}`} fill={`var(--color-asset-${index})`} />
