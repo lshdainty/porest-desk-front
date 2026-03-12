@@ -49,8 +49,8 @@ const DonutWithList = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 도넛 차트 */}
+    <div className="flex h-full flex-col gap-4">
+      {/* 도넛 차트 (고정) */}
       <div className="relative flex shrink-0 items-center justify-center">
         <ChartContainer config={chartConfig} className="aspect-square h-full max-h-[200px] w-full">
           <PieChart>
@@ -91,32 +91,35 @@ const DonutWithList = ({
         </div>
       </div>
 
-      {/* 헤더 행 */}
-      <div className="flex items-center justify-between border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        <span>{headerLabel}</span>
-        <span>금액 / 비율</span>
-      </div>
+      {/* 헤더 + 리스트 영역 (리스트만 스크롤) */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* 헤더 행 (고정) */}
+        <div className="flex shrink-0 items-center justify-between border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <span>{headerLabel}</span>
+          <span>금액 / 비율</span>
+        </div>
 
-      {/* 상세 리스트 */}
-      <div className="flex flex-col">
-        {data.map((item, i) => (
-          <div
-            key={item.name}
-            className="flex items-center gap-3 border-b py-3 last:border-b-0"
-          >
+        {/* 상세 리스트 (스크롤) */}
+        <div className="flex-1 overflow-y-auto">
+          {data.map((item, i) => (
             <div
-              className="h-8 w-1 shrink-0 rounded-full"
-              style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
-            />
-            <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
-            <span className="text-sm font-bold tabular-nums">
-              {formatCurrency(item.value)}
-            </span>
-            <span className="rounded-md bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
-              {item.percentage}%
-            </span>
-          </div>
-        ))}
+              key={item.name}
+              className="flex items-center gap-3 border-b py-3 last:border-b-0"
+            >
+              <div
+                className="h-8 w-1 shrink-0 rounded-full"
+                style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+              />
+              <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
+              <span className="text-sm font-bold tabular-nums">
+                {formatCurrency(item.value)}
+              </span>
+              <span className="rounded-md bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
+                {item.percentage}%
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -224,8 +227,8 @@ export const ExpenseCategoryWidget = () => {
   }
 
   return (
-    <div className="flex h-full flex-col p-4">
-      <Tabs defaultValue="category" className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-hidden p-4">
+      <Tabs defaultValue="category" className="flex min-h-0 flex-1 flex-col">
         <div className="flex justify-center">
           <TabsList>
             <TabsTrigger value="category">{t('widget.byCategory')}</TabsTrigger>
@@ -233,7 +236,7 @@ export const ExpenseCategoryWidget = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="category" className="flex-1 overflow-auto">
+        <TabsContent value="category" className="min-h-0 flex-1 overflow-hidden">
           <DonutWithList
             data={categoryChartData}
             total={categoryTotal}
@@ -244,7 +247,7 @@ export const ExpenseCategoryWidget = () => {
           />
         </TabsContent>
 
-        <TabsContent value="merchant" className="flex-1 overflow-auto">
+        <TabsContent value="merchant" className="min-h-0 flex-1 overflow-hidden">
           <DonutWithList
             data={merchantChartData}
             total={merchantTotal}
