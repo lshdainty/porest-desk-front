@@ -185,7 +185,7 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
         <h3 className="mb-3 text-sm font-semibold">
           {t('stats.categoryTrend')}
         </h3>
-        <CategoryTrendChart monthlyAmounts={filteredMonthlyAmounts} />
+        <CategoryTrendChart monthlyAmounts={filteredMonthlyAmounts} categories={categories} />
       </div>
 
       <div className="rounded-xl border p-5">

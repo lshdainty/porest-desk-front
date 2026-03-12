@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useYearlySummary } from '@/features/expense'
+import { useYearlySummary, useExpenseCategories } from '@/features/expense'
 import { CategoryTrendChart } from '@/widgets/expense-full/ui/summary/CategoryTrendChart'
 
 export const CategoryTrendDashWidget = () => {
@@ -9,6 +9,7 @@ export const CategoryTrendDashWidget = () => {
   const year = now.getFullYear()
 
   const { data, isLoading } = useYearlySummary(year)
+  const { data: categories } = useExpenseCategories()
 
   const filteredData = useMemo(() => {
     if (!data?.monthlyAmounts) return []
@@ -35,7 +36,7 @@ export const CategoryTrendDashWidget = () => {
 
   return (
     <div className="flex h-full flex-col p-3">
-      <CategoryTrendChart monthlyAmounts={filteredData} />
+      <CategoryTrendChart monthlyAmounts={filteredData} categories={categories} />
     </div>
   )
 }

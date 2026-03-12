@@ -10,18 +10,21 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
 import { formatCurrency } from '@/shared/lib'
-import type { MonthlyAmount } from '@/entities/expense'
+import type { MonthlyAmount, ExpenseCategory } from '@/entities/expense'
 
 interface CategoryTrendChartProps {
   monthlyAmounts: MonthlyAmount[]
+  categories?: ExpenseCategory[]
 }
 
-export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) => {
+export const CategoryTrendChart = ({ monthlyAmounts, categories }: CategoryTrendChartProps) => {
   const { t } = useTranslation('expense')
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
 
@@ -37,6 +40,30 @@ export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) 
     })
     return Array.from(catMap.entries()).map(([id, name]) => ({ id, name }))
   }, [monthlyAmounts])
+
+  // 수입/지출 그룹 분리
+  const { expenseCategories, incomeCategories } = useMemo(() => {
+    if (!categories || categories.length === 0) {
+      return { expenseCategories: allCategories, incomeCategories: [] as typeof allCategories }
+    }
+
+    const typeMap = new Map<number, string>()
+    categories.forEach((c) => typeMap.set(c.rowId, c.expenseType))
+
+    const expense: typeof allCategories = []
+    const income: typeof allCategories = []
+
+    allCategories.forEach((cat) => {
+      const type = typeMap.get(cat.id) ?? 'EXPENSE'
+      if (type === 'INCOME') {
+        income.push(cat)
+      } else {
+        expense.push(cat)
+      }
+    })
+
+    return { expenseCategories: expense, incomeCategories: income }
+  }, [allCategories, categories])
 
   const selectedCategory = allCategories.find((c) => String(c.id) === selectedCategoryId)
 
@@ -59,6 +86,8 @@ export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) 
     })
   }, [monthlyAmounts, selectedCategoryId])
 
+  const hasGroups = categories && categories.length > 0
+
   return (
     <div className="space-y-3">
       <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
@@ -66,11 +95,36 @@ export const CategoryTrendChart = ({ monthlyAmounts }: CategoryTrendChartProps) 
           <SelectValue placeholder={t('stats.selectCategory')} />
         </SelectTrigger>
         <SelectContent>
-          {allCategories.map((cat) => (
-            <SelectItem key={cat.id} value={String(cat.id)}>
-              {cat.name}
-            </SelectItem>
-          ))}
+          {hasGroups ? (
+            <>
+              {expenseCategories.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>{t('expense')}</SelectLabel>
+                  {expenseCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              {incomeCategories.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>{t('income')}</SelectLabel>
+                  {incomeCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+            </>
+          ) : (
+            allCategories.map((cat) => (
+              <SelectItem key={cat.id} value={String(cat.id)}>
+                {cat.name}
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
 
