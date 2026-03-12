@@ -180,7 +180,7 @@ const MonthDayCell = ({
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="lg:min-h-0 lg:flex-1">
+            <div key={eventKey} className="lg:h-6.5">
               {event && (
                 <>
                   {/* Mobile: color dot */}
