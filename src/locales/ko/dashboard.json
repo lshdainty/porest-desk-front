@@ -128,5 +128,10 @@
   "widget.merchantAnalysis": "거래처 분석",
   "widget.assetUsage": "자산별 사용",
   "allDay": "종일",
-  "total": "합계"
+  "total": "합계",
+  "widget.byCategory": "카테고리별",
+  "widget.byMerchant": "가맹점별",
+  "widget.categoryLabel": "카테고리",
+  "widget.merchantLabel": "가맹점",
+  "widget.totalExpense": "총 지출"
 }

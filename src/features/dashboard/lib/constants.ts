@@ -20,9 +20,8 @@ export const WIDGETS: Widget[] = [
   { id: 'quick-stats', labelKey: 'widget.quickStats', defaultH: 3, defaultW: 12, minW: 6, maxW: 12, minH: 3, maxH: 4 },
 
   // 가계부 관련 신규
-  { id: 'expense-category', labelKey: 'widget.expenseCategory', defaultH: 8, defaultW: 4, minW: 3, maxW: 8, minH: 6, maxH: 12 },
+  { id: 'expense-category', labelKey: 'widget.expenseCategory', defaultH: 10, defaultW: 6, minW: 4, maxW: 8, minH: 8, maxH: 14 },
   { id: 'monthly-budget', labelKey: 'widget.monthlyBudget', defaultH: 6, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 10 },
-  { id: 'expense-by-merchant', labelKey: 'widget.expenseByMerchant', defaultH: 7, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 12 },
   { id: 'asset-overview', labelKey: 'widget.assetOverview', defaultH: 6, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 10 },
   { id: 'monthly-compare', labelKey: 'widget.monthlyCompare', defaultH: 7, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 12 },
 

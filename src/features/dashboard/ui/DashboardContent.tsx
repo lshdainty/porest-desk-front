@@ -21,7 +21,6 @@ import { ExpenseTrendWidget } from '@/features/dashboard/ui/widgets/ExpenseTrend
 import { QuickStatsWidget } from '@/features/dashboard/ui/widgets/QuickStatsWidget'
 import { ExpenseCategoryWidget } from '@/features/dashboard/ui/widgets/ExpenseCategoryWidget'
 import { MonthlyBudgetWidget } from '@/features/dashboard/ui/widgets/MonthlyBudgetWidget'
-import { ExpenseByMerchantWidget } from '@/features/dashboard/ui/widgets/ExpenseByMerchantWidget'
 import { AssetOverviewWidget } from '@/features/dashboard/ui/widgets/AssetOverviewWidget'
 import { MonthlyCompareWidget } from '@/features/dashboard/ui/widgets/MonthlyCompareWidget'
 import { MiniCalendarWidget } from '@/features/dashboard/ui/widgets/MiniCalendarWidget'
@@ -106,7 +105,6 @@ const DashboardContent = () => {
     'quick-stats': { title: t('widget.quickStats'), component: <QuickStatsWidget /> },
     'expense-category': { title: t('widget.expenseCategory'), component: <ExpenseCategoryWidget /> },
     'monthly-budget': { title: t('widget.monthlyBudget'), component: <MonthlyBudgetWidget /> },
-    'expense-by-merchant': { title: t('widget.expenseByMerchant'), component: <ExpenseByMerchantWidget /> },
     'asset-overview': { title: t('widget.assetOverview'), component: <AssetOverviewWidget /> },
     'monthly-compare': { title: t('widget.monthlyCompare'), component: <MonthlyCompareWidget /> },
     'mini-calendar': { title: t('widget.miniCalendar'), component: <MiniCalendarWidget /> },

@@ -128,5 +128,10 @@
   "widget.merchantAnalysis": "Merchant Analysis",
   "widget.assetUsage": "Asset Usage",
   "allDay": "All Day",
-  "total": "Total"
+  "total": "Total",
+  "widget.byCategory": "By Category",
+  "widget.byMerchant": "By Merchant",
+  "widget.categoryLabel": "CATEGORY",
+  "widget.merchantLabel": "MERCHANT",
+  "widget.totalExpense": "total spend"
 }
