@@ -125,22 +125,24 @@ export const ExpenseFullWidget = () => {
     <div className="relative h-full">
       <div className="space-y-4">
         {/* Tabs + category manager button */}
-        <div className="flex items-center overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                activeTab === tab.key
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center pl-1">
+        <div className="flex items-center rounded-lg border bg-muted/30 p-1">
+          <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  activeTab === tab.key
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex shrink-0 items-center pl-1">
             <div className="mx-1 h-5 w-px bg-border" />
             <button
               onClick={() => setShowCategoryManager(true)}
