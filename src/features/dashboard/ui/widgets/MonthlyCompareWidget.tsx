@@ -37,8 +37,8 @@ export const MonthlyCompareWidget = () => {
   const chartData = useMemo(() => {
     if (!data?.monthlyAmounts) return []
 
-    // 1월~현재월까지 전체 표시 (데이터 없는 달도 0으로)
-    return Array.from({ length: currentMonth }, (_, i) => {
+    // 1월~12월 전체 표시 (데이터 없는 달도 0으로)
+    return Array.from({ length: 12 }, (_, i) => {
       const month = i + 1
       const found = data.monthlyAmounts.find((m) => m.month === month)
       return {
@@ -47,7 +47,7 @@ export const MonthlyCompareWidget = () => {
         expense: found?.totalExpense ?? 0,
       }
     })
-  }, [data, currentMonth])
+  }, [data])
 
   if (isLoading) {
     return (
@@ -115,13 +115,13 @@ export const MonthlyCompareWidget = () => {
               dataKey="income"
               fill="var(--color-income)"
               radius={[4, 4, 0, 0]}
-              barSize={currentMonth <= 6 ? 20 : 14}
+              barSize={12}
             />
             <Bar
               dataKey="expense"
               fill="var(--color-expense)"
               radius={[4, 4, 0, 0]}
-              barSize={currentMonth <= 6 ? 20 : 14}
+              barSize={12}
             />
             <ChartLegend content={<ChartLegendContent />} />
           </BarChart>
