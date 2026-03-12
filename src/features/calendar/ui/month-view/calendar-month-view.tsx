@@ -1,6 +1,6 @@
 import { isToday, startOfDay, endOfDay, format, isSameDay, parseISO } from 'date-fns'
 import { enUS, ko } from 'date-fns/locale'
-import { useMemo, useCallback, useRef } from 'react'
+import { useMemo, useCallback, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
@@ -53,7 +53,7 @@ interface IProps {
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
-const MAX_VISIBLE_EVENTS = 3
+const MOBILE_MAX_EVENTS = 3
 
 const MonthDayCell = ({
   cell,
@@ -61,6 +61,7 @@ const MonthDayCell = ({
   eventPositions,
   expenseSummary,
   holidayDateSet,
+  maxVisibleEvents,
   onEventClick,
 }: {
   cell: ICalendarCell
@@ -68,6 +69,7 @@ const MonthDayCell = ({
   eventPositions: Record<string, number>
   expenseSummary?: IDayExpenseSummary
   holidayDateSet: Set<string>
+  maxVisibleEvents: number
   onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
   const { t } = useTranslation('calendar')
@@ -158,7 +160,7 @@ const MonthDayCell = ({
           )}
         </div>
 
-        {cellEvents.length > MAX_VISIBLE_EVENTS && (
+        {cellEvents.length > maxVisibleEvents && (
           <button
             onClick={handleClick}
             className={cn(
@@ -166,19 +168,19 @@ const MonthDayCell = ({
               !currentMonth && 'opacity-50'
             )}
           >
-            <span className="sm:hidden">+{cellEvents.length - MAX_VISIBLE_EVENTS}</span>
-            <span className="hidden sm:inline">{t('monthView.more', { count: cellEvents.length - MAX_VISIBLE_EVENTS })}</span>
+            <span className="sm:hidden">+{cellEvents.length - maxVisibleEvents}</span>
+            <span className="hidden sm:inline">{t('monthView.more', { count: cellEvents.length - maxVisibleEvents })}</span>
           </button>
         )}
       </div>
 
-      <div className={cn('flex flex-1 h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0', !currentMonth && 'opacity-50')}>
-        {[0, 1, 2].map(position => {
+      <div className={cn('flex flex-1 min-h-0 h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0', !currentMonth && 'opacity-50')}>
+        {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="lg:min-h-[28px]">
+            <div key={eventKey} className="lg:min-h-0 lg:flex-1">
               {event && (
                 <>
                   {/* Mobile: color dot */}
@@ -342,6 +344,30 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
     [regularMultiDayEvents, regularSingleDayEvents, selectedDate]
   )
 
+  // 그리드 래퍼 높이 기반 동적 이벤트 표시 개수 계산
+  const gridWrapperRef = useRef<HTMLDivElement>(null)
+  const [maxVisibleEvents, setMaxVisibleEvents] = useState(MOBILE_MAX_EVENTS)
+
+  useEffect(() => {
+    const el = gridWrapperRef.current
+    if (!el) return
+
+    const calculate = () => {
+      const wrapperHeight = el.clientHeight
+      const numRows = Math.ceil(cells.length / 7)
+      const rowHeight = wrapperHeight / numRows
+      // 셀 내부: 헤더(날짜번호) ~30px + padding ~12px
+      const availableForEvents = rowHeight - 42
+      // 이벤트 배지 ~24px + gap 8px
+      const count = Math.max(0, Math.floor((availableForEvents + 8) / 32))
+      setMaxVisibleEvents(count)
+    }
+
+    const observer = new ResizeObserver(calculate)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [cells.length])
+
   // Handle mouse up on the grid container (catches mouseup outside cells)
   const handleGridMouseUp = useCallback(() => {
     endSelection()
@@ -372,10 +398,9 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-hidden" ref={gridWrapperRef}>
         <div
-          className="grid grid-cols-7 min-h-full"
-          style={{ gridAutoRows: 'minmax(120px, 1fr)' }}
+          className="grid grid-cols-7 auto-rows-fr h-full"
           onMouseUp={handleGridMouseUp}
           onMouseLeave={handleGridMouseLeave}
         >
@@ -389,6 +414,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 eventPositions={eventPositions}
                 expenseSummary={expenseSummaryMap.get(dayKey)}
                 holidayDateSet={holidayDateSet}
+                maxVisibleEvents={maxVisibleEvents}
                 onEventClick={onEventClick}
               />
             )
