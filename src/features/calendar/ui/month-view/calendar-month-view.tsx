@@ -174,7 +174,7 @@ const MonthDayCell = ({
         )}
       </div>
 
-      <div className={cn('flex flex-1 min-h-0 h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0', !currentMonth && 'opacity-50')}>
+      <div className={cn('flex flex-1 min-h-0 h-6 gap-1 px-2 lg:flex-col lg:gap-1 lg:px-0', !currentMonth && 'opacity-50')}>
         {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
@@ -356,10 +356,10 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
       const wrapperHeight = el.clientHeight
       const numRows = Math.ceil(cells.length / 7)
       const rowHeight = wrapperHeight / numRows
-      // 셀 내부: 헤더(날짜번호) ~30px + padding ~12px
-      const availableForEvents = rowHeight - 42
-      // 이벤트 배지 ~24px + gap 8px
-      const count = Math.max(0, Math.floor((availableForEvents + 8) / 32))
+      // 셀 내부: 헤더(날짜번호) 24px + padding(top 4 + bottom 8) + cell gap 4px = 40px
+      const availableForEvents = rowHeight - 40
+      // 이벤트 배지 26px(h-6.5) + gap 4px(gap-1) = 30px per slot
+      const count = Math.max(0, Math.floor((availableForEvents + 4) / 30))
       setMaxVisibleEvents(count)
     }
 
