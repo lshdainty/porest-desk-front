@@ -26,7 +26,7 @@ export const WIDGETS: Widget[] = [
   { id: 'monthly-compare', labelKey: 'widget.monthlyCompare', defaultH: 7, defaultW: 6, minW: 4, maxW: 12, minH: 5, maxH: 12 },
 
   // 일정 관련 신규
-  { id: 'mini-calendar', labelKey: 'widget.miniCalendar', defaultH: 9, defaultW: 4, minW: 3, maxW: 6, minH: 8, maxH: 12 },
+  { id: 'mini-calendar', labelKey: 'widget.miniCalendar', defaultH: 7, defaultW: 4, minW: 3, maxW: 6, minH: 7, maxH: 10 },
   { id: 'today-schedule', labelKey: 'widget.todaySchedule', defaultH: 8, defaultW: 4, minW: 3, maxW: 8, minH: 6, maxH: 14 },
   { id: 'dday', labelKey: 'widget.dday', defaultH: 5, defaultW: 4, minW: 3, maxW: 6, minH: 4, maxH: 8 },
 
