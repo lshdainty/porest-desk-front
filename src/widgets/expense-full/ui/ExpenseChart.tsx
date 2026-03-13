@@ -16,6 +16,56 @@ const COLORS = [
   '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
 ]
 
+const RADIAN = Math.PI / 180
+
+const formatCompactAmount = (value: number): string => {
+  if (value >= 1000000) {
+    // 100만 이상: 소수점 없이 (예: 371만)
+    return `${Math.round(value / 10000)}만`
+  }
+  if (value >= 10000) {
+    // 1만 이상: 소수점 1자리 (예: 27.7만)
+    const man = value / 10000
+    return man % 1 === 0 ? `${man}만` : `${man.toFixed(1)}만`
+  }
+  return value.toLocaleString()
+}
+
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  outerRadius,
+  value,
+  percent,
+}: {
+  cx: number
+  cy: number
+  midAngle: number
+  outerRadius: number
+  value: number
+  percent: number
+}) => {
+  // 비율이 1% 미만이면 라벨 표시하지 않음
+  if (percent < 0.01) return null
+
+  const radius = outerRadius + 28
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="fill-foreground text-[11px] font-medium"
+    >
+      {formatCompactAmount(value)}
+    </text>
+  )
+}
+
 export const ExpenseChart = ({ breakdown }: ExpenseChartProps) => {
   const { t } = useTranslation('expense')
   const [selectedParent, setSelectedParent] = useState<ParentCategoryBreakdown | null>(null)
@@ -62,7 +112,7 @@ export const ExpenseChart = ({ breakdown }: ExpenseChartProps) => {
   if (breakdown.length === 0) return null
 
   return (
-    <div className="h-48 w-full">
+    <div className="w-full">
       {selectedParent && (
         <button
           onClick={handleBack}
@@ -72,17 +122,18 @@ export const ExpenseChart = ({ breakdown }: ExpenseChartProps) => {
           {selectedParent.categoryName}
         </button>
       )}
-      <ChartContainer config={chartConfig} className="mx-auto aspect-square h-full">
-        <PieChart>
+      <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[280px]">
+        <PieChart margin={{ top: 25, right: 50, bottom: 25, left: 50 }}>
           <Pie
             data={displayData}
             cx="50%"
             cy="50%"
-            innerRadius={40}
-            outerRadius={70}
+            innerRadius={50}
+            outerRadius={80}
             paddingAngle={2}
             dataKey="value"
             nameKey="name"
+            label={renderCustomizedLabel}
             onClick={handlePieClick}
             style={{ cursor: selectedParent ? 'default' : 'pointer' }}
           >
@@ -120,6 +171,19 @@ export const ExpenseChart = ({ breakdown }: ExpenseChartProps) => {
           />
         </PieChart>
       </ChartContainer>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pt-1">
+        {displayData.map((entry, index) => (
+          <div key={entry.name} className="flex items-center gap-1.5">
+            <div
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            />
+            <span className="text-xs text-muted-foreground">{entry.name}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

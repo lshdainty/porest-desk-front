@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next'
 import { GreetingWidget } from '@/features/dashboard/ui/widgets/GreetingWidget'
 import { TodoSummaryWidget } from '@/features/dashboard/ui/widgets/TodoSummaryWidget'
 import { ExpenseSummaryWidget } from '@/features/dashboard/ui/widgets/ExpenseSummaryWidget'
-import { TimerSummaryWidget } from '@/features/dashboard/ui/widgets/TimerSummaryWidget'
 import { UpcomingEventsWidget } from '@/features/dashboard/ui/widgets/UpcomingEventsWidget'
 import { ExpenseTrendWidget } from '@/features/dashboard/ui/widgets/ExpenseTrendWidget'
 import { QuickStatsWidget } from '@/features/dashboard/ui/widgets/QuickStatsWidget'
@@ -28,15 +27,16 @@ import { TodayScheduleWidget } from '@/features/dashboard/ui/widgets/TodaySchedu
 import { DDayWidget } from '@/features/dashboard/ui/widgets/DDayWidget'
 import { RecentTodosWidget } from '@/features/dashboard/ui/widgets/RecentTodosWidget'
 import { PinnedMemosWidget } from '@/features/dashboard/ui/widgets/PinnedMemosWidget'
-import { WeeklyFocusWidget } from '@/features/dashboard/ui/widgets/WeeklyFocusWidget'
 import { TimerMiniWidgetWrapper } from '@/features/dashboard/ui/widgets/TimerMiniWidgetWrapper'
 import { CalculatorMiniWidgetWrapper } from '@/features/dashboard/ui/widgets/CalculatorMiniWidgetWrapper'
-import { MonthlyTrendDashWidget } from '@/features/dashboard/ui/widgets/MonthlyTrendDashWidget'
 import { YearOverYearDashWidget } from '@/features/dashboard/ui/widgets/YearOverYearDashWidget'
 import { CategoryTrendDashWidget } from '@/features/dashboard/ui/widgets/CategoryTrendDashWidget'
 import { BudgetVsActualDashWidget } from '@/features/dashboard/ui/widgets/BudgetVsActualDashWidget'
 import { MerchantAnalysisDashWidget } from '@/features/dashboard/ui/widgets/MerchantAnalysisDashWidget'
 import { AssetUsageDashWidget } from '@/features/dashboard/ui/widgets/AssetUsageDashWidget'
+import { PaymentMethodWidget } from '@/features/dashboard/ui/widgets/PaymentMethodWidget'
+import { DailyExpenseCalendarWidget } from '@/features/dashboard/ui/widgets/DailyExpenseCalendarWidget'
+import { SavingsRateWidget } from '@/features/dashboard/ui/widgets/SavingsRateWidget'
 
 const DashboardContent = () => {
   const { t } = useTranslation('dashboard')
@@ -99,7 +99,6 @@ const DashboardContent = () => {
     greeting: { title: t('widget.greeting'), component: <GreetingWidget /> },
     'todo-summary': { title: t('widget.todoSummary'), component: <TodoSummaryWidget /> },
     'expense-summary': { title: t('widget.expenseSummary'), component: <ExpenseSummaryWidget /> },
-    'timer-summary': { title: t('widget.timerSummary'), component: <TimerSummaryWidget /> },
     'upcoming-events': { title: t('widget.upcomingEvents'), component: <UpcomingEventsWidget /> },
     'expense-trend': { title: t('widget.expenseTrend'), component: <ExpenseTrendWidget /> },
     'quick-stats': { title: t('widget.quickStats'), component: <QuickStatsWidget /> },
@@ -112,13 +111,14 @@ const DashboardContent = () => {
     dday: { title: t('widget.dday'), component: <DDayWidget /> },
     'recent-todos': { title: t('widget.recentTodos'), component: <RecentTodosWidget /> },
     'pinned-memos': { title: t('widget.pinnedMemos'), component: <PinnedMemosWidget /> },
-    'weekly-focus': { title: t('widget.weeklyFocus'), component: <WeeklyFocusWidget /> },
-    'monthly-trend': { title: t('widget.monthlyTrend'), component: <MonthlyTrendDashWidget /> },
     'year-over-year': { title: t('widget.yearOverYear'), component: <YearOverYearDashWidget /> },
     'category-trend': { title: t('widget.categoryTrend'), component: <CategoryTrendDashWidget /> },
     'budget-vs-actual': { title: t('widget.budgetVsActual'), component: <BudgetVsActualDashWidget /> },
     'merchant-analysis': { title: t('widget.merchantAnalysis'), component: <MerchantAnalysisDashWidget /> },
     'asset-usage': { title: t('widget.assetUsage'), component: <AssetUsageDashWidget /> },
+    'payment-method': { title: t('widget.paymentMethod'), component: <PaymentMethodWidget /> },
+    'daily-expense-calendar': { title: t('widget.dailyExpenseCalendar'), component: <DailyExpenseCalendarWidget /> },
+    'savings-rate': { title: t('widget.savingsRate'), component: <SavingsRateWidget /> },
     'timer-mini': { title: t('widget.timerMini'), component: <TimerMiniWidgetWrapper /> },
     'calculator-mini': { title: t('widget.calculatorMini'), component: <CalculatorMiniWidgetWrapper /> },
   }

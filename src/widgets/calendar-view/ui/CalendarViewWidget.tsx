@@ -209,7 +209,6 @@ export const CalendarViewWidget = () => {
           events={events}
           todos={todos}
           expenses={[]}
-          timerSessions={[]}
           onEventClick={handleEventClick}
           onTodoToggle={handleTodoToggle}
         />

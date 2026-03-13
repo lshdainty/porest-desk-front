@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckSquare, CalendarDays, FileText, Timer } from 'lucide-react'
+import { ArrowRight, CheckSquare, CalendarDays, FileText } from 'lucide-react'
 import type { DashboardSummary } from '@/features/dashboard/api/dashboardApi'
 
 interface Props {
@@ -29,12 +29,6 @@ export const QuickStatsRow = ({ data }: Props) => {
       value: data.memoSummary.pinnedCount,
       icon: <FileText size={16} />,
       path: '/desk/todo',
-    },
-    {
-      label: t('quick.timerSessions'),
-      value: data.timerSummary.todaySessionCount,
-      icon: <Timer size={16} />,
-      path: '/desk/timer',
     },
   ]
 

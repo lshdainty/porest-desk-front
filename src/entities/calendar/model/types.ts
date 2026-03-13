@@ -1,7 +1,5 @@
 import type { Todo } from '@/entities/todo'
 import type { Expense } from '@/entities/expense'
-import type { TimerSession } from '@/entities/timer'
-
 export type CalendarEventType = 'PERSONAL' | 'WORK' | 'BIRTHDAY' | 'HOLIDAY'
 
 export interface EventReminderInfo {
@@ -58,7 +56,6 @@ export interface CalendarAggregateData {
   events: CalendarEvent[]
   todos: Todo[]
   expenses: Expense[]
-  timerSessions: TimerSession[]
 }
 
 export type HolidayType = 'PUBLIC' | 'SUBSTITUTE' | 'CUSTOM'

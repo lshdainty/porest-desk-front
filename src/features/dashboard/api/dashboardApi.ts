@@ -44,11 +44,6 @@ export interface DashboardSummary {
     monthlyIncome: number
     monthlyExpense: number
   }
-  timerSummary: {
-    todayFocusSeconds: number
-    todaySessionCount: number
-    weeklyFocusSeconds: number
-  }
   memoSummary: {
     totalCount: number
     pinnedCount: number

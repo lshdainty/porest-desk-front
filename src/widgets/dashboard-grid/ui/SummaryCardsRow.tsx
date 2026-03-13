@@ -1,17 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { CheckSquare, Wallet, Timer } from 'lucide-react'
+import { CheckSquare, Wallet } from 'lucide-react'
 import type { DashboardSummary } from '@/features/dashboard/api/dashboardApi'
 
 interface Props {
   data: DashboardSummary
-}
-
-const formatTime = (seconds: number) => {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h}h ${m}m`
-  return `${m}m`
 }
 
 const formatCurrency = (amount: number) => {
@@ -22,7 +15,7 @@ export const SummaryCardsRow = ({ data }: Props) => {
   const { t } = useTranslation('dashboard')
   const navigate = useNavigate()
 
-  const { todoSummary, expenseSummary, timerSummary } = data
+  const { todoSummary, expenseSummary } = data
   const totalTodos = todoSummary.totalCount
   const completedTodos = todoSummary.completedCount
   const progressPercent = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0
@@ -45,18 +38,10 @@ export const SummaryCardsRow = ({ data }: Props) => {
       color: 'bg-accent-red/10 text-accent-red',
       path: '/desk/expense',
     },
-    {
-      title: t('summary.focusTime'),
-      value: formatTime(timerSummary.todayFocusSeconds),
-      sub: `${timerSummary.todaySessionCount} ${t('timer.sessions')}`,
-      icon: <Timer size={20} />,
-      color: 'bg-accent-purple/10 text-accent-purple',
-      path: '/desk/timer',
-    },
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {cards.map((card) => (
         <button
           key={card.title}

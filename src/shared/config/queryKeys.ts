@@ -59,12 +59,6 @@ export const calculatorKeys = {
   histories: () => [...calculatorKeys.all, 'histories'] as const,
 }
 
-export const timerKeys = {
-  all: ['timer'] as const,
-  sessions: (params?: Record<string, unknown>) => [...timerKeys.all, 'sessions', params] as const,
-  dailyStats: (params?: Record<string, unknown>) => [...timerKeys.all, 'daily-stats', params] as const,
-}
-
 export const expenseKeys = {
   all: ['expenses'] as const,
   list: (filters?: Record<string, unknown>) => [...expenseKeys.all, 'list', filters] as const,

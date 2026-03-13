@@ -15,7 +15,6 @@ const pageTitleMap: Record<string, string> = {
   '/desk': 'dashboard',
   '/desk/todo': 'todo',
   '/desk/calendar': 'calendar',
-  '/desk/timer': 'timer',
   '/desk/memo': 'memo',
   '/desk/expense': 'expense',
   '/desk/group': 'group',

@@ -74,7 +74,7 @@ export const ExpenseList = ({ expenses, categories = [], onEdit, onDelete }: Exp
                 {/* Category color indicator */}
                 <div
                   className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: expense.categoryColor || '#6b7280' }}
+                  style={{ backgroundColor: categoryMap.get(expense.categoryRowId)?.color || '#6b7280' }}
                 />
 
                 {/* Details */}

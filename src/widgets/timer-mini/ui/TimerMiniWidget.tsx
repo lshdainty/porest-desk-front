@@ -10,7 +10,6 @@ import {
   getCurrentElapsed,
   formatTime,
 } from '@/features/timer'
-import { useSaveTimerSession } from '@/features/timer'
 import type { TimerState } from '@/features/timer'
 
 type WidgetMode = 'STOPWATCH' | 'COUNTDOWN'
@@ -22,15 +21,10 @@ export const TimerMiniWidget = () => {
   // Stopwatch state
   const [swState, setSwState] = useState<TimerState>(() => createTimer('STOPWATCH'))
   const [swDisplayMs, setSwDisplayMs] = useState(0)
-  const swStartTimeRef = useRef<string>('')
-
   // Countdown state
   const [cdMinutes, setCdMinutes] = useState(5)
   const [cdState, setCdState] = useState<TimerState | null>(null)
   const [cdDisplayMs, setCdDisplayMs] = useState(0)
-  const cdStartTimeRef = useRef<string>('')
-
-  const saveSession = useSaveTimerSession()
   const rafRef = useRef<number>(0)
 
   // RAF loop for both timers
@@ -65,28 +59,10 @@ export const TimerMiniWidget = () => {
     return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
-  // Handle countdown completion
-  useEffect(() => {
-    if (cdState?.status === 'completed') {
-      const durationSeconds = Math.floor(cdState.targetMs / 1000)
-      saveSession.mutate({
-        timerType: 'COUNTDOWN',
-        label: t('countdown'),
-        startTime: cdStartTimeRef.current,
-        endTime: new Date().toISOString(),
-        durationSeconds,
-        targetSeconds: durationSeconds,
-        isCompleted: true,
-      })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cdState?.status])
-
   // --- Stopwatch handlers ---
   const swStart = useCallback(() => {
     const now = Date.now()
-    swStartTimeRef.current = new Date(now).toISOString()
-    setSwState((prev) => start(prev, now))
+setSwState((prev) => start(prev, now))
   }, [])
 
   const swPause = useCallback(() => {
@@ -98,22 +74,9 @@ export const TimerMiniWidget = () => {
   }, [])
 
   const swStop = useCallback(() => {
-    const now = Date.now()
-    const elapsed = getCurrentElapsed(swState, now)
-    if (elapsed > 0) {
-      saveSession.mutate({
-        timerType: 'STOPWATCH',
-        label: t('stopwatch'),
-        startTime: swStartTimeRef.current,
-        endTime: new Date(now).toISOString(),
-        durationSeconds: Math.floor(elapsed / 1000),
-        isCompleted: true,
-      })
-    }
     setSwState(createTimer('STOPWATCH'))
     setSwDisplayMs(0)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [swState])
+  }, [])
 
   const swReset = useCallback(() => {
     setSwState(createTimer('STOPWATCH'))
@@ -124,8 +87,7 @@ export const TimerMiniWidget = () => {
   const cdStart = useCallback(() => {
     if (cdMinutes <= 0) return
     const now = Date.now()
-    cdStartTimeRef.current = new Date(now).toISOString()
-    const timer = createTimer('COUNTDOWN', cdMinutes * 60)
+const timer = createTimer('COUNTDOWN', cdMinutes * 60)
     setCdState(start(timer, now))
     setCdDisplayMs(0)
   }, [cdMinutes])
@@ -139,24 +101,9 @@ export const TimerMiniWidget = () => {
   }, [])
 
   const cdStop = useCallback(() => {
-    if (!cdState) return
-    const now = Date.now()
-    const elapsed = getCurrentElapsed(cdState, now)
-    if (elapsed > 0) {
-      saveSession.mutate({
-        timerType: 'COUNTDOWN',
-        label: t('countdown'),
-        startTime: cdStartTimeRef.current,
-        endTime: new Date(now).toISOString(),
-        durationSeconds: Math.floor(elapsed / 1000),
-        targetSeconds: cdMinutes * 60,
-        isCompleted: false,
-      })
-    }
     setCdState(null)
     setCdDisplayMs(0)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cdState, cdMinutes])
+  }, [])
 
   const cdReset = useCallback(() => {
     setCdState(null)

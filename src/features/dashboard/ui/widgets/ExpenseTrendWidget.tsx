@@ -1,13 +1,12 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Wallet, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowRight, Wallet } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
   type ChartConfig,
 } from '@/shared/ui/chart'
 import { useDashboardSummary } from '@/features/dashboard/model/useDashboardSummary'
@@ -22,10 +21,6 @@ export const ExpenseTrendWidget = () => {
   const { data, isLoading } = useDashboardSummary()
 
   const chartConfig = {
-    income: {
-      label: t('chart.income'),
-      color: '#10b981',
-    },
     expense: {
       label: t('chart.expense'),
       color: '#f43f5e',
@@ -44,12 +39,12 @@ export const ExpenseTrendWidget = () => {
 
   const chartData = expenseTrend.map((d) => ({
     date: new Date(d.date).getDate() + '일',
-    income: d.income,
     expense: d.expense,
   }))
 
-  const net = expenseSummary.monthlyIncome - expenseSummary.monthlyExpense
-  const isPositiveNet = net >= 0
+  const totalExpense30d = expenseTrend.reduce((sum, d) => sum + d.expense, 0)
+  const daysWithExpense = expenseTrend.filter((d) => d.expense > 0).length
+  const dailyAvg = daysWithExpense > 0 ? Math.round(totalExpense30d / daysWithExpense) : 0
 
   return (
     <div className="flex h-full flex-col p-3">
@@ -72,10 +67,6 @@ export const ExpenseTrendWidget = () => {
         <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.05} />
-              </linearGradient>
               <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.05} />
@@ -102,29 +93,16 @@ export const ExpenseTrendWidget = () => {
               content={
                 <ChartTooltipContent
                   indicator="line"
-                  formatter={(value, name) => {
-                    const label = name === 'income' ? t('chart.income') : t('chart.expense')
-                    return (
-                      <div className="flex flex-1 justify-between gap-4 leading-none">
-                        <span className="text-muted-foreground">{label}</span>
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {formatCurrency(value as number)}
-                        </span>
-                      </div>
-                    )
-                  }}
+                  formatter={(value) => (
+                    <div className="flex flex-1 justify-between gap-4 leading-none">
+                      <span className="text-muted-foreground">{t('chart.expense')}</span>
+                      <span className="font-mono font-medium tabular-nums text-foreground">
+                        {formatCurrency(value as number)}
+                      </span>
+                    </div>
+                  )}
                 />
               }
-            />
-            <Area
-              dataKey="income"
-              type="monotone"
-              fill="url(#fillIncome)"
-              fillOpacity={0.4}
-              stroke="var(--color-income)"
-              strokeWidth={2.5}
-              dot={{ r: 0 }}
-              activeDot={{ r: 5, strokeWidth: 2 }}
             />
             <Area
               dataKey="expense"
@@ -136,29 +114,18 @@ export const ExpenseTrendWidget = () => {
               dot={{ r: 0 }}
               activeDot={{ r: 5, strokeWidth: 2 }}
             />
-            <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </div>
 
-      <div className="flex items-center gap-4 border-t pt-3 text-sm">
+      <div className="flex items-center gap-6 border-t pt-3 text-sm">
         <div>
-          <span className="text-muted-foreground">{t('chart.income')}</span>
-          <p className="font-semibold text-accent-green">{formatCurrency(expenseSummary.monthlyIncome)}</p>
+          <span className="text-xs text-muted-foreground">{t('chart.expense')}</span>
+          <p className="font-semibold tabular-nums text-accent-red">{formatCurrency(expenseSummary.monthlyExpense)}</p>
         </div>
         <div>
-          <span className="text-muted-foreground">{t('chart.expense')}</span>
-          <p className="font-semibold text-accent-red">{formatCurrency(expenseSummary.monthlyExpense)}</p>
-        </div>
-        <div className="ml-auto flex items-center gap-1 text-xs font-medium">
-          {isPositiveNet ? (
-            <TrendingUp size={14} className="text-accent-green" />
-          ) : (
-            <TrendingDown size={14} className="text-accent-red" />
-          )}
-          <span className={isPositiveNet ? 'text-accent-green' : 'text-accent-red'}>
-            {isPositiveNet ? '+' : ''}{formatCurrency(net)}
-          </span>
+          <span className="text-xs text-muted-foreground">{t('calendar.dailyAvg')}</span>
+          <p className="font-semibold tabular-nums text-foreground">{formatCurrency(dailyAvg)}</p>
         </div>
       </div>
     </div>

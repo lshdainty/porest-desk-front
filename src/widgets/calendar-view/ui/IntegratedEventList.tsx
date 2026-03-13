@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { Calendar, CheckSquare, Wallet, Timer, MapPin, Repeat } from 'lucide-react'
+import { Calendar, CheckSquare, Wallet, MapPin, Repeat } from 'lucide-react'
 import { cn, formatDate, formatCurrency, formatDuration } from '@/shared/lib'
 import { isSameDay } from '@/shared/lib/date'
 import type { CalendarEvent } from '@/entities/calendar'
 import type { Todo } from '@/entities/todo'
 import type { Expense } from '@/entities/expense'
-import type { TimerSession } from '@/entities/timer'
 import { EventBadge } from './EventBadge'
 
 interface IntegratedEventListProps {
@@ -13,16 +12,8 @@ interface IntegratedEventListProps {
   events: CalendarEvent[]
   todos: Todo[]
   expenses: Expense[]
-  timerSessions: TimerSession[]
   onEventClick?: (event: CalendarEvent) => void
   onTodoToggle?: (id: number) => void
-}
-
-const formatTimerDuration = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
 export const IntegratedEventList = ({
@@ -30,7 +21,6 @@ export const IntegratedEventList = ({
   events,
   todos,
   expenses,
-  timerSessions,
   onEventClick,
   onTodoToggle,
 }: IntegratedEventListProps) => {
@@ -52,11 +42,7 @@ export const IntegratedEventList = ({
     return isSameDay(new Date(expense.expenseDate), selectedDate)
   })
 
-  const dayTimerSessions = timerSessions.filter((session) => {
-    return isSameDay(new Date(session.startTime), selectedDate)
-  })
-
-  const hasItems = dayEvents.length > 0 || dayTodos.length > 0 || dayExpenses.length > 0 || dayTimerSessions.length > 0
+  const hasItems = dayEvents.length > 0 || dayTodos.length > 0 || dayExpenses.length > 0
 
   return (
     <div className="space-y-4">
@@ -226,47 +212,6 @@ export const IntegratedEventList = ({
                 >
                   {expense.expenseType === 'INCOME' ? '+' : '-'}
                   {formatCurrency(expense.amount)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {dayTimerSessions.length > 0 && (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Timer size={12} />
-            <span>{t('timerSessions')}</span>
-            <span className="ml-auto text-[10px]">{dayTimerSessions.length}</span>
-          </div>
-          <div className="space-y-1">
-            {dayTimerSessions.map((session) => (
-              <div
-                key={session.rowId}
-                className="flex w-full items-center gap-2 rounded-md border p-2.5 transition-colors"
-              >
-                <span
-                  className={cn(
-                    'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium text-white',
-                    session.timerType === 'POMODORO' && 'bg-red-500',
-                    session.timerType === 'STOPWATCH' && 'bg-blue-500',
-                    session.timerType === 'COUNTDOWN' && 'bg-purple-500'
-                  )}
-                >
-                  {session.timerType.charAt(0)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {session.label ?? session.timerType}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {formatDate(session.startTime, 'HH:mm')}
-                    {session.endTime ? ` - ${formatDate(session.endTime, 'HH:mm')}` : ''}
-                  </p>
-                </div>
-                <span className="shrink-0 text-sm font-mono font-semibold text-foreground">
-                  {formatTimerDuration(session.durationSeconds)}
                 </span>
               </div>
             ))}
