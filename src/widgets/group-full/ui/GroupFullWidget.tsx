@@ -187,7 +187,11 @@ export const GroupFullWidget = () => {
   }
 
   if (isLoading) {
-    return <div className="p-4 text-center text-muted-foreground">{t('loading', { ns: 'common' })}</div>
+    return (
+      <div className="flex h-full items-center justify-center p-4">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   // Detail view

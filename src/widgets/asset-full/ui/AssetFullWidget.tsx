@@ -124,7 +124,9 @@ export const AssetFullWidget = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex justify-center py-8 text-muted-foreground">{t('loading')}</div>
+            <div className="flex justify-center py-8">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
           ) : (
             <AssetList assets={assets} onEdit={handleEdit} onDelete={handleDelete} />
           )}
