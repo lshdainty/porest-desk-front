@@ -11,7 +11,11 @@ const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ d
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
 
-const Loading = () => <div className="flex h-screen items-center justify-center">Loading...</div>
+const Loading = () => (
+  <div className="flex h-screen items-center justify-center">
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+)
 
 export const AppRouter = () => {
   return (
