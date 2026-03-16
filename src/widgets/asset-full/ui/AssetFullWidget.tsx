@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useIsMobile } from '@/shared/hooks'
-import { Button } from '@/shared/ui/button'
+import { Plus } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +32,6 @@ type TabType = 'assets' | 'transfers'
 
 export const AssetFullWidget = () => {
   const { t } = useTranslation('asset')
-  const isMobile = useIsMobile()
 
   const [activeTab, setActiveTab] = useState<TabType>('assets')
   const [showForm, setShowForm] = useState(false)
@@ -97,52 +95,61 @@ export const AssetFullWidget = () => {
   }, [deleteTransfer])
 
   return (
-    <div className="space-y-4">
-      {summary && <AssetSummaryCard summary={summary} />}
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* 고정: 요약 + 탭바 + 추가 버튼 */}
+      <div className="shrink-0 space-y-4">
+        {summary && <AssetSummaryCard summary={summary} />}
 
-      <div className="flex items-center gap-2 border-b">
-        <button
-          className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'assets' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-          onClick={() => setActiveTab('assets')}
-        >
-          {t('assets')}
-        </button>
-        <button
-          className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'transfers' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-          onClick={() => setActiveTab('transfers')}
-        >
-          {t('transfers')}
-        </button>
+        <div className="flex items-center gap-2 border-b">
+          <button
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'assets' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('assets')}
+          >
+            {t('assets')}
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'transfers' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('transfers')}
+          >
+            {t('transfers')}
+          </button>
+          {activeTab === 'assets' && (
+            <button
+              onClick={() => { setEditingAsset(null); setShowForm(true) }}
+              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Plus size={12} />
+              {t('addAsset')}
+            </button>
+          )}
+          {activeTab === 'transfers' && (
+            <button
+              onClick={() => setShowTransferForm(true)}
+              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Plus size={12} />
+              {t('addTransfer')}
+            </button>
+          )}
+        </div>
       </div>
 
-      {activeTab === 'assets' && (
-        <>
-          <div className="flex justify-end">
-            <Button onClick={() => { setEditingAsset(null); setShowForm(true) }}>
-              {t('addAsset')}
-            </Button>
-          </div>
-
-          {isLoading ? (
+      {/* 스크롤: 리스트 */}
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        {activeTab === 'assets' && (
+          isLoading ? (
             <div className="flex justify-center py-8">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : (
             <AssetList assets={assets} onEdit={handleEdit} onDelete={handleDelete} />
-          )}
-        </>
-      )}
+          )
+        )}
 
-      {activeTab === 'transfers' && (
-        <>
-          <div className="flex justify-end">
-            <Button onClick={() => setShowTransferForm(true)}>
-              {t('addTransfer')}
-            </Button>
-          </div>
+        {activeTab === 'transfers' && (
           <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
-        </>
-      )}
+        )}
+      </div>
 
       {showForm && (
         <AssetForm

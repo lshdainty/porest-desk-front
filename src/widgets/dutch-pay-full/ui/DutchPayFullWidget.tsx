@@ -124,30 +124,33 @@ export const DutchPayFullWidget = () => {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Filter tabs */}
-      <div className="flex items-center gap-2">
-        {(['all', 'active', 'settled'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-              filter === f
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            )}
-          >
-            {t(`filter.${f}`)}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-muted-foreground">
-          {filteredDutchPays.length}{t('count')}
-        </span>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* 고정: 필터 탭 */}
+      <div className="shrink-0">
+        <div className="flex items-center gap-2">
+          {(['all', 'active', 'settled'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                filter === f
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              )}
+            >
+              {t(`filter.${f}`)}
+            </button>
+          ))}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {filteredDutchPays.length}{t('count')}
+          </span>
+        </div>
       </div>
 
-      {/* Dutch pay list */}
-      {filteredDutchPays.length === 0 ? (
+      {/* 스크롤: 리스트 */}
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        {filteredDutchPays.length === 0 ? (
         <div className="py-12 text-center">
           <Users className="mx-auto mb-2 h-10 w-10 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">{t('empty')}</p>
@@ -293,8 +296,20 @@ export const DutchPayFullWidget = () => {
         </div>
       )}
 
-      {/* Add button */}
-      {isMobile ? (
+        {/* Desktop add button - inside scroll area */}
+        {!isMobile && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+          >
+            <Plus size={16} />
+            {t('addDutchPay')}
+          </button>
+        )}
+      </div>
+
+      {/* Mobile FAB */}
+      {isMobile && (
         <button
           onClick={() => setShowForm(true)}
           className={cn(
@@ -304,14 +319,6 @@ export const DutchPayFullWidget = () => {
           )}
         >
           <Plus size={24} />
-        </button>
-      ) : (
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-        >
-          <Plus size={16} />
-          {t('addDutchPay')}
         </button>
       )}
 

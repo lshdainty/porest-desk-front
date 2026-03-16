@@ -154,19 +154,24 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">{t('budget.title')}</h3>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-        >
-          <Plus size={12} />
-          {t('budget.set')}
-        </button>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* 고정: 헤더 */}
+      <div className="shrink-0">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium">{t('budget.title')}</h3>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Plus size={12} />
+            {t('budget.set')}
+          </button>
+        </div>
       </div>
 
-      {budgets.map((budget) => {
+      {/* 스크롤: 예산 아이템 */}
+      <div className="mt-4 space-y-4 min-h-0 flex-1 overflow-y-auto">
+        {budgets.map((budget) => {
         const catSpend = budget.categoryRowId
           ? breakdown.find((b) => b.categoryRowId === budget.categoryRowId)?.totalAmount ?? 0
           : totalExpense
@@ -216,6 +221,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
           </div>
         )
       })}
+      </div>
 
       {budgetFormDialog}
 

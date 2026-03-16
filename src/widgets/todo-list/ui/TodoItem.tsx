@@ -151,7 +151,8 @@ export const TodoItem = ({
       className={cn(
         'rounded-lg border bg-card p-3 transition-all',
         isCompleted && 'opacity-60',
-        isSubtask && 'ml-6 border-dashed'
+        isSubtask && 'ml-6 border-dashed',
+        !isSubtask && todo.isPinned && 'border-primary/30 bg-primary/5'
       )}
     >
       <div className="flex items-start gap-3">
@@ -177,6 +178,9 @@ export const TodoItem = ({
             >
               {todo.title}
             </span>
+            {todo.isPinned && (
+              <Pin size={12} className="shrink-0 text-primary" />
+            )}
             <span
               className={cn(
                 'inline-flex h-2 w-2 shrink-0 rounded-full',
@@ -278,6 +282,20 @@ export const TodoItem = ({
               title={t('addSubtask')}
             >
               <Plus size={14} />
+            </button>
+          )}
+          {!isSubtask && onTogglePin && (
+            <button
+              onClick={() => onTogglePin(todo.rowId)}
+              className={cn(
+                'rounded p-1 transition-colors',
+                todo.isPinned
+                  ? 'text-primary hover:bg-primary/10'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+              title={todo.isPinned ? t('note.unpin') : t('note.pin')}
+            >
+              <Pin size={14} />
             </button>
           )}
           <button

@@ -163,30 +163,34 @@ export const TodoListWidget = () => {
     }
   }, [])
 
+  const priorityOrder: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
+
   const sortedTodos = todos
     ? [...todos].sort((a, b) => {
-        // Pinned items always come first
+        // 1. Pinned items always come first
         if (a.isPinned && !b.isPinned) return -1
         if (!a.isPinned && b.isPinned) return 1
+
+        // 2. Completed items always go to bottom
+        if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
+        if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
 
         if (typeFilter === 'NOTE') {
           // NOTE: sort by modifyAt desc
           return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
         }
 
-        if (typeFilter === 'TASK') {
-          // TASK: existing sort
-          if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
-          if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
-          return a.sortOrder - b.sortOrder
-        }
-
-        // ALL: mixed - TASK sort logic with pinned first
+        // TASK or ALL: sort by priority, then sortOrder
         if (a.type === 'NOTE' && b.type === 'NOTE') {
           return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
         }
-        if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
-        if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
+
+        // 3. Tasks: sort by priority (HIGH > MEDIUM > LOW)
+        const pa = priorityOrder[a.priority] ?? 1
+        const pb = priorityOrder[b.priority] ?? 1
+        if (pa !== pb) return pa - pb
+
+        // 4. Same priority: sort by sortOrder
         return a.sortOrder - b.sortOrder
       })
     : []
@@ -197,8 +201,9 @@ export const TodoListWidget = () => {
   const addButtonText = typeFilter === 'NOTE' ? t('type.NOTE') : t('addTodo')
 
   return (
-    <div className="relative h-full">
-      <div className="space-y-4">
+    <div className="relative flex h-full min-h-0 flex-col">
+      {/* 고정: 필터 + 프로젝트/태그 버튼 */}
+      <div className="shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <TodoFilters
@@ -234,7 +239,10 @@ export const TodoListWidget = () => {
             </Button>
           </div>
         </div>
+      </div>
 
+      {/* 스크롤: 리스트 */}
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -275,17 +283,17 @@ export const TodoListWidget = () => {
             ))}
           </div>
         )}
-      </div>
 
-      {!isMobile && !showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-        >
-          <Plus size={16} />
-          {addButtonText}
-        </button>
-      )}
+        {!isMobile && !showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+          >
+            <Plus size={16} />
+            {addButtonText}
+          </button>
+        )}
+      </div>
 
       {isMobile && (
         <button

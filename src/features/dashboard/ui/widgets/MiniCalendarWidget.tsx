@@ -1,21 +1,30 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { calendarApi } from '@/features/calendar/api/calendarApi'
 import { holidayApi } from '@/features/calendar/api/holidayApi'
 import { calendarKeys, holidayKeys } from '@/shared/config'
+import { cn } from '@/shared/lib'
 
-const DAY_KEYS = ['focus.sun', 'focus.mon', 'focus.tue', 'focus.wed', 'focus.thu', 'focus.fri', 'focus.sat']
+const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
+const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+interface DayEvent {
+  color: string
+}
 
 export const MiniCalendarWidget = () => {
-  const { t } = useTranslation('dashboard')
-  const dayLabels = DAY_KEYS.map((key) => t(key))
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
   const today = new Date()
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
+  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
   const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const lastDay = new Date(year, month + 1, 0).getDate()
@@ -36,15 +45,31 @@ export const MiniCalendarWidget = () => {
     return new Set(holidays.map((h) => h.holidayDate))
   }, [holidays])
 
-  const eventDates = useMemo(() => {
-    if (!events) return new Set<string>()
-    const dates = new Set<string>()
-    events.forEach((e) => {
-      const start = e.startDate.split('T')[0]
-      dates.add(start)
-    })
-    return dates
-  }, [events])
+  // 날짜별 이벤트 색상 배열
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, DayEvent[]>()
+
+    // 캘린더 이벤트
+    if (events) {
+      events.forEach((e) => {
+        const dateKey = e.startDate.split('T')[0]
+        const color = e.calendarColor || e.color || '#3b82f6'
+        if (!map.has(dateKey)) map.set(dateKey, [])
+        map.get(dateKey)!.push({ color })
+      })
+    }
+
+    // 공휴일
+    if (holidays) {
+      holidays.forEach((h) => {
+        const dateKey = h.holidayDate
+        if (!map.has(dateKey)) map.set(dateKey, [])
+        map.get(dateKey)!.push({ color: '#ef4444' })
+      })
+    }
+
+    return map
+  }, [events, holidays])
 
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(year, month, 1).getDay()
@@ -61,7 +86,7 @@ export const MiniCalendarWidget = () => {
     return days
   }, [year, month])
 
-  const isToday = (day: number) => {
+  const isTodayDate = (day: number) => {
     return (
       day === today.getDate() &&
       month === today.getMonth() &&
@@ -69,33 +94,16 @@ export const MiniCalendarWidget = () => {
     )
   }
 
-  const isHoliday = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return holidayDates.has(dateStr)
-  }
-
-  const hasEvent = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return eventDates.has(dateStr)
-  }
-
-  const isSunday = (day: number) => {
-    return new Date(year, month, day).getDay() === 0
-  }
-
-  const goToPrevMonth = () => {
-    setViewDate(new Date(year, month - 1, 1))
-  }
-
-  const goToNextMonth = () => {
-    setViewDate(new Date(year, month + 1, 1))
+  const handleDayClick = (day: number) => {
+    const dateStr = format(new Date(year, month, day), 'yyyy-MM-dd')
+    navigate(`/desk/calendar?date=${dateStr}&view=day`)
   }
 
   return (
     <div className="flex h-full flex-col p-3">
       <div className="mb-2 flex items-center justify-between">
         <button
-          onClick={goToPrevMonth}
+          onClick={() => setViewDate(new Date(year, month - 1, 1))}
           className="rounded p-0.5 hover:bg-muted"
         >
           <ChevronLeft size={14} />
@@ -104,49 +112,91 @@ export const MiniCalendarWidget = () => {
           {year}.{String(month + 1).padStart(2, '0')}
         </span>
         <button
-          onClick={goToNextMonth}
+          onClick={() => setViewDate(new Date(year, month + 1, 1))}
           className="rounded p-0.5 hover:bg-muted"
         >
           <ChevronRight size={14} />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-0.5 text-center text-[10px]">
-        {dayLabels.map((label, i) => (
+      {/* 요일 라벨 */}
+      <div className="grid grid-cols-7 gap-x-0.5 text-center">
+        {weekDays.map((label, i) => (
           <div
-            key={label}
-            className={`pb-1 font-medium ${i === 0 ? 'text-red-500' : 'text-muted-foreground'}`}
+            key={i}
+            className="pb-1 text-[10px] font-medium"
+            style={{ color: i === 0 ? '#ff6767' : i === 6 ? '#6767ff' : undefined }}
           >
             {label}
           </div>
         ))}
+      </div>
 
+      {/* 날짜 그리드 */}
+      <div className="grid grid-cols-7 gap-x-0.5 gap-y-0.5">
         {calendarDays.map((day, idx) => {
           if (day === null) {
-            return <div key={`empty-${idx}`} className="h-6" />
+            return <div key={`empty-${idx}`} className="h-10" />
           }
 
-          const sunday = isSunday(day)
-          const holiday = isHoliday(day)
-          const todayMatch = isToday(day)
-          const event = hasEvent(day)
+          const date = new Date(year, month, day)
+          const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          const todayMatch = isTodayDate(day)
+          const isSunday = date.getDay() === 0
+          const isSaturday = date.getDay() === 6
+          const isHoliday = holidayDates.has(dateKey)
+          const dayEvents = eventsByDate.get(dateKey) || []
+          const maxIndicators = 3
 
           return (
-            <div
+            <button
               key={day}
-              className={`relative flex h-6 items-center justify-center text-[11px] ${
-                todayMatch
-                  ? 'rounded-full bg-primary text-primary-foreground font-bold'
-                  : sunday || holiday
-                    ? 'text-red-500'
-                    : ''
-              }`}
+              type="button"
+              onClick={() => handleDayClick(day)}
+              className="flex h-10 flex-1 flex-col items-center justify-start gap-0.5 rounded-md pt-0.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {day}
-              {event && !todayMatch && (
-                <span className="absolute bottom-0 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-blue-500" />
+              <div
+                className={cn(
+                  'flex size-5 items-center justify-center rounded-full text-[11px] font-medium',
+                  todayMatch && 'bg-primary font-semibold text-primary-foreground'
+                )}
+                style={{
+                  color: todayMatch
+                    ? undefined
+                    : isHoliday || isSunday
+                      ? '#ff6767'
+                      : isSaturday
+                        ? '#6767ff'
+                        : undefined,
+                }}
+              >
+                {day}
+              </div>
+
+              {dayEvents.length > 0 && (
+                <div className="flex gap-0.5">
+                  {dayEvents.length <= maxIndicators ? (
+                    dayEvents.map((event, i) => (
+                      <div
+                        key={i}
+                        className="size-1.5 rounded-full"
+                        style={{ backgroundColor: event.color }}
+                      />
+                    ))
+                  ) : (
+                    <>
+                      <div
+                        className="size-1.5 rounded-full"
+                        style={{ backgroundColor: dayEvents[0].color }}
+                      />
+                      <span className="text-[7px] text-muted-foreground">
+                        +{dayEvents.length - 1}
+                      </span>
+                    </>
+                  )}
+                </div>
               )}
-            </div>
+            </button>
           )
         })}
       </div>

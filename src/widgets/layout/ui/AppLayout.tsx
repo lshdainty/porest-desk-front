@@ -8,11 +8,11 @@ import { LayoutHeader } from './LayoutHeader'
 
 export const AppLayout = () => {
   return (
-    <SidebarProvider className="md:h-dvh md:overflow-hidden">
+    <SidebarProvider className="h-dvh overflow-hidden">
       <AppSidebar />
-      <SidebarInset className="md:overflow-hidden">
+      <SidebarInset className="overflow-hidden">
         <LayoutHeader />
-        <div className="flex flex-1 flex-col md:min-h-0 md:overflow-y-auto">
+        <div className="flex flex-1 flex-col min-h-0 overflow-y-auto">
           <Outlet />
         </div>
       </SidebarInset>

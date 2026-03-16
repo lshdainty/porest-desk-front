@@ -122,9 +122,9 @@ export const ExpenseFullWidget = () => {
   ]
 
   return (
-    <div className="relative h-full">
-      <div className="space-y-4">
-        {/* Tabs + category manager button */}
+    <div className="relative flex h-full min-h-0 flex-col">
+      {/* 고정: 탭바 */}
+      <div className="shrink-0">
         <div className="flex items-center rounded-lg border bg-muted/30 px-1">
           <div className="flex min-w-0 flex-1 overflow-x-auto py-1 scrollbar-none">
             {tabs.map((tab) => (
@@ -153,28 +153,46 @@ export const ExpenseFullWidget = () => {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Tab content */}
+      {/* 콘텐츠: 탭별 스크롤 */}
+      <div className="mt-4 min-h-0 flex-1 flex flex-col">
         {activeTab === 'list' && (
-          <div className="space-y-4">
-            <DailySummaryCard date={todayStr} />
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <ExpenseList
-                expenses={expenses || []}
-                categories={categories || []}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            )}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0">
+              <DailySummaryCard date={todayStr} />
+            </div>
+            <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <ExpenseList
+                  expenses={expenses || []}
+                  categories={categories || []}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              )}
+
+              {!isMobile && (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                >
+                  <Plus size={16} />
+                  {t('addTransaction')}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {activeTab === 'summary' && (
-          <SummaryDashboard year={currentYear} month={currentMonth} />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <SummaryDashboard year={currentYear} month={currentMonth} />
+          </div>
         )}
 
         {activeTab === 'budget' && (
@@ -182,11 +200,15 @@ export const ExpenseFullWidget = () => {
         )}
 
         {activeTab === 'template' && (
-          <ExpenseTemplateList />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <ExpenseTemplateList />
+          </div>
         )}
 
         {activeTab === 'recurring' && (
-          <RecurringTransactionList />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <RecurringTransactionList />
+          </div>
         )}
 
         {activeTab === 'asset' && (
@@ -198,32 +220,18 @@ export const ExpenseFullWidget = () => {
         )}
       </div>
 
-      {/* FAB for add on mobile, dashed button on desktop - KEEP custom */}
-      {activeTab === 'list' && (
-        <>
-          {!isMobile && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-            >
-              <Plus size={16} />
-              {t('addTransaction')}
-            </button>
+      {/* Mobile FAB */}
+      {activeTab === 'list' && isMobile && (
+        <button
+          onClick={() => setShowForm(true)}
+          className={cn(
+            'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
+            'rounded-full bg-primary text-primary-foreground shadow-lg',
+            'hover:bg-primary/90 active:scale-95 transition-all'
           )}
-
-          {isMobile && (
-            <button
-              onClick={() => setShowForm(true)}
-              className={cn(
-                'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
-                'rounded-full bg-primary text-primary-foreground shadow-lg',
-                'hover:bg-primary/90 active:scale-95 transition-all'
-              )}
-            >
-              <Plus size={24} />
-            </button>
-          )}
-        </>
+        >
+          <Plus size={24} />
+        </button>
       )}
 
       {/* Expense form */}

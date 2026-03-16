@@ -336,91 +336,97 @@ export const GroupFullWidget = () => {
 
   // List view
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          {t('addGroup')}
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => setShowJoinDialog(true)}>
-          <LogIn className="mr-1.5 h-4 w-4" />
-          {t('joinGroup')}
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => setShowTypeManagement(true)}>
-          <Settings className="mr-1.5 h-4 w-4" />
-          {t('groupTypeManagement')}
-        </Button>
+    <div className="flex h-full min-h-0 flex-col">
+      {/* 고정: 액션 버튼 */}
+      <div className="shrink-0">
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            {t('addGroup')}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowJoinDialog(true)}>
+            <LogIn className="mr-1.5 h-4 w-4" />
+            {t('joinGroup')}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowTypeManagement(true)}>
+            <Settings className="mr-1.5 h-4 w-4" />
+            {t('groupTypeManagement')}
+          </Button>
+        </div>
       </div>
 
-      {groups.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          <Users className="mx-auto mb-3 h-12 w-12 opacity-30" />
-          <p>{t('empty')}</p>
-          <p className="text-sm">{t('createFirst')}</p>
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {groups.map((group) => (
-            <Card
-              key={group.rowId}
-              className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
-              onClick={() => setSelectedGroupId(group.rowId)}
-            >
-              <CardContent className="flex items-center justify-between gap-2 p-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <h3 className="truncate font-medium">{group.groupName}</h3>
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                      style={group.groupTypeColor ? {
-                        borderColor: group.groupTypeColor,
-                        color: group.groupTypeColor,
-                      } : undefined}
-                    >
-                      {group.groupTypeName ?? t('noGroupType')}
-                    </Badge>
-                  </div>
-                  {group.description && (
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                      {group.description}
+      {/* 스크롤: 그룹 카드 */}
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        {groups.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground">
+            <Users className="mx-auto mb-3 h-12 w-12 opacity-30" />
+            <p>{t('empty')}</p>
+            <p className="text-sm">{t('createFirst')}</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {groups.map((group) => (
+              <Card
+                key={group.rowId}
+                className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
+                onClick={() => setSelectedGroupId(group.rowId)}
+              >
+                <CardContent className="flex items-center justify-between gap-2 p-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h3 className="truncate font-medium">{group.groupName}</h3>
+                      <Badge
+                        variant="outline"
+                        className="text-xs"
+                        style={group.groupTypeColor ? {
+                          borderColor: group.groupTypeColor,
+                          color: group.groupTypeColor,
+                        } : undefined}
+                      >
+                        {group.groupTypeName ?? t('noGroupType')}
+                      </Badge>
+                    </div>
+                    {group.description && (
+                      <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                        {group.description}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <Users className="mr-1 inline h-3 w-3" />
+                      {group.memberCount} {t('memberCount')}
                     </p>
-                  )}
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    <Users className="mr-1 inline h-3 w-3" />
-                    {group.memberCount} {t('memberCount')}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setEditingGroup(group)
-                    }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setDeleteTargetId(group.rowId)
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingGroup(group)
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteTargetId(group.rowId)
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

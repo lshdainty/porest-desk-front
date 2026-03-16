@@ -40,14 +40,16 @@ interface CalendarProviderProps {
   children: ReactNode
   events: IEvent[]
   initialView?: TCalendarView
+  initialDate?: Date
 }
 
 export const CalendarProvider = ({
   children,
   events: externalEvents,
   initialView = 'month',
+  initialDate,
 }: CalendarProviderProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate ?? new Date())
   const [view, setView] = useState<TCalendarView>(initialView)
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>('dot')
   const [workingHours, setWorkingHours] = useState<TWorkingHours>({
