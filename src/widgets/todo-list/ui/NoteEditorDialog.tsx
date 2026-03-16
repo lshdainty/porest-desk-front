@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pin, Eye, EyeOff, Trash2, Check } from 'lucide-react'
+import { Pin, Eye, EyeOff, Trash2, Check, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -234,7 +234,8 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
               onClick={handleSave}
               disabled={updateTodo.isPending || !title.trim()}
             >
-              {updateTodo.isPending ? tc('loading') : tc('save')}
+              {updateTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {tc('save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -249,7 +250,8 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleteTodo.isPending}>
-              {deleteTodo.isPending ? '...' : t('deleteConfirm.confirm')}
+              {deleteTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

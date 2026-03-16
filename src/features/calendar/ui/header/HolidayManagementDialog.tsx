@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit3, Trash2, Plus, RotateCcw } from 'lucide-react'
+import { Edit3, Trash2, Plus, RotateCcw, Loader2 } from 'lucide-react'
 
 import {
   useCalendarHolidays,
@@ -259,7 +259,8 @@ export const HolidayManagementDialog = ({
               onClick={handleSubmit}
               disabled={!formName.trim() || !formDate || createHoliday.isPending || updateHoliday.isPending}
             >
-              {(createHoliday.isPending || updateHoliday.isPending) ? '...' : tc('save')}
+              {(createHoliday.isPending || updateHoliday.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+              {tc('save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -283,7 +284,8 @@ export const HolidayManagementDialog = ({
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteHoliday.isPending ? '...' : t('holiday.deleteConfirm.confirm')}
+              {deleteHoliday.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('holiday.deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

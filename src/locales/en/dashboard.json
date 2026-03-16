@@ -127,8 +127,6 @@
   "widget.budgetVsActual": "Budget vs Actual",
   "widget.merchantAnalysis": "Merchant Analysis",
   "widget.assetUsage": "Asset Usage",
-  "allDay": "All Day",
-  "total": "Total",
   "widget.byCategory": "By Category",
   "widget.byMerchant": "By Merchant",
   "widget.categoryLabel": "CATEGORY",
@@ -166,5 +164,7 @@
   "savings.rate": "Savings Rate",
   "savings.last6months": "Last 6 months",
   "savings.thisMonth": "This Month",
-  "savings.amount": "Savings"
+  "savings.amount": "Savings",
+  "allDay": "All Day",
+  "total": "Total"
 }

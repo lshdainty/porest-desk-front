@@ -25,6 +25,7 @@
   "form.balance": "Balance",
   "form.institution": "Institution",
   "form.institutionPlaceholder": "Enter institution name",
+  "form.icon": "Icon",
   "form.color": "Color",
   "form.memo": "Memo",
   "form.memoPlaceholder": "Enter memo",

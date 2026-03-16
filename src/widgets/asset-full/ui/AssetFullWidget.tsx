@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -182,7 +182,8 @@ export const AssetFullWidget = () => {
               disabled={deleteAsset.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteAsset.isPending ? '...' : t('deleteConfirm.confirm')}
+              {deleteAsset.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

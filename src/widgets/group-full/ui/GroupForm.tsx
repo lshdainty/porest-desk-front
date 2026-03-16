@@ -29,9 +29,9 @@ export const GroupForm = ({ initialData, onSubmit, onCancel, isSubmitting }: Gro
   const { t: tc } = useTranslation('common')
   const { data: groupTypes = [], isLoading: isLoadingTypes } = useGroupTypes()
 
-  const [groupName, setGroupName] = useState('')
-  const [description, setDescription] = useState('')
-  const [groupTypeId, setGroupTypeId] = useState<number | null>(null)
+  const [groupName, setGroupName] = useState(initialData?.groupName ?? '')
+  const [description, setDescription] = useState(initialData?.description ?? '')
+  const [groupTypeId, setGroupTypeId] = useState<number | null>(initialData?.groupTypeId ?? null)
 
   useEffect(() => {
     if (initialData) {

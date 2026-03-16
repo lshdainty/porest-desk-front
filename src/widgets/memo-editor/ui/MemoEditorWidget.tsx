@@ -290,7 +290,8 @@ export const MemoEditorWidget = () => {
                   onClick={handleSave}
                   disabled={!isDirty || updateMemo.isPending}
                 >
-                  {updateMemo.isPending ? tc('loading') : tc('save')}
+                  {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
@@ -363,7 +364,8 @@ export const MemoEditorWidget = () => {
                 disabled={deleteMemo.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
+                {deleteMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t('deleteConfirm.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -475,7 +477,8 @@ export const MemoEditorWidget = () => {
                   onClick={handleSave}
                   disabled={!isDirty || updateMemo.isPending}
                 >
-                  {updateMemo.isPending ? tc('loading') : tc('save')}
+                  {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
@@ -536,7 +539,8 @@ export const MemoEditorWidget = () => {
               disabled={deleteMemo.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteMemo.isPending ? '...' : t('deleteConfirm.confirm')}
+              {deleteMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

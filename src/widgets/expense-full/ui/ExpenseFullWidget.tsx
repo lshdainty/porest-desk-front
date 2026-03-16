@@ -274,7 +274,8 @@ export const ExpenseFullWidget = () => {
               disabled={deleteExpense.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteExpense.isPending ? '...' : t('deleteConfirm.confirm')}
+              {deleteExpense.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

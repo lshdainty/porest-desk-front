@@ -61,6 +61,7 @@ todo,noProjects,프로젝트가 없습니다,No projects yet
 todo,form.projectName,프로젝트 이름,Project Name
 todo,form.projectNamePlaceholder,프로젝트 이름을 입력하세요,Enter project name
 todo,form.project,프로젝트,Project
+todo,form.icon,아이콘,Icon
 todo,form.color,색상,Color
 todo,form.description,설명,Description
 todo,form.descriptionPlaceholder,설명을 입력하세요,Enter description
@@ -306,6 +307,7 @@ asset,form.assetType,자산 유형,Asset Type
 asset,form.balance,잔액,Balance
 asset,form.institution,금융기관,Institution
 asset,form.institutionPlaceholder,금융기관명을 입력하세요,Enter institution name
+asset,form.icon,아이콘,Icon
 asset,form.color,색상,Color
 asset,form.memo,메모,Memo
 asset,form.memoPlaceholder,메모를 입력하세요,Enter memo
@@ -477,7 +479,7 @@ expense,stats.monthlyTrend,월별 추이,Monthly Trend
 expense,stats.yearOverYear,전년 대비,Year over Year
 expense,stats.categoryTrend,카테고리 추이,Category Trend
 expense,stats.selectCategory,카테고리 선택,Select category
-expense,stats.budgetVsActual,예산 대비 실적,Budget vs Actual
+expense,stats.budgetVsActual,예산 대비 지출,Budget vs Actual
 expense,stats.noBudgetSet,"설정된 예산이 없습니다. 예산 탭에서 설정해 주세요.","No budgets set. Configure budgets in the Budget tab."
 expense,stats.merchantAnalysis,거래처 분석,Merchant Analysis
 expense,stats.noMerchantData,거래처 데이터가 없습니다,No merchant data available
@@ -506,7 +508,7 @@ dashboard,todo.overdue,기한 초과,Overdue
 dashboard,calendar.noToday,오늘 일정 없음,No events today
 dashboard,expense.todayLabel,오늘,Today
 dashboard,expense.budget,예산,Budget
-dashboard,expense.actual,실적,Actual
+dashboard,expense.actual,지출,Actual
 dashboard,expense.remaining,잔여,Remaining
 dashboard,expense.category,카테고리별,By Category
 dashboard,expense.merchant,가맹점별,By Merchant
@@ -546,7 +548,7 @@ dashboard,widget.expenseCategory,카테고리별 지출,Expense by Category
 dashboard,widget.monthlyBudget,월별 예산,Monthly Budget
 dashboard,widget.expenseByMerchant,가맹점별 지출,Expense by Merchant
 dashboard,widget.assetOverview,자산 현황,Asset Overview
-dashboard,widget.monthlyCompare,월별 비교,Monthly Compare
+dashboard,widget.monthlyCompare,월별 수입·지출,Monthly Income & Expense
 dashboard,widget.miniCalendar,미니 캘린더,Mini Calendar
 dashboard,widget.todaySchedule,오늘 일정,Today's Schedule
 dashboard,widget.dday,D-Day,D-Day
@@ -558,9 +560,47 @@ dashboard,widget.calculatorMini,계산기,Calculator
 dashboard,widget.monthlyTrend,월별 추이,Monthly Trend
 dashboard,widget.yearOverYear,전년 대비,Year over Year
 dashboard,widget.categoryTrend,카테고리 추이,Category Trend
-dashboard,widget.budgetVsActual,예산 대비 실적,Budget vs Actual
+dashboard,widget.budgetVsActual,예산 대비 지출,Budget vs Actual
 dashboard,widget.merchantAnalysis,거래처 분석,Merchant Analysis
 dashboard,widget.assetUsage,자산별 사용,Asset Usage
+dashboard,widget.byCategory,카테고리별,By Category
+dashboard,widget.byMerchant,가맹점별,By Merchant
+dashboard,widget.categoryLabel,카테고리,CATEGORY
+dashboard,widget.merchantLabel,가맹점,MERCHANT
+dashboard,widget.totalExpense,총 지출,total spend
+dashboard,widget.paymentMethod,결제수단별 지출,By Payment Method
+dashboard,widget.dailyExpenseCalendar,일별 지출 달력,Daily Expense Calendar
+dashboard,widget.savingsRate,저축률 추이,Savings Rate
+dashboard,budget.used,사용,Used
+dashboard,budget.remaining,잔여,Remaining
+dashboard,budget.noBudget,설정된 예산이 없습니다,No budget set
+dashboard,budget.exceeded,초과,Over
+dashboard,budget.danger,주의,Danger
+dashboard,budget.warning,경고,Warning
+dashboard,budget.safe,여유,Safe
+dashboard,budget.remainingAmount,잔여 {{amount}},{{amount}} left
+dashboard,budget.exceededAmount,{{amount}} 초과,{{amount}} over
+dashboard,budget.categoryBudget,카테고리별 예산,Budget by Category
+dashboard,asset.netAsset,순자산,Net Assets
+dashboard,asset.totalAsset,총 자산,Total Assets
+dashboard,asset.totalDebt,총 부채,Total Debt
+dashboard,asset.assetTab,자산,Assets
+dashboard,asset.debtTab,부채,Debts
+dashboard,payment.method,결제수단,Method
+dashboard,payment.amountRatio,금액 / 비율,Amount / Ratio
+dashboard,payment.card,카드,Card
+dashboard,payment.cash,현금,Cash
+dashboard,payment.transfer,이체,Transfer
+dashboard,payment.other,기타,Other
+dashboard,calendar.dailyAvg,일평균,Daily Avg
+dashboard,calendar.noExpense,지출 없음,No expense
+dashboard,calendar.less,적음,Less
+dashboard,calendar.more,많음,More
+dashboard,savings.title,저축률 추이,Savings Rate Trend
+dashboard,savings.rate,저축률,Savings Rate
+dashboard,savings.last6months,최근 6개월,Last 6 months
+dashboard,savings.thisMonth,이번 달 저축률,This Month
+dashboard,savings.amount,저축액,Savings
 group,groupTypeManagement,그룹 유형 관리,Group Type Management
 group,noGroupType,미지정,Uncategorized
 group,tabs.members,멤버,Members

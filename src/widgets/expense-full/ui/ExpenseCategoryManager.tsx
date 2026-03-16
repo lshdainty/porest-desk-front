@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Edit3, Trash2 } from 'lucide-react'
-import { renderMaterialIcon } from '@/shared/lib'
+import { Plus, Edit3, Trash2, Loader2 } from 'lucide-react'
+import { renderIcon } from '@/shared/lib'
+import { IconPicker } from '@/shared/ui/icon-picker'
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -101,7 +102,7 @@ export const ExpenseCategoryManager = () => {
           className="h-3 w-3 shrink-0 rounded-full"
           style={{ backgroundColor: node.color || '#6b7280' }}
         />
-        {node.icon && renderMaterialIcon(node.icon, node.categoryName.charAt(0), 16)}
+        {node.icon && renderIcon(node.icon, node.categoryName.charAt(0), 16)}
         <span className="flex-1 text-sm">{node.categoryName}</span>
         {!isChild && (
           <button
@@ -189,13 +190,9 @@ export const ExpenseCategoryManager = () => {
               />
             </div>
             <div className="flex gap-3">
-              <div className="flex-1">
+              <div>
                 <Label>{t('form.icon')}</Label>
-                <Input
-                  value={formIcon}
-                  onChange={(e) => setFormIcon(e.target.value)}
-                  placeholder={t('form.iconPlaceholder')}
-                />
+                <IconPicker value={formIcon} onChange={setFormIcon} />
               </div>
               <div>
                 <Label>{t('form.color')}</Label>
@@ -211,7 +208,8 @@ export const ExpenseCategoryManager = () => {
               onClick={handleSubmit}
               disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}
             >
-              {(createCategory.isPending || updateCategory.isPending) ? '...' : t('form.save')}
+              {(createCategory.isPending || updateCategory.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('form.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

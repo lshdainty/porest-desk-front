@@ -197,7 +197,8 @@ export const ExpenseTemplateList = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} disabled={deleteTemplate.isPending}>
-              {deleteTemplate.isPending ? '...' : tc('delete')}
+              {deleteTemplate.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

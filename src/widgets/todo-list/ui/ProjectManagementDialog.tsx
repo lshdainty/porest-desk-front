@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
-import { cn } from '@/shared/lib'
+import { cn, renderIcon } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -12,6 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/shared/ui/alert-dialog'
+import { IconPicker } from '@/shared/ui/icon-picker'
 import {
   useTodoProjects,
   useCreateTodoProject,
@@ -43,13 +44,14 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
   const [formData, setFormData] = useState<TodoProjectFormValues>({
     projectName: '',
     color: '#3b82f6',
+    icon: '',
     description: '',
   })
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
 
   const openCreateForm = () => {
     setEditingProject(null)
-    setFormData({ projectName: '', color: '#3b82f6', description: '' })
+    setFormData({ projectName: '', color: '#3b82f6', icon: '', description: '' })
     setShowForm(true)
   }
 
@@ -58,6 +60,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
     setFormData({
       projectName: project.projectName,
       color: project.color || '#3b82f6',
+      icon: project.icon || '',
       description: project.description || '',
     })
     setShowForm(true)
@@ -113,6 +116,14 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
               </div>
 
               <div className="space-y-1.5">
+                <Label>{t('form.icon')}</Label>
+                <IconPicker
+                  value={formData.icon || ''}
+                  onChange={(icon) => setFormData({ ...formData, icon })}
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <Label>{t('form.color')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {COLOR_OPTIONS.map((color) => (
@@ -143,7 +154,8 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                   onClick={handleSave}
                   disabled={createProject.isPending || updateProject.isPending}
                 >
-                  {(createProject.isPending || updateProject.isPending) ? tc('loading') : tc('save')}
+                  {(createProject.isPending || updateProject.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
@@ -168,6 +180,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                         className="h-3 w-3 rounded-full shrink-0"
                         style={{ backgroundColor: project.color || '#6b7280' }}
                       />
+                      {project.icon && renderIcon(project.icon, '', 16)}
                       <div>
                         <span className="text-sm font-medium">{project.projectName}</span>
                         {project.description && (
@@ -223,7 +236,8 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                 disabled={deleteProject.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteProject.isPending ? '...' : tc('delete')}
+                {deleteProject.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bell, Check, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'lucide-react'
+import { Bell, Check, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {
@@ -77,9 +77,10 @@ export const NotificationBell = () => {
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead.mutate()}
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                disabled={markAllRead.isPending}
+                className="flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
               >
-                <CheckCheck size={12} />
+                {markAllRead.isPending ? <Loader2 size={12} className="animate-spin" /> : <CheckCheck size={12} />}
                 {t('markAllRead')}
               </button>
             )}
@@ -127,9 +128,10 @@ export const NotificationBell = () => {
                       e.stopPropagation()
                       deleteNotification.mutate(notification.rowId)
                     }}
-                    className="mt-0.5 shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-destructive transition-colors"
+                    disabled={deleteNotification.isPending}
+                    className="mt-0.5 shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-destructive transition-colors disabled:opacity-50"
                   >
-                    <Trash2 size={12} />
+                    {deleteNotification.isPending ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                   </button>
                 </div>
               ))

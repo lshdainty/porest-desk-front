@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { Asset } from '@/entities/asset'
-import { formatCurrency, renderMaterialIcon } from '@/shared/lib'
+import { formatCurrency, renderIcon } from '@/shared/lib'
 
 interface AssetListProps {
   assets: Asset[]
@@ -35,7 +35,7 @@ export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm"
             style={{ backgroundColor: asset.color || '#6b7280', color: '#fff' }}
           >
-            {renderMaterialIcon(asset.icon, asset.assetName.charAt(0), 20)}
+            {renderIcon(asset.icon, asset.assetName.charAt(0), 20)}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">

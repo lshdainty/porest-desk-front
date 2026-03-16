@@ -25,6 +25,7 @@
   "form.balance": "잔액",
   "form.institution": "금융기관",
   "form.institutionPlaceholder": "금융기관명을 입력하세요",
+  "form.icon": "아이콘",
   "form.color": "색상",
   "form.memo": "메모",
   "form.memoPlaceholder": "메모를 입력하세요",

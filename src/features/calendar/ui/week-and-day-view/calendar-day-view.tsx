@@ -69,7 +69,7 @@ const DayViewMultiDayEventsRow = ({
               tabIndex={0}
               className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               style={{
-                backgroundColor: `${event.color}15`,
+                background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
                 borderColor: `${event.color}40`,
                 color: event.color,
               }}
@@ -154,7 +154,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        backgroundColor: `${event.color}15`,
+        background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
         borderColor: `${event.color}40`,
         color: event.color,
       }}

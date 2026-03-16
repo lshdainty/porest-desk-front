@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { History, FlaskConical } from 'lucide-react'
+import { History, FlaskConical, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
@@ -290,7 +290,8 @@ export const CalculatorFullWidget = () => {
                 disabled={deleteAllHistories.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
+                {deleteAllHistories.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t('clearHistoryConfirm.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -384,7 +385,8 @@ export const CalculatorFullWidget = () => {
               disabled={deleteAllHistories.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteAllHistories.isPending ? '...' : t('clearHistoryConfirm.confirm')}
+              {deleteAllHistories.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('clearHistoryConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

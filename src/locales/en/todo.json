@@ -36,6 +36,7 @@
   "form.projectName": "Project Name",
   "form.projectNamePlaceholder": "Enter project name",
   "form.project": "Project",
+  "form.icon": "Icon",
   "form.color": "Color",
   "form.description": "Description",
   "form.descriptionPlaceholder": "Enter description",

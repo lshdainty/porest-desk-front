@@ -92,7 +92,7 @@
   "stats.yearOverYear": "전년 대비",
   "stats.categoryTrend": "카테고리 추이",
   "stats.selectCategory": "카테고리 선택",
-  "stats.budgetVsActual": "예산 대비 실적",
+  "stats.budgetVsActual": "예산 대비 지출",
   "stats.noBudgetSet": "설정된 예산이 없습니다. 예산 탭에서 설정해 주세요.",
   "stats.merchantAnalysis": "거래처 분석",
   "stats.noMerchantData": "거래처 데이터가 없습니다",

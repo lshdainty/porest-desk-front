@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/shared/ui/dialog'
+import { IconPicker } from '@/shared/ui/icon-picker'
 
 interface AssetFormProps {
   asset?: Asset | null
@@ -38,6 +39,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
   const [balance, setBalance] = useState(asset?.balance?.toString() ?? '0')
   const [institution, setInstitution] = useState(asset?.institution ?? '')
   const [memo, setMemo] = useState(asset?.memo ?? '')
+  const [icon, setIcon] = useState(asset?.icon ?? '')
   const [color, setColor] = useState(asset?.color ?? '#6b7280')
 
   const handleSubmit = useCallback(() => {
@@ -48,6 +50,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       assetType,
       balance: parseInt(balance) || 0,
       currency: 'KRW',
+      icon: icon || undefined,
       color,
       institution: institution || undefined,
       memo: memo || undefined,
@@ -55,7 +58,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
     }
 
     onSubmit(data)
-  }, [assetName, assetType, balance, color, institution, memo, onSubmit])
+  }, [assetName, assetType, balance, icon, color, institution, memo, onSubmit])
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
@@ -110,14 +113,20 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
             />
           </div>
 
-          <div>
-            <Label>{t('form.color')}</Label>
-            <input
-              type="color"
-              className="h-10 w-full rounded-md border"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
+          <div className="flex gap-3">
+            <div>
+              <Label>{t('form.icon')}</Label>
+              <IconPicker value={icon} onChange={setIcon} />
+            </div>
+            <div className="flex-1">
+              <Label>{t('form.color')}</Label>
+              <input
+                type="color"
+                className="h-10 w-full rounded-md border"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+              />
+            </div>
           </div>
 
           <div>

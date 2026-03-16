@@ -130,7 +130,8 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
                   onClick={handleSave}
                   disabled={createGroupType.isPending || updateGroupType.isPending}
                 >
-                  {(createGroupType.isPending || updateGroupType.isPending) ? tc('loading') : tc('save')}
+                  {(createGroupType.isPending || updateGroupType.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
@@ -207,7 +208,8 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
                 disabled={deleteGroupType.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteGroupType.isPending ? '...' : tc('delete')}
+                {deleteGroupType.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

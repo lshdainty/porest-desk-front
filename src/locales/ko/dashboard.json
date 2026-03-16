@@ -72,7 +72,7 @@
   "calendar.noToday": "오늘 일정 없음",
   "expense.todayLabel": "오늘",
   "expense.budget": "예산",
-  "expense.actual": "실적",
+  "expense.actual": "지출",
   "expense.remaining": "잔여",
   "expense.category": "카테고리별",
   "expense.merchant": "가맹점별",
@@ -124,11 +124,9 @@
   "widget.monthlyTrend": "월별 추이",
   "widget.yearOverYear": "전년 대비",
   "widget.categoryTrend": "카테고리 추이",
-  "widget.budgetVsActual": "예산 대비 실적",
+  "widget.budgetVsActual": "예산 대비 지출",
   "widget.merchantAnalysis": "거래처 분석",
   "widget.assetUsage": "자산별 사용",
-  "allDay": "종일",
-  "total": "합계",
   "widget.byCategory": "카테고리별",
   "widget.byMerchant": "가맹점별",
   "widget.categoryLabel": "카테고리",
@@ -166,5 +164,7 @@
   "savings.rate": "저축률",
   "savings.last6months": "최근 6개월",
   "savings.thisMonth": "이번 달 저축률",
-  "savings.amount": "저축액"
+  "savings.amount": "저축액",
+  "allDay": "종일",
+  "total": "합계"
 }

@@ -473,7 +473,8 @@ export const GroupFullWidget = () => {
                 {tc('cancel')}
               </Button>
               <Button onClick={handleJoin} disabled={joinGroup.isPending}>
-                {joinGroup.isPending ? tc('loading') : t('join')}
+                {joinGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t('join')}
               </Button>
             </div>
           </div>
@@ -494,7 +495,8 @@ export const GroupFullWidget = () => {
               disabled={deleteGroup.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteGroup.isPending ? tc('loading') : tc('delete')}
+              {deleteGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

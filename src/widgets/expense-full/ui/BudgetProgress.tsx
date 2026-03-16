@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Loader2 } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import { cn, formatCurrency } from '@/shared/lib'
 import {
@@ -128,7 +128,8 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
             onClick={handleSubmit}
             disabled={!budgetAmount || createBudget.isPending}
           >
-            {createBudget.isPending ? '...' : t('budget.save')}
+            {createBudget.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t('budget.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -235,7 +236,8 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleteBudget.isPending}>
-              {deleteBudget.isPending ? '...' : t('deleteConfirm.confirm')}
+              {deleteBudget.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

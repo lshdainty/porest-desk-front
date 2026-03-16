@@ -129,7 +129,8 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                   onClick={handleSave}
                   disabled={createTag.isPending || updateTag.isPending}
                 >
-                  {(createTag.isPending || updateTag.isPending) ? tc('loading') : tc('save')}
+                  {(createTag.isPending || updateTag.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
@@ -206,7 +207,8 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                 disabled={deleteTag.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteTag.isPending ? '...' : tc('delete')}
+                {deleteTag.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -36,6 +36,7 @@
   "form.projectName": "프로젝트 이름",
   "form.projectNamePlaceholder": "프로젝트 이름을 입력하세요",
   "form.project": "프로젝트",
+  "form.icon": "아이콘",
   "form.color": "색상",
   "form.description": "설명",
   "form.descriptionPlaceholder": "설명을 입력하세요",

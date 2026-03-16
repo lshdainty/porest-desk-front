@@ -230,7 +230,8 @@ export const RecurringTransactionList = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} disabled={deleteRecurring.isPending}>
-              {deleteRecurring.isPending ? '...' : tc('delete')}
+              {deleteRecurring.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

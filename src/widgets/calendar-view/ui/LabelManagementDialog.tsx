@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -161,7 +161,8 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                   disabled={!formName.trim() || createLabel.isPending || updateLabel.isPending}
                 >
                   <Check size={12} className="mr-1" />
-                  {(createLabel.isPending || updateLabel.isPending) ? tc('loading') : tc('save')}
+                  {(createLabel.isPending || updateLabel.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tc('save')}
                 </Button>
               </div>
             </div>
