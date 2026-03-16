@@ -123,7 +123,7 @@ const MonthDayCell = ({
   return (
     <div
       className={cn(
-        'flex h-full flex-col gap-1 overflow-hidden border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
+        'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
         isSunday && 'border-l-0',
         isSelected && 'bg-blue-100/50 dark:bg-blue-900/20 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]'
       )}
@@ -257,9 +257,9 @@ const MonthEventBadge = ({
       )}
       style={{
         background: position !== 'none'
-          ? `linear-gradient(${event.color}15, ${event.color}15), var(--background)`
-          : `${event.color}15`,
-        borderColor: `${event.color}40`,
+          ? `linear-gradient(${event.color}25, ${event.color}25), var(--background)`
+          : `${event.color}20`,
+        borderColor: `${event.color}50`,
         color: event.color,
       }}
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
