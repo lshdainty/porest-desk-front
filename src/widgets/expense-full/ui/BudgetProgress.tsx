@@ -203,7 +203,7 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
-                  isExceeded ? 'bg-red-500' : 'bg-primary'
+                  isExceeded ? 'bg-red-500' : 'bg-blue-500'
                 )}
                 style={{ width: `${Math.min(percentage, 100)}%` }}
               />

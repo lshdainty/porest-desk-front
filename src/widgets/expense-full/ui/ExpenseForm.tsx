@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileDown, Search, Loader2 } from 'lucide-react'
-import { cn } from '@/shared/lib'
+import { cn, renderMaterialIcon } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -243,17 +243,17 @@ export const ExpenseForm = ({
                             style={{ backgroundColor: node.color }}
                           />
                         )}
-                        {node.icon ? `${node.icon} ` : ''}{node.categoryName}
+                        {node.icon && <span className="inline-flex mr-1 align-middle">{renderMaterialIcon(node.icon, '', 14)}</span>}{node.categoryName}
                       </SelectLabel>
                       {node.children.map((child) => (
                         <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-11">
-                          {child.icon ? `${child.icon} ` : ''}{child.categoryName}
+                          {child.icon && <span className="inline-flex mr-1 align-middle">{renderMaterialIcon(child.icon, '', 14)}</span>}{child.categoryName}
                         </SelectItem>
                       ))}
                     </SelectGroup>
                   ) : (
                     <SelectItem key={node.rowId} value={String(node.rowId)}>
-                      {node.icon ? `${node.icon} ` : ''}{node.categoryName}
+                      {node.icon && <span className="inline-flex mr-1 align-middle">{renderMaterialIcon(node.icon, '', 14)}</span>}{node.categoryName}
                     </SelectItem>
                   )
                 )}

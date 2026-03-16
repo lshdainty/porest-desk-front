@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Edit3, Trash2 } from 'lucide-react'
+import { renderMaterialIcon } from '@/shared/lib'
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -100,7 +101,7 @@ export const ExpenseCategoryManager = () => {
           className="h-3 w-3 shrink-0 rounded-full"
           style={{ backgroundColor: node.color || '#6b7280' }}
         />
-        {node.icon && <span className="text-sm">{node.icon}</span>}
+        {node.icon && renderMaterialIcon(node.icon, node.categoryName.charAt(0), 16)}
         <span className="flex-1 text-sm">{node.categoryName}</span>
         {!isChild && (
           <button

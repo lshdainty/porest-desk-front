@@ -28,7 +28,7 @@ export const BudgetVsActualChart = ({
   const chartConfig = {
     budget: {
       label: t('budget.amount'),
-      color: '#cbd5e1',
+      color: '#3b82f6',
     },
     actual: {
       label: t('totalExpense'),

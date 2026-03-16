@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { cn } from '@/shared/lib'
+import { cn, renderMaterialIcon } from '@/shared/lib'
 import type { ExpenseType, ExpenseCategory } from '@/entities/expense'
 import type { Asset } from '@/entities/asset'
 import type { RecurringTransaction, RecurringTransactionFormValues, RecurringFrequency } from '@/entities/recurring-transaction'
@@ -213,7 +213,7 @@ export const RecurringTransactionForm = ({
                 <SelectItem value="__none__">{t('category')}</SelectItem>
                 {filteredCategories.map((cat) => (
                   <SelectItem key={cat.rowId} value={String(cat.rowId)}>
-                    {cat.icon ? `${cat.icon} ` : ''}{cat.categoryName}
+                    {cat.icon && <span className="inline-flex mr-1 align-middle">{renderMaterialIcon(cat.icon, '', 14)}</span>}{cat.categoryName}
                   </SelectItem>
                 ))}
               </SelectContent>

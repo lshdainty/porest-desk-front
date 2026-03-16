@@ -51,6 +51,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       color,
       institution: institution || undefined,
       memo: memo || undefined,
+      ...(asset ? { isIncludedInTotal: asset.isIncludedInTotal ?? 'Y' } : {}),
     }
 
     onSubmit(data)
