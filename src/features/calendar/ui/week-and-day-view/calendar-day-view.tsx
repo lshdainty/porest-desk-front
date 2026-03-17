@@ -181,7 +181,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
 
 const CalendarDayView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
   const { t, i18n } = useTranslation('calendar')
-  const { selectedDate, setSelectedDate, visibleHours, workingHours } = useCalendar()
+  const { selectedDate, visibleHours, workingHours } = useCalendar()
 
   const locale = i18n.language.startsWith('ko') ? ko : enUS
   const hourFormat = i18n.language.startsWith('ko') ? 'a hh시' : 'hh a'

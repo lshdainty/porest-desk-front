@@ -17,7 +17,7 @@ export const useCalendarExpenses = (
   }
 
   return useQuery({
-    queryKey: [...expenseKeys.list(filters), 'calendar'],
+    queryKey: [...expenseKeys.list(filters as unknown as Record<string, unknown>), 'calendar'],
     queryFn: () => expenseApi.getExpenses(filters),
     enabled,
   })

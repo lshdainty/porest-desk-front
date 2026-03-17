@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { authApi } from '../api/authApi'
-import { setToken, removeToken } from '@/shared/api'
+import { setAuthenticated, clearAuthenticated } from '@/shared/api'
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -11,7 +11,7 @@ export const useAuth = () => {
     setError(null)
     try {
       const response = await authApi.exchangeToken(ssoToken)
-      setToken(response.accessToken)
+      setAuthenticated()
       return response
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Token exchange failed'
@@ -22,8 +22,13 @@ export const useAuth = () => {
     }
   }, [])
 
-  const logout = useCallback(() => {
-    removeToken()
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // 로그아웃 API 실패해도 클라이언트 상태는 정리
+    }
+    clearAuthenticated()
     window.location.href = '/login'
   }, [])
 

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { PieChart, Pie, Cell } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/shared/ui/chart'
 import { useExpenses } from '@/features/expense'
-import type { PaymentMethod } from '@/entities/expense'
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('ko-KR').format(amount) + '원'

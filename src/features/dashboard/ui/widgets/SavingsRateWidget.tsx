@@ -55,7 +55,7 @@ export const SavingsRateWidget = () => {
       const savingsRate = income > 0 ? Math.round(((income - expense) / income) * 1000) / 10 : 0
 
       months.push({
-        label: MONTH_LABELS[targetMonth - 1],
+        label: MONTH_LABELS[targetMonth - 1] ?? `${targetMonth}월`,
         income,
         expense,
         savingsRate,

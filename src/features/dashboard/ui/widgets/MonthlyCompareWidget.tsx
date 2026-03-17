@@ -19,7 +19,7 @@ export const MonthlyCompareWidget = () => {
   const { t } = useTranslation('dashboard')
   const now = new Date()
   const year = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
+
 
   const chartConfig = {
     income: {
@@ -123,7 +123,7 @@ export const MonthlyCompareWidget = () => {
               radius={[4, 4, 0, 0]}
               barSize={12}
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent payload={[]} />} />
           </BarChart>
         </ChartContainer>
       </div>

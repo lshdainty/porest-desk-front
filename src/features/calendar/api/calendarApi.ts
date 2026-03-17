@@ -53,7 +53,7 @@ function toApiPayload(data: CalendarEventFormValues) {
 export const calendarApi = {
   createEvent: async (data: CalendarEventFormValues): Promise<CalendarEvent> => {
     const resp: ApiResponse<CalendarEvent> = await apiClient.post('/v1/calendar/event', toApiPayload(data))
-    return fromApiEvent(resp.data as Record<string, unknown>)
+    return fromApiEvent(resp.data as unknown as Record<string, unknown>)
   },
 
   getEvents: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
@@ -68,7 +68,7 @@ export const calendarApi = {
 
   updateEvent: async (id: number, data: CalendarEventFormValues): Promise<CalendarEvent> => {
     const resp: ApiResponse<CalendarEvent> = await apiClient.put(`/v1/calendar/event/${id}`, toApiPayload(data))
-    return fromApiEvent(resp.data as Record<string, unknown>)
+    return fromApiEvent(resp.data as unknown as Record<string, unknown>)
   },
 
   deleteEvent: async (id: number): Promise<void> => {

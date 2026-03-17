@@ -76,7 +76,7 @@ export const CalculatorFullWidget = () => {
       if (value === '.') {
         const parts = prev.split(/[+\-*/^()]/)
         const lastPart = parts[parts.length - 1]
-        if (lastPart.includes('.')) return prev
+        if (lastPart?.includes('.')) return prev
       }
       return prev + value
     })
@@ -93,7 +93,7 @@ export const CalculatorFullWidget = () => {
       if (!prev) return ''
       // Replace last operator if there is one
       const lastChar = prev[prev.length - 1]
-      if (['+', '-', '*', '/', '^'].includes(lastChar)) {
+      if (lastChar && ['+', '-', '*', '/', '^'].includes(lastChar)) {
         return prev.slice(0, -1) + op
       }
       return prev + op

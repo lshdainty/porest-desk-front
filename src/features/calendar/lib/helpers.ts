@@ -106,6 +106,7 @@ export function groupEvents(dayEvents: IEvent[]) {
     let placed = false
     for (const group of groups) {
       const lastEventInGroup = group[group.length - 1]
+      if (!lastEventInGroup) continue
       const lastEventEnd = parseISO(lastEventInGroup.endDate)
 
       if (eventStart >= lastEventEnd) {
@@ -258,7 +259,9 @@ export function calculateMonthEventPositions(multiDayEvents: IEvent[], singleDay
     if (position !== -1) {
       eventDays.forEach(day => {
         const dayKey = startOfDay(day).toISOString()
-        occupiedPositions[dayKey][position] = true
+        if (occupiedPositions[dayKey]) {
+          occupiedPositions[dayKey][position] = true
+        }
       })
       eventPositions[eventKey] = position
     }

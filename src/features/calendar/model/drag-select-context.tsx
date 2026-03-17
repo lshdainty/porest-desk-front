@@ -53,7 +53,8 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
   // Expense (transaction) dependencies
   const createExpense = useCreateExpense()
   const { data: categories = [] } = useExpenseCategories()
-  const { data: assets = [] } = useAssets()
+  const { data: assetsData } = useAssets()
+  const assets = assetsData?.assets ?? []
 
   const startSelection = useCallback((date: Date) => {
     setIsDragSelecting(true)

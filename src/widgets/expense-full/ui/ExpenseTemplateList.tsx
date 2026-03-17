@@ -180,7 +180,7 @@ export const ExpenseTemplateList = () => {
         <ExpenseTemplateForm
           template={editingTemplate}
           categories={categories || []}
-          assets={assets || []}
+          assets={assets?.assets || []}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createTemplate.isPending || updateTemplate.isPending}

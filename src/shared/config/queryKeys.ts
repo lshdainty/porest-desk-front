@@ -10,7 +10,7 @@ export const userKeys = {
 
 export const todoKeys = {
   all: ['todos'] as const,
-  list: (filters?: Record<string, unknown>) => [...todoKeys.all, 'list', filters] as const,
+  list: <T = Record<string, unknown>>(filters?: T) => [...todoKeys.all, 'list', filters] as const,
   detail: (id: number) => [...todoKeys.all, 'detail', id] as const,
   subtasks: (parentId: number) => [...todoKeys.all, 'subtasks', parentId] as const,
   stats: () => [...todoKeys.all, 'stats'] as const,
@@ -28,13 +28,13 @@ export const todoTagKeys = {
 
 export const calendarKeys = {
   all: ['calendar'] as const,
-  events: (params?: Record<string, unknown>) => [...calendarKeys.all, 'events', params] as const,
-  aggregate: (params?: Record<string, unknown>) => [...calendarKeys.all, 'aggregate', params] as const,
+  events: <T = Record<string, unknown>>(params?: T) => [...calendarKeys.all, 'events', params] as const,
+  aggregate: <T = Record<string, unknown>>(params?: T) => [...calendarKeys.all, 'aggregate', params] as const,
 }
 
 export const holidayKeys = {
   all: ['holidays'] as const,
-  list: (params?: Record<string, unknown>) => [...holidayKeys.all, 'list', params] as const,
+  list: <T = Record<string, unknown>>(params?: T) => [...holidayKeys.all, 'list', params] as const,
 }
 
 export const userCalendarKeys = {
@@ -49,7 +49,7 @@ export const eventLabelKeys = {
 
 export const memoKeys = {
   all: ['memos'] as const,
-  list: (filters?: Record<string, unknown>) => [...memoKeys.all, 'list', filters] as const,
+  list: <T = Record<string, unknown>>(filters?: T) => [...memoKeys.all, 'list', filters] as const,
   detail: (id: number) => [...memoKeys.all, 'detail', id] as const,
   folders: () => [...memoKeys.all, 'folders'] as const,
 }
@@ -61,16 +61,16 @@ export const calculatorKeys = {
 
 export const expenseKeys = {
   all: ['expenses'] as const,
-  list: (filters?: Record<string, unknown>) => [...expenseKeys.all, 'list', filters] as const,
+  list: <T = Record<string, unknown>>(filters?: T) => [...expenseKeys.all, 'list', filters] as const,
   categories: () => [...expenseKeys.all, 'categories'] as const,
-  budgets: (params?: Record<string, unknown>) => [...expenseKeys.all, 'budgets', params] as const,
+  budgets: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'budgets', params] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
   monthlySummary: (year: number, month: number) => [...expenseKeys.all, 'monthly-summary', year, month] as const,
   weeklySummary: (weekStart: string, weekEnd: string) => [...expenseKeys.all, 'weekly-summary', weekStart, weekEnd] as const,
   yearlySummary: (year: number) => [...expenseKeys.all, 'yearly-summary', year] as const,
-  merchantSummary: (params?: Record<string, unknown>) => [...expenseKeys.all, 'merchant-summary', params] as const,
-  assetSummary: (params?: Record<string, unknown>) => [...expenseKeys.all, 'asset-summary', params] as const,
-  search: (params?: Record<string, unknown>) => [...expenseKeys.all, 'search', params] as const,
+  merchantSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'merchant-summary', params] as const,
+  assetSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'asset-summary', params] as const,
+  search: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'search', params] as const,
   byCalendarEvent: (eventId: number) => [...expenseKeys.all, 'by-calendar-event', eventId] as const,
   byTodo: (todoId: number) => [...expenseKeys.all, 'by-todo', todoId] as const,
 }
@@ -80,7 +80,7 @@ export const assetKeys = {
   list: () => [...assetKeys.all, 'list'] as const,
   detail: (id: number) => [...assetKeys.all, 'detail', id] as const,
   summary: () => [...assetKeys.all, 'summary'] as const,
-  transfers: (params?: Record<string, unknown>) => [...assetKeys.all, 'transfers', params] as const,
+  transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
 }
 
 export const expenseTemplateKeys = {

@@ -11,4 +11,7 @@ export const authApi = {
     const resp: ApiResponse<LoginCheckResponse> = await apiClient.get('/v1/auth/check')
     return resp.data
   },
+  logout: async (): Promise<void> => {
+    await apiClient.post('/v1/auth/logout')
+  },
 }

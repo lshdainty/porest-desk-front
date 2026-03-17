@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Calendar, CheckSquare, Wallet, MapPin, Repeat } from 'lucide-react'
-import { cn, formatDate, formatCurrency, formatDuration } from '@/shared/lib'
+import { cn, formatDate, formatCurrency } from '@/shared/lib'
 import { isSameDay } from '@/shared/lib/date'
 import type { CalendarEvent } from '@/entities/calendar'
 import type { Todo } from '@/entities/todo'

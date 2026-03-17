@@ -54,11 +54,11 @@ export const RecurringTransactionForm = ({
   const [merchant, setMerchant] = useState(recurring?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(recurring?.paymentMethod ?? '')
   const [frequency, setFrequency] = useState<RecurringFrequency>(recurring?.frequency ?? 'MONTHLY')
-  const [intervalValue, setIntervalValue] = useState<string>(recurring?.intervalValue?.toString() ?? '1')
+  const [intervalValue] = useState<string>(recurring?.intervalValue?.toString() ?? '1')
   const [dayOfWeek, setDayOfWeek] = useState<string>(recurring?.dayOfWeek?.toString() ?? '')
   const [dayOfMonth, setDayOfMonth] = useState<string>(recurring?.dayOfMonth?.toString() ?? '')
   const [startDate, setStartDate] = useState(
-    recurring?.startDate ?? new Date().toISOString().split('T')[0]
+    recurring?.startDate ?? (new Date().toISOString().split('T')[0] ?? '')
   )
   const [endDate, setEndDate] = useState(recurring?.endDate ?? '')
 

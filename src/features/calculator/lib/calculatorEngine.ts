@@ -31,17 +31,17 @@ export function tokenize(expression: string): Token[] {
   const expr = expression.replace(/\s+/g, '')
 
   while (i < expr.length) {
-    const char = expr[i]
+    const char = expr[i]!
 
     // Numbers (including decimals)
-    if (/\d/.test(char) || (char === '.' && i + 1 < expr.length && /\d/.test(expr[i + 1]))) {
+    if (/\d/.test(char) || (char === '.' && i + 1 < expr.length && /\d/.test(expr[i + 1]!))) {
       let num = ''
-      while (i < expr.length && (/\d/.test(expr[i]) || expr[i] === '.')) {
-        num += expr[i]
+      while (i < expr.length && (/\d/.test(expr[i]!) || expr[i] === '.')) {
+        num += expr[i]!
         i++
       }
       // Check for percentage
-      if (i < expr.length && expr[i] === '%') {
+      if (i < expr.length && expr[i]! === '%') {
         const value = parseFloat(num) / 100
         tokens.push({ type: 'number', value: String(value) })
         i++
@@ -52,24 +52,24 @@ export function tokenize(expression: string): Token[] {
     }
 
     // Unary minus: at start, after operator, or after left paren
-    if (char === '-' && (tokens.length === 0 || tokens[tokens.length - 1].type === 'operator' || tokens[tokens.length - 1].type === 'lparen')) {
+    if (char === '-' && (tokens.length === 0 || tokens[tokens.length - 1]!.type === 'operator' || tokens[tokens.length - 1]!.type === 'lparen')) {
       let num = '-'
       i++
-      if (i < expr.length && expr[i] === '(') {
+      if (i < expr.length && expr[i]! === '(') {
         // Handle -(expression) by inserting -1 *
         tokens.push({ type: 'number', value: '-1' })
         tokens.push({ type: 'operator', value: '*' })
         continue
       }
-      while (i < expr.length && (/\d/.test(expr[i]) || expr[i] === '.')) {
-        num += expr[i]
+      while (i < expr.length && (/\d/.test(expr[i]!) || expr[i] === '.')) {
+        num += expr[i]!
         i++
       }
       if (num === '-') {
         // standalone minus that we couldn't parse as unary
         tokens.push({ type: 'operator', value: '-' })
       } else {
-        if (i < expr.length && expr[i] === '%') {
+        if (i < expr.length && expr[i]! === '%') {
           const value = parseFloat(num) / 100
           tokens.push({ type: 'number', value: String(value) })
           i++
@@ -102,15 +102,15 @@ export function tokenize(expression: string): Token[] {
     // Functions and constants (alphabetic)
     if (/[a-zA-Z]/.test(char)) {
       let name = ''
-      while (i < expr.length && /[a-zA-Z]/.test(expr[i])) {
-        name += expr[i]
+      while (i < expr.length && /[a-zA-Z]/.test(expr[i]!)) {
+        name += expr[i]!
         i++
       }
       const lower = name.toLowerCase()
       if (FUNCTIONS.includes(lower)) {
         tokens.push({ type: 'function', value: lower })
       } else if (lower in CONSTANTS) {
-        tokens.push({ type: 'number', value: String(CONSTANTS[lower]) })
+        tokens.push({ type: 'number', value: String(CONSTANTS[lower]!) })
       } else {
         throw new Error(`Unknown function or constant: ${name}`)
       }
@@ -138,9 +138,9 @@ function shuntingYard(tokens: Token[]): Token[] {
         break
 
       case 'operator': {
-        const op = OPERATORS[token.value]
+        const op = OPERATORS[token.value]!
         while (operatorStack.length > 0) {
-          const top = operatorStack[operatorStack.length - 1]
+          const top = operatorStack[operatorStack.length - 1]!
           if (top.type === 'lparen') break
           if (top.type === 'function') {
             output.push(operatorStack.pop()!)
@@ -166,7 +166,7 @@ function shuntingYard(tokens: Token[]): Token[] {
         break
 
       case 'rparen':
-        while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type !== 'lparen') {
+        while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1]!.type !== 'lparen') {
           output.push(operatorStack.pop()!)
         }
         if (operatorStack.length === 0) {
@@ -174,7 +174,7 @@ function shuntingYard(tokens: Token[]): Token[] {
         }
         operatorStack.pop() // Remove lparen
         // If there's a function on top, pop it
-        if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type === 'function') {
+        if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1]!.type === 'function') {
           output.push(operatorStack.pop()!)
         }
         break
@@ -260,7 +260,7 @@ function evaluateRPN(tokens: Token[]): number {
     throw new Error('Invalid expression')
   }
 
-  return stack[0]
+  return stack[0]!
 }
 
 export function evaluate(expression: string): string {
@@ -304,10 +304,10 @@ export function formatDisplay(value: string): string {
   const parts = value.split('.')
   const intPart = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
-  }).format(parseInt(parts[0], 10))
+  }).format(parseInt(parts[0]!, 10))
 
   if (parts.length > 1) {
-    return `${intPart}.${parts[1]}`
+    return `${intPart}.${parts[1]!}`
   }
 
   return intPart

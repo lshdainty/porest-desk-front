@@ -99,7 +99,7 @@ export const BudgetVsActualChart = ({
         />
         <Bar dataKey="budget" fill="var(--color-budget)" radius={[0, 6, 6, 0]} barSize={18} />
         <Bar dataKey="actual" fill="var(--color-actual)" radius={[0, 6, 6, 0]} barSize={18} />
-        <ChartLegend content={<ChartLegendContent />} />
+        <ChartLegend content={<ChartLegendContent payload={[]} />} />
       </BarChart>
     </ChartContainer>
   )

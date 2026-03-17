@@ -163,7 +163,7 @@ export const ExpenseCategoryWidget = () => {
       name: c.categoryName,
       value: c.totalAmount,
       percentage: c.percentage,
-      fill: CHART_COLORS[i % CHART_COLORS.length],
+      fill: CHART_COLORS[i % CHART_COLORS.length] ?? '#6b7280',
     }))
   }, [summaryData, categories])
 
@@ -199,7 +199,7 @@ export const ExpenseCategoryWidget = () => {
       name: m.merchant,
       value: m.totalAmount,
       percentage: Math.round((m.totalAmount / total) * 1000) / 10,
-      fill: CHART_COLORS[i % CHART_COLORS.length],
+      fill: CHART_COLORS[i % CHART_COLORS.length] ?? '#6b7280',
     }))
   }, [merchantData])
 

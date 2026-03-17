@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
+import { ProtectedRoute } from './ProtectedRoute'
 
 const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => ({ default: m.AppLayout })))
 const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -24,15 +25,17 @@ export const AppRouter = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route element={<AppLayout />}>
-            <Route path="/desk" element={<DashboardPage />} />
-            <Route path="/desk/todo" element={<TodoPage />} />
-            <Route path="/desk/calendar" element={<CalendarPage />} />
-            <Route path="/desk/memo" element={<Navigate to="/desk/todo" replace />} />
-            <Route path="/desk/expense" element={<ExpensePage />} />
-            <Route path="/desk/asset" element={<Navigate to="/desk/expense" replace />} />
-            <Route path="/desk/dutch-pay" element={<Navigate to="/desk/expense" replace />} />
-            <Route path="/desk/group" element={<GroupPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/desk" element={<DashboardPage />} />
+              <Route path="/desk/todo" element={<TodoPage />} />
+              <Route path="/desk/calendar" element={<CalendarPage />} />
+              <Route path="/desk/memo" element={<Navigate to="/desk/todo" replace />} />
+              <Route path="/desk/expense" element={<ExpensePage />} />
+              <Route path="/desk/asset" element={<Navigate to="/desk/expense" replace />} />
+              <Route path="/desk/dutch-pay" element={<Navigate to="/desk/expense" replace />} />
+              <Route path="/desk/group" element={<GroupPage />} />
+            </Route>
           </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
           <Route path="*" element={<Navigate to="/desk" replace />} />

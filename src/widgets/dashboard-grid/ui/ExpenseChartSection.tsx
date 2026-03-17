@@ -123,7 +123,7 @@ export const ExpenseChartSection = ({ data }: Props) => {
               dot={{ r: 0 }}
               activeDot={{ r: 5, strokeWidth: 2 }}
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent payload={[]} />} />
           </AreaChart>
         </ChartContainer>
       </div>

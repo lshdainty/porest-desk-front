@@ -31,7 +31,7 @@ export const ExpenseByMerchantWidget = () => {
 
   const maxAmount = useMemo(() => {
     if (topMerchants.length === 0) return 1
-    return topMerchants[0].totalAmount
+    return topMerchants[0]?.totalAmount ?? 1
   }, [topMerchants])
 
   if (isLoading) {

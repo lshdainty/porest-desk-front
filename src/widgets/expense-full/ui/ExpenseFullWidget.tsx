@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Loader2, Settings } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
-import { Button } from '@/shared/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/shared/ui/dialog'
@@ -24,7 +23,6 @@ import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
 import { ExpenseCategoryManager } from './ExpenseCategoryManager'
 import { DailySummaryCard } from './DailySummary'
-import { MonthlySummaryCard } from './MonthlySummary'
 import { SummaryDashboard } from './summary/SummaryDashboard'
 import { BudgetProgress } from './BudgetProgress'
 import { ExpenseTemplateList } from './ExpenseTemplateList'
@@ -45,7 +43,7 @@ export const ExpenseFullWidget = () => {
   const [showCategoryManager, setShowCategoryManager] = useState(false)
 
   const now = new Date()
-  const todayStr = now.toISOString().split('T')[0]
+  const todayStr = now.toISOString().split('T')[0] ?? ''
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() + 1
 
@@ -239,7 +237,7 @@ export const ExpenseFullWidget = () => {
         <ExpenseForm
           expense={editingExpense}
           categories={categories || []}
-          assets={assets || []}
+          assets={assets?.assets || []}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createExpense.isPending || updateExpense.isPending}

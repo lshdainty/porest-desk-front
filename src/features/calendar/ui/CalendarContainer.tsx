@@ -58,6 +58,8 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
     calendarRowId: event.calendarRowId,
     calendarName: event.calendarName,
     calendarColor: event.calendarColor,
+    groupRowId: event.groupRowId ?? null,
+    groupName: event.groupName ?? null,
     createAt: '',
     modifyAt: '',
   }

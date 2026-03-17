@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bell, Check, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info, Loader2 } from 'lucide-react'
+import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {

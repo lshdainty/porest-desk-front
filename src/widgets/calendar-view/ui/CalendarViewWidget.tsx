@@ -21,7 +21,6 @@ import {
   useUpdateEvent,
   useDeleteEvent,
 } from '@/features/calendar'
-import { useCalendarAggregate } from '@/features/calendar'
 import { useEventLabels } from '@/features/event-label'
 import { useTodos, useToggleTodoStatus } from '@/features/todo'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'

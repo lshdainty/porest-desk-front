@@ -13,7 +13,7 @@ import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces
 /** expense 이벤트의 title에서 금액(숫자)을 추출 */
 function parseExpenseAmount(title: string): number {
   const match = title.match(/[+-]?([\d,]+)/)
-  if (!match) return 0
+  if (!match?.[1]) return 0
   return Number(match[1].replace(/,/g, ''))
 }
 
@@ -74,7 +74,7 @@ const MonthDayCell = ({
 }) => {
   const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
-  const { startSelection, updateSelection, endSelection, isDateInSelection, isDragSelecting } = useDragSelect()
+  const { startSelection, updateSelection, endSelection, isDateInSelection } = useDragSelect()
 
   const { day, currentMonth, date } = cell
 

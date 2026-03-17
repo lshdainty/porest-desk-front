@@ -1,4 +1,4 @@
-import { addDays, areIntervalsOverlapping, differenceInDays, differenceInMinutes, endOfWeek, format, isAfter, isBefore, isSameDay, parseISO, startOfDay, startOfWeek } from 'date-fns'
+import { addDays, areIntervalsOverlapping, differenceInDays, differenceInMinutes, endOfWeek, format, isAfter, isBefore, isSameDay, parseISO, startOfWeek } from 'date-fns'
 import { enUS, ko } from 'date-fns/locale'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -68,7 +68,7 @@ const WeekViewMultiDayEventsRow = ({
         rows.push([])
       }
 
-      rows[rowIndex].push(event)
+      rows[rowIndex]!.push(event)
     })
 
     return rows

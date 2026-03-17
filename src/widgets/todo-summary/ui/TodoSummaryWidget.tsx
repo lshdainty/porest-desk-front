@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { CheckSquare, ArrowRight } from 'lucide-react'
-import { cn } from '@/shared/lib'
 import { useDashboardSummary } from '@/features/dashboard'
 
 export const TodoSummaryWidget = () => {

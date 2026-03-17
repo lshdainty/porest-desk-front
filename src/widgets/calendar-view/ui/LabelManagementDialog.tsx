@@ -37,11 +37,11 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
   const [editingLabel, setEditingLabel] = useState<EventLabel | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState(labelColorOptions[0])
+  const [formColor, setFormColor] = useState<string>(labelColorOptions[0] ?? '#3b82f6')
 
   const resetForm = () => {
     setFormName('')
-    setFormColor(labelColorOptions[0])
+    setFormColor(labelColorOptions[0] ?? '#3b82f6')
     setEditingLabel(null)
     setIsAdding(false)
   }

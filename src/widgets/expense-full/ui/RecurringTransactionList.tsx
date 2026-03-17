@@ -213,7 +213,7 @@ export const RecurringTransactionList = () => {
         <RecurringTransactionForm
           recurring={editingRecurring}
           categories={categories || []}
-          assets={assets || []}
+          assets={assets?.assets || []}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createRecurring.isPending || updateRecurring.isPending}

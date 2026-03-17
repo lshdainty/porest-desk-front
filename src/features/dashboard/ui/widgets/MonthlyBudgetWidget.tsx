@@ -130,7 +130,7 @@ export const MonthlyBudgetWidget = () => {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value, name) => (
+                  formatter={(_value, name) => (
                     <span className="font-mono font-medium tabular-nums">
                       {name === 'used' ? `${usagePercentage.toFixed(1)}%` : `${Math.max(100 - usagePercentage, 0).toFixed(1)}%`}
                     </span>

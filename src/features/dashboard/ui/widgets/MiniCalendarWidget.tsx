@@ -52,8 +52,8 @@ export const MiniCalendarWidget = () => {
     // 캘린더 이벤트
     if (events) {
       events.forEach((e) => {
-        const dateKey = e.startDate.split('T')[0]
-        const color = e.calendarColor || e.color || '#3b82f6'
+        const dateKey = e.startDate.split('T')[0] ?? e.startDate
+        const color = e.calendarColor ?? e.color ?? '#3b82f6'
         if (!map.has(dateKey)) map.set(dateKey, [])
         map.get(dateKey)!.push({ color })
       })
@@ -187,7 +187,7 @@ export const MiniCalendarWidget = () => {
                     <>
                       <div
                         className="size-1.5 rounded-full"
-                        style={{ backgroundColor: dayEvents[0].color }}
+                        style={{ backgroundColor: dayEvents[0]?.color }}
                       />
                       <span className="text-[7px] text-muted-foreground">
                         +{dayEvents.length - 1}

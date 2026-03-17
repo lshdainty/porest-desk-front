@@ -52,7 +52,7 @@ export const ExpenseForm = ({
   const [amount, setAmount] = useState<string>(expense?.amount?.toString() ?? '')
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState(
-    expense?.expenseDate ?? defaultDate ?? new Date().toISOString().split('T')[0]
+    expense?.expenseDate ?? defaultDate ?? (new Date().toISOString().split('T')[0] ?? '')
   )
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
   const [assetRowId, setAssetRowId] = useState<number>(expense?.assetRowId ?? 0)
@@ -86,7 +86,7 @@ export const ExpenseForm = ({
 
   useEffect(() => {
     if (selectableCategories.length > 0 && categoryRowId === 0) {
-      setCategoryRowId(selectableCategories[0].rowId)
+      setCategoryRowId(selectableCategories[0]?.rowId ?? 0)
     }
   }, [selectableCategories, categoryRowId])
 

@@ -71,7 +71,7 @@ const YearViewDayCell = ({
             <>
               <div
                 className="size-1.5 rounded-full"
-                style={{ backgroundColor: events[0].color }}
+                style={{ backgroundColor: events[0]?.color }}
               />
               <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>
             </>

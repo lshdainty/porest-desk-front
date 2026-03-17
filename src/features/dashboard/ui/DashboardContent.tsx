@@ -6,7 +6,7 @@ import WidgetWrapper from '@/features/dashboard/ui/WidgetWrapper'
 import { cn } from '@/shared/lib'
 import { GripVertical, Pencil, Plus, Save, Settings, X } from 'lucide-react'
 import { useMemo } from 'react'
-import { Responsive, useContainerWidth } from 'react-grid-layout'
+import { Responsive, useContainerWidth, type Layout, type ResponsiveLayouts } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { useTranslation } from 'react-i18next'
@@ -126,11 +126,11 @@ const DashboardContent = () => {
   const cols = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }
 
   const constrainedLayouts = useMemo(() => {
-    const newLayouts: Record<string, unknown[]> = {}
+    const newLayouts: ResponsiveLayouts = {}
     Object.keys(layouts).forEach((breakpoint) => {
-      newLayouts[breakpoint] = (layouts[breakpoint] || [])
-        .filter((item: { i: string }) => widgetConfig[item.i])
-        .map((item: { i: string; w: number; h: number; x: number; y: number }) => {
+      newLayouts[breakpoint] = ((layouts[breakpoint] || []) as Layout)
+        .filter((item) => widgetConfig[item.i])
+        .map((item) => {
           const widgetDef = WIDGETS.find((w) => w.id === item.i)
           if (widgetDef) {
             const breakpointCols = cols[breakpoint as keyof typeof cols] || 12
@@ -159,13 +159,13 @@ const DashboardContent = () => {
             cols={cols}
             rowHeight={30}
             width={width}
-            onLayoutChange={handleLayoutChange}
-            onBreakpointChange={handleBreakpointChange}
+            onLayoutChange={(layout, layouts) => handleLayoutChange(layout, layouts as Record<string, unknown[]>)}
+            onBreakpointChange={(bp, _cols) => handleBreakpointChange(bp)}
             margin={[16, 16]}
             dragConfig={{ enabled: isEditing, handle: '.drag-handle' }}
             resizeConfig={{ enabled: isEditing }}
             dropConfig={{ enabled: isEditing }}
-            onDrop={onDrop}
+            onDrop={(layout, item, e) => onDrop(layout as unknown[], item, e)}
             droppingItem={
               draggedWidget
                 ? { i: draggedWidget.id, x: 0, y: 0, w: draggedWidget.defaultW, h: draggedWidget.defaultH }
@@ -176,6 +176,7 @@ const DashboardContent = () => {
               .filter((widgetId) => widgetConfig[widgetId])
               .map((widgetId) => {
                 const config = widgetConfig[widgetId]
+                if (!config) return null
                 return (
                   <div key={widgetId}>
                     <WidgetWrapper

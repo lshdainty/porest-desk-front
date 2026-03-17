@@ -112,10 +112,12 @@ export const DutchPayForm = ({
 
   const updateParticipant = (index: number, field: keyof ParticipantFormValues, value: string | number) => {
     const updated = [...participants]
+    const current = updated[index]
+    if (!current) return
     if (field === 'participantName') {
-      updated[index] = { ...updated[index], participantName: value as string }
+      updated[index] = { ...current, participantName: value as string }
     } else {
-      updated[index] = { ...updated[index], amount: Number(value) }
+      updated[index] = { ...current, amount: Number(value) }
     }
     setParticipants(updated)
   }

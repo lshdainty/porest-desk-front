@@ -28,21 +28,15 @@ const formatCompactAmount = (value: number): string => {
   return value.toLocaleString()
 }
 
-const renderCustomizedLabel = ({
-  cx,
-  cy,
-  midAngle,
-  outerRadius,
-  value,
-  percent,
-}: {
-  cx: number
-  cy: number
-  midAngle: number
-  outerRadius: number
-  value: number
-  percent: number
+const renderCustomizedLabel = (props: {
+  cx?: number
+  cy?: number
+  midAngle?: number
+  outerRadius?: number
+  value?: number
+  percent?: number
 }) => {
+  const { cx = 0, cy = 0, midAngle = 0, outerRadius = 0, value = 0, percent = 0 } = props
   if (percent < 0.01) return null
 
   const radius = outerRadius + 28
@@ -128,8 +122,8 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
                     <div
                       className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
                       style={{
-                        backgroundColor: (item as Record<string, unknown>)?.payload
-                          ? ((item as Record<string, unknown>).payload as Record<string, string>).fill
+                        backgroundColor: (item as unknown as Record<string, unknown>)?.payload
+                          ? ((item as unknown as Record<string, unknown>).payload as Record<string, string>).fill
                           : undefined,
                       }}
                     />

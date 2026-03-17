@@ -36,7 +36,7 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
   const [amount, setAmount] = useState('')
   const [fee, setFee] = useState('')
   const [description, setDescription] = useState('')
-  const [transferDate, setTransferDate] = useState(new Date().toISOString().split('T')[0])
+  const [transferDate, setTransferDate] = useState(new Date().toISOString().split('T')[0] ?? '')
 
   const handleSubmit = useCallback(() => {
     if (!fromAssetRowId || !toAssetRowId || !amount || fromAssetRowId === toAssetRowId) return

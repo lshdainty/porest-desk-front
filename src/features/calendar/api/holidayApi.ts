@@ -48,12 +48,12 @@ export const holidayApi = {
 
   createHoliday: async (data: HolidayFormValues): Promise<Holiday> => {
     const resp: ApiResponse<Holiday> = await apiClient.post('/v1/holiday', toApiPayload(data))
-    return fromApiHoliday(resp.data as Record<string, unknown>)
+    return fromApiHoliday(resp.data as unknown as Record<string, unknown>)
   },
 
   updateHoliday: async (id: number, data: HolidayFormValues): Promise<Holiday> => {
     const resp: ApiResponse<Holiday> = await apiClient.put(`/v1/holiday/${id}`, toApiPayload(data))
-    return fromApiHoliday(resp.data as Record<string, unknown>)
+    return fromApiHoliday(resp.data as unknown as Record<string, unknown>)
   },
 
   deleteHoliday: async (id: number): Promise<void> => {

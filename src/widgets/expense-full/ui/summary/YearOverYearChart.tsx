@@ -94,7 +94,7 @@ export const YearOverYearChart = ({
         />
         <Bar dataKey="thisYear" fill="var(--color-thisYear)" radius={[6, 6, 0, 0]} barSize={20} />
         <Bar dataKey="lastYear" fill="var(--color-lastYear)" radius={[6, 6, 0, 0]} barSize={20} />
-        <ChartLegend content={<ChartLegendContent />} />
+        <ChartLegend content={<ChartLegendContent payload={[]} />} />
       </BarChart>
     </ChartContainer>
   )
