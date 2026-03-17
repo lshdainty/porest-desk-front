@@ -12,6 +12,7 @@ import type { Holiday, HolidayType } from '@/entities/calendar'
 import type { HolidayFormValues } from '@/features/calendar/api/holidayApi'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import { Badge } from '@/shared/ui/badge'
 import {
@@ -199,10 +200,9 @@ export const HolidayManagementDialog = ({
           <div className="space-y-3">
             <div>
               <Label>{t('holiday.date')}</Label>
-              <Input
-                type="date"
+              <InputDatePicker
                 value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
+                onValueChange={(v) => setFormDate(v)}
               />
             </div>
             <div>

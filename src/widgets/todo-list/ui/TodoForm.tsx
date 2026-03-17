@@ -5,6 +5,7 @@ import { Check, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import {
@@ -251,9 +252,9 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
 
               <div className="space-y-1.5">
                 <Label>{t('form.dueDate')}</Label>
-                <Input
-                  {...register('dueDate')}
-                  type="date"
+                <InputDatePicker
+                  value={watch('dueDate')}
+                  onValueChange={(v) => setValue('dueDate', v)}
                 />
               </div>
             </>

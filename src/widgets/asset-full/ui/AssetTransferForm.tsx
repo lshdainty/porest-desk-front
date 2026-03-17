@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Asset, AssetTransferFormValues } from '@/entities/asset'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import {
   Select,
@@ -108,10 +109,9 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
 
           <div>
             <Label>{t('form.date')}</Label>
-            <Input
-              type="date"
+            <InputDatePicker
               value={transferDate}
-              onChange={(e) => setTransferDate(e.target.value)}
+              onValueChange={(v) => setTransferDate(v)}
             />
           </div>
 

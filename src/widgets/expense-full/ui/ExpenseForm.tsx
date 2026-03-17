@@ -4,6 +4,7 @@ import { FileDown, Search, Loader2 } from 'lucide-react'
 import { cn, renderIcon } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue,
@@ -264,10 +265,9 @@ export const ExpenseForm = ({
           {/* Date */}
           <div className="space-y-1.5">
             <Label>{t('form.date')}</Label>
-            <Input
-              type="date"
+            <InputDatePicker
               value={expenseDate}
-              onChange={(e) => setExpenseDate(e.target.value)}
+              onValueChange={(v) => setExpenseDate(v)}
             />
           </div>
 

@@ -5,6 +5,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -174,9 +175,9 @@ export const DutchPayForm = ({
           {/* Date */}
           <div className="space-y-1.5">
             <Label>{t('form.date')}</Label>
-            <Input
-              {...register('dutchPayDate', { required: true })}
-              type="date"
+            <InputDatePicker
+              value={watch('dutchPayDate')}
+              onValueChange={(v) => setValue('dutchPayDate', v)}
             />
           </div>
 

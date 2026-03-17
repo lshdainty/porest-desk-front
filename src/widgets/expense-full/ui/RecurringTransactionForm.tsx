@@ -6,6 +6,7 @@ import type { Asset } from '@/entities/asset'
 import type { RecurringTransaction, RecurringTransactionFormValues, RecurringFrequency } from '@/entities/recurring-transaction'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import {
   Select,
@@ -287,20 +288,18 @@ export const RecurringTransactionForm = ({
           {/* Start date */}
           <div>
             <Label>{t('form.date')}</Label>
-            <Input
-              type="date"
+            <InputDatePicker
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onValueChange={(v) => setStartDate(v)}
             />
           </div>
 
           {/* End date (optional) */}
           <div>
             <Label>종료일 (선택)</Label>
-            <Input
-              type="date"
+            <InputDatePicker
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onValueChange={(v) => setEndDate(v)}
             />
           </div>
         </div>
