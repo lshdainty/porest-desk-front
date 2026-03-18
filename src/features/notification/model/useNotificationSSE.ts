@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { notificationKeys } from '@/shared/config'
@@ -7,62 +7,62 @@ const SSE_URL = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}
 
 export const useNotificationSSE = () => {
   const queryClient = useQueryClient()
-  const eventSourceRef = useRef<EventSource | null>(null)
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
   const reconnectDelayRef = useRef(1000)
 
-  const connect = useCallback(() => {
-    // Close existing connection
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-    }
-
-    const eventSource = new EventSource(SSE_URL)
-    eventSourceRef.current = eventSource
-
-    eventSource.addEventListener('CONNECT', () => {
-      console.log('[SSE] Connected')
-      reconnectDelayRef.current = 1000 // reset backoff
-    })
-
-    eventSource.addEventListener('NOTIFICATION', (event) => {
-      try {
-        const notification = JSON.parse(event.data)
-        // Invalidate React Query cache
-        queryClient.invalidateQueries({ queryKey: notificationKeys.all })
-        // Show toast
-        toast(notification.title, {
-          description: notification.message,
-        })
-      } catch (e) {
-        console.error('[SSE] Failed to parse notification:', e)
-      }
-    })
-
-    eventSource.onerror = () => {
-      console.warn('[SSE] Connection error, reconnecting...')
-      eventSource.close()
-      eventSourceRef.current = null
-
-      // Exponential backoff reconnection
-      reconnectTimeoutRef.current = setTimeout(() => {
-        reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, 30000)
-        connect()
-      }, reconnectDelayRef.current)
-    }
-  }, [queryClient])
-
   useEffect(() => {
+    // active 플래그: cleanup 후 stale 콜백이 재연결하는 것을 방지
+    let active = true
+    let eventSource: EventSource | null = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+    const connect = () => {
+      if (!active) return
+
+      eventSource = new EventSource(SSE_URL, { withCredentials: true })
+
+      eventSource.addEventListener('CONNECT', () => {
+        reconnectDelayRef.current = 1000 // backoff 초기화
+      })
+
+      eventSource.addEventListener('NOTIFICATION', (event) => {
+        try {
+          const notification = JSON.parse(event.data)
+          queryClient.invalidateQueries({ queryKey: notificationKeys.all })
+          toast(notification.title, {
+            description: notification.message,
+          })
+        } catch (e) {
+          console.error('[SSE] Failed to parse notification:', e)
+        }
+      })
+
+      eventSource.onerror = () => {
+        // cleanup이 실행된 후 stale 콜백은 무시
+        if (!active) return
+
+        console.warn('[SSE] Connection error, reconnecting...')
+        eventSource?.close()
+        eventSource = null
+
+        // Exponential backoff 재연결
+        reconnectTimer = setTimeout(() => {
+          reconnectDelayRef.current = Math.min(reconnectDelayRef.current * 2, 30000)
+          connect()
+        }, reconnectDelayRef.current)
+      }
+    }
+
     connect()
 
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current)
+      // cleanup: active 플래그를 먼저 내려서 이후 콜백 차단
+      active = false
+      eventSource?.close()
+      eventSource = null
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
       }
     }
-  }, [connect])
+  }, [queryClient])
 }
