@@ -12,5 +12,6 @@
   "settings": "설정",
   "more": "더보기",
   "menu": "메뉴",
-  "logout": "로그아웃"
+  "logout": "로그아웃",
+  "changePassword": "비밀번호 변경"
 }

@@ -24,6 +24,7 @@ layout,settings,설정,Settings
 layout,more,더보기,More
 layout,menu,메뉴,Menu
 layout,logout,로그아웃,Log out
+layout,changePassword,비밀번호 변경,Change Password
 todo,title,할일,Todo
 todo,createTodo,할일 추가,Add Todo
 todo,editTodo,할일 수정,Edit Todo
@@ -685,3 +686,17 @@ notification,newNotification,새 알림,New notification
 notification,eventReminder,일정 알림,Event Reminder
 notification,budgetAlert,예산 알림,Budget Alert
 notification,todoReminder,할 일 알림,Todo Reminder
+user,passwordChange,비밀번호 변경,Change Password
+user,passwordChangeDescription,현재 비밀번호를 확인 후 새 비밀번호로 변경합니다,Verify your current password and set a new one
+user,currentPassword,현재 비밀번호,Current Password
+user,currentPasswordPlaceholder,현재 비밀번호를 입력하세요,Enter your current password
+user,currentPasswordRequired,현재 비밀번호를 입력해주세요,Current password is required
+user,newPassword,새 비밀번호,New Password
+user,newPasswordPlaceholder,새 비밀번호를 입력하세요,Enter your new password
+user,newPasswordRequired,새 비밀번호를 입력해주세요,New password is required
+user,confirmPassword,새 비밀번호 확인,Confirm New Password
+user,confirmPasswordPlaceholder,새 비밀번호를 다시 입력하세요,Re-enter your new password
+user,confirmPasswordRequired,새 비밀번호 확인을 입력해주세요,Password confirmation is required
+user,passwordMismatch,새 비밀번호가 일치하지 않습니다,New passwords do not match
+user,passwordChangeSuccess,비밀번호가 성공적으로 변경되었습니다,Password changed successfully
+user,passwordChangeError,비밀번호 변경에 실패했습니다,Failed to change password

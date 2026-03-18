@@ -1,0 +1,16 @@
+{
+  "passwordChange": "비밀번호 변경",
+  "passwordChangeDescription": "현재 비밀번호를 확인 후 새 비밀번호로 변경합니다",
+  "currentPassword": "현재 비밀번호",
+  "currentPasswordPlaceholder": "현재 비밀번호를 입력하세요",
+  "currentPasswordRequired": "현재 비밀번호를 입력해주세요",
+  "newPassword": "새 비밀번호",
+  "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
+  "newPasswordRequired": "새 비밀번호를 입력해주세요",
+  "confirmPassword": "새 비밀번호 확인",
+  "confirmPasswordPlaceholder": "새 비밀번호를 다시 입력하세요",
+  "confirmPasswordRequired": "새 비밀번호 확인을 입력해주세요",
+  "passwordMismatch": "새 비밀번호가 일치하지 않습니다",
+  "passwordChangeSuccess": "비밀번호가 성공적으로 변경되었습니다",
+  "passwordChangeError": "비밀번호 변경에 실패했습니다"
+}

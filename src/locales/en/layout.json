@@ -12,5 +12,6 @@
   "settings": "Settings",
   "more": "More",
   "menu": "Menu",
-  "logout": "Log out"
+  "logout": "Log out",
+  "changePassword": "Change Password"
 }
