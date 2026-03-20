@@ -1,0 +1,15 @@
+{
+  "title": "알림",
+  "empty": "알림이 없습니다",
+  "markAllRead": "모두 읽음",
+  "type.EVENT_REMINDER": "일정 알림",
+  "type.BUDGET_ALERT": "예산 알림",
+  "type.TODO_REMINDER": "할일 알림",
+  "type.SYSTEM": "시스템 알림",
+  "connectionLost": "알림 연결이 끊어졌습니다",
+  "connectionRestored": "알림 연결이 복구되었습니다",
+  "newNotification": "새 알림",
+  "eventReminder": "일정 알림",
+  "budgetAlert": "예산 알림",
+  "todoReminder": "할 일 알림"
+}

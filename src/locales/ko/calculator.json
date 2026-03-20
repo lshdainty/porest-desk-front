@@ -1,0 +1,16 @@
+{
+  "title": "계산기",
+  "history": "계산 기록",
+  "clearHistory": "기록 삭제",
+  "noHistory": "계산 기록이 없습니다",
+  "scientific": "공학용",
+  "standard": "일반",
+  "clearAll": "AC",
+  "clear": "C",
+  "equals": "=",
+  "error": "오류",
+  "clearHistoryConfirm.title": "기록 삭제",
+  "clearHistoryConfirm.message": "모든 계산 기록을 삭제하시겠습니까?",
+  "clearHistoryConfirm.cancel": "취소",
+  "clearHistoryConfirm.confirm": "삭제"
+}

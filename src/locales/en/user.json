@@ -1,0 +1,16 @@
+{
+  "passwordChange": "Change Password",
+  "passwordChangeDescription": "Verify your current password and set a new one",
+  "currentPassword": "Current Password",
+  "currentPasswordPlaceholder": "Enter your current password",
+  "currentPasswordRequired": "Current password is required",
+  "newPassword": "New Password",
+  "newPasswordPlaceholder": "Enter your new password",
+  "newPasswordRequired": "New password is required",
+  "confirmPassword": "Confirm New Password",
+  "confirmPasswordPlaceholder": "Re-enter your new password",
+  "confirmPasswordRequired": "Password confirmation is required",
+  "passwordMismatch": "New passwords do not match",
+  "passwordChangeSuccess": "Password changed successfully",
+  "passwordChangeError": "Failed to change password"
+}
