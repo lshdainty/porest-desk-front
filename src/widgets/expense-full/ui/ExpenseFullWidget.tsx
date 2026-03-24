@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Loader2, Settings } from 'lucide-react'
 import { cn } from '@/shared/lib'
@@ -12,15 +12,18 @@ import {
 } from '@/shared/ui/alert-dialog'
 import {
   useExpenses,
+  useSearchExpenses,
   useCreateExpense,
   useUpdateExpense,
   useDeleteExpense,
   useExpenseCategories,
 } from '@/features/expense'
+import type { ExpenseSearchParams } from '@/features/expense'
 import { useAssets } from '@/features/asset'
 import type { Expense, ExpenseFormValues } from '@/entities/expense'
 import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
+import { ExpenseFilterBar } from './ExpenseFilterBar'
 import { ExpenseCategoryManager } from './ExpenseCategoryManager'
 import { DailySummaryCard } from './DailySummary'
 import { SummaryDashboard } from './summary/SummaryDashboard'
@@ -41,13 +44,20 @@ export const ExpenseFullWidget = () => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
+  const [searchFilters, setSearchFilters] = useState<ExpenseSearchParams>({})
 
   const now = new Date()
   const todayStr = now.toISOString().split('T')[0] ?? ''
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() + 1
 
+  const isSearchMode = useMemo(
+    () => Object.values(searchFilters).some((v) => v !== undefined && v !== ''),
+    [searchFilters],
+  )
+
   const { data: expenses, isLoading } = useExpenses()
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchExpenses(searchFilters)
   const { data: categories } = useExpenseCategories()
   const { data: assets } = useAssets()
   const createExpense = useCreateExpense()
@@ -92,6 +102,13 @@ export const ExpenseFullWidget = () => {
       },
     })
   }, [showDeleteConfirm, deleteExpense])
+
+  const handleNavigateToList = useCallback((categoryId?: number) => {
+    if (categoryId) {
+      setSearchFilters({ categoryId })
+    }
+    setActiveTab('list')
+  }, [])
 
   const handleFormClose = useCallback(() => {
     setShowForm(false)
@@ -160,14 +177,28 @@ export const ExpenseFullWidget = () => {
             <div className="shrink-0">
               <DailySummaryCard date={todayStr} />
             </div>
-            <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
-              {isLoading ? (
+            <div className="mt-4 shrink-0">
+              <ExpenseFilterBar
+                categories={categories || []}
+                assets={assets?.assets || []}
+                filters={searchFilters}
+                onFiltersChange={setSearchFilters}
+                onClear={() => setSearchFilters({})}
+              />
+            </div>
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+              {isSearchMode && searchResults && (
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t('searchResults', { count: searchResults.length })}
+                </p>
+              )}
+              {(isSearchMode ? isSearchLoading : isLoading) ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <ExpenseList
-                  expenses={expenses || []}
+                  expenses={(isSearchMode ? searchResults : expenses) || []}
                   categories={categories || []}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
@@ -189,7 +220,7 @@ export const ExpenseFullWidget = () => {
 
         {activeTab === 'summary' && (
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <SummaryDashboard year={currentYear} month={currentMonth} />
+            <SummaryDashboard year={currentYear} month={currentMonth} onNavigateToList={handleNavigateToList} />
           </div>
         )}
 

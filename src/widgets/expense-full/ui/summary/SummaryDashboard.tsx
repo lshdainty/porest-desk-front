@@ -1,30 +1,33 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
+import { cn } from '@/shared/lib'
+import { useIsMobile } from '@/shared/hooks'
 import type {
   StatsPeriod,
   MonthlyAmount,
   CategoryBreakdown,
 } from '@/entities/expense'
 import {
+  useExpenses,
   useYearlySummary,
   useMerchantSummary,
   useAssetExpenseSummary,
   useExpenseBudgets,
   useExpenseCategories,
 } from '@/features/expense'
-import { MonthlySummaryCard } from '../MonthlySummary'
-import { PeriodSelector } from './PeriodSelector'
-import { MonthlyTrendChart } from './MonthlyTrendChart'
-import { YearOverYearChart } from './YearOverYearChart'
-import { BudgetVsActualChart } from './BudgetVsActualChart'
-import { CategoryTrendChart } from './CategoryTrendChart'
-import { MerchantAnalysisChart } from './MerchantAnalysisChart'
-import { AssetUsageChart } from './AssetUsageChart'
+import { SectionOverview } from './SectionOverview'
+import { SectionCategory } from './SectionCategory'
+import { SectionTrend } from './SectionTrend'
+import { SectionBudget } from './SectionBudget'
+import { SectionDetailed } from './SectionDetailed'
+
+type SummarySection = 'overview' | 'category' | 'trend' | 'budget' | 'detailed'
 
 interface SummaryDashboardProps {
   year: number
   month: number
+  onNavigateToList?: (categoryId?: number) => void
 }
 
 function computeDateRange(
@@ -77,14 +80,21 @@ function filterMonthlyAmountsByPeriod(
   return monthlyAmounts.filter((ma) => currentYearMonths.has(ma.month))
 }
 
-export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
+export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashboardProps) => {
   const { t } = useTranslation('expense')
+  const isMobile = useIsMobile()
   const [period, setPeriod] = useState<StatsPeriod>('6m')
+  const [activeSection, setActiveSection] = useState<SummarySection>('overview')
 
   const { startDate, endDate } = useMemo(
     () => computeDateRange(period, year, month),
     [period, year, month],
   )
+
+  // 해당 월 날짜 범위
+  const lastDay = new Date(year, month, 0).getDate()
+  const monthStartDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const monthEndDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
   // Data fetching
   const { data: yearlyData, isLoading: loadingYearly } =
@@ -100,8 +110,13 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
     month,
   })
   const { data: categories } = useExpenseCategories()
+  const { data: monthExpenses, isLoading: loadingExpenses } = useExpenses({
+    startDate: monthStartDate,
+    endDate: monthEndDate,
+  })
+  const { data: monthMerchantData } = useMerchantSummary(monthStartDate, monthEndDate)
 
-  // Filter monthly amounts by selected period
+  // Derived data
   const filteredMonthlyAmounts = useMemo(
     () =>
       filterMonthlyAmountsByPeriod(
@@ -113,7 +128,6 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
     [yearlyData, period, year, month],
   )
 
-  // Category name map for budget chart
   const categoryNames = useMemo(() => {
     const map: Record<number, string> = {}
     categories?.forEach((c) => {
@@ -122,7 +136,6 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
     return map
   }, [categories])
 
-  // Current month's category breakdown for budget chart
   const categoryBreakdown: CategoryBreakdown[] = useMemo(() => {
     if (!yearlyData?.monthlyAmounts) return []
     const currentMonth = yearlyData.monthlyAmounts.find(
@@ -136,7 +149,8 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
     loadingPrevYearly ||
     loadingMerchants ||
     loadingAssets ||
-    loadingBudgets
+    loadingBudgets ||
+    loadingExpenses
 
   if (isLoading) {
     return (
@@ -146,61 +160,102 @@ export const SummaryDashboard = ({ year, month }: SummaryDashboardProps) => {
     )
   }
 
+  const sections: { key: SummarySection; label: string }[] = [
+    { key: 'overview', label: t('stats.sectionOverview', '개요') },
+    { key: 'category', label: t('stats.sectionCategory', '카테고리') },
+    { key: 'trend', label: t('stats.sectionTrend', '트렌드') },
+    { key: 'budget', label: t('stats.sectionBudget', '예산') },
+    { key: 'detailed', label: t('stats.sectionDetailed', '상세') },
+  ]
+
+  const renderSection = (section: SummarySection) => {
+    switch (section) {
+      case 'overview':
+        return (
+          <SectionOverview
+            year={year}
+            month={month}
+            expenses={monthExpenses || []}
+          />
+        )
+      case 'category':
+        return (
+          <SectionCategory
+            categoryBreakdown={categoryBreakdown}
+            categories={categories}
+            filteredMonthlyAmounts={filteredMonthlyAmounts}
+            onViewTransactions={onNavigateToList}
+          />
+        )
+      case 'trend':
+        return (
+          <SectionTrend
+            expenses={monthExpenses || []}
+            filteredMonthlyAmounts={filteredMonthlyAmounts}
+            allMonthlyAmounts={yearlyData?.monthlyAmounts ?? []}
+            prevYearMonthlyAmounts={prevYearlyData?.monthlyAmounts ?? []}
+            year={year}
+            month={month}
+            period={period}
+            onPeriodChange={setPeriod}
+          />
+        )
+      case 'budget':
+        return (
+          <SectionBudget
+            budgets={budgets ?? []}
+            categoryBreakdown={categoryBreakdown}
+            categoryNames={categoryNames}
+            categories={categories}
+          />
+        )
+      case 'detailed':
+        return (
+          <SectionDetailed
+            expenses={monthExpenses || []}
+            merchants={monthMerchantData?.merchants ?? merchantData?.merchants ?? []}
+            assets={assetData?.assets ?? []}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  // Mobile: section tabs + active section only
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {/* Section tabs */}
+        <div className="flex overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
+          {sections.map((section) => (
+            <button
+              key={section.key}
+              onClick={() => setActiveSection(section.key)}
+              className={cn(
+                'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+                activeSection === section.key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {section.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Active section */}
+        {renderSection(activeSection)}
+      </div>
+    )
+  }
+
+  // Desktop: all sections stacked with spacing
   return (
-    <div className="space-y-4">
-      <MonthlySummaryCard year={year} month={month} />
-
-      <PeriodSelector value={period} onChange={setPeriod} />
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.monthlyTrend')}
-        </h3>
-        <MonthlyTrendChart monthlyAmounts={filteredMonthlyAmounts} />
-      </div>
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.yearOverYear')}
-        </h3>
-        <YearOverYearChart
-          currentYearData={yearlyData?.monthlyAmounts ?? []}
-          previousYearData={prevYearlyData?.monthlyAmounts ?? []}
-          currentYear={year}
-        />
-      </div>
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.budgetVsActual')}
-        </h3>
-        <BudgetVsActualChart
-          budgets={budgets ?? []}
-          categoryBreakdown={categoryBreakdown}
-          categoryNames={categoryNames}
-        />
-      </div>
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.categoryTrend')}
-        </h3>
-        <CategoryTrendChart monthlyAmounts={filteredMonthlyAmounts} categories={categories} />
-      </div>
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.merchantAnalysis')}
-        </h3>
-        <MerchantAnalysisChart merchants={merchantData?.merchants ?? []} />
-      </div>
-
-      <div className="rounded-xl border p-5">
-        <h3 className="mb-3 text-sm font-semibold">
-          {t('stats.assetUsage')}
-        </h3>
-        <AssetUsageChart assets={assetData?.assets ?? []} />
-      </div>
+    <div className="space-y-6">
+      {sections.map((section) => (
+        <div key={section.key}>{renderSection(section.key)}</div>
+      ))}
     </div>
   )
 }
