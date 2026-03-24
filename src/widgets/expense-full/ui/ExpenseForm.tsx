@@ -27,6 +27,7 @@ interface ExpenseFormProps {
   categories: ExpenseCategory[]
   assets?: Asset[]
   defaultDate?: string
+  defaultValues?: Partial<ExpenseFormValues>
   onSubmit: (data: ExpenseFormValues) => void
   onClose: () => void
   isLoading: boolean
@@ -39,6 +40,7 @@ export const ExpenseForm = ({
   categories,
   assets = [],
   defaultDate,
+  defaultValues,
   onSubmit,
   onClose,
   isLoading,
@@ -47,9 +49,9 @@ export const ExpenseForm = ({
   const { t: tc } = useTranslation('common')
   const { data: groups = [] } = useGroups()
 
-  const [expenseType, setExpenseType] = useState<ExpenseType>(expense?.expenseType ?? 'EXPENSE')
-  const [categoryRowId, setCategoryRowId] = useState<number>(expense?.categoryRowId ?? 0)
-  const [amount, setAmount] = useState<string>(expense?.amount?.toString() ?? '')
+  const [expenseType, setExpenseType] = useState<ExpenseType>(expense?.expenseType ?? defaultValues?.expenseType ?? 'EXPENSE')
+  const [categoryRowId, setCategoryRowId] = useState<number>(expense?.categoryRowId ?? defaultValues?.categoryRowId ?? 0)
+  const [amount, setAmount] = useState<string>(expense?.amount?.toString() ?? defaultValues?.amount?.toString() ?? '')
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState(
     expense?.expenseDate ?? defaultDate ?? (new Date().toISOString().split('T')[0] ?? '')

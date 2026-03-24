@@ -130,5 +130,9 @@
   "stats.sectionTrend": "Trend",
   "stats.sectionBudget": "Budget",
   "stats.sectionDetailed": "Details",
-  "viewTransactions": "View Transactions"
+  "viewTransactions": "View Transactions",
+  "manage": "Manage",
+  "filter.thisWeek": "This Week",
+  "filter.thisMonth": "This Month",
+  "filter.largeExpenses": "Large Expenses"
 }

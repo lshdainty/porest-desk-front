@@ -1,11 +1,8 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Settings } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -25,15 +22,16 @@ import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
 import { ExpenseFilterBar } from './ExpenseFilterBar'
 import { ExpenseCategoryManager } from './ExpenseCategoryManager'
+import { QuickAddBar } from './QuickAddBar'
+import { BudgetSummaryCard } from './BudgetSummaryCard'
 import { DailySummaryCard } from './DailySummary'
 import { SummaryDashboard } from './summary/SummaryDashboard'
 import { BudgetProgress } from './BudgetProgress'
 import { ExpenseTemplateList } from './ExpenseTemplateList'
 import { RecurringTransactionList } from './RecurringTransactionList'
-import { AssetFullWidget } from '@/widgets/asset-full'
-import { DutchPayFullWidget } from '@/widgets/dutch-pay-full'
 
-type TabType = 'list' | 'summary' | 'budget' | 'asset' | 'dutchPay' | 'template' | 'recurring'
+type TabType = 'list' | 'summary' | 'budget' | 'manage'
+type ManageSubTab = 'template' | 'recurring' | 'category'
 
 export const ExpenseFullWidget = () => {
   const { t } = useTranslation('expense')
@@ -43,7 +41,7 @@ export const ExpenseFullWidget = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
-  const [showCategoryManager, setShowCategoryManager] = useState(false)
+  const [manageSubTab, setManageSubTab] = useState<ManageSubTab>('template')
   const [searchFilters, setSearchFilters] = useState<ExpenseSearchParams>({})
 
   const now = new Date()
@@ -64,13 +62,26 @@ export const ExpenseFullWidget = () => {
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
 
+  const [formDefaults, setFormDefaults] = useState<Partial<ExpenseFormValues>>({})
+
   const handleCreate = useCallback((data: ExpenseFormValues) => {
     createExpense.mutate(data, {
       onSuccess: () => {
         setShowForm(false)
+        setFormDefaults({})
       },
     })
   }, [createExpense])
+
+  const handleQuickCreate = useCallback((data: ExpenseFormValues) => {
+    createExpense.mutate(data)
+  }, [createExpense])
+
+  const handleOpenFullForm = useCallback((partial: Partial<ExpenseFormValues>) => {
+    setFormDefaults(partial)
+    setEditingExpense(null)
+    setShowForm(true)
+  }, [])
 
   const handleUpdate = useCallback((data: ExpenseFormValues) => {
     if (!editingExpense) return
@@ -123,17 +134,17 @@ export const ExpenseFullWidget = () => {
     }
   }, [editingExpense, handleUpdate, handleCreate])
 
-  const { t: tAsset } = useTranslation('asset')
-  const { t: tDutchPay } = useTranslation('dutchPay')
-
   const tabs: { key: TabType; label: string }[] = [
     { key: 'list', label: t('list') },
     { key: 'summary', label: t('summary') },
     { key: 'budget', label: t('budget') },
-    { key: 'asset', label: tAsset('title') },
-    { key: 'dutchPay', label: tDutchPay('title') },
+    { key: 'manage', label: t('manage') },
+  ]
+
+  const manageSubTabs: { key: ManageSubTab; label: string }[] = [
     { key: 'template', label: t('template') },
     { key: 'recurring', label: t('recurring') },
+    { key: 'category', label: t('categories') },
   ]
 
   return (
@@ -157,16 +168,6 @@ export const ExpenseFullWidget = () => {
               </button>
             ))}
           </div>
-          <div className="flex shrink-0 items-center pl-1">
-            <div className="mx-1 h-5 w-px bg-border" />
-            <button
-              onClick={() => setShowCategoryManager(true)}
-              title={t('categories')}
-              className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Settings size={16} />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -175,9 +176,14 @@ export const ExpenseFullWidget = () => {
         {activeTab === 'list' && (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="shrink-0">
-              <DailySummaryCard date={todayStr} />
+              <QuickAddBar
+                categories={categories || []}
+                onCreateExpense={handleQuickCreate}
+                onOpenFullForm={handleOpenFullForm}
+                isLoading={createExpense.isPending}
+              />
             </div>
-            <div className="mt-4 shrink-0">
+            <div className="mt-3 shrink-0">
               <ExpenseFilterBar
                 categories={categories || []}
                 assets={assets?.assets || []}
@@ -185,6 +191,16 @@ export const ExpenseFullWidget = () => {
                 onFiltersChange={setSearchFilters}
                 onClear={() => setSearchFilters({})}
               />
+            </div>
+            <div className="mt-3 shrink-0">
+              <BudgetSummaryCard
+                year={currentYear}
+                month={currentMonth}
+                onNavigateToBudget={() => setActiveTab('budget')}
+              />
+            </div>
+            <div className="mt-3 shrink-0">
+              <DailySummaryCard date={todayStr} />
             </div>
             <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
               {isSearchMode && searchResults && (
@@ -202,6 +218,7 @@ export const ExpenseFullWidget = () => {
                   categories={categories || []}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onAdd={() => setShowForm(true)}
                 />
               )}
 
@@ -228,24 +245,30 @@ export const ExpenseFullWidget = () => {
           <BudgetProgress year={currentYear} month={currentMonth} />
         )}
 
-        {activeTab === 'template' && (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <ExpenseTemplateList />
+        {activeTab === 'manage' && (
+          <div className="min-h-0 flex-1 flex flex-col">
+            <div className="shrink-0 flex gap-1 mb-4">
+              {manageSubTabs.map((sub) => (
+                <button
+                  key={sub.key}
+                  onClick={() => setManageSubTab(sub.key)}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+                    manageSubTab === sub.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {manageSubTab === 'template' && <ExpenseTemplateList />}
+              {manageSubTab === 'recurring' && <RecurringTransactionList />}
+              {manageSubTab === 'category' && <ExpenseCategoryManager />}
+            </div>
           </div>
-        )}
-
-        {activeTab === 'recurring' && (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <RecurringTransactionList />
-          </div>
-        )}
-
-        {activeTab === 'asset' && (
-          <AssetFullWidget />
-        )}
-
-        {activeTab === 'dutchPay' && (
-          <DutchPayFullWidget />
         )}
       </div>
 
@@ -269,21 +292,12 @@ export const ExpenseFullWidget = () => {
           expense={editingExpense}
           categories={categories || []}
           assets={assets?.assets || []}
+          defaultValues={formDefaults}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createExpense.isPending || updateExpense.isPending}
         />
       )}
-
-      {/* Category manager modal */}
-      <Dialog open={showCategoryManager} onOpenChange={setShowCategoryManager}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('categories')}</DialogTitle>
-          </DialogHeader>
-          <ExpenseCategoryManager />
-        </DialogContent>
-      </Dialog>
 
       {/* Delete confirmation modal */}
       <AlertDialog open={showDeleteConfirm !== null} onOpenChange={(open) => { if (!open) setShowDeleteConfirm(null) }}>

@@ -130,5 +130,9 @@
   "stats.sectionTrend": "트렌드",
   "stats.sectionBudget": "예산",
   "stats.sectionDetailed": "상세",
-  "viewTransactions": "내역 보기"
+  "viewTransactions": "내역 보기",
+  "manage": "관리",
+  "filter.thisWeek": "이번 주",
+  "filter.thisMonth": "이번 달",
+  "filter.largeExpenses": "큰 지출"
 }

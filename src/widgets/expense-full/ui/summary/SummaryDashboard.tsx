@@ -1,8 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2 } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/shared/ui/collapsible'
 import type {
   StatsPeriod,
   MonthlyAmount,
@@ -21,6 +26,13 @@ import { SectionCategory } from './SectionCategory'
 import { SectionTrend } from './SectionTrend'
 import { SectionBudget } from './SectionBudget'
 import { SectionDetailed } from './SectionDetailed'
+import {
+  OverviewSkeleton,
+  CategorySkeleton,
+  TrendSkeleton,
+  BudgetSkeleton,
+  DetailedSkeleton,
+} from './SummarySkeleton'
 
 type SummarySection = 'overview' | 'category' | 'trend' | 'budget' | 'detailed'
 
@@ -96,19 +108,12 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
   const monthStartDate = `${year}-${String(month).padStart(2, '0')}-01`
   const monthEndDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
-  // Data fetching
-  const { data: yearlyData, isLoading: loadingYearly } =
-    useYearlySummary(year)
-  const { data: prevYearlyData, isLoading: loadingPrevYearly } =
-    useYearlySummary(year - 1)
-  const { data: merchantData, isLoading: loadingMerchants } =
-    useMerchantSummary(startDate, endDate)
-  const { data: assetData, isLoading: loadingAssets } =
-    useAssetExpenseSummary(startDate, endDate)
-  const { data: budgets, isLoading: loadingBudgets } = useExpenseBudgets({
-    year,
-    month,
-  })
+  // Data fetching - each independently
+  const { data: yearlyData, isLoading: loadingYearly } = useYearlySummary(year)
+  const { data: prevYearlyData, isLoading: loadingPrevYearly } = useYearlySummary(year - 1)
+  const { data: merchantData, isLoading: loadingMerchants } = useMerchantSummary(startDate, endDate)
+  const { data: assetData, isLoading: loadingAssets } = useAssetExpenseSummary(startDate, endDate)
+  const { data: budgets, isLoading: loadingBudgets } = useExpenseBudgets({ year, month })
   const { data: categories } = useExpenseCategories()
   const { data: monthExpenses, isLoading: loadingExpenses } = useExpenses({
     startDate: monthStartDate,
@@ -118,47 +123,28 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
 
   // Derived data
   const filteredMonthlyAmounts = useMemo(
-    () =>
-      filterMonthlyAmountsByPeriod(
-        yearlyData?.monthlyAmounts,
-        period,
-        year,
-        month,
-      ),
+    () => filterMonthlyAmountsByPeriod(yearlyData?.monthlyAmounts, period, year, month),
     [yearlyData, period, year, month],
   )
 
   const categoryNames = useMemo(() => {
     const map: Record<number, string> = {}
-    categories?.forEach((c) => {
-      map[c.rowId] = c.categoryName
-    })
+    categories?.forEach((c) => { map[c.rowId] = c.categoryName })
     return map
   }, [categories])
 
   const categoryBreakdown: CategoryBreakdown[] = useMemo(() => {
     if (!yearlyData?.monthlyAmounts) return []
-    const currentMonth = yearlyData.monthlyAmounts.find(
-      (m) => m.month === month,
-    )
+    const currentMonth = yearlyData.monthlyAmounts.find((m) => m.month === month)
     return currentMonth?.categoryBreakdown ?? []
   }, [yearlyData, month])
 
-  const isLoading =
-    loadingYearly ||
-    loadingPrevYearly ||
-    loadingMerchants ||
-    loadingAssets ||
-    loadingBudgets ||
-    loadingExpenses
-
-  if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
+  // Section loading states
+  const overviewLoading = loadingExpenses
+  const categoryLoading = loadingYearly
+  const trendLoading = loadingYearly || loadingPrevYearly || loadingExpenses
+  const budgetLoading = loadingBudgets || loadingYearly
+  const detailedLoading = loadingExpenses || loadingMerchants || loadingAssets
 
   const sections: { key: SummarySection; label: string }[] = [
     { key: 'overview', label: t('stats.sectionOverview', '개요') },
@@ -171,14 +157,10 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
   const renderSection = (section: SummarySection) => {
     switch (section) {
       case 'overview':
-        return (
-          <SectionOverview
-            year={year}
-            month={month}
-            expenses={monthExpenses || []}
-          />
-        )
+        if (overviewLoading) return <OverviewSkeleton />
+        return <SectionOverview year={year} month={month} expenses={monthExpenses || []} />
       case 'category':
+        if (categoryLoading) return <CategorySkeleton />
         return (
           <SectionCategory
             categoryBreakdown={categoryBreakdown}
@@ -188,6 +170,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
           />
         )
       case 'trend':
+        if (trendLoading) return <TrendSkeleton />
         return (
           <SectionTrend
             expenses={monthExpenses || []}
@@ -201,6 +184,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
           />
         )
       case 'budget':
+        if (budgetLoading) return <BudgetSkeleton />
         return (
           <SectionBudget
             budgets={budgets ?? []}
@@ -210,6 +194,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
           />
         )
       case 'detailed':
+        if (detailedLoading) return <DetailedSkeleton />
         return (
           <SectionDetailed
             expenses={monthExpenses || []}
@@ -226,7 +211,6 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
   if (isMobile) {
     return (
       <div className="space-y-4">
-        {/* Section tabs */}
         <div className="flex overflow-x-auto rounded-lg border bg-muted/30 p-1 scrollbar-none">
           {sections.map((section) => (
             <button
@@ -243,18 +227,35 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
             </button>
           ))}
         </div>
-
-        {/* Active section */}
         {renderSection(activeSection)}
       </div>
     )
   }
 
-  // Desktop: all sections stacked with spacing
+  // Desktop: Overview + Category side by side, others collapsible
   return (
-    <div className="space-y-6">
-      {sections.map((section) => (
-        <div key={section.key}>{renderSection(section.key)}</div>
+    <div className="space-y-4">
+      {/* Primary: Overview + Category side by side */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>{renderSection('overview')}</div>
+        <div>{renderSection('category')}</div>
+      </div>
+
+      {/* Secondary: Collapsible sections */}
+      {sections.slice(2).map((section) => (
+        <Collapsible key={section.key} defaultOpen={section.key === 'trend'}>
+          <div className="rounded-xl border">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-sm font-semibold hover:bg-muted/30 transition-colors">
+              {section.label}
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="border-t p-4">
+                {renderSection(section.key)}
+              </div>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
       ))}
     </div>
   )
