@@ -159,7 +159,7 @@ export const CategoryDrillDown = ({
       {onViewTransactions && (
         <button
           onClick={() => onViewTransactions(parentCategory.rowId)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           {t('viewTransactions', '내역 보기')}
           <ArrowRight size={14} />

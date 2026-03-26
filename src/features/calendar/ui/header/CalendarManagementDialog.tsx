@@ -102,7 +102,18 @@ export const CalendarManagementDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('manage')}</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>{t('manage')}</DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={openCreateForm}
+              >
+                <Plus size={14} />
+                {t('add')}
+              </Button>
+            </div>
           </DialogHeader>
 
           <div className="space-y-2">
@@ -146,17 +157,6 @@ export const CalendarManagementDialog = ({
             )}
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={openCreateForm}
-            >
-              <Plus size={14} />
-              {t('add')}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

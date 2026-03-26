@@ -207,7 +207,17 @@ export const DutchPayForm = ({
 
           {/* Participants - KEEP custom participant remove/add buttons */}
           <div className="space-y-2">
-            <Label>{t('form.participants')}</Label>
+            <div className="flex items-center justify-between">
+              <Label>{t('form.participants')}</Label>
+              <button
+                type="button"
+                onClick={addParticipant}
+                className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <Plus size={12} />
+                {t('form.addParticipant')}
+              </button>
+            </div>
             {participants.map((p, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
@@ -240,14 +250,6 @@ export const DutchPayForm = ({
                 </button>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={addParticipant}
-              className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-muted-foreground/30 py-2 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-            >
-              <Plus size={12} />
-              {t('form.addParticipant')}
-            </button>
           </div>
 
           {/* Submit */}

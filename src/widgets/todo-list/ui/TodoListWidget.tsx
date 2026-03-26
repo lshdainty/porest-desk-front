@@ -263,8 +263,8 @@ export const TodoListWidget = () => {
 
   return (
     <div className="relative flex h-full min-h-0 flex-col">
-      {/* 고정: 필터 + 프로젝트/태그 버튼 */}
-      <div className="shrink-0">
+      {/* 고정: 필터 + 프로젝트/태그 버튼 + 퀵추가 */}
+      <div className="shrink-0 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <TodoFilters
@@ -316,6 +316,13 @@ export const TodoListWidget = () => {
             </Button>
           </div>
         </div>
+
+        {viewMode === 'list' && !isMobile && (
+          <TodoQuickAdd
+            onAdd={handleQuickAdd}
+            isLoading={createTodo.isPending}
+          />
+        )}
       </div>
 
       {/* 스크롤: 리스트 또는 칸반 */}
@@ -401,14 +408,6 @@ export const TodoListWidget = () => {
           </DndContext>
         )}
 
-        {viewMode === 'list' && !isMobile && (
-          <div className="mt-4">
-            <TodoQuickAdd
-              onAdd={handleQuickAdd}
-              isLoading={createTodo.isPending}
-            />
-          </div>
-        )}
       </div>
 
       {isMobile && (

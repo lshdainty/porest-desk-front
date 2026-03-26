@@ -43,7 +43,7 @@ export const TodoQuickAdd = ({ onAdd, isLoading }: TodoQuickAddProps) => {
           setIsOpen(true)
           setTimeout(() => inputRef.current?.focus(), 0)
         }}
-        className="flex w-full items-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 px-3 py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
       >
         <Plus size={16} />
         {t('addTodo')}

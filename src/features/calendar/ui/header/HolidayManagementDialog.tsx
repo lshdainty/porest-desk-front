@@ -132,7 +132,18 @@ export const HolidayManagementDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('holiday.manage')}</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>{t('holiday.manage')}</DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={openCreateForm}
+              >
+                <Plus size={14} />
+                {t('holiday.add')}
+              </Button>
+            </div>
           </DialogHeader>
 
           <div className="space-y-2">
@@ -175,17 +186,6 @@ export const HolidayManagementDialog = ({
             )}
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={openCreateForm}
-            >
-              <Plus size={14} />
-              {t('holiday.add')}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
