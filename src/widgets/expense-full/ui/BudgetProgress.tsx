@@ -314,6 +314,14 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-medium">{t('budget.categoryBudget')}</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowForm(true)}
+          >
+            <Plus size={14} className="mr-1" />
+            {t('budget.addBudget')}
+          </Button>
         </div>
 
         {categoryBudgets.length === 0 ? (
@@ -421,15 +429,6 @@ export const BudgetProgress = ({ year, month }: BudgetProgressProps) => {
           </div>
         )}
       </div>
-
-      {/* Add budget button */}
-      <button
-        onClick={() => setShowForm(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-      >
-        <Plus size={16} />
-        {t('budget.addBudget')}
-      </button>
 
       {budgetFormDialog}
 

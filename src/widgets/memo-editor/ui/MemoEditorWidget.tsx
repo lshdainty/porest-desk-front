@@ -403,15 +403,19 @@ export const MemoEditorWidget = () => {
       {/* Middle panel: Memo list */}
       <div className="w-72 shrink-0 overflow-y-auto border-r">
         <div className="space-y-3 p-3">
-          <MemoSearch value={searchQuery} onChange={setSearchQuery} />
-
-          <button
-            onClick={handleCreateMemo}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-          >
-            <Plus size={16} />
-            {t('newMemo')}
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <MemoSearch value={searchQuery} onChange={setSearchQuery} />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCreateMemo}
+            >
+              <Plus size={14} className="mr-1" />
+              {t('newMemo')}
+            </Button>
+          </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">

@@ -118,23 +118,35 @@ export const ExpenseTemplateList = () => {
 
   return (
     <div className="space-y-4">
-      {/* Sort toggle */}
-      {sortedTemplates.length > 1 && (
-        <div className="flex justify-end">
-          <button
-            onClick={toggleSortMode}
-            className={cn(
-              'flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors',
-              sortMode === 'frequency'
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <ArrowUpDown size={12} />
-            {sortMode === 'frequency' ? '빈도순' : '기본순'}
-          </button>
+      {/* Header with sort toggle and add button */}
+      <div className="flex items-center justify-between">
+        <div>
+          {sortedTemplates.length > 1 && (
+            <button
+              onClick={toggleSortMode}
+              className={cn(
+                'flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors',
+                sortMode === 'frequency'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              )}
+            >
+              <ArrowUpDown size={12} />
+              {sortMode === 'frequency' ? '빈도순' : '기본순'}
+            </button>
+          )}
         </div>
-      )}
+        {!isMobile && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowForm(true)}
+          >
+            <Plus size={14} className="mr-1" />
+            {t('addTemplate')}
+          </Button>
+        )}
+      </div>
 
       {/* Template list */}
       {sortedTemplates.length > 0 ? (
@@ -209,16 +221,8 @@ export const ExpenseTemplateList = () => {
         </div>
       )}
 
-      {/* Add button */}
-      {!isMobile ? (
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-        >
-          <Plus size={16} />
-          {t('addTemplate')}
-        </button>
-      ) : (
+      {/* Mobile FAB */}
+      {isMobile && (
         <button
           onClick={() => setShowForm(true)}
           className={cn(

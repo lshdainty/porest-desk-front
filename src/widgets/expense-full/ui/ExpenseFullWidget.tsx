@@ -359,15 +359,6 @@ export const ExpenseFullWidget = () => {
                   />
                 )}
 
-                {!isMobile && (
-                  <button
-                    onClick={() => setShowForm(true)}
-                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-                  >
-                    <Plus size={16} />
-                    {t('addTransaction')}
-                  </button>
-                )}
               </div>
             )}
 

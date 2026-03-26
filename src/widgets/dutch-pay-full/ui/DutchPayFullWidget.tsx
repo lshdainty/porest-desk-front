@@ -125,7 +125,7 @@ export const DutchPayFullWidget = () => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* 고정: 필터 탭 */}
+      {/* 고정: 필터 탭 + 추가 버튼 */}
       <div className="shrink-0">
         <div className="flex items-center gap-2">
           {(['all', 'active', 'settled'] as const).map(f => (
@@ -145,6 +145,16 @@ export const DutchPayFullWidget = () => {
           <span className="ml-auto text-xs text-muted-foreground">
             {filteredDutchPays.length}{t('count')}
           </span>
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowForm(true)}
+            >
+              <Plus size={14} className="mr-1" />
+              {t('addDutchPay')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -296,16 +306,6 @@ export const DutchPayFullWidget = () => {
         </div>
       )}
 
-        {/* Desktop add button - inside scroll area */}
-        {!isMobile && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-          >
-            <Plus size={16} />
-            {t('addDutchPay')}
-          </button>
-        )}
       </div>
 
       {/* Mobile FAB */}
