@@ -12,9 +12,21 @@ interface MonthlySummaryProps {
   month: number
 }
 
+const computePrevMonth = (year: number, month: number) => {
+  if (month === 1) return { year: year - 1, month: 12 }
+  return { year, month: month - 1 }
+}
+
+const calcChangePercent = (current: number, prev: number): number | null => {
+  if (prev === 0) return current > 0 ? 100 : null
+  return Math.round(((current - prev) / prev) * 100)
+}
+
 export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
   const { t } = useTranslation('expense')
   const { data: summary } = useMonthlySummary(year, month)
+  const prevPeriod = computePrevMonth(year, month)
+  const { data: prevSummary } = useMonthlySummary(prevPeriod.year, prevPeriod.month)
   const { data: categories } = useExpenseCategories()
   const [expandedParents, setExpandedParents] = useState<Set<number>>(new Set())
 
@@ -22,6 +34,14 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
   const totalExpense = summary?.totalExpense ?? 0
   const net = totalIncome - totalExpense
   const breakdown = summary?.categoryBreakdown ?? []
+
+  const prevIncome = prevSummary?.totalIncome ?? 0
+  const prevExpense = prevSummary?.totalExpense ?? 0
+  const prevNet = prevIncome - prevExpense
+
+  const incomeChange = calcChangePercent(totalIncome, prevIncome)
+  const expenseChange = calcChangePercent(totalExpense, prevExpense)
+  const netChange = calcChangePercent(net, prevNet)
 
   // 수입/지출 분리
   const { incomeBreakdown, expenseBreakdown } = useMemo(
@@ -101,11 +121,23 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
           <TrendingUp size={16} className="mx-auto mb-1 text-green-600 dark:text-green-400" />
           <p className="text-xs text-muted-foreground">{t('totalIncome')}</p>
           <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
+          {incomeChange !== null && (
+            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', incomeChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
+              {incomeChange >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              <span>{incomeChange >= 0 ? '+' : ''}{incomeChange}%</span>
+            </div>
+          )}
         </div>
         <div className="rounded-lg border p-3 text-center">
           <TrendingDown size={16} className="mx-auto mb-1 text-red-600 dark:text-red-400" />
           <p className="text-xs text-muted-foreground">{t('totalExpense')}</p>
           <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(totalExpense)}</p>
+          {expenseChange !== null && (
+            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', expenseChange <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
+              {expenseChange > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              <span>{expenseChange >= 0 ? '+' : ''}{expenseChange}%</span>
+            </div>
+          )}
         </div>
         <div className="rounded-lg border p-3 text-center">
           <Wallet size={16} className={cn('mx-auto mb-1', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
@@ -113,6 +145,12 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
           <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
             {net >= 0 ? '+' : ''}{formatCurrency(net)}
           </p>
+          {netChange !== null && (
+            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', netChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
+              {netChange >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              <span>{netChange >= 0 ? '+' : ''}{netChange}%</span>
+            </div>
+          )}
         </div>
       </div>
 

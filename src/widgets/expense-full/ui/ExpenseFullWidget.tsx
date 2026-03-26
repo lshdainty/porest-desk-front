@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, X, Loader2, TrendingDown, TrendingUp, FileDown } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
@@ -43,6 +43,7 @@ export const ExpenseFullWidget = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [manageSubTab, setManageSubTab] = useState<ManageSubTab>('template')
   const [searchFilters, setSearchFilters] = useState<ExpenseSearchParams>({})
+  const [fabOpen, setFabOpen] = useState(false)
 
   const now = new Date()
   const todayStr = now.toISOString().split('T')[0] ?? ''
@@ -61,6 +62,18 @@ export const ExpenseFullWidget = () => {
   const createExpense = useCreateExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
+
+  // 최근 사용 merchant 목록 (중복 제거, 빈도순)
+  const recentMerchants = useMemo(() => {
+    if (!expenses) return []
+    const freq = new Map<string, number>()
+    expenses.forEach((e) => {
+      if (e.merchant) freq.set(e.merchant, (freq.get(e.merchant) ?? 0) + 1)
+    })
+    return [...freq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([m]) => m)
+  }, [expenses])
 
   const [formDefaults, setFormDefaults] = useState<Partial<ExpenseFormValues>>({})
 
@@ -178,6 +191,7 @@ export const ExpenseFullWidget = () => {
             <div className="shrink-0">
               <QuickAddBar
                 categories={categories || []}
+                expenses={expenses || []}
                 onCreateExpense={handleQuickCreate}
                 onOpenFullForm={handleOpenFullForm}
                 isLoading={createExpense.isPending}
@@ -272,18 +286,72 @@ export const ExpenseFullWidget = () => {
         )}
       </div>
 
-      {/* Mobile FAB */}
+      {/* Mobile SpeedDial FAB */}
       {activeTab === 'list' && isMobile && (
-        <button
-          onClick={() => setShowForm(true)}
-          className={cn(
-            'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
-            'rounded-full bg-primary text-primary-foreground shadow-lg',
-            'hover:bg-primary/90 active:scale-95 transition-all'
+        <>
+          {/* 배경 오버레이 */}
+          {fabOpen && (
+            <div
+              className="fixed inset-0 z-30 bg-black/20"
+              onClick={() => setFabOpen(false)}
+            />
           )}
-        >
-          <Plus size={24} />
-        </button>
+
+          {/* SpeedDial 옵션 */}
+          {fabOpen && (
+            <div className="fixed bottom-36 right-4 z-40 flex flex-col items-end gap-2">
+              <button
+                onClick={() => {
+                  setFabOpen(false)
+                  setFormDefaults({ expenseType: 'EXPENSE' })
+                  setEditingExpense(null)
+                  setShowForm(true)
+                }}
+                className="flex items-center gap-2 rounded-full bg-red-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+              >
+                <TrendingDown size={16} />
+                <span className="text-sm font-medium">{t('expense')}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFabOpen(false)
+                  setFormDefaults({ expenseType: 'INCOME' })
+                  setEditingExpense(null)
+                  setShowForm(true)
+                }}
+                className="flex items-center gap-2 rounded-full bg-green-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+              >
+                <TrendingUp size={16} />
+                <span className="text-sm font-medium">{t('income')}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFabOpen(false)
+                  setFormDefaults({})
+                  setEditingExpense(null)
+                  setShowForm(true)
+                }}
+                className="flex items-center gap-2 rounded-full bg-blue-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+              >
+                <FileDown size={16} />
+                <span className="text-sm font-medium">{t('loadFromTemplate')}</span>
+              </button>
+            </div>
+          )}
+
+          {/* 메인 FAB 버튼 */}
+          <button
+            onClick={() => setFabOpen(!fabOpen)}
+            className={cn(
+              'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
+              'rounded-full bg-primary text-primary-foreground shadow-lg',
+              'hover:bg-primary/90 active:scale-95 transition-all',
+              fabOpen && 'rotate-45',
+            )}
+          >
+            {fabOpen ? <X size={24} /> : <Plus size={24} />}
+          </button>
+        </>
       )}
 
       {/* Expense form */}
@@ -293,6 +361,7 @@ export const ExpenseFullWidget = () => {
           categories={categories || []}
           assets={assets?.assets || []}
           defaultValues={formDefaults}
+          recentMerchants={recentMerchants}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createExpense.isPending || updateExpense.isPending}

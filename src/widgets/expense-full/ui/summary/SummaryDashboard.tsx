@@ -26,6 +26,7 @@ import { SectionCategory } from './SectionCategory'
 import { SectionTrend } from './SectionTrend'
 import { SectionBudget } from './SectionBudget'
 import { SectionDetailed } from './SectionDetailed'
+import { DailyExpenseHeatmap } from './DailyExpenseHeatmap'
 import {
   OverviewSkeleton,
   CategorySkeleton,
@@ -228,6 +229,9 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
           ))}
         </div>
         {renderSection(activeSection)}
+        {activeSection === 'overview' && !overviewLoading && (
+          <DailyExpenseHeatmap expenses={monthExpenses || []} year={year} month={month} />
+        )}
       </div>
     )
   }
@@ -240,6 +244,11 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
         <div>{renderSection('overview')}</div>
         <div>{renderSection('category')}</div>
       </div>
+
+      {/* Daily Expense Heatmap */}
+      {!overviewLoading && (
+        <DailyExpenseHeatmap expenses={monthExpenses || []} year={year} month={month} />
+      )}
 
       {/* Secondary: Collapsible sections */}
       {sections.slice(2).map((section) => (

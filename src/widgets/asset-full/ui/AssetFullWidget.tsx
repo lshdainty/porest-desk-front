@@ -98,7 +98,7 @@ export const AssetFullWidget = () => {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* 고정: 요약 + 탭바 + 추가 버튼 */}
       <div className="shrink-0 space-y-4">
-        {summary && <AssetSummaryCard summary={summary} />}
+        {summary && <AssetSummaryCard summary={summary} assets={assets} />}
 
         <div className="flex items-center gap-2 border-b">
           <button

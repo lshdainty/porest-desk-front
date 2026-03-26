@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Edit3, Trash2, Wallet, Plus } from 'lucide-react'
-import { useMemo } from 'react'
+import { Edit3, Trash2, Wallet, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
 import { format, parseISO } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { cn, formatCurrency } from '@/shared/lib'
@@ -52,8 +52,50 @@ const formatDateHeader = (dateStr: string): string => {
   }
 }
 
+const getMonthFromExpenses = (expenses: Expense[]): { year: number; month: number } | null => {
+  if (expenses.length === 0) return null
+  const dates = expenses.map((e) => e.expenseDate).sort()
+  const mid = dates[Math.floor(dates.length / 2)]
+  if (!mid) return null
+  const d = parseISO(mid)
+  return { year: d.getFullYear(), month: d.getMonth() + 1 }
+}
+
 export const ExpenseList = ({ expenses, categories = [], onEdit, onDelete, onAdd }: ExpenseListProps) => {
   const { t } = useTranslation('expense')
+  const now = new Date()
+
+  const detectedMonth = useMemo(() => getMonthFromExpenses(expenses), [expenses])
+  const [monthOffset, setMonthOffset] = useState(0)
+
+  const currentViewMonth = useMemo(() => {
+    const base = detectedMonth ?? { year: now.getFullYear(), month: now.getMonth() + 1 }
+    let y = base.year
+    let m = base.month + monthOffset
+    while (m > 12) { m -= 12; y++ }
+    while (m < 1) { m += 12; y-- }
+    return { year: y, month: m }
+  }, [detectedMonth, monthOffset, now])
+
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((e) => {
+      const d = parseISO(e.expenseDate)
+      return d.getFullYear() === currentViewMonth.year && d.getMonth() + 1 === currentViewMonth.month
+    })
+  }, [expenses, currentViewMonth])
+
+  const monthlySummary = useMemo(() => {
+    const income = filteredExpenses
+      .filter((e) => e.expenseType === 'INCOME')
+      .reduce((sum, e) => sum + e.amount, 0)
+    const expense = filteredExpenses
+      .filter((e) => e.expenseType === 'EXPENSE')
+      .reduce((sum, e) => sum + e.amount, 0)
+    return { income, expense }
+  }, [filteredExpenses])
+
+  const handlePrevMonth = useCallback(() => setMonthOffset((prev) => prev - 1), [])
+  const handleNextMonth = useCallback(() => setMonthOffset((prev) => prev + 1), [])
 
   const categoryMap = useMemo(() => {
     const map = new Map<number, ExpenseCategory>()
@@ -91,99 +133,134 @@ export const ExpenseList = ({ expenses, categories = [], onEdit, onDelete, onAdd
     )
   }
 
-  const grouped = groupByDate(expenses)
+  const grouped = groupByDate(filteredExpenses)
 
   return (
     <div className="space-y-4">
-      {grouped.map(({ date, items, dailyIncome, dailyExpense }) => (
-        <div key={date}>
-          {/* Enhanced date header with daily totals */}
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              {formatDateHeader(date)}
-            </h3>
-            <div className="flex items-center gap-2 text-xs">
-              {dailyIncome > 0 && (
-                <span className="text-green-600 dark:text-green-400">
-                  +{formatCurrency(dailyIncome)}
-                </span>
-              )}
-              {dailyExpense > 0 && (
-                <span className="text-red-600 dark:text-red-400">
-                  -{formatCurrency(dailyExpense)}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            {items.map((expense) => (
-              <div
-                key={expense.rowId}
-                className="group flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/30 transition-colors"
-              >
-                {/* Category color indicator */}
-                <div
-                  className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: categoryMap.get(expense.categoryRowId)?.color || '#6b7280' }}
-                />
-
-                {/* Details */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    {expense.categoryIcon && (
-                      <span className="text-sm">{expense.categoryIcon}</span>
-                    )}
-                    <span className="text-sm font-medium truncate">
-                      {getCategoryDisplayName(expense)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    {expense.description && (
-                      <span className="truncate">{expense.description}</span>
-                    )}
-                    {expense.description && expense.merchant && (
-                      <span>·</span>
-                    )}
-                    {expense.merchant && (
-                      <span className="shrink-0">{expense.merchant}</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Amount - larger and more prominent */}
-                <span
-                  className={cn(
-                    'shrink-0 text-base font-bold tabular-nums',
-                    expense.expenseType === 'INCOME'
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  )}
-                >
-                  {expense.expenseType === 'INCOME' ? '+' : '-'}
-                  {formatCurrency(expense.amount)}
-                </span>
-
-                {/* Actions - visible on hover (desktop), always visible on mobile */}
-                <div className="flex shrink-0 items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => onEdit(expense)}
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  >
-                    <Edit3 size={14} />
-                  </button>
-                  <button
-                    onClick={() => onDelete(expense.rowId)}
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
+      {/* Month navigation header */}
+      <div className="flex items-center justify-between rounded-lg border bg-card p-3">
+        <button
+          onClick={handlePrevMonth}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div className="text-center">
+          <p className="text-sm font-semibold">
+            {currentViewMonth.year}년 {currentViewMonth.month}월
+          </p>
+          <div className="mt-0.5 flex items-center justify-center gap-3 text-xs">
+            <span className="text-green-600 dark:text-green-400">
+              +{formatCurrency(monthlySummary.income)}
+            </span>
+            <span className="text-red-600 dark:text-red-400">
+              -{formatCurrency(monthlySummary.expense)}
+            </span>
           </div>
         </div>
-      ))}
+        <button
+          onClick={handleNextMonth}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {grouped.length === 0 ? (
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          {t('noTransactions')}
+        </div>
+      ) : (
+        grouped.map(({ date, items, dailyIncome, dailyExpense }) => (
+          <div key={date}>
+            {/* Sticky date header */}
+            <div className="sticky top-0 z-10 mb-2 flex items-center justify-between bg-background py-1">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {formatDateHeader(date)}
+              </h3>
+              <div className="flex items-center gap-2 text-xs">
+                {dailyIncome > 0 && (
+                  <span className="text-green-600 dark:text-green-400">
+                    +{formatCurrency(dailyIncome)}
+                  </span>
+                )}
+                {dailyExpense > 0 && (
+                  <span className="text-red-600 dark:text-red-400">
+                    -{formatCurrency(dailyExpense)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              {items.map((expense) => (
+                <div
+                  key={expense.rowId}
+                  className="group flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/30 transition-colors"
+                >
+                  {/* Category color indicator */}
+                  <div
+                    className="h-8 w-1 shrink-0 rounded-full"
+                    style={{ backgroundColor: categoryMap.get(expense.categoryRowId)?.color || '#6b7280' }}
+                  />
+
+                  {/* Details */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      {expense.categoryIcon && (
+                        <span className="text-sm">{expense.categoryIcon}</span>
+                      )}
+                      <span className="text-sm font-medium truncate">
+                        {getCategoryDisplayName(expense)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {expense.description && (
+                        <span className="truncate">{expense.description}</span>
+                      )}
+                      {expense.description && expense.merchant && (
+                        <span>·</span>
+                      )}
+                      {expense.merchant && (
+                        <span className="shrink-0">{expense.merchant}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Amount - larger and more prominent */}
+                  <span
+                    className={cn(
+                      'shrink-0 text-base font-bold tabular-nums',
+                      expense.expenseType === 'INCOME'
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    )}
+                  >
+                    {expense.expenseType === 'INCOME' ? '+' : '-'}
+                    {formatCurrency(expense.amount)}
+                  </span>
+
+                  {/* Actions - visible on hover (desktop), always visible on mobile */}
+                  <div className="flex shrink-0 items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => onEdit(expense)}
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(expense.rowId)}
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   )
 }
