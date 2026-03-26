@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pin, Eye, EyeOff, Trash2, Check, Loader2 } from 'lucide-react'
+import { Pin, Trash2, Check, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { Textarea } from '@/shared/ui/textarea'
+import { RichTextEditor } from '@/shared/ui/rich-text-editor'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/shared/ui/select'
@@ -30,7 +30,6 @@ import {
 import type { Todo } from '@/entities/todo'
 import type { TodoProject } from '@/entities/todo-project'
 import type { TodoTag } from '@/entities/todo-tag'
-import { MemoPreview } from './MemoPreview'
 
 interface NoteEditorDialogProps {
   todo: Todo | null
@@ -46,7 +45,6 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
   const [projectRowId, setProjectRowId] = useState<number | undefined>(undefined)
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -61,7 +59,6 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
       setContent(todo.content || '')
       setProjectRowId(todo.projectRowId || undefined)
       setSelectedTagIds(todo.tags?.map((t) => t.rowId) || [])
-      setShowPreview(false)
     }
   }, [todo])
 
@@ -129,15 +126,6 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setShowPreview(!showPreview)}
-                  title={showPreview ? t('note.editor') : t('note.preview')}
-                >
-                  {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
                   className="h-8 w-8 text-destructive hover:text-destructive"
                   onClick={() => setShowDeleteConfirm(true)}
                 >
@@ -155,19 +143,11 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
               className="text-lg font-semibold"
             />
 
-            {showPreview ? (
-              <div className="min-h-[300px] rounded-md border p-4">
-                <MemoPreview content={content} />
-              </div>
-            ) : (
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={15}
-                className="resize-none font-mono text-sm"
-                placeholder={t('note.markdown')}
-              />
-            )}
+            <RichTextEditor
+              content={content}
+              onUpdate={setContent}
+              placeholder={t('note.startWriting')}
+            />
 
             {projects.length > 0 && (
               <div className="space-y-1.5">

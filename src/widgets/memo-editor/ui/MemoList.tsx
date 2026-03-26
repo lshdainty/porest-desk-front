@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Pin, Trash2 } from 'lucide-react'
+import { Pin, Trash2, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/shared/lib'
 import type { Memo } from '@/entities/memo'
 
@@ -9,6 +9,7 @@ interface MemoListProps {
   onSelectMemo: (memo: Memo) => void
   onTogglePin: (id: number) => void
   onDelete: (id: number) => void
+  hasSearchQuery?: boolean
 }
 
 export const MemoList = ({
@@ -17,6 +18,7 @@ export const MemoList = ({
   onSelectMemo,
   onTogglePin,
   onDelete,
+  hasSearchQuery = false,
 }: MemoListProps) => {
   const { t } = useTranslation('memo')
 
@@ -29,9 +31,12 @@ export const MemoList = ({
 
   if (sortedMemos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <p className="text-sm">{t('empty')}</p>
-        <p className="mt-1 text-xs">{t('createFirst')}</p>
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+        <FileText size={48} strokeWidth={1.2} className="mb-4 text-muted-foreground/40" />
+        <p className="text-sm font-medium">{t('empty')}</p>
+        <p className="mt-1 text-xs text-muted-foreground/70">
+          {hasSearchQuery ? t('emptySearchDescription') : t('emptyDescription')}
+        </p>
       </div>
     )
   }

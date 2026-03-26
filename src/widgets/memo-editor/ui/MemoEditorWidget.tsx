@@ -1,18 +1,19 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Plus,
   Loader2,
   ArrowLeft,
-  Eye,
-  Edit3,
   Pin,
   Trash2,
   Menu,
+  Check,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
+import { RichTextEditor } from '@/shared/ui/rich-text-editor'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/shared/ui/sheet'
@@ -30,12 +31,12 @@ import {
   useCreateMemoFolder,
   useUpdateMemoFolder,
   useDeleteMemoFolder,
+  useReorderMemoFolders,
 } from '@/features/memo'
 import type { Memo, MemoFormValues } from '@/entities/memo'
 import { MemoFolderTree } from './MemoFolderTree'
 import { MemoList } from './MemoList'
 import { MemoSearch } from './MemoSearch'
-import { MemoPreview } from './MemoPreview'
 
 type MobileView = 'list' | 'editor'
 
@@ -47,7 +48,6 @@ export const MemoEditorWidget = () => {
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [mobileView, setMobileView] = useState<MobileView>('list')
   const [showSidebar, setShowSidebar] = useState(false)
@@ -56,6 +56,8 @@ export const MemoEditorWidget = () => {
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
   const [isDirty, setIsDirty] = useState(false)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const filters = {
     ...(selectedFolderId !== null && { folderId: selectedFolderId }),
@@ -73,6 +75,7 @@ export const MemoEditorWidget = () => {
   const createFolder = useCreateMemoFolder()
   const updateFolder = useUpdateMemoFolder()
   const deleteFolder = useDeleteMemoFolder()
+  const reorderFolders = useReorderMemoFolders()
 
   // Sync editor state with selected memo
   useEffect(() => {
@@ -85,7 +88,6 @@ export const MemoEditorWidget = () => {
 
   const handleSelectMemo = useCallback((memo: Memo) => {
     setSelectedMemo(memo)
-    setShowPreview(false)
     if (isMobile) {
       setMobileView('editor')
     }
@@ -107,8 +109,9 @@ export const MemoEditorWidget = () => {
     })
   }, [createMemo, selectedFolderId, isMobile])
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((isAutoSave = false) => {
     if (!selectedMemo || !isDirty) return
+    if (isAutoSave) setAutoSaveStatus('saving')
     const data: MemoFormValues = {
       title: editTitle,
       content: editContent || undefined,
@@ -120,10 +123,29 @@ export const MemoEditorWidget = () => {
         onSuccess: (updated) => {
           setSelectedMemo(updated)
           setIsDirty(false)
+          if (isAutoSave) {
+            setAutoSaveStatus('saved')
+            setTimeout(() => setAutoSaveStatus('idle'), 2000)
+          }
+        },
+        onError: () => {
+          if (isAutoSave) setAutoSaveStatus('idle')
         },
       }
     )
   }, [selectedMemo, isDirty, editTitle, editContent, updateMemo])
+
+  // Auto-save: debounce 2 seconds after last edit
+  useEffect(() => {
+    if (!isDirty || !selectedMemo) return
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    autoSaveTimerRef.current = setTimeout(() => {
+      handleSave(true)
+    }, 2000)
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    }
+  }, [isDirty, editTitle, editContent, selectedMemo, handleSave])
 
   const handleTogglePin = useCallback((id: number) => {
     togglePin.mutate(id, {
@@ -173,6 +195,10 @@ export const MemoEditorWidget = () => {
     deleteFolder.mutate(id)
   }, [deleteFolder])
 
+  const handleReorderFolders = useCallback((items: { folderId: number; sortOrder: number }[]) => {
+    reorderFolders.mutate(items)
+  }, [reorderFolders])
+
   const handleTitleChange = useCallback((value: string) => {
     setEditTitle(value)
     setIsDirty(true)
@@ -218,6 +244,7 @@ export const MemoEditorWidget = () => {
                 onSelectMemo={handleSelectMemo}
                 onTogglePin={handleTogglePin}
                 onDelete={handleDelete}
+                hasSearchQuery={!!searchQuery}
               />
             )}
 
@@ -265,19 +292,6 @@ export const MemoEditorWidget = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={cn(
-                        'h-8 w-8',
-                        showPreview
-                          ? 'text-primary'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                      onClick={() => setShowPreview(!showPreview)}
-                    >
-                      {showPreview ? <Edit3 size={18} /> : <Eye size={18} />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(selectedMemo.rowId)}
                     >
@@ -285,9 +299,15 @@ export const MemoEditorWidget = () => {
                     </Button>
                   </>
                 )}
+                {autoSaveStatus === 'saving' && (
+                  <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                )}
+                {autoSaveStatus === 'saved' && (
+                  <Check size={14} className="text-green-600 dark:text-green-400" />
+                )}
                 <Button
                   size="sm"
-                  onClick={handleSave}
+                  onClick={() => handleSave()}
                   disabled={!isDirty || updateMemo.isPending}
                 >
                   {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -297,30 +317,19 @@ export const MemoEditorWidget = () => {
             </div>
 
             {selectedMemo && (
-              <div className="flex-1 overflow-auto p-4">
-                {showPreview ? (
-                  <div>
-                    <h1 className="mb-4 text-xl font-bold">
-                      {editTitle || t('untitled')}
-                    </h1>
-                    <MemoPreview content={editContent} />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <input
-                      value={editTitle}
-                      onChange={(e) => handleTitleChange(e.target.value)}
-                      placeholder={t('untitled')}
-                      className="w-full bg-transparent text-xl font-bold outline-none placeholder:text-muted-foreground/50"
-                    />
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => handleContentChange(e.target.value)}
-                      placeholder={t('markdown')}
-                      className="min-h-[60vh] w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                )}
+              <div className="flex-1 overflow-auto p-3">
+                <input
+                  value={editTitle}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  placeholder={t('untitled')}
+                  className="mb-3 w-full bg-transparent text-xl font-bold outline-none placeholder:text-muted-foreground/50"
+                />
+                <RichTextEditor
+                  content={editContent}
+                  onUpdate={handleContentChange}
+                  placeholder={t('startWriting')}
+                  className="border-0 [&_.tiptap]:min-h-[50vh]"
+                />
               </div>
             )}
           </div>
@@ -343,6 +352,7 @@ export const MemoEditorWidget = () => {
                 onCreateFolder={handleCreateFolder}
                 onRenameFolder={handleRenameFolder}
                 onDeleteFolder={handleDeleteFolder}
+                onReorderFolders={handleReorderFolders}
               />
             </div>
           </SheetContent>
@@ -386,6 +396,7 @@ export const MemoEditorWidget = () => {
           onCreateFolder={handleCreateFolder}
           onRenameFolder={handleRenameFolder}
           onDeleteFolder={handleDeleteFolder}
+          onReorderFolders={handleReorderFolders}
         />
       </div>
 
@@ -413,6 +424,7 @@ export const MemoEditorWidget = () => {
               onSelectMemo={handleSelectMemo}
               onTogglePin={handleTogglePin}
               onDelete={handleDelete}
+              hasSearchQuery={!!searchQuery}
             />
           )}
         </div>
@@ -440,30 +452,20 @@ export const MemoEditorWidget = () => {
                 >
                   <Pin size={16} />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    showPreview
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                  onClick={() => setShowPreview(!showPreview)}
-                >
-                  {showPreview ? (
-                    <>
-                      <Edit3 size={14} className="mr-1" />
-                      {t('editor')}
-                    </>
-                  ) : (
-                    <>
-                      <Eye size={14} className="mr-1" />
-                      {t('preview')}
-                    </>
-                  )}
-                </Button>
               </div>
               <div className="flex items-center gap-2">
+                {autoSaveStatus === 'saving' && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Loader2 size={12} className="animate-spin" />
+                    {t('autoSave.saving')}
+                  </span>
+                )}
+                {autoSaveStatus === 'saved' && (
+                  <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <Check size={12} />
+                    {t('autoSave.saved')}
+                  </span>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -474,7 +476,7 @@ export const MemoEditorWidget = () => {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleSave}
+                  onClick={() => handleSave()}
                   disabled={!isDirty || updateMemo.isPending}
                 >
                   {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -485,38 +487,29 @@ export const MemoEditorWidget = () => {
 
             {/* Editor content */}
             <div className="flex-1 overflow-auto p-4">
-              {showPreview ? (
-                <div>
-                  <h1 className="mb-4 text-xl font-bold">
-                    {editTitle || t('untitled')}
-                  </h1>
-                  <MemoPreview content={editContent} />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <input
-                    value={editTitle}
-                    onChange={(e) => handleTitleChange(e.target.value)}
-                    placeholder={t('untitled')}
-                    className="w-full bg-transparent text-xl font-bold outline-none placeholder:text-muted-foreground/50"
-                  />
-                  <textarea
-                    value={editContent}
-                    onChange={(e) => handleContentChange(e.target.value)}
-                    placeholder={t('markdown')}
-                    className="min-h-[50vh] w-full resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
-                  />
-                </div>
-              )}
+              <input
+                value={editTitle}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder={t('untitled')}
+                className="mb-3 w-full bg-transparent text-xl font-bold outline-none placeholder:text-muted-foreground/50"
+              />
+              <RichTextEditor
+                content={editContent}
+                onUpdate={handleContentChange}
+                placeholder={t('startWriting')}
+              />
             </div>
           </>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
-            <p className="text-sm">{t('empty')}</p>
+            <FileText size={56} strokeWidth={1.2} className="mb-4 text-muted-foreground/30" />
+            <p className="text-sm font-medium">{t('empty')}</p>
+            <p className="mt-1 text-xs">{t('emptyDescription')}</p>
             <Button
-              className="mt-3"
+              className="mt-4"
               onClick={handleCreateMemo}
             >
+              <Plus size={16} className="mr-1" />
               {t('createFirst')}
             </Button>
           </div>

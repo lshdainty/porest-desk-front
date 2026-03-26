@@ -14,4 +14,5 @@ export {
   useCreateMemoFolder,
   useUpdateMemoFolder,
   useDeleteMemoFolder,
+  useReorderMemoFolders,
 } from './model/useMemoFolders'

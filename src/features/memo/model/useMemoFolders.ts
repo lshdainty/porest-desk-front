@@ -43,3 +43,15 @@ export const useDeleteMemoFolder = () => {
     },
   })
 }
+
+export const useReorderMemoFolders = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (items: { folderId: number; sortOrder: number }[]) =>
+      memoFolderApi.reorderFolders(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: memoKeys.all })
+    },
+  })
+}

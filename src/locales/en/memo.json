@@ -6,6 +6,8 @@
   "newMemo": "New Memo",
   "untitled": "Untitled",
   "empty": "No memos yet",
+  "emptyDescription": "Start writing a new memo to capture your ideas",
+  "emptySearchDescription": "No memos match your search criteria",
   "createFirst": "Create your first memo",
   "pinned": "Pinned",
   "pin": "Pin",
@@ -28,5 +30,8 @@
   "deleteConfirm.confirm": "Delete",
   "folderDeleteConfirm.title": "Delete Folder",
   "folderDeleteConfirm.message": "Are you sure you want to delete this folder? Memos inside will be moved.",
-  "folders": "Folders"
+  "folders": "Folders",
+  "startWriting": "Start writing...",
+  "autoSave.saving": "Saving...",
+  "autoSave.saved": "Saved"
 }

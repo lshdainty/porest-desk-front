@@ -22,4 +22,9 @@ export const memoFolderApi = {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/memo/folder/${id}`)
     return resp.data
   },
+
+  reorderFolders: async (items: { folderId: number; sortOrder: number }[]): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.patch('/v1/memo/folders/reorder', { items })
+    return resp.data
+  },
 }
