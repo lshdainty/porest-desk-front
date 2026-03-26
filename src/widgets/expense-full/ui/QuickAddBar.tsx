@@ -1,9 +1,8 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, ChevronDown, ChevronUp, Send } from 'lucide-react'
 import { cn, renderIcon } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
-import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue,
@@ -19,7 +18,7 @@ interface QuickAddBarProps {
   isLoading: boolean
 }
 
-/** 최근 사용 카테고리 상위 N개 추출 (빈도 기반) */
+/** Most-used categories by frequency */
 function getRecentCategories(
   expenses: Expense[],
   selectableCategories: ExpenseCategory[],
@@ -53,7 +52,7 @@ export const QuickAddBar = ({
   const [expenseType, setExpenseType] = useState<ExpenseType>('EXPENSE')
   const [amount, setAmount] = useState('')
   const [categoryRowId, setCategoryRowId] = useState<number>(0)
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(!isMobile)
 
   const filteredCategories = categories.filter((c) => c.expenseType === expenseType)
   const categoryTree = buildCategoryTree(filteredCategories)
@@ -93,39 +92,39 @@ export const QuickAddBar = ({
     setCategoryRowId(selectableCategories[0]?.rowId ?? 0)
   }
 
-  // 모바일: 접혀있을 때 탭하면 펼쳐지는 형태
+  // Mobile collapsed state
   if (isMobile && !expanded) {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border bg-card p-2.5 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors active:scale-[0.99]"
       >
-        <Plus size={16} className="text-primary" />
-        {t('addTransaction')}
-        <ChevronDown size={14} />
+        <Plus size={18} />
+        {t('quickAdd.collapsed')}
       </button>
     )
   }
 
   return (
-    <div className="rounded-lg border bg-card p-3">
-      {/* 모바일 접기 버튼 */}
+    <div className="rounded-xl border bg-card p-3 shadow-sm">
+      {/* Mobile collapse button */}
       {isMobile && (
         <button
           onClick={() => setExpanded(false)}
-          className="mb-2 flex w-full items-center justify-center gap-1 text-xs text-muted-foreground"
+          className="mb-2 flex w-full items-center justify-center text-muted-foreground"
         >
-          <ChevronUp size={12} />
+          <ChevronUp size={14} />
         </button>
       )}
 
-      {/* Row 1: Type toggle + Amount */}
-      <div className="flex gap-2">
-        <div className="flex shrink-0 rounded-md border bg-muted/30 p-0.5">
+      {/* Single line: Type toggle + Amount + Category + Submit */}
+      <div className="flex items-center gap-2">
+        {/* Type toggle - compact pill */}
+        <div className="flex shrink-0 rounded-lg border bg-muted/30 p-0.5">
           <button
             onClick={() => setExpenseType('EXPENSE')}
             className={cn(
-              'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+              'rounded-md px-2 py-1.5 text-xs font-medium transition-all',
               expenseType === 'EXPENSE'
                 ? 'bg-red-500 text-white shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -136,15 +135,17 @@ export const QuickAddBar = ({
           <button
             onClick={() => setExpenseType('INCOME')}
             className={cn(
-              'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+              'rounded-md px-2 py-1.5 text-xs font-medium transition-all',
               expenseType === 'INCOME'
-                ? 'bg-green-500 text-white shadow-sm'
+                ? 'bg-emerald-500 text-white shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {t('income')}
           </button>
         </div>
+
+        {/* Amount input */}
         <Input
           type="number"
           inputMode="numeric"
@@ -152,11 +153,70 @@ export const QuickAddBar = ({
           onChange={(e) => setAmount(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t('form.amountPlaceholder')}
-          className="h-8 flex-1 text-sm font-bold"
+          className="h-9 flex-1 min-w-0 text-sm font-bold"
         />
+
+        {/* Category select (desktop only - mobile uses chips below) */}
+        {!isMobile && (
+          <Select
+            value={categoryRowId ? String(categoryRowId) : undefined}
+            onValueChange={(val) => setCategoryRowId(Number(val))}
+          >
+            <SelectTrigger className="h-9 w-[140px] shrink-0 text-xs">
+              <SelectValue placeholder={t('category')} />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryTree.map((node, index) =>
+                node.children.length > 0 ? (
+                  <SelectGroup key={node.rowId}>
+                    {index > 0 && <SelectSeparator />}
+                    <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                      {node.categoryName}
+                    </SelectLabel>
+                    {node.children.map((child) => (
+                      <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
+                        {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
+                        {child.categoryName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ) : (
+                  <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
+                    {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                    {node.categoryName}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Submit button */}
+        <button
+          onClick={handleSubmit}
+          disabled={isLoading || !categoryRowId || !amount}
+          className={cn(
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all active:scale-95',
+            categoryRowId && amount
+              ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
+              : 'bg-muted text-muted-foreground cursor-not-allowed',
+          )}
+        >
+          <Send size={16} />
+        </button>
+
+        {/* Full form link */}
+        <button
+          onClick={handleOpenFull}
+          className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          title={t('editTransaction')}
+        >
+          <ChevronDown size={16} />
+        </button>
       </div>
 
-      {/* 최근 사용 카테고리 칩 */}
+      {/* Recent category chips */}
       {recentCategories.length > 0 && (
         <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-none">
           {recentCategories.map((cat) => (
@@ -164,7 +224,7 @@ export const QuickAddBar = ({
               key={cat.rowId}
               onClick={() => setCategoryRowId(cat.rowId)}
               className={cn(
-                'flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors',
+                'flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all active:scale-95',
                 categoryRowId === cat.rowId
                   ? 'border-primary bg-primary/10 text-primary font-medium'
                   : 'border-muted-foreground/20 text-muted-foreground hover:border-primary/40 hover:text-foreground',
@@ -174,62 +234,44 @@ export const QuickAddBar = ({
               {cat.categoryName}
             </button>
           ))}
+
+          {/* Mobile: full category select trigger */}
+          {isMobile && (
+            <Select
+              value={categoryRowId ? String(categoryRowId) : undefined}
+              onValueChange={(val) => setCategoryRowId(Number(val))}
+            >
+              <SelectTrigger className="h-7 shrink-0 rounded-full border-dashed px-2.5 text-xs w-auto">
+                <span className="text-muted-foreground">{t('category')}...</span>
+              </SelectTrigger>
+              <SelectContent>
+                {categoryTree.map((node, index) =>
+                  node.children.length > 0 ? (
+                    <SelectGroup key={node.rowId}>
+                      {index > 0 && <SelectSeparator />}
+                      <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                        {node.categoryName}
+                      </SelectLabel>
+                      {node.children.map((child) => (
+                        <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
+                          {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
+                          {child.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ) : (
+                    <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
+                      {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                      {node.categoryName}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
-
-      {/* Row 2: Category + Submit + Full form link */}
-      <div className="mt-2 flex items-center gap-2">
-        <Select
-          value={categoryRowId ? String(categoryRowId) : undefined}
-          onValueChange={(val) => setCategoryRowId(Number(val))}
-        >
-          <SelectTrigger className="h-8 flex-1 text-xs">
-            <SelectValue placeholder={t('category')} />
-          </SelectTrigger>
-          <SelectContent>
-            {categoryTree.map((node, index) =>
-              node.children.length > 0 ? (
-                <SelectGroup key={node.rowId}>
-                  {index > 0 && <SelectSeparator />}
-                  <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                    {node.categoryName}
-                  </SelectLabel>
-                  {node.children.map((child) => (
-                    <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
-                      {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
-                      {child.categoryName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ) : (
-                <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
-                  {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                  {node.categoryName}
-                </SelectItem>
-              )
-            )}
-          </SelectContent>
-        </Select>
-
-        <Button
-          size="sm"
-          onClick={handleSubmit}
-          disabled={isLoading || !categoryRowId || !amount}
-          className="h-8 shrink-0 gap-1 px-3"
-        >
-          <Plus size={14} />
-          {t('addTransaction')}
-        </Button>
-
-        <button
-          onClick={handleOpenFull}
-          className="shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          title={t('editTransaction')}
-        >
-          <ChevronDown size={16} />
-        </button>
-      </div>
     </div>
   )
 }

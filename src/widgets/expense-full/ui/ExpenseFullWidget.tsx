@@ -1,7 +1,10 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, X, Loader2, TrendingDown, TrendingUp, FileDown } from 'lucide-react'
-import { cn } from '@/shared/lib'
+import {
+  Plus, X, Loader2, TrendingDown, TrendingUp, FileDown,
+  ChevronLeft, ChevronRight,
+} from 'lucide-react'
+import { cn, formatCurrency } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -14,6 +17,8 @@ import {
   useUpdateExpense,
   useDeleteExpense,
   useExpenseCategories,
+  useExpenseBudgets,
+  useMonthlySummary,
 } from '@/features/expense'
 import type { ExpenseSearchParams } from '@/features/expense'
 import { useAssets } from '@/features/asset'
@@ -23,32 +28,40 @@ import { ExpenseList } from './ExpenseList'
 import { ExpenseFilterBar } from './ExpenseFilterBar'
 import { ExpenseCategoryManager } from './ExpenseCategoryManager'
 import { QuickAddBar } from './QuickAddBar'
-import { BudgetSummaryCard } from './BudgetSummaryCard'
-import { DailySummaryCard } from './DailySummary'
+import { MonthlySummaryCard } from './MonthlySummary'
 import { SummaryDashboard } from './summary/SummaryDashboard'
 import { BudgetProgress } from './BudgetProgress'
 import { ExpenseTemplateList } from './ExpenseTemplateList'
 import { RecurringTransactionList } from './RecurringTransactionList'
 
-type TabType = 'list' | 'summary' | 'budget' | 'manage'
-type ManageSubTab = 'template' | 'recurring' | 'category'
+type TabType = 'transactions' | 'analysis' | 'budget' | 'settings'
+type SettingsSubTab = 'template' | 'recurring' | 'category'
 
 export const ExpenseFullWidget = () => {
   const { t } = useTranslation('expense')
   const isMobile = useIsMobile()
 
-  const [activeTab, setActiveTab] = useState<TabType>('list')
+  const [activeTab, setActiveTab] = useState<TabType>('transactions')
   const [showForm, setShowForm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
-  const [manageSubTab, setManageSubTab] = useState<ManageSubTab>('template')
+  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('template')
   const [searchFilters, setSearchFilters] = useState<ExpenseSearchParams>({})
   const [fabOpen, setFabOpen] = useState(false)
+  const [monthOffset, setMonthOffset] = useState(0)
 
   const now = new Date()
-  const todayStr = now.toISOString().split('T')[0] ?? ''
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
+  const baseYear = now.getFullYear()
+  const baseMonth = now.getMonth() + 1
+
+  // Compute current view month from offset
+  const currentViewMonth = useMemo(() => {
+    let y = baseYear
+    let m = baseMonth + monthOffset
+    while (m > 12) { m -= 12; y++ }
+    while (m < 1) { m += 12; y-- }
+    return { year: y, month: m }
+  }, [baseYear, baseMonth, monthOffset])
 
   const isSearchMode = useMemo(
     () => Object.values(searchFilters).some((v) => v !== undefined && v !== ''),
@@ -63,7 +76,40 @@ export const ExpenseFullWidget = () => {
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
 
-  // 최근 사용 merchant 목록 (중복 제거, 빈도순)
+  // Budget summary for the overview bar
+  const { data: budgets } = useExpenseBudgets({ year: currentViewMonth.year, month: currentViewMonth.month })
+  const { data: monthlySummary } = useMonthlySummary(currentViewMonth.year, currentViewMonth.month)
+
+  const budgetSummary = useMemo(() => {
+    if (!budgets?.length) return null
+    // Find overall budget (categoryRowId === null)
+    const overallBudget = budgets.find((b) => b.categoryRowId === null)
+    if (!overallBudget) {
+      // Fallback: sum all budgets
+      const totalBudget = budgets.reduce((sum, b) => sum + b.budgetAmount, 0)
+      const totalExpense = monthlySummary?.totalExpense ?? 0
+      const percentage = totalBudget > 0 ? Math.round((totalExpense / totalBudget) * 100) : 0
+      const remaining = totalBudget - totalExpense
+      // Calculate days remaining
+      const lastDay = new Date(currentViewMonth.year, currentViewMonth.month, 0).getDate()
+      const isCurrentMonth = now.getFullYear() === currentViewMonth.year && now.getMonth() + 1 === currentViewMonth.month
+      const today = isCurrentMonth ? now.getDate() : lastDay
+      const daysRemaining = Math.max(0, lastDay - today)
+      const perDay = daysRemaining > 0 ? Math.round(remaining / daysRemaining) : 0
+      return { totalBudget, totalExpense, percentage, remaining, daysRemaining, perDay }
+    }
+    const totalExpense = monthlySummary?.totalExpense ?? 0
+    const percentage = overallBudget.budgetAmount > 0 ? Math.round((totalExpense / overallBudget.budgetAmount) * 100) : 0
+    const remaining = overallBudget.budgetAmount - totalExpense
+    const lastDay = new Date(currentViewMonth.year, currentViewMonth.month, 0).getDate()
+    const isCurrentMonth = now.getFullYear() === currentViewMonth.year && now.getMonth() + 1 === currentViewMonth.month
+    const today = isCurrentMonth ? now.getDate() : lastDay
+    const daysRemaining = Math.max(0, lastDay - today)
+    const perDay = daysRemaining > 0 ? Math.round(remaining / daysRemaining) : 0
+    return { totalBudget: overallBudget.budgetAmount, totalExpense, percentage, remaining, daysRemaining, perDay }
+  }, [budgets, monthlySummary, currentViewMonth, now])
+
+  // Recent merchants
   const recentMerchants = useMemo(() => {
     if (!expenses) return []
     const freq = new Map<string, number>()
@@ -131,7 +177,7 @@ export const ExpenseFullWidget = () => {
     if (categoryId) {
       setSearchFilters({ categoryId })
     }
-    setActiveTab('list')
+    setActiveTab('transactions')
   }, [])
 
   const handleFormClose = useCallback(() => {
@@ -148,156 +194,235 @@ export const ExpenseFullWidget = () => {
   }, [editingExpense, handleUpdate, handleCreate])
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'list', label: t('list') },
-    { key: 'summary', label: t('summary') },
+    { key: 'transactions', label: t('transactions') },
+    { key: 'analysis', label: t('analysis') },
     { key: 'budget', label: t('budget') },
-    { key: 'manage', label: t('manage') },
+    { key: 'settings', label: t('settings') },
   ]
 
-  const manageSubTabs: { key: ManageSubTab; label: string }[] = [
+  const settingsSubTabs: { key: SettingsSubTab; label: string }[] = [
     { key: 'template', label: t('template') },
     { key: 'recurring', label: t('recurring') },
     { key: 'category', label: t('categories') },
   ]
 
+  // Budget bar gradient
+  const budgetBarGradient = useMemo(() => {
+    if (!budgetSummary) return ''
+    const p = budgetSummary.percentage
+    if (p > 100) return 'bg-gradient-to-r from-red-400 to-red-600'
+    if (p > 90) return 'bg-gradient-to-r from-orange-400 to-red-500'
+    if (p > 70) return 'bg-gradient-to-r from-yellow-400 to-orange-500'
+    return 'bg-gradient-to-r from-blue-400 to-blue-600'
+  }, [budgetSummary])
+
   return (
     <div className="relative flex h-full min-h-0 flex-col">
-      {/* 고정: 탭바 */}
-      <div className="shrink-0">
-        <div className="flex items-center rounded-lg border bg-muted/30 px-1">
-          <div className="flex min-w-0 flex-1 overflow-x-auto py-1 scrollbar-none">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  'shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  activeTab === tab.key
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+      {/* Scrollable content area */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="space-y-4 pb-4">
+
+          {/* 1. Month Navigator */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setMonthOffset((prev) => prev - 1)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={() => setMonthOffset(0)}
+              className="rounded-lg px-4 py-1.5 text-center hover:bg-muted/50 transition-colors"
+            >
+              <p className="text-lg font-bold tracking-tight">
+                {currentViewMonth.year}년 {currentViewMonth.month}월
+              </p>
+              {monthOffset !== 0 && (
+                <p className="text-[10px] text-muted-foreground">탭하여 이번 달로</p>
+              )}
+            </button>
+            <button
+              onClick={() => setMonthOffset((prev) => prev + 1)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {/* 2. KPI Summary Cards */}
+          <MonthlySummaryCard year={currentViewMonth.year} month={currentViewMonth.month} />
+
+          {/* 3. Budget Progress Bar (overview) */}
+          {budgetSummary && (
+            <button
+              onClick={() => setActiveTab('budget')}
+              className="w-full rounded-xl border bg-card p-3 sm:p-4 text-left transition-colors hover:bg-muted/50 active:scale-[0.99]"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{t('budget.overall')}</span>
+                <span className={cn(
+                  'text-xs font-bold tabular-nums',
+                  budgetSummary.percentage > 100 ? 'text-red-600 dark:text-red-400'
+                    : budgetSummary.percentage > 70 ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-blue-600 dark:text-blue-400',
+                )}>
+                  {budgetSummary.percentage}%
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn('h-full rounded-full transition-all duration-700 ease-out', budgetBarGradient)}
+                  style={{ width: `${Math.min(budgetSummary.percentage, 100)}%` }}
+                />
+              </div>
+              {/* Details row */}
+              <div className="mt-2 flex items-center justify-between text-[11px] sm:text-xs text-muted-foreground">
+                <span className="tabular-nums">
+                  {t('budget.spent')} {formatCurrency(budgetSummary.totalExpense)} / {formatCurrency(budgetSummary.totalBudget)}
+                </span>
+                {budgetSummary.remaining >= 0 && budgetSummary.daysRemaining > 0 && (
+                  <span className="tabular-nums">
+                    {t('budget.perDay')} {formatCurrency(Math.max(0, budgetSummary.perDay))}
+                  </span>
                 )}
-              >
-                {tab.label}
-              </button>
-            ))}
+                {budgetSummary.remaining < 0 && (
+                  <span className="font-medium text-red-600 dark:text-red-400 tabular-nums">
+                    +{formatCurrency(Math.abs(budgetSummary.remaining))} {t('budget.exceeded')}
+                  </span>
+                )}
+              </div>
+            </button>
+          )}
+
+          {/* 4. Quick Add Bar */}
+          <QuickAddBar
+            categories={categories || []}
+            expenses={expenses || []}
+            onCreateExpense={handleQuickCreate}
+            onOpenFullForm={handleOpenFullForm}
+            isLoading={createExpense.isPending}
+          />
+
+          {/* 5. Tab Navigation */}
+          <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 pb-1 bg-background/95 backdrop-blur-sm">
+            <div className="flex items-center rounded-xl border bg-muted/30 p-1">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all',
+                    activeTab === tab.key
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 6. Tab Content */}
+          <div className="min-h-[300px]">
+            {/* Transactions tab */}
+            {activeTab === 'transactions' && (
+              <div className="space-y-3">
+                <ExpenseFilterBar
+                  categories={categories || []}
+                  assets={assets?.assets || []}
+                  filters={searchFilters}
+                  onFiltersChange={setSearchFilters}
+                  onClear={() => setSearchFilters({})}
+                />
+
+                {isSearchMode && searchResults && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('searchResults', { count: searchResults.length })}
+                  </p>
+                )}
+
+                {(isSearchMode ? isSearchLoading : isLoading) ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <ExpenseList
+                    expenses={(isSearchMode ? searchResults : expenses) || []}
+                    categories={categories || []}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onAdd={() => setShowForm(true)}
+                    viewYear={currentViewMonth.year}
+                    viewMonth={currentViewMonth.month}
+                  />
+                )}
+
+                {!isMobile && (
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                  >
+                    <Plus size={16} />
+                    {t('addTransaction')}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Analysis tab */}
+            {activeTab === 'analysis' && (
+              <SummaryDashboard
+                year={currentViewMonth.year}
+                month={currentViewMonth.month}
+                onNavigateToList={handleNavigateToList}
+              />
+            )}
+
+            {/* Budget tab */}
+            {activeTab === 'budget' && (
+              <BudgetProgress year={currentViewMonth.year} month={currentViewMonth.month} />
+            )}
+
+            {/* Settings tab */}
+            {activeTab === 'settings' && (
+              <div className="space-y-4">
+                <div className="flex gap-1">
+                  {settingsSubTabs.map((sub) => (
+                    <button
+                      key={sub.key}
+                      onClick={() => setSettingsSubTab(sub.key)}
+                      className={cn(
+                        'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                        settingsSubTab === sub.key
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+                {settingsSubTab === 'template' && <ExpenseTemplateList />}
+                {settingsSubTab === 'recurring' && <RecurringTransactionList />}
+                {settingsSubTab === 'category' && <ExpenseCategoryManager />}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 콘텐츠: 탭별 스크롤 */}
-      <div className="mt-4 min-h-0 flex-1 flex flex-col">
-        {activeTab === 'list' && (
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0">
-              <QuickAddBar
-                categories={categories || []}
-                expenses={expenses || []}
-                onCreateExpense={handleQuickCreate}
-                onOpenFullForm={handleOpenFullForm}
-                isLoading={createExpense.isPending}
-              />
-            </div>
-            <div className="mt-3 shrink-0">
-              <ExpenseFilterBar
-                categories={categories || []}
-                assets={assets?.assets || []}
-                filters={searchFilters}
-                onFiltersChange={setSearchFilters}
-                onClear={() => setSearchFilters({})}
-              />
-            </div>
-            <div className="mt-3 shrink-0">
-              <BudgetSummaryCard
-                year={currentYear}
-                month={currentMonth}
-                onNavigateToBudget={() => setActiveTab('budget')}
-              />
-            </div>
-            <div className="mt-3 shrink-0">
-              <DailySummaryCard date={todayStr} />
-            </div>
-            <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
-              {isSearchMode && searchResults && (
-                <p className="mb-2 text-xs text-muted-foreground">
-                  {t('searchResults', { count: searchResults.length })}
-                </p>
-              )}
-              {(isSearchMode ? isSearchLoading : isLoading) ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <ExpenseList
-                  expenses={(isSearchMode ? searchResults : expenses) || []}
-                  categories={categories || []}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onAdd={() => setShowForm(true)}
-                />
-              )}
-
-              {!isMobile && (
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-                >
-                  <Plus size={16} />
-                  {t('addTransaction')}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'summary' && (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <SummaryDashboard year={currentYear} month={currentMonth} onNavigateToList={handleNavigateToList} />
-          </div>
-        )}
-
-        {activeTab === 'budget' && (
-          <BudgetProgress year={currentYear} month={currentMonth} />
-        )}
-
-        {activeTab === 'manage' && (
-          <div className="min-h-0 flex-1 flex flex-col">
-            <div className="shrink-0 flex gap-1 mb-4">
-              {manageSubTabs.map((sub) => (
-                <button
-                  key={sub.key}
-                  onClick={() => setManageSubTab(sub.key)}
-                  className={cn(
-                    'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                    manageSubTab === sub.key
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {sub.label}
-                </button>
-              ))}
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              {manageSubTab === 'template' && <ExpenseTemplateList />}
-              {manageSubTab === 'recurring' && <RecurringTransactionList />}
-              {manageSubTab === 'category' && <ExpenseCategoryManager />}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Mobile SpeedDial FAB */}
-      {activeTab === 'list' && isMobile && (
+      {isMobile && (
         <>
-          {/* 배경 오버레이 */}
           {fabOpen && (
             <div
-              className="fixed inset-0 z-30 bg-black/20"
+              className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]"
               onClick={() => setFabOpen(false)}
             />
           )}
 
-          {/* SpeedDial 옵션 */}
           {fabOpen && (
             <div className="fixed bottom-36 right-4 z-40 flex flex-col items-end gap-2">
               <button
@@ -307,7 +432,7 @@ export const ExpenseFullWidget = () => {
                   setEditingExpense(null)
                   setShowForm(true)
                 }}
-                className="flex items-center gap-2 rounded-full bg-red-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+                className="flex items-center gap-2 rounded-full bg-red-500 pl-3 pr-4 py-2.5 text-white shadow-lg active:scale-95 transition-all"
               >
                 <TrendingDown size={16} />
                 <span className="text-sm font-medium">{t('expense')}</span>
@@ -319,7 +444,7 @@ export const ExpenseFullWidget = () => {
                   setEditingExpense(null)
                   setShowForm(true)
                 }}
-                className="flex items-center gap-2 rounded-full bg-green-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+                className="flex items-center gap-2 rounded-full bg-emerald-500 pl-3 pr-4 py-2.5 text-white shadow-lg active:scale-95 transition-all"
               >
                 <TrendingUp size={16} />
                 <span className="text-sm font-medium">{t('income')}</span>
@@ -331,7 +456,7 @@ export const ExpenseFullWidget = () => {
                   setEditingExpense(null)
                   setShowForm(true)
                 }}
-                className="flex items-center gap-2 rounded-full bg-blue-500 pl-3 pr-4 py-2 text-white shadow-lg active:scale-95 transition-all"
+                className="flex items-center gap-2 rounded-full bg-blue-500 pl-3 pr-4 py-2.5 text-white shadow-lg active:scale-95 transition-all"
               >
                 <FileDown size={16} />
                 <span className="text-sm font-medium">{t('loadFromTemplate')}</span>
@@ -339,7 +464,6 @@ export const ExpenseFullWidget = () => {
             </div>
           )}
 
-          {/* 메인 FAB 버튼 */}
           <button
             onClick={() => setFabOpen(!fabOpen)}
             className={cn(

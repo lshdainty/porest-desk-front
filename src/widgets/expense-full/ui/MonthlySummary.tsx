@@ -1,11 +1,8 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, TrendingDown, Wallet, ChevronRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react'
 import { cn, formatCurrency } from '@/shared/lib'
-import { useMonthlySummary, useExpenseCategories } from '@/features/expense'
-import { aggregateByParent, separateBreakdownByType } from '@/entities/expense'
-import type { ParentCategoryBreakdown } from '@/entities/expense'
-import { ExpenseChart } from './ExpenseChart'
+import { useMonthlySummary } from '@/features/expense'
 
 interface MonthlySummaryProps {
   year: number
@@ -27,13 +24,10 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
   const { data: summary } = useMonthlySummary(year, month)
   const prevPeriod = computePrevMonth(year, month)
   const { data: prevSummary } = useMonthlySummary(prevPeriod.year, prevPeriod.month)
-  const { data: categories } = useExpenseCategories()
-  const [expandedParents, setExpandedParents] = useState<Set<number>>(new Set())
 
   const totalIncome = summary?.totalIncome ?? 0
   const totalExpense = summary?.totalExpense ?? 0
   const net = totalIncome - totalExpense
-  const breakdown = summary?.categoryBreakdown ?? []
 
   const prevIncome = prevSummary?.totalIncome ?? 0
   const prevExpense = prevSummary?.totalExpense ?? 0
@@ -43,138 +37,104 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
   const expenseChange = calcChangePercent(totalExpense, prevExpense)
   const netChange = calcChangePercent(net, prevNet)
 
-  // 수입/지출 분리
-  const { incomeBreakdown, expenseBreakdown } = useMemo(
-    () => separateBreakdownByType(breakdown, categories ?? []),
-    [breakdown, categories],
-  )
+  const cards = useMemo(() => [
+    {
+      key: 'income',
+      label: t('totalIncome'),
+      value: totalIncome,
+      change: incomeChange,
+      isPositiveGood: true,
+      icon: TrendingUp,
+      bgClass: 'bg-emerald-50 dark:bg-emerald-950/40',
+      borderClass: 'border-emerald-200/60 dark:border-emerald-800/40',
+      valueClass: 'text-emerald-700 dark:text-emerald-400',
+      iconBgClass: 'bg-emerald-100 dark:bg-emerald-900/50',
+      prefix: '+',
+    },
+    {
+      key: 'expense',
+      label: t('totalExpense'),
+      value: totalExpense,
+      change: expenseChange,
+      isPositiveGood: false,
+      icon: TrendingDown,
+      bgClass: 'bg-red-50 dark:bg-red-950/40',
+      borderClass: 'border-red-200/60 dark:border-red-800/40',
+      valueClass: 'text-red-700 dark:text-red-400',
+      iconBgClass: 'bg-red-100 dark:bg-red-900/50',
+      prefix: '',
+    },
+    {
+      key: 'balance',
+      label: t('balance'),
+      value: Math.abs(net),
+      change: netChange,
+      isPositiveGood: true,
+      icon: Wallet,
+      bgClass: 'bg-blue-50 dark:bg-blue-950/40',
+      borderClass: 'border-blue-200/60 dark:border-blue-800/40',
+      valueClass: net >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400',
+      iconBgClass: 'bg-blue-100 dark:bg-blue-900/50',
+      prefix: net >= 0 ? '+' : '-',
+    },
+  ], [t, totalIncome, totalExpense, net, incomeChange, expenseChange, netChange])
 
-  const parentExpenseBreakdown = useMemo(() => aggregateByParent(expenseBreakdown), [expenseBreakdown])
-  const parentIncomeBreakdown = useMemo(() => aggregateByParent(incomeBreakdown), [incomeBreakdown])
-
-  const toggleParent = useCallback((parentId: number) => {
-    setExpandedParents((prev) => {
-      const next = new Set(prev)
-      if (next.has(parentId)) {
-        next.delete(parentId)
-      } else {
-        next.add(parentId)
-      }
-      return next
-    })
-  }, [])
-
-  const renderParentList = (items: ParentCategoryBreakdown[]) => (
-    <div className="space-y-2">
-      {items.map((parent) => {
-        const hasChildren = parent.children.length > 0
-        const isExpanded = expandedParents.has(parent.categoryRowId)
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {cards.map((card) => {
+        const Icon = card.icon
+        const changeIsGood = card.change !== null
+          ? card.isPositiveGood
+            ? card.change >= 0
+            : card.change <= 0
+          : true
 
         return (
-          <div key={parent.categoryRowId}>
-            <div
-              className={cn(
-                'flex items-center justify-between rounded-md border px-3 py-2',
-                hasChildren && 'cursor-pointer hover:bg-muted/30 transition-colors',
-              )}
-              onClick={hasChildren ? () => toggleParent(parent.categoryRowId) : undefined}
-            >
-              <div className="flex items-center gap-2">
-                {hasChildren && (
-                  <ChevronRight
-                    size={14}
-                    className={cn(
-                      'text-muted-foreground transition-transform',
-                      isExpanded && 'rotate-90',
-                    )}
-                  />
-                )}
-                <span className="text-sm">{parent.categoryName}</span>
+          <div
+            key={card.key}
+            className={cn(
+              'rounded-xl border p-3 sm:p-4 transition-all',
+              card.bgClass,
+              card.borderClass,
+            )}
+          >
+            {/* Icon + Label */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className={cn('rounded-lg p-1.5', card.iconBgClass)}>
+                <Icon size={14} className={card.valueClass} />
               </div>
-              <span className="text-sm font-medium">{formatCurrency(parent.totalAmount)}</span>
+              <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate">
+                {card.label}
+              </span>
             </div>
 
-            {hasChildren && isExpanded && (
-              <div className="mt-1 space-y-1">
-                {parent.children.map((child) => (
-                  <div
-                    key={child.categoryRowId}
-                    className="ml-6 flex items-center justify-between rounded-md border px-3 py-2"
-                  >
-                    <span className="text-sm text-muted-foreground">{child.categoryName}</span>
-                    <span className="text-sm font-medium">{formatCurrency(child.totalAmount)}</span>
-                  </div>
-                ))}
+            {/* Amount - Hero number */}
+            <p className={cn(
+              'text-base sm:text-xl font-bold tabular-nums tracking-tight leading-tight',
+              card.valueClass,
+            )}>
+              {card.prefix}{formatCurrency(card.value)}
+            </p>
+
+            {/* Change percent */}
+            {card.change !== null && (
+              <div className={cn(
+                'mt-1.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-medium',
+                changeIsGood
+                  ? 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                  : 'bg-red-100/80 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+              )}>
+                {card.change >= 0 ? (
+                  <ArrowUpRight size={12} />
+                ) : (
+                  <ArrowDownRight size={12} />
+                )}
+                <span>{Math.abs(card.change)}%</span>
               </div>
             )}
           </div>
         )
       })}
-    </div>
-  )
-
-  return (
-    <div className="space-y-4">
-      {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border p-3 text-center">
-          <TrendingUp size={16} className="mx-auto mb-1 text-green-600 dark:text-green-400" />
-          <p className="text-xs text-muted-foreground">{t('totalIncome')}</p>
-          <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
-          {incomeChange !== null && (
-            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', incomeChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
-              {incomeChange >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-              <span>{incomeChange >= 0 ? '+' : ''}{incomeChange}%</span>
-            </div>
-          )}
-        </div>
-        <div className="rounded-lg border p-3 text-center">
-          <TrendingDown size={16} className="mx-auto mb-1 text-red-600 dark:text-red-400" />
-          <p className="text-xs text-muted-foreground">{t('totalExpense')}</p>
-          <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(totalExpense)}</p>
-          {expenseChange !== null && (
-            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', expenseChange <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
-              {expenseChange > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-              <span>{expenseChange >= 0 ? '+' : ''}{expenseChange}%</span>
-            </div>
-          )}
-        </div>
-        <div className="rounded-lg border p-3 text-center">
-          <Wallet size={16} className={cn('mx-auto mb-1', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
-          <p className="text-xs text-muted-foreground">{t('net')}</p>
-          <p className={cn('text-sm font-bold', net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
-            {net >= 0 ? '+' : ''}{formatCurrency(net)}
-          </p>
-          {netChange !== null && (
-            <div className={cn('mt-1 flex items-center justify-center gap-0.5 text-[10px] font-medium', netChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
-              {netChange >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-              <span>{netChange >= 0 ? '+' : ''}{netChange}%</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 지출 카테고리 분석 */}
-      {expenseBreakdown.length > 0 && (
-        <>
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-3 text-sm font-medium">{t('expense')} {t('categoryBreakdown')}</h3>
-            <ExpenseChart breakdown={expenseBreakdown} />
-          </div>
-          {renderParentList(parentExpenseBreakdown)}
-        </>
-      )}
-
-      {/* 수입 카테고리 분석 */}
-      {incomeBreakdown.length > 0 && (
-        <>
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-3 text-sm font-medium">{t('income')} {t('categoryBreakdown')}</h3>
-            <ExpenseChart breakdown={incomeBreakdown} />
-          </div>
-          {renderParentList(parentIncomeBreakdown)}
-        </>
-      )}
     </div>
   )
 }
