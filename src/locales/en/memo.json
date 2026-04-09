@@ -33,5 +33,10 @@
   "folders": "Folders",
   "startWriting": "Start writing...",
   "autoSave.saving": "Saving...",
-  "autoSave.saved": "Saved"
+  "autoSave.saved": "Saved",
+  "autoSave.error": "Save failed",
+  "autoSave.retry": "Retry",
+  "focusMode.enter": "Focus mode",
+  "focusMode.exit": "Exit focus mode",
+  "favorites": "Favorites"
 }

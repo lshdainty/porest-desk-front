@@ -14,9 +14,9 @@ interface KanbanCardProps {
 }
 
 const priorityConfig = {
-  HIGH: { label: 'HIGH', className: 'border-red-500 text-red-600 dark:text-red-400' },
-  MEDIUM: { label: 'MEDIUM', className: 'border-yellow-500 text-yellow-600 dark:text-yellow-400' },
-  LOW: { label: 'LOW', className: 'border-green-500 text-green-600 dark:text-green-400' },
+  HIGH: { label: 'HIGH', className: 'border-red-500 text-red-600 dark:text-red-400', borderColor: 'border-l-red-500' },
+  MEDIUM: { label: 'MEDIUM', className: 'border-yellow-500 text-yellow-600 dark:text-yellow-400', borderColor: 'border-l-amber-500' },
+  LOW: { label: 'LOW', className: 'border-green-500 text-green-600 dark:text-green-400', borderColor: 'border-l-green-500' },
 } as const
 
 export const KanbanCard = ({ todo, onEdit, onDelete }: KanbanCardProps) => {
@@ -30,7 +30,9 @@ export const KanbanCard = ({ todo, onEdit, onDelete }: KanbanCardProps) => {
   } = useSortable({ id: todo.rowId })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging
+      ? `${CSS.Transform.toString(transform)} rotate(3deg)`
+      : CSS.Transform.toString(transform),
     transition,
   }
 
@@ -55,9 +57,12 @@ export const KanbanCard = ({ todo, onEdit, onDelete }: KanbanCardProps) => {
       {...listeners}
       onClick={handleCardClick}
       className={cn(
-        'group cursor-grab p-3 transition-all hover:shadow-md',
-        isDragging && 'opacity-50 ring-2 ring-primary',
-        isCompleted && 'opacity-60'
+        'group cursor-grab border-l-4 p-3 transition-all duration-200',
+        priority.borderColor,
+        'hover:shadow-lg hover:-translate-y-0.5',
+        isDragging && 'shadow-xl ring-2 ring-primary',
+        isCompleted && 'opacity-60',
+        isOverdue && 'bg-red-50 dark:bg-red-950/20'
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -108,8 +113,10 @@ export const KanbanCard = ({ todo, onEdit, onDelete }: KanbanCardProps) => {
         {todo.dueDate && (
           <span
             className={cn(
-              'text-[10px] text-muted-foreground',
-              isOverdue && 'text-red-500'
+              'text-[10px]',
+              isOverdue
+                ? 'rounded bg-red-100 px-1 py-0.5 font-semibold text-red-600 dark:bg-red-900/40 dark:text-red-400'
+                : 'text-muted-foreground'
             )}
           >
             {formatDate(todo.dueDate, 'M/d')}

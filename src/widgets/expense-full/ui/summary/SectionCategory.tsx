@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell } from 'recharts'
+import { PieChart, Pie, Cell, Sector } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/ui/chart'
 import { useIsMobile } from '@/shared/hooks'
 import { formatCurrency } from '@/shared/lib'
@@ -14,6 +14,67 @@ const CHART_COLORS = [
   '#f97316', '#14b8a6', '#3b82f6', '#f59e0b', '#8b5cf6',
   '#ec4899', '#10b981', '#6366f1', '#84cc16', '#06b6d4',
 ]
+
+/** ActiveShape renderer for category pie chart hover */
+const renderCategoryActiveShape = (props: Record<string, unknown>) => {
+  const {
+    cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle,
+    fill, payload, value, percent,
+  } = props as {
+    cx: number; cy: number; midAngle: number
+    innerRadius: number; outerRadius: number
+    startAngle: number; endAngle: number
+    fill: string; payload: { name: string; icon?: string | null }
+    value: number; percent: number
+  }
+  const RADIAN = Math.PI / 180
+  const cos = Math.cos(-RADIAN * midAngle)
+  const sin = Math.sin(-RADIAN * midAngle)
+  const mx = cx + (outerRadius + 18) * cos
+  const my = cy + (outerRadius + 18) * sin
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={(outerRadius as number) + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.95}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={(outerRadius as number) + 10}
+        outerRadius={(outerRadius as number) + 13}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.4}
+      />
+      <text
+        x={mx}
+        y={my}
+        textAnchor={cos >= 0 ? 'start' : 'end'}
+        dominantBaseline="central"
+        className="fill-foreground text-[11px] font-medium"
+      >
+        {payload.icon || ''} {payload.name}
+      </text>
+      <text
+        x={mx}
+        y={my + 14}
+        textAnchor={cos >= 0 ? 'start' : 'end'}
+        className="fill-muted-foreground text-[10px]"
+      >
+        {new Intl.NumberFormat('ko-KR').format(value as number)}원 ({(percent * 100).toFixed(1)}%)
+      </text>
+    </g>
+  )
+}
 
 interface SectionCategoryProps {
   categoryBreakdown: CategoryBreakdown[]
@@ -80,6 +141,16 @@ export const SectionCategory = ({
     return ranked.find((p) => p.categoryRowId === selectedParentId) ?? null
   }, [selectedParentId, ranked])
 
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined)
+
+  const onPieEnter = useCallback((_: unknown, index: number) => {
+    setActivePieIndex(index)
+  }, [])
+
+  const onPieLeave = useCallback(() => {
+    setActivePieIndex(undefined)
+  }, [])
+
   const handleCategoryClick = useCallback((rowId: number) => {
     setSelectedParentId((prev) => (prev === rowId ? null : rowId))
   }, [])
@@ -99,32 +170,25 @@ export const SectionCategory = ({
         <h3 className="mb-4 text-sm font-semibold">{t('stats.categoryDonut')}</h3>
 
         <div className={isMobile ? 'space-y-4' : 'grid grid-cols-2 gap-6'}>
-          {/* Donut chart */}
+          {/* Donut chart with ActiveShape hover */}
           <div className="relative flex items-center justify-center">
-            <ChartContainer config={chartConfig} className="aspect-square max-h-[220px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-square max-h-[260px] w-full">
               <PieChart>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => (
-                        <span className="font-mono font-medium tabular-nums">
-                          {formatCurrency(value as number)}
-                        </span>
-                      )}
-                    />
-                  }
-                />
                 <Pie
+                  activeIndex={activePieIndex}
+                  activeShape={renderCategoryActiveShape}
                   data={chartData}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius="60%"
-                  outerRadius="85%"
+                  innerRadius="55%"
+                  outerRadius="75%"
                   paddingAngle={3}
                   strokeWidth={3}
                   stroke="hsl(var(--background))"
+                  onMouseEnter={onPieEnter}
+                  onMouseLeave={onPieLeave}
                   onClick={(_, index) => { if (chartData[index]) handleCategoryClick(chartData[index].rowId) }}
                   className="cursor-pointer"
                 >

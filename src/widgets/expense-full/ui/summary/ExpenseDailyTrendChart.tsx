@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Brush } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -105,6 +105,17 @@ export const ExpenseDailyTrendChart = ({ expenses }: ExpenseDailyTrendChartProps
             dot={{ r: 0 }}
             activeDot={{ r: 5, strokeWidth: 2 }}
           />
+          {chartData.length > 7 && (
+            <Brush
+              dataKey="date"
+              height={28}
+              stroke="hsl(var(--muted-foreground))"
+              fill="hsl(var(--muted))"
+              travellerWidth={8}
+              startIndex={0}
+              endIndex={chartData.length - 1}
+            />
+          )}
         </AreaChart>
       </ChartContainer>
 

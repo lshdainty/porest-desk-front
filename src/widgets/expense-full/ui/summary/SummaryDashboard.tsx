@@ -1,6 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts'
+import {
+  PieChart, Pie, Cell, Sector,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, Brush, ReferenceLine, Tooltip,
+} from 'recharts'
 import { cn, formatCurrency } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
@@ -24,6 +28,67 @@ const CHART_COLORS = [
   '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
 ]
 
+/** ActiveShape renderer for pie chart hover effect */
+const renderActiveShape = (props: Record<string, unknown>) => {
+  const {
+    cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle,
+    fill, payload, value, percent,
+  } = props as {
+    cx: number; cy: number; midAngle: number
+    innerRadius: number; outerRadius: number
+    startAngle: number; endAngle: number
+    fill: string; payload: { name: string }
+    value: number; percent: number
+  }
+  const RADIAN = Math.PI / 180
+  const sin = Math.sin(-RADIAN * midAngle)
+  const cos = Math.cos(-RADIAN * midAngle)
+  const mx = cx + (outerRadius + 16) * cos
+  const my = cy + (outerRadius + 16) * sin
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={(outerRadius as number) + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.95}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={(outerRadius as number) + 10}
+        outerRadius={(outerRadius as number) + 13}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.4}
+      />
+      <text
+        x={mx}
+        y={my}
+        textAnchor={cos >= 0 ? 'start' : 'end'}
+        dominantBaseline="central"
+        className="fill-foreground text-[11px] font-medium"
+      >
+        {payload.name}
+      </text>
+      <text
+        x={mx}
+        y={my + 14}
+        textAnchor={cos >= 0 ? 'start' : 'end'}
+        className="fill-muted-foreground text-[10px]"
+      >
+        {new Intl.NumberFormat('ko-KR').format(value as number)}원 ({(percent * 100).toFixed(1)}%)
+      </text>
+    </g>
+  )
+}
+
 interface SummaryDashboardProps {
   year: number
   month: number
@@ -43,6 +108,15 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
   const { t } = useTranslation('expense')
   const isMobile = useIsMobile()
   const [trendPeriod, setTrendPeriod] = useState<'7d' | '30d'>('30d')
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined)
+
+  const onPieEnter = useCallback((_: unknown, index: number) => {
+    setActivePieIndex(index)
+  }, [])
+
+  const onPieLeave = useCallback(() => {
+    setActivePieIndex(undefined)
+  }, [])
 
   // Data
   const lastDay = new Date(year, month, 0).getDate()
@@ -154,33 +228,26 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
           <p className="py-8 text-center text-sm text-muted-foreground">{t('stats.noData')}</p>
         ) : (
           <div className={isMobile ? 'space-y-4' : 'grid grid-cols-2 gap-6'}>
-            {/* Donut */}
+            {/* Donut with ActiveShape hover */}
             <div className="relative flex items-center justify-center">
-              <ChartContainer config={donutConfig} className="aspect-square max-h-[200px] w-full">
+              <ChartContainer config={donutConfig} className="aspect-square max-h-[240px] w-full">
                 <PieChart>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => (
-                          <span className="font-mono font-medium tabular-nums">
-                            {formatCurrency(value as number)}
-                          </span>
-                        )}
-                      />
-                    }
-                  />
                   <Pie
+                    activeIndex={activePieIndex}
+                    activeShape={renderActiveShape}
                     data={donutData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    innerRadius="55%"
-                    outerRadius="85%"
+                    innerRadius="50%"
+                    outerRadius="75%"
                     paddingAngle={3}
                     strokeWidth={2}
                     stroke="hsl(var(--background))"
                     className="cursor-pointer"
+                    onMouseEnter={onPieEnter}
+                    onMouseLeave={onPieLeave}
                     onClick={(_, index) => {
                       const item = donutData[index]
                       if (item && item.rowId > 0 && onNavigateToList) {
@@ -263,7 +330,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
         {dailyTrendData.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t('stats.noData')}</p>
         ) : (
-          <ChartContainer config={trendConfig} className="aspect-auto h-52 w-full">
+          <ChartContainer config={trendConfig} className="aspect-auto h-64 w-full">
             <AreaChart data={dailyTrendData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="fillDailyExpenseSummary" x1="0" y1="0" x2="0" y2="1">
@@ -310,6 +377,17 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
                 dot={false}
                 activeDot={{ r: 4, strokeWidth: 2 }}
               />
+              {dailyTrendData.length > 7 && (
+                <Brush
+                  dataKey="date"
+                  height={28}
+                  stroke="hsl(var(--muted-foreground))"
+                  fill="hsl(var(--muted))"
+                  travellerWidth={8}
+                  startIndex={0}
+                  endIndex={dailyTrendData.length - 1}
+                />
+              )}
             </AreaChart>
           </ChartContainer>
         )}

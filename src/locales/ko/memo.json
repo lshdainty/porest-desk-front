@@ -33,5 +33,10 @@
   "folders": "폴더",
   "startWriting": "내용을 입력하세요...",
   "autoSave.saving": "저장 중...",
-  "autoSave.saved": "저장됨"
+  "autoSave.saved": "저장됨",
+  "autoSave.error": "저장 실패",
+  "autoSave.retry": "재시도",
+  "focusMode.enter": "포커스 모드",
+  "focusMode.exit": "포커스 모드 종료",
+  "favorites": "즐겨찾기"
 }

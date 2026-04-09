@@ -75,5 +75,8 @@
   "filter.status": "상태",
   "filter.priority": "우선순위",
   "filter.project": "프로젝트",
-  "filter.reset": "초기화"
+  "filter.reset": "초기화",
+  "kanban.addTodo": "할일 추가",
+  "progress.total": "전체 {{count}}건",
+  "progress.completionRate": "완료율 {{rate}}%"
 }

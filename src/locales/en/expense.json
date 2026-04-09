@@ -151,5 +151,9 @@
   "stats.last30days": "30 days",
   "stats.others": "Others",
   "quickAdd.expanded": "Collapse",
-  "quickAdd.collapsed": "Quick Add"
+  "quickAdd.collapsed": "Quick Add",
+  "stats.categoryDonut": "Category Donut Chart",
+  "stats.budgetGauge": "Budget Gauge",
+  "stats.budgetOverview": "Budget vs Spending Overview",
+  "stats.savingsRate": "Savings Rate"
 }

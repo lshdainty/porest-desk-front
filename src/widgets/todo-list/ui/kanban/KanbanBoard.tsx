@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DndContext,
@@ -24,6 +24,8 @@ interface KanbanBoardProps {
   onToggleStatus: (id: number) => void
   onTogglePin: (id: number) => void
   onStatusChange: (id: number, status: TodoStatus) => void
+  onQuickAdd?: (title: string, status: TodoStatus) => void
+  isQuickAddLoading?: boolean
 }
 
 const COLUMNS: { id: TodoStatus; translationKey: string }[] = [
@@ -37,6 +39,8 @@ export const KanbanBoard = ({
   onEdit,
   onDelete,
   onStatusChange,
+  onQuickAdd,
+  isQuickAddLoading,
 }: KanbanBoardProps) => {
   const { t } = useTranslation('todo')
   const isMobile = useIsMobile()
@@ -107,6 +111,13 @@ export const KanbanBoard = ({
     setActiveDragId(null)
   }
 
+  const makeQuickAddHandler = useCallback(
+    (status: TodoStatus) => (title: string) => {
+      onQuickAdd?.(title, status)
+    },
+    [onQuickAdd]
+  )
+
   if (isMobile) {
     return (
       <Tabs defaultValue="PENDING" className="flex flex-col">
@@ -137,6 +148,8 @@ export const KanbanBoard = ({
                 todos={groupedTodos[col.id]}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onQuickAdd={onQuickAdd ? makeQuickAddHandler(col.id) : undefined}
+                isQuickAddLoading={isQuickAddLoading}
               />
             </TabsContent>
           ))}
@@ -173,6 +186,8 @@ export const KanbanBoard = ({
             todos={groupedTodos[col.id]}
             onEdit={onEdit}
             onDelete={onDelete}
+            onQuickAdd={onQuickAdd ? makeQuickAddHandler(col.id) : undefined}
+            isQuickAddLoading={isQuickAddLoading}
           />
         ))}
       </div>

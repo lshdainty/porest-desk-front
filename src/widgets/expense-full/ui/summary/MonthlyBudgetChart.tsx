@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { AlertTriangle } from 'lucide-react'
 import { PieChart, Pie, Cell } from 'recharts'
+import { cn } from '@/shared/lib'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/shared/ui/chart'
 import type { ExpenseBudget, CategoryBreakdown, ExpenseCategory } from '@/entities/expense'
 import { separateBreakdownByType } from '@/entities/expense'
@@ -8,17 +10,28 @@ import { separateBreakdownByType } from '@/entities/expense'
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('ko-KR').format(amount) + '원'
 
+/** Color thresholds: <80% green, 80-100% orange, >100% red */
 const getUsageColor = (percentage: number) => {
   if (percentage > 100) return '#dc2626'
-  if (percentage >= 90) return '#ef4444'
-  if (percentage >= 60) return '#f59e0b'
+  if (percentage >= 80) return '#f59e0b'
   return '#10b981'
+}
+
+const getUsageBarClass = (percentage: number) => {
+  if (percentage > 100) return 'bg-red-500'
+  if (percentage >= 80) return 'bg-orange-500'
+  return 'bg-emerald-500'
+}
+
+const getUsageTextClass = (percentage: number) => {
+  if (percentage > 100) return 'text-red-600 dark:text-red-400'
+  if (percentage >= 80) return 'text-orange-600 dark:text-orange-400'
+  return 'text-emerald-600 dark:text-emerald-400'
 }
 
 const getUsageLabel = (percentage: number) => {
   if (percentage > 100) return '초과'
-  if (percentage >= 90) return '위험'
-  if (percentage >= 60) return '주의'
+  if (percentage >= 80) return '주의'
   return '안전'
 }
 
@@ -157,7 +170,14 @@ export const MonthlyBudgetChart = ({ budgets, categoryBreakdown, categoryNames, 
           {categoryBudgetData.map((item) => (
             <div key={item.categoryName} className="border-b py-2.5 last:border-b-0">
               <div className="mb-1 flex items-center justify-between">
-                <span className="text-sm font-medium">{item.categoryName}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium">{item.categoryName}</span>
+                  {item.percentage > 100 && (
+                    <span className="text-red-500" title={getUsageLabel(item.percentage)}>
+                      <AlertTriangle size={13} />
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tabular-nums text-muted-foreground">
                     {formatCurrency(item.spentAmount)} / {formatCurrency(item.budgetAmount)}
@@ -172,15 +192,27 @@ export const MonthlyBudgetChart = ({ budgets, categoryBreakdown, categoryNames, 
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${Math.min(item.percentage, 100)}%`,
-                    backgroundColor: getUsageColor(item.percentage),
-                  }}
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    getUsageBarClass(item.percentage),
+                  )}
+                  style={{ width: `${Math.min(item.percentage, 100)}%` }}
                 />
               </div>
-              <div className="mt-0.5 text-right text-xs tabular-nums text-muted-foreground">
-                {item.percentage}%
+              <div className="mt-0.5 flex items-center justify-between text-xs tabular-nums">
+                <span className={cn('font-medium', getUsageTextClass(item.percentage))}>
+                  {item.percentage}%
+                </span>
+                {item.percentage > 100 && (
+                  <span className="text-red-600 dark:text-red-400 font-medium">
+                    +{formatCurrency(item.spentAmount - item.budgetAmount)} {getUsageLabel(item.percentage)}
+                  </span>
+                )}
+                {item.percentage <= 100 && (
+                  <span className="text-muted-foreground">
+                    {t('budget.remaining')}: {formatCurrency(item.budgetAmount - item.spentAmount)}
+                  </span>
+                )}
               </div>
             </div>
           ))}

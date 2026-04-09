@@ -66,7 +66,24 @@ export const MemoList = ({
               </div>
               {memo.content && (
                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {memo.content.replace(/[#*`>_\-[\]()]/g, '').slice(0, 80)}
+                  {memo.content
+                    .replace(/!\[.*?\]\(.*?\)/g, '')
+                    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .replace(/`([^`]*)`/g, '$1')
+                    .replace(/^#{1,6}\s+/gm, '')
+                    .replace(/\*\*([^*]*)\*\*/g, '$1')
+                    .replace(/\*([^*]*)\*/g, '$1')
+                    .replace(/__([^_]*)__/g, '$1')
+                    .replace(/_([^_]*)_/g, '$1')
+                    .replace(/~~([^~]*)~~/g, '$1')
+                    .replace(/^[-*+]\s+/gm, '')
+                    .replace(/^\d+\.\s+/gm, '')
+                    .replace(/^>\s+/gm, '')
+                    .replace(/---+/g, '')
+                    .replace(/\n+/g, ' ')
+                    .trim()
+                    .slice(0, 80)}
                 </p>
               )}
               <span className="mt-1.5 block text-[10px] text-muted-foreground">

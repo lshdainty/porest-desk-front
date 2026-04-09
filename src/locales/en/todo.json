@@ -75,5 +75,8 @@
   "filter.status": "Status",
   "filter.priority": "Priority",
   "filter.project": "Project",
-  "filter.reset": "Reset"
+  "filter.reset": "Reset",
+  "kanban.addTodo": "Add todo",
+  "progress.total": "Total {{count}}",
+  "progress.completionRate": "{{rate}}% complete"
 }

@@ -9,7 +9,12 @@ import {
   Menu,
   Check,
   FileText,
+  Maximize2,
+  Minimize2,
+  AlertCircle,
+  RotateCw,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -51,12 +56,13 @@ export const MemoEditorWidget = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [mobileView, setMobileView] = useState<MobileView>('list')
   const [showSidebar, setShowSidebar] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
 
   // Editor state
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
   const [isDirty, setIsDirty] = useState(false)
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const filters = {
@@ -129,7 +135,15 @@ export const MemoEditorWidget = () => {
           }
         },
         onError: () => {
-          if (isAutoSave) setAutoSaveStatus('idle')
+          if (isAutoSave) {
+            setAutoSaveStatus('error')
+            toast.error(t('autoSave.error'), {
+              action: {
+                label: t('autoSave.retry'),
+                onClick: () => handleSave(true),
+              },
+            })
+          }
         },
       }
     )
@@ -208,6 +222,30 @@ export const MemoEditorWidget = () => {
     setEditContent(value)
     setIsDirty(true)
   }, [])
+
+  // Warn on page leave with unsaved changes
+  useEffect(() => {
+    if (!isDirty) return
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
+  const handleRetry = useCallback(() => {
+    handleSave(true)
+  }, [handleSave])
+
+  // ESC key to exit focus mode
+  useEffect(() => {
+    if (!focusMode) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFocusMode(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [focusMode])
 
   const isLoading = memosLoading || foldersLoading
 
@@ -305,6 +343,12 @@ export const MemoEditorWidget = () => {
                 {autoSaveStatus === 'saved' && (
                   <Check size={14} className="text-green-600 dark:text-green-400" />
                 )}
+                {autoSaveStatus === 'error' && (
+                  <button onClick={handleRetry} className="flex items-center gap-0.5">
+                    <AlertCircle size={14} className="text-destructive" />
+                    <RotateCw size={12} className="text-destructive" />
+                  </button>
+                )}
                 <Button
                   size="sm"
                   onClick={() => handleSave()}
@@ -353,6 +397,11 @@ export const MemoEditorWidget = () => {
                 onRenameFolder={handleRenameFolder}
                 onDeleteFolder={handleDeleteFolder}
                 onReorderFolders={handleReorderFolders}
+                pinnedMemos={memos?.filter((m) => m.isPinned) || []}
+                onSelectMemo={(memo) => {
+                  handleSelectMemo(memo)
+                  setShowSidebar(false)
+                }}
               />
             </div>
           </SheetContent>
@@ -388,19 +437,24 @@ export const MemoEditorWidget = () => {
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-lg border">
       {/* Left panel: Folders */}
-      <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/20 p-3">
-        <MemoFolderTree
-          folders={folders || []}
-          selectedFolderId={selectedFolderId}
-          onSelectFolder={setSelectedFolderId}
-          onCreateFolder={handleCreateFolder}
-          onRenameFolder={handleRenameFolder}
-          onDeleteFolder={handleDeleteFolder}
-          onReorderFolders={handleReorderFolders}
-        />
-      </div>
+      {!focusMode && (
+        <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/20 p-3">
+          <MemoFolderTree
+            folders={folders || []}
+            selectedFolderId={selectedFolderId}
+            onSelectFolder={setSelectedFolderId}
+            onCreateFolder={handleCreateFolder}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onReorderFolders={handleReorderFolders}
+            pinnedMemos={memos?.filter((m) => m.isPinned) || []}
+            onSelectMemo={handleSelectMemo}
+          />
+        </div>
+      )}
 
       {/* Middle panel: Memo list */}
+      {!focusMode && (
       <div className="w-72 shrink-0 overflow-y-auto border-r">
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-2">
@@ -433,6 +487,7 @@ export const MemoEditorWidget = () => {
           )}
         </div>
       </div>
+      )}
 
       {/* Right panel: Editor */}
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -470,6 +525,28 @@ export const MemoEditorWidget = () => {
                     {t('autoSave.saved')}
                   </span>
                 )}
+                {autoSaveStatus === 'error' && (
+                  <span className="flex items-center gap-1 text-xs text-destructive">
+                    <AlertCircle size={12} />
+                    {t('autoSave.error')}
+                    <button
+                      onClick={handleRetry}
+                      className="ml-1 inline-flex items-center gap-0.5 underline hover:no-underline"
+                    >
+                      <RotateCw size={10} />
+                      {t('autoSave.retry')}
+                    </button>
+                  </span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setFocusMode(!focusMode)}
+                  title={focusMode ? t('focusMode.exit') : t('focusMode.enter')}
+                >
+                  {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

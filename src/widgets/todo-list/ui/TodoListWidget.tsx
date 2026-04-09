@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare } from 'lucide-react'
 import {
   DndContext,
@@ -52,11 +53,51 @@ type ViewMode = 'list' | 'kanban'
 export const TodoListWidget = () => {
   const { t } = useTranslation('todo')
   const isMobile = useIsMobile()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [statusFilter, setStatusFilter] = useState<TodoStatus | 'ALL'>('ALL')
-  const [priorityFilter, setPriorityFilter] = useState<TodoPriority | 'ALL'>('ALL')
-  const [projectFilter, setProjectFilter] = useState<number | null>(null)
+  // URL search params에서 필터 상태 읽기
+  const viewMode: ViewMode = (searchParams.get('view') as ViewMode) || 'list'
+  const statusFilter: TodoStatus | 'ALL' = (searchParams.get('status') as TodoStatus | 'ALL') || 'ALL'
+  const priorityFilter: TodoPriority | 'ALL' = (searchParams.get('priority') as TodoPriority | 'ALL') || 'ALL'
+  const projectFilterParam = searchParams.get('project')
+  const projectFilter: number | null = projectFilterParam ? Number(projectFilterParam) : null
+
+  const setViewMode = useCallback((mode: ViewMode) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (mode === 'list') next.delete('view')
+      else next.set('view', mode)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setStatusFilter = useCallback((status: TodoStatus | 'ALL') => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (status === 'ALL') next.delete('status')
+      else next.set('status', status)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setPriorityFilter = useCallback((priority: TodoPriority | 'ALL') => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (priority === 'ALL') next.delete('priority')
+      else next.set('priority', priority)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setProjectFilter = useCallback((projectId: number | null) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (projectId === null) next.delete('project')
+      else next.set('project', String(projectId))
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
   const [showForm, setShowForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [subtaskParentId, setSubtaskParentId] = useState<number | undefined>(undefined)
@@ -196,6 +237,21 @@ export const TodoListWidget = () => {
     })
   }, [todos, updateTodo])
 
+  const handleKanbanQuickAdd = useCallback((title: string, status: TodoStatus) => {
+    createTodo.mutate({
+      title,
+      priority: 'MEDIUM',
+      type: 'TASK',
+      ...(projectFilter !== null && { projectRowId: projectFilter }),
+    }, {
+      onSuccess: (createdTodo) => {
+        if (status !== 'PENDING') {
+          handleStatusChange(createdTodo.rowId, status)
+        }
+      },
+    })
+  }, [createTodo, projectFilter, handleStatusChange])
+
   const handleExpandSubtasks = useCallback((todoId: number) => {
     setExpandedSubtasks((prev) => {
       const next = new Set(prev)
@@ -235,6 +291,16 @@ export const TodoListWidget = () => {
     () => (activeDragId !== null ? sortedTodos.find((t) => t.rowId === activeDragId) ?? null : null),
     [activeDragId, sortedTodos]
   )
+
+  const progressStats = useMemo(() => {
+    const total = sortedTodos.length
+    if (total === 0) return null
+    const pending = sortedTodos.filter((t) => t.status === 'PENDING').length
+    const inProgress = sortedTodos.filter((t) => t.status === 'IN_PROGRESS').length
+    const completed = sortedTodos.filter((t) => t.status === 'COMPLETED').length
+    const completionRate = Math.round((completed / total) * 100)
+    return { total, pending, inProgress, completed, completionRate }
+  }, [sortedTodos])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveDragId(Number(event.active.id))
@@ -323,6 +389,53 @@ export const TodoListWidget = () => {
             isLoading={createTodo.isPending}
           />
         )}
+
+        {viewMode === 'list' && progressStats && (
+          <div className="mt-3 rounded-lg border bg-card p-3">
+            <div className="mb-2 flex items-center justify-between text-xs">
+              <span className="font-medium text-muted-foreground">
+                {t('progress.total', { count: progressStats.total })}
+              </span>
+              <span className="font-semibold">
+                {t('progress.completionRate', { rate: progressStats.completionRate })}
+              </span>
+            </div>
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+              {progressStats.completed > 0 && (
+                <div
+                  className="bg-green-500 transition-all duration-300"
+                  style={{ width: `${(progressStats.completed / progressStats.total) * 100}%` }}
+                />
+              )}
+              {progressStats.inProgress > 0 && (
+                <div
+                  className="bg-blue-500 transition-all duration-300"
+                  style={{ width: `${(progressStats.inProgress / progressStats.total) * 100}%` }}
+                />
+              )}
+              {progressStats.pending > 0 && (
+                <div
+                  className="bg-gray-300 dark:bg-gray-600 transition-all duration-300"
+                  style={{ width: `${(progressStats.pending / progressStats.total) * 100}%` }}
+                />
+              )}
+            </div>
+            <div className="mt-1.5 flex items-center gap-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                {t('status.PENDING')} {progressStats.pending}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+                {t('status.IN_PROGRESS')} {progressStats.inProgress}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+                {t('status.COMPLETED')} {progressStats.completed}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 스크롤: 리스트 또는 칸반 */}
@@ -339,6 +452,8 @@ export const TodoListWidget = () => {
             onToggleStatus={handleToggle}
             onTogglePin={handleTogglePin}
             onStatusChange={handleStatusChange}
+            onQuickAdd={handleKanbanQuickAdd}
+            isQuickAddLoading={createTodo.isPending}
           />
         ) : sortedTodos.length === 0 ? (
           (() => {

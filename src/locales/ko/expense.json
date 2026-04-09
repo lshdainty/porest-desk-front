@@ -151,5 +151,9 @@
   "stats.last30days": "30일",
   "stats.others": "기타",
   "quickAdd.expanded": "접기",
-  "quickAdd.collapsed": "빠른 입력"
+  "quickAdd.collapsed": "빠른 입력",
+  "stats.categoryDonut": "카테고리별 도넛 차트",
+  "stats.budgetGauge": "예산 게이지",
+  "stats.budgetOverview": "예산 대비 지출 현황",
+  "stats.savingsRate": "저축률"
 }

@@ -10,6 +10,9 @@ import {
   Check,
   X,
   GripVertical,
+  Star,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import {
   DndContext,
@@ -30,7 +33,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/shared/lib'
-import type { MemoFolder } from '@/entities/memo'
+import type { Memo, MemoFolder } from '@/entities/memo'
 
 interface MemoFolderTreeProps {
   folders: MemoFolder[]
@@ -40,6 +43,8 @@ interface MemoFolderTreeProps {
   onRenameFolder: (id: number, folderName: string) => void
   onDeleteFolder: (id: number) => void
   onReorderFolders?: (items: { folderId: number; sortOrder: number }[]) => void
+  pinnedMemos?: Memo[]
+  onSelectMemo?: (memo: Memo) => void
 }
 
 interface SortableFolderItemProps {
@@ -198,6 +203,8 @@ export const MemoFolderTree = ({
   onRenameFolder,
   onDeleteFolder,
   onReorderFolders,
+  pinnedMemos = [],
+  onSelectMemo,
 }: MemoFolderTreeProps) => {
   const { t } = useTranslation('memo')
 
@@ -207,6 +214,7 @@ export const MemoFolderTree = ({
   const [editingName, setEditingName] = useState('')
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [activeDragId, setActiveDragId] = useState<number | null>(null)
+  const [pinnedExpanded, setPinnedExpanded] = useState(true)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -283,6 +291,35 @@ export const MemoFolderTree = ({
 
   return (
     <div className="space-y-1">
+      {/* Pinned memos section */}
+      {pinnedMemos.length > 0 && (
+        <div className="mb-2">
+          <button
+            onClick={() => setPinnedExpanded(!pinnedExpanded)}
+            className="flex w-full items-center gap-1 px-2 py-1 text-xs font-semibold uppercase text-muted-foreground hover:text-foreground"
+          >
+            {pinnedExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            <Star size={12} className="text-amber-500" />
+            <span>{t('favorites')}</span>
+            <span className="ml-auto text-[10px] font-normal">{pinnedMemos.length}</span>
+          </button>
+          {pinnedExpanded && (
+            <div className="space-y-0.5">
+              {pinnedMemos.map((memo) => (
+                <button
+                  key={memo.rowId}
+                  onClick={() => onSelectMemo?.(memo)}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <Star size={14} className="shrink-0 text-amber-500" />
+                  <span className="truncate">{memo.title || t('untitled')}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between px-2 py-1">
         <span className="text-xs font-semibold uppercase text-muted-foreground">
           {t('folder.title')}

@@ -1,5 +1,8 @@
+import { useState, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Badge } from '@/shared/ui/badge'
 import type { Todo } from '@/entities/todo'
@@ -12,6 +15,8 @@ interface KanbanColumnProps {
   todos: Todo[]
   onEdit: (todo: Todo) => void
   onDelete: (todo: Todo) => void
+  onQuickAdd?: (title: string) => void
+  isQuickAddLoading?: boolean
 }
 
 const columnColorMap: Record<string, { header: string; badge: string; border: string }> = {
@@ -39,10 +44,36 @@ export const KanbanColumn = ({
   todos,
   onEdit,
   onDelete,
+  onQuickAdd,
+  isQuickAddLoading,
 }: KanbanColumnProps) => {
+  const { t } = useTranslation('todo')
   const { setNodeRef, isOver } = useDroppable({ id })
   const colors = columnColorMap[id] ?? columnColorMap.PENDING
   const todoIds = todos.map((t) => t.rowId)
+
+  const [isAdding, setIsAdding] = useState(false)
+  const [quickTitle, setQuickTitle] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleQuickSubmit = useCallback(() => {
+    const trimmed = quickTitle.trim()
+    if (!trimmed || isQuickAddLoading || !onQuickAdd) return
+    onQuickAdd(trimmed)
+    setQuickTitle('')
+    inputRef.current?.focus()
+  }, [quickTitle, isQuickAddLoading, onQuickAdd])
+
+  const handleQuickKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleQuickSubmit()
+    }
+    if (e.key === 'Escape') {
+      setQuickTitle('')
+      setIsAdding(false)
+    }
+  }, [handleQuickSubmit])
 
   return (
     <div
@@ -71,7 +102,7 @@ export const KanbanColumn = ({
         >
           {todos.length === 0 ? (
             <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/20 py-8 text-xs text-muted-foreground">
-              여기에 드래그하세요
+              {t('kanban.empty')}
             </div>
           ) : (
             todos.map((todo) => (
@@ -85,6 +116,39 @@ export const KanbanColumn = ({
           )}
         </div>
       </SortableContext>
+
+      {onQuickAdd && id !== 'COMPLETED' && (
+        <div className="px-2 pb-2">
+          {isAdding ? (
+            <div className="flex items-center gap-1.5 rounded-md border bg-card p-1.5">
+              <input
+                ref={inputRef}
+                value={quickTitle}
+                onChange={(e) => setQuickTitle(e.target.value)}
+                onKeyDown={handleQuickKeyDown}
+                onBlur={() => {
+                  if (!quickTitle.trim()) setIsAdding(false)
+                }}
+                placeholder={t('quickAdd.placeholder')}
+                className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
+                autoFocus
+              />
+              {isQuickAddLoading && <Loader2 size={12} className="animate-spin text-muted-foreground" />}
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setIsAdding(true)
+                setTimeout(() => inputRef.current?.focus(), 0)
+              }}
+              className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Plus size={14} />
+              {t('kanban.addTodo')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
