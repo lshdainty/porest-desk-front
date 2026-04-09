@@ -2,8 +2,6 @@ import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard,
   StickyNote,
-  FileText,
-  CheckSquare,
   CalendarDays,
   Wallet,
   UsersRound,

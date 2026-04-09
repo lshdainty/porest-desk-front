@@ -1,7 +1,11 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell, Sector } from 'recharts'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/ui/chart'
+import { PieChart, Pie as RechartsPie, Cell, Sector } from 'recharts'
+
+// recharts 3.x removed `activeIndex`/`activeShape` typing from Pie.
+// We still rely on the runtime prop, so loosen the component type.
+const Pie = RechartsPie as unknown as React.ComponentType<Record<string, unknown>>
+import { ChartContainer } from '@/shared/ui/chart'
 import { useIsMobile } from '@/shared/hooks'
 import { formatCurrency } from '@/shared/lib'
 import { separateBreakdownByType, aggregateByParent } from '@/entities/expense'
@@ -189,7 +193,7 @@ export const SectionCategory = ({
                   stroke="hsl(var(--background))"
                   onMouseEnter={onPieEnter}
                   onMouseLeave={onPieLeave}
-                  onClick={(_, index) => { if (chartData[index]) handleCategoryClick(chartData[index].rowId) }}
+                  onClick={(_: unknown, index: number) => { if (chartData[index]) handleCategoryClick(chartData[index].rowId) }}
                   className="cursor-pointer"
                 >
                   {chartData.map((entry, index) => (

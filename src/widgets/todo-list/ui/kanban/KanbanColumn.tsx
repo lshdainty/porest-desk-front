@@ -19,7 +19,9 @@ interface KanbanColumnProps {
   isQuickAddLoading?: boolean
 }
 
-const columnColorMap: Record<string, { header: string; badge: string; border: string }> = {
+type ColumnColors = { header: string; badge: string; border: string }
+
+const columnColorMap: Record<string, ColumnColors> = {
   PENDING: {
     header: 'text-yellow-700 dark:text-yellow-400',
     badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400',
@@ -37,6 +39,12 @@ const columnColorMap: Record<string, { header: string; badge: string; border: st
   },
 }
 
+const defaultColumnColors: ColumnColors = {
+  header: 'text-muted-foreground',
+  badge: 'bg-muted text-muted-foreground',
+  border: 'border-t-muted-foreground/30',
+}
+
 export const KanbanColumn = ({
   id,
   title,
@@ -49,7 +57,7 @@ export const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const { t } = useTranslation('todo')
   const { setNodeRef, isOver } = useDroppable({ id })
-  const colors = columnColorMap[id] ?? columnColorMap.PENDING
+  const colors = columnColorMap[id] ?? defaultColumnColors
   const todoIds = todos.map((t) => t.rowId)
 
   const [isAdding, setIsAdding] = useState(false)

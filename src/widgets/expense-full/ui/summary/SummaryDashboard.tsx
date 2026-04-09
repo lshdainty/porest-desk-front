@@ -1,10 +1,14 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  PieChart, Pie, Cell, Sector,
+  PieChart, Pie as RechartsPie, Cell, Sector,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  BarChart, Bar, Brush, ReferenceLine, Tooltip,
+  BarChart, Bar, Brush,
 } from 'recharts'
+
+// recharts 3.x removed `activeIndex`/`activeShape` typing from Pie.
+// We still rely on the runtime prop, so loosen the component type.
+const Pie = RechartsPie as unknown as React.ComponentType<Record<string, unknown>>
 import { cn, formatCurrency } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
@@ -125,7 +129,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
 
   const { data: monthExpenses } = useExpenses({ startDate: monthStartDate, endDate: monthEndDate })
   const { data: categories } = useExpenseCategories()
-  const { data: summary } = useMonthlySummary(year, month)
+  useMonthlySummary(year, month)
   const { data: yearlyData } = useYearlySummary(year)
 
   const categoryBreakdown: CategoryBreakdown[] = useMemo(() => {
@@ -248,7 +252,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
                     className="cursor-pointer"
                     onMouseEnter={onPieEnter}
                     onMouseLeave={onPieLeave}
-                    onClick={(_, index) => {
+                    onClick={(_: unknown, index: number) => {
                       const item = donutData[index]
                       if (item && item.rowId > 0 && onNavigateToList) {
                         onNavigateToList(item.rowId)

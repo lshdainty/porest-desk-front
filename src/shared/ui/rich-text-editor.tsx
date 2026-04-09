@@ -27,7 +27,7 @@ import {
   Redo,
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 const lowlight = createLowlight(common)
 
@@ -101,7 +101,7 @@ export const RichTextEditor = ({
     if (editor && !isInternalUpdate.current) {
       const currentHTML = editor.getHTML()
       if (content !== currentHTML) {
-        editor.commands.setContent(content || '', false)
+        editor.commands.setContent(content || '', { emitUpdate: false })
       }
     }
     isInternalUpdate.current = false
@@ -294,7 +294,7 @@ export const RichTextViewer = ({ content, className }: RichTextViewerProps) => {
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content || '', false)
+      editor.commands.setContent(content || '', { emitUpdate: false })
     }
   }, [content, editor])
 

@@ -4,7 +4,6 @@ import {
   SidebarProvider,
 } from '@/shared/ui/sidebar'
 import { AppSidebar } from '@/widgets/sidebar'
-import { CommandPalette } from '@/widgets/command-palette'
 import { LayoutHeader } from './LayoutHeader'
 
 export const AppLayout = () => {
@@ -17,7 +16,6 @@ export const AppLayout = () => {
           <Outlet />
         </div>
       </SidebarInset>
-      <CommandPalette />
     </SidebarProvider>
   )
 }

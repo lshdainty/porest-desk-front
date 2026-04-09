@@ -35,7 +35,6 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
   const { t: tc } = useTranslation('common')
 
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
-  const isEditing = !!todo
 
   const {
     register,
