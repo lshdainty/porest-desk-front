@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react'
+import { TrendingUp, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react'
 import { cn, formatCurrency } from '@/shared/lib'
 import { useMonthlySummary } from '@/features/expense'
 
@@ -34,7 +34,6 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
   const prevNet = prevIncome - prevExpense
 
   const incomeChange = calcChangePercent(totalIncome, prevIncome)
-  const expenseChange = calcChangePercent(totalExpense, prevExpense)
   const netChange = calcChangePercent(net, prevNet)
 
   const cards = useMemo(() => [
@@ -52,19 +51,6 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
       prefix: '+',
     },
     {
-      key: 'expense',
-      label: t('totalExpense'),
-      value: totalExpense,
-      change: expenseChange,
-      isPositiveGood: false,
-      icon: TrendingDown,
-      bgClass: 'bg-red-50 dark:bg-red-950/40',
-      borderClass: 'border-red-200/60 dark:border-red-800/40',
-      valueClass: 'text-red-700 dark:text-red-400',
-      iconBgClass: 'bg-red-100 dark:bg-red-900/50',
-      prefix: '',
-    },
-    {
       key: 'balance',
       label: t('balance'),
       value: Math.abs(net),
@@ -77,10 +63,10 @@ export const MonthlySummaryCard = ({ year, month }: MonthlySummaryProps) => {
       iconBgClass: 'bg-blue-100 dark:bg-blue-900/50',
       prefix: net >= 0 ? '+' : '-',
     },
-  ], [t, totalIncome, totalExpense, net, incomeChange, expenseChange, netChange])
+  ], [t, totalIncome, net, incomeChange, netChange])
 
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
       {cards.map((card) => {
         const Icon = card.icon
         const changeIsGood = card.change !== null

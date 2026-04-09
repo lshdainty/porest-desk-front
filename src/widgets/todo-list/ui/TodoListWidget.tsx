@@ -1,7 +1,17 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare } from 'lucide-react'
+import { format } from 'date-fns'
+import { ko } from 'date-fns/locale'
+import {
+  Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
+} from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
 import {
   DndContext,
   DragOverlay,
@@ -327,12 +337,36 @@ export const TodoListWidget = () => {
     setActiveDragId(null)
   }, [])
 
+  const todayLabel = useMemo(() => format(new Date(), 'M월 d일 EEEE', { locale: ko }), [])
+
   return (
     <div className="relative flex h-full min-h-0 flex-col">
-      {/* 고정: 필터 + 프로젝트/태그 버튼 + 퀵추가 */}
+      {/* 고정: Today hero + 필터 + 퀵추가 */}
       <div className="shrink-0 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+        {/* Today hero — Todoist 스타일 */}
+        {viewMode === 'list' && (
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+                {todayLabel}
+              </h2>
+              {progressStats ? (
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('progress.total', { count: progressStats.total })} ·{' '}
+                  <span className="font-semibold text-foreground">
+                    {t('progress.completionRate', { rate: progressStats.completionRate })}
+                  </span>
+                </p>
+              ) : (
+                <p className="text-xs sm:text-sm text-muted-foreground">{t('empty')}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Filter + view toggle + settings menu */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
             <TodoFilters
               statusFilter={statusFilter}
               priorityFilter={priorityFilter}
@@ -362,24 +396,23 @@ export const TodoListWidget = () => {
             >
               <LayoutGrid size={16} />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setShowProjectDialog(true)}
-              title={t('projects')}
-            >
-              <Settings2 size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setShowTagDialog(true)}
-              title={t('tags')}
-            >
-              <Tags size={16} />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" title={t('projects')}>
+                  <MoreHorizontal size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setShowProjectDialog(true)}>
+                  <Settings2 size={14} className="mr-2" />
+                  {t('projects')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setShowTagDialog(true)}>
+                  <Tags size={14} className="mr-2" />
+                  {t('tags')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -390,47 +423,40 @@ export const TodoListWidget = () => {
           />
         )}
 
+        {/* Segmented progress bar (Today hero 보조) */}
         {viewMode === 'list' && progressStats && (
-          <div className="mt-3 rounded-lg border bg-card p-3">
-            <div className="mb-2 flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">
-                {t('progress.total', { count: progressStats.total })}
-              </span>
-              <span className="font-semibold">
-                {t('progress.completionRate', { rate: progressStats.completionRate })}
-              </span>
-            </div>
-            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="space-y-1.5">
+            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
               {progressStats.completed > 0 && (
                 <div
-                  className="bg-green-500 transition-all duration-300"
+                  className="bg-emerald-500 transition-all duration-300"
                   style={{ width: `${(progressStats.completed / progressStats.total) * 100}%` }}
                 />
               )}
               {progressStats.inProgress > 0 && (
                 <div
-                  className="bg-blue-500 transition-all duration-300"
+                  className="bg-primary transition-all duration-300"
                   style={{ width: `${(progressStats.inProgress / progressStats.total) * 100}%` }}
                 />
               )}
               {progressStats.pending > 0 && (
                 <div
-                  className="bg-gray-300 dark:bg-gray-600 transition-all duration-300"
+                  className="bg-muted-foreground/30 transition-all duration-300"
                   style={{ width: `${(progressStats.pending / progressStats.total) * 100}%` }}
                 />
               )}
             </div>
-            <div className="mt-1.5 flex items-center gap-3 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30" />
                 {t('status.PENDING')} {progressStats.pending}
               </span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+                <span className="inline-block h-2 w-2 rounded-full bg-primary" />
                 {t('status.IN_PROGRESS')} {progressStats.inProgress}
               </span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
                 {t('status.COMPLETED')} {progressStats.completed}
               </span>
             </div>

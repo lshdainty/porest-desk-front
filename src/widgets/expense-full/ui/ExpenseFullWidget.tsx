@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Plus, X, Loader2, TrendingDown, TrendingUp, FileDown,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Wallet,
 } from 'lucide-react'
 import { cn, formatCurrency } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
@@ -10,6 +10,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/shared/ui/alert-dialog'
+import { HeroStatCard } from '@/shared/ui/hero-stat-card'
+import { BudgetRing } from '@/shared/ui/budget-ring'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   useExpenses,
   useSearchExpenses,
@@ -79,6 +82,22 @@ export const ExpenseFullWidget = () => {
   // Budget summary for the overview bar
   const { data: budgets } = useExpenseBudgets({ year: currentViewMonth.year, month: currentViewMonth.month })
   const { data: monthlySummary } = useMonthlySummary(currentViewMonth.year, currentViewMonth.month)
+
+  // Previous month summary for hero delta (this month vs last month)
+  const prevViewMonth = useMemo(() => {
+    const m = currentViewMonth.month - 1
+    return m < 1
+      ? { year: currentViewMonth.year - 1, month: 12 }
+      : { year: currentViewMonth.year, month: m }
+  }, [currentViewMonth])
+  const { data: prevMonthlySummary } = useMonthlySummary(prevViewMonth.year, prevViewMonth.month)
+
+  const heroExpenseDelta = useMemo(() => {
+    const curr = monthlySummary?.totalExpense ?? 0
+    const prev = prevMonthlySummary?.totalExpense ?? 0
+    if (prev === 0) return curr > 0 ? 100 : null
+    return Math.round(((curr - prev) / prev) * 100)
+  }, [monthlySummary, prevMonthlySummary])
 
   const budgetSummary = useMemo(() => {
     if (!budgets?.length) return null
@@ -206,96 +225,87 @@ export const ExpenseFullWidget = () => {
     { key: 'category', label: t('categories') },
   ]
 
-  // Budget bar gradient
-  const budgetBarGradient = useMemo(() => {
-    if (!budgetSummary) return ''
-    const p = budgetSummary.percentage
-    if (p > 100) return 'bg-gradient-to-r from-red-400 to-red-600'
-    if (p > 90) return 'bg-gradient-to-r from-orange-400 to-red-500'
-    if (p > 70) return 'bg-gradient-to-r from-yellow-400 to-orange-500'
-    return 'bg-gradient-to-r from-blue-400 to-blue-600'
-  }, [budgetSummary])
-
   return (
     <div className="relative flex h-full min-h-0 flex-col">
       {/* Scrollable content area */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="space-y-4 pb-4">
 
-          {/* 1. Month Navigator */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setMonthOffset((prev) => prev - 1)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => setMonthOffset(0)}
-              className="rounded-lg px-4 py-1.5 text-center hover:bg-muted/50 transition-colors"
-            >
-              <p className="text-lg font-bold tracking-tight">
-                {currentViewMonth.year}년 {currentViewMonth.month}월
-              </p>
-              {monthOffset !== 0 && (
-                <p className="text-[10px] text-muted-foreground">탭하여 이번 달로</p>
-              )}
-            </button>
-            <button
-              onClick={() => setMonthOffset((prev) => prev + 1)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-
-          {/* 2. KPI Summary Cards */}
-          <MonthlySummaryCard year={currentViewMonth.year} month={currentViewMonth.month} />
-
-          {/* 3. Budget Progress Bar (overview) */}
-          {budgetSummary && (
-            <button
-              onClick={() => setActiveTab('budget')}
-              className="w-full rounded-xl border bg-card p-3 sm:p-4 text-left transition-colors hover:bg-muted/50 active:scale-[0.99]"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">{t('budget.overall')}</span>
-                <span className={cn(
-                  'text-xs font-bold tabular-nums',
-                  budgetSummary.percentage > 100 ? 'text-red-600 dark:text-red-400'
-                    : budgetSummary.percentage > 70 ? 'text-orange-600 dark:text-orange-400'
-                    : 'text-blue-600 dark:text-blue-400',
-                )}>
-                  {budgetSummary.percentage}%
-                </span>
+          {/* 1. Hero — current month expense + budget ring (+ month nav header-right) */}
+          <HeroStatCard
+            tone="brand"
+            icon={Wallet}
+            label={t('totalExpense')}
+            value={formatCurrency(monthlySummary?.totalExpense ?? 0)}
+            delta={heroExpenseDelta}
+            isPositiveGood={false}
+            headerRight={
+              <div className="flex items-center gap-0.5">
+                <button
+                  onClick={() => setMonthOffset((prev) => prev - 1)}
+                  className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  aria-label="previous month"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  onClick={() => setMonthOffset(0)}
+                  className="rounded-md px-2 py-1 text-xs font-semibold tracking-tight hover:bg-muted/50 transition-colors tabular-nums"
+                >
+                  {currentViewMonth.year}.{String(currentViewMonth.month).padStart(2, '0')}
+                </button>
+                <button
+                  onClick={() => setMonthOffset((prev) => prev + 1)}
+                  className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  aria-label="next month"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
-              {/* Progress bar */}
-              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={cn('h-full rounded-full transition-all duration-700 ease-out', budgetBarGradient)}
-                  style={{ width: `${Math.min(budgetSummary.percentage, 100)}%` }}
-                />
-              </div>
-              {/* Details row */}
-              <div className="mt-2 flex items-center justify-between text-[11px] sm:text-xs text-muted-foreground">
+            }
+            footer={
+              budgetSummary ? (
                 <span className="tabular-nums">
                   {t('budget.spent')} {formatCurrency(budgetSummary.totalExpense)} / {formatCurrency(budgetSummary.totalBudget)}
                 </span>
-                {budgetSummary.remaining >= 0 && budgetSummary.daysRemaining > 0 && (
-                  <span className="tabular-nums">
-                    {t('budget.perDay')} {formatCurrency(Math.max(0, budgetSummary.perDay))}
-                  </span>
-                )}
-                {budgetSummary.remaining < 0 && (
-                  <span className="font-medium text-red-600 dark:text-red-400 tabular-nums">
-                    +{formatCurrency(Math.abs(budgetSummary.remaining))} {t('budget.exceeded')}
-                  </span>
-                )}
-              </div>
-            </button>
-          )}
+              ) : undefined
+            }
+          />
 
-          {/* 4. Quick Add Bar */}
+          {/* 2. Budget Ring + 2 secondary KPI cards */}
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            {budgetSummary ? (
+              <BudgetRing
+                percentage={budgetSummary.percentage}
+                label={t('budget.overall')}
+                totalBudget={formatCurrency(budgetSummary.totalBudget)}
+                spent={formatCurrency(budgetSummary.totalExpense)}
+                remaining={
+                  budgetSummary.remaining >= 0
+                    ? `${t('budget.remaining')} ${formatCurrency(budgetSummary.remaining)}`
+                    : `+${formatCurrency(Math.abs(budgetSummary.remaining))} ${t('budget.exceeded')}`
+                }
+                isOverBudget={budgetSummary.remaining < 0}
+                perDay={
+                  budgetSummary.daysRemaining > 0
+                    ? `${t('budget.perDay')} ${formatCurrency(Math.max(0, budgetSummary.perDay))}`
+                    : undefined
+                }
+                onClick={() => setActiveTab('budget')}
+              />
+            ) : (
+              <button
+                onClick={() => setActiveTab('budget')}
+                className="flex h-full min-h-[140px] items-center justify-center rounded-xl border border-dashed bg-card p-4 text-sm text-muted-foreground hover:bg-muted/40 transition-colors"
+              >
+                + {t('budget.set')}
+              </button>
+            )}
+
+            <MonthlySummaryCard year={currentViewMonth.year} month={currentViewMonth.month} />
+          </div>
+
+          {/* 3. Quick Add Bar */}
           <QuickAddBar
             categories={categories || []}
             expenses={expenses || []}
@@ -304,24 +314,21 @@ export const ExpenseFullWidget = () => {
             isLoading={createExpense.isPending}
           />
 
-          {/* 5. Tab Navigation */}
+          {/* 4. Tab Navigation */}
           <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 pb-1 bg-background/95 backdrop-blur-sm">
-            <div className="flex items-center rounded-xl border bg-muted/30 p-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    'flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all',
-                    activeTab === tab.key
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
+              <TabsList className="h-auto w-full rounded-xl border bg-muted/30 p-1">
+                {tabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab.key}
+                    value={tab.key}
+                    className="flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
           {/* 6. Tab Content */}

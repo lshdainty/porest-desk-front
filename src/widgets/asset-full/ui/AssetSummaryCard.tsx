@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts'
+import { Wallet } from 'lucide-react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/ui/chart'
+import { HeroStatCard } from '@/shared/ui/hero-stat-card'
 import type { AssetSummary, Asset, AssetType } from '@/entities/asset'
 import { formatCurrency } from '@/shared/lib'
 
@@ -51,65 +53,78 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
     return config
   }, [summary.byType])
 
+  const includedCount = useMemo(
+    () => assets.filter((a) => a.isIncludedInTotal === 'Y').length,
+    [assets],
+  )
+
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-4">
-      {/* Net worth card */}
-      <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-4 text-center">
-        <p className="text-xs text-muted-foreground">{t('totalBalance')}</p>
-        <p className="text-2xl font-bold">{formatCurrency(netWorth)}</p>
-        {assets.length > 0 && netWorth !== summary.totalBalance && (
-          <p className="mt-0.5 text-[10px] text-muted-foreground">
-            전체: {formatCurrency(summary.totalBalance)}
-          </p>
-        )}
-      </div>
+    <div className="space-y-4">
+      {/* Hero net worth card */}
+      <HeroStatCard
+        tone="brand"
+        icon={Wallet}
+        label={t('totalBalance')}
+        value={formatCurrency(netWorth)}
+        footer={
+          assets.length > 0 && netWorth !== summary.totalBalance ? (
+            <span className="tabular-nums">
+              {includedCount}/{assets.length} · {formatCurrency(summary.totalBalance)}
+            </span>
+          ) : assets.length > 0 ? (
+            <span className="tabular-nums">{assets.length} {t('count')}</span>
+          ) : undefined
+        }
+      />
 
       {/* Donut chart + type breakdown */}
       {chartData.length > 0 && (
-        <div className="flex flex-col items-center gap-4 md:flex-row">
-          <div className="w-full md:w-1/2">
-            <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[180px]">
-              <PieChart>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => formatCurrency(Number(value))}
-                    />
-                  }
-                />
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={45}
-                  outerRadius={70}
-                  paddingAngle={2}
-                  strokeWidth={0}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          </div>
-          <div className="w-full md:w-1/2">
-            <div className="grid grid-cols-2 gap-2">
-              {summary.byType.map((item) => (
-                <div key={item.assetType} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
-                  <div
-                    className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: ASSET_TYPE_COLORS[item.assetType] || '#6B7280' }}
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex flex-col items-center gap-4 md:flex-row">
+            <div className="w-full md:w-1/2">
+              <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[180px]">
+                <PieChart>
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value) => formatCurrency(Number(value))}
+                      />
+                    }
                   />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground truncate">
-                      {t(`assetType.${item.assetType.toLowerCase().replace(/_/g, '')}`)}
-                    </p>
-                    <p className="text-sm font-semibold">{formatCurrency(item.totalBalance)}</p>
-                    <p className="text-xs text-muted-foreground">{item.count}{t('count')}</p>
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={2}
+                    strokeWidth={0}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </div>
+            <div className="w-full md:w-1/2">
+              <div className="grid grid-cols-2 gap-2">
+                {summary.byType.map((item) => (
+                  <div key={item.assetType} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
+                    <div
+                      className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: ASSET_TYPE_COLORS[item.assetType] || '#6B7280' }}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground truncate">
+                        {t(`assetType.${item.assetType.toLowerCase().replace(/_/g, '')}`)}
+                      </p>
+                      <p className="text-sm font-semibold">{formatCurrency(item.totalBalance)}</p>
+                      <p className="text-xs text-muted-foreground">{item.count}{t('count')}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

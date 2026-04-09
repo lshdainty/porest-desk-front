@@ -5,7 +5,7 @@ import { cn, renderIcon } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Input } from '@/shared/ui/input'
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger,
 } from '@/shared/ui/select'
 import type { Expense, ExpenseFormValues, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { buildCategoryTree, getSelectableCategories } from '@/entities/expense'
@@ -156,42 +156,6 @@ export const QuickAddBar = ({
           className="h-9 flex-1 min-w-0 text-sm font-bold"
         />
 
-        {/* Category select (desktop only - mobile uses chips below) */}
-        {!isMobile && (
-          <Select
-            value={categoryRowId ? String(categoryRowId) : undefined}
-            onValueChange={(val) => setCategoryRowId(Number(val))}
-          >
-            <SelectTrigger className="h-9 w-[140px] shrink-0 text-xs">
-              <SelectValue placeholder={t('category')} />
-            </SelectTrigger>
-            <SelectContent>
-              {categoryTree.map((node, index) =>
-                node.children.length > 0 ? (
-                  <SelectGroup key={node.rowId}>
-                    {index > 0 && <SelectSeparator />}
-                    <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                      {node.categoryName}
-                    </SelectLabel>
-                    {node.children.map((child) => (
-                      <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
-                        {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
-                        {child.categoryName}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ) : (
-                  <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
-                    {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                    {node.categoryName}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
-        )}
-
         {/* Submit button */}
         <button
           onClick={handleSubmit}
@@ -216,62 +180,58 @@ export const QuickAddBar = ({
         </button>
       </div>
 
-      {/* Recent category chips */}
-      {recentCategories.length > 0 && (
-        <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-none">
-          {recentCategories.map((cat) => (
-            <button
-              key={cat.rowId}
-              onClick={() => setCategoryRowId(cat.rowId)}
-              className={cn(
-                'flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all active:scale-95',
-                categoryRowId === cat.rowId
-                  ? 'border-primary bg-primary/10 text-primary font-medium'
-                  : 'border-muted-foreground/20 text-muted-foreground hover:border-primary/40 hover:text-foreground',
-              )}
-            >
-              {cat.icon && <span className="inline-flex">{renderIcon(cat.icon, '', 12)}</span>}
-              {cat.categoryName}
-            </button>
-          ))}
+      {/* Recent category chips + "more categories" select (always visible) */}
+      <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-none">
+        {recentCategories.map((cat) => (
+          <button
+            key={cat.rowId}
+            onClick={() => setCategoryRowId(cat.rowId)}
+            className={cn(
+              'flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all active:scale-95',
+              categoryRowId === cat.rowId
+                ? 'border-primary bg-primary/10 text-primary font-medium'
+                : 'border-muted-foreground/20 text-muted-foreground hover:border-primary/40 hover:text-foreground',
+            )}
+          >
+            {cat.icon && <span className="inline-flex">{renderIcon(cat.icon, '', 12)}</span>}
+            {cat.categoryName}
+          </button>
+        ))}
 
-          {/* Mobile: full category select trigger */}
-          {isMobile && (
-            <Select
-              value={categoryRowId ? String(categoryRowId) : undefined}
-              onValueChange={(val) => setCategoryRowId(Number(val))}
-            >
-              <SelectTrigger className="h-7 shrink-0 rounded-full border-dashed px-2.5 text-xs w-auto">
-                <span className="text-muted-foreground">{t('category')}...</span>
-              </SelectTrigger>
-              <SelectContent>
-                {categoryTree.map((node, index) =>
-                  node.children.length > 0 ? (
-                    <SelectGroup key={node.rowId}>
-                      {index > 0 && <SelectSeparator />}
-                      <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                        {node.categoryName}
-                      </SelectLabel>
-                      {node.children.map((child) => (
-                        <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
-                          {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
-                          {child.categoryName}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ) : (
-                    <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
-                      {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
-                      {node.categoryName}
+        {/* Full category select — always shown so chips are not the only entry */}
+        <Select
+          value={categoryRowId ? String(categoryRowId) : undefined}
+          onValueChange={(val) => setCategoryRowId(Number(val))}
+        >
+          <SelectTrigger className="h-7 shrink-0 rounded-full border-dashed px-2.5 text-xs w-auto gap-1">
+            <span className="text-muted-foreground">{t('category')}</span>
+          </SelectTrigger>
+          <SelectContent>
+            {categoryTree.map((node, index) =>
+              node.children.length > 0 ? (
+                <SelectGroup key={node.rowId}>
+                  {index > 0 && <SelectSeparator />}
+                  <SelectLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                    {node.categoryName}
+                  </SelectLabel>
+                  {node.children.map((child) => (
+                    <SelectItem key={child.rowId} value={String(child.rowId)} className="pl-8 text-xs">
+                      {child.icon && <span className="inline-flex mr-0.5">{renderIcon(child.icon, '', 12)}</span>}
+                      {child.categoryName}
                     </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      )}
+                  ))}
+                </SelectGroup>
+              ) : (
+                <SelectItem key={node.rowId} value={String(node.rowId)} className="text-xs">
+                  {node.icon && <span className="inline-flex mr-0.5">{renderIcon(node.icon, '', 12)}</span>}
+                  {node.categoryName}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   )
 }
