@@ -13,7 +13,7 @@ export const AppLayout = () => {
       <AppSidebar />
       <SidebarInset className="overflow-hidden">
         <LayoutHeader />
-        <div className="flex flex-1 flex-col min-h-0 overflow-y-auto">
+        <div className="flex flex-1 flex-col min-h-0 overflow-x-hidden overflow-y-auto">
           <Outlet />
         </div>
       </SidebarInset>

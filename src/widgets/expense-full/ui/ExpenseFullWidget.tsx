@@ -315,7 +315,7 @@ export const ExpenseFullWidget = () => {
           />
 
           {/* 4. Tab Navigation */}
-          <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 pb-1 bg-background/95 backdrop-blur-sm">
+          <div className="sticky top-0 z-20 py-1 bg-background/95 backdrop-blur-sm">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
               <TabsList className="h-auto w-full rounded-xl border bg-muted/30 p-1">
                 {tabs.map((tab) => (
