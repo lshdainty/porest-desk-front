@@ -1,6 +1,23 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Edit3, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Edit3, Trash2, Loader2, GripVertical, ShoppingCart, Coffee, Car, Home, Utensils, Heart, Briefcase, Gift, Plane, Smartphone } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { renderIcon } from '@/shared/lib'
 import { IconPicker } from '@/shared/ui/icon-picker'
 import {
@@ -23,6 +40,117 @@ import {
   DialogFooter,
 } from '@/shared/ui/dialog'
 
+const ICON_PRESETS = [
+  { name: 'shopping-cart', Icon: ShoppingCart },
+  { name: 'coffee', Icon: Coffee },
+  { name: 'car', Icon: Car },
+  { name: 'home', Icon: Home },
+  { name: 'utensils', Icon: Utensils },
+  { name: 'heart', Icon: Heart },
+  { name: 'briefcase', Icon: Briefcase },
+  { name: 'gift', Icon: Gift },
+  { name: 'plane', Icon: Plane },
+  { name: 'smartphone', Icon: Smartphone },
+]
+
+const COLOR_PRESETS = [
+  { name: 'red', value: '#EF4444' },
+  { name: 'orange', value: '#F97316' },
+  { name: 'amber', value: '#F59E0B' },
+  { name: 'yellow', value: '#EAB308' },
+  { name: 'green', value: '#22C55E' },
+  { name: 'emerald', value: '#10B981' },
+  { name: 'blue', value: '#3B82F6' },
+  { name: 'indigo', value: '#6366F1' },
+  { name: 'purple', value: '#8B5CF6' },
+  { name: 'pink', value: '#EC4899' },
+]
+
+interface SortableCategoryNodeProps {
+  node: ExpenseCategoryTreeNode
+  isChild?: boolean
+  onOpenCreate: (type: ExpenseType, parentRowId?: number) => void
+  onOpenEdit: (cat: ExpenseCategory) => void
+  onDelete: (cat: ExpenseCategory) => void
+}
+
+const SortableCategoryNode = ({ node, isChild = false, onOpenCreate, onOpenEdit, onDelete }: SortableCategoryNodeProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: node.rowId })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div
+        className={`flex items-center gap-2 rounded-md border px-3 py-2 ${isChild ? 'ml-6' : ''}`}
+      >
+        <button
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical size={14} />
+        </button>
+        <div
+          className="h-3 w-3 shrink-0 rounded-full"
+          style={{ backgroundColor: node.color || '#6b7280' }}
+        />
+        {node.icon && renderIcon(node.icon, node.categoryName.charAt(0), 16)}
+        <span className="flex-1 text-sm">{node.categoryName}</span>
+        {!isChild && (
+          <button
+            onClick={() => onOpenCreate(node.expenseType, node.rowId)}
+            className="flex items-center gap-0.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Plus size={12} />
+          </button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onOpenEdit(node)}
+        >
+          <Edit3 size={12} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          onClick={() => onDelete(node)}
+        >
+          <Trash2 size={12} />
+        </Button>
+      </div>
+      {node.children.length > 0 && (
+        <div className="mt-1 space-y-1">
+          {node.children.map((child) => (
+            <SortableCategoryNode
+              key={child.rowId}
+              node={child}
+              isChild
+              onOpenCreate={onOpenCreate}
+              onOpenEdit={onOpenEdit}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const ExpenseCategoryManager = () => {
   const { t } = useTranslation('expense')
   const { data: categories } = useExpenseCategories()
@@ -40,8 +168,13 @@ export const ExpenseCategoryManager = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const allCategories = categories ?? []
-  const incomeTree = buildCategoryTree(allCategories.filter((c) => c.expenseType === 'INCOME'))
-  const expenseTree = buildCategoryTree(allCategories.filter((c) => c.expenseType === 'EXPENSE'))
+  const incomeTree = useMemo(() => buildCategoryTree(allCategories.filter((c) => c.expenseType === 'INCOME')), [allCategories])
+  const expenseTree = useMemo(() => buildCategoryTree(allCategories.filter((c) => c.expenseType === 'EXPENSE')), [allCategories])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   const openCreateForm = useCallback((type: ExpenseType, parentRowId?: number) => {
     setEditing(null)
@@ -93,50 +226,29 @@ export const ExpenseCategoryManager = () => {
     deleteCategory.mutate(cat.rowId)
   }, [deleteCategory, t])
 
-  const renderCategoryNode = (node: ExpenseCategoryTreeNode, isChild = false) => (
-    <div key={node.rowId}>
-      <div
-        className={`flex items-center gap-2 rounded-md border px-3 py-2 ${isChild ? 'ml-6' : ''}`}
-      >
-        <div
-          className="h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: node.color || '#6b7280' }}
-        />
-        {node.icon && renderIcon(node.icon, node.categoryName.charAt(0), 16)}
-        <span className="flex-1 text-sm">{node.categoryName}</span>
-        {!isChild && (
-          <button
-            onClick={() => openCreateForm(node.expenseType, node.rowId)}
-            className="flex items-center gap-0.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            title={t('addSubCategory')}
-          >
-            <Plus size={12} />
-          </button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => openEditForm(node)}
-        >
-          <Edit3 size={12} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-          onClick={() => handleDelete(node)}
-        >
-          <Trash2 size={12} />
-        </Button>
-      </div>
-      {node.children.length > 0 && (
-        <div className="mt-1 space-y-1">
-          {node.children.map((child) => renderCategoryNode(child, true))}
-        </div>
-      )}
-    </div>
-  )
+  const handleDragEnd = useCallback((event: DragEndEvent, tree: ExpenseCategoryTreeNode[]) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = tree.findIndex((n) => n.rowId === active.id)
+    const newIndex = tree.findIndex((n) => n.rowId === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(tree, oldIndex, newIndex)
+    reordered.forEach((node, idx) => {
+      updateCategory.mutate({
+        id: node.rowId,
+        data: {
+          categoryName: node.categoryName,
+          icon: node.icon ?? undefined,
+          color: node.color ?? undefined,
+          expenseType: node.expenseType,
+          parentRowId: node.parentRowId,
+          sortOrder: idx,
+        },
+      })
+    })
+  }, [updateCategory])
 
   const renderCategoryList = (tree: ExpenseCategoryTreeNode[], type: ExpenseType) => (
     <div className="space-y-2">
@@ -155,9 +267,28 @@ export const ExpenseCategoryManager = () => {
       {tree.length === 0 ? (
         <p className="py-2 text-center text-xs text-muted-foreground">-</p>
       ) : (
-        <div className="space-y-1">
-          {tree.map((node) => renderCategoryNode(node))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => handleDragEnd(event, tree)}
+        >
+          <SortableContext
+            items={tree.map((n) => n.rowId)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-1">
+              {tree.map((node) => (
+                <SortableCategoryNode
+                  key={node.rowId}
+                  node={node}
+                  onOpenCreate={openCreateForm}
+                  onOpenEdit={openEditForm}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   )
@@ -189,13 +320,42 @@ export const ExpenseCategoryManager = () => {
                 placeholder={t('categoryNamePlaceholder')}
               />
             </div>
-            <div className="flex gap-3">
-              <div>
-                <Label>{t('form.icon')}</Label>
-                <IconPicker value={formIcon} onChange={setFormIcon} />
+            {/* Icon preset palette */}
+            <div>
+              <Label>{t('form.icon')}</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {ICON_PRESETS.map(({ name, Icon }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => setFormIcon(name)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-md border transition-all hover:bg-accent ${
+                      formIcon === name ? 'ring-2 ring-primary border-primary' : 'border-input'
+                    }`}
+                  >
+                    <Icon size={16} />
+                  </button>
+                ))}
+                <IconPicker value={formIcon} onChange={setFormIcon} className="h-8 w-8" />
               </div>
-              <div>
-                <Label>{t('form.color')}</Label>
+            </div>
+            {/* Color preset palette */}
+            <div>
+              <Label>{t('form.color')}</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {COLOR_PRESETS.map(({ name, value }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => setFormColor(value)}
+                    className={`h-7 w-7 rounded-md border transition-all hover:scale-110 ${
+                      formColor.toUpperCase() === value.toUpperCase()
+                        ? 'ring-2 ring-primary ring-offset-1 ring-offset-background'
+                        : 'border-border/30'
+                    }`}
+                    style={{ backgroundColor: value }}
+                  />
+                ))}
                 <ColorPicker value={formColor} onChange={setFormColor} />
               </div>
             </div>

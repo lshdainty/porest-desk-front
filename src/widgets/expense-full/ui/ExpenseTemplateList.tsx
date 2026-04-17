@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, Play, ArrowUpDown } from 'lucide-react'
+import { format } from 'date-fns'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -19,11 +20,14 @@ import {
   useCreateExpenseTemplate,
   useUpdateExpenseTemplate,
   useDeleteExpenseTemplate,
+  useUseExpenseTemplate,
 } from '@/features/expense-template'
 import { useExpenseCategories } from '@/features/expense'
 import { useAssets } from '@/features/asset'
 import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
 import { ExpenseTemplateForm } from './ExpenseTemplateForm'
+
+type SortMode = 'default' | 'frequency'
 
 export const ExpenseTemplateList = () => {
   const { t } = useTranslation('expense')
@@ -33,6 +37,7 @@ export const ExpenseTemplateList = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ExpenseTemplate | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+  const [sortMode, setSortMode] = useState<SortMode>('default')
 
   const { data: templates, isLoading } = useExpenseTemplates()
   const { data: categories } = useExpenseCategories()
@@ -40,6 +45,15 @@ export const ExpenseTemplateList = () => {
   const createTemplate = useCreateExpenseTemplate()
   const updateTemplate = useUpdateExpenseTemplate()
   const deleteTemplate = useDeleteExpenseTemplate()
+  const useTemplate = useUseExpenseTemplate()
+
+  const sortedTemplates = useMemo(() => {
+    if (!templates) return []
+    if (sortMode === 'frequency') {
+      return [...templates].sort((a, b) => b.useCount - a.useCount)
+    }
+    return templates
+  }, [templates, sortMode])
 
   const handleCreate = useCallback((data: ExpenseTemplateFormValues) => {
     createTemplate.mutate(data, {
@@ -65,6 +79,11 @@ export const ExpenseTemplateList = () => {
     setShowForm(true)
   }, [])
 
+  const handleQuickUse = useCallback((template: ExpenseTemplate) => {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    useTemplate.mutate({ id: template.rowId, data: { expenseDate: today } })
+  }, [useTemplate])
+
   const confirmDelete = useCallback(() => {
     if (showDeleteConfirm === null) return
     deleteTemplate.mutate(showDeleteConfirm, {
@@ -85,6 +104,10 @@ export const ExpenseTemplateList = () => {
     }
   }, [editingTemplate, handleUpdate, handleCreate])
 
+  const toggleSortMode = useCallback(() => {
+    setSortMode((prev) => (prev === 'default' ? 'frequency' : 'default'))
+  }, [])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -95,10 +118,40 @@ export const ExpenseTemplateList = () => {
 
   return (
     <div className="space-y-4">
+      {/* Header with sort toggle and add button */}
+      <div className="flex items-center justify-between">
+        <div>
+          {sortedTemplates.length > 1 && (
+            <button
+              onClick={toggleSortMode}
+              className={cn(
+                'flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors',
+                sortMode === 'frequency'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              )}
+            >
+              <ArrowUpDown size={12} />
+              {sortMode === 'frequency' ? '빈도순' : '기본순'}
+            </button>
+          )}
+        </div>
+        {!isMobile && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowForm(true)}
+          >
+            <Plus size={14} className="mr-1" />
+            {t('addTemplate')}
+          </Button>
+        )}
+      </div>
+
       {/* Template list */}
-      {templates && templates.length > 0 ? (
+      {sortedTemplates.length > 0 ? (
         <div className="space-y-2">
-          {templates.map((template) => (
+          {sortedTemplates.map((template) => (
             <div
               key={template.rowId}
               className="flex items-center justify-between rounded-lg border p-3"
@@ -127,6 +180,21 @@ export const ExpenseTemplateList = () => {
                 </div>
               </div>
               <div className="ml-2 flex shrink-0 gap-1">
+                {/* Quick execute button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-green-600 hover:bg-green-100 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+                  onClick={() => handleQuickUse(template)}
+                  disabled={useTemplate.isPending}
+                  title="바로 사용"
+                >
+                  {useTemplate.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Play size={14} />
+                  )}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -153,16 +221,8 @@ export const ExpenseTemplateList = () => {
         </div>
       )}
 
-      {/* Add button */}
-      {!isMobile ? (
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-        >
-          <Plus size={16} />
-          {t('addTemplate')}
-        </button>
-      ) : (
+      {/* Mobile FAB */}
+      {isMobile && (
         <button
           onClick={() => setShowForm(true)}
           className={cn(

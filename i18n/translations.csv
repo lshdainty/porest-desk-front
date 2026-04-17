@@ -19,6 +19,7 @@ layout,timer,타이머,Timer
 layout,expense,가계부,Expense
 layout,asset,자산,Assets
 layout,dutchPay,더치페이,Dutch Pay
+layout,postit,포스트잇,Post-it
 layout,group,그룹,Groups
 layout,settings,설정,Settings
 layout,more,더보기,More
@@ -80,6 +81,13 @@ todo,subtaskProgress,{{completed}}/{{total}},{{completed}}/{{total}}
 todo,stats,통계,Stats
 todo,overdue,기한 초과,Overdue
 todo,completionRate,완료율,Completion Rate
+todo,view.list,리스트,List
+todo,view.kanban,보드,Board
+todo,kanban.pending,대기,Pending
+todo,kanban.inProgress,진행중,In Progress
+todo,kanban.completed,완료,Completed
+todo,kanban.empty,여기에 드래그하세요,Drag here
+todo,kanban.count,{{count}}건,{{count}} items
 calendar,title,캘린더,Calendar
 calendar,addEvent,일정 추가,Add Event
 calendar,editEvent,일정 수정,Edit Event
@@ -670,16 +678,6 @@ group,deleteGroupType,그룹 유형 삭제,Delete Group Type
 group,groupTypeDeleteConfirm,이 그룹 유형을 삭제하시겠습니까?,Are you sure you want to delete this group type?
 group,groupTypeNamePlaceholder,그룹 유형 이름을 입력하세요,Enter group type name
 memo,folders,폴더,Folders
-todo,type.ALL,전체,All
-todo,type.TASK,할 일,Task
-todo,type.NOTE,노트,Note
-todo,note.empty,노트가 없습니다,No notes yet
-todo,note.createFirst,첫 번째 노트를 작성해보세요,Create your first note
-todo,note.editor,편집기,Editor
-todo,note.preview,미리보기,Preview
-todo,note.markdown,마크다운으로 작성하세요...,Write in markdown...
-todo,note.pin,고정,Pin
-todo,note.unpin,고정 해제,Unpin
 notification,connectionLost,알림 연결이 끊어졌습니다,Notification connection lost
 notification,connectionRestored,알림 연결이 복구되었습니다,Notification connection restored
 notification,newNotification,새 알림,New notification

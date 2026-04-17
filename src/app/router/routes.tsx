@@ -6,8 +6,10 @@ const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => (
 const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const TodoPage = lazy(() => import('@/pages/todo/ui/TodoPage').then(m => ({ default: m.TodoPage })))
 const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(m => ({ default: m.CalendarPage })))
-// MemoPage lazy import removed - memo is now integrated into todo
+const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
 const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
+const AssetPage = lazy(() => import('@/pages/asset/ui/AssetPage').then(m => ({ default: m.AssetPage })))
+const DutchPayPage = lazy(() => import('@/pages/dutch-pay/ui/DutchPayPage').then(m => ({ default: m.DutchPayPage })))
 const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
@@ -30,10 +32,10 @@ export const AppRouter = () => {
               <Route path="/desk" element={<DashboardPage />} />
               <Route path="/desk/todo" element={<TodoPage />} />
               <Route path="/desk/calendar" element={<CalendarPage />} />
-              <Route path="/desk/memo" element={<Navigate to="/desk/todo" replace />} />
+              <Route path="/desk/memo" element={<MemoPage />} />
               <Route path="/desk/expense" element={<ExpensePage />} />
-              <Route path="/desk/asset" element={<Navigate to="/desk/expense" replace />} />
-              <Route path="/desk/dutch-pay" element={<Navigate to="/desk/expense" replace />} />
+              <Route path="/desk/asset" element={<AssetPage />} />
+              <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
               <Route path="/desk/group" element={<GroupPage />} />
             </Route>
           </Route>

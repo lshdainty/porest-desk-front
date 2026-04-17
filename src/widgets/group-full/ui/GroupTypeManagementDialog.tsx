@@ -85,7 +85,19 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('groupTypeManagement')}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>{t('groupTypeManagement')}</DialogTitle>
+            {!showForm && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openCreateForm}
+              >
+                <Plus size={14} className="mr-1" />
+                {t('addGroupType')}
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div>
@@ -182,13 +194,6 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
                 </div>
               )}
 
-              <button
-                onClick={openCreateForm}
-                className="flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-muted-foreground/20 py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-              >
-                <Plus size={14} />
-                {t('addGroupType')}
-              </button>
             </div>
           )}
         </div>

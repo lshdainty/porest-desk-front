@@ -1,6 +1,28 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Settings2, Tags } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { format } from 'date-fns'
+import { ko } from 'date-fns/locale'
+import {
+  Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
+} from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from '@dnd-kit/core'
+import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -21,29 +43,73 @@ import {
   useToggleTodoStatus,
   useToggleTodoPin,
   useDeleteTodo,
+  useReorderTodos,
 } from '@/features/todo'
 import { useTodoProjects } from '@/features/todo-project'
 import { useTodoTags } from '@/features/todo-tag'
-import type { Todo, TodoFormValues, TodoStatus, TodoPriority, TodoType } from '@/entities/todo'
+import type { Todo, TodoFormValues, TodoStatus, TodoPriority } from '@/entities/todo'
 import { TodoFilters } from './TodoFilters'
 import { TodoItem } from './TodoItem'
+import { SortableTodoItem } from './SortableTodoItem'
 import { TodoForm } from './TodoForm'
+import { TodoQuickAdd } from './TodoQuickAdd'
 import { SubtaskList } from './SubtaskList'
 import { ProjectManagementDialog } from './ProjectManagementDialog'
 import { TagManagementDialog } from './TagManagementDialog'
-import { NoteEditorDialog } from './NoteEditorDialog'
+import { KanbanBoard } from './kanban/KanbanBoard'
+
+type ViewMode = 'list' | 'kanban'
 
 export const TodoListWidget = () => {
   const { t } = useTranslation('todo')
   const isMobile = useIsMobile()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [typeFilter, setTypeFilter] = useState<TodoType | 'ALL'>('ALL')
-  const [statusFilter, setStatusFilter] = useState<TodoStatus | 'ALL'>('ALL')
-  const [priorityFilter, setPriorityFilter] = useState<TodoPriority | 'ALL'>('ALL')
-  const [projectFilter, setProjectFilter] = useState<number | null>(null)
+  // URL search params에서 필터 상태 읽기
+  const viewMode: ViewMode = (searchParams.get('view') as ViewMode) || 'list'
+  const statusFilter: TodoStatus | 'ALL' = (searchParams.get('status') as TodoStatus | 'ALL') || 'ALL'
+  const priorityFilter: TodoPriority | 'ALL' = (searchParams.get('priority') as TodoPriority | 'ALL') || 'ALL'
+  const projectFilterParam = searchParams.get('project')
+  const projectFilter: number | null = projectFilterParam ? Number(projectFilterParam) : null
+
+  const setViewMode = useCallback((mode: ViewMode) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (mode === 'list') next.delete('view')
+      else next.set('view', mode)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setStatusFilter = useCallback((status: TodoStatus | 'ALL') => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (status === 'ALL') next.delete('status')
+      else next.set('status', status)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setPriorityFilter = useCallback((priority: TodoPriority | 'ALL') => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (priority === 'ALL') next.delete('priority')
+      else next.set('priority', priority)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const setProjectFilter = useCallback((projectId: number | null) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (projectId === null) next.delete('project')
+      else next.set('project', String(projectId))
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
   const [showForm, setShowForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
-  const [editingNote, setEditingNote] = useState<Todo | null>(null)
   const [subtaskParentId, setSubtaskParentId] = useState<number | undefined>(undefined)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [expandedSubtasks, setExpandedSubtasks] = useState<Set<number>>(new Set())
@@ -51,15 +117,13 @@ export const TodoListWidget = () => {
   const [showTagDialog, setShowTagDialog] = useState(false)
 
   const filters = {
-    ...(typeFilter !== 'ALL' && { type: typeFilter }),
-    ...(statusFilter !== 'ALL' && typeFilter !== 'NOTE' && { status: statusFilter }),
-    ...(priorityFilter !== 'ALL' && typeFilter !== 'NOTE' && { priority: priorityFilter }),
+    type: 'TASK' as const,
+    ...(statusFilter !== 'ALL' && { status: statusFilter }),
+    ...(priorityFilter !== 'ALL' && { priority: priorityFilter }),
     ...(projectFilter !== null && { projectRowId: projectFilter }),
   }
 
-  const { data: todos, isLoading } = useTodos(
-    Object.keys(filters).length > 0 ? filters : undefined
-  )
+  const { data: todos, isLoading } = useTodos(filters)
   const { data: projects = [] } = useTodoProjects()
   const { data: tags = [] } = useTodoTags()
   const createTodo = useCreateTodo()
@@ -67,6 +131,18 @@ export const TodoListWidget = () => {
   const toggleStatus = useToggleTodoStatus()
   const togglePin = useToggleTodoPin()
   const deleteTodo = useDeleteTodo()
+  const reorderTodos = useReorderTodos()
+
+  const [activeDragId, setActiveDragId] = useState<number | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const handleCreate = useCallback((data: TodoFormValues) => {
     createTodo.mutate(data, {
@@ -106,10 +182,6 @@ export const TodoListWidget = () => {
     setShowForm(true)
   }, [])
 
-  const handleNoteClick = useCallback((todo: Todo) => {
-    setEditingNote(todo)
-  }, [])
-
   const handleDelete = useCallback((id: number) => {
     setShowDeleteConfirm(id)
   }, [])
@@ -137,11 +209,58 @@ export const TodoListWidget = () => {
     }
   }, [editingTodo, handleUpdate, handleCreate])
 
+  const handleQuickAdd = useCallback((title: string) => {
+    createTodo.mutate({
+      title,
+      priority: 'MEDIUM',
+      type: 'TASK',
+      ...(projectFilter !== null && { projectRowId: projectFilter }),
+    })
+  }, [createTodo, projectFilter])
+
   const handleAddSubtask = useCallback((parentId: number) => {
     setEditingTodo(null)
     setSubtaskParentId(parentId)
     setShowForm(true)
   }, [])
+
+  const handleKanbanDelete = useCallback((todo: Todo) => {
+    setShowDeleteConfirm(todo.rowId)
+  }, [])
+
+  const handleStatusChange = useCallback((id: number, status: TodoStatus) => {
+    const todo = todos?.find((t) => t.rowId === id)
+    if (!todo) return
+    updateTodo.mutate({
+      id,
+      data: {
+        title: todo.title,
+        content: todo.content || undefined,
+        priority: todo.priority,
+        category: todo.category || undefined,
+        dueDate: todo.dueDate || undefined,
+        projectRowId: todo.projectRowId || undefined,
+        parentRowId: todo.parentRowId || undefined,
+        type: 'TASK',
+        status,
+      } as TodoFormValues,
+    })
+  }, [todos, updateTodo])
+
+  const handleKanbanQuickAdd = useCallback((title: string, status: TodoStatus) => {
+    createTodo.mutate({
+      title,
+      priority: 'MEDIUM',
+      type: 'TASK',
+      ...(projectFilter !== null && { projectRowId: projectFilter }),
+    }, {
+      onSuccess: (createdTodo) => {
+        if (status !== 'PENDING') {
+          handleStatusChange(createdTodo.rowId, status)
+        }
+      },
+    })
+  }, [createTodo, projectFilter, handleStatusChange])
 
   const handleExpandSubtasks = useCallback((todoId: number) => {
     setExpandedSubtasks((prev) => {
@@ -153,14 +272,6 @@ export const TodoListWidget = () => {
       }
       return next
     })
-  }, [])
-
-  const handleTypeFilterChange = useCallback((type: TodoType | 'ALL') => {
-    setTypeFilter(type)
-    if (type === 'NOTE') {
-      setStatusFilter('ALL')
-      setPriorityFilter('ALL')
-    }
   }, [])
 
   const priorityOrder: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
@@ -175,17 +286,7 @@ export const TodoListWidget = () => {
         if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
         if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
 
-        if (typeFilter === 'NOTE') {
-          // NOTE: sort by modifyAt desc
-          return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
-        }
-
-        // TASK or ALL: sort by priority, then sortOrder
-        if (a.type === 'NOTE' && b.type === 'NOTE') {
-          return new Date(b.modifyAt).getTime() - new Date(a.modifyAt).getTime()
-        }
-
-        // 3. Tasks: sort by priority (HIGH > MEDIUM > LOW)
+        // 3. Sort by priority (HIGH > MEDIUM > LOW)
         const pa = priorityOrder[a.priority] ?? 1
         const pb = priorityOrder[b.priority] ?? 1
         if (pa !== pb) return pa - pb
@@ -195,24 +296,82 @@ export const TodoListWidget = () => {
       })
     : []
 
-  const defaultFormType: TodoType = typeFilter === 'NOTE' ? 'NOTE' : 'TASK'
-  const emptyMessage = typeFilter === 'NOTE' ? t('note.empty') : t('empty')
-  const emptyAction = typeFilter === 'NOTE' ? t('note.createFirst') : t('createFirst')
-  const addButtonText = typeFilter === 'NOTE' ? t('type.NOTE') : t('addTodo')
+  const todoIds = useMemo(() => sortedTodos.map((t) => t.rowId), [sortedTodos])
+  const activeTodo = useMemo(
+    () => (activeDragId !== null ? sortedTodos.find((t) => t.rowId === activeDragId) ?? null : null),
+    [activeDragId, sortedTodos]
+  )
+
+  const progressStats = useMemo(() => {
+    const total = sortedTodos.length
+    if (total === 0) return null
+    const pending = sortedTodos.filter((t) => t.status === 'PENDING').length
+    const inProgress = sortedTodos.filter((t) => t.status === 'IN_PROGRESS').length
+    const completed = sortedTodos.filter((t) => t.status === 'COMPLETED').length
+    const completionRate = Math.round((completed / total) * 100)
+    return { total, pending, inProgress, completed, completionRate }
+  }, [sortedTodos])
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragId(Number(event.active.id))
+  }, [])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveDragId(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = sortedTodos.findIndex((t) => t.rowId === Number(active.id))
+    const newIndex = sortedTodos.findIndex((t) => t.rowId === Number(over.id))
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(sortedTodos, oldIndex, newIndex)
+    const items = reordered.map((todo, index) => ({
+      todoId: todo.rowId,
+      sortOrder: index,
+    }))
+    reorderTodos.mutate(items)
+  }, [sortedTodos, reorderTodos])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveDragId(null)
+  }, [])
+
+  const todayLabel = useMemo(() => format(new Date(), 'M월 d일 EEEE', { locale: ko }), [])
 
   return (
     <div className="relative flex h-full min-h-0 flex-col">
-      {/* 고정: 필터 + 프로젝트/태그 버튼 */}
-      <div className="shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+      {/* 고정: Today hero + 필터 + 퀵추가 */}
+      <div className="shrink-0 space-y-3">
+        {/* Today hero — Todoist 스타일 */}
+        {viewMode === 'list' && (
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+                {todayLabel}
+              </h2>
+              {progressStats ? (
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('progress.total', { count: progressStats.total })} ·{' '}
+                  <span className="font-semibold text-foreground">
+                    {t('progress.completionRate', { rate: progressStats.completionRate })}
+                  </span>
+                </p>
+              ) : (
+                <p className="text-xs sm:text-sm text-muted-foreground">{t('empty')}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Filter + view toggle + settings menu */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
             <TodoFilters
-              typeFilter={typeFilter}
               statusFilter={statusFilter}
               priorityFilter={priorityFilter}
               projectFilter={projectFilter}
               projects={projects}
-              onTypeChange={handleTypeFilterChange}
               onStatusChange={setStatusFilter}
               onPriorityChange={setPriorityFilter}
               onProjectChange={setProjectFilter}
@@ -220,79 +379,176 @@ export const TodoListWidget = () => {
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1">
             <Button
-              variant="ghost"
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"
-              onClick={() => setShowProjectDialog(true)}
-              title={t('projects')}
+              onClick={() => setViewMode('list')}
+              title={t('view.list')}
             >
-              <Settings2 size={16} />
+              <List size={16} />
             </Button>
             <Button
-              variant="ghost"
+              variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"
-              onClick={() => setShowTagDialog(true)}
-              title={t('tags')}
+              onClick={() => setViewMode('kanban')}
+              title={t('view.kanban')}
             >
-              <Tags size={16} />
+              <LayoutGrid size={16} />
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" title={t('projects')}>
+                  <MoreHorizontal size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setShowProjectDialog(true)}>
+                  <Settings2 size={14} className="mr-2" />
+                  {t('projects')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setShowTagDialog(true)}>
+                  <Tags size={14} className="mr-2" />
+                  {t('tags')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+
+        {viewMode === 'list' && !isMobile && (
+          <TodoQuickAdd
+            onAdd={handleQuickAdd}
+            isLoading={createTodo.isPending}
+          />
+        )}
+
+        {/* Segmented progress bar (Today hero 보조) */}
+        {viewMode === 'list' && progressStats && (
+          <div className="space-y-1.5">
+            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              {progressStats.completed > 0 && (
+                <div
+                  className="bg-emerald-500 transition-all duration-300"
+                  style={{ width: `${(progressStats.completed / progressStats.total) * 100}%` }}
+                />
+              )}
+              {progressStats.inProgress > 0 && (
+                <div
+                  className="bg-primary transition-all duration-300"
+                  style={{ width: `${(progressStats.inProgress / progressStats.total) * 100}%` }}
+                />
+              )}
+              {progressStats.pending > 0 && (
+                <div
+                  className="bg-muted-foreground/30 transition-all duration-300"
+                  style={{ width: `${(progressStats.pending / progressStats.total) * 100}%` }}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30" />
+                {t('status.PENDING')} {progressStats.pending}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+                {t('status.IN_PROGRESS')} {progressStats.inProgress}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                {t('status.COMPLETED')} {progressStats.completed}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 스크롤: 리스트 */}
+      {/* 스크롤: 리스트 또는 칸반 */}
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
+        ) : viewMode === 'kanban' ? (
+          <KanbanBoard
+            todos={sortedTodos}
+            onEdit={handleEdit}
+            onDelete={handleKanbanDelete}
+            onToggleStatus={handleToggle}
+            onTogglePin={handleTogglePin}
+            onStatusChange={handleStatusChange}
+            onQuickAdd={handleKanbanQuickAdd}
+            isQuickAddLoading={createTodo.isPending}
+          />
         ) : sortedTodos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <p className="text-sm">{emptyMessage}</p>
-            <Button
-              onClick={() => setShowForm(true)}
-              className="mt-3"
-            >
-              {emptyAction}
-            </Button>
-          </div>
+          (() => {
+            const hasActiveFilters = statusFilter !== 'ALL' || priorityFilter !== 'ALL' || projectFilter !== null
+            return (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <CheckSquare size={56} strokeWidth={1.2} className="mb-4 text-muted-foreground/30" />
+                <p className="text-sm font-medium">{t('empty')}</p>
+                <p className="mt-1 text-xs text-muted-foreground/70">
+                  {hasActiveFilters ? t('emptyFilterDescription') : t('emptyDescription')}
+                </p>
+                {!hasActiveFilters && (
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    className="mt-4"
+                  >
+                    <Plus size={16} className="mr-1" />
+                    {t('createFirst')}
+                  </Button>
+                )}
+              </div>
+            )
+          })()
         ) : (
-          <div className="space-y-2">
-            {sortedTodos.map((todo) => (
-              <div key={todo.rowId}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext items={todoIds} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                {sortedTodos.map((todo) => (
+                  <div key={todo.rowId}>
+                    <SortableTodoItem
+                      todo={todo}
+                      onToggle={handleToggle}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onAddSubtask={handleAddSubtask}
+                      onExpandSubtasks={handleExpandSubtasks}
+                      onTogglePin={handleTogglePin}
+                    />
+                    {expandedSubtasks.has(todo.rowId) && todo.subtaskCount > 0 && (
+                      <SubtaskList
+                        parentId={todo.rowId}
+                        onToggle={handleToggle}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+            <DragOverlay>
+              {activeTodo ? (
                 <TodoItem
-                  todo={todo}
+                  todo={activeTodo}
                   onToggle={handleToggle}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
-                  onAddSubtask={handleAddSubtask}
-                  onExpandSubtasks={handleExpandSubtasks}
-                  onTogglePin={handleTogglePin}
-                  onNoteClick={handleNoteClick}
                 />
-                {expandedSubtasks.has(todo.rowId) && todo.subtaskCount > 0 && (
-                  <SubtaskList
-                    parentId={todo.rowId}
-                    onToggle={handleToggle}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
 
-        {!isMobile && !showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-          >
-            <Plus size={16} />
-            {addButtonText}
-          </button>
-        )}
       </div>
 
       {isMobile && (
@@ -314,20 +570,11 @@ export const TodoListWidget = () => {
           projects={projects}
           tags={tags}
           parentId={subtaskParentId}
-          defaultType={defaultFormType}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createTodo.isPending || updateTodo.isPending}
         />
       )}
-
-      <NoteEditorDialog
-        todo={editingNote}
-        open={editingNote !== null}
-        onClose={() => setEditingNote(null)}
-        projects={projects}
-        tags={tags}
-      />
 
       <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
         <AlertDialogContent>

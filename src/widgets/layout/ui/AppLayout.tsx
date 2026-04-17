@@ -4,6 +4,7 @@ import {
   SidebarProvider,
 } from '@/shared/ui/sidebar'
 import { AppSidebar } from '@/widgets/sidebar'
+import { CommandPalette } from '@/widgets/command-palette'
 import { LayoutHeader } from './LayoutHeader'
 
 export const AppLayout = () => {
@@ -12,10 +13,11 @@ export const AppLayout = () => {
       <AppSidebar />
       <SidebarInset className="overflow-hidden">
         <LayoutHeader />
-        <div className="flex flex-1 flex-col min-h-0 overflow-y-auto">
+        <div className="flex flex-1 flex-col min-h-0 overflow-x-hidden overflow-y-auto">
           <Outlet />
         </div>
       </SidebarInset>
+      <CommandPalette />
     </SidebarProvider>
   )
 }

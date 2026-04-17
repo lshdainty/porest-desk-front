@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard,
-  CheckSquare,
+  StickyNote,
   CalendarDays,
   Wallet,
   UsersRound,
@@ -35,9 +35,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navItems: NavItem[] = [
     { title: t('dashboard'), url: '/desk', icon: LayoutDashboard },
-    { title: t('todo'), url: '/desk/todo', icon: CheckSquare },
+    {
+      title: t('postit'),
+      url: '/desk/memo',
+      icon: StickyNote,
+      children: [
+        { title: t('memo'), url: '/desk/memo' },
+        { title: t('todo'), url: '/desk/todo' },
+      ],
+    },
     { title: t('calendar'), url: '/desk/calendar', icon: CalendarDays },
-    { title: t('expense'), url: '/desk/expense', icon: Wallet },
+    {
+      title: t('expense'),
+      url: '/desk/expense',
+      icon: Wallet,
+      children: [
+        { title: t('expense'), url: '/desk/expense' },
+        { title: t('asset'), url: '/desk/asset' },
+        { title: t('dutchPay'), url: '/desk/dutch-pay' },
+      ],
+    },
     { title: t('group'), url: '/desk/group', icon: UsersRound },
   ]
 

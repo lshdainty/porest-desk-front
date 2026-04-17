@@ -142,6 +142,16 @@ export const CalendarViewWidget = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEventForm(true)}
+            >
+              <Plus size={14} className="mr-1" />
+              {t('addEvent')}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -213,8 +223,8 @@ export const CalendarViewWidget = () => {
         />
       </div>
 
-      {/* Add event button */}
-      {isMobile ? (
+      {/* Mobile FAB */}
+      {isMobile && (
         <button
           onClick={() => setShowEventForm(true)}
           className={cn(
@@ -224,14 +234,6 @@ export const CalendarViewWidget = () => {
           )}
         >
           <Plus size={24} />
-        </button>
-      ) : (
-        <button
-          onClick={() => setShowEventForm(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/20 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-        >
-          <Plus size={16} />
-          {t('addEvent')}
         </button>
       )}
 

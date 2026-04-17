@@ -86,8 +86,94 @@ export const ExpenseFilterBar = ({
 
   const hasAnyFilter = activeFilterCount > 0 || !!filters.keyword
 
+  // Preset filter helpers
+  const applyPreset = (preset: Partial<ExpenseSearchParams>) => {
+    onClear()
+    onFiltersChange(preset)
+  }
+
+  const getThisWeekRange = () => {
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const start = new Date(now)
+    start.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+    const end = new Date(start)
+    end.setDate(start.getDate() + 6)
+    return {
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    }
+  }
+
+  const getThisMonthRange = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const lastDay = new Date(year, month, 0).getDate()
+    return {
+      startDate: `${year}-${String(month).padStart(2, '0')}-01`,
+      endDate: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+    }
+  }
+
+  // Active filter chips
+  const activeChips: { label: string; onRemove: () => void }[] = []
+  if (filters.expenseType) {
+    activeChips.push({
+      label: `${t('filter.type')}: ${t(filters.expenseType === 'EXPENSE' ? 'expense' : 'income')}`,
+      onRemove: () => updateFilter('expenseType', undefined),
+    })
+  }
+  if (filters.categoryId) {
+    const cat = categories.find((c) => c.rowId === filters.categoryId)
+    if (cat) {
+      activeChips.push({
+        label: `${t('category')}: ${cat.categoryName}`,
+        onRemove: () => updateFilter('categoryId', undefined),
+      })
+    }
+  }
+  if (filters.startDate || filters.endDate) {
+    activeChips.push({
+      label: `${t('filter.dateRange')}: ${filters.startDate || '...'} ~ ${filters.endDate || '...'}`,
+      onRemove: () => {
+        onFiltersChange({ ...filters, startDate: undefined, endDate: undefined })
+      },
+    })
+  }
+  if (filters.minAmount || filters.maxAmount) {
+    activeChips.push({
+      label: `${t('filter.amountRange')}: ${filters.minAmount?.toLocaleString() || '...'} ~ ${filters.maxAmount?.toLocaleString() || '...'}`,
+      onRemove: () => {
+        onFiltersChange({ ...filters, minAmount: undefined, maxAmount: undefined })
+      },
+    })
+  }
+
   return (
     <div className="space-y-2">
+      {/* Preset filters */}
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+        <button
+          onClick={() => applyPreset(getThisWeekRange())}
+          className="shrink-0 rounded-full border px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        >
+          {t('filter.thisWeek')}
+        </button>
+        <button
+          onClick={() => applyPreset(getThisMonthRange())}
+          className="shrink-0 rounded-full border px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        >
+          {t('filter.thisMonth')}
+        </button>
+        <button
+          onClick={() => applyPreset({ minAmount: 50000, expenseType: 'EXPENSE' })}
+          className="shrink-0 rounded-full border px-2.5 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        >
+          {t('filter.largeExpenses')}
+        </button>
+      </div>
+
       {/* 검색바 + 필터 토글 */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
@@ -133,6 +219,27 @@ export const ExpenseFilterBar = ({
           </button>
         )}
       </div>
+
+      {/* Active filter chips */}
+      {!showFilters && activeChips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {activeChips.map((chip) => (
+            <Badge
+              key={chip.label}
+              variant="secondary"
+              className="gap-1 pr-1 text-xs font-normal"
+            >
+              {chip.label}
+              <button
+                onClick={chip.onRemove}
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+              >
+                <X size={10} />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {/* 필터 패널 */}
       {showFilters && (

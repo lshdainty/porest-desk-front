@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Check, Eye, EyeOff } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -14,17 +14,15 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/shared/ui/dialog'
-import type { Todo, TodoFormValues, TodoPriority, TodoType } from '@/entities/todo'
+import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import type { TodoProject } from '@/entities/todo-project'
 import type { TodoTag } from '@/entities/todo-tag'
-import { MemoPreview } from './MemoPreview'
 
 interface TodoFormProps {
   todo?: Todo | null
   projects: TodoProject[]
   tags: TodoTag[]
   parentId?: number
-  defaultType?: TodoType
   onSubmit: (data: TodoFormValues) => void
   onClose: () => void
   isLoading?: boolean
@@ -32,15 +30,11 @@ interface TodoFormProps {
 
 const priorityOptions: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
 
-export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit, onClose, isLoading }: TodoFormProps) => {
+export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, isLoading }: TodoFormProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
 
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
-  const [selectedType, setSelectedType] = useState<TodoType>(todo?.type || defaultType || 'TASK')
-  const [showPreview, setShowPreview] = useState(false)
-  const isEditing = !!todo
-  const isNote = selectedType === 'NOTE'
 
   const {
     register,
@@ -59,13 +53,12 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
       projectRowId: undefined,
       parentRowId: parentId,
       tagIds: [],
-      type: todo?.type || defaultType || 'TASK',
+      type: 'TASK',
     },
   })
 
   const selectedPriority = watch('priority')
   const projectRowId = watch('projectRowId')
-  const contentValue = watch('content')
 
   useEffect(() => {
     if (todo) {
@@ -78,10 +71,9 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
         projectRowId: todo.projectRowId || undefined,
         parentRowId: todo.parentRowId || undefined,
         tagIds: todo.tags?.map((t) => t.rowId) || [],
-        type: todo.type,
+        type: 'TASK',
       })
       setSelectedTagIds(todo.tags?.map((t) => t.rowId) || [])
-      setSelectedType(todo.type)
     } else {
       reset({
         title: '',
@@ -92,18 +84,11 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
         projectRowId: undefined,
         parentRowId: parentId,
         tagIds: [],
-        type: defaultType || 'TASK',
+        type: 'TASK',
       })
       setSelectedTagIds([])
-      setSelectedType(defaultType || 'TASK')
     }
-  }, [todo, parentId, defaultType, reset])
-
-  const handleTypeChange = (type: TodoType) => {
-    if (isEditing) return
-    setSelectedType(type)
-    setValue('type', type)
-  }
+  }, [todo, parentId, reset])
 
   const toggleTag = (tagId: number) => {
     setSelectedTagIds((prev) => {
@@ -118,19 +103,19 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
   const onFormSubmit = (data: TodoFormValues) => {
     onSubmit({
       ...data,
-      type: selectedType,
+      type: 'TASK',
       content: data.content || undefined,
-      category: isNote ? undefined : (data.category || undefined),
-      dueDate: isNote ? undefined : (data.dueDate || undefined),
+      category: data.category || undefined,
+      dueDate: data.dueDate || undefined,
       projectRowId: data.projectRowId || undefined,
-      parentRowId: isNote ? undefined : (data.parentRowId || undefined),
+      parentRowId: data.parentRowId || undefined,
       tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
     })
   }
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className={cn('max-h-[85vh] overflow-y-auto', isNote ? 'sm:max-w-lg' : 'sm:max-w-md')}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {parentId
@@ -142,39 +127,6 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          {!parentId && (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleTypeChange('TASK')}
-                disabled={isEditing}
-                className={cn(
-                  'flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors',
-                  selectedType === 'TASK'
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'hover:bg-muted',
-                  isEditing && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                {t('type.TASK')}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTypeChange('NOTE')}
-                disabled={isEditing}
-                className={cn(
-                  'flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors',
-                  selectedType === 'NOTE'
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'hover:bg-muted',
-                  isEditing && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                {t('type.NOTE')}
-              </button>
-            </div>
-          )}
-
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
             <Input
@@ -188,101 +140,57 @@ export const TodoForm = ({ todo, projects, tags, parentId, defaultType, onSubmit
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label>{t('form.content')}</Label>
-              {isNote && (
-                <button
-                  type="button"
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
-                  {showPreview ? t('note.editor') : t('note.preview')}
-                </button>
-              )}
-            </div>
-            {isNote && showPreview ? (
-              <div className="min-h-[200px] rounded-md border p-3">
-                <MemoPreview content={contentValue || ''} />
-              </div>
-            ) : (
-              <Textarea
-                {...register('content')}
-                rows={isNote ? 10 : 3}
-                className="resize-none"
-                placeholder={isNote ? t('note.markdown') : t('form.contentPlaceholder')}
-              />
-            )}
+            <Label>{t('form.content')}</Label>
+            <Textarea
+              {...register('content')}
+              rows={3}
+              className="resize-none"
+              placeholder={t('form.contentPlaceholder')}
+            />
           </div>
 
-          {!isNote && (
-            <>
-              <div className="space-y-1.5">
-                <Label>{t('form.priority')}</Label>
-                <div className="flex gap-2">
-                  {priorityOptions.map((priority) => (
-                    <button
-                      key={priority}
-                      type="button"
-                      onClick={() => setValue('priority', priority)}
-                      className={cn(
-                        'flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors',
-                        selectedPriority === priority
-                          ? priority === 'HIGH'
-                            ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                            : priority === 'MEDIUM'
-                              ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                              : 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                          : 'hover:bg-muted'
-                      )}
-                    >
-                      {t(`priority.${priority}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t('form.category')}</Label>
-                <Input
-                  {...register('category')}
-                  placeholder={t('form.categoryPlaceholder')}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t('form.dueDate')}</Label>
-                <InputDatePicker
-                  value={watch('dueDate')}
-                  onValueChange={(v) => setValue('dueDate', v)}
-                />
-              </div>
-            </>
-          )}
-
-          {!isNote && !parentId && projects.length > 0 && (
-            <div className="space-y-1.5">
-              <Label>{t('form.project')}</Label>
-              <Select
-                value={projectRowId ? String(projectRowId) : '__none__'}
-                onValueChange={(val) => setValue('projectRowId', val === '__none__' ? undefined : Number(val))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('allProjects')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{t('allProjects')}</SelectItem>
-                  {projects.map((project) => (
-                    <SelectItem key={project.rowId} value={String(project.rowId)}>
-                      {project.projectName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-1.5">
+            <Label>{t('form.priority')}</Label>
+            <div className="flex gap-2">
+              {priorityOptions.map((priority) => (
+                <button
+                  key={priority}
+                  type="button"
+                  onClick={() => setValue('priority', priority)}
+                  className={cn(
+                    'flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors',
+                    selectedPriority === priority
+                      ? priority === 'HIGH'
+                        ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                        : priority === 'MEDIUM'
+                          ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          : 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                      : 'hover:bg-muted'
+                  )}
+                >
+                  {t(`priority.${priority}`)}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
-          {isNote && projects.length > 0 && (
+          <div className="space-y-1.5">
+            <Label>{t('form.category')}</Label>
+            <Input
+              {...register('category')}
+              placeholder={t('form.categoryPlaceholder')}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>{t('form.dueDate')}</Label>
+            <InputDatePicker
+              value={watch('dueDate')}
+              onValueChange={(v) => setValue('dueDate', v)}
+            />
+          </div>
+
+          {!parentId && projects.length > 0 && (
             <div className="space-y-1.5">
               <Label>{t('form.project')}</Label>
               <Select

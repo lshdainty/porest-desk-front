@@ -83,7 +83,19 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>{t('labels')}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>{t('labels')}</DialogTitle>
+            {!isAdding && !editingLabel && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStartAdd}
+              >
+                <Plus size={14} className="mr-1" />
+                {t('addLabel')}
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -168,17 +180,6 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
             </div>
           )}
 
-          {/* Add button */}
-          {!isAdding && !editingLabel && (
-            <button
-              type="button"
-              onClick={handleStartAdd}
-              className="flex w-full items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/20 py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-            >
-              <Plus size={14} />
-              {t('addLabel')}
-            </button>
-          )}
         </div>
       </DialogContent>
     </Dialog>
