@@ -68,13 +68,13 @@ export const MonthlyBudgetChart = ({ budgets, categoryBreakdown, categoryNames, 
     const remaining = Math.max(100 - used, 0)
     return [
       { name: 'used', value: used, fill: getUsageColor(usagePercentage) },
-      { name: 'remaining', value: remaining, fill: 'hsl(var(--muted))' },
+      { name: 'remaining', value: remaining, fill: 'var(--muted)' },
     ]
   }, [usagePercentage])
 
   const gaugeConfig: ChartConfig = {
     used: { label: t('budget.title'), color: getUsageColor(usagePercentage) },
-    remaining: { label: t('budget.remaining'), color: 'hsl(var(--muted))' },
+    remaining: { label: t('budget.remaining'), color: 'var(--muted)' },
   }
 
   const categoryBudgetData = useMemo(() => {

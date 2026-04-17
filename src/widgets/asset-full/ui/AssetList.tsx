@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pencil, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CreditCard, Pencil, Trash2 } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import { cn, formatCurrency, renderIcon } from '@/shared/lib'
 
@@ -16,6 +17,7 @@ const getAssetTypeLabel = (assetType: string): string => {
 
 export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
   const { t } = useTranslation('asset')
+  const navigate = useNavigate()
 
   // Total of positive balances included in net worth — used for the weight bar.
   const positiveTotal = useMemo(() => {
@@ -80,6 +82,15 @@ export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
                 )}
               </div>
               <div className="flex shrink-0 gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                {asset.cardCatalog && (
+                  <button
+                    className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    title="카드 상세"
+                    onClick={() => navigate(`/desk/card/${asset.rowId}`)}
+                  >
+                    <CreditCard size={14} />
+                  </button>
+                )}
                 <button
                   className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   onClick={() => onEdit(asset)}

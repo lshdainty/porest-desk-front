@@ -190,7 +190,7 @@ export const SectionCategory = ({
                   outerRadius="75%"
                   paddingAngle={3}
                   strokeWidth={3}
-                  stroke="hsl(var(--background))"
+                  stroke="var(--background)"
                   onMouseEnter={onPieEnter}
                   onMouseLeave={onPieLeave}
                   onClick={(_: unknown, index: number) => { if (chartData[index]) handleCategoryClick(chartData[index].rowId) }}

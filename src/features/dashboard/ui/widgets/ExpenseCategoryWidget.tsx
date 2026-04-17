@@ -75,7 +75,7 @@ const DonutWithList = ({
               outerRadius="85%"
               paddingAngle={3}
               strokeWidth={3}
-              stroke="hsl(var(--background))"
+              stroke="var(--background)"
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />

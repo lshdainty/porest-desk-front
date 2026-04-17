@@ -248,7 +248,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
                     outerRadius="75%"
                     paddingAngle={3}
                     strokeWidth={2}
-                    stroke="hsl(var(--background))"
+                    stroke="var(--background)"
                     className="cursor-pointer"
                     onMouseEnter={onPieEnter}
                     onMouseLeave={onPieLeave}
@@ -359,7 +359,7 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
                 tickFormatter={formatCompact}
               />
               <ChartTooltip
-                cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
+                cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
                 content={
                   <ChartTooltipContent
                     indicator="line"
@@ -385,8 +385,8 @@ export const SummaryDashboard = ({ year, month, onNavigateToList }: SummaryDashb
                 <Brush
                   dataKey="date"
                   height={28}
-                  stroke="hsl(var(--muted-foreground))"
-                  fill="hsl(var(--muted))"
+                  stroke="var(--muted-foreground)"
+                  fill="var(--muted)"
                   travellerWidth={8}
                   startIndex={0}
                   endIndex={dailyTrendData.length - 1}

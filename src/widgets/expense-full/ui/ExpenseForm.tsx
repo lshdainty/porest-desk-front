@@ -21,10 +21,12 @@ import {
 } from '@/shared/ui/popover'
 import { useExpenseTemplates } from '@/features/expense-template'
 import { useGroups } from '@/features/group'
+import { useAvailableBenefits } from '@/features/card-catalog'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import type { Expense, ExpenseFormValues, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { buildCategoryTree, getSelectableCategories } from '@/entities/expense'
 import type { Asset } from '@/entities/asset'
+import { Sparkles } from 'lucide-react'
 
 interface ExpenseFormProps {
   expense?: Expense | null
@@ -114,6 +116,17 @@ export const ExpenseForm = ({
   const filteredCategories = categories.filter((c) => c.expenseType === expenseType)
   const categoryTree = buildCategoryTree(filteredCategories)
   const selectableCategories = getSelectableCategories(filteredCategories)
+
+  // 선택된 asset에 cardCatalog가 있고 expense 타입이면 해당 카드의 혜택 자동 조회
+  const selectedAsset = useMemo(
+    () => assets.find((a) => a.rowId === assetRowId),
+    [assets, assetRowId]
+  )
+  const cardCatalogRowId = selectedAsset?.cardCatalog?.rowId ?? null
+  const { data: availableBenefits = [] } = useAvailableBenefits(
+    expenseType === 'EXPENSE' ? cardCatalogRowId : null,
+    expenseType === 'EXPENSE' && categoryRowId > 0 ? categoryRowId : null
+  )
 
   useEffect(() => {
     if (selectableCategories.length > 0 && categoryRowId === 0) {
@@ -335,6 +348,26 @@ export const ExpenseForm = ({
               ))}
             </SelectContent>
           </Select>
+        </div>
+      )}
+
+      {/* Available benefits banner (카드 자산 + 지출 카테고리 선택 시) */}
+      {availableBenefits.length > 0 && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-amber-800 dark:text-amber-300">
+            <Sparkles size={14} />
+            이 결제에 적용될 수 있는 혜택
+          </div>
+          <ul className="space-y-1 text-xs text-amber-900/90 dark:text-amber-200/90">
+            {availableBenefits.slice(0, 3).map((b) => (
+              <li key={b.rowId}>
+                <span className="font-medium">[{b.category}]</span> {b.summary ?? b.title ?? ''}
+              </li>
+            ))}
+            {availableBenefits.length > 3 && (
+              <li className="text-muted-foreground">그 외 {availableBenefits.length - 3}개…</li>
+            )}
+          </ul>
         </div>
       )}
 

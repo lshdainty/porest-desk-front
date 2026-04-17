@@ -9,6 +9,8 @@ const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(
 const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
 const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
 const AssetPage = lazy(() => import('@/pages/asset/ui/AssetPage').then(m => ({ default: m.AssetPage })))
+const CardDetailPage = lazy(() => import('@/pages/card/ui/CardDetailPage').then(m => ({ default: m.CardDetailPage })))
+const CardSettingsPage = lazy(() => import('@/pages/card/ui/CardSettingsPage').then(m => ({ default: m.CardSettingsPage })))
 const DutchPayPage = lazy(() => import('@/pages/dutch-pay/ui/DutchPayPage').then(m => ({ default: m.DutchPayPage })))
 const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -35,6 +37,8 @@ export const AppRouter = () => {
               <Route path="/desk/memo" element={<MemoPage />} />
               <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/asset" element={<AssetPage />} />
+              <Route path="/desk/card/:assetRowId" element={<CardDetailPage />} />
+              <Route path="/desk/card-settings" element={<CardSettingsPage />} />
               <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
               <Route path="/desk/group" element={<GroupPage />} />
             </Route>

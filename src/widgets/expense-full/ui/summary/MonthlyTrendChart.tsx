@@ -75,7 +75,7 @@ export const MonthlyTrendChart = ({ monthlyAmounts }: MonthlyTrendChartProps) =>
           tickFormatter={(v) => v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString()}
         />
         <ChartTooltip
-          cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
+          cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
           content={
             <ChartTooltipContent
               indicator="line"

@@ -134,7 +134,7 @@ export const SavingsRateWidget = () => {
               ]}
             />
             <ChartTooltip
-              cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
+              cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
               content={
                 <ChartTooltipContent
                   formatter={(value, _name, entry) => {

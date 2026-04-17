@@ -83,6 +83,16 @@ export const assetKeys = {
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
 }
 
+export const cardKeys = {
+  all: ['cards'] as const,
+  catalogs: <T = Record<string, unknown>>(params?: T) => [...cardKeys.all, 'catalogs', params] as const,
+  catalogDetail: (id: number) => [...cardKeys.all, 'catalog', id] as const,
+  performance: (assetRowId: number, yearMonth: string) => [...cardKeys.all, 'performance', assetRowId, yearMonth] as const,
+  benefitMappings: () => [...cardKeys.all, 'benefit-mappings'] as const,
+  availableBenefits: (cardRowId: number, expenseCategoryRowId: number) =>
+    [...cardKeys.all, 'available-benefits', cardRowId, expenseCategoryRowId] as const,
+}
+
 export const expenseTemplateKeys = {
   all: ['expense-templates'] as const,
   list: () => [...expenseTemplateKeys.all, 'list'] as const,

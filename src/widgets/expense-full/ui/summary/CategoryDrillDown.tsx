@@ -118,7 +118,7 @@ export const CategoryDrillDown = ({
                 outerRadius="85%"
                 paddingAngle={3}
                 strokeWidth={2}
-                stroke="hsl(var(--background))"
+                stroke="var(--background)"
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />

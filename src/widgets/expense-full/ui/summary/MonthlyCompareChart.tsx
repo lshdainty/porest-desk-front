@@ -64,7 +64,7 @@ export const MonthlyCompareChart = ({ monthlyAmounts, year: _year }: MonthlyComp
             tickFormatter={(v) => (v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString())}
           />
           <ChartTooltip
-            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
+            cursor={{ fill: 'var(--muted)', opacity: 0.3 }}
             content={
               <ChartTooltipContent
                 formatter={(value, name) => (

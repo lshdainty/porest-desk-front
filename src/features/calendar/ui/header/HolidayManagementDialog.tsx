@@ -237,7 +237,7 @@ export const HolidayManagementDialog = ({
                 className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-primary transition-colors data-[state=checked]:bg-primary"
                 data-state={formRecurring ? 'checked' : 'unchecked'}
                 style={{
-                  backgroundColor: formRecurring ? 'hsl(var(--primary))' : 'transparent',
+                  backgroundColor: formRecurring ? 'var(--primary)' : 'transparent',
                 }}
               >
                 {formRecurring && (

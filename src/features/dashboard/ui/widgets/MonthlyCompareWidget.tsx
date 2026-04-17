@@ -93,7 +93,7 @@ export const MonthlyCompareWidget = () => {
               }
             />
             <ChartTooltip
-              cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
+              cursor={{ fill: 'var(--muted)', opacity: 0.3 }}
               content={
                 <ChartTooltipContent
                   formatter={(value, name) => {

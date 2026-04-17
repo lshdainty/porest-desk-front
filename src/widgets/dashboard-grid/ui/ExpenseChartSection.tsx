@@ -85,7 +85,7 @@ export const ExpenseChartSection = ({ data }: Props) => {
               fontSize={11}
             />
             <ChartTooltip
-              cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
+              cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
               content={
                 <ChartTooltipContent
                   indicator="line"
