@@ -1,6 +1,6 @@
 import { apiClient } from '@/shared/api'
 import type { ApiResponse } from '@/shared/types'
-import type { ExpenseBudget, ExpenseBudgetFormValues } from '@/entities/expense'
+import type { ExpenseBudget, ExpenseBudgetFormValues, BudgetComplianceMonth } from '@/entities/expense'
 
 export interface BudgetListParams {
   year: number
@@ -21,5 +21,11 @@ export const expenseBudgetApi = {
   deleteBudget: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/budget/${id}`)
     return resp.data
+  },
+
+  getCompliance: async (months = 6): Promise<BudgetComplianceMonth[]> => {
+    const resp: ApiResponse<{ months: BudgetComplianceMonth[] }> =
+      await apiClient.get('/v1/expense/budgets/compliance', { params: { months } })
+    return resp.data.months
   },
 }

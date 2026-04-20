@@ -14,6 +14,7 @@ export type {
   DailySummary,
   MonthlySummary,
   MonthlyTrend,
+  BudgetComplianceMonth,
   CategoryBreakdown,
   ParentCategoryBreakdown,
   WeeklySummary,

@@ -4,6 +4,7 @@ export {
   useAssets,
   useAsset,
   useAssetSummary,
+  useNetWorthTrend,
   useCreateAsset,
   useUpdateAsset,
   useDeleteAsset,

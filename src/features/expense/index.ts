@@ -29,6 +29,7 @@ export {
   useExpenseBudgets,
   useCreateExpenseBudget,
   useDeleteExpenseBudget,
+  useBudgetCompliance,
 } from './model/useExpenseBudgets'
 export { recurringTransactionApi } from './api/recurringTransactionApi'
 export { useRecurringTransactions } from './model/useRecurringTransactions'

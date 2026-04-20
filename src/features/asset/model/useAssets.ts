@@ -26,6 +26,14 @@ export const useAssetSummary = () => {
   })
 }
 
+export const useNetWorthTrend = (months = 12) => {
+  return useQuery({
+    queryKey: assetKeys.netWorthTrend(months),
+    queryFn: () => assetApi.getNetWorthTrend(months),
+    enabled: months > 0,
+  })
+}
+
 export const useCreateAsset = () => {
   const queryClient = useQueryClient()
 

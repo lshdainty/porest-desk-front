@@ -129,6 +129,14 @@ export interface MonthlyTrend {
   totalExpense: number
 }
 
+export interface BudgetComplianceMonth {
+  year: number
+  month: number
+  totalLimit: number
+  totalSpent: number
+  compliancePercent: number
+}
+
 export interface CategoryBreakdown {
   categoryRowId: number
   categoryName: string

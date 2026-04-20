@@ -64,6 +64,7 @@ export const expenseKeys = {
   list: <T = Record<string, unknown>>(filters?: T) => [...expenseKeys.all, 'list', filters] as const,
   categories: () => [...expenseKeys.all, 'categories'] as const,
   budgets: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'budgets', params] as const,
+  budgetCompliance: (months: number) => [...expenseKeys.all, 'budget-compliance', months] as const,
   recurring: () => [...expenseKeys.all, 'recurring'] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
   monthlySummary: (year: number, month: number) => [...expenseKeys.all, 'monthly-summary', year, month] as const,
@@ -82,6 +83,7 @@ export const assetKeys = {
   list: () => [...assetKeys.all, 'list'] as const,
   detail: (id: number) => [...assetKeys.all, 'detail', id] as const,
   summary: () => [...assetKeys.all, 'summary'] as const,
+  netWorthTrend: (months: number) => [...assetKeys.all, 'net-worth-trend', months] as const,
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
 }
 

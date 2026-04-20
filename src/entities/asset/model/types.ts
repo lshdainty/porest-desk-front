@@ -70,6 +70,12 @@ export interface AssetTypeSummary {
   count: number
 }
 
+export interface NetWorthTrendPoint {
+  year: number
+  month: number
+  netWorth: number
+}
+
 export interface AssetTransfer {
   rowId: number
   userRowId: number

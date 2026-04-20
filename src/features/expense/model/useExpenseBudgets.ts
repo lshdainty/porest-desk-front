@@ -33,3 +33,11 @@ export const useDeleteExpenseBudget = () => {
     },
   })
 }
+
+export const useBudgetCompliance = (months = 6) => {
+  return useQuery({
+    queryKey: expenseKeys.budgetCompliance(months),
+    queryFn: () => expenseBudgetApi.getCompliance(months),
+    enabled: months > 0,
+  })
+}
