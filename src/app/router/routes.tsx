@@ -9,10 +9,11 @@ const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(
 const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
 const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
 const AssetPage = lazy(() => import('@/pages/asset/ui/AssetPage').then(m => ({ default: m.AssetPage })))
-const CardDetailPage = lazy(() => import('@/pages/card/ui/CardDetailPage').then(m => ({ default: m.CardDetailPage })))
-const CardSettingsPage = lazy(() => import('@/pages/card/ui/CardSettingsPage').then(m => ({ default: m.CardSettingsPage })))
 const DutchPayPage = lazy(() => import('@/pages/dutch-pay/ui/DutchPayPage').then(m => ({ default: m.DutchPayPage })))
-const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
+const StatsPage = lazy(() => import('@/pages/stats/ui/StatsPage').then(m => ({ default: m.StatsPage })))
+const BudgetPage = lazy(() => import('@/pages/budget/ui/BudgetPage').then(m => ({ default: m.BudgetPage })))
+const SettingsPage = lazy(() => import('@/pages/settings/ui/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const MorePage = lazy(() => import('@/pages/more/ui/MorePage').then(m => ({ default: m.MorePage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
 
@@ -32,15 +33,16 @@ export const AppRouter = () => {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/desk" element={<DashboardPage />} />
-              <Route path="/desk/todo" element={<TodoPage />} />
-              <Route path="/desk/calendar" element={<CalendarPage />} />
-              <Route path="/desk/memo" element={<MemoPage />} />
-              <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/asset" element={<AssetPage />} />
-              <Route path="/desk/card/:assetRowId" element={<CardDetailPage />} />
-              <Route path="/desk/card-settings" element={<CardSettingsPage />} />
+              <Route path="/desk/expense" element={<ExpensePage />} />
+              <Route path="/desk/stats" element={<StatsPage />} />
+              <Route path="/desk/budget" element={<BudgetPage />} />
+              <Route path="/desk/calendar" element={<CalendarPage />} />
+              <Route path="/desk/todo" element={<TodoPage />} />
               <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
-              <Route path="/desk/group" element={<GroupPage />} />
+              <Route path="/desk/memo" element={<MemoPage />} />
+              <Route path="/desk/settings" element={<SettingsPage />} />
+              <Route path="/desk/more" element={<MorePage />} />
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
