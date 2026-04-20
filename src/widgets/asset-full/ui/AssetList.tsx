@@ -9,13 +9,14 @@ interface AssetListProps {
   assets: Asset[]
   onEdit: (asset: Asset) => void
   onDelete: (id: number) => void
+  onRowClick?: (asset: Asset) => void
 }
 
 const getAssetTypeLabel = (assetType: string): string => {
   return `assetType.${assetType.toLowerCase().replace(/_/g, '')}`
 }
 
-export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
+export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListProps) => {
   const { t } = useTranslation('asset')
   const navigate = useNavigate()
 
@@ -46,7 +47,20 @@ export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
         return (
           <div
             key={asset.rowId}
-            className="group rounded-xl border p-3 hover:bg-muted/30 transition-colors"
+            role={onRowClick ? 'button' : undefined}
+            tabIndex={onRowClick ? 0 : undefined}
+            onClick={() => onRowClick?.(asset)}
+            onKeyDown={(e) => {
+              if (!onRowClick) return
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onRowClick(asset)
+              }
+            }}
+            className={cn(
+              'group rounded-xl border p-3 hover:bg-muted/30 transition-colors',
+              onRowClick && 'cursor-pointer',
+            )}
           >
             <div className="flex items-center gap-3">
               <div
@@ -86,20 +100,20 @@ export const AssetList = ({ assets, onEdit, onDelete }: AssetListProps) => {
                   <button
                     className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     title="카드 상세"
-                    onClick={() => navigate(`/desk/card/${asset.rowId}`)}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/desk/card/${asset.rowId}`) }}
                   >
                     <CreditCard size={14} />
                   </button>
                 )}
                 <button
                   className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  onClick={() => onEdit(asset)}
+                  onClick={(e) => { e.stopPropagation(); onEdit(asset) }}
                 >
                   <Pencil size={14} />
                 </button>
                 <button
                   className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  onClick={() => onDelete(asset.rowId)}
+                  onClick={(e) => { e.stopPropagation(); onDelete(asset.rowId) }}
                 >
                   <Trash2 size={14} />
                 </button>

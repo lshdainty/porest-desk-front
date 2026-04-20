@@ -2,7 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { assetKeys } from '@/shared/config'
 import { assetApi } from '../api/assetApi'
 import type { TransferListParams } from '../api/assetApi'
-import type { AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues, ReorderItem } from '@/entities/asset'
+import type {
+  AssetFormValues,
+  AssetUpdateFormValues,
+  AssetTransferFormValues,
+  ReorderItem,
+} from '@/entities/asset'
 
 export const useAssets = () => {
   return useQuery({

@@ -13,6 +13,7 @@ import { Donut } from '@/shared/ui/porest/charts'
 import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/expense'
 import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
+import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog'
 import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
 import type { Asset, AssetType } from '@/entities/asset'
@@ -443,10 +444,6 @@ function hashHue(text: string): number {
   return Math.abs(h) % 360
 }
 
-function notifyComing(): void {
-  console.log('[asset] 개발 중입니다')
-}
-
 function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
   return (
     <div
@@ -487,6 +484,7 @@ function TypeGroup({
   totalColor,
   mobile,
   onAdd,
+  onOpenDetail,
   negativeTotal = false,
 }: {
   title: string
@@ -495,6 +493,7 @@ function TypeGroup({
   totalColor?: string
   mobile: boolean
   onAdd: () => void
+  onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
 }) {
   const hidden = useHideAmounts()
@@ -539,9 +538,17 @@ function TypeGroup({
           {assets.map(a => (
             <div
               key={a.rowId}
+              role="button"
+              tabIndex={0}
               className="acc-card"
               style={{ cursor: 'pointer' }}
-              onClick={notifyComing}
+              onClick={() => onOpenDetail(a)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onOpenDetail(a)
+                }
+              }}
             >
               <AssetLogo asset={a} />
               <div className="acc-card__meta">
@@ -749,6 +756,7 @@ function AssetDesktop() {
   const [addOpen, setAddOpen] = useState(false)
   const [investOpen, setInvestOpen] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -832,6 +840,7 @@ function AssetDesktop() {
               total={g.accountsTotal}
               mobile={false}
               onAdd={() => setAddOpen(true)}
+              onOpenDetail={setDetailAsset}
             />
             {g.investments.length > 0 && (
               <TypeGroup
@@ -840,6 +849,7 @@ function AssetDesktop() {
                 total={g.investmentsTotal}
                 mobile={false}
                 onAdd={() => setInvestOpen(true)}
+                onOpenDetail={setDetailAsset}
               />
             )}
             <TypeGroup
@@ -850,6 +860,7 @@ function AssetDesktop() {
               negativeTotal
               mobile={false}
               onAdd={() => setCardOpen(true)}
+              onOpenDetail={setDetailAsset}
             />
             {g.loans.length > 0 && (
               <TypeGroup
@@ -860,6 +871,7 @@ function AssetDesktop() {
                 negativeTotal
                 mobile={false}
                 onAdd={() => setAddOpen(true)}
+                onOpenDetail={setDetailAsset}
               />
             )}
             <SavingGoalsCard />
@@ -869,6 +881,13 @@ function AssetDesktop() {
       <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
       <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
+      {detailAsset && (
+        <AssetDetailDialog
+          asset={detailAsset}
+          mobile={false}
+          onClose={() => setDetailAsset(null)}
+        />
+      )}
     </div>
   )
 }
@@ -878,6 +897,7 @@ function AssetMobile() {
   const [addOpen, setAddOpen] = useState(false)
   const [investOpen, setInvestOpen] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -937,6 +957,7 @@ function AssetMobile() {
           total={g.accountsTotal}
           mobile
           onAdd={() => setAddOpen(true)}
+          onOpenDetail={setDetailAsset}
         />
         {g.investments.length > 0 && (
           <TypeGroup
@@ -945,6 +966,7 @@ function AssetMobile() {
             total={g.investmentsTotal}
             mobile
             onAdd={() => setInvestOpen(true)}
+            onOpenDetail={setDetailAsset}
           />
         )}
         <TypeGroup
@@ -955,6 +977,7 @@ function AssetMobile() {
           negativeTotal
           mobile
           onAdd={() => setCardOpen(true)}
+          onOpenDetail={setDetailAsset}
         />
         {g.loans.length > 0 && (
           <TypeGroup
@@ -965,12 +988,20 @@ function AssetMobile() {
             negativeTotal
             mobile
             onAdd={() => setAddOpen(true)}
+            onOpenDetail={setDetailAsset}
           />
         )}
       </div>
       <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
       <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
+      {detailAsset && (
+        <AssetDetailDialog
+          asset={detailAsset}
+          mobile
+          onClose={() => setDetailAsset(null)}
+        />
+      )}
     </div>
   )
 }

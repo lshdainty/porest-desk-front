@@ -22,11 +22,13 @@ import {
   useDeleteTransfer,
 } from '@/features/asset'
 import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
+import { useIsMobile } from '@/shared/hooks'
 import { AssetList } from './AssetList'
 import { AssetForm } from './AssetForm'
 import { AssetSummaryCard } from './AssetSummaryCard'
 import { AssetTransferList } from './AssetTransferList'
 import { AssetTransferForm } from './AssetTransferForm'
+import { AssetDetailDialog } from './AssetDetailDialog'
 
 type TabType = 'assets' | 'transfers'
 
@@ -37,7 +39,9 @@ export const AssetFullWidget = () => {
   const [showForm, setShowForm] = useState(false)
   const [showTransferForm, setShowTransferForm] = useState(false)
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+  const isMobile = useIsMobile()
 
   const { data: assetsData, isLoading } = useAssets()
   const { data: summary } = useAssetSummary()
@@ -142,7 +146,12 @@ export const AssetFullWidget = () => {
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : (
-            <AssetList assets={assets} onEdit={handleEdit} onDelete={handleDelete} />
+            <AssetList
+              assets={assets}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onRowClick={(asset) => setDetailAsset(asset)}
+            />
           )
         )}
 
@@ -150,6 +159,19 @@ export const AssetFullWidget = () => {
           <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
         )}
       </div>
+
+      {detailAsset && (
+        <AssetDetailDialog
+          asset={detailAsset}
+          mobile={isMobile}
+          onClose={() => setDetailAsset(null)}
+          onEdit={(asset) => {
+            setDetailAsset(null)
+            setEditingAsset(asset)
+            setShowForm(true)
+          }}
+        />
+      )}
 
       {showForm && (
         <AssetForm
