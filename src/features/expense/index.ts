@@ -10,6 +10,7 @@ export {
   useDeleteExpense,
   useDailySummary,
   useMonthlySummary,
+  useMonthlyTrend,
   useWeeklySummary,
   useYearlySummary,
   useMerchantSummary,
@@ -29,3 +30,5 @@ export {
   useCreateExpenseBudget,
   useDeleteExpenseBudget,
 } from './model/useExpenseBudgets'
+export { recurringTransactionApi } from './api/recurringTransactionApi'
+export { useRecurringTransactions } from './model/useRecurringTransactions'

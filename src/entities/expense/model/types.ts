@@ -66,10 +66,39 @@ export interface ExpenseCategoryFormValues {
 export interface ExpenseBudget {
   rowId: number
   categoryRowId: number | null
+  categoryName: string | null
   budgetAmount: number
   budgetYear: number
   budgetMonth: number
   createAt: string
+}
+
+export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+export type YNType = 'Y' | 'N'
+
+export interface RecurringTransaction {
+  rowId: number
+  userRowId: number
+  categoryRowId: number
+  categoryName: string
+  assetRowId: number | null
+  assetName: string | null
+  expenseType: ExpenseType
+  amount: number
+  description: string | null
+  merchant: string | null
+  paymentMethod: string | null
+  frequency: RecurringFrequency
+  intervalValue: number
+  dayOfWeek: number | null
+  dayOfMonth: number | null
+  startDate: string
+  endDate: string | null
+  nextExecutionDate: string | null
+  lastExecutedAt: string | null
+  isActive: YNType
+  createAt: string
+  modifyAt: string
 }
 
 export interface ExpenseBudgetFormValues {
@@ -93,12 +122,20 @@ export interface MonthlySummary {
   categoryBreakdown: CategoryBreakdown[]
 }
 
+export interface MonthlyTrend {
+  year: number
+  month: number
+  totalIncome: number
+  totalExpense: number
+}
+
 export interface CategoryBreakdown {
   categoryRowId: number
   categoryName: string
   totalAmount: number
   parentCategoryRowId: number | null
   parentCategoryName: string | null
+  expenseType: ExpenseType
 }
 
 export interface ParentCategoryBreakdown {

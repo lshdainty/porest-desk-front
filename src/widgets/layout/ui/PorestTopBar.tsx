@@ -41,7 +41,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
 
   return (
     <header className="top">
-      <SidebarTrigger className="-ml-1 h-8 w-8" />
+      <SidebarTrigger className="h-8 w-8" />
       <Separator orientation="vertical" className="mx-1 h-5" />
       <div>
         <div className="top__title">{title}</div>

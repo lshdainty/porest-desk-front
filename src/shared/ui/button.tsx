@@ -4,26 +4,42 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
+// POREST Design System — .p-btn spec (tokens.css + components.css)
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  [
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap select-none",
+    "text-sm font-semibold tracking-[-0.005em]",
+    "rounded-[var(--radius-md)] border border-transparent",
+    "transition-[background-color,color,border-color,box-shadow,transform] duration-[140ms]",
+    "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
+    "active:enabled:translate-y-[0.5px] active:enabled:scale-[0.99]",
+    "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
+    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-[var(--bg-brand)] text-[var(--fg-on-brand)] hover:bg-[var(--bg-brand-hover)] active:bg-[var(--bg-brand-press)]",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-[var(--status-danger)] text-white hover:bg-[var(--berry-700)]",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "bg-transparent text-[var(--fg-brand)] border-[var(--mossy-300)] hover:bg-[var(--bg-brand-subtle)] hover:border-[var(--border-brand)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-[var(--bg-surface)] text-[var(--fg-primary)] border-[var(--border-default)] hover:bg-[var(--mist-100)] hover:border-[var(--border-strong)]",
+        ghost:
+          "bg-transparent text-[var(--fg-primary)] hover:bg-[var(--mist-200)]",
+        warm:
+          "bg-[var(--bark-200)] text-[var(--bark-900)] hover:bg-[var(--bark-300)]",
+        link:
+          "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px]",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-9 px-4 py-[9px]",
+        xs:      "h-6 px-2   py-1   text-xs gap-1 rounded-[var(--radius-sm)]",
+        sm:      "h-8 px-3   py-1.5 text-[13px] gap-[5px] rounded-[var(--radius-sm)]",
+        lg:      "h-11 px-5  py-3   text-base",
+        icon:    "h-9 w-9 p-0",
       },
     },
     defaultVariants: {

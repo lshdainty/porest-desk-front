@@ -61,6 +61,14 @@ export const useMonthlySummary = (year: number, month: number) => {
   })
 }
 
+export const useMonthlyTrend = (months = 6) => {
+  return useQuery({
+    queryKey: expenseKeys.monthlyTrend(months),
+    queryFn: () => expenseApi.getMonthlyTrend(months),
+    enabled: months > 0,
+  })
+}
+
 export const useWeeklySummary = (weekStart: string, weekEnd: string) => {
   return useQuery({
     queryKey: expenseKeys.weeklySummary(weekStart, weekEnd),

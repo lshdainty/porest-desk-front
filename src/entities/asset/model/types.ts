@@ -55,6 +55,12 @@ export interface AssetUpdateFormValues {
 
 export interface AssetSummary {
   totalBalance: number
+  totalAssets: number
+  totalDebt: number
+  netWorth: number
+  lastMonthNetWorth: number
+  changeAmount: number
+  changePercent: number
   byType: AssetTypeSummary[]
 }
 

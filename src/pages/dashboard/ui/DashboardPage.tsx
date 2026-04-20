@@ -1,17 +1,130 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  ChevronRight, Eye, EyeOff, Receipt, Target, TrendingUp, UsersRound, Wallet,
+  ChevronRight, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
 } from 'lucide-react'
+import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
-import { BarChart, Donut } from '@/shared/ui/porest/charts'
+import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { useDashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
-import { useExpenses, useMonthlySummary } from '@/features/expense'
+import {
+  useExpenses,
+  useMonthlySummary,
+  useMonthlyTrend,
+  useExpenseBudgets,
+  useRecurringTransactions,
+} from '@/features/expense'
 import type { Expense } from '@/entities/expense'
+
+const barChartConfig = {
+  income:  { label: '수입', color: 'var(--mossy-500)' },
+  expense: { label: '지출', color: 'var(--bark-400)' },
+} satisfies ChartConfig
+
+function fmtAxisNum(v: number) {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1000)      return `${(v / 1000).toFixed(0)}k`
+  return String(v)
+}
+
+type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<string, unknown> }
+type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
+
+function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null
+  const income = Number(payload.find(p => p.dataKey === 'income')?.value ?? 0)
+  const expense = Number(payload.find(p => p.dataKey === 'expense')?.value ?? 0)
+  const saving = income - expense
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 10,
+        boxShadow: 'var(--shadow-md)',
+        padding: '8px 12px',
+        fontSize: 11.5,
+        minWidth: 140,
+      }}
+    >
+      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
+        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+          {KRW(income)}원
+        </span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--bark-400)' }} />
+        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+          {KRW(expense)}원
+        </span>
+      </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        marginTop: 5, paddingTop: 5, borderTop: '1px solid var(--border-subtle)',
+      }}>
+        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>저축</span>
+        <span
+          className="num"
+          style={{
+            marginLeft: 'auto', fontSize: 12, fontWeight: 700,
+            color: saving >= 0 ? 'var(--mossy-700)' : 'var(--berry-600)',
+          }}
+        >
+          {saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}원
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function IncomeExpenseBarChart({ data, height = 200 }: {
+  data: { label: string; income: number; expense: number }[]
+  height?: number
+}) {
+  return (
+    <ChartContainer
+      config={barChartConfig}
+      className="aspect-auto w-full"
+      style={{ height }}
+    >
+      <RcBarChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 8 }} barGap={8} barCategoryGap="55%">
+        <CartesianGrid
+          vertical={false}
+          stroke="var(--mist-200)"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          tickMargin={8}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={fmtAxisNum}
+          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          width={48}
+        />
+        <ChartTooltip cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
+        <Bar dataKey="income"  fill="var(--color-income)"  radius={4} barSize={28} />
+        <Bar dataKey="expense" fill="var(--color-expense)" radius={4} barSize={28} />
+      </RcBarChart>
+    </ChartContainer>
+  )
+}
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -62,13 +175,26 @@ function HomeDesktop() {
   const [period, setPeriod] = useState(initialKey)
   const [periodY, periodM] = period.split('-').map(Number) as [number, number]
 
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+  const periodStart = `${periodY}-${pad2(periodM)}-01`
+  const periodEnd = `${periodY}-${pad2(periodM)}-${pad2(new Date(periodY, periodM, 0).getDate())}`
+
   const dashboardQ = useDashboardSummary()
   const assetSummaryQ = useAssetSummary()
   const monthlyQ = useMonthlySummary(periodY, periodM)
-  const recentQ = useExpenses()
+  const trendQ = useMonthlyTrend(6)
+  const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd })
+  const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
+  const recurringQ = useRecurringTransactions()
 
   const summary = dashboardQ.data
-  const totalAssets = assetSummaryQ.data?.totalBalance ?? 0
+  const assetSummary = assetSummaryQ.data
+  const totalAssets = assetSummary?.totalAssets ?? 0
+  const totalDebt = assetSummary?.totalDebt ?? 0
+  const netWorth = assetSummary?.netWorth ?? 0
+  const changeAmount = assetSummary?.changeAmount ?? 0
+  const changePercent = assetSummary?.changePercent ?? 0
+  const isUp = changeAmount >= 0
   const monthly = monthlyQ.data
   const income = monthly?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
   const expense = monthly?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
@@ -80,8 +206,12 @@ function HomeDesktop() {
     .slice(0, 6)
 
   const donutSegs = useMemo(() => {
-    const items = monthly?.categoryBreakdown ?? []
-    return items.slice(0, 6).map((c, i) => ({
+    const items = (monthly?.categoryBreakdown ?? [])
+      .filter(c => c.expenseType === 'EXPENSE')
+      .slice()
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 6)
+    return items.map((c, i) => ({
       value: c.totalAmount,
       color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--mossy-500)',
       label: c.categoryName,
@@ -90,20 +220,59 @@ function HomeDesktop() {
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
   const barData = useMemo(() => {
-    const trend = summary?.expenseTrend ?? []
-    return trend.slice(-6).map(t => ({
-      label: t.date.slice(5, 10),
-      income: t.income,
-      expense: t.expense,
+    const trend = trendQ.data ?? []
+    return trend.map(t => ({
+      label: String(t.month).padStart(2, '0'),
+      income: t.totalIncome,
+      expense: t.totalExpense,
     }))
-  }, [summary])
+  }, [trendQ.data])
+
+  const budgetItems = useMemo(() => {
+    const budgets = budgetsQ.data ?? []
+    const spentByCat = new Map<number, number>()
+    for (const c of monthly?.categoryBreakdown ?? []) {
+      if (c.expenseType === 'EXPENSE' && c.categoryRowId != null) {
+        spentByCat.set(c.categoryRowId, c.totalAmount)
+      }
+    }
+    return budgets.slice(0, 4).map(b => {
+      const spent = b.categoryRowId != null ? spentByCat.get(b.categoryRowId) ?? 0 : 0
+      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
+      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      return { rowId: b.rowId, categoryName: b.categoryName, budgetAmount: b.budgetAmount, spent, pct, state }
+    })
+  }, [budgetsQ.data, monthly])
+
+  const upcomingPayments = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const recurrings = (recurringQ.data ?? [])
+      .filter(r => r.isActive === 'Y' && r.expenseType === 'EXPENSE' && r.nextExecutionDate)
+      .map(r => {
+        const next = new Date(r.nextExecutionDate as string)
+        const d = Math.max(0, Math.round((next.getTime() - today.getTime()) / 86_400_000))
+        const mm = next.getMonth() + 1
+        const dd = next.getDate()
+        return {
+          rowId: r.rowId,
+          title: r.description || r.merchant || r.categoryName,
+          amount: r.amount,
+          d,
+          dateLabel: `${String(mm).padStart(2, '0')}월 ${String(dd).padStart(2, '0')}일`,
+          nextIso: r.nextExecutionDate as string,
+        }
+      })
+      .sort((a, b) => a.nextIso.localeCompare(b.nextIso))
+    return recurrings.slice(0, 3)
+  }, [recurringQ.data])
 
   return (
     <div className="dash-grid">
       <div className="dash-grid__left">
         <div className="balance-hero" style={{ padding: '28px 32px 24px' }}>
           <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-            <Wallet size={14} /> 총 자산
+            <Wallet size={14} /> 순자산 · {periodY}년 {periodM}월
             <button
               onClick={togglePdHideAmounts}
               title={hidden ? '금액 표시' : '금액 가리기'}
@@ -125,22 +294,28 @@ function HomeDesktop() {
             </button>
           </div>
           <div className="balance-hero__amount num">
-            {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(totalAssets)}
+            {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(netWorth)}
             <span className="unit">원</span>
           </div>
           <div className="balance-hero__sub">
-            {summary?.calendarSummary?.upcomingEventCount != null && (
-              <>예정 일정 {summary.calendarSummary.upcomingEventCount}건</>
-            )}
+            지난달 대비
+            <span className={`chg ${isUp ? 'up' : 'down'}`}>
+              {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+              {' '}
+              {isUp ? '+' : ''}{changePercent.toFixed(1)}%
+              {!hidden && changeAmount !== 0 && (
+                <>{' '}({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)</>
+              )}
+            </span>
           </div>
           <div className="balance-hero__split">
             <div>
-              <div className="l">이번 달 수입</div>
-              <div className="v num">{hidden ? '••••••' : '+' + KRW(income) + '원'}</div>
+              <div className="l">총 자산</div>
+              <div className="v num">{hidden ? '••••••' : KRW(totalAssets) + '원'}</div>
             </div>
             <div>
-              <div className="l">이번 달 지출</div>
-              <div className="v num">{hidden ? '••••••' : '−' + KRW(expense) + '원'}</div>
+              <div className="l">총 부채</div>
+              <div className="v num">{hidden ? '••••••' : '−' + KRW(totalDebt) + '원'}</div>
             </div>
           </div>
         </div>
@@ -171,10 +346,10 @@ function HomeDesktop() {
             </div>
           </div>
           {barData.length > 0 ? (
-            <BarChart data={barData} height={200} />
+            <IncomeExpenseBarChart data={barData} height={280} />
           ) : (
-            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
-              {dashboardQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
+            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+              {trendQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
             </div>
           )}
         </div>
@@ -228,6 +403,102 @@ function HomeDesktop() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-card" style={{ padding: 22 }}>
+          <div className="sec-head">
+            <h2>예산</h2>
+            <button className="all" onClick={() => navigate('/desk/budget')}>
+              예산 관리 <ChevronRight size={14} />
+            </button>
+          </div>
+          {budgetItems.length === 0 ? (
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+              {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {budgetItems.map(b => (
+                <div key={b.rowId}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span
+                      style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        background: 'var(--mossy-100)', color: 'var(--mossy-800)',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 700, flexShrink: 0,
+                      }}
+                    >
+                      {(b.categoryName ?? '·').slice(0, 1)}
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{b.categoryName ?? '전체'}</span>
+                    <span
+                      className="num"
+                      style={{
+                        marginLeft: 'auto', fontSize: 12, fontWeight: 600,
+                        color: b.state === 'over' ? 'var(--berry-700)' : 'var(--fg-secondary)',
+                      }}
+                    >
+                      {KRW(b.spent)}
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}> / {KRW(b.budgetAmount)}</span>
+                    </span>
+                  </div>
+                  <div className="budget-bar">
+                    <div
+                      className={`budget-bar__fill ${b.state}`}
+                      style={{ width: `${Math.min(100, b.pct)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="p-card" style={{ padding: 22 }}>
+          <div className="sec-head">
+            <h2>예정된 결제</h2>
+          </div>
+          {upcomingPayments.length === 0 ? (
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+              {recurringQ.isLoading ? '불러오는 중…' : '예정된 결제가 없어요'}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {upcomingPayments.map(p => (
+                <div key={p.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span
+                    style={{
+                      width: 38, height: 38, borderRadius: 10,
+                      background: p.d <= 7 ? 'var(--sunlit-100)' : 'var(--mist-200)',
+                      color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em',
+                      flexShrink: 0,
+                    }}
+                  >
+                    D-{p.d}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {p.title}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                      {p.dateLabel}
+                    </div>
+                  </div>
+                  <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                    −{KRW(p.amount)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -341,7 +612,13 @@ function HomeMobile() {
   const recentQ = useExpenses()
 
   const summary = dashboardQ.data
-  const totalAssets = assetSummaryQ.data?.totalBalance ?? 0
+  const assetSummary = assetSummaryQ.data
+  const totalAssets = assetSummary?.totalAssets ?? 0
+  const totalDebt = assetSummary?.totalDebt ?? 0
+  const netWorth = assetSummary?.netWorth ?? 0
+  const changeAmount = assetSummary?.changeAmount ?? 0
+  const changePercent = assetSummary?.changePercent ?? 0
+  const isUp = changeAmount >= 0
   const income = monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
   const expense = monthlyQ.data?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
 
@@ -361,7 +638,7 @@ function HomeMobile() {
     <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-          <Wallet size={13} /> 총 자산
+          <Wallet size={13} /> 순자산
           <button
             onClick={togglePdHideAmounts}
             title={hidden ? '금액 표시' : '금액 가리기'}
@@ -383,17 +660,25 @@ function HomeMobile() {
           </button>
         </div>
         <div className="balance-hero__amount num">
-          {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(totalAssets)}
+          {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(netWorth)}
           <span className="unit">원</span>
+        </div>
+        <div className="balance-hero__sub">
+          지난달 대비
+          <span className={`chg ${isUp ? 'up' : 'down'}`}>
+            {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+            {' '}
+            {isUp ? '+' : ''}{changePercent.toFixed(1)}%
+          </span>
         </div>
         <div className="balance-hero__split">
           <div>
-            <div className="l">수입</div>
-            <div className="v num">{hidden ? '••••' : '+' + KRW(income)}</div>
+            <div className="l">자산</div>
+            <div className="v num">{hidden ? '••••' : KRW(totalAssets)}</div>
           </div>
           <div>
-            <div className="l">지출</div>
-            <div className="v num">{hidden ? '••••' : '−' + KRW(expense)}</div>
+            <div className="l">부채</div>
+            <div className="v num">{hidden ? '••••' : '−' + KRW(totalDebt)}</div>
           </div>
         </div>
       </div>

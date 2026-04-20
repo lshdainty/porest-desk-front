@@ -26,14 +26,12 @@ export const AppLayout = () => {
   }
 
   return (
-    <SidebarProvider className="h-dvh overflow-hidden">
+    <SidebarProvider className="h-svh">
       <PorestSidebar />
-      <SidebarInset className="overflow-hidden">
-        <div className="main">
-          <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
-          <div className="scroll">
-            <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
-          </div>
+      <SidebarInset className="h-svh overflow-hidden">
+        <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+          <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
         </div>
       </SidebarInset>
       {addOpen && <AddTxSheet mobile={false} onClose={() => setAddOpen(false)} />}

@@ -5,6 +5,7 @@ import type {
   ExpenseFormValues,
   DailySummary,
   MonthlySummary,
+  MonthlyTrend,
   WeeklySummary,
   YearlySummary,
   MerchantSummary,
@@ -59,6 +60,11 @@ export const expenseApi = {
   getMonthlySummary: async (year: number, month: number): Promise<MonthlySummary> => {
     const resp: ApiResponse<MonthlySummary> = await apiClient.get('/v1/expenses/summary/monthly', { params: { year, month } })
     return resp.data
+  },
+
+  getMonthlyTrend: async (months = 6): Promise<MonthlyTrend[]> => {
+    const resp: ApiResponse<{ trends: MonthlyTrend[] }> = await apiClient.get('/v1/expenses/summary/trend', { params: { months } })
+    return resp.data.trends
   },
 
   getWeeklySummary: async (weekStart: string, weekEnd: string): Promise<WeeklySummary> => {
