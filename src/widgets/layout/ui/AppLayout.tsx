@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
 import { PorestSidebar } from './PorestSidebar'
 import { PorestTopBar } from './PorestTopBar'
 import { MobileHeader } from './MobileHeader'
@@ -9,12 +10,7 @@ import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 
 export const AppLayout = () => {
   const size = useDeviceSize()
-  const [collapsed, setCollapsed] = useState<boolean>(() => localStorage.getItem('pd_collapsed') === '1')
   const [addOpen, setAddOpen] = useState(false)
-
-  useEffect(() => {
-    localStorage.setItem('pd_collapsed', collapsed ? '1' : '0')
-  }, [collapsed])
 
   if (size === 'mobile') {
     return (
@@ -30,15 +26,17 @@ export const AppLayout = () => {
   }
 
   return (
-    <div className="app-shell" data-collapsed={collapsed ? 'true' : 'false'}>
-      <PorestSidebar collapsed={collapsed} onToggle={() => setCollapsed(v => !v)} />
-      <div className="main">
-        <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
-        <div className="scroll">
-          <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
+    <SidebarProvider className="h-dvh overflow-hidden">
+      <PorestSidebar />
+      <SidebarInset className="overflow-hidden">
+        <div className="main">
+          <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
+          <div className="scroll">
+            <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
+          </div>
         </div>
-      </div>
+      </SidebarInset>
       {addOpen && <AddTxSheet mobile={false} onClose={() => setAddOpen(false)} />}
-    </div>
+    </SidebarProvider>
   )
 }

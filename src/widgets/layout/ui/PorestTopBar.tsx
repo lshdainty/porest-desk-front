@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
 import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { NotificationsPopover } from '@/features/porest/dialogs'
+import { SidebarTrigger } from '@/shared/ui/sidebar'
+import { Separator } from '@/shared/ui/separator'
 import { NAV } from './PorestSidebar'
 
 const TITLE_MAP: Record<string, string> = {
@@ -39,6 +41,8 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
 
   return (
     <header className="top">
+      <SidebarTrigger className="-ml-1 h-8 w-8" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
       <div>
         <div className="top__title">{title}</div>
         {sub && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 1 }}>{sub}</div>}

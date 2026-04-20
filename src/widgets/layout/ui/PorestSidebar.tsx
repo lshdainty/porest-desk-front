@@ -1,9 +1,21 @@
-import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Wallet, Receipt, ChartPie, Target, CalendarDays,
-  ListChecks, UsersRound, NotebookPen, ChevronsUpDown,
+  CalendarDays, ChartPie, ChevronsUpDown, LayoutDashboard, ListChecks,
+  NotebookPen, Receipt, Target, UsersRound, Wallet,
 } from 'lucide-react'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from '@/shared/ui/sidebar'
 
 export interface NavItem {
   id: string
@@ -25,96 +37,90 @@ export const NAV: NavItem[] = [
   { id: 'memo',     label: '메모',      icon: NotebookPen,     path: '/desk/memo' },
 ]
 
-export function PorestSidebar({
-  collapsed,
-  onToggle,
-}: {
-  collapsed: boolean
-  onToggle: () => void
-}) {
+export function PorestSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
 
   const isActive = (path: string) =>
     path === '/desk' ? location.pathname === path : location.pathname.startsWith(path)
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
-        e.preventDefault()
-        onToggle()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onToggle])
-
-  const renderItem = (it: NavItem) => {
-    const IconComp = it.icon
-    const active = isActive(it.path)
-    return (
-      <button
-        key={it.id}
-        className={`side__item ${active ? 'active' : ''}`}
-        onClick={() => navigate(it.path)}
-        title={collapsed ? it.label : undefined}
-      >
-        <IconComp size={18} strokeWidth={1.9} />
-        <span className="side__item-label">{it.label}</span>
-        {it.badge != null && <span className="count">{it.badge}</span>}
-      </button>
-    )
-  }
+  const renderGroup = (label: string, items: NavItem[]) => (
+    <SidebarGroup>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      <SidebarMenu>
+        {items.map(it => {
+          const IconComp = it.icon
+          return (
+            <SidebarMenuItem key={it.id}>
+              <SidebarMenuButton
+                tooltip={it.label}
+                isActive={isActive(it.path)}
+                onClick={() => navigate(it.path)}
+              >
+                <IconComp />
+                <span>{it.label}</span>
+              </SidebarMenuButton>
+              {it.badge != null && <SidebarMenuBadge>{it.badge}</SidebarMenuBadge>}
+            </SidebarMenuItem>
+          )
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  )
 
   return (
-    <aside className={`side ${collapsed ? 'side--collapsed' : ''}`}>
-      <div className="side__head">
-        {!collapsed ? (
-          <>
-            <span className="wordmark">POREST</span>
-            <span className="pill">DESK</span>
-          </>
-        ) : (
-          <span className="mark-logo">P</span>
-        )}
-        <button
-          className="side__collapse"
-          onClick={onToggle}
-          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-          title={collapsed ? '펼치기 (⌘\\)' : '접기 (⌘\\)'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2.5" />
-            <path d="M9 5v14" />
-            {collapsed ? <path d="M14 9l3 3-3 3" /> : <path d="M17 9l-3 3 3 3" />}
-          </svg>
-        </button>
-      </div>
-      <div className="side__scroll">
-        <div className="side__glabel">워크스페이스</div>
-        {NAV.slice(0, 5).map(renderItem)}
-        <div className="side__glabel">기록</div>
-        {NAV.slice(5).map(renderItem)}
-      </div>
-      <div className="side__foot">
-        <div className="side__user" title={collapsed ? '김민서 · minseo@porest.cloud' : undefined}>
-          <span
-            className="p-avatar"
-            style={{ width: 32, height: 32, fontSize: 12, background: 'var(--mossy-200)', color: 'var(--mossy-800)' }}
-          >
-            김
-          </span>
-          {!collapsed && (
-            <>
-              <div className="info side__item-label">
-                <div className="name">김민서</div>
-                <div className="sub">minseo@porest.cloud</div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+              <div
+                className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
+                style={{ background: 'linear-gradient(135deg, var(--mossy-600), var(--mossy-800))' }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em' }}>P</span>
               </div>
-              <ChevronsUpDown size={14} style={{ color: 'var(--fg-tertiary)' }} />
-            </>
-          )}
-        </div>
-      </div>
-    </aside>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold" style={{ color: 'var(--mossy-800)', letterSpacing: '-0.02em' }}>
+                  POREST
+                </span>
+                <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
+                  DESK
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      <SidebarContent>
+        {renderGroup('워크스페이스', NAV.slice(0, 5))}
+        {renderGroup('기록', NAV.slice(5))}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg">
+              <span
+                className="flex size-8 items-center justify-center rounded-full"
+                style={{ background: 'var(--mossy-200)', color: 'var(--mossy-800)', fontWeight: 600, fontSize: 12 }}
+              >
+                김
+              </span>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold" style={{ fontSize: 13.5 }}>김민서</span>
+                <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
+                  minseo@porest.cloud
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" style={{ color: 'var(--fg-tertiary)' }} />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
   )
 }
