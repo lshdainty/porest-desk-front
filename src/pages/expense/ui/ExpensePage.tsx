@@ -5,9 +5,10 @@ import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
-import { useExpenses, useMonthlySummary } from '@/features/expense'
-import { useAsset } from '@/features/asset'
-import type { Expense, ExpenseType } from '@/entities/expense'
+import { useExpenses, useMonthlySummary, useExpenseCategories } from '@/features/expense'
+import { useAsset, useAssets } from '@/features/asset'
+import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
+import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type Filter = 'all' | 'income' | 'expense'
@@ -77,7 +78,7 @@ function groupExpensesByDay(expenses: Expense[]): [string, Expense[]][] {
 
 export const ExpensePage = () => {
   const { onAddTx, mobile } = useOutletContext<OutletCtx>()
-  return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop onAddTx={onAddTx} />
+  return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />
 }
 
 function Summary({
@@ -237,19 +238,99 @@ function ExpenseList({
   )
 }
 
-function useExpenseData(month: string, filter: Filter, assetId?: number) {
-  const { startDate, endDate } = useMemo(() => monthRange(month), [month])
+function computeFilterRange(
+  period: FilterValue['period'],
+  monthKey: string,
+  customStart?: string,
+  customEnd?: string,
+): { startDate: string; endDate: string } {
+  if (period === 'custom') {
+    if (customStart && customEnd) return { startDate: customStart, endDate: customEnd }
+    return monthRange(monthKey)
+  }
+  if (period === 'month') return monthRange(monthKey)
+  const today = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  if (period === 'week') {
+    const dow = today.getDay() // 0=Sun
+    const mondayOffset = dow === 0 ? -6 : 1 - dow
+    const start = new Date(today)
+    start.setDate(today.getDate() + mondayOffset)
+    const end = new Date(start)
+    end.setDate(start.getDate() + 6)
+    return { startDate: fmt(start), endDate: fmt(end) }
+  }
+  // '3m' — 3개월 전 1일 ~ 오늘
+  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1)
+  return { startDate: fmt(start), endDate: fmt(today) }
+}
+
+function useExpenseData(
+  month: string,
+  filter: Filter,
+  filterValue: FilterValue | null,
+  assetId?: number,
+  categories?: ExpenseCategory[] | null,
+) {
+  const { startDate, endDate } = useMemo(() => {
+    if (filterValue) {
+      return computeFilterRange(
+        filterValue.period,
+        month,
+        filterValue.startDate,
+        filterValue.endDate,
+      )
+    }
+    return monthRange(month)
+  }, [month, filterValue])
+
   const [yStr, mStr] = month.split('-')
   const year = Number(yStr)
   const m = Number(mStr)
 
-  const expenseType: ExpenseType | undefined =
+  const chipType: ExpenseType | undefined =
     filter === 'income' ? 'INCOME' : filter === 'expense' ? 'EXPENSE' : undefined
 
-  const expensesQ = useExpenses({ startDate, endDate, expenseType, assetId })
+  // 다이얼로그 필터가 적용된 상태면 types은 클라이언트에서 처리 (다중 타입 가능)
+  const serverType = filterValue ? undefined : chipType
+
+  const expensesQ = useExpenses({ startDate, endDate, expenseType: serverType, assetId })
   const monthlyQ = useMonthlySummary(year, m)
 
-  const filtered = expensesQ.data ?? []
+  // 선택한 부모 카테고리의 자식 rowId까지 모두 허용 집합에 추가
+  const allowedCatIds = useMemo(() => {
+    if (!filterValue || filterValue.categoryIds.length === 0) return null
+    const set = new Set<number>(filterValue.categoryIds)
+    for (const cat of categories ?? []) {
+      if (cat.parentRowId != null && filterValue.categoryIds.includes(cat.parentRowId)) {
+        set.add(cat.rowId)
+      }
+    }
+    return set
+  }, [filterValue, categories])
+
+  const filtered = useMemo(() => {
+    let list = expensesQ.data ?? []
+    if (filterValue) {
+      if (filterValue.types.length > 0 && filterValue.types.length < 2) {
+        list = list.filter(e => filterValue.types.includes(e.expenseType))
+      }
+      if (allowedCatIds) {
+        list = list.filter(e => allowedCatIds.has(e.categoryRowId))
+      }
+      if (filterValue.assetIds.length > 0) {
+        list = list.filter(
+          e => e.assetRowId != null && filterValue.assetIds.includes(e.assetRowId),
+        )
+      }
+      const minN = filterValue.min ? Number(filterValue.min) : null
+      const maxN = filterValue.max ? Number(filterValue.max) : null
+      if (minN != null) list = list.filter(e => e.amount >= minN)
+      if (maxN != null) list = list.filter(e => e.amount <= maxN)
+    }
+    return list
+  }, [expensesQ.data, filterValue, allowedCatIds])
 
   const monthIn = monthlyQ.data?.totalIncome ?? 0
   const monthOut = monthlyQ.data?.totalExpense ?? 0
@@ -308,12 +389,33 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
   )
 }
 
-function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
+function filterActiveCount(v: FilterValue | null): number {
+  if (!v) return 0
+  let n = 0
+  if (v.period !== DEFAULT_FILTER.period) n += 1
+  if (v.types.length !== DEFAULT_FILTER.types.length) n += 1
+  if (v.categoryIds.length > 0) n += 1
+  if (v.assetIds.length > 0) n += 1
+  if (v.min) n += 1
+  if (v.max) n += 1
+  return n
+}
+
+function ExpenseDesktop() {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(currentMonthKey())
   const { assetId, asset, clear } = useAssetFilter()
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
 
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter, assetId)
+  const categoriesQ = useExpenseCategories()
+  const assetsQ = useAssets()
+
+  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
+    month, filter, filterValue, assetId, categoriesQ.data ?? null,
+  )
+
+  const activeCount = filterActiveCount(filterValue)
 
   return (
     <div className="page">
@@ -323,18 +425,18 @@ function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
           <div className="sub">모든 거래 내역</div>
         </div>
         <div className="right">
-          <button className="p-btn p-btn--secondary p-btn--sm" onClick={notifyComing}>
-            <Filter size={13} /> 필터
+          <button className="p-btn p-btn--secondary p-btn--sm" onClick={() => setFilterOpen(true)}>
+            <Filter size={13} /> 필터{activeCount > 0 && ` · ${activeCount}`}
           </button>
           <button className="p-btn p-btn--secondary p-btn--sm" onClick={notifyComing}>
             <Download size={13} /> 내보내기
           </button>
-          <button className="p-btn p-btn--primary p-btn--sm" onClick={onAddTx}>
-            <Plus size={14} /> 내역 추가
-          </button>
         </div>
       </div>
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
+      {activeCount > 0 && (
+        <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
+      )}
       <Summary
         month={month}
         onMonthChange={setMonth}
@@ -345,6 +447,19 @@ function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
       />
       <Chips filter={filter} onChange={setFilter} />
       <ExpenseList expenses={expenses} mobile={false} isLoading={isLoadingList} />
+      {filterOpen && (
+        <FilterDialog
+          initial={filterValue}
+          categories={categoriesQ.data ?? []}
+          assets={assetsQ.data?.assets ?? []}
+          onClose={() => setFilterOpen(false)}
+          onApply={(v) => {
+            setFilterValue(v)
+            setFilterOpen(false)
+          }}
+          mobile={false}
+        />
+      )}
     </div>
   )
 }
@@ -353,12 +468,24 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(currentMonthKey())
   const { assetId, asset, clear } = useAssetFilter()
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
 
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter, assetId)
+  const categoriesQ = useExpenseCategories()
+  const assetsQ = useAssets()
+
+  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
+    month, filter, filterValue, assetId, categoriesQ.data ?? null,
+  )
+
+  const activeCount = filterActiveCount(filterValue)
 
   return (
     <div style={{ padding: '4px 16px 24px' }}>
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
+      {activeCount > 0 && (
+        <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
+      )}
       <Summary
         month={month}
         onMonthChange={setMonth}
@@ -372,8 +499,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           <Chips filter={filter} onChange={setFilter} />
         </div>
         <button
-          onClick={notifyComing}
+          onClick={() => setFilterOpen(true)}
           style={{
+            position: 'relative',
             width: 36,
             height: 36,
             borderRadius: 10,
@@ -386,8 +514,31 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             justifyContent: 'center',
             cursor: 'pointer',
           }}
+          aria-label="필터"
         >
           <SlidersHorizontal size={18} />
+          {activeCount > 0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                minWidth: 16,
+                height: 16,
+                padding: '0 4px',
+                borderRadius: 999,
+                background: 'var(--mossy-600)',
+                color: '#fff',
+                fontSize: 10,
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {activeCount}
+            </span>
+          )}
         </button>
         <button
           onClick={onAddTx}
@@ -409,6 +560,19 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </button>
       </div>
       <ExpenseList expenses={expenses} mobile isLoading={isLoadingList} />
+      {filterOpen && (
+        <FilterDialog
+          initial={filterValue}
+          categories={categoriesQ.data ?? []}
+          assets={assetsQ.data?.assets ?? []}
+          onClose={() => setFilterOpen(false)}
+          onApply={(v) => {
+            setFilterValue(v)
+            setFilterOpen(false)
+          }}
+          mobile
+        />
+      )}
     </div>
   )
 }

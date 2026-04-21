@@ -34,14 +34,14 @@ const DONUT_COLORS = [
   'var(--mossy-700)',
 ]
 
-// 6-step heatmap palette (light → dark) based on mossy hue
-const HEAT_PALETTE = [
-  'oklch(0.96 0.01 145)',
-  'oklch(0.90 0.04 145)',
-  'oklch(0.82 0.07 145)',
-  'oklch(0.70 0.10 145)',
-  'oklch(0.58 0.12 145)',
-  'oklch(0.44 0.13 145)',
+// 6-step heatmap palette (pale → deep mossy) — 디자인 시스템 spec
+const HEAT_PALETTE: { bg: string; fg: string }[] = [
+  { bg: 'oklch(0.965 0.01 110)', fg: 'oklch(0.55 0.02 110)' }, // 0 — empty/zero
+  { bg: 'oklch(0.92 0.04 115)',  fg: 'oklch(0.38 0.05 110)' }, // 1
+  { bg: 'oklch(0.82 0.07 120)',  fg: 'oklch(0.30 0.05 110)' }, // 2
+  { bg: 'oklch(0.68 0.10 125)',  fg: 'oklch(0.99 0 0)' },      // 3
+  { bg: 'oklch(0.52 0.11 125)',  fg: 'oklch(0.99 0 0)' },      // 4
+  { bg: 'oklch(0.385 0.11 125)', fg: 'oklch(0.99 0 0)' },      // 5 peak
 ]
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
@@ -549,36 +549,27 @@ export const StatsPage = () => {
     [heatmapMatrix]
   )
 
-  const heatColor = (value: number): string => {
-    if (heatmapMax <= 0 || value <= 0) return HEAT_PALETTE[0]!
-    // 6단계: ratio 0~1 → step 1~5 (0 단계는 빈 값)
+  /** 비선형 bucket (디자인 spec) — 상위값에 더 큰 대비 */
+  const heatBucket = (value: number): number => {
+    if (heatmapMax <= 0 || value <= 0) return 0
     const ratio = value / heatmapMax
-    const step = Math.min(5, Math.max(1, Math.ceil(ratio * 5)))
-    return HEAT_PALETTE[step]!
+    if (ratio < 0.08) return 1
+    if (ratio < 0.22) return 2
+    if (ratio < 0.45) return 3
+    if (ratio < 0.75) return 4
+    return 5
   }
 
   /**
-   * 셀 내부에 표시할 금액 약식
+   * 셀 내부에 표시할 금액 약식 — 디자인 spec
    *   0        → "—"
-   *   < 10000  → "3천"   (천 단위)
-   *   < 10만   → "1.2만"  (만 단위, 소수 1자리)
-   *   >= 10만  → "12만"   (만 단위, 정수)
+   *   < 10000  → "X천"    (천 단위 정수)
+   *   >= 10000 → "X.X만"  (만 단위, 소수 1자리)
    */
   const shortAmount = (v: number): string => {
     if (v <= 0) return '—'
     if (v < 10_000) return `${Math.round(v / 1000)}천`
-    if (v < 100_000) return `${(v / 10_000).toFixed(1)}만`
-    return `${Math.round(v / 10_000)}만`
-  }
-
-  /**
-   * 진한 배경(step >= 3) 에서는 텍스트를 흰색, 옅은 배경에서는 fg-primary.
-   */
-  const heatTextColor = (value: number): string => {
-    if (heatmapMax <= 0 || value <= 0) return 'var(--fg-tertiary)'
-    const ratio = value / heatmapMax
-    const step = Math.min(5, Math.max(1, Math.ceil(ratio * 5)))
-    return step >= 3 ? '#fff' : 'var(--fg-primary)'
+    return `${(v / 10_000).toFixed(1)}만`
   }
 
   const HeatmapCard = (
@@ -669,27 +660,28 @@ export const StatsPage = () => {
                 </div>
                 {HEAT_COLS.map((col, cIdx) => {
                   const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0
+                  const bucket = heatBucket(value)
+                  const pal = HEAT_PALETTE[bucket]!
                   const isPeak = value > 0 && value === heatmapMax
                   return (
                     <div
                       key={`${row.label}-${col.dow}`}
                       title={hidden ? `${row.label}·${col.label}` : `${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
-                        height: mobile ? 64 : 96,
-                        borderRadius: 10,
-                        background: heatColor(value),
-                        border: isPeak
-                          ? '2px solid var(--mossy-800)'
-                          : '1px solid var(--border-subtle)',
+                        aspectRatio: mobile ? '0.9' : '1.1',
+                        borderRadius: 6,
+                        background: pal.bg,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: mobile ? 12 : 15,
+                        fontSize: mobile ? 10 : 11.5,
                         fontWeight: 700,
-                        color: heatTextColor(value),
-                        letterSpacing: '-0.01em',
+                        color: pal.fg,
                         fontVariantNumeric: 'tabular-nums',
-                        transition: 'background var(--dur-med) var(--ease-decel)',
+                        boxShadow: isPeak
+                          ? '0 0 0 2px var(--mossy-900), 0 0 0 4px oklch(0.385 0.05 110 / 0.25)'
+                          : 'none',
+                        transition: 'background var(--dur-fast) var(--ease-standard)',
                       }}
                     >
                       {hidden && value > 0 ? '••' : shortAmount(value)}
@@ -713,15 +705,15 @@ export const StatsPage = () => {
           >
             <span>적음</span>
             <div style={{ display: 'flex', gap: 3 }}>
-              {HEAT_PALETTE.map((c, i) => (
+              {HEAT_PALETTE.slice(1).map((c, i) => (
                 <span
                   key={i}
                   style={{
                     width: 18,
                     height: 10,
                     borderRadius: 2,
-                    background: c,
-                    border: '1px solid var(--border-subtle)',
+                    background: c.bg,
+                    border: '1px solid oklch(0.90 0.01 110)',
                   }}
                 />
               ))}

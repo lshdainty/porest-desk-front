@@ -112,8 +112,9 @@ export function InputDatePicker({
           <Button
             type="button"
             variant="ghost"
+            size="icon"
             disabled={disabled}
-            className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
+            className="absolute top-1/2 right-1 size-7 -translate-y-1/2 p-0 active:enabled:translate-y-[calc(-50%+0.5px)]"
           >
             <CalendarIcon className="size-3.5" />
             <span className="sr-only">Select date</span>

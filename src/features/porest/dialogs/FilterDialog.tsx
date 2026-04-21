@@ -1,26 +1,34 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Check } from 'lucide-react'
-import { ACCOUNTS, CARDS, CATEGORIES, type CategoryKey } from '@/shared/lib/porest/data'
-import { CatIcon } from '@/shared/ui/porest/primitives'
+import type { Asset } from '@/entities/asset'
+import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
+import { renderIcon } from '@/shared/lib'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 
 export type FilterPeriod = 'week' | 'month' | '3m' | 'custom'
-export type TxKind = 'expense' | 'income' | 'transfer'
 
 export interface FilterValue {
   period: FilterPeriod
-  types: TxKind[]
-  cats: CategoryKey[]
-  accounts: string[]
+  /** period === 'custom' 일 때만 사용 — "YYYY-MM-DD" */
+  startDate: string
+  /** period === 'custom' 일 때만 사용 — "YYYY-MM-DD" */
+  endDate: string
+  types: ExpenseType[]
+  categoryIds: number[]
+  assetIds: number[]
   min: string
   max: string
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_FILTER: FilterValue = {
-  period: 'month',
-  types: ['expense', 'income'],
-  cats: [],
-  accounts: [],
+  period: 'custom',
+  startDate: '',
+  endDate: '',
+  types: ['EXPENSE', 'INCOME'],
+  categoryIds: [],
+  assetIds: [],
   min: '',
   max: '',
 }
@@ -32,48 +40,98 @@ const PERIODS: { v: FilterPeriod; l: string }[] = [
   { v: 'custom', l: '직접 선택' },
 ]
 
-const TYPES: { v: TxKind; l: string; c: string }[] = [
-  { v: 'expense', l: '지출', c: 'var(--berry-700)' },
-  { v: 'income', l: '수입', c: 'var(--mossy-700)' },
-  { v: 'transfer', l: '이체', c: 'var(--fg-secondary)' },
+const TYPES: { v: ExpenseType; l: string; c: string }[] = [
+  { v: 'EXPENSE', l: '지출', c: 'var(--berry-700)' },
+  { v: 'INCOME', l: '수입', c: 'var(--mossy-700)' },
 ]
 
 function toggleIn<T>(arr: T[], v: T): T[] {
   return arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]
 }
 
+function pad2(n: number): string { return String(n).padStart(2, '0') }
+function fmtYmd(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+}
+/** 종료일=오늘, 시작일=오늘 − 1개월 */
+function defaultCustomRange(): { startDate: string; endDate: string } {
+  const today = new Date()
+  const start = new Date(today)
+  start.setMonth(start.getMonth() - 1)
+  return { startDate: fmtYmd(start), endDate: fmtYmd(today) }
+}
+
 export function FilterDialog({
   initial,
+  categories,
+  assets,
   onClose,
   onApply,
   mobile,
 }: {
   initial?: FilterValue | null
+  categories: ExpenseCategory[]
+  assets: Asset[]
   onClose: () => void
   onApply: (v: FilterValue) => void
   mobile: boolean
 }) {
   const start = initial ?? DEFAULT_FILTER
   const [period, setPeriod] = useState<FilterPeriod>(start.period)
-  const [types, setTypes] = useState<TxKind[]>(start.types)
-  const [cats, setCats] = useState<CategoryKey[]>(start.cats)
-  const [accounts, setAccounts] = useState<string[]>(start.accounts)
+  const initialRange = useMemo(() => {
+    if (start.startDate && start.endDate) {
+      return { startDate: start.startDate, endDate: start.endDate }
+    }
+    return defaultCustomRange()
+  }, [start.startDate, start.endDate])
+  const [startDate, setStartDate] = useState(initialRange.startDate)
+  const [endDate, setEndDate] = useState(initialRange.endDate)
+
+  // 'custom' 전환 시 값 비어있으면 기본(오늘~-1개월) 세팅
+  const selectPeriod = (p: FilterPeriod) => {
+    if (p === 'custom') {
+      const def = defaultCustomRange()
+      if (!startDate) setStartDate(def.startDate)
+      if (!endDate) setEndDate(def.endDate)
+    }
+    setPeriod(p)
+  }
+  const [types, setTypes] = useState<ExpenseType[]>(start.types)
+  const [categoryIds, setCategoryIds] = useState<number[]>(start.categoryIds)
+  const [assetIds, setAssetIds] = useState<number[]>(start.assetIds)
   const [min, setMin] = useState(start.min)
   const [max, setMax] = useState(start.max)
 
+  // 탑레벨(부모 없는) 카테고리만 필터 그리드로 노출
+  const parentCategories = useMemo(
+    () => categories.filter(c => c.parentRowId == null).sort((a, b) => a.sortOrder - b.sortOrder),
+    [categories],
+  )
+
   const reset = () => {
-    setPeriod('month')
-    setTypes(['expense', 'income'])
-    setCats([])
-    setAccounts([])
+    setPeriod(DEFAULT_FILTER.period)
+    setStartDate('')
+    setEndDate('')
+    setTypes(DEFAULT_FILTER.types)
+    setCategoryIds([])
+    setAssetIds([])
     setMin('')
     setMax('')
   }
 
-  const apply = () => onApply({ period, types, cats, accounts, min, max })
+  const apply = () => onApply({
+    period,
+    startDate: period === 'custom' ? startDate : '',
+    endDate: period === 'custom' ? endDate : '',
+    types,
+    categoryIds,
+    assetIds,
+    min,
+    max,
+  })
 
-  const catKeys = Object.keys(CATEGORIES) as CategoryKey[]
-  const accNames = Array.from(new Set([...ACCOUNTS.map(a => a.name), ...CARDS.map(c => c.name)]))
+  const customInvalid = period === 'custom'
+    && startDate !== '' && endDate !== '' && startDate > endDate
 
   const Footer = (
     <>
@@ -83,7 +141,7 @@ export function FilterDialog({
       <button className="p-btn p-btn--ghost" onClick={onClose}>
         취소
       </button>
-      <button className="p-btn p-btn--primary" onClick={apply}>
+      <button className="p-btn p-btn--primary" onClick={apply} disabled={customInvalid}>
         필터 적용
       </button>
     </>
@@ -99,12 +157,41 @@ export function FilterDialog({
               key={o.v}
               type="button"
               className={`p-seg__btn ${period === o.v ? 'active' : ''}`}
-              onClick={() => setPeriod(o.v)}
+              onClick={() => selectPeriod(o.v)}
             >
               {o.l}
             </button>
           ))}
         </div>
+        {period === 'custom' && (
+          <div style={{ marginTop: 10 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                gap: 8,
+                alignItems: 'center',
+              }}
+            >
+              <InputDatePicker
+                value={startDate}
+                onValueChange={setStartDate}
+                placeholder="시작일"
+              />
+              <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
+              <InputDatePicker
+                value={endDate}
+                onValueChange={setEndDate}
+                placeholder="종료일"
+              />
+            </div>
+            {customInvalid && (
+              <div style={{ fontSize: 11.5, color: 'var(--berry-700)', marginTop: 6 }}>
+                시작일이 종료일보다 늦을 수 없습니다.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="p-field" style={{ marginBottom: 16 }}>
@@ -142,87 +229,109 @@ export function FilterDialog({
         </div>
       </div>
 
-      <div className="p-field" style={{ marginBottom: 16 }}>
-        <label className="p-field__label">
-          카테고리
-          {cats.length > 0 && (
-            <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
-              · {cats.length}개 선택
-            </span>
-          )}
-        </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-          {catKeys.map(c => {
-            const active = cats.includes(c)
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCats(toggleIn(cats, c))}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '10px 4px',
-                  background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <CatIcon cat={c} size="sm" />
-                <span
+      {parentCategories.length > 0 && (
+        <div className="p-field" style={{ marginBottom: 16 }}>
+          <label className="p-field__label">
+            카테고리
+            {categoryIds.length > 0 && (
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
+                · {categoryIds.length}개 선택
+              </span>
+            )}
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+            {parentCategories.map(c => {
+              const active = categoryIds.includes(c.rowId)
+              const color = c.color ?? 'var(--mossy-600)'
+              return (
+                <button
+                  key={c.rowId}
+                  type="button"
+                  onClick={() => setCategoryIds(toggleIn(categoryIds, c.rowId))}
                   style={{
-                    fontSize: 10.5,
-                    fontWeight: active ? 700 : 500,
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '10px 4px',
+                    background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                    border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
                   }}
                 >
-                  {CATEGORIES[c].label.split('·')[0]}
-                </span>
-              </button>
-            )
-          })}
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      background: `oklch(from ${color} l c h / 0.14)`,
+                      color,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {renderIcon(c.icon, c.categoryName.charAt(0), 18)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: active ? 700 : 500,
+                      color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    {c.categoryName}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="p-field" style={{ marginBottom: 16 }}>
-        <label className="p-field__label">
-          계좌·카드
-          {accounts.length > 0 && (
-            <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
-              · {accounts.length}개 선택
-            </span>
-          )}
-        </label>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {accNames.map(a => {
-            const active = accounts.includes(a)
-            return (
-              <button
-                key={a}
-                type="button"
-                onClick={() => setAccounts(toggleIn(accounts, a))}
-                style={{
-                  padding: '8px 12px',
-                  background: active ? 'var(--mossy-100)' : 'var(--mist-50)',
-                  color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                  borderRadius: 999,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {a}
-              </button>
-            )
-          })}
+      {assets.length > 0 && (
+        <div className="p-field" style={{ marginBottom: 16 }}>
+          <label className="p-field__label">
+            계좌·카드
+            {assetIds.length > 0 && (
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
+                · {assetIds.length}개 선택
+              </span>
+            )}
+          </label>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {assets.map(a => {
+              const active = assetIds.includes(a.rowId)
+              return (
+                <button
+                  key={a.rowId}
+                  type="button"
+                  onClick={() => setAssetIds(toggleIn(assetIds, a.rowId))}
+                  style={{
+                    padding: '8px 12px',
+                    background: active ? 'var(--mossy-100)' : 'var(--mist-50)',
+                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                    border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {a.assetName}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="p-field">
         <label className="p-field__label">금액 범위</label>

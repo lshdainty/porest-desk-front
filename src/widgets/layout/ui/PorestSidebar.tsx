@@ -75,12 +75,12 @@ export function PorestSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
               <div
-                className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
+                className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg text-white"
                 style={{ background: 'linear-gradient(135deg, var(--mossy-600), var(--mossy-800))' }}
               >
                 <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em' }}>P</span>
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold" style={{ color: 'var(--mossy-800)', letterSpacing: '-0.02em' }}>
                   POREST
                 </span>
@@ -103,18 +103,21 @@ export function PorestSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
               <span
-                className="flex size-8 items-center justify-center rounded-full"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full"
                 style={{ background: 'var(--mossy-200)', color: 'var(--mossy-800)', fontWeight: 600, fontSize: 12 }}
               >
                 김
               </span>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold" style={{ fontSize: 13.5 }}>김민서</span>
                 <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
                   minseo@porest.cloud
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" style={{ color: 'var(--fg-tertiary)' }} />
+              <ChevronsUpDown
+                className="ml-auto size-4 group-data-[collapsible=icon]:hidden"
+                style={{ color: 'var(--fg-tertiary)' }}
+              />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
