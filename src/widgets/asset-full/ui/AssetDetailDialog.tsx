@@ -1,17 +1,63 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, EyeOff, Pencil } from 'lucide-react'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import type { Asset } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
-import { LineChart } from '@/shared/ui/porest/charts'
+import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
+
+function fmtAxisNum(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1000) return `${(v / 1000).toFixed(0)}k`
+  return String(v)
+}
+
+type BalanceTooltipProps = {
+  active?: boolean
+  payload?: { value?: number; payload?: { label?: string; weekStart?: string } }[]
+  seriesLabel: string
+}
+
+function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null
+  const first = payload[0]
+  const val = Number(first?.value ?? 0)
+  const label = first?.payload?.label ?? ''
+  const weekStart = first?.payload?.weekStart ?? ''
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 10,
+        boxShadow: 'var(--shadow-md)',
+        padding: '8px 12px',
+        fontSize: 11.5,
+        minWidth: 140,
+      }}
+    >
+      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+        {label}
+        {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--color-balance)' }} />
+        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+          {KRW(val)}원
+        </span>
+      </div>
+    </div>
+  )
+}
 
 type AssetGroup = 'account' | 'card' | 'invest'
 
@@ -45,19 +91,23 @@ export function AssetDetailDialog({
   const [period, setPeriod] = useState<'3m' | '6m' | '1y'>('3m')
   const weeks = period === '3m' ? 12 : period === '6m' ? 24 : 52
   const { data: trendData, isLoading: trendLoading } = useAssetBalanceTrend(asset.rowId, weeks)
-  const chartLabels = useMemo(() => {
-    const arr = trendData ?? []
-    return arr.map((_, i) => `${i + 1}주`)
-  }, [trendData])
-  const chartValues = useMemo(() => (trendData ?? []).map(p => p.balance), [trendData])
+  const chartData = useMemo(
+    () => (trendData ?? []).map((p, i) => ({ label: `${i + 1}주`, weekStart: p.weekStart, balance: p.balance })),
+    [trendData],
+  )
   const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
+  const seriesLabel = isCard ? '사용' : isInv ? '평가액' : '잔액'
+
+  const color = asset.color || '#6b7280'
+  const chartConfig: ChartConfig = {
+    balance: { label: seriesLabel, color },
+  }
 
   const absBalance = Math.abs(asset.balance)
 
   const { data: relatedAll } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = (relatedAll ?? []).slice(0, 12)
 
-  const color = asset.color || '#6b7280'
   const title = isCard ? '카드 상세' : isInv ? '투자 상세' : '계좌 상세'
   const valueLabel = isCard ? '이번 달 결제 예정' : isInv ? '평가액' : '잔액'
 
@@ -192,27 +242,61 @@ export function AssetDetailDialog({
         </div>
         {trendLoading ? (
           <div style={{
-            height: 140, background: 'var(--mist-100)', borderRadius: 10,
+            height: 160, background: 'var(--mist-100)', borderRadius: 10,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
             불러오는 중…
           </div>
-        ) : chartValues.length === 0 ? (
+        ) : chartData.length === 0 ? (
           <div style={{
-            height: 140, background: 'var(--mist-100)', borderRadius: 10,
+            height: 160, background: 'var(--mist-100)', borderRadius: 10,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
             표시할 데이터가 없어요
           </div>
         ) : (
-          <LineChart
-            labels={chartLabels}
-            series={[{ label: isCard ? '사용' : '잔액', values: chartValues }]}
-            height={160}
-            colors={[color]}
-          />
+          <ChartContainer config={chartConfig} className="aspect-auto w-full" style={{ height: 160 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
+              <defs>
+                <linearGradient id={`asset-balance-fill-${asset.rowId}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-balance)" stopOpacity={0.28} />
+                  <stop offset="100%" stopColor="var(--color-balance)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tickMargin={6}
+                interval="preserveStartEnd"
+                minTickGap={18}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={fmtAxisNum}
+                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                width={44}
+              />
+              <ChartTooltip
+                cursor={{ stroke: 'var(--fg-tertiary)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                content={<BalanceTooltip seriesLabel={seriesLabel} />}
+              />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="var(--color-balance)"
+                strokeWidth={2}
+                fill={`url(#asset-balance-fill-${asset.rowId})`}
+                dot={{ r: 3, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 1.5 }}
+                activeDot={{ r: 4.5, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ChartContainer>
         )}
       </div>
 

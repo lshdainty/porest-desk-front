@@ -658,7 +658,7 @@
 .modal--sm { width: 420px; }
 .modal--lg { width: 720px; }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-.modal__head { padding: 18px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); }
+.modal__head { padding: 18px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
 .modal__head h3 { font-size: 17px; font-weight: 700; flex: 1; }
 .modal__head .close {
   width: 32px; height: 32px;
@@ -669,8 +669,9 @@
   color: var(--fg-secondary);
 }
 .modal__head .close:hover { background: var(--mist-100); color: var(--fg-primary); }
-.modal__body { padding: 22px; overflow-y: auto; }
-.modal__foot { padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border-subtle); background: var(--mist-50); }
+/* flex:1 + min-height:0 — flex column 에서 body 만 스크롤하게 */
+.modal__body { flex: 1 1 auto; min-height: 0; padding: 22px; overflow-y: auto; }
+.modal__foot { padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border-subtle); background: var(--mist-50); flex-shrink: 0; }
 
 /* Sheet (mobile) */
 .overlay {
