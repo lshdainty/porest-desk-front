@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
+import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/expense'
 import { useSavingGoals, useDeleteSavingGoal } from '@/features/savingGoal'
 import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
@@ -27,8 +27,16 @@ import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog
 import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
 import { SavingGoalContributeDialog } from '@/widgets/asset-full/ui/SavingGoalContributeDialog'
-import type { Asset, AssetType } from '@/entities/asset'
+import { AssetEditDialog, type AssetGroup } from '@/features/porest/dialogs/AssetEditDialog'
+import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
+
+/** assetType → AssetEditDialog 용 group 매핑 */
+function assetGroupOf(asset: Asset): AssetGroup {
+  if (asset.assetType === 'CREDIT_CARD' || asset.assetType === 'CHECK_CARD') return 'card'
+  if (asset.assetType === 'INVESTMENT') return 'invest'
+  return 'account'
+}
 
 const netWorthChartConfig = {
   netWorth: { label: '순자산', color: 'var(--mossy-500)' },
@@ -888,6 +896,8 @@ function AssetDesktop() {
   const [investOpen, setInvestOpen] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
+  const [editAsset, setEditAsset] = useState<Asset | null>(null)
+  const updateMut = useUpdateAsset()
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1017,6 +1027,46 @@ function AssetDesktop() {
           asset={detailAsset}
           mobile={false}
           onClose={() => setDetailAsset(null)}
+          onEdit={asset => {
+            setEditAsset(asset)
+            setDetailAsset(null)
+          }}
+          onToggleHide={asset => {
+            updateMut.mutate({
+              id: asset.rowId,
+              data: {
+                assetName: asset.assetName,
+                assetType: asset.assetType,
+                balance: asset.balance,
+                currency: asset.currency,
+                icon: asset.icon ?? undefined,
+                color: asset.color ?? undefined,
+                institution: asset.institution ?? undefined,
+                memo: asset.memo ?? undefined,
+                isIncludedInTotal: asset.isIncludedInTotal === 'Y' ? 'N' : 'Y',
+                cardCatalogRowId: asset.cardCatalog?.rowId ?? null,
+              },
+            })
+          }}
+        />
+      )}
+      {editAsset && (
+        <AssetEditDialog
+          item={editAsset}
+          group={assetGroupOf(editAsset)}
+          mobile={false}
+          onClose={() => setEditAsset(null)}
+          onCreate={(values: AssetFormValues) => {
+            /* edit 모드에서는 호출되지 않음 */
+            void values
+          }}
+          onUpdate={(values: AssetUpdateFormValues) => {
+            updateMut.mutate(
+              { id: editAsset.rowId, data: values },
+              { onSuccess: () => setEditAsset(null) },
+            )
+          }}
+          isSubmitting={updateMut.isPending}
         />
       )}
     </div>
@@ -1029,6 +1079,8 @@ function AssetMobile() {
   const [investOpen, setInvestOpen] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
+  const [editAsset, setEditAsset] = useState<Asset | null>(null)
+  const updateMut = useUpdateAsset()
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1131,6 +1183,45 @@ function AssetMobile() {
           asset={detailAsset}
           mobile
           onClose={() => setDetailAsset(null)}
+          onEdit={asset => {
+            setEditAsset(asset)
+            setDetailAsset(null)
+          }}
+          onToggleHide={asset => {
+            updateMut.mutate({
+              id: asset.rowId,
+              data: {
+                assetName: asset.assetName,
+                assetType: asset.assetType,
+                balance: asset.balance,
+                currency: asset.currency,
+                icon: asset.icon ?? undefined,
+                color: asset.color ?? undefined,
+                institution: asset.institution ?? undefined,
+                memo: asset.memo ?? undefined,
+                isIncludedInTotal: asset.isIncludedInTotal === 'Y' ? 'N' : 'Y',
+                cardCatalogRowId: asset.cardCatalog?.rowId ?? null,
+              },
+            })
+          }}
+        />
+      )}
+      {editAsset && (
+        <AssetEditDialog
+          item={editAsset}
+          group={assetGroupOf(editAsset)}
+          mobile
+          onClose={() => setEditAsset(null)}
+          onCreate={(values: AssetFormValues) => {
+            void values
+          }}
+          onUpdate={(values: AssetUpdateFormValues) => {
+            updateMut.mutate(
+              { id: editAsset.rowId, data: values },
+              { onSuccess: () => setEditAsset(null) },
+            )
+          }}
+          isSubmitting={updateMut.isPending}
         />
       )}
     </div>
