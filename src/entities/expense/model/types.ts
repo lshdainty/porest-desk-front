@@ -29,6 +29,7 @@ export interface Expense {
   expenseType: ExpenseType
   amount: number
   description: string | null
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss). 10자 "YYYY-MM-DD" 도 호환됨. */
   expenseDate: string
   merchant: string | null
   paymentMethod: string | null
@@ -46,6 +47,7 @@ export interface ExpenseFormValues {
   expenseType: ExpenseType
   amount: number
   description?: string
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss). 10자 "YYYY-MM-DD" 도 호환됨. */
   expenseDate: string
   merchant?: string
   paymentMethod?: string
@@ -194,4 +196,12 @@ export interface AssetExpenseSummary {
   assetName: string
   totalAmount: number
   count: number
+}
+
+export interface HeatmapCell {
+  /** Java DayOfWeek 기준: 1=월 ~ 7=일 */
+  dayOfWeek: number
+  /** 0-23 */
+  hour: number
+  totalAmount: number
 }

@@ -14,6 +14,7 @@ export {
   useWeeklySummary,
   useYearlySummary,
   useMerchantSummary,
+  useExpenseHeatmap,
   useAssetExpenseSummary,
   useSearchExpenses,
   useExpensesByCalendarEvent,

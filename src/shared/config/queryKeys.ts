@@ -72,6 +72,7 @@ export const expenseKeys = {
   weeklySummary: (weekStart: string, weekEnd: string) => [...expenseKeys.all, 'weekly-summary', weekStart, weekEnd] as const,
   yearlySummary: (year: number) => [...expenseKeys.all, 'yearly-summary', year] as const,
   merchantSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'merchant-summary', params] as const,
+  heatmap: (year: number, month: number) => [...expenseKeys.all, 'heatmap', year, month] as const,
   assetSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'asset-summary', params] as const,
   search: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'search', params] as const,
   byCalendarEvent: (eventId: number) => [...expenseKeys.all, 'by-calendar-event', eventId] as const,
@@ -85,6 +86,12 @@ export const assetKeys = {
   summary: () => [...assetKeys.all, 'summary'] as const,
   netWorthTrend: (months: number) => [...assetKeys.all, 'net-worth-trend', months] as const,
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
+}
+
+export const savingGoalKeys = {
+  all: ['saving-goals'] as const,
+  list: () => [...savingGoalKeys.all, 'list'] as const,
+  detail: (id: number) => [...savingGoalKeys.all, 'detail', id] as const,
 }
 
 export const cardKeys = {

@@ -24,6 +24,7 @@ export type {
   AssetExpenseSummary,
   StatsPeriod,
   BudgetVsActualItem,
+  HeatmapCell,
 } from './model/types'
 
 export { buildCategoryTree, getSelectableCategories, aggregateByParent } from './lib/categoryUtils'

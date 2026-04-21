@@ -1,22 +1,34 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import {
-  CreditCard, Eye, EyeOff, Laptop, Plane, Plus, RefreshCw,
-  Shield, TrendingDown, TrendingUp,
+  CreditCard, Eye, EyeOff, MoreHorizontal, Plus, RefreshCw,
+  Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
+import { DynamicIcon } from 'lucide-react/dynamic'
+import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Donut } from '@/shared/ui/porest/charts'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
 import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/expense'
+import { useSavingGoals, useDeleteSavingGoal } from '@/features/savingGoal'
 import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog'
 import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
+import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
+import { SavingGoalContributeDialog } from '@/widgets/asset-full/ui/SavingGoalContributeDialog'
 import type { Asset, AssetType } from '@/entities/asset'
+import type { SavingGoal } from '@/entities/savingGoal'
 
 const netWorthChartConfig = {
   netWorth: { label: '순자산', color: 'var(--mossy-500)' },
@@ -353,23 +365,136 @@ function UpcomingBillsCard() {
   )
 }
 
-type SavingGoalSample = {
-  name: string
-  icon: React.ComponentType<{ size?: number }>
-  color: string
-  target: number
-  current: number
-  due: string
+function formatDeadline(deadline: string | null): string {
+  if (!deadline) return '상시'
+  const d = new Date(deadline)
+  if (isNaN(d.getTime())) return '상시'
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
 }
-const SAVING_GOALS_SAMPLE: SavingGoalSample[] = [
-  { name: '유럽 여행',   icon: Plane,  color: 'var(--sky-500)',   target: 5_000_000,  current: 3_420_000, due: '2026년 8월' },
-  { name: '비상금',      icon: Shield, color: 'var(--mossy-600)', target: 10_000_000, current: 8_200_000, due: '상시' },
-  { name: '노트북 교체', icon: Laptop, color: 'var(--berry-500)', target: 3_500_000,  current: 1_850_000, due: '2026년 12월' },
-]
+
+function SavingGoalItem({
+  goal,
+  onEdit,
+  onDelete,
+  onContribute,
+}: {
+  goal: SavingGoal
+  onEdit: (g: SavingGoal) => void
+  onDelete: (g: SavingGoal) => void
+  onContribute: (g: SavingGoal) => void
+}) {
+  const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
+  const color = goal.color ?? 'var(--mossy-600)'
+  const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <span
+          style={{
+            width: 32, height: 32, borderRadius: 10,
+            background: `oklch(from ${color} l c h / 0.12)`,
+            color,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <DynamicIcon name={iconName} size={15} fallback={() => <Target size={15} />} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 13.5, fontWeight: 600,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}
+          >
+            {goal.title}
+            {goal.isAchieved === 'Y' && (
+              <span
+                style={{
+                  marginLeft: 8,
+                  padding: '1px 6px',
+                  background: 'var(--mossy-100, #e4f4e1)',
+                  color: 'var(--mossy-700)',
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  borderRadius: 6,
+                }}
+              >
+                달성
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+            {formatDeadline(goal.deadlineDate)}
+          </div>
+        </div>
+        <div className="num" style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 13, fontWeight: 700 }}>{pct.toFixed(0)}%</div>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>
+            {KRW(goal.currentAmount)} / {(goal.targetAmount / 10_000).toFixed(0)}만
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="목표 메뉴"
+              style={{
+                width: 28, height: 28, borderRadius: 8,
+                border: 0, background: 'transparent', cursor: 'pointer',
+                color: 'var(--fg-tertiary)', display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onContribute(goal)}>적립</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(goal)}>수정</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onDelete(goal)}
+              style={{ color: 'var(--berry-600)' }}
+            >
+              삭제
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div
+        style={{
+          height: 6, background: 'var(--mist-100)',
+          borderRadius: 99, overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, pct)}%`, height: '100%',
+            background: color, borderRadius: 99,
+          }}
+        />
+      </div>
+    </div>
+  )
+}
 
 function SavingGoalsCard() {
-  // TODO: 실제 SavingGoal 백엔드 도메인 추가 후 useSavingGoals() 로 교체.
-  const goals = SAVING_GOALS_SAMPLE
+  const goalsQ = useSavingGoals()
+  const deleteMut = useDeleteSavingGoal()
+  const [addOpen, setAddOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<SavingGoal | null>(null)
+  const [contributeTarget, setContributeTarget] = useState<SavingGoal | null>(null)
+
+  const goals = goalsQ.data?.goals ?? []
+  const isLoading = goalsQ.isLoading
+  const isEmpty = !isLoading && goals.length === 0
+
+  const handleDelete = (goal: SavingGoal) => {
+    if (!window.confirm(`'${goal.title}' 목표를 삭제할까요?`)) return
+    deleteMut.mutate(goal.rowId)
+  }
+
   return (
     <div className="p-card" style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
@@ -378,57 +503,63 @@ function SavingGoalsCard() {
           className="p-btn p-btn--ghost p-btn--sm"
           style={{ marginLeft: 'auto' }}
           type="button"
-          onClick={() => console.log('[saving-goal] 개발 중입니다')}
+          onClick={() => setAddOpen(true)}
         >
           <Plus size={13} /> 목표 추가
         </button>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {goals.map((g, i) => {
-          const pct = (g.current / g.target) * 100
-          const Icon = g.icon
-          return (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <span
-                  style={{
-                    width: 32, height: 32, borderRadius: 10,
-                    background: `oklch(from ${g.color} l c h / 0.12)`,
-                    color: g.color,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Icon size={15} />
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600 }}>{g.name}</div>
-                  <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>{g.due}</div>
-                </div>
-                <div className="num" style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{pct.toFixed(0)}%</div>
-                  <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>
-                    {KRW(g.current)} / {(g.target / 10_000).toFixed(0)}만
-                  </div>
-                </div>
-              </div>
-              <div
-                style={{
-                  height: 6, background: 'var(--mist-100)',
-                  borderRadius: 99, overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.min(100, pct)}%`, height: '100%',
-                    background: g.color, borderRadius: 99,
-                  }}
-                />
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      {isLoading ? (
+        <div
+          style={{
+            padding: '16px 0', textAlign: 'center',
+            color: 'var(--fg-tertiary)', fontSize: 12,
+          }}
+        >
+          불러오는 중…
+        </div>
+      ) : isEmpty ? (
+        <div style={{ padding: '20px 0', textAlign: 'center' }}>
+          <div
+            style={{
+              fontSize: 13, color: 'var(--fg-tertiary)',
+              fontWeight: 500, marginBottom: 10,
+            }}
+          >
+            저축 목표를 추가해보세요
+          </div>
+          <button
+            className="p-btn p-btn--primary p-btn--sm"
+            type="button"
+            onClick={() => setAddOpen(true)}
+          >
+            <Plus size={13} /> 첫 목표 추가하기
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {goals.map(g => (
+            <SavingGoalItem
+              key={g.rowId}
+              goal={g}
+              onEdit={setEditTarget}
+              onDelete={handleDelete}
+              onContribute={setContributeTarget}
+            />
+          ))}
+        </div>
+      )}
+
+      <SavingGoalAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
+      <SavingGoalAddDialog
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        goal={editTarget}
+      />
+      <SavingGoalContributeDialog
+        open={!!contributeTarget}
+        onClose={() => setContributeTarget(null)}
+        goal={contributeTarget}
+      />
     </div>
   )
 }

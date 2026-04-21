@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { KRW } from '@/shared/lib/porest/format'
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
@@ -7,8 +7,9 @@ import {
   useMonthlySummary,
   useYearlySummary,
   useMerchantSummary,
+  useExpenseHeatmap,
 } from '@/features/expense'
-import type { CategoryBreakdown } from '@/entities/expense'
+import type { CategoryBreakdown, HeatmapCell } from '@/entities/expense'
 
 type OutletCtx = { mobile: boolean }
 type TabKey = 'cat' | 'trend' | 'compare'
@@ -26,6 +27,38 @@ const DONUT_COLORS = [
   'oklch(0.55 0.13 25)',
   'var(--bark-700)',
   'var(--mossy-700)',
+]
+
+// 6-step heatmap palette (light → dark) based on mossy hue
+const HEAT_PALETTE = [
+  'oklch(0.96 0.01 145)',
+  'oklch(0.90 0.04 145)',
+  'oklch(0.82 0.07 145)',
+  'oklch(0.70 0.10 145)',
+  'oklch(0.58 0.12 145)',
+  'oklch(0.44 0.13 145)',
+]
+
+// 행(시간대 구간) 정의 — 각 구간은 4시간 범위
+// 라벨 순서는 하루의 흐름에 맞춰 새벽→심야로 정렬
+const HEAT_ROWS: { label: string; hours: number[] }[] = [
+  { label: '새벽',   hours: [2, 3, 4, 5] },
+  { label: '아침',   hours: [6, 7, 8, 9] },
+  { label: '점심',   hours: [10, 11, 12, 13] },
+  { label: '오후',   hours: [14, 15, 16, 17] },
+  { label: '저녁',   hours: [18, 19, 20, 21] },
+  { label: '심야',   hours: [22, 23, 0, 1] },
+]
+
+// 열(요일) — Java DayOfWeek: 1=월 ~ 7=일
+const HEAT_COLS: { label: string; dow: number }[] = [
+  { label: '월', dow: 1 },
+  { label: '화', dow: 2 },
+  { label: '수', dow: 3 },
+  { label: '목', dow: 4 },
+  { label: '금', dow: 5 },
+  { label: '토', dow: 6 },
+  { label: '일', dow: 7 },
 ]
 
 const getCurrentYearMonth = () => {
@@ -63,6 +96,7 @@ export const StatsPage = () => {
   const endDateObj = new Date(year, month, 0) // last day of month
   const endDate = `${year}-${String(month).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
   const merchantQ = useMerchantSummary(startDate, endDate)
+  const heatmapQ = useExpenseHeatmap(year, month)
 
   const categoryBreakdown: CategoryBreakdown[] = monthlyQ.data?.categoryBreakdown ?? []
   const totalExpense = monthlyQ.data?.totalExpense ?? 0
@@ -265,26 +299,169 @@ export const StatsPage = () => {
     </div>
   )
 
-  const HeatmapPlaceholder = (
+  // ---------- HEATMAP (요일 × 시간대 구간) ----------
+  const heatmapCells: HeatmapCell[] = heatmapQ.data ?? []
+  const heatmapMatrix = useMemo(() => {
+    // rows: 6 시간대 × cols: 7 요일, value = sum of totalAmount
+    const matrix: number[][] = HEAT_ROWS.map(() => HEAT_COLS.map(() => 0))
+    for (const cell of heatmapCells) {
+      const colIdx = HEAT_COLS.findIndex(c => c.dow === cell.dayOfWeek)
+      const rowIdx = HEAT_ROWS.findIndex(r => r.hours.includes(cell.hour))
+      if (colIdx < 0 || rowIdx < 0) continue
+      matrix[rowIdx]![colIdx]! += cell.totalAmount
+    }
+    return matrix
+  }, [heatmapCells])
+
+  const heatmapMax = useMemo(
+    () => heatmapMatrix.reduce((m, row) => Math.max(m, ...row), 0),
+    [heatmapMatrix]
+  )
+
+  const heatmapTotal = useMemo(
+    () => heatmapMatrix.reduce((s, row) => s + row.reduce((a, b) => a + b, 0), 0),
+    [heatmapMatrix]
+  )
+
+  const heatColor = (value: number): string => {
+    if (heatmapMax <= 0 || value <= 0) return HEAT_PALETTE[0]!
+    // 6단계: ratio 0~1 → step 1~5 (0 단계는 빈 값)
+    const ratio = value / heatmapMax
+    const step = Math.min(5, Math.max(1, Math.ceil(ratio * 5)))
+    return HEAT_PALETTE[step]!
+  }
+
+  const HeatmapCard = (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 6 }}>
         <h2 style={{ fontSize: 15 }}>요일·시간대 지출 패턴</h2>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 10 }}>
-        거래 시간대 데이터를 분석 중이에요
+      <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 12 }}>
+        이번 달 거래를 요일과 시간대 구간으로 묶어 본 히트맵이에요
       </div>
-      <div
-        style={{
-          padding: '40px 0',
-          textAlign: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 13,
-          background: 'var(--mist-100)',
-          borderRadius: 12,
-        }}
-      >
-        데이터 준비 중
-      </div>
+      {heatmapQ.isLoading ? (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: `repeat(${HEAT_ROWS.length}, 1fr)`,
+            gap: 6,
+          }}
+        >
+          {HEAT_ROWS.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                height: 28,
+                background: 'var(--mist-100)',
+                borderRadius: 8,
+                opacity: 0.6 + (i % 2) * 0.2,
+              }}
+            />
+          ))}
+        </div>
+      ) : heatmapTotal === 0 ? (
+        <div
+          style={{
+            padding: '40px 0',
+            textAlign: 'center',
+            color: 'var(--fg-tertiary)',
+            fontSize: 13,
+            background: 'var(--mist-100)',
+            borderRadius: 12,
+          }}
+        >
+          이번 달 거래가 아직 적어요
+        </div>
+      ) : (
+        <>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
+              gap: 6,
+              alignItems: 'center',
+            }}
+          >
+            {/* 헤더 행: 빈 코너 + 요일 라벨 */}
+            <span />
+            {HEAT_COLS.map(col => (
+              <span
+                key={col.dow}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: 'var(--fg-tertiary)',
+                  textAlign: 'center',
+                }}
+              >
+                {col.label}
+              </span>
+            ))}
+
+            {/* 데이터 행들 */}
+            {HEAT_ROWS.map((row, rIdx) => (
+              <Fragment key={row.label}>
+                <span
+                  style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-tertiary)' }}
+                >
+                  {row.label}
+                </span>
+                {HEAT_COLS.map((col, cIdx) => {
+                  const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0
+                  const isPeak = value > 0 && value === heatmapMax
+                  return (
+                    <div
+                      key={`${row.label}-${col.dow}`}
+                      title={`${row.label}·${col.label} ${KRW(value)}원`}
+                      style={{
+                        height: mobile ? 28 : 32,
+                        borderRadius: 6,
+                        background: heatColor(value),
+                        border: isPeak
+                          ? '1.5px solid var(--mossy-700)'
+                          : '1px solid var(--border-subtle)',
+                        transition: 'background var(--dur-med) var(--ease-decel)',
+                      }}
+                    />
+                  )
+                })}
+              </Fragment>
+            ))}
+          </div>
+
+          {/* 범례 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 14,
+              fontSize: 11,
+              color: 'var(--fg-tertiary)',
+            }}
+          >
+            <span>적음</span>
+            <div style={{ display: 'flex', gap: 3 }}>
+              {HEAT_PALETTE.map((c, i) => (
+                <span
+                  key={i}
+                  style={{
+                    width: 18,
+                    height: 10,
+                    borderRadius: 2,
+                    background: c,
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                />
+              ))}
+            </div>
+            <span>많음</span>
+            <span style={{ marginLeft: 'auto' }}>
+              총 {KRW(heatmapTotal)}원
+            </span>
+          </div>
+        </>
+      )}
     </div>
   )
 
@@ -691,7 +868,7 @@ export const StatsPage = () => {
           {DonutCard}
           {TopMerchantsCard}
         </div>
-        <div style={{ marginBottom: 20 }}>{HeatmapPlaceholder}</div>
+        <div style={{ marginBottom: 20 }}>{HeatmapCard}</div>
         {HighlightsGrid}
       </>
     ) : tab === 'trend' ? (

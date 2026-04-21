@@ -10,6 +10,7 @@ import type {
   YearlySummary,
   MerchantSummary,
   AssetExpenseSummary,
+  HeatmapCell,
 } from '@/entities/expense'
 
 export interface ExpenseListParams {
@@ -85,6 +86,11 @@ export const expenseApi = {
   getAssetSummary: async (startDate?: string, endDate?: string): Promise<{ assets: AssetExpenseSummary[] }> => {
     const resp: ApiResponse<{ assets: AssetExpenseSummary[] }> = await apiClient.get('/v1/expenses/summary/by-asset', { params: { startDate, endDate } })
     return resp.data
+  },
+
+  getHeatmap: async (year: number, month: number): Promise<HeatmapCell[]> => {
+    const resp: ApiResponse<{ cells: HeatmapCell[] }> = await apiClient.get('/v1/expenses/summary/heatmap', { params: { year, month } })
+    return resp.data.cells
   },
 
   searchExpenses: async (params: ExpenseSearchParams): Promise<Expense[]> => {

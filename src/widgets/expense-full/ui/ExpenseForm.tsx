@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileDown, Search, Loader2 } from 'lucide-react'
 import { cn, renderIcon } from '@/shared/lib'
+import { toLocalIso } from '@/shared/lib/porest/format'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -63,7 +64,7 @@ export const ExpenseForm = ({
   const [amount, setAmount] = useState<string>(expense?.amount?.toString() ?? defaultValues?.amount?.toString() ?? '')
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState(
-    expense?.expenseDate ?? defaultDate ?? (new Date().toISOString().split('T')[0] ?? '')
+    expense?.expenseDate ?? defaultDate ?? toLocalIso()
   )
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
   const [assetRowId, setAssetRowId] = useState<number>(expense?.assetRowId ?? 0)
@@ -302,7 +303,7 @@ export const ExpenseForm = ({
       <div className="space-y-1.5">
         <Label>{t('form.date')}</Label>
         <InputDatePicker
-          value={expenseDate}
+          value={expenseDate.slice(0, 10)}
           onValueChange={(v) => setExpenseDate(v)}
         />
       </div>

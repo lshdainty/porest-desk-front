@@ -92,6 +92,14 @@ export const useMerchantSummary = (startDate?: string, endDate?: string) => {
   })
 }
 
+export const useExpenseHeatmap = (year: number, month: number) => {
+  return useQuery({
+    queryKey: expenseKeys.heatmap(year, month),
+    queryFn: () => expenseApi.getHeatmap(year, month),
+    enabled: year > 0 && month > 0,
+  })
+}
+
 export const useAssetExpenseSummary = (startDate?: string, endDate?: string) => {
   return useQuery({
     queryKey: expenseKeys.assetSummary({ startDate, endDate }),
