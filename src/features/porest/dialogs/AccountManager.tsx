@@ -268,23 +268,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
             setEditing({ mode: 'edit', asset })
             setDetail(null)
           }}
-          onToggleHide={asset => {
-            updateAsset.mutate({
-              id: asset.rowId,
-              data: {
-                assetName: asset.assetName,
-                assetType: asset.assetType,
-                balance: asset.balance,
-                currency: asset.currency,
-                icon: asset.icon ?? undefined,
-                color: asset.color ?? undefined,
-                institution: asset.institution ?? undefined,
-                memo: asset.memo ?? undefined,
-                isIncludedInTotal: asset.isIncludedInTotal === 'Y' ? 'N' : 'Y',
-                cardCatalogRowId: asset.cardCatalog?.rowId ?? null,
-              },
-            })
-          }}
           mobile={mobile}
         />
       )}

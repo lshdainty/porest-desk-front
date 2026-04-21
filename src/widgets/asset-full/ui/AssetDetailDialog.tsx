@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, EyeOff, Pencil } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Pencil } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import type { Asset } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
@@ -11,7 +11,7 @@ import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 
 function fmtAxisNum(v: number): string {
@@ -71,13 +71,11 @@ export function AssetDetailDialog({
   asset,
   onClose,
   onEdit,
-  onToggleHide,
   mobile,
 }: {
   asset: Asset
   onClose: () => void
   onEdit?: (asset: Asset) => void
-  onToggleHide?: (asset: Asset) => void
   mobile: boolean
 }) {
   const navigate = useNavigate()
@@ -118,16 +116,15 @@ export function AssetDetailDialog({
 
   const Footer = (
     <>
-      {onToggleHide && (
-        <button
-          className="p-btn p-btn--ghost"
-          style={{ marginRight: 'auto' }}
-          onClick={() => onToggleHide(asset)}
-        >
-          <EyeOff size={14} />
-          {asset.isIncludedInTotal === 'Y' ? '숨기기' : '표시'}
-        </button>
-      )}
+      <button
+        className="p-btn p-btn--ghost"
+        style={{ marginRight: 'auto' }}
+        onClick={togglePdHideAmounts}
+        type="button"
+      >
+        {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
+        {hidden ? '금액 표시' : '금액 가리기'}
+      </button>
       {onEdit && (
         <button className="p-btn p-btn--ghost" onClick={() => onEdit(asset)}>
           <Pencil size={14} />편집

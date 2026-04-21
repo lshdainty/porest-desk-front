@@ -110,7 +110,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0">
+      <DialogContent className="sm:max-w-lg p-0 gap-0 bg-[var(--bg-surface)]">
         <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
           <DialogTitle className="text-[17px] font-bold tracking-tight">계좌 추가</DialogTitle>
         </DialogHeader>
@@ -179,9 +179,9 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
                                     borderColor: 'transparent',
                                   }
                                 : {
-                                    background: 'var(--bg-surface)',
-                                    color: 'var(--fg-primary)',
-                                    borderColor: 'var(--border-default)',
+                                    background: 'var(--mist-100)',
+                                    color: 'var(--fg-secondary)',
+                                    borderColor: 'transparent',
                                   }
                             }
                           >

@@ -87,7 +87,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0">
+      <DialogContent className="sm:max-w-lg p-0 gap-0 bg-[var(--bg-surface)]">
         <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
           <DialogTitle className="text-[17px] font-bold tracking-tight">카드 추가</DialogTitle>
         </DialogHeader>
