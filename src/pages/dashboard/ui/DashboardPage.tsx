@@ -17,8 +17,8 @@ import {
   useMonthlySummary,
   useMonthlyTrend,
   useExpenseBudgets,
-  useRecurringTransactions,
 } from '@/features/expense'
+import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 
 const barChartConfig = {

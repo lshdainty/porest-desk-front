@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Plus, X, Loader2, TrendingDown, TrendingUp, FileDown,
@@ -40,15 +41,67 @@ import { RecurringTransactionList } from './RecurringTransactionList'
 type TabType = 'transactions' | 'analysis' | 'budget' | 'settings'
 type SettingsSubTab = 'template' | 'recurring' | 'category'
 
+const TAB_VALUES: TabType[] = ['transactions', 'analysis', 'budget', 'settings']
+const SUB_TAB_VALUES: SettingsSubTab[] = ['template', 'recurring', 'category']
+
 export const ExpenseFullWidget = () => {
   const { t } = useTranslation('expense')
   const isMobile = useIsMobile()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [activeTab, setActiveTab] = useState<TabType>('transactions')
+  const initialTab: TabType = (() => {
+    const q = searchParams.get('tab')
+    return q && (TAB_VALUES as string[]).includes(q) ? (q as TabType) : 'transactions'
+  })()
+  const initialSubTab: SettingsSubTab = (() => {
+    const q = searchParams.get('sub')
+    return q && (SUB_TAB_VALUES as string[]).includes(q) ? (q as SettingsSubTab) : 'template'
+  })()
+
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [showForm, setShowForm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
-  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('template')
+  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>(initialSubTab)
+
+  // URL 쿼리가 변하면 탭 상태 동기화 (딥링크 대응).
+  useEffect(() => {
+    const qTab = searchParams.get('tab')
+    if (qTab && (TAB_VALUES as string[]).includes(qTab) && qTab !== activeTab) {
+      setActiveTab(qTab as TabType)
+    }
+    const qSub = searchParams.get('sub')
+    if (qSub && (SUB_TAB_VALUES as string[]).includes(qSub) && qSub !== settingsSubTab) {
+      setSettingsSubTab(qSub as SettingsSubTab)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  // 탭 변경 시 URL 도 갱신 (뒤로가기 정합성).
+  const changeTab = useCallback(
+    (next: TabType) => {
+      setActiveTab(next)
+      const p = new URLSearchParams(searchParams)
+      p.set('tab', next)
+      if (next !== 'settings') {
+        p.delete('sub')
+        p.delete('recurringId')
+      }
+      setSearchParams(p, { replace: true })
+    },
+    [searchParams, setSearchParams],
+  )
+  const changeSubTab = useCallback(
+    (next: SettingsSubTab) => {
+      setSettingsSubTab(next)
+      const p = new URLSearchParams(searchParams)
+      p.set('tab', 'settings')
+      p.set('sub', next)
+      if (next !== 'recurring') p.delete('recurringId')
+      setSearchParams(p, { replace: true })
+    },
+    [searchParams, setSearchParams],
+  )
   const [searchFilters, setSearchFilters] = useState<ExpenseSearchParams>({})
   const [fabOpen, setFabOpen] = useState(false)
   const [monthOffset, setMonthOffset] = useState(0)
@@ -316,7 +369,7 @@ export const ExpenseFullWidget = () => {
 
           {/* 4. Tab Navigation */}
           <div className="sticky top-0 z-20 py-1 bg-background/95 backdrop-blur-sm">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
+            <Tabs value={activeTab} onValueChange={(v) => changeTab(v as TabType)}>
               <TabsList className="h-auto w-full rounded-xl border bg-muted/30 p-1">
                 {tabs.map((tab) => (
                   <TabsTrigger
@@ -390,7 +443,7 @@ export const ExpenseFullWidget = () => {
                   {settingsSubTabs.map((sub) => (
                     <button
                       key={sub.key}
-                      onClick={() => setSettingsSubTab(sub.key)}
+                      onClick={() => changeSubTab(sub.key)}
                       className={cn(
                         'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
                         settingsSubTab === sub.key

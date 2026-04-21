@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  CreditCard, Eye, EyeOff, MoreHorizontal, Plus, RefreshCw,
+  ChevronRight, CreditCard, Eye, EyeOff, MoreHorizontal, Plus, RefreshCw,
   Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
-import { useRecurringTransactions } from '@/features/expense'
+import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals, useDeleteSavingGoal } from '@/features/savingGoal'
 import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
@@ -281,11 +281,14 @@ function AssetCompositionCard({
 }
 
 function UpcomingBillsCard() {
-  const recurringQ = useRecurringTransactions()
+  const navigate = useNavigate()
+  const hidden = useHideAmounts()
+  // 백엔드에서 EXPENSE·활성·nextDate>=today 필터 + limit 6 — 프론트 필터 불필요.
+  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 })
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const items = (recurringQ.data ?? [])
-    .filter(r => r.isActive === 'Y' && r.expenseType === 'EXPENSE' && r.nextExecutionDate)
+    .filter(r => !!r.nextExecutionDate)
     .map(r => {
       const next = new Date(r.nextExecutionDate as string)
       const daysLeft = Math.round((next.getTime() - today.getTime()) / 86_400_000)
@@ -299,14 +302,28 @@ function UpcomingBillsCard() {
         iso: r.nextExecutionDate as string,
       }
     })
-    .filter(i => i.daysLeft >= 0)
-    .sort((a, b) => a.iso.localeCompare(b.iso))
-    .slice(0, 6)
+
+  const goToSettings = (rowId?: number) => {
+    const params = new URLSearchParams({ tab: 'settings', sub: 'recurring' })
+    if (rowId) params.set('recurringId', String(rowId))
+    navigate(`/desk/expense?${params.toString()}`)
+  }
 
   return (
     <div className="p-card" style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
+      <div className="sec-head" style={{ marginBottom: 14, display: 'flex', alignItems: 'center' }}>
         <h2 style={{ fontSize: 15 }}>예정된 결제 · 고정지출</h2>
+        <button
+          type="button"
+          onClick={() => goToSettings()}
+          style={{
+            marginLeft: 'auto', background: 'transparent', border: 0, cursor: 'pointer',
+            color: 'var(--fg-secondary)', fontSize: 12.5, fontWeight: 600,
+            display: 'inline-flex', alignItems: 'center', gap: 2,
+          }}
+        >
+          전체 보기 <ChevronRight size={12} />
+        </button>
       </div>
       {recurringQ.isLoading ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
@@ -321,8 +338,10 @@ function UpcomingBillsCard() {
           {items.map(it => {
             const urgent = it.daysLeft <= 3
             return (
-              <div
+              <button
                 key={it.rowId}
+                type="button"
+                onClick={() => goToSettings(it.rowId)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 14px',
@@ -330,6 +349,10 @@ function UpcomingBillsCard() {
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 12,
                   minWidth: 0,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%',
+                  fontFamily: 'inherit',
                 }}
               >
                 <span
@@ -361,9 +384,9 @@ function UpcomingBillsCard() {
                   </div>
                 </div>
                 <div className="num" style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
-                  −{KRW(it.amount)}
+                  {hidden ? '••••' : `−${KRW(it.amount)}`}
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>

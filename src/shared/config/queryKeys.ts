@@ -112,7 +112,8 @@ export const expenseTemplateKeys = {
 
 export const recurringTransactionKeys = {
   all: ['recurring-transactions'] as const,
-  list: () => [...recurringTransactionKeys.all, 'list'] as const,
+  list: (params?: { upcoming?: boolean; limit?: number }) =>
+    [...recurringTransactionKeys.all, 'list', params ?? {}] as const,
 }
 
 export const notificationKeys = {

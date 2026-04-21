@@ -75,33 +75,7 @@ export interface ExpenseBudget {
   createAt: string
 }
 
-export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
 export type YNType = 'Y' | 'N'
-
-export interface RecurringTransaction {
-  rowId: number
-  userRowId: number
-  categoryRowId: number
-  categoryName: string
-  assetRowId: number | null
-  assetName: string | null
-  expenseType: ExpenseType
-  amount: number
-  description: string | null
-  merchant: string | null
-  paymentMethod: string | null
-  frequency: RecurringFrequency
-  intervalValue: number
-  dayOfWeek: number | null
-  dayOfMonth: number | null
-  startDate: string
-  endDate: string | null
-  nextExecutionDate: string | null
-  lastExecutedAt: string | null
-  isActive: YNType
-  createAt: string
-  modifyAt: string
-}
 
 export interface ExpenseBudgetFormValues {
   categoryRowId?: number | null

@@ -8,8 +8,6 @@ export type {
   ExpenseCategoryFormValues,
   ExpenseBudget,
   ExpenseBudgetFormValues,
-  RecurringTransaction,
-  RecurringFrequency,
   YNType,
   DailySummary,
   MonthlySummary,

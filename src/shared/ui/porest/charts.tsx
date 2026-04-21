@@ -1,4 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { Cell, Pie, PieChart } from 'recharts'
+import { ChartContainer, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
 
 export function Sparkline({
@@ -425,36 +427,54 @@ export function Donut({
   stroke?: number
   children?: ReactNode
 }) {
-  const r = (size - stroke) / 2
-  const c = 2 * Math.PI * r
-  const total = segments.reduce((s, x) => s + x.value, 0)
-  let acc = 0
+  const outerRadius = size / 2
+  const innerRadius = Math.max(0, outerRadius - stroke)
+  const data = segments.map((s, i) => ({
+    name: s.label ?? `seg-${i}`,
+    value: Math.max(0, s.value),
+    fill: s.color,
+  }))
+  const config: ChartConfig = Object.fromEntries(
+    data.map((d, i) => [d.name || `seg-${i}`, { label: d.name, color: segments[i].color }]),
+  )
+  // 빈 데이터면 mist-200 링만 렌더.
+  const hasValue = data.some(d => d.value > 0)
   return (
     <div className="donut-wrap" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--mist-200)" strokeWidth={stroke} fill="none" />
-        {segments.map((s, i) => {
-          const len = (s.value / total) * c
-          const dashArr = `${len} ${c - len}`
-          const offset = -acc
-          acc += len
-          return (
-            <circle
-              key={i}
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              stroke={s.color}
-              strokeWidth={stroke}
-              fill="none"
-              strokeDasharray={dashArr}
-              strokeDashoffset={offset}
-              transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              strokeLinecap="butt"
+      <ChartContainer config={config} style={{ width: size, height: size, aspectRatio: '1 / 1' }}>
+        <PieChart width={size} height={size}>
+          {!hasValue && (
+            <Pie
+              data={[{ value: 1, fill: 'var(--mist-200)' }]}
+              dataKey="value"
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              startAngle={90}
+              endAngle={-270}
+              isAnimationActive={false}
+              stroke="none"
             />
-          )
-        })}
-      </svg>
+          )}
+          {hasValue && (
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              startAngle={90}
+              endAngle={-270}
+              paddingAngle={0}
+              stroke="none"
+              isAnimationActive
+            >
+              {data.map((d, i) => (
+                <Cell key={i} fill={d.fill} />
+              ))}
+            </Pie>
+          )}
+        </PieChart>
+      </ChartContainer>
       <div className="center">{children}</div>
     </div>
   )

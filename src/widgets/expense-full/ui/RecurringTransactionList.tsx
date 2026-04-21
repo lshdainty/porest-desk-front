@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Loader2, ToggleLeft, ToggleRight, ArrowUpDown } from 'lucide-react'
 import { differenceInDays, parseISO, startOfDay } from 'date-fns'
@@ -65,7 +66,32 @@ export const RecurringTransactionList = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('default')
 
+  // ?recurringId=… 딥링크: 해당 행으로 스크롤·하이라이트.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const highlightId = (() => {
+    const v = searchParams.get('recurringId')
+    const n = v ? Number(v) : NaN
+    return Number.isFinite(n) ? n : null
+  })()
+  const rowRefs = useRef<Map<number, HTMLDivElement | null>>(new Map())
+
   const { data: recurringList, isLoading } = useRecurringTransactions()
+
+  useEffect(() => {
+    if (highlightId == null || !recurringList?.length) return
+    const el = rowRefs.current.get(highlightId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // 강조는 한 번만 — 스크롤 직후 쿼리에서 지움 (뒤로가기 중복 발동 방지).
+      const p = new URLSearchParams(searchParams)
+      const t = setTimeout(() => {
+        p.delete('recurringId')
+        setSearchParams(p, { replace: true })
+      }, 2500)
+      return () => clearTimeout(t)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightId, recurringList])
   const { data: categories } = useExpenseCategories()
   const { data: assets } = useAssets()
   const createRecurring = useCreateRecurringTransaction()
@@ -186,9 +212,13 @@ export const RecurringTransactionList = () => {
             return (
               <div
                 key={recurring.rowId}
+                ref={el => {
+                  rowRefs.current.set(recurring.rowId, el)
+                }}
                 className={cn(
-                  'flex items-center justify-between rounded-lg border p-3',
-                  recurring.isActive === 'N' && 'opacity-50'
+                  'flex items-center justify-between rounded-lg border p-3 transition-colors',
+                  recurring.isActive === 'N' && 'opacity-50',
+                  highlightId === recurring.rowId && 'bg-primary/5 ring-2 ring-primary/40',
                 )}
               >
                 <div className="min-w-0 flex-1">
