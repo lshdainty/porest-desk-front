@@ -131,6 +131,7 @@ export const ExpenseForm = ({
 
   useEffect(() => {
     if (selectableCategories.length > 0 && categoryRowId === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCategoryRowId(selectableCategories[0]?.rowId ?? 0)
     }
   }, [selectableCategories, categoryRowId])

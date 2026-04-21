@@ -1,30 +1,254 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import { CATEGORIES, type CategoryKey } from '@/shared/lib/porest/data'
-import { CatIcon } from '@/shared/ui/porest/primitives'
+import { useEffect, useMemo, useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { renderIcon } from '@/shared/lib'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import {
+  useCreateExpense,
+  useExpenseCategories,
+  useUpdateExpense,
+  useDeleteExpense,
+} from '@/features/expense'
+import { useAssets, useCreateTransfer } from '@/features/asset'
+import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
+import type { Asset, AssetType } from '@/entities/asset'
 
-export type TxType = 'expense' | 'income' | 'transfer'
+const PAYMENT_METHODS: { v: string; l: string }[] = [
+  { v: 'CASH', l: '현금' },
+  { v: 'CARD', l: '카드' },
+  { v: 'TRANSFER', l: '계좌이체' },
+  { v: 'OTHER', l: '기타' },
+]
 
-export function AddTxSheet({ onClose, mobile }: { onClose: () => void; mobile: boolean }) {
-  const [type, setType] = useState<TxType>('expense')
-  const [amount, setAmount] = useState('28500')
-  const [cat, setCat] = useState<CategoryKey>('food')
-  const [title, setTitle] = useState('이촌돈까스')
-  const [account, setAccount] = useState('신한 Deep Dream')
+/** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
+const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
+  CASH: ['CASH'],
+  CARD: ['CREDIT_CARD', 'CHECK_CARD'],
+  TRANSFER: ['BANK_ACCOUNT', 'SAVINGS'],
+  OTHER: null,
+}
 
-  const formatted = amount ? parseInt(amount || '0', 10).toLocaleString('ko-KR') : '0'
+type TxType = 'EXPENSE' | 'INCOME' | 'TRANSFER'
 
-  const cats: CategoryKey[] = ['food', 'cafe', 'transport', 'shopping', 'living', 'medical', 'leisure', 'bill', 'edu', 'saving']
+type Props = {
+  onClose: () => void
+  /** Desktop=false / Mobile=true — ModalShell 패턴 전환용 */
+  mobile: boolean
+  /** 편집 모드일 때 전달 — 전달되면 수정/삭제, 아니면 신규 생성 */
+  expense?: Expense | null
+}
 
-  const Content = (
+const todayLocal = () => {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+export function AddTxSheet({ onClose, mobile, expense }: Props) {
+  const isEdit = !!expense
+
+  const categoriesQ = useExpenseCategories()
+  const assetsQ = useAssets()
+  const createMut = useCreateExpense()
+  const updateMut = useUpdateExpense()
+  const deleteMut = useDeleteExpense()
+  const createTransferMut = useCreateTransfer()
+
+  const categories: ExpenseCategory[] = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
+  const assets: Asset[] = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data])
+
+  // 타입
+  const [type, setType] = useState<TxType>(expense?.expenseType ?? 'EXPENSE')
+
+  // 공통 필드
+  const [amount, setAmount] = useState<string>(expense?.amount ? String(expense.amount) : '')
+  const [description, setDescription] = useState(expense?.description ?? '')
+  const [expenseDate, setExpenseDate] = useState<string>(
+    expense?.expenseDate ? expense.expenseDate.slice(0, 10) : todayLocal(),
+  )
+  const [merchant, setMerchant] = useState(expense?.merchant ?? '')
+  const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
+
+  // EXPENSE/INCOME 전용
+  const [categoryRowId, setCategoryRowId] = useState<number | null>(expense?.categoryRowId ?? null)
+  const [assetRowId, setAssetRowId] = useState<number | null>(expense?.assetRowId ?? null)
+
+  // TRANSFER 전용
+  const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(null)
+  const [toAssetRowId, setToAssetRowId] = useState<number | null>(null)
+  const [fee, setFee] = useState<string>('')
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // 같은 expenseType의 최상위 카테고리 그리드 (자식은 Select로)
+  const topCategories = useMemo(
+    () =>
+      categories
+        .filter(c => c.expenseType === type && c.parentRowId == null)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [categories, type],
+  )
+
+  const childrenByParent = useMemo(() => {
+    const map = new Map<number, ExpenseCategory[]>()
+    for (const c of categories) {
+      if (c.parentRowId == null || c.expenseType !== type) continue
+      const arr = map.get(c.parentRowId) ?? []
+      arr.push(c)
+      map.set(c.parentRowId, arr)
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.sortOrder - b.sortOrder)
+    return map
+  }, [categories, type])
+
+  // 선택된 카테고리 정보 (자식이면 부모 id 도 파악)
+  const selectedCategory = categoryRowId != null
+    ? categories.find(c => c.rowId === categoryRowId)
+    : null
+  const selectedParentId = selectedCategory
+    ? (selectedCategory.parentRowId ?? selectedCategory.rowId)
+    : null
+
+  // 결제 수단으로 계좌·카드 목록 필터
+  const filteredAssets = useMemo(() => {
+    if (!paymentMethod) return assets
+    const allowed = PAYMENT_ASSET_TYPES[paymentMethod]
+    if (!allowed) return assets
+    return assets.filter(a => allowed.includes(a.assetType))
+  }, [assets, paymentMethod])
+
+  // 결제 수단 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
+  useEffect(() => {
+    if (!paymentMethod || assetRowId == null) return
+    const allowed = PAYMENT_ASSET_TYPES[paymentMethod]
+    if (!allowed) return
+    const ok = assets.some(a => a.rowId === assetRowId && allowed.includes(a.assetType))
+    if (!ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAssetRowId(null)
+    }
+  }, [paymentMethod, assetRowId, assets])
+
+  // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
+  useEffect(() => {
+    if (categoryRowId == null) return
+    const cat = categories.find(c => c.rowId === categoryRowId)
+    if (!cat || cat.expenseType !== type) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCategoryRowId(null)
+    }
+  }, [type, categoryRowId, categories])
+
+  const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0
+  const amountFormatted = amountNumber.toLocaleString('ko-KR')
+
+  const canSave = (() => {
+    if (amountNumber <= 0) return false
+    if (type === 'TRANSFER') {
+      return !!fromAssetRowId && !!toAssetRowId && fromAssetRowId !== toAssetRowId
+    }
+    return !!categoryRowId
+  })()
+
+  const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending || deleteMut.isPending
+
+  const save = () => {
+    if (!canSave) return
+    if (type === 'TRANSFER') {
+      createTransferMut.mutate(
+        {
+          fromAssetRowId: fromAssetRowId!,
+          toAssetRowId: toAssetRowId!,
+          amount: amountNumber,
+          fee: fee ? Number(fee) : undefined,
+          description: description || undefined,
+          transferDate: expenseDate,
+        },
+        { onSuccess: onClose },
+      )
+      return
+    }
+    const data: ExpenseFormValues = {
+      categoryRowId: categoryRowId!,
+      assetRowId: assetRowId ?? undefined,
+      expenseType: type,
+      amount: amountNumber,
+      description: description || undefined,
+      expenseDate,
+      merchant: merchant || undefined,
+      paymentMethod: paymentMethod || undefined,
+    }
+    if (isEdit && expense) {
+      updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose })
+    } else {
+      createMut.mutate(data, { onSuccess: onClose })
+    }
+  }
+
+  const onDeleteClick = () => setConfirmDelete(true)
+  const doDelete = () => {
+    if (!expense) return
+    deleteMut.mutate(expense.rowId, {
+      onSuccess: () => {
+        setConfirmDelete(false)
+        onClose()
+      },
+    })
+  }
+
+  // 타입별 강조 색
+  const amountColor =
+    type === 'EXPENSE' ? 'var(--berry-700)'
+    : type === 'INCOME' ? 'var(--mossy-700)'
+    : 'var(--fg-primary)'
+  const amountPrefix = type === 'EXPENSE' ? '−' : type === 'INCOME' ? '+' : ''
+
+  const Footer = (
     <>
+      {isEdit && (
+        <button
+          type="button"
+          className="p-btn p-btn--ghost"
+          onClick={onDeleteClick}
+          disabled={submitting}
+          style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+        >
+          <Trash2 size={14} /> 삭제
+        </button>
+      )}
+      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+        취소
+      </button>
+      <button
+        type="button"
+        className="p-btn p-btn--primary"
+        onClick={save}
+        disabled={!canSave || submitting}
+      >
+        {submitting ? '저장 중…' : isEdit ? '저장' : '추가'}
+      </button>
+    </>
+  )
+
+  return (
+    <ModalShell
+      title={isEdit ? '거래 편집' : '내역 추가'}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
+      {/* 타입 segment */}
       <div
         style={{
           display: 'grid',
@@ -36,34 +260,40 @@ export function AddTxSheet({ onClose, mobile }: { onClose: () => void; mobile: b
           marginBottom: 20,
         }}
       >
-        {[
-          { v: 'expense', l: '지출' },
-          { v: 'income', l: '수입' },
-          { v: 'transfer', l: '이체' },
-        ].map(o => (
-          <button
-            key={o.v}
-            onClick={() => setType(o.v as TxType)}
-            style={{
-              background: type === o.v ? 'var(--bg-surface)' : 'transparent',
-              color: type === o.v
-                ? o.v === 'expense' ? 'var(--berry-700)' : o.v === 'income' ? 'var(--mossy-700)' : 'var(--fg-primary)'
-                : 'var(--fg-secondary)',
-              border: 0,
-              padding: '8px 0',
-              fontSize: 13.5,
-              fontWeight: 700,
-              borderRadius: 8,
-              cursor: 'pointer',
-              boxShadow: type === o.v ? 'var(--shadow-xs)' : 'none',
-              fontFamily: 'inherit',
-            }}
-          >
-            {o.l}
-          </button>
-        ))}
+        {([
+          { v: 'EXPENSE', l: '지출', c: 'var(--berry-700)' },
+          { v: 'INCOME', l: '수입', c: 'var(--mossy-700)' },
+          { v: 'TRANSFER', l: '이체', c: 'var(--fg-primary)' },
+        ] as { v: TxType; l: string; c: string }[]).map(o => {
+          const active = type === o.v
+          const disabled = isEdit && o.v !== (expense?.expenseType ?? type) // edit 모드는 타입 변경 막음
+          return (
+            <button
+              key={o.v}
+              type="button"
+              onClick={() => !disabled && setType(o.v)}
+              disabled={disabled}
+              style={{
+                background: active ? 'var(--bg-surface)' : 'transparent',
+                color: active ? o.c : 'var(--fg-secondary)',
+                border: 0,
+                padding: '8px 0',
+                fontSize: 13.5,
+                fontWeight: 700,
+                borderRadius: 8,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.4 : 1,
+                fontFamily: 'inherit',
+                boxShadow: active ? 'var(--shadow-xs)' : 'none',
+              }}
+            >
+              {o.l}
+            </button>
+          )
+        })}
       </div>
 
+      {/* 큰 금액 */}
       <div
         style={{
           textAlign: 'center',
@@ -72,7 +302,15 @@ export function AddTxSheet({ onClose, mobile }: { onClose: () => void; mobile: b
           marginBottom: 20,
         }}
       >
-        <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 600, letterSpacing: '0.06em', marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--fg-tertiary)',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            marginBottom: 8,
+          }}
+        >
           금액
         </div>
         <div
@@ -81,175 +319,308 @@ export function AddTxSheet({ onClose, mobile }: { onClose: () => void; mobile: b
             fontSize: 36,
             fontWeight: 800,
             letterSpacing: '-0.03em',
-            color: type === 'expense' ? 'var(--berry-700)' : type === 'income' ? 'var(--mossy-700)' : 'var(--fg-primary)',
+            color: amountColor,
           }}
         >
-          {type === 'expense' ? '−' : type === 'income' ? '+' : ''}
-          {formatted}
+          {amountPrefix}
+          {amountFormatted}
           <span style={{ fontSize: 20, color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 700 }}>원</span>
         </div>
         <input
+          className="p-input num"
           value={amount}
           onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+          placeholder="0"
           inputMode="numeric"
-          className="p-input"
-          style={{ maxWidth: 240, margin: '12px auto 0', textAlign: 'center' }}
-          placeholder="금액 입력"
+          style={{ marginTop: 10, textAlign: 'center', fontSize: 15 }}
         />
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--fg-tertiary)',
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            marginBottom: 10,
-          }}
-        >
-          카테고리
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-          {cats.map(c => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-                padding: '10px 4px',
-                background: cat === c ? 'var(--bg-brand-subtle)' : 'transparent',
-                border: cat === c ? '1px solid var(--border-brand)' : '1px solid transparent',
-                borderRadius: 10,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              <CatIcon cat={c} size="sm" />
-              <span
+      {type !== 'TRANSFER' ? (
+        <>
+          {/* 카테고리 */}
+          {topCategories.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div
                 style={{
-                  fontSize: 10.5,
-                  fontWeight: cat === c ? 700 : 500,
-                  color: cat === c ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                  fontSize: 11,
+                  color: 'var(--fg-tertiary)',
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  marginBottom: 10,
                 }}
               >
-                {CATEGORIES[c].label.split('·')[0]}
-              </span>
-            </button>
-          ))}
-        </div>
+                카테고리
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+                {topCategories.map(c => {
+                  const active = selectedParentId === c.rowId
+                  const color = c.color ?? 'var(--mossy-600)'
+                  return (
+                    <button
+                      key={c.rowId}
+                      type="button"
+                      onClick={() => setCategoryRowId(c.rowId)}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '10px 4px',
+                        background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                        border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 10,
+                          background: `oklch(from ${color} l c h / 0.14)`,
+                          color,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {renderIcon(c.icon, c.categoryName.charAt(0), 18)}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: active ? 700 : 500,
+                          color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '100%',
+                        }}
+                      >
+                        {c.categoryName}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* 하위 카테고리 (선택된 부모에 자식이 있을 때) */}
+              {selectedParentId != null
+                && (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <Select
+                    value={categoryRowId != null ? String(categoryRowId) : ''}
+                    onValueChange={(v) => setCategoryRowId(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="세부 카테고리" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>상위</SelectLabel>
+                        <SelectItem value={String(selectedParentId)}>
+                          {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? '상위'}
+                        </SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>세부</SelectLabel>
+                        {(childrenByParent.get(selectedParentId) ?? []).map(child => (
+                          <SelectItem key={child.rowId} value={String(child.rowId)}>
+                            {child.categoryName}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 거래처 */}
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">{type === 'INCOME' ? '수입처' : '거래처'}</label>
+            <input
+              className="p-input"
+              value={merchant}
+              onChange={e => setMerchant(e.target.value)}
+              placeholder={type === 'INCOME' ? '예: (주)포레스트' : '예: 스타벅스 강남점'}
+            />
+          </div>
+
+          {/* 결제 수단 — 먼저 선택, 계좌·카드 목록을 필터링 */}
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">
+              {type === 'INCOME' ? '수입 방식' : '결제 수단'}
+            </label>
+            <Select
+              value={paymentMethod || '__none__'}
+              onValueChange={(v) => setPaymentMethod(v === '__none__' ? '' : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="선택 안 함" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">선택 안 함</SelectItem>
+                {PAYMENT_METHODS.map(pm => (
+                  <SelectItem key={pm.v} value={pm.v}>{pm.l}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 계좌·카드 — 결제 수단에 맞춰 필터 */}
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">
+              {type === 'INCOME' ? '입금 계좌' : '계좌·카드'}
+              {paymentMethod && filteredAssets.length !== assets.length && (
+                <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400, marginLeft: 4 }}>
+                  ({PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? ''} 기준)
+                </span>
+              )}
+            </label>
+            <Select
+              value={assetRowId != null ? String(assetRowId) : '__none__'}
+              onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="선택 안 함" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">선택 안 함</SelectItem>
+                {filteredAssets.map(a => (
+                  <SelectItem key={a.rowId} value={String(a.rowId)}>
+                    {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {paymentMethod && filteredAssets.length === 0 && (
+              <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>
+                해당 결제 수단에 연결된 자산이 없어요.
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* 이체: 출금 → 입금 */}
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">출금 계좌</label>
+            <Select
+              value={fromAssetRowId != null ? String(fromAssetRowId) : ''}
+              onValueChange={(v) => setFromAssetRowId(v ? Number(v) : null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {assets.map(a => (
+                  <SelectItem key={a.rowId} value={String(a.rowId)}>
+                    {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">입금 계좌</label>
+            <Select
+              value={toAssetRowId != null ? String(toAssetRowId) : ''}
+              onValueChange={(v) => setToAssetRowId(v ? Number(v) : null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {assets
+                  .filter(a => a.rowId !== fromAssetRowId)
+                  .map(a => (
+                    <SelectItem key={a.rowId} value={String(a.rowId)}>
+                      {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="p-field" style={{ marginBottom: 14 }}>
+            <label className="p-field__label">수수료 (선택)</label>
+            <input
+              className="p-input num"
+              value={fee}
+              onChange={e => setFee(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="0"
+              inputMode="numeric"
+            />
+          </div>
+        </>
+      )}
+
+      {/* 날짜 */}
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">날짜</label>
+        <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
       </div>
 
-      <div style={{ marginBottom: 14 }}>
-        <label
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: 'var(--fg-primary)',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          내역
-        </label>
-        <input className="p-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="예: 스타벅스 강남점" />
+      {/* 메모 */}
+      <div className="p-field" style={{ marginBottom: 4 }}>
+        <label className="p-field__label">메모</label>
+        <textarea
+          className="p-textarea"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="선택 사항"
+          style={{ minHeight: 64 }}
+        />
       </div>
-      <div style={{ marginBottom: 14 }}>
-        <label
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: 'var(--fg-primary)',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          결제 수단
-        </label>
-        <Select value={account} onValueChange={setAccount}>
-          <SelectTrigger>
-            <SelectValue placeholder="결제 수단 선택" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="신한 Deep Dream">신한 Deep Dream</SelectItem>
-            <SelectItem value="현대 M Boost">현대 M Boost</SelectItem>
-            <SelectItem value="신한 체크">신한 체크</SelectItem>
-            <SelectItem value="토스 체크">토스 체크</SelectItem>
-            <SelectItem value="현금">현금</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div style={{ marginBottom: 14 }}>
-        <label
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: 'var(--fg-primary)',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          날짜
-        </label>
-        <input className="p-input" defaultValue="2026-04-20 13:42" />
-      </div>
-      <div style={{ marginBottom: 20 }}>
-        <label
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: 'var(--fg-primary)',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          메모
-        </label>
-        <textarea className="p-textarea" placeholder="선택 사항" style={{ minHeight: 64 }} />
-      </div>
-    </>
-  )
 
-  if (mobile) {
-    return (
-      <div className="overlay" onClick={onClose}>
-        <div className="sheet" onClick={e => e.stopPropagation()}>
-          <div className="sheet__handle" />
-          <div className="sheet__head">
-            <h3>내역 추가</h3>
-            <button className="close" onClick={onClose} aria-label="닫기">
-              <X size={18} />
-            </button>
+      {confirmDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'oklch(0.15 0.01 180 / 0.5)',
+            zIndex: 110,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={() => !submitting && setConfirmDelete(false)}
+        >
+          <div
+            className="p-card"
+            style={{ width: 360, padding: 20 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>거래 삭제</div>
+            <div style={{ fontSize: 13.5, color: 'var(--fg-secondary)', lineHeight: 1.6, marginBottom: 16 }}>
+              선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="p-btn p-btn--ghost"
+                onClick={() => setConfirmDelete(false)}
+                disabled={submitting}
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="p-btn p-btn--danger"
+                onClick={doDelete}
+                disabled={submitting}
+              >
+                삭제
+              </button>
+            </div>
           </div>
-          <div className="sheet__body">
-            {Content}
-            <button className="p-btn p-btn--primary p-btn--lg" style={{ width: '100%' }} onClick={onClose}>
-              저장
-            </button>
-          </div>
         </div>
-      </div>
-    )
-  }
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal__head">
-          <h3>내역 추가</h3>
-          <button className="close" onClick={onClose} aria-label="닫기">
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal__body">{Content}</div>
-        <div className="modal__foot">
-          <button className="p-btn p-btn--ghost" onClick={onClose}>취소</button>
-          <button className="p-btn p-btn--primary" onClick={onClose}>저장</button>
-        </div>
-      </div>
-    </div>
+      )}
+    </ModalShell>
   )
 }

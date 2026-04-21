@@ -5,10 +5,15 @@ import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
-import { useExpenses, useMonthlySummary, useExpenseCategories } from '@/features/expense'
+import {
+  useExpenses,
+  useMonthlySummary,
+  useExpenseCategories,
+} from '@/features/expense'
 import { useAsset, useAssets } from '@/features/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
+import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type Filter = 'all' | 'income' | 'expense'
@@ -175,10 +180,12 @@ function ExpenseList({
   expenses,
   mobile,
   isLoading,
+  onItemClick,
 }: {
   expenses: Expense[]
   mobile: boolean
   isLoading: boolean
+  onItemClick?: (expense: Expense) => void
 }) {
   const hidden = useHideAmounts()
   const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
@@ -228,7 +235,11 @@ function ExpenseList({
             </div>
             <div>
               {items.map(e => (
-                <ExpenseRow key={e.rowId} expense={e} onClick={notifyComing} />
+                <ExpenseRow
+                  key={e.rowId}
+                  expense={e}
+                  onClick={onItemClick}
+                />
               ))}
             </div>
           </div>
@@ -401,6 +412,37 @@ function filterActiveCount(v: FilterValue | null): number {
   return n
 }
 
+/** 행 클릭 → 편집 AddTxSheet 오픈. Desktop/Mobile 공용. */
+function EditableList({
+  expenses,
+  isLoading,
+  mobile,
+}: {
+  expenses: Expense[]
+  isLoading: boolean
+  mobile: boolean
+}) {
+  const [editing, setEditing] = useState<Expense | null>(null)
+
+  return (
+    <>
+      <ExpenseList
+        expenses={expenses}
+        mobile={mobile}
+        isLoading={isLoading}
+        onItemClick={(e) => setEditing(e)}
+      />
+      {editing && (
+        <AddTxSheet
+          expense={editing}
+          mobile={mobile}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </>
+  )
+}
+
 function ExpenseDesktop() {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(currentMonthKey())
@@ -446,7 +488,11 @@ function ExpenseDesktop() {
         isLoading={isLoadingSummary}
       />
       <Chips filter={filter} onChange={setFilter} />
-      <ExpenseList expenses={expenses} mobile={false} isLoading={isLoadingList} />
+      <EditableList
+        expenses={expenses}
+        isLoading={isLoadingList}
+        mobile={false}
+      />
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
@@ -559,7 +605,11 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           <Plus size={18} />
         </button>
       </div>
-      <ExpenseList expenses={expenses} mobile isLoading={isLoadingList} />
+      <EditableList
+        expenses={expenses}
+        isLoading={isLoadingList}
+        mobile
+      />
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
