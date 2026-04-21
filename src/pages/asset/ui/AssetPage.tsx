@@ -185,28 +185,27 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 function AssetCompositionCard({
   cashTotal,
   investTotal,
-  debtTotal,
+  cardTotal,
+  loanTotal,
   netWorth,
 }: {
   cashTotal: number
   investTotal: number
-  debtTotal: number
+  cardTotal: number
+  loanTotal: number
   netWorth: number
 }) {
   const hidden = useHideAmounts()
   const mask = (n: number) => (hidden ? '••••' : KRW(n))
-  const denom = Math.max(1, cashTotal + investTotal + debtTotal)
+  const denom = Math.max(1, cashTotal + investTotal + cardTotal + loanTotal)
   const rows = [
-    { label: '현금·예금',     amt: cashTotal,   color: 'var(--sky-500)' },
-    { label: '투자',           amt: investTotal, color: 'var(--mossy-600)' },
-    { label: '카드값(부채)',   amt: debtTotal,   color: 'var(--berry-500)' },
-  ]
+    { label: '현금·예금', amt: cashTotal,   color: 'var(--sky-500)' },
+    { label: '투자',       amt: investTotal, color: 'var(--mossy-600)' },
+    { label: '카드',       amt: cardTotal,   color: 'var(--berry-500)' },
+    { label: '대출',       amt: loanTotal,   color: 'var(--sunlit-700)' },
+  ].filter(r => r.amt > 0)
 
-  const segments = [
-    { value: cashTotal,   color: 'var(--sky-500)' },
-    { value: investTotal, color: 'var(--mossy-600)' },
-    { value: debtTotal,   color: 'var(--berry-500)' },
-  ].filter(s => s.value > 0)
+  const segments = rows.map(r => ({ value: r.amt, color: r.color }))
 
   const totalLabel = hidden
     ? '••••'
@@ -858,16 +857,19 @@ function useAssetGroups() {
     const cards = list.filter(a => CARD_TYPES.includes(a.assetType))
     const investments = list.filter(a => INVESTMENT_TYPES.includes(a.assetType))
     const loans = list.filter(a => LOAN_TYPES.includes(a.assetType))
-    const sum = (arr: Asset[]) => arr.reduce((s, a) => s + a.balance, 0)
+    // 순자산·구성비 집계에는 '총액 포함' 자산만 사용해 백엔드 summary 와 일치.
+    const inTotal = (a: Asset) => a.isIncludedInTotal === 'Y'
+    const sumIncluded = (arr: Asset[]) =>
+      arr.filter(inTotal).reduce((s, a) => s + a.balance, 0)
     return {
       accounts,
       cards,
       investments,
       loans,
-      accountsTotal: sum(accounts),
-      cardsTotal: Math.abs(sum(cards)),
-      investmentsTotal: sum(investments),
-      loansTotal: Math.abs(sum(loans)),
+      accountsTotal: sumIncluded(accounts),
+      cardsTotal: Math.abs(sumIncluded(cards)),
+      investmentsTotal: sumIncluded(investments),
+      loansTotal: Math.abs(sumIncluded(loans)),
     }
   }, [assetsQ.data])
 
@@ -969,7 +971,8 @@ function AssetDesktop() {
             <AssetCompositionCard
               cashTotal={g.accountsTotal}
               investTotal={g.investmentsTotal}
-              debtTotal={g.cardsTotal + g.loansTotal}
+              cardTotal={g.cardsTotal}
+              loanTotal={g.loansTotal}
               netWorth={g.netWorth}
             />
             <UpcomingBillsCard />
