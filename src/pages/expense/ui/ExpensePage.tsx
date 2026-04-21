@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { useExpenses, useMonthlySummary } from '@/features/expense'
@@ -94,6 +95,7 @@ function Summary({
   monthOut: number
   isLoading: boolean
 }) {
+  const hidden = useHideAmounts()
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
   return (
@@ -121,13 +123,13 @@ function Summary({
             className="num"
             style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--mossy-700)' }}
           >
-            {isLoading ? '—' : `+${KRW(monthIn)}`}
+            {isLoading ? '—' : hidden ? '••••••' : `+${KRW(monthIn)}`}
           </div>
         </div>
         <div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
           <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--berry-700)' }}>
-            {isLoading ? '—' : `−${KRW(monthOut)}`}
+            {isLoading ? '—' : hidden ? '••••••' : `−${KRW(monthOut)}`}
           </div>
         </div>
         <div>
@@ -142,7 +144,9 @@ function Summary({
           >
             {isLoading
               ? '—'
-              : `${balance >= 0 ? '+' : '−'}${KRW(Math.abs(balance))}`}
+              : hidden
+                ? '••••••'
+                : `${balance >= 0 ? '+' : '−'}${KRW(Math.abs(balance))}`}
           </div>
         </div>
       </div>
@@ -175,6 +179,7 @@ function ExpenseList({
   mobile: boolean
   isLoading: boolean
 }) {
+  const hidden = useHideAmounts()
   const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
 
   if (isLoading) {
@@ -216,8 +221,8 @@ function ExpenseList({
               <span className="date">{md}</span>
               <span>{dow}요일</span>
               <span className="sum num">
-                {out > 0 && <span className="out">−{KRW(out)}</span>}
-                {inn > 0 && <span className="in">+{KRW(inn)}</span>}
+                {out > 0 && <span className="out">{hidden ? '••••••' : `−${KRW(out)}`}</span>}
+                {inn > 0 && <span className="in">{hidden ? '••••••' : `+${KRW(inn)}`}</span>}
               </span>
             </div>
             <div>

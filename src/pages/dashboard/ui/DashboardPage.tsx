@@ -36,10 +36,12 @@ type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<strin
 type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
 
 function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
+  const hidden = useHideAmounts()
   if (!active || !payload || payload.length === 0) return null
   const income = Number(payload.find(p => p.dataKey === 'income')?.value ?? 0)
   const expense = Number(payload.find(p => p.dataKey === 'expense')?.value ?? 0)
   const saving = income - expense
+  const mask = (n: number) => (hidden ? '••••••' : `${KRW(n)}원`)
   return (
     <div
       style={{
@@ -59,14 +61,14 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
-          {KRW(income)}원
+          {mask(income)}
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
-          {KRW(expense)}원
+          {mask(expense)}
         </span>
       </div>
       <div style={{
@@ -81,7 +83,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             color: saving >= 0 ? 'var(--mossy-700)' : 'var(--berry-600)',
           }}
         >
-          {saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}원
+          {hidden ? '••••••' : <>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}원</>}
         </span>
       </div>
     </div>
@@ -180,7 +182,7 @@ function HomeDesktop() {
   const periodEnd = `${periodY}-${pad2(periodM)}-${pad2(new Date(periodY, periodM, 0).getDate())}`
 
   const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary()
+  const assetSummaryQ = useAssetSummary(periodY, periodM)
   const monthlyQ = useMonthlySummary(periodY, periodM)
   const trendQ = useMonthlyTrend(6)
   const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd })
@@ -329,19 +331,19 @@ function HomeDesktop() {
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>수입</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--mossy-700)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : `+${KRW(income)}원`}
+                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `+${KRW(income)}원`}
               </div>
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>지출</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--berry-700)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : `−${KRW(expense)}원`}
+                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `−${KRW(expense)}원`}
               </div>
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>잔액</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--fg-brand-strong)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : `${balance >= 0 ? '+' : '-'}${KRW(Math.abs(balance))}원`}
+                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `${balance >= 0 ? '+' : '-'}${KRW(Math.abs(balance))}원`}
               </div>
             </div>
           </div>
@@ -391,7 +393,7 @@ function HomeDesktop() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Donut segments={donutSegs} size={160} stroke={22}>
                 <div className="lbl">이번 달 지출</div>
-                <div className="val num">{(donutTotal / 10000).toFixed(1)}만원</div>
+                <div className="val num">{hidden ? '••••' : `${(donutTotal / 10000).toFixed(1)}만원`}</div>
               </Donut>
               <div className="cat-legend">
                 {donutSegs.map((s, i) => (
@@ -399,7 +401,7 @@ function HomeDesktop() {
                     <span className="cat-legend__sw" style={{ background: s.color }} />
                     <span className="cat-legend__name">{s.label}</span>
                     <span className="cat-legend__pct num">{((s.value / donutTotal) * 100).toFixed(0)}%</span>
-                    <span className="cat-legend__amt num">{KRW(s.value)}</span>
+                    <span className="cat-legend__amt num">{hidden ? '••••' : KRW(s.value)}</span>
                   </div>
                 ))}
               </div>
@@ -441,8 +443,12 @@ function HomeDesktop() {
                         color: b.state === 'over' ? 'var(--berry-700)' : 'var(--fg-secondary)',
                       }}
                     >
-                      {KRW(b.spent)}
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}> / {KRW(b.budgetAmount)}</span>
+                      {hidden ? '••••' : (
+                        <>
+                          {KRW(b.spent)}
+                          <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}> / {KRW(b.budgetAmount)}</span>
+                        </>
+                      )}
                     </span>
                   </div>
                   <div className="budget-bar">
@@ -495,7 +501,7 @@ function HomeDesktop() {
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--berry-700)' }}>
-                    −{KRW(p.amount)}
+                    {hidden ? '••••' : `−${KRW(p.amount)}`}
                   </div>
                 </div>
               ))}
@@ -607,7 +613,7 @@ function HomeMobile() {
   const { year, month } = useCurrentMonthKey()
 
   const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary()
+  const assetSummaryQ = useAssetSummary(year, month)
   const monthlyQ = useMonthlySummary(year, month)
   const recentQ = useExpenses()
 
@@ -731,12 +737,14 @@ function HomeMobile() {
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>수입</div>
             <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--mossy-700)' }}>
-              +{KRW(income)}
+              {hidden ? '••••••' : `+${KRW(income)}`}
             </div>
           </div>
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
-            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--berry-700)' }}>−{KRW(expense)}</div>
+            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--berry-700)' }}>
+              {hidden ? '••••••' : `−${KRW(expense)}`}
+            </div>
           </div>
         </div>
       </div>

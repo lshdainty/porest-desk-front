@@ -43,8 +43,9 @@ export const assetApi = {
     return resp.data
   },
 
-  getAssetSummary: async (): Promise<AssetSummary> => {
-    const resp: ApiResponse<AssetSummary> = await apiClient.get('/v1/assets/summary')
+  getAssetSummary: async (year?: number, month?: number): Promise<AssetSummary> => {
+    const params = year && month ? { year, month } : undefined
+    const resp: ApiResponse<AssetSummary> = await apiClient.get('/v1/assets/summary', { params })
     return resp.data
   },
 

@@ -24,10 +24,10 @@ export const useAsset = (id: number) => {
   })
 }
 
-export const useAssetSummary = () => {
+export const useAssetSummary = (year?: number, month?: number) => {
   return useQuery({
-    queryKey: assetKeys.summary(),
-    queryFn: () => assetApi.getAssetSummary(),
+    queryKey: assetKeys.summary(year, month),
+    queryFn: () => assetApi.getAssetSummary(year, month),
   })
 }
 

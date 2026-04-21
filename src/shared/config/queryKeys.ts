@@ -83,7 +83,8 @@ export const assetKeys = {
   all: ['assets'] as const,
   list: () => [...assetKeys.all, 'list'] as const,
   detail: (id: number) => [...assetKeys.all, 'detail', id] as const,
-  summary: () => [...assetKeys.all, 'summary'] as const,
+  summary: (year?: number, month?: number) =>
+    [...assetKeys.all, 'summary', year ?? null, month ?? null] as const,
   netWorthTrend: (months: number) => [...assetKeys.all, 'net-worth-trend', months] as const,
   balanceTrend: (assetId: number, weeks: number) => [...assetKeys.all, 'balance-trend', assetId, weeks] as const,
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,

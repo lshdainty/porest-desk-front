@@ -1,7 +1,8 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -97,6 +98,7 @@ function PorestChartTooltip({
 }: TrendTooltipProps & {
   rows: { dataKey: string; label: string; color: string; format?: (v: number) => string }[]
 }) {
+  const hidden = useHideAmounts()
   if (!active || !payload || payload.length === 0) return null
   return (
     <div
@@ -124,7 +126,7 @@ function PorestChartTooltip({
         const item = payload.find(p => p.dataKey === row.dataKey)
         if (!item) return null
         const v = Number(item.value ?? 0)
-        const text = row.format ? row.format(v) : `${KRW(v)}원`
+        const text = hidden ? '••••••' : row.format ? row.format(v) : `${KRW(v)}원`
         return (
           <div
             key={row.dataKey}
@@ -160,10 +162,16 @@ function PorestChartTooltip({
 
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const hidden = useHideAmounts()
+  const mask = (s: string | number, fallback = '••••••') => (hidden ? fallback : String(s))
   const initial = getCurrentYearMonth()
   const [tab, setTab] = useState<TabKey>('cat')
   const [period, setPeriod] = useState<PeriodKey>('1m')
   const [monthKey, setMonthKey] = useState<string>(initial.key)
+  const [activeParentId, setActiveParentId] = useState<number | null>(null)
+
+  // 기간·월·탭 변경 시 드릴다운 해제
+  useEffect(() => setActiveParentId(null), [period, monthKey, tab])
 
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
   const prev = prevYearMonth(year, month)
@@ -198,27 +206,92 @@ export const StatsPage = () => {
     return Array.from({ length: 12 }, (_, i) => i + 1)
   }, [period, month])
 
-  // 도넛차트용 — 기간 전체의 카테고리 집계
-  const donutBreakdown = useMemo(() => {
-    const agg = new Map<string, { name: string; amount: number }>()
+  // 카테고리 메타(rowId → 아이콘/색/이름) 룩업
+  const categoryById = useMemo(() => {
+    const map = new Map<number, ExpenseCategory>()
+    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c)
+    return map
+  }, [categoriesQ.data])
+
+  // 기간 범위의 leaf 카테고리 원본(필터·집계용)
+  const periodBreakdown = useMemo<CategoryBreakdown[]>(() => {
+    const items: CategoryBreakdown[] = []
     const push = (list: CategoryBreakdown[]) => {
       for (const c of list) {
         if (c.expenseType !== 'EXPENSE') continue
-        const key = c.parentCategoryName || c.categoryName
-        const curr = agg.get(key)
-        if (curr) curr.amount += c.totalAmount
-        else agg.set(key, { name: key, amount: c.totalAmount })
+        items.push(c)
       }
     }
-    if (period === '1m') {
-      push(categoryBreakdown)
-    } else {
-      for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
-        if (periodMonths.includes(m.month)) push(m.categoryBreakdown)
-      }
+    if (period === '1m') push(categoryBreakdown)
+    else for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
+      if (periodMonths.includes(m.month)) push(m.categoryBreakdown)
     }
-    return Array.from(agg.values()).sort((a, b) => b.amount - a.amount)
+    return items
   }, [period, categoryBreakdown, yearlyQ.data, periodMonths])
+
+  type DonutRow = {
+    rowId: number
+    name: string
+    amount: number
+    icon: string | null
+    color: string | null
+    hasChildren: boolean
+  }
+
+  // 부모 카테고리 집계 (드릴 전)
+  const donutBreakdown = useMemo<DonutRow[]>(() => {
+    const map = new Map<number, DonutRow>()
+    for (const c of periodBreakdown) {
+      const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
+      const groupName = c.parentCategoryName ?? c.categoryName
+      let row = map.get(groupRowId)
+      if (!row) {
+        const cat = categoryById.get(groupRowId)
+        row = {
+          rowId: groupRowId,
+          name: groupName,
+          amount: 0,
+          icon: cat?.icon ?? null,
+          color: cat?.color ?? null,
+          hasChildren: false,
+        }
+        map.set(groupRowId, row)
+      }
+      row.amount += c.totalAmount
+      if (c.parentCategoryRowId != null) row.hasChildren = true
+    }
+    return Array.from(map.values()).sort((a, b) => b.amount - a.amount)
+  }, [periodBreakdown, categoryById])
+
+  // 드릴 모드: 활성 부모의 자식 leaf 집계
+  const drillBreakdown = useMemo<DonutRow[]>(() => {
+    if (activeParentId == null) return []
+    const map = new Map<number, DonutRow>()
+    for (const c of periodBreakdown) {
+      if (c.parentCategoryRowId !== activeParentId) continue
+      let row = map.get(c.categoryRowId)
+      if (!row) {
+        const cat = categoryById.get(c.categoryRowId)
+        row = {
+          rowId: c.categoryRowId,
+          name: c.categoryName,
+          amount: 0,
+          icon: cat?.icon ?? null,
+          color: cat?.color ?? null,
+          hasChildren: false,
+        }
+        map.set(c.categoryRowId, row)
+      }
+      row.amount += c.totalAmount
+    }
+    return Array.from(map.values()).sort((a, b) => b.amount - a.amount)
+  }, [activeParentId, periodBreakdown, categoryById])
+
+  const activeParent = activeParentId != null
+    ? donutBreakdown.find(r => r.rowId === activeParentId) ?? null
+    : null
+  const isDrilled = activeParentId != null && drillBreakdown.length > 0
+  const donutView = isDrilled ? drillBreakdown : donutBreakdown
 
   // 기간 총 지출 (하이라이트 · 도넛 센터용)
   const periodTotalExpense = useMemo(() => {
@@ -288,17 +361,45 @@ export const StatsPage = () => {
   )
 
   // ---------- CATEGORY TAB ----------
-  const donutTotal = donutBreakdown.reduce((s, x) => s + x.amount, 0)
+  const donutTotal = donutView.reduce((s, x) => s + x.amount, 0)
+  const donutCenterLbl = isDrilled
+    ? `${activeParent?.name ?? ''} 세부`
+    : `${periodLbl} 지출`
 
   const DonutCard = (
     <div className="p-card" style={{ padding: mobile ? 18 : 24 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>카테고리별 지출</h2>
+        <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isDrilled ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveParentId(null)}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'var(--fg-secondary)',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  padding: 0,
+                  fontFamily: 'inherit',
+                }}
+              >
+                카테고리별 지출
+              </button>
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}>›</span>
+              <span>{activeParent?.name}</span>
+            </>
+          ) : (
+            '카테고리별 지출'
+          )}
+        </h2>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
       </div>
       {donutLoading ? (
         <EmptyBox text="불러오는 중…" />
-      ) : donutBreakdown.length === 0 ? (
+      ) : donutView.length === 0 ? (
         <EmptyBox text="카테고리 데이터가 없습니다" />
       ) : (
         <div
@@ -310,26 +411,51 @@ export const StatsPage = () => {
           }}
         >
           <Donut
-            segments={donutBreakdown.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
+            segments={donutView.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
             size={mobile ? 180 : 200}
             stroke={28}
           >
-            <div className="lbl">{periodLbl} 지출</div>
+            <div className="lbl">{donutCenterLbl}</div>
             <div className="val num" style={{ fontSize: 20 }}>
-              {KRW(donutTotal)}원
+              {hidden ? '••••••' : `${KRW(donutTotal)}원`}
             </div>
           </Donut>
           <div className="cat-legend" style={{ width: '100%' }}>
-            {donutBreakdown.map((s, i) => (
-              <div key={i} className="cat-legend__row">
-                <span className="cat-legend__sw" style={{ background: colorFor(i) }} />
-                <span className="cat-legend__name">{s.name}</span>
-                <span className="cat-legend__pct num">
-                  {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
-                </span>
-                <span className="cat-legend__amt num">{KRW(s.amount)}</span>
-              </div>
-            ))}
+            {donutView.map((s, i) => {
+              const clickable = !isDrilled && s.hasChildren
+              return (
+                <div
+                  key={s.rowId}
+                  className="cat-legend__row"
+                  role={clickable ? 'button' : undefined}
+                  tabIndex={clickable ? 0 : undefined}
+                  onClick={clickable ? () => setActiveParentId(s.rowId) : undefined}
+                  onKeyDown={clickable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setActiveParentId(s.rowId)
+                    }
+                  } : undefined}
+                  style={{
+                    cursor: clickable ? 'pointer' : 'default',
+                    borderRadius: 8,
+                    padding: clickable ? '4px 6px' : undefined,
+                    margin: clickable ? '0 -6px' : undefined,
+                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                  }}
+                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--mist-100)' } : undefined}
+                  onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
+                  title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
+                >
+                  <span className="cat-legend__sw" style={{ background: colorFor(i) }} />
+                  <span className="cat-legend__name">{s.name}</span>
+                  <span className="cat-legend__pct num">
+                    {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
+                  </span>
+                  <span className="cat-legend__amt num">{mask(KRW(s.amount), '••••')}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -371,7 +497,7 @@ export const StatsPage = () => {
                     {m.count}회
                   </span>
                   <span className="num" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700 }}>
-                    {KRW(m.totalAmount)}원
+                    {hidden ? '••••••' : `${KRW(m.totalAmount)}원`}
                   </span>
                 </div>
                 <div
@@ -547,7 +673,7 @@ export const StatsPage = () => {
                   return (
                     <div
                       key={`${row.label}-${col.dow}`}
-                      title={`${row.label}·${col.label} ${KRW(value)}원`}
+                      title={hidden ? `${row.label}·${col.label}` : `${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
                         height: mobile ? 64 : 96,
                         borderRadius: 10,
@@ -566,7 +692,7 @@ export const StatsPage = () => {
                         transition: 'background var(--dur-med) var(--ease-decel)',
                       }}
                     >
-                      {shortAmount(value)}
+                      {hidden && value > 0 ? '••' : shortAmount(value)}
                     </div>
                   )
                 })}
@@ -602,7 +728,7 @@ export const StatsPage = () => {
             </div>
             <span>많음</span>
             <span style={{ marginLeft: 'auto' }}>
-              총 {KRW(heatmapTotal)}원
+              총 {hidden ? '••••••' : `${KRW(heatmapTotal)}원`}
             </span>
           </div>
         </>
@@ -622,7 +748,7 @@ export const StatsPage = () => {
   const avgDivisor = period === '1m' ? daysInMonth : periodMonths.length
   const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
   const avgSub = period !== '1m'
-    ? `${periodMonths.length}개월 합계 ${KRW(periodTotalExpense)}원`
+    ? `${periodMonths.length}개월 합계 ${hidden ? '••••••' : `${KRW(periodTotalExpense)}원`}`
     : prevTotalExpense > 0
       ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
       : '전월 비교 불가'
@@ -631,16 +757,18 @@ export const StatsPage = () => {
     {
       lbl: '가장 많이 쓴 카테고리',
       val: categoryTop?.name ?? '—',
-      sub: categoryTop ? `${KRW(categoryTop.amount)}원` : '데이터 없음',
+      sub: categoryTop ? (hidden ? '••••••' : `${KRW(categoryTop.amount)}원`) : '데이터 없음',
     },
     {
       lbl: '가장 많이 쓴 가맹점',
       val: topMerchant?.merchant ?? '—',
-      sub: topMerchant ? `${topMerchant.count}회 · ${KRW(topMerchant.totalAmount)}원` : '데이터 없음',
+      sub: topMerchant
+        ? `${topMerchant.count}회 · ${hidden ? '••••••' : `${KRW(topMerchant.totalAmount)}원`}`
+        : '데이터 없음',
     },
     {
       lbl: avgLabel,
-      val: `${KRW(avgValue)}원`,
+      val: hidden ? '••••••' : `${KRW(avgValue)}원`,
       sub: avgSub,
     },
   ]
@@ -814,9 +942,9 @@ export const StatsPage = () => {
       }}
     >
       {[
-        { lbl: statLabelIn, val: KRW(Math.round(avgIn)) + '원' },
-        { lbl: statLabelOut, val: KRW(Math.round(avgOut)) + '원' },
-        { lbl: statLabelSave, val: KRW(Math.round(avgSave)) + '원' },
+        { lbl: statLabelIn, val: hidden ? '••••••' : KRW(Math.round(avgIn)) + '원' },
+        { lbl: statLabelOut, val: hidden ? '••••••' : KRW(Math.round(avgOut)) + '원' },
+        { lbl: statLabelSave, val: hidden ? '••••••' : KRW(Math.round(avgSave)) + '원' },
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ].map((s, i) => (
         <div key={i} className="p-card" style={{ padding: 16 }}>
@@ -916,13 +1044,6 @@ export const StatsPage = () => {
 
   const prevPeriodYearly = prevPeriod.year === year ? yearlyQ.data : prevYearlyQ.data
 
-  // 카테고리 메타(rowId → 아이콘/색/이름) 룩업
-  const categoryById = useMemo(() => {
-    const map = new Map<number, ExpenseCategory>()
-    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c)
-    return map
-  }, [categoriesQ.data])
-
   // 이전 기간 총 지출
   const prevPeriodTotal = useMemo(() => {
     if (period === '1m') return prevMonthlyQ.data?.totalExpense ?? 0
@@ -1020,8 +1141,14 @@ export const StatsPage = () => {
           className="num"
           style={{ fontSize: mobile ? 18 : 22, fontWeight: 800, letterSpacing: '-0.02em' }}
         >
-          {KRW(totalNow)}
-          <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
+          {hidden ? (
+            '••••••'
+          ) : (
+            <>
+              {KRW(totalNow)}
+              <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
+            </>
+          )}
         </div>
       </div>
       <div className="p-card" style={{ padding: 16 }}>
@@ -1037,8 +1164,14 @@ export const StatsPage = () => {
             color: 'var(--fg-secondary)',
           }}
         >
-          {KRW(totalPrev)}
-          <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
+          {hidden ? (
+            '••••••'
+          ) : (
+            <>
+              {KRW(totalPrev)}
+              <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
+            </>
+          )}
         </div>
       </div>
       <div className="p-card" style={{ padding: 16 }}>
@@ -1063,10 +1196,14 @@ export const StatsPage = () => {
         </div>
         <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>
           {totalPrev > 0 ? (
-            <>
-              {momUp ? '+' : '−'}
-              {KRW(Math.abs(totalNow - totalPrev))}원
-            </>
+            hidden ? (
+              '••••••'
+            ) : (
+              <>
+                {momUp ? '+' : '−'}
+                {KRW(Math.abs(totalNow - totalPrev))}원
+              </>
+            )
           ) : noPrevText}
         </div>
       </div>
@@ -1132,7 +1269,7 @@ export const StatsPage = () => {
                     <div style={{ fontSize: 13.5, fontWeight: 600 }}>{r.name}</div>
                   </div>
                   <span className="num" style={{ fontSize: 13, fontWeight: 700 }}>
-                    {KRW(r.now)}원
+                    {hidden ? '••••••' : `${KRW(r.now)}원`}
                   </span>
                   <span
                     style={{
