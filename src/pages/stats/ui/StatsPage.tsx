@@ -40,14 +40,14 @@ const HEAT_PALETTE = [
 ]
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
-// 라벨 순서는 하루의 흐름에 맞춰 새벽→심야로 정렬
-const HEAT_ROWS: { label: string; hours: number[] }[] = [
-  { label: '새벽',   hours: [2, 3, 4, 5] },
-  { label: '아침',   hours: [6, 7, 8, 9] },
-  { label: '점심',   hours: [10, 11, 12, 13] },
-  { label: '오후',   hours: [14, 15, 16, 17] },
-  { label: '저녁',   hours: [18, 19, 20, 21] },
-  { label: '심야',   hours: [22, 23, 0, 1] },
+// 하루 흐름: 아침 → 점심 → 오후 → 저녁 → 심야 → 새벽
+const HEAT_ROWS: { label: string; sub: string; hours: number[] }[] = [
+  { label: '아침', sub: '06–10시', hours: [6, 7, 8, 9] },
+  { label: '점심', sub: '10–14시', hours: [10, 11, 12, 13] },
+  { label: '오후', sub: '14–18시', hours: [14, 15, 16, 17] },
+  { label: '저녁', sub: '18–22시', hours: [18, 19, 20, 21] },
+  { label: '심야', sub: '22–02시', hours: [22, 23, 0, 1] },
+  { label: '새벽', sub: '02–06시', hours: [2, 3, 4, 5] },
 ]
 
 // 열(요일) — Java DayOfWeek: 1=월 ~ 7=일
@@ -331,6 +331,30 @@ export const StatsPage = () => {
     return HEAT_PALETTE[step]!
   }
 
+  /**
+   * 셀 내부에 표시할 금액 약식
+   *   0        → "—"
+   *   < 10000  → "3천"   (천 단위)
+   *   < 10만   → "1.2만"  (만 단위, 소수 1자리)
+   *   >= 10만  → "12만"   (만 단위, 정수)
+   */
+  const shortAmount = (v: number): string => {
+    if (v <= 0) return '—'
+    if (v < 10_000) return `${Math.round(v / 1000)}천`
+    if (v < 100_000) return `${(v / 10_000).toFixed(1)}만`
+    return `${Math.round(v / 10_000)}만`
+  }
+
+  /**
+   * 진한 배경(step >= 3) 에서는 텍스트를 흰색, 옅은 배경에서는 fg-primary.
+   */
+  const heatTextColor = (value: number): string => {
+    if (heatmapMax <= 0 || value <= 0) return 'var(--fg-tertiary)'
+    const ratio = value / heatmapMax
+    const step = Math.min(5, Math.max(1, Math.ceil(ratio * 5)))
+    return step >= 3 ? '#fff' : 'var(--fg-primary)'
+  }
+
   const HeatmapCard = (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 6 }}>
@@ -377,7 +401,7 @@ export const StatsPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
+              gridTemplateColumns: `64px repeat(${HEAT_COLS.length}, 1fr)`,
               gap: 6,
               alignItems: 'center',
             }}
@@ -401,11 +425,17 @@ export const StatsPage = () => {
             {/* 데이터 행들 */}
             {HEAT_ROWS.map((row, rIdx) => (
               <Fragment key={row.label}>
-                <span
-                  style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-tertiary)' }}
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--fg-tertiary)',
+                    lineHeight: 1.3,
+                    paddingRight: 4,
+                  }}
                 >
-                  {row.label}
-                </span>
+                  <div style={{ fontWeight: 600, color: 'var(--fg-secondary)' }}>{row.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>{row.sub}</div>
+                </div>
                 {HEAT_COLS.map((col, cIdx) => {
                   const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0
                   const isPeak = value > 0 && value === heatmapMax
@@ -414,15 +444,25 @@ export const StatsPage = () => {
                       key={`${row.label}-${col.dow}`}
                       title={`${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
-                        height: mobile ? 28 : 32,
+                        height: mobile ? 40 : 48,
                         borderRadius: 6,
                         background: heatColor(value),
                         border: isPeak
                           ? '1.5px solid var(--mossy-700)'
                           : '1px solid var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: mobile ? 10.5 : 12,
+                        fontWeight: 600,
+                        color: heatTextColor(value),
+                        letterSpacing: '-0.01em',
+                        fontVariantNumeric: 'tabular-nums',
                         transition: 'background var(--dur-med) var(--ease-decel)',
                       }}
-                    />
+                    >
+                      {shortAmount(value)}
+                    </div>
                   )
                 })}
               </Fragment>
