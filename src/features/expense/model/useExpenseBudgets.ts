@@ -23,6 +23,18 @@ export const useCreateExpenseBudget = () => {
   })
 }
 
+export const useUpdateExpenseBudget = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, budgetAmount }: { id: number; budgetAmount: number }) =>
+      expenseBudgetApi.updateBudget(id, { budgetAmount }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+    },
+  })
+}
+
 export const useDeleteExpenseBudget = () => {
   const queryClient = useQueryClient()
 

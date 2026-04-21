@@ -28,6 +28,7 @@ export {
 export {
   useExpenseBudgets,
   useCreateExpenseBudget,
+  useUpdateExpenseBudget,
   useDeleteExpenseBudget,
   useBudgetCompliance,
 } from './model/useExpenseBudgets'

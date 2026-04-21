@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 
 export const BANK_PRESETS: { k: string; color: string }[] = [
   { k: '신한', color: '#0046FF' },
@@ -17,6 +18,10 @@ export const BANK_PRESETS: { k: string; color: string }[] = [
 
 export type AssetGroup = 'account' | 'card' | 'invest'
 
+/**
+ * Legacy mock shape — kept only for the sibling (unused) AssetDetailDialog.tsx
+ * compatibility. New code should use `Asset` from `@/entities/asset`.
+ */
 export interface AssetDraft {
   id: string
   group: AssetGroup
@@ -34,69 +39,107 @@ export interface AssetDraft {
   fg?: string
 }
 
+const ACCOUNT_SUBTYPES: { label: string; value: AssetType }[] = [
+  { label: '입출금', value: 'BANK_ACCOUNT' },
+  { label: '적금', value: 'SAVINGS' },
+  { label: '현금', value: 'CASH' },
+  { label: '대출', value: 'LOAN' },
+]
+const CARD_SUBTYPES: { label: string; value: AssetType }[] = [
+  { label: '신용카드', value: 'CREDIT_CARD' },
+  { label: '체크카드', value: 'CHECK_CARD' },
+]
+
+const groupOfType = (t: AssetType): AssetGroup => {
+  if (t === 'CREDIT_CARD' || t === 'CHECK_CARD' || t === 'LOAN') return 'card'
+  if (t === 'INVESTMENT') return 'invest'
+  return 'account'
+}
+
+const defaultTypeForGroup = (g: AssetGroup): AssetType => {
+  if (g === 'card') return 'CREDIT_CARD'
+  if (g === 'invest') return 'INVESTMENT'
+  return 'BANK_ACCOUNT'
+}
+
+export interface AssetEditDialogProps {
+  item: Asset | null
+  group: AssetGroup
+  onClose: () => void
+  onCreate: (values: AssetFormValues) => void
+  onUpdate: (values: AssetUpdateFormValues) => void
+  onDelete?: () => void
+  mobile: boolean
+  isSubmitting?: boolean
+}
+
 export function AssetEditDialog({
   item,
   group,
   onClose,
-  onSave,
+  onCreate,
+  onUpdate,
   onDelete,
   mobile,
-}: {
-  item: AssetDraft | null
-  group: AssetGroup
-  onClose: () => void
-  onSave: (draft: AssetDraft) => void
-  onDelete?: () => void
-  mobile: boolean
-}) {
+  isSubmitting,
+}: AssetEditDialogProps) {
   const isNew = !item
-  const [bank, setBank] = useState(item?.bank || BANK_PRESETS[0]!.k)
-  const [color, setColor] = useState(item?.color || BANK_PRESETS[0]!.color)
-  const [name, setName] = useState(item?.name || '')
-  const [number, setNumber] = useState(item?.number || '')
-  const [type, setType] = useState(item?.type || '입출금')
-  const [balance, setBalance] = useState(String(item?.balance ?? item?.outstanding ?? 0))
-  const [due, setDue] = useState(String(item?.due ?? 15))
-  const [limit, setLimit] = useState(String(item?.limit ?? 3_000_000))
-  const [changePct, setChangePct] = useState(String(item?.changePct ?? 0))
+  const initialGroup: AssetGroup = item ? groupOfType(item.assetType) : group
+
+  const [assetType, setAssetType] = useState<AssetType>(
+    item?.assetType ?? defaultTypeForGroup(initialGroup),
+  )
+  const [institution, setInstitution] = useState(item?.institution ?? BANK_PRESETS[0]!.k)
+  const [color, setColor] = useState(item?.color ?? BANK_PRESETS[0]!.color)
+  const [assetName, setAssetName] = useState(item?.assetName ?? '')
+  const [memo, setMemo] = useState(item?.memo ?? '')
+  const [balance, setBalance] = useState(String(item?.balance ?? 0))
   const [touched, setTouched] = useState(false)
 
-  const nameTrim = name.trim()
-  const valid = nameTrim.length > 0 && bank.trim().length > 0
+  const editingGroup: AssetGroup = groupOfType(assetType)
+
+  const nameTrim = assetName.trim()
+  const valid = nameTrim.length > 0 && institution.trim().length > 0
 
   const save = () => {
     setTouched(true)
     if (!valid) return
-    const base: AssetDraft = {
-      id: item?.id || `${group}-${Date.now()}`,
-      group,
-      bank,
-      name: nameTrim,
-      color,
-    }
-    if (group === 'account') {
-      onSave({ ...base, type, number, balance: parseInt(balance) || 0 })
-    } else if (group === 'card') {
-      onSave({
-        ...base,
-        number,
-        outstanding: parseInt(balance) || 0,
-        limit: parseInt(limit) || 0,
-        due: parseInt(due) || 1,
-      })
+    const parsedBalance = parseInt(balance, 10) || 0
+    if (isNew) {
+      const payload: AssetFormValues = {
+        assetName: nameTrim,
+        assetType,
+        balance: parsedBalance,
+        institution: institution.trim() || undefined,
+        color: color || undefined,
+        memo: memo.trim() || undefined,
+      }
+      onCreate(payload)
     } else {
-      onSave({
-        ...base,
-        balance: parseInt(balance) || 0,
-        changePct: parseFloat(changePct) || 0,
-        changeAmt: 0,
-      })
+      const payload: AssetUpdateFormValues = {
+        assetName: nameTrim,
+        assetType,
+        balance: parsedBalance,
+        institution: institution.trim() || undefined,
+        color: color || undefined,
+        memo: memo.trim() || undefined,
+        isIncludedInTotal: item?.isIncludedInTotal,
+      }
+      onUpdate(payload)
     }
   }
 
-  const title = isNew
-    ? group === 'account' ? '계좌 추가' : group === 'card' ? '카드 추가' : '투자 상품 추가'
-    : group === 'account' ? '계좌 편집' : group === 'card' ? '카드 편집' : '투자 상품 편집'
+  const titleAction = isNew ? '추가' : '편집'
+  const title =
+    editingGroup === 'account'
+      ? `계좌 ${titleAction}`
+      : editingGroup === 'card'
+      ? `카드 ${titleAction}`
+      : `투자 상품 ${titleAction}`
+
+  const nameLabel = editingGroup === 'invest' ? '상품명' : '별칭'
+  const balanceLabel =
+    editingGroup === 'card' ? '이번 달 사용액 (원)' : editingGroup === 'invest' ? '평가액 (원)' : '잔액 (원)'
 
   const Footer = (
     <>
@@ -105,24 +148,27 @@ export function AssetEditDialog({
           className="p-btn p-btn--ghost"
           onClick={onDelete}
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          disabled={isSubmitting}
         >
           <Trash2 size={14} />삭제
         </button>
       ) : (
         <span style={{ marginRight: 'auto' }} />
       )}
-      <button className="p-btn p-btn--ghost" onClick={onClose}>
+      <button className="p-btn p-btn--ghost" onClick={onClose} disabled={isSubmitting}>
         취소
       </button>
       <button
         className="p-btn p-btn--primary"
         onClick={save}
-        disabled={touched && !valid}
+        disabled={(touched && !valid) || isSubmitting}
       >
         {isNew ? '추가' : '저장'}
       </button>
     </>
   )
+
+  const previewInitial = (institution || assetName || '?').charAt(0)
 
   return (
     <ModalShell title={title} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
@@ -131,13 +177,18 @@ export function AssetEditDialog({
           className="cat-edit__preview-chip"
           style={{ background: color, color: '#fff', fontWeight: 700, fontSize: 16 }}
         >
-          {(bank || '?')[0]}
+          {previewInitial}
         </span>
         <div>
           <div className="cat-edit__preview-label">
-            {name || (group === 'account' ? '새 계좌' : group === 'card' ? '새 카드' : '새 투자')}
+            {assetName ||
+              (editingGroup === 'account'
+                ? '새 계좌'
+                : editingGroup === 'card'
+                ? '새 카드'
+                : '새 투자')}
           </div>
-          <div className="cat-edit__preview-sub">{bank} · 미리보기</div>
+          <div className="cat-edit__preview-sub">{institution || '기관 미지정'} · 미리보기</div>
         </div>
       </div>
 
@@ -145,13 +196,13 @@ export function AssetEditDialog({
         <label className="p-field__label">기관·브랜드</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
           {BANK_PRESETS.map(b => {
-            const active = bank === b.k
+            const active = institution === b.k
             return (
               <button
                 key={b.k}
                 type="button"
                 onClick={() => {
-                  setBank(b.k)
+                  setInstitution(b.k)
                   setColor(b.color)
                 }}
                 style={{
@@ -175,18 +226,18 @@ export function AssetEditDialog({
       </div>
 
       <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">{group === 'invest' ? '상품명' : '별칭'}</label>
+        <label className="p-field__label">{nameLabel}</label>
         <input
           className="p-input"
-          value={name}
+          value={assetName}
           onChange={e => {
-            setName(e.target.value)
+            setAssetName(e.target.value)
             setTouched(true)
           }}
           placeholder={
-            group === 'account'
+            editingGroup === 'account'
               ? '예: 신한 주거래'
-              : group === 'card'
+              : editingGroup === 'card'
               ? '예: 신한 Deep Dream'
               : '예: KODEX 200'
           }
@@ -195,117 +246,63 @@ export function AssetEditDialog({
         />
       </div>
 
-      {group === 'account' && (
-        <>
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">계좌 종류</label>
-            <div className="p-seg">
-              {['입출금', '적금', '예금', '대출'].map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`p-seg__btn ${type === t ? 'active' : ''}`}
-                  onClick={() => setType(t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            <div className="p-field">
-              <label className="p-field__label">계좌번호</label>
-              <input
-                className="p-input"
-                value={number}
-                onChange={e => setNumber(e.target.value)}
-                placeholder="110-***-123456"
-              />
-            </div>
-            <div className="p-field">
-              <label className="p-field__label">잔액 (원)</label>
-              <input
-                className="p-input num"
-                value={balance}
-                onChange={e => setBalance(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="0"
-                inputMode="numeric"
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {group === 'card' && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            <div className="p-field">
-              <label className="p-field__label">카드번호</label>
-              <input
-                className="p-input"
-                value={number}
-                onChange={e => setNumber(e.target.value)}
-                placeholder="5137-****-7745"
-              />
-            </div>
-            <div className="p-field">
-              <label className="p-field__label">결제일</label>
-              <input
-                className="p-input num"
-                value={due}
-                onChange={e => setDue(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="28"
-                inputMode="numeric"
-                maxLength={2}
-              />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            <div className="p-field">
-              <label className="p-field__label">이번 달 사용액 (원)</label>
-              <input
-                className="p-input num"
-                value={balance}
-                onChange={e => setBalance(e.target.value.replace(/[^0-9]/g, ''))}
-                inputMode="numeric"
-              />
-            </div>
-            <div className="p-field">
-              <label className="p-field__label">한도 (원)</label>
-              <input
-                className="p-input num"
-                value={limit}
-                onChange={e => setLimit(e.target.value.replace(/[^0-9]/g, ''))}
-                inputMode="numeric"
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {group === 'invest' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-          <div className="p-field">
-            <label className="p-field__label">평가액 (원)</label>
-            <input
-              className="p-input num"
-              value={balance}
-              onChange={e => setBalance(e.target.value.replace(/[^0-9]/g, ''))}
-              inputMode="numeric"
-            />
-          </div>
-          <div className="p-field">
-            <label className="p-field__label">수익률 (%)</label>
-            <input
-              className="p-input num"
-              value={changePct}
-              onChange={e => setChangePct(e.target.value)}
-              inputMode="decimal"
-              placeholder="3.8"
-            />
+      {editingGroup === 'account' && (
+        <div className="p-field" style={{ marginBottom: 14 }}>
+          <label className="p-field__label">계좌 종류</label>
+          <div className="p-seg">
+            {ACCOUNT_SUBTYPES.map(t => (
+              <button
+                key={t.value}
+                type="button"
+                className={`p-seg__btn ${assetType === t.value ? 'active' : ''}`}
+                onClick={() => setAssetType(t.value)}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
+
+      {editingGroup === 'card' && (
+        <div className="p-field" style={{ marginBottom: 14 }}>
+          <label className="p-field__label">카드 종류</label>
+          <div className="p-seg">
+            {CARD_SUBTYPES.map(t => (
+              <button
+                key={t.value}
+                type="button"
+                className={`p-seg__btn ${assetType === t.value ? 'active' : ''}`}
+                onClick={() => setAssetType(t.value)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">{balanceLabel}</label>
+        <input
+          className="p-input num"
+          value={balance}
+          onChange={e => setBalance(e.target.value.replace(/[^0-9]/g, ''))}
+          placeholder="0"
+          inputMode="numeric"
+        />
+      </div>
+
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">메모 (선택)</label>
+        <input
+          className="p-input"
+          value={memo}
+          onChange={e => setMemo(e.target.value)}
+          placeholder="계좌번호 뒷자리, 결제일, 한도 등 메모하세요"
+          maxLength={120}
+        />
+      </div>
     </ModalShell>
   )
 }

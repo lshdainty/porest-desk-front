@@ -1,73 +1,66 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Pencil, Plus, Search, Trash2 } from 'lucide-react'
-import { CATEGORIES, type CategoryKey } from '@/shared/lib/porest/data'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
-import { CategoryEditDialog, type CategoryItem } from './CategoryEditDialog'
-
-function buildInitial(): CategoryItem[] {
-  const expense: CategoryKey[] = [
-    'food', 'cafe', 'transport', 'shopping', 'living',
-    'medical', 'leisure', 'bill', 'edu', 'saving',
-  ]
-  const list: CategoryItem[] = []
-  expense.forEach(k => {
-    const c = CATEGORIES[k]
-    list.push({ id: k, label: c.label, icon: c.icon, color: c.color, bg: c.bg, kind: 'expense', count: 5 })
-  })
-  const c = CATEGORIES['income']
-  list.push({ id: 'income', label: c.label, icon: c.icon, color: c.color, bg: c.bg, kind: 'income', count: 2 })
-  list.push({
-    id: 'custom-1',
-    label: '반려동물',
-    icon: 'paw-print',
-    color: 'oklch(0.50 0.14 15)',
-    bg: 'oklch(0.96 0.035 15)',
-    kind: 'expense',
-    count: 6,
-  })
-  list.push({
-    id: 'custom-2',
-    label: '부수입',
-    icon: 'hand-coins',
-    color: 'var(--bark-700)',
-    bg: 'var(--bark-100)',
-    kind: 'income',
-    count: 3,
-  })
-  return list
-}
+import {
+  useExpenseCategories,
+  useCreateExpenseCategory,
+  useUpdateExpenseCategory,
+  useDeleteExpenseCategory,
+} from '@/features/expense'
+import type {
+  ExpenseCategory,
+  ExpenseCategoryFormValues,
+  ExpenseType,
+} from '@/entities/expense'
+import { CategoryEditDialog, getPaletteByColor } from './CategoryEditDialog'
 
 export function CategoryManager({ mobile }: { mobile: boolean }) {
-  const [cats, setCats] = useState<CategoryItem[]>(() => buildInitial())
-  const [tab, setTab] = useState<'expense' | 'income'>('expense')
+  const { data: categories, isLoading } = useExpenseCategories()
+  const createMut = useCreateExpenseCategory()
+  const updateMut = useUpdateExpenseCategory()
+  const deleteMut = useDeleteExpenseCategory()
+
+  const [tab, setTab] = useState<ExpenseType>('EXPENSE')
   const [query, setQuery] = useState('')
-  const [editing, setEditing] = useState<CategoryItem | 'new' | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState<CategoryItem | null>(null)
+  const [editing, setEditing] = useState<ExpenseCategory | 'new' | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(null)
+
+  const list = categories ?? []
 
   const filtered = useMemo(
-    () => cats.filter(c => c.kind === tab && (query === '' || c.label.includes(query))),
-    [cats, tab, query],
-  )
-  const counts = useMemo(
-    () => ({
-      expense: cats.filter(c => c.kind === 'expense').length,
-      income: cats.filter(c => c.kind === 'income').length,
-    }),
-    [cats],
+    () =>
+      list.filter(
+        c =>
+          c.expenseType === tab &&
+          (query === '' || c.categoryName.includes(query)),
+      ),
+    [list, tab, query],
   )
 
-  const onSave = (draft: CategoryItem) => {
-    setCats(prev => {
-      const exists = prev.find(c => c.id === draft.id)
-      if (exists) return prev.map(c => (c.id === draft.id ? draft : c))
-      return [...prev, { ...draft, count: 0 }]
-    })
-    setEditing(null)
+  const counts = useMemo(
+    () => ({
+      expense: list.filter(c => c.expenseType === 'EXPENSE').length,
+      income: list.filter(c => c.expenseType === 'INCOME').length,
+    }),
+    [list],
+  )
+
+  const submitting = createMut.isPending || updateMut.isPending
+
+  const onSave = (values: ExpenseCategoryFormValues) => {
+    if (editing && editing !== 'new') {
+      updateMut.mutate(
+        { id: editing.rowId, data: values },
+        { onSuccess: () => setEditing(null) },
+      )
+    } else {
+      createMut.mutate(values, { onSuccess: () => setEditing(null) })
+    }
   }
-  const onDelete = (c: CategoryItem) => {
-    setCats(prev => prev.filter(x => x.id !== c.id))
-    setConfirmDelete(null)
+
+  const onDelete = (c: ExpenseCategory) => {
+    deleteMut.mutate(c.rowId, { onSuccess: () => setConfirmDelete(null) })
   }
 
   return (
@@ -90,10 +83,10 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
 
         <div className="cat-mgr__toolbar">
           <div className="cat-mgr__tabs">
-            <button className={tab === 'expense' ? 'active' : ''} onClick={() => setTab('expense')}>
+            <button className={tab === 'EXPENSE' ? 'active' : ''} onClick={() => setTab('EXPENSE')}>
               지출 <span className="cnt">{counts.expense}</span>
             </button>
-            <button className={tab === 'income' ? 'active' : ''} onClick={() => setTab('income')}>
+            <button className={tab === 'INCOME' ? 'active' : ''} onClick={() => setTab('INCOME')}>
               수입 <span className="cnt">{counts.income}</span>
             </button>
           </div>
@@ -104,42 +97,55 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
         </div>
 
         <div className="cat-list">
-          {filtered.map(c => (
-            <div key={c.id} className="cat-row">
-              <span className="cat-row__icon" style={{ background: c.bg, color: c.color }}>
-                <Icon name={c.icon} size={18} strokeWidth={1.9} />
-              </span>
-              <div className="cat-row__text">
-                <div className="cat-row__label">{c.label}</div>
-                <div className="cat-row__meta">
-                  {c.kind === 'expense' ? '지출' : '수입'}
-                  <span className="dot-sep" />
-                  거래 {c.count}건
-                </div>
-              </div>
-              {!mobile ? (
-                <div className="cat-row__actions">
-                  <button className="p-btn p-btn--ghost p-btn--sm" onClick={() => setEditing(c)}>
-                    <Pencil size={13} />편집
-                  </button>
-                  <button
-                    className="p-btn p-btn--ghost p-btn--sm cat-row__del"
-                    onClick={() => setConfirmDelete(c)}
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ) : (
-                <button className="cat-row__more" onClick={() => setEditing(c)}>
-                  <ChevronRight size={18} />
-                </button>
-              )}
+          {isLoading ? (
+            <div className="cat-list__empty">
+              <span>불러오는 중…</span>
             </div>
-          ))}
-          {filtered.length === 0 && (
+          ) : list.length === 0 ? (
+            <div className="cat-list__empty">
+              <span>카테고리가 없어요</span>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="cat-list__empty">
               <span>검색 결과가 없습니다.</span>
             </div>
+          ) : (
+            filtered.map(c => {
+              const palette = getPaletteByColor(c.color)
+              return (
+                <div key={c.rowId} className="cat-row">
+                  <span
+                    className="cat-row__icon"
+                    style={{ background: palette.bg, color: palette.color }}
+                  >
+                    <Icon name={c.icon ?? 'tag'} size={18} strokeWidth={1.9} />
+                  </span>
+                  <div className="cat-row__text">
+                    <div className="cat-row__label">{c.categoryName}</div>
+                    <div className="cat-row__meta">
+                      {c.expenseType === 'EXPENSE' ? '지출' : '수입'}
+                    </div>
+                  </div>
+                  {!mobile ? (
+                    <div className="cat-row__actions">
+                      <button className="p-btn p-btn--ghost p-btn--sm" onClick={() => setEditing(c)}>
+                        <Pencil size={13} />편집
+                      </button>
+                      <button
+                        className="p-btn p-btn--ghost p-btn--sm cat-row__del"
+                        onClick={() => setConfirmDelete(c)}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button className="cat-row__more" onClick={() => setEditing(c)}>
+                      <ChevronRight size={18} />
+                    </button>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
 
@@ -166,18 +172,14 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
               : undefined
           }
           mobile={mobile}
-          existing={cats}
+          existing={list}
+          submitting={submitting}
         />
       )}
       {confirmDelete && (
         <ConfirmDialog
           title="카테고리 삭제"
-          message={
-            `"${confirmDelete.label}" 카테고리를 삭제하시겠어요?` +
-            (confirmDelete.count > 0
-              ? ` 이 카테고리의 거래 ${confirmDelete.count}건은 '미분류'로 이동합니다.`
-              : ' 연결된 거래가 없습니다.')
-          }
+          message={`"${confirmDelete.categoryName}" 카테고리를 삭제하시겠어요?`}
           confirmLabel="삭제"
           danger
           onCancel={() => setConfirmDelete(null)}

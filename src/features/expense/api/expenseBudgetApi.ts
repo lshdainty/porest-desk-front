@@ -18,6 +18,11 @@ export const expenseBudgetApi = {
     return resp.data.budgets
   },
 
+  updateBudget: async (id: number, data: { budgetAmount: number }): Promise<ExpenseBudget> => {
+    const resp: ApiResponse<ExpenseBudget> = await apiClient.put(`/v1/expense/budget/${id}`, data)
+    return resp.data
+  },
+
   deleteBudget: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/budget/${id}`)
     return resp.data

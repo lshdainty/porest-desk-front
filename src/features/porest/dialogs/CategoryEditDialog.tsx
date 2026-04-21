@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Check, Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
 
+/** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
 export interface CategoryItem {
   id: string
   label: string
@@ -28,6 +30,12 @@ export const CAT_PALETTE: { color: string; bg: string }[] = [
   { color: 'oklch(0.50 0.14 15)',   bg: 'oklch(0.96 0.035 15)' },
 ]
 
+export const getPaletteByColor = (color: string | null | undefined) => {
+  if (!color) return CAT_PALETTE[0]!
+  const found = CAT_PALETTE.find(p => p.color === color)
+  return found ?? CAT_PALETTE[0]!
+}
+
 const ICON_CHOICES = [
   'utensils', 'coffee', 'bus', 'shopping-bag', 'home', 'heart-pulse',
   'ticket', 'receipt-text', 'book-open', 'piggy-bank', 'arrow-down-to-line',
@@ -45,21 +53,23 @@ export function CategoryEditDialog({
   onDelete,
   mobile,
   existing,
+  submitting,
 }: {
-  cat: CategoryItem | null
-  defaultKind: 'expense' | 'income'
+  cat: ExpenseCategory | null
+  defaultKind: ExpenseType
   onClose: () => void
-  onSave: (c: CategoryItem) => void
+  onSave: (values: ExpenseCategoryFormValues) => void
   onDelete?: () => void
   mobile: boolean
-  existing: CategoryItem[]
+  existing: ExpenseCategory[]
+  submitting?: boolean
 }) {
   const isNew = !cat
-  const [label, setLabel] = useState(cat?.label || '')
-  const [kind, setKind] = useState<'expense' | 'income'>(cat?.kind || defaultKind)
+  const [label, setLabel] = useState(cat?.categoryName || '')
+  const [kind, setKind] = useState<ExpenseType>(cat?.expenseType || defaultKind)
   const [icon, setIcon] = useState(cat?.icon || 'tag')
   const [paletteIdx, setPaletteIdx] = useState(() => {
-    if (!cat) return 0
+    if (!cat?.color) return 0
     const idx = CAT_PALETTE.findIndex(p => p.color === cat.color)
     return idx >= 0 ? idx : 0
   })
@@ -67,7 +77,9 @@ export function CategoryEditDialog({
 
   const palette = CAT_PALETTE[paletteIdx]!
   const labelTrim = label.trim()
-  const duplicate = existing.some(c => c.label === labelTrim && c.id !== cat?.id)
+  const duplicate = existing.some(
+    c => c.categoryName === labelTrim && c.rowId !== cat?.rowId,
+  )
   const valid = labelTrim.length > 0 && labelTrim.length <= 12 && !duplicate
   const err =
     touched && !valid
@@ -83,16 +95,15 @@ export function CategoryEditDialog({
   const save = () => {
     setTouched(true)
     if (!valid) return
-    const id = cat?.id || `custom-${Date.now()}`
-    onSave({
-      id,
-      label: labelTrim,
+    const values: ExpenseCategoryFormValues = {
+      categoryName: labelTrim,
       icon,
       color: palette.color,
-      bg: palette.bg,
-      kind,
-      count: cat?.count ?? 0,
-    })
+      expenseType: kind,
+      sortOrder: cat?.sortOrder,
+      parentRowId: cat?.parentRowId ?? null,
+    }
+    onSave(values)
   }
 
   const Footer = (
@@ -102,17 +113,22 @@ export function CategoryEditDialog({
           className="p-btn p-btn--ghost"
           onClick={onDelete}
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          disabled={submitting}
         >
           <Trash2 size={14} />삭제
         </button>
       ) : (
         <span style={{ marginRight: 'auto' }} />
       )}
-      <button className="p-btn p-btn--ghost" onClick={onClose}>
+      <button className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
         취소
       </button>
-      <button className="p-btn p-btn--primary" onClick={save} disabled={touched && !valid}>
-        {isNew ? '추가' : '저장'}
+      <button
+        className="p-btn p-btn--primary"
+        onClick={save}
+        disabled={(touched && !valid) || submitting}
+      >
+        {submitting ? '저장 중…' : isNew ? '추가' : '저장'}
       </button>
     </>
   )
@@ -135,7 +151,7 @@ export function CategoryEditDialog({
         <div>
           <div className="cat-edit__preview-label">{labelTrim || '새 카테고리'}</div>
           <div className="cat-edit__preview-sub">
-            {kind === 'expense' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
+            {kind === 'EXPENSE' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
           </div>
         </div>
       </div>
@@ -145,15 +161,15 @@ export function CategoryEditDialog({
         <div className="p-seg">
           <button
             type="button"
-            className={`p-seg__btn ${kind === 'expense' ? 'active' : ''}`}
-            onClick={() => setKind('expense')}
+            className={`p-seg__btn ${kind === 'EXPENSE' ? 'active' : ''}`}
+            onClick={() => setKind('EXPENSE')}
           >
             지출
           </button>
           <button
             type="button"
-            className={`p-seg__btn ${kind === 'income' ? 'active' : ''}`}
-            onClick={() => setKind('income')}
+            className={`p-seg__btn ${kind === 'INCOME' ? 'active' : ''}`}
+            onClick={() => setKind('INCOME')}
           >
             수입
           </button>
