@@ -44,6 +44,10 @@ export const useAssetBalanceTrend = (assetId: number, weeks: number) => {
     queryKey: assetKeys.balanceTrend(assetId, weeks),
     queryFn: () => assetApi.getAssetBalanceTrend(assetId, weeks),
     enabled: assetId > 0 && weeks > 0,
+    // 자산 잔액 추이는 자주 바뀌지 않으므로 5분간 fresh.
+    // 탭(3개월/6개월/1년) 전환 시 이미 조회한 기간은 즉시 재사용.
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 }
 
