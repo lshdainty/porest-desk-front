@@ -1,15 +1,19 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
-import { Donut, LineChart } from '@/shared/ui/porest/charts'
+import { Donut } from '@/shared/ui/porest/charts'
+import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import {
   useMonthlySummary,
   useYearlySummary,
   useMerchantSummary,
   useExpenseHeatmap,
+  useExpenseCategories,
 } from '@/features/expense'
-import type { CategoryBreakdown, HeatmapCell } from '@/entities/expense'
+import type { CategoryBreakdown, HeatmapCell, ExpenseCategory } from '@/entities/expense'
+import { renderIcon } from '@/shared/lib'
 
 type OutletCtx = { mobile: boolean }
 type TabKey = 'cat' | 'trend' | 'compare'
@@ -77,6 +81,83 @@ const prevYearMonth = (year: number, month: number) => {
 
 const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
 
+type TrendTooltipPayload = {
+  dataKey?: string | number
+  value?: number
+  color?: string
+  payload?: { month?: string }
+}
+type TrendTooltipProps = { active?: boolean; payload?: TrendTooltipPayload[]; label?: string }
+
+function PorestChartTooltip({
+  active,
+  payload,
+  label,
+  rows,
+}: TrendTooltipProps & {
+  rows: { dataKey: string; label: string; color: string; format?: (v: number) => string }[]
+}) {
+  if (!active || !payload || payload.length === 0) return null
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 10,
+        boxShadow: 'var(--shadow-md)',
+        padding: '10px 12px',
+        fontSize: 12,
+        minWidth: 150,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: 'var(--fg-tertiary)',
+          fontWeight: 600,
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </div>
+      {rows.map(row => {
+        const item = payload.find(p => p.dataKey === row.dataKey)
+        if (!item) return null
+        const v = Number(item.value ?? 0)
+        const text = row.format ? row.format(v) : `${KRW(v)}원`
+        return (
+          <div
+            key={row.dataKey}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}
+          >
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 2,
+                background: row.color,
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 12, color: 'var(--fg-secondary)' }}>{row.label}</span>
+            <span
+              className="num"
+              style={{
+                marginLeft: 'auto',
+                fontSize: 13,
+                fontWeight: 700,
+                color: 'var(--fg-primary)',
+              }}
+            >
+              {text}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const initial = getCurrentYearMonth()
@@ -90,6 +171,8 @@ export const StatsPage = () => {
   const monthlyQ = useMonthlySummary(year, month)
   const prevMonthlyQ = useMonthlySummary(prev.year, prev.month)
   const yearlyQ = useYearlySummary(year)
+  const prevYearlyQ = useYearlySummary(year - 1)
+  const categoriesQ = useExpenseCategories()
 
   // Merchant summary over current month
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -98,63 +181,80 @@ export const StatsPage = () => {
   const merchantQ = useMerchantSummary(startDate, endDate)
   const heatmapQ = useExpenseHeatmap(year, month)
 
-  const categoryBreakdown: CategoryBreakdown[] = monthlyQ.data?.categoryBreakdown ?? []
+  const categoryBreakdown: CategoryBreakdown[] = useMemo(
+    () => monthlyQ.data?.categoryBreakdown ?? [],
+    [monthlyQ.data],
+  )
   const totalExpense = monthlyQ.data?.totalExpense ?? 0
   const totalIncome = monthlyQ.data?.totalIncome ?? 0
 
-  // Aggregate by parent category where available
-  const aggregatedBreakdown = useMemo(() => {
+  // 기간 선택(월/분기/년)에 해당하는 실제 월 번호 목록
+  const periodMonths = useMemo(() => {
+    if (period === '1m') return [month]
+    if (period === '3m') {
+      const q = Math.ceil(month / 3)
+      return [q * 3 - 2, q * 3 - 1, q * 3]
+    }
+    return Array.from({ length: 12 }, (_, i) => i + 1)
+  }, [period, month])
+
+  // 도넛차트용 — 기간 전체의 카테고리 집계
+  const donutBreakdown = useMemo(() => {
     const agg = new Map<string, { name: string; amount: number }>()
-    for (const c of categoryBreakdown) {
-      const key = c.parentCategoryName || c.categoryName
-      const curr = agg.get(key)
-      if (curr) curr.amount += c.totalAmount
-      else agg.set(key, { name: key, amount: c.totalAmount })
+    const push = (list: CategoryBreakdown[]) => {
+      for (const c of list) {
+        if (c.expenseType !== 'EXPENSE') continue
+        const key = c.parentCategoryName || c.categoryName
+        const curr = agg.get(key)
+        if (curr) curr.amount += c.totalAmount
+        else agg.set(key, { name: key, amount: c.totalAmount })
+      }
+    }
+    if (period === '1m') {
+      push(categoryBreakdown)
+    } else {
+      for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
+        if (periodMonths.includes(m.month)) push(m.categoryBreakdown)
+      }
     }
     return Array.from(agg.values()).sort((a, b) => b.amount - a.amount)
-  }, [categoryBreakdown])
+  }, [period, categoryBreakdown, yearlyQ.data, periodMonths])
 
-  const periodLbl = period === '1m' ? `${month}월` : period === '3m' ? '3개월' : `${year}년`
+  // 기간 총 지출 (하이라이트 · 도넛 센터용)
+  const periodTotalExpense = useMemo(() => {
+    if (period === '1m') return totalExpense
+    let sum = 0
+    for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
+      if (periodMonths.includes(m.month)) sum += m.totalExpense
+    }
+    return sum
+  }, [period, totalExpense, yearlyQ.data, periodMonths])
+
+  const donutLoading = period === '1m' ? monthlyQ.isLoading : yearlyQ.isLoading
+
+  const periodLbl = period === '1m'
+    ? `${month}월`
+    : period === '3m'
+      ? `${year}년 ${Math.ceil(month / 3)}분기`
+      : `${year}년`
 
   const Tabs = (
-    <div
-      style={{
-        display: 'inline-flex',
-        gap: 4,
-        padding: 4,
-        background: 'var(--mist-100)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 12,
-        marginBottom: mobile ? 14 : 20,
-      }}
-    >
+    <div className="p-tabs" style={{ marginBottom: mobile ? 14 : 20 }}>
       {([
         { v: 'cat', l: '카테고리' },
         { v: 'trend', l: '추이' },
         { v: 'compare', l: '비교' },
-      ] as { v: TabKey; l: string }[]).map(t => {
-        const active = tab === t.v
-        return (
-          <button
-            key={t.v}
-            onClick={() => setTab(t.v)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: 0,
-              background: active ? 'var(--bg-surface)' : 'transparent',
-              color: active ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-              fontSize: 13,
-              fontWeight: active ? 700 : 500,
-              boxShadow: active ? 'var(--shadow-sm)' : 'none',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            {t.l}
-          </button>
-        )
-      })}
+      ] as { v: TabKey; l: string }[]).map(t => (
+        <button
+          key={t.v}
+          type="button"
+          className={`p-tab ${tab === t.v ? 'is-active' : ''}`}
+          aria-selected={tab === t.v}
+          onClick={() => setTab(t.v)}
+        >
+          {t.l}
+        </button>
+      ))}
     </div>
   )
 
@@ -188,7 +288,7 @@ export const StatsPage = () => {
   )
 
   // ---------- CATEGORY TAB ----------
-  const donutTotal = aggregatedBreakdown.reduce((s, x) => s + x.amount, 0)
+  const donutTotal = donutBreakdown.reduce((s, x) => s + x.amount, 0)
 
   const DonutCard = (
     <div className="p-card" style={{ padding: mobile ? 18 : 24 }}>
@@ -196,9 +296,9 @@ export const StatsPage = () => {
         <h2 style={{ fontSize: 15 }}>카테고리별 지출</h2>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
       </div>
-      {monthlyQ.isLoading ? (
+      {donutLoading ? (
         <EmptyBox text="불러오는 중…" />
-      ) : aggregatedBreakdown.length === 0 ? (
+      ) : donutBreakdown.length === 0 ? (
         <EmptyBox text="카테고리 데이터가 없습니다" />
       ) : (
         <div
@@ -210,7 +310,7 @@ export const StatsPage = () => {
           }}
         >
           <Donut
-            segments={aggregatedBreakdown.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
+            segments={donutBreakdown.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
             size={mobile ? 180 : 200}
             stroke={28}
           >
@@ -220,7 +320,7 @@ export const StatsPage = () => {
             </div>
           </Donut>
           <div className="cat-legend" style={{ width: '100%' }}>
-            {aggregatedBreakdown.map((s, i) => (
+            {donutBreakdown.map((s, i) => (
               <div key={i} className="cat-legend__row">
                 <span className="cat-legend__sw" style={{ background: colorFor(i) }} />
                 <span className="cat-legend__name">{s.name}</span>
@@ -511,13 +611,21 @@ export const StatsPage = () => {
   )
 
   const topMerchant = topMerchants[0]
-  const categoryTop = aggregatedBreakdown[0]
+  const categoryTop = donutBreakdown[0]
   const daysInMonth = endDateObj.getDate()
-  const dailyAvg = daysInMonth > 0 ? Math.round(totalExpense / daysInMonth) : 0
   const prevTotalExpense = prevMonthlyQ.data?.totalExpense ?? 0
   const dayPct = prevTotalExpense > 0
     ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
     : 0
+
+  const avgLabel = period === '1m' ? '하루 평균' : '월 평균'
+  const avgDivisor = period === '1m' ? daysInMonth : periodMonths.length
+  const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
+  const avgSub = period !== '1m'
+    ? `${periodMonths.length}개월 합계 ${KRW(periodTotalExpense)}원`
+    : prevTotalExpense > 0
+      ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
+      : '전월 비교 불가'
 
   const highlights = [
     {
@@ -531,11 +639,9 @@ export const StatsPage = () => {
       sub: topMerchant ? `${topMerchant.count}회 · ${KRW(topMerchant.totalAmount)}원` : '데이터 없음',
     },
     {
-      lbl: '하루 평균',
-      val: `${KRW(dailyAvg)}원`,
-      sub: prevTotalExpense > 0
-        ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
-        : '전월 비교 불가',
+      lbl: avgLabel,
+      val: `${KRW(avgValue)}원`,
+      sub: avgSub,
     },
   ]
 
@@ -562,36 +668,130 @@ export const StatsPage = () => {
   )
 
   // ---------- TREND TAB ----------
-  const monthlyAmounts = yearlyQ.data?.monthlyAmounts ?? []
-  const avgIn = monthlyAmounts.length > 0
-    ? monthlyAmounts.reduce((s, m) => s + m.totalIncome, 0) / monthlyAmounts.length
-    : 0
-  const avgOut = monthlyAmounts.length > 0
-    ? monthlyAmounts.reduce((s, m) => s + m.totalExpense, 0) / monthlyAmounts.length
-    : 0
+  const monthlyAmounts = useMemo(
+    () => yearlyQ.data?.monthlyAmounts ?? [],
+    [yearlyQ.data],
+  )
+  // 기간 선택에 따라 필터링된 월들 (월별 정렬)
+  const trendMonths = useMemo(
+    () =>
+      monthlyAmounts
+        .filter(m => periodMonths.includes(m.month))
+        .slice()
+        .sort((a, b) => a.month - b.month),
+    [monthlyAmounts, periodMonths],
+  )
+  const trendChartData = useMemo(
+    () =>
+      trendMonths.map(m => ({
+        month: `${String(m.month).padStart(2, '0')}월`,
+        income: m.totalIncome,
+        expense: m.totalExpense,
+        savings: m.totalIncome - m.totalExpense,
+      })),
+    [trendMonths],
+  )
+
+  const sumIn = trendMonths.reduce((s, m) => s + m.totalIncome, 0)
+  const sumOut = trendMonths.reduce((s, m) => s + m.totalExpense, 0)
+  const n = Math.max(1, trendMonths.length)
+  const avgIn = sumIn / n
+  const avgOut = sumOut / n
   const avgSave = avgIn - avgOut
+  const isSingle = period === '1m'
+  const statLabelIn = isSingle ? '수입' : '평균 수입'
+  const statLabelOut = isSingle ? '지출' : '평균 지출'
+  const statLabelSave = isSingle ? '순저축' : '평균 저축'
+
+  const trendChartConfig: ChartConfig = {
+    income: { label: '수입', color: 'var(--mossy-500)' },
+    expense: { label: '지출', color: 'var(--berry-500)' },
+  }
+  const savingsChartConfig: ChartConfig = {
+    savings: { label: '순저축', color: 'var(--mossy-600)' },
+  }
+
+  const fmtTick = (v: number) =>
+    v >= 100_000_000
+      ? `${(v / 100_000_000).toFixed(1)}억`
+      : v >= 10_000
+        ? `${Math.round(v / 10_000).toLocaleString('ko-KR')}만`
+        : v.toLocaleString('ko-KR')
 
   const TrendBig = (
     <div className="p-card" style={{ padding: mobile ? 18 : 24 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>{year}년 수입·지출 추이</h2>
+        <h2 style={{ fontSize: 15 }}>{periodLbl} 수입·지출 추이</h2>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
       </div>
       {yearlyQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
-      ) : monthlyAmounts.length === 0 ? (
+      ) : trendChartData.length === 0 ? (
         <EmptyBox text="추이 데이터가 없습니다" />
       ) : (
         <>
-          <LineChart
-            labels={monthlyAmounts.map(m => `${m.month}월`)}
-            series={[
-              { label: '수입', values: monthlyAmounts.map(m => m.totalIncome) },
-              { label: '지출', values: monthlyAmounts.map(m => m.totalExpense) },
-            ]}
-            colors={['var(--mossy-500)', 'var(--berry-500)']}
-            height={mobile ? 180 : 240}
-          />
+          <ChartContainer
+            config={trendChartConfig}
+            className="aspect-auto w-full"
+            style={{ height: mobile ? 200 : 260 }}
+          >
+            <AreaChart data={trendChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="trendIncomeFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-income)" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="var(--color-income)" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="trendExpenseFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-expense)" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="var(--color-expense)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tickMargin={8}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tickFormatter={fmtTick}
+                width={52}
+              />
+              <ChartTooltip
+                cursor={{ stroke: 'var(--fg-tertiary)', strokeDasharray: '3 3' }}
+                content={
+                  <PorestChartTooltip
+                    rows={[
+                      { dataKey: 'income', label: '수입', color: 'var(--mossy-500)' },
+                      { dataKey: 'expense', label: '지출', color: 'var(--berry-500)' },
+                    ]}
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="var(--color-income)"
+                strokeWidth={2}
+                fill="url(#trendIncomeFill)"
+                dot={{ fill: 'var(--color-income)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="var(--color-expense)"
+                strokeWidth={2}
+                fill="url(#trendExpenseFill)"
+                dot={{ fill: 'var(--color-expense)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+            </AreaChart>
+          </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-500)' }} /> 수입
@@ -614,9 +814,9 @@ export const StatsPage = () => {
       }}
     >
       {[
-        { lbl: '평균 수입', val: KRW(Math.round(avgIn)) + '원' },
-        { lbl: '평균 지출', val: KRW(Math.round(avgOut)) + '원' },
-        { lbl: '평균 저축', val: KRW(Math.round(avgSave)) + '원' },
+        { lbl: statLabelIn, val: KRW(Math.round(avgIn)) + '원' },
+        { lbl: statLabelOut, val: KRW(Math.round(avgOut)) + '원' },
+        { lbl: statLabelSave, val: KRW(Math.round(avgSave)) + '원' },
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ].map((s, i) => (
         <div key={i} className="p-card" style={{ padding: 16 }}>
@@ -634,100 +834,175 @@ export const StatsPage = () => {
     </div>
   )
 
-  const savings = monthlyAmounts.map(m => m.totalIncome - m.totalExpense)
-  const maxSave = Math.max(1, ...savings)
-
   const SavingsBars = (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>월별 순저축</h2>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </div>
-      {monthlyAmounts.length === 0 ? (
+      {yearlyQ.isLoading ? (
+        <EmptyBox text="불러오는 중…" />
+      ) : trendChartData.length === 0 ? (
         <EmptyBox text="월별 데이터가 없습니다" />
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: mobile ? 8 : 16,
-            height: mobile ? 160 : 200,
-            padding: '12px 4px 8px',
-          }}
+        <ChartContainer
+          config={savingsChartConfig}
+          className="aspect-auto w-full"
+          style={{ height: mobile ? 180 : 220 }}
         >
-          {monthlyAmounts.map((m, i) => {
-            const save = m.totalIncome - m.totalExpense
-            const h = Math.max(4, (save / maxSave) * (mobile ? 140 : 180))
-            const isCurrent = m.month === month
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                  minWidth: 0,
-                }}
-              >
-                <span
-                  className="num"
-                  style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}
-                >
-                  {(save / 10000).toFixed(0)}만
-                </span>
-                <div
-                  style={{
-                    width: '100%',
-                    maxWidth: 42,
-                    height: Math.max(4, h),
-                    background: isCurrent ? 'var(--mossy-700)' : 'var(--mossy-300)',
-                    borderRadius: '6px 6px 2px 2px',
-                    transition: 'all var(--dur-med) var(--ease-decel)',
-                  }}
+          <BarChart data={trendChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+              tickMargin={8}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+              tickFormatter={fmtTick}
+              width={52}
+            />
+            <ChartTooltip
+              cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.05 }}
+              content={
+                <PorestChartTooltip
+                  rows={[
+                    {
+                      dataKey: 'savings',
+                      label: '순저축',
+                      color: 'var(--mossy-600)',
+                      format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
+                    },
+                  ]}
                 />
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: isCurrent ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
-                    fontWeight: isCurrent ? 700 : 500,
-                  }}
-                >
-                  {m.month}월
-                </span>
-              </div>
-            )
-          })}
-        </div>
+              }
+            />
+            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={mobile ? 18 : 28}>
+              {trendChartData.map((d, i) => (
+                <Cell
+                  key={i}
+                  fill={
+                    d.savings < 0
+                      ? 'var(--berry-400)'
+                      : d.month === `${month}월`
+                        ? 'var(--mossy-700)'
+                        : 'var(--mossy-400)'
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
       )}
     </div>
   )
 
   // ---------- COMPARE TAB ----------
-  const prevCategoryMap = new Map<string, number>()
-  for (const c of prevMonthlyQ.data?.categoryBreakdown ?? []) {
-    const key = c.parentCategoryName || c.categoryName
-    prevCategoryMap.set(key, (prevCategoryMap.get(key) ?? 0) + c.totalAmount)
-  }
-
-  const compareRows = aggregatedBreakdown.map(cur => ({
-    name: cur.name,
-    now: cur.amount,
-    prev: prevCategoryMap.get(cur.name) ?? 0,
-  }))
-
-  // Include categories only in prev month (no current value)
-  for (const [name, amount] of prevCategoryMap) {
-    if (!compareRows.some(r => r.name === name)) {
-      compareRows.push({ name, now: 0, prev: amount })
+  // 현재 기간과 비교(이전 기간)의 년/월 범위 계산
+  const prevPeriod = useMemo<{ year: number; months: number[] }>(() => {
+    if (period === '1m') return { year: prev.year, months: [prev.month] }
+    if (period === '3m') {
+      const q = Math.ceil(month / 3)
+      if (q === 1) return { year: year - 1, months: [10, 11, 12] }
+      const pq = q - 1
+      return { year, months: [pq * 3 - 2, pq * 3 - 1, pq * 3] }
     }
-  }
+    return { year: year - 1, months: Array.from({ length: 12 }, (_, i) => i + 1) }
+  }, [period, year, month, prev])
 
-  const totalNow = totalExpense
-  const totalPrev = prevTotalExpense
-  const maxAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
+  const prevPeriodYearly = prevPeriod.year === year ? yearlyQ.data : prevYearlyQ.data
+
+  // 카테고리 메타(rowId → 아이콘/색/이름) 룩업
+  const categoryById = useMemo(() => {
+    const map = new Map<number, ExpenseCategory>()
+    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c)
+    return map
+  }, [categoriesQ.data])
+
+  // 이전 기간 총 지출
+  const prevPeriodTotal = useMemo(() => {
+    if (period === '1m') return prevMonthlyQ.data?.totalExpense ?? 0
+    let total = 0
+    for (const m of prevPeriodYearly?.monthlyAmounts ?? []) {
+      if (prevPeriod.months.includes(m.month)) total += m.totalExpense
+    }
+    return total
+  }, [period, prevMonthlyQ.data, prevPeriodYearly, prevPeriod])
+
+  // 카테고리별 비교 (parent rowId로 그룹핑, 아이콘/색 동반)
+  type CompareRow = {
+    groupRowId: number
+    name: string
+    icon: string | null
+    color: string | null
+    now: number
+    prev: number
+  }
+  const compareRows = useMemo<CompareRow[]>(() => {
+    const byId = new Map<number, CompareRow>()
+
+    const addBreakdown = (source: 'now' | 'prev', list: CategoryBreakdown[]) => {
+      for (const c of list) {
+        if (c.expenseType !== 'EXPENSE') continue
+        const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
+        const groupName = c.parentCategoryName ?? c.categoryName
+        let row = byId.get(groupRowId)
+        if (!row) {
+          const cat = categoryById.get(groupRowId)
+          row = {
+            groupRowId,
+            name: groupName,
+            icon: cat?.icon ?? null,
+            color: cat?.color ?? null,
+            now: 0,
+            prev: 0,
+          }
+          byId.set(groupRowId, row)
+        }
+        row[source] += c.totalAmount
+      }
+    }
+
+    // 현재 기간
+    if (period === '1m') {
+      addBreakdown('now', monthlyQ.data?.categoryBreakdown ?? [])
+    } else {
+      for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
+        if (periodMonths.includes(m.month)) addBreakdown('now', m.categoryBreakdown)
+      }
+    }
+
+    // 이전 기간
+    if (period === '1m') {
+      addBreakdown('prev', prevMonthlyQ.data?.categoryBreakdown ?? [])
+    } else {
+      for (const m of prevPeriodYearly?.monthlyAmounts ?? []) {
+        if (prevPeriod.months.includes(m.month)) addBreakdown('prev', m.categoryBreakdown)
+      }
+    }
+
+    return Array.from(byId.values())
+      .sort((a, b) => (b.now - a.now) || (b.prev - a.prev))
+      .slice(0, 10)
+  }, [period, monthlyQ.data, prevMonthlyQ.data, yearlyQ.data, prevPeriodYearly, periodMonths, prevPeriod, categoryById])
+
+  const totalNow = periodTotalExpense
+  const totalPrev = prevPeriodTotal
   const momUp = totalNow >= totalPrev
+  const maxCompareAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
+
+  const periodNow = period === '1m' ? '이번 달' : period === '3m' ? '이번 분기' : '이번 해'
+  const periodPrev = period === '1m' ? '지난 달' : period === '3m' ? '지난 분기' : '지난 해'
+  const momLabel = period === '1m' ? '전월 대비' : period === '3m' ? '전분기 대비' : '전년 대비'
+  const noPrevText = period === '1m' ? '전월 데이터 없음' : period === '3m' ? '전분기 데이터 없음' : '전년 데이터 없음'
+
+  const compareLoading = period === '1m'
+    ? (monthlyQ.isLoading || prevMonthlyQ.isLoading)
+    : (yearlyQ.isLoading || (prevPeriod.year !== year && prevYearlyQ.isLoading))
 
   const CompareSummary = (
     <div
@@ -739,7 +1014,7 @@ export const StatsPage = () => {
     >
       <div className="p-card" style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
-          이번 달 지출
+          {periodNow} 지출
         </div>
         <div
           className="num"
@@ -751,7 +1026,7 @@ export const StatsPage = () => {
       </div>
       <div className="p-card" style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
-          지난 달 지출
+          {periodPrev} 지출
         </div>
         <div
           className="num"
@@ -768,7 +1043,7 @@ export const StatsPage = () => {
       </div>
       <div className="p-card" style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
-          전월 대비
+          {momLabel}
         </div>
         <div
           className="num"
@@ -792,7 +1067,7 @@ export const StatsPage = () => {
               {momUp ? '+' : '−'}
               {KRW(Math.abs(totalNow - totalPrev))}원
             </>
-          ) : '전월 데이터 없음'}
+          ) : noPrevText}
         </div>
       </div>
     </div>
@@ -801,7 +1076,7 @@ export const StatsPage = () => {
   const CompareCategory = (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>카테고리별 전월 대비</h2>
+        <h2 style={{ fontSize: 15 }}>카테고리별 {momLabel}</h2>
         <div
           style={{
             marginLeft: 'auto',
@@ -813,25 +1088,46 @@ export const StatsPage = () => {
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-600)' }} />
-            이번 달
+            {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-200)' }} />
-            지난 달
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-300)' }} />
+            {periodPrev}
           </span>
         </div>
       </div>
-      {compareRows.length === 0 ? (
+      {compareLoading ? (
+        <EmptyBox text="불러오는 중…" />
+      ) : compareRows.length === 0 ? (
         <EmptyBox text="비교할 데이터가 없습니다" />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {compareRows.map((r, i) => {
+          {compareRows.map(r => {
             const diff = r.now - r.prev
             const pct = r.prev > 0 ? (diff / r.prev) * 100 : 0
             const up = diff > 0
+            const iconBg = r.color
+              ? `oklch(from ${r.color} l c h / 0.12)`
+              : 'var(--bg-brand-subtle)'
+            const iconFg = r.color ?? 'var(--fg-brand-strong)'
             return (
-              <div key={i}>
+              <div key={r.groupRowId}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      background: iconBg,
+                      color: iconFg,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
+                  </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 600 }}>{r.name}</div>
                   </div>
@@ -844,7 +1140,11 @@ export const StatsPage = () => {
                       fontWeight: 700,
                       minWidth: 56,
                       textAlign: 'right',
-                      color: up ? 'var(--berry-700)' : 'var(--mossy-700)',
+                      color: r.prev === 0
+                        ? 'var(--fg-tertiary)'
+                        : up
+                          ? 'var(--berry-700)'
+                          : 'var(--mossy-700)',
                     }}
                   >
                     {r.prev > 0 ? (
@@ -852,38 +1152,24 @@ export const StatsPage = () => {
                     ) : '—'}
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div
-                    style={{
-                      position: 'relative',
-                      height: 10,
-                      background: 'var(--mist-100)',
-                      borderRadius: 999,
-                    }}
-                  >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
+                  <div style={{ position: 'relative', height: 10, background: 'var(--bg-subtle)', borderRadius: 999 }}>
                     <div
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        width: `${(r.now / maxAmt) * 100}%`,
+                        width: `${(r.now / maxCompareAmt) * 100}%`,
                         background: 'var(--mossy-600)',
                         borderRadius: 999,
                       }}
                     />
                   </div>
-                  <div
-                    style={{
-                      position: 'relative',
-                      height: 6,
-                      background: 'var(--mist-100)',
-                      borderRadius: 999,
-                    }}
-                  >
+                  <div style={{ position: 'relative', height: 6, background: 'var(--bg-subtle)', borderRadius: 999 }}>
                     <div
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        width: `${(r.prev / maxAmt) * 100}%`,
+                        width: `${(r.prev / maxCompareAmt) * 100}%`,
                         background: 'var(--mossy-200)',
                         borderRadius: 999,
                       }}

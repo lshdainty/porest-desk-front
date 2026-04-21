@@ -1213,3 +1213,34 @@
     border-radius: 20px 20px 0 0;
   }
 }
+
+/* ------------------------------------------------------------------------
+ * Tabs — .p-tabs (bottom underline)
+ * ---------------------------------------------------------------------- */
+.p-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.p-tab {
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--fg-secondary);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
+}
+.p-tab:hover {
+  color: var(--fg-primary);
+}
+.p-tab.is-active {
+  color: var(--fg-brand-strong, var(--mossy-800));
+  border-bottom-color: var(--mossy-600);
+  font-weight: 700;
+}
