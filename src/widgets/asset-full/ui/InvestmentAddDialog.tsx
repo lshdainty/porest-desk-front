@@ -14,11 +14,26 @@ import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
   BANK_ENTRIES_BY_CATEGORY,
+  INVEST_CATEGORIES,
+  type BankCategory,
   type BankEntry,
 } from '@/shared/lib/porest/bank-colors'
 import { useCreateAsset } from '@/features/asset'
 
-const SECURITIES: BankEntry[] = BANK_ENTRIES_BY_CATEGORY['증권사'] ?? []
+const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
+  cat => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
+)
+
+const CATEGORY_LABEL: Record<BankCategory, string> = {
+  '시중은행': '시중은행',
+  '인터넷은행': '인터넷은행',
+  '지방은행': '지방은행',
+  '특수은행': '특수은행',
+  '저축기관': '저축기관',
+  '외국계': '외국계',
+  '증권사': '증권사',
+  '가상자산': '가상자산거래소',
+}
 
 interface InvestmentAddDialogProps {
   open: boolean
@@ -26,7 +41,7 @@ interface InvestmentAddDialogProps {
 }
 
 export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps) {
-  const [brand, setBrand] = useState<string>(SECURITIES[0]?.name ?? '삼성증권')
+  const [brand, setBrand] = useState<string>(INVEST_BRANDS[0]?.name ?? '삼성증권')
   const [query, setQuery] = useState('')
   const [productName, setProductName] = useState('')
   const [balanceStr, setBalanceStr] = useState('0')
@@ -40,10 +55,16 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
     return (e.aliases ?? []).some(a => a.toLowerCase().replace(/\s+/g, '').includes(needle))
   }
 
-  const filtered = useMemo(
-    () => SECURITIES.filter(e => matchesQuery(e, query)),
-    [query],
-  )
+  const filteredByCategory = useMemo(() => {
+    const result: [BankCategory, BankEntry[]][] = []
+    for (const cat of INVEST_CATEGORIES) {
+      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter(e => matchesQuery(e, query))
+      if (list.length > 0) result.push([cat, list])
+    }
+    return result
+  }, [query])
+
+  const filteredCount = filteredByCategory.reduce((sum, [, list]) => sum + list.length, 0)
 
   const brandColor = useMemo(() => getBrandColor(brand), [brand])
   const previewName = productName.trim() || '새 투자 상품'
@@ -52,7 +73,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
   const previewFg = brandColor?.fg ?? '#fff'
 
   const reset = () => {
-    setBrand(SECURITIES[0]?.name ?? '삼성증권')
+    setBrand(INVEST_BRANDS[0]?.name ?? '삼성증권')
     setQuery('')
     setProductName('')
     setBalanceStr('0')
@@ -108,8 +129,8 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-[13px] font-medium">증권사</Label>
-              <span className="text-[11px] text-[var(--fg-tertiary)]">총 {SECURITIES.length}개</span>
+              <Label className="text-[13px] font-medium">증권사·거래소</Label>
+              <span className="text-[11px] text-[var(--fg-tertiary)]">총 {INVEST_BRANDS.length}개</span>
             </div>
             <div className="relative mb-2">
               <Search
@@ -119,47 +140,54 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
               <Input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="증권사 검색"
+                placeholder="증권사·가상자산거래소·상품거래소 검색"
                 className="pl-9"
               />
             </div>
             <div
               className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-              style={{ maxHeight: 220, overflowY: 'auto' }}
+              style={{ maxHeight: 260, overflowY: 'auto' }}
             >
-              {filtered.length === 0 ? (
+              {filteredCount === 0 ? (
                 <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
                   검색 결과가 없어요
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-1.5 p-3">
-                  {filtered.map(e => {
-                    const active = e.name === brand
-                    return (
-                      <button
-                        key={e.name}
-                        type="button"
-                        onClick={() => setBrand(e.name)}
-                        className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
-                        style={
-                          active
-                            ? {
-                                background: e.color.bg,
-                                color: e.color.fg ?? '#fff',
-                                borderColor: 'transparent',
-                              }
-                            : {
-                                background: 'var(--mist-100)',
-                                color: 'var(--fg-secondary)',
-                                borderColor: 'transparent',
-                              }
-                        }
-                      >
-                        {e.name}
-                      </button>
-                    )
-                  })}
-                </div>
+                filteredByCategory.map(([cat, list]) => (
+                  <div key={cat}>
+                    <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
+                      {CATEGORY_LABEL[cat]}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                      {list.map(e => {
+                        const active = e.name === brand
+                        return (
+                          <button
+                            key={e.name}
+                            type="button"
+                            onClick={() => setBrand(e.name)}
+                            className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
+                            style={
+                              active
+                                ? {
+                                    background: e.color.bg,
+                                    color: e.color.fg ?? '#fff',
+                                    borderColor: 'transparent',
+                                  }
+                                : {
+                                    background: 'var(--mist-100)',
+                                    color: 'var(--fg-secondary)',
+                                    borderColor: 'transparent',
+                                  }
+                            }
+                          >
+                            {e.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>

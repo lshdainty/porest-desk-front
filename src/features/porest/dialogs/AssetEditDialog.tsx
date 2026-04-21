@@ -16,8 +16,23 @@ import {
   BANK_ENTRIES,
   BANK_ENTRIES_BY_CATEGORY,
   BANK_CATEGORY_ORDER,
+  INVEST_CATEGORIES,
+  type BankCategory,
   type BankEntry,
 } from '@/shared/lib/porest/bank-colors'
+
+const INVEST_CATEGORY_SET = new Set<BankCategory>(INVEST_CATEGORIES)
+
+const CATEGORY_LABEL: Record<BankCategory, string> = {
+  '시중은행': '시중은행',
+  '인터넷은행': '인터넷은행',
+  '지방은행': '지방은행',
+  '특수은행': '특수은행',
+  '저축기관': '저축기관',
+  '외국계': '외국계',
+  '증권사': '증권사',
+  '가상자산': '가상자산거래소',
+}
 import { useCardCatalogs } from '@/features/card-catalog'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
 import type {
@@ -58,7 +73,9 @@ const groupOfType = (t: AssetType): AssetGroup => {
   return 'account'
 }
 
-const SECURITIES: BankEntry[] = BANK_ENTRIES_BY_CATEGORY['증권사'] ?? []
+const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
+  cat => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
+)
 
 export interface AssetEditDialogProps {
   item: Asset | null
@@ -87,7 +104,7 @@ export function AssetEditDialog({
   const [brand, setBrand] = useState<string>(
     item?.institution ??
       (editingGroup === 'invest'
-        ? SECURITIES[0]?.name ?? '삼성증권'
+        ? INVEST_BRANDS[0]?.name ?? '삼성증권'
         : BANK_ENTRIES[0]?.name ?? '신한'),
   )
   const [query, setQuery] = useState('')
@@ -141,7 +158,7 @@ export function AssetEditDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.rowId])
 
-  // 은행 검색 (category 묶음 — 카드/투자는 제외)
+  // 은행 검색 (category 묶음 — 투자용 카테고리는 제외)
   const matchesQuery = (e: BankEntry, q: string) => {
     if (!q) return true
     const needle = q.toLowerCase().replace(/\s+/g, '')
@@ -152,9 +169,9 @@ export function AssetEditDialog({
   }
 
   const bankFilteredByCategory = useMemo(() => {
-    const result: [string, BankEntry[]][] = []
+    const result: [BankCategory, BankEntry[]][] = []
     for (const cat of BANK_CATEGORY_ORDER) {
-      if (cat === '증권사') continue
+      if (INVEST_CATEGORY_SET.has(cat)) continue
       const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter(e =>
         matchesQuery(e, query),
       )
@@ -163,10 +180,16 @@ export function AssetEditDialog({
     return result
   }, [query])
 
-  const investFiltered = useMemo(
-    () => SECURITIES.filter(e => matchesQuery(e, query)),
-    [query],
-  )
+  const investFilteredByCategory = useMemo(() => {
+    const result: [BankCategory, BankEntry[]][] = []
+    for (const cat of INVEST_CATEGORIES) {
+      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter(e => matchesQuery(e, query))
+      if (list.length > 0) result.push([cat, list])
+    }
+    return result
+  }, [query])
+
+  const investFilteredCount = investFilteredByCategory.reduce((sum, [, list]) => sum + list.length, 0)
 
   // 색/미리보기
   const cardCompanyName = selectedCard?.company?.name ?? item?.institution ?? ''
@@ -488,13 +511,13 @@ export function AssetEditDialog({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-[13px] font-medium">
-                  {editingGroup === 'invest' ? '증권사' : '기관·브랜드'}
+                  {editingGroup === 'invest' ? '증권사·거래소' : '기관·브랜드'}
                 </Label>
                 <span className="text-[11px] text-[var(--fg-tertiary)]">
                   총{' '}
                   {editingGroup === 'invest'
-                    ? SECURITIES.length
-                    : BANK_ENTRIES.filter(e => e.category !== '증권사').length}
+                    ? INVEST_BRANDS.length
+                    : BANK_ENTRIES.filter(e => !INVEST_CATEGORY_SET.has(e.category)).length}
                   개
                 </span>
               </div>
@@ -506,48 +529,59 @@ export function AssetEditDialog({
                 <Input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder={editingGroup === 'invest' ? '증권사 검색' : '은행명 검색'}
+                  placeholder={
+                    editingGroup === 'invest'
+                      ? '증권사·가상자산거래소 검색'
+                      : '은행명 검색'
+                  }
                   className="pl-9"
                 />
               </div>
               <div
                 className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-                style={{ maxHeight: 220, overflowY: 'auto' }}
+                style={{ maxHeight: 260, overflowY: 'auto' }}
               >
                 {editingGroup === 'invest' ? (
-                  investFiltered.length === 0 ? (
+                  investFilteredCount === 0 ? (
                     <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
                       검색 결과가 없어요
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-1.5 p-3">
-                      {investFiltered.map(e => {
-                        const active = e.name === brand
-                        return (
-                          <button
-                            key={e.name}
-                            type="button"
-                            onClick={() => setBrand(e.name)}
-                            className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
-                            style={
-                              active
-                                ? {
-                                    background: e.color.bg,
-                                    color: e.color.fg ?? '#fff',
-                                    borderColor: 'transparent',
-                                  }
-                                : {
-                                    background: 'var(--mist-100)',
-                                    color: 'var(--fg-secondary)',
-                                    borderColor: 'transparent',
-                                  }
-                            }
-                          >
-                            {e.name}
-                          </button>
-                        )
-                      })}
-                    </div>
+                    investFilteredByCategory.map(([cat, list]) => (
+                      <div key={cat}>
+                        <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
+                          {CATEGORY_LABEL[cat]}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                          {list.map(e => {
+                            const active = e.name === brand
+                            return (
+                              <button
+                                key={e.name}
+                                type="button"
+                                onClick={() => setBrand(e.name)}
+                                className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
+                                style={
+                                  active
+                                    ? {
+                                        background: e.color.bg,
+                                        color: e.color.fg ?? '#fff',
+                                        borderColor: 'transparent',
+                                      }
+                                    : {
+                                        background: 'var(--mist-100)',
+                                        color: 'var(--fg-secondary)',
+                                        borderColor: 'transparent',
+                                      }
+                                }
+                              >
+                                {e.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))
                   )
                 ) : bankFilteredByCategory.length === 0 ? (
                   <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">

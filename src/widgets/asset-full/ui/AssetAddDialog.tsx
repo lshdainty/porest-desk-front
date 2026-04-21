@@ -16,19 +16,23 @@ import {
   BANK_ENTRIES,
   BANK_ENTRIES_BY_CATEGORY,
   BANK_CATEGORY_ORDER,
+  INVEST_CATEGORIES,
   type BankEntry,
 } from '@/shared/lib/porest/bank-colors'
+
+const INVEST_CATEGORY_SET = new Set(INVEST_CATEGORIES)
 import { useCreateAsset } from '@/features/asset'
 import type { AssetType } from '@/entities/asset'
 
-type SubType = '입출금' | '적금' | '예금' | '대출'
-const SUB_TYPES: SubType[] = ['입출금', '적금', '예금', '대출']
+type SubType = '입출금' | '적금' | '예금' | '현금' | '대출'
+const SUB_TYPES: SubType[] = ['입출금', '적금', '예금', '현금', '대출']
 
 function toAssetType(sub: SubType): AssetType {
   switch (sub) {
     case '입출금': return 'BANK_ACCOUNT'
     case '적금':   return 'SAVINGS'
     case '예금':   return 'SAVINGS'
+    case '현금':   return 'CASH'
     case '대출':   return 'LOAN'
   }
 }
@@ -58,7 +62,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
   const filteredByCategory = useMemo(() => {
     const result: [string, BankEntry[]][] = []
     for (const cat of BANK_CATEGORY_ORDER) {
-      if (cat === '증권사') continue // 투자는 별도 다이얼로그에서 처리
+      if (INVEST_CATEGORY_SET.has(cat)) continue // 증권사/가상자산/상품은 투자 다이얼로그에서 처리
       const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter(e => matchesQuery(e, query))
       if (list.length > 0) result.push([cat, list])
     }
@@ -133,7 +137,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
             <div className="flex items-center justify-between mb-2">
               <Label className="text-[13px] font-medium">기관·브랜드</Label>
               <span className="text-[11px] text-[var(--fg-tertiary)]">
-                총 {BANK_ENTRIES.filter(e => e.category !== '증권사').length}개
+                총 {BANK_ENTRIES.filter(e => !INVEST_CATEGORY_SET.has(e.category)).length}개
               </span>
             </div>
             <div className="relative mb-2">
@@ -209,7 +213,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
           <div>
             <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
             <div
-              className="grid grid-cols-4 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]"
+              className="grid grid-cols-5 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]"
             >
               {SUB_TYPES.map(s => {
                 const active = s === subType

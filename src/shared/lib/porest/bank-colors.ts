@@ -5,13 +5,28 @@ export interface BrandColor {
   fg?: string // 노랑 등 밝은 배경일 때만 지정. 기본은 #fff.
 }
 
-export type BankCategory = '시중은행' | '인터넷은행' | '지방은행' | '특수은행' | '저축기관' | '외국계' | '증권사'
+export type BankCategory =
+  | '시중은행'
+  | '인터넷은행'
+  | '지방은행'
+  | '특수은행'
+  | '저축기관'
+  | '외국계'
+  | '기타'
+  | '증권사'
+  | '가상자산'
+
+/** 투자 상품 등록 시 선택 가능한 카테고리.
+ *  증권사: 금투협 표준 코드. 주식/ETF 및 KRX 금시장(증권사 HTS로 거래)을 포함.
+ *  가상자산: 금융정보분석원(FIU) VASP 신고번호 체계로 별도 관리. */
+export const INVEST_CATEGORIES: BankCategory[] = ['증권사', '가상자산']
 
 export interface BankEntry {
   name: string
   category: BankCategory
   color: BrandColor
-  /** 한국은행 표준 금융기관 코드(은행 3자리) 또는 금투협 증권사 코드(2~3자리). */
+  /** 은행: 한국은행 표준 금융기관 코드(3자리), 증권사: 금투협 표준 코드(2~3자리),
+   *  가상자산: FIU VASP 신고번호(제YYYY-NNN호 형식). */
   code?: string
   /** 검색/매칭 시 병합할 대체 키(약칭, 옛 이름 등). */
   aliases?: string[]
@@ -65,6 +80,9 @@ export const BANK_ENTRIES: BankEntry[] = [
   { name: '도이치',        category: '외국계', color: { bg: '#004A8F' }, aliases: ['도이치뱅크', 'Deutsche'] },
   { name: 'JP모건',        category: '외국계', color: { bg: '#006CB7' }, aliases: ['JPMorgan', 'JP모건체이스'] },
 
+  // 기타 (현금 등 공식 기관 코드가 없는 개인 자산 유형)
+  { name: '현금',  category: '기타', color: { bg: '#64748B' }, aliases: ['지갑', 'Cash'] },
+
   // 증권사 (금투협 표준 코드)
   { name: '삼성증권',      category: '증권사', code: '240', color: { bg: '#1428A0' }, aliases: ['삼성'] },
   { name: '미래에셋',      category: '증권사', code: '230', color: { bg: '#2C3E50' }, aliases: ['미래에셋증권'] },
@@ -92,6 +110,13 @@ export const BANK_ENTRIES: BankEntry[] = [
   { name: '신영증권',      category: '증권사', code: '291', color: { bg: '#005EB8' }, aliases: ['신영'] },
   { name: '카카오페이증권', category: '증권사', code: '288', color: { bg: '#FEE500', fg: '#191919' }, aliases: ['카카오페이'] },
   { name: '토스증권',      category: '증권사', code: '298', color: { bg: '#0064FF' } },
+
+  // 가상자산거래소 (KR 원화마켓 주요 거래소).
+  // 금융정보분석원(FIU) VASP 신고사업자. code 는 공식 신고번호 형식(제YYYY-NNN호)이 통일돼 있지 않아 생략.
+  { name: '업비트',  category: '가상자산', color: { bg: '#1F55F4' }, aliases: ['Upbit', 'UPBIT', '두나무'] },
+  { name: '빗썸',    category: '가상자산', color: { bg: '#F2811D' }, aliases: ['Bithumb', 'BITHUMB'] },
+  { name: '코인원',  category: '가상자산', color: { bg: '#F55826' }, aliases: ['Coinone', 'COINONE'] },
+  { name: '코빗',    category: '가상자산', color: { bg: '#1D3FFF' }, aliases: ['Korbit', 'KORBIT'] },
 ]
 
 // 빠른 조회용 맵
@@ -137,5 +162,7 @@ export const BANK_CATEGORY_ORDER: BankCategory[] = [
   '특수은행',
   '저축기관',
   '외국계',
+  '기타',
   '증권사',
+  '가상자산',
 ]
