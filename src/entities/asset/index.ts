@@ -8,6 +8,7 @@ export type {
   AssetSummary,
   AssetTypeSummary,
   NetWorthTrendPoint,
+  AssetBalancePoint,
   AssetTransfer,
   AssetTransferFormValues,
   ReorderItem,

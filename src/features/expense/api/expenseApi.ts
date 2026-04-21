@@ -16,6 +16,7 @@ import type {
 export interface ExpenseListParams {
   expenseType?: string
   categoryId?: number
+  assetId?: number
   startDate?: string
   endDate?: string
 }

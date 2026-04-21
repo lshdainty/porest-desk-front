@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { Download, Filter, Plus, SlidersHorizontal } from 'lucide-react'
+import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { useExpenses, useMonthlySummary } from '@/features/expense'
+import { useAsset } from '@/features/asset'
 import type { Expense, ExpenseType } from '@/entities/expense'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -231,7 +232,7 @@ function ExpenseList({
   )
 }
 
-function useExpenseData(month: string, filter: Filter) {
+function useExpenseData(month: string, filter: Filter, assetId?: number) {
   const { startDate, endDate } = useMemo(() => monthRange(month), [month])
   const [yStr, mStr] = month.split('-')
   const year = Number(yStr)
@@ -240,7 +241,7 @@ function useExpenseData(month: string, filter: Filter) {
   const expenseType: ExpenseType | undefined =
     filter === 'income' ? 'INCOME' : filter === 'expense' ? 'EXPENSE' : undefined
 
-  const expensesQ = useExpenses({ startDate, endDate, expenseType })
+  const expensesQ = useExpenses({ startDate, endDate, expenseType, assetId })
   const monthlyQ = useMonthlySummary(year, m)
 
   const filtered = expensesQ.data ?? []
@@ -257,11 +258,57 @@ function useExpenseData(month: string, filter: Filter) {
   }
 }
 
+function useAssetFilter() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const raw = searchParams.get('assetId')
+  const assetId = raw ? Number(raw) : undefined
+  const enabled = !!assetId && !Number.isNaN(assetId)
+  const { data: asset } = useAsset(enabled ? assetId! : 0)
+  const clear = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('assetId')
+    setSearchParams(next, { replace: true })
+  }
+  return { assetId: enabled ? assetId : undefined, asset: enabled ? asset : undefined, clear }
+}
+
+function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void }) {
+  return (
+    <div
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '6px 10px 6px 12px',
+        background: 'var(--mossy-100)',
+        color: 'var(--fg-brand-strong)',
+        border: '1px solid var(--mossy-200)',
+        borderRadius: 999,
+        fontSize: 12.5,
+        fontWeight: 600,
+        marginBottom: 12,
+      }}
+    >
+      <span>{name}</span>
+      <button
+        type="button"
+        onClick={onClear}
+        aria-label="필터 해제"
+        style={{
+          background: 'transparent', border: 0, padding: 2, cursor: 'pointer',
+          color: 'var(--fg-brand)', display: 'inline-flex',
+        }}
+      >
+        <X size={13} />
+      </button>
+    </div>
+  )
+}
+
 function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(currentMonthKey())
+  const { assetId, asset, clear } = useAssetFilter()
 
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter)
+  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter, assetId)
 
   return (
     <div className="page">
@@ -282,6 +329,7 @@ function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
           </button>
         </div>
       </div>
+      {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       <Summary
         month={month}
         onMonthChange={setMonth}
@@ -299,11 +347,13 @@ function ExpenseDesktop({ onAddTx }: { onAddTx: () => void }) {
 function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(currentMonthKey())
+  const { assetId, asset, clear } = useAssetFilter()
 
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter)
+  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(month, filter, assetId)
 
   return (
     <div style={{ padding: '4px 16px 24px' }}>
+      {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       <Summary
         month={month}
         onMonthChange={setMonth}

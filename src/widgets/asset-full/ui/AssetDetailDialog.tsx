@@ -1,11 +1,15 @@
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, EyeOff, Pencil } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
+import { useAssetBalanceTrend } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { LineChart } from '@/shared/ui/porest/charts'
 import { KRW } from '@/shared/lib/porest/format'
+import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 
@@ -36,6 +40,17 @@ export function AssetDetailDialog({
   const group = groupOf(asset)
   const isCard = group === 'card'
   const isInv = group === 'invest'
+
+  // 차트 기간: 3m/6m/1y → 12/24/52주
+  const [period, setPeriod] = useState<'3m' | '6m' | '1y'>('3m')
+  const weeks = period === '3m' ? 12 : period === '6m' ? 24 : 52
+  const { data: trendData, isLoading: trendLoading } = useAssetBalanceTrend(asset.rowId, weeks)
+  const chartLabels = useMemo(() => {
+    const arr = trendData ?? []
+    return arr.map((_, i) => `${i + 1}주`)
+  }, [trendData])
+  const chartValues = useMemo(() => (trendData ?? []).map(p => p.balance), [trendData])
+  const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
 
   const absBalance = Math.abs(asset.balance)
 
@@ -107,9 +122,9 @@ export function AssetDetailDialog({
               {asset.assetName}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-              {asset.institution ? `${asset.institution} · ` : ''}
-              {asset.assetType.replace('_', ' ').toLowerCase()}
-              {asset.memo && ` · ${asset.memo}`}
+              {[asset.institution, assetTypeLabel(asset.assetType), asset.memo]
+                .filter(Boolean)
+                .join(' · ')}
             </div>
           </div>
         </div>
@@ -143,6 +158,62 @@ export function AssetDetailDialog({
             </>
           )}
         </div>
+      </div>
+
+      {/* Balance trend chart */}
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>
+            최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
+          </h4>
+          <div className="seg" style={{ marginLeft: 'auto' }}>
+            <button
+              className={period === '3m' ? 'active' : ''}
+              onClick={() => setPeriod('3m')}
+              type="button"
+            >
+              3개월
+            </button>
+            <button
+              className={period === '6m' ? 'active' : ''}
+              onClick={() => setPeriod('6m')}
+              type="button"
+            >
+              6개월
+            </button>
+            <button
+              className={period === '1y' ? 'active' : ''}
+              onClick={() => setPeriod('1y')}
+              type="button"
+            >
+              1년
+            </button>
+          </div>
+        </div>
+        {trendLoading ? (
+          <div style={{
+            height: 140, background: 'var(--mist-100)', borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--fg-tertiary)', fontSize: 12.5,
+          }}>
+            불러오는 중…
+          </div>
+        ) : chartValues.length === 0 ? (
+          <div style={{
+            height: 140, background: 'var(--mist-100)', borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--fg-tertiary)', fontSize: 12.5,
+          }}>
+            표시할 데이터가 없어요
+          </div>
+        ) : (
+          <LineChart
+            labels={chartLabels}
+            series={[{ label: isCard ? '사용' : '잔액', values: chartValues }]}
+            height={160}
+            colors={[color]}
+          />
+        )}
       </div>
 
       {/* Recent tx */}

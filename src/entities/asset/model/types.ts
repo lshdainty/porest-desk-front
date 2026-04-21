@@ -76,6 +76,13 @@ export interface NetWorthTrendPoint {
   netWorth: number
 }
 
+export interface AssetBalancePoint {
+  /** 주 시작일 (월요일) — "YYYY-MM-DD" */
+  weekStart: string
+  /** 해당 주 말 시점 자산 잔액 */
+  balance: number
+}
+
 export interface AssetTransfer {
   rowId: number
   userRowId: number

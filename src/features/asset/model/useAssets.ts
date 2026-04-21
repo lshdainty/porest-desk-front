@@ -39,6 +39,14 @@ export const useNetWorthTrend = (months = 12) => {
   })
 }
 
+export const useAssetBalanceTrend = (assetId: number, weeks: number) => {
+  return useQuery({
+    queryKey: assetKeys.balanceTrend(assetId, weeks),
+    queryFn: () => assetApi.getAssetBalanceTrend(assetId, weeks),
+    enabled: assetId > 0 && weeks > 0,
+  })
+}
+
 export const useCreateAsset = () => {
   const queryClient = useQueryClient()
 

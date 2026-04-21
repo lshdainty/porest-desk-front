@@ -9,6 +9,7 @@ import type {
   AssetTransferFormValues,
   ReorderItem,
   NetWorthTrendPoint,
+  AssetBalancePoint,
 } from '@/entities/asset'
 
 export interface TransferListParams {
@@ -49,6 +50,11 @@ export const assetApi = {
 
   getNetWorthTrend: async (months = 12): Promise<NetWorthTrendPoint[]> => {
     const resp: ApiResponse<{ trend: NetWorthTrendPoint[] }> = await apiClient.get('/v1/assets/net-worth-trend', { params: { months } })
+    return resp.data.trend
+  },
+
+  getAssetBalanceTrend: async (assetId: number, weeks: number): Promise<AssetBalancePoint[]> => {
+    const resp: ApiResponse<{ trend: AssetBalancePoint[] }> = await apiClient.get(`/v1/asset/${assetId}/balance-trend`, { params: { weeks } })
     return resp.data.trend
   },
 
