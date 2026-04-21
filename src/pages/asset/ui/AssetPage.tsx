@@ -182,36 +182,96 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
+type AssetGroupKey = 'cash' | 'invest' | 'card' | 'loan'
+
+const GROUP_META: Record<AssetGroupKey, { label: string; color: string }> = {
+  cash: { label: '현금·예금', color: 'var(--sky-500)' },
+  invest: { label: '투자', color: 'var(--mossy-600)' },
+  card: { label: '카드', color: 'var(--berry-500)' },
+  loan: { label: '대출', color: 'var(--sunlit-700)' },
+}
+
 function AssetCompositionCard({
-  cashTotal,
-  investTotal,
-  cardTotal,
-  loanTotal,
+  accounts,
+  investments,
+  cards,
+  loans,
   netWorth,
 }: {
-  cashTotal: number
-  investTotal: number
-  cardTotal: number
-  loanTotal: number
+  accounts: Asset[]
+  investments: Asset[]
+  cards: Asset[]
+  loans: Asset[]
   netWorth: number
 }) {
   const hidden = useHideAmounts()
   const mask = (n: number) => (hidden ? '••••' : KRW(n))
-  const denom = Math.max(1, cashTotal + investTotal + cardTotal + loanTotal)
-  const rows = [
-    { label: '현금·예금', amt: cashTotal,   color: 'var(--sky-500)' },
-    { label: '투자',       amt: investTotal, color: 'var(--mossy-600)' },
-    { label: '카드',       amt: cardTotal,   color: 'var(--berry-500)' },
-    { label: '대출',       amt: loanTotal,   color: 'var(--sunlit-700)' },
-  ].filter(r => r.amt > 0)
+  const [active, setActive] = useState<AssetGroupKey | null>(null)
 
+  const groupAssets: Record<AssetGroupKey, Asset[]> = {
+    cash: accounts,
+    invest: investments,
+    card: cards,
+    loan: loans,
+  }
+
+  type Row = {
+    key: string
+    label: string
+    amt: number
+    color: string
+    groupKey?: AssetGroupKey
+    clickable: boolean
+  }
+
+  const groupRows: Row[] = (['cash', 'invest', 'card', 'loan'] as AssetGroupKey[])
+    .map(g => {
+      const arr = groupAssets[g]
+      const amt = (g === 'card' || g === 'loan')
+        ? Math.abs(arr.reduce((s, a) => s + a.balance, 0))
+        : arr.reduce((s, a) => s + a.balance, 0)
+      return {
+        key: g,
+        label: GROUP_META[g].label,
+        amt,
+        color: GROUP_META[g].color,
+        groupKey: g,
+        clickable: arr.length > 0,
+      }
+    })
+    .filter(r => r.amt > 0)
+
+  const drillRows: Row[] = active
+    ? groupAssets[active].map(a => {
+        const brand = getBrandColor(a.institution, a.assetName)
+        const isDebt = active === 'card' || active === 'loan'
+        return {
+          key: String(a.rowId),
+          label: a.institution ? `${a.institution} · ${a.assetName}` : a.assetName,
+          amt: isDebt ? Math.abs(a.balance) : a.balance,
+          color: a.color ?? brand?.bg ?? GROUP_META[active].color,
+          clickable: false,
+        }
+      })
+        .filter(r => r.amt > 0)
+        .sort((a, b) => b.amt - a.amt)
+    : []
+
+  const rows = active ? drillRows : groupRows
   const segments = rows.map(r => ({ value: r.amt, color: r.color }))
+  const denom = Math.max(1, rows.reduce((s, r) => s + r.amt, 0))
+
+  const activeTotal = rows.reduce((s, r) => s + r.amt, 0)
+  const centerLbl = active ? GROUP_META[active].label : '순자산'
+  const centerVal = active
+    ? activeTotal
+    : netWorth
 
   const totalLabel = hidden
     ? '••••'
-    : netWorth >= 10_000_000
-      ? `${(netWorth / 10_000_000).toFixed(2)}천만`
-      : `${(netWorth / 10_000).toFixed(0)}만`
+    : Math.abs(centerVal) >= 10_000_000
+      ? `${(centerVal / 10_000_000).toFixed(2)}천만`
+      : `${(centerVal / 10_000).toFixed(0)}만`
 
   const today = new Date()
   const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일 기준`
@@ -219,29 +279,85 @@ function AssetCompositionCard({
   return (
     <div className="p-card" style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 15 }}>자산 구성</h2>
+        <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {active ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setActive(null)}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'var(--fg-secondary)',
+                  cursor: 'pointer',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  padding: 0,
+                  fontFamily: 'inherit',
+                }}
+              >
+                자산 구성
+              </button>
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}>›</span>
+              <span>{GROUP_META[active].label}</span>
+            </>
+          ) : (
+            '자산 구성'
+          )}
+        </h2>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
           {dateLabel}
         </span>
       </div>
       {segments.length === 0 ? (
         <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
-          자산 데이터가 없어요
+          {active ? '등록된 항목이 없어요' : '자산 데이터가 없어요'}
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Donut size={180} stroke={24} segments={segments}>
-            <div className="lbl">순자산</div>
+            <div className="lbl">{centerLbl}</div>
             <div className="val num" style={{ fontSize: 15 }}>{totalLabel}</div>
           </Donut>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
             {rows.map(row => {
               const pct = (row.amt / denom) * 100
               return (
-                <div key={row.label}>
+                <div
+                  key={row.key}
+                  role={row.clickable ? 'button' : undefined}
+                  tabIndex={row.clickable ? 0 : undefined}
+                  onClick={row.clickable ? () => row.groupKey && setActive(row.groupKey) : undefined}
+                  onKeyDown={row.clickable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      if (row.groupKey) setActive(row.groupKey)
+                    }
+                  } : undefined}
+                  style={{
+                    cursor: row.clickable ? 'pointer' : 'default',
+                    borderRadius: 8,
+                    padding: row.clickable ? '4px 6px' : undefined,
+                    margin: row.clickable ? '0 -6px' : undefined,
+                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                  }}
+                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--mist-100)' } : undefined}
+                  onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
+                  title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, background: row.color }} />
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</span>
+                    <span style={{ width: 10, height: 10, borderRadius: 3, background: row.color, flexShrink: 0 }} />
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {row.label}
+                    </span>
                     <span className="num" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700 }}>
                       {mask(row.amt)}
                     </span>
@@ -992,10 +1108,10 @@ function AssetDesktop() {
               isLoading={g.isLoading}
             />
             <AssetCompositionCard
-              cashTotal={g.accountsTotal}
-              investTotal={g.investmentsTotal}
-              cardTotal={g.cardsTotal}
-              loanTotal={g.loansTotal}
+              accounts={g.accounts}
+              investments={g.investments}
+              cards={g.cards}
+              loans={g.loans}
               netWorth={g.netWorth}
             />
             <UpcomingBillsCard />
