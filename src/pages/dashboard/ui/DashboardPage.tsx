@@ -23,7 +23,7 @@ import type { Expense } from '@/entities/expense'
 
 const barChartConfig = {
   income:  { label: '수입', color: 'var(--mossy-500)' },
-  expense: { label: '지출', color: 'var(--bark-400)' },
+  expense: { label: '지출', color: 'var(--berry-500)' },
 } satisfies ChartConfig
 
 function fmtAxisNum(v: number) {
@@ -63,7 +63,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--bark-400)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
           {KRW(expense)}원

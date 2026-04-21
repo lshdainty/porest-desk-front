@@ -172,7 +172,7 @@
   --input:                var(--border-default);
   --ring:                 var(--border-focus);
   --chart-1: var(--mossy-500);
-  --chart-2: var(--bark-500);
+  --chart-2: var(--berry-500);
   --chart-3: var(--sky-500);
   --chart-4: var(--sunlit-500);
   --chart-5: var(--berry-500);
@@ -256,7 +256,7 @@
   --input:                var(--border-default);
   --ring:                 var(--border-focus);
   --chart-1: var(--mossy-400);
-  --chart-2: var(--bark-400);
+  --chart-2: var(--berry-500);
   --chart-3: var(--sky-500);
   --chart-4: var(--sunlit-500);
   --chart-5: var(--berry-500);

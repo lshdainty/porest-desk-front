@@ -5,6 +5,7 @@ import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-am
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 import { Separator } from '@/shared/ui/separator'
+import { ModeToggle } from '@/shared/ui/mode-toggle'
 import { NAV } from './PorestSidebar'
 
 const TITLE_MAP: Record<string, string> = {
@@ -59,6 +60,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
         >
           {hidden ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
+        <ModeToggle />
         <button
           className="top__icon-btn"
           aria-label="알림"

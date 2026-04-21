@@ -589,7 +589,7 @@ export const StatsPage = () => {
               { label: '수입', values: monthlyAmounts.map(m => m.totalIncome) },
               { label: '지출', values: monthlyAmounts.map(m => m.totalExpense) },
             ]}
-            colors={['var(--mossy-500)', 'var(--bark-400)']}
+            colors={['var(--mossy-500)', 'var(--berry-500)']}
             height={mobile ? 180 : 240}
           />
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--fg-secondary)' }}>
@@ -597,7 +597,7 @@ export const StatsPage = () => {
               <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-500)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--bark-400)' }} /> 지출
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--berry-500)' }} /> 지출
             </span>
           </div>
         </>

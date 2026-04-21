@@ -466,7 +466,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  color: var(--fg-primary);
+  color: var(--berry-700);
   text-align: right;
   flex-shrink: 0;
 }
@@ -484,7 +484,7 @@
 }
 .day-head .date { font-weight: 700; color: var(--fg-primary); font-size: 14px; }
 .day-head .sum { margin-left: auto; font-variant-numeric: tabular-nums; }
-.day-head .sum .out { color: var(--fg-primary); font-weight: 600; }
+.day-head .sum .out { color: var(--berry-700); font-weight: 600; }
 .day-head .sum .in { color: var(--mossy-700); font-weight: 600; margin-left: 8px; }
 
 .budget-bar {

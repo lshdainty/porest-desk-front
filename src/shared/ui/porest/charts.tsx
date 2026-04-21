@@ -55,7 +55,7 @@ export function LineChart({
   series,
   labels,
   height = 200,
-  colors = ['var(--mossy-500)', 'var(--bark-500)'],
+  colors = ['var(--mossy-500)', 'var(--berry-500)'],
   yFormat,
 }: {
   series: LineSeries[]
@@ -327,7 +327,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 width={barW}
                 height={padT + innerH - yEx}
                 rx="3"
-                fill="var(--bark-400)"
+                fill="var(--berry-500)"
                 opacity={isHover ? 1 : 0.92}
               />
               <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--mist-500)" textAnchor="middle">
@@ -371,7 +371,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--bark-400)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
                 <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
                   {KRW(d.expense)}원
