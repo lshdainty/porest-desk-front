@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { Check, Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
 
 /** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
@@ -15,6 +22,7 @@ export interface CategoryItem {
   count: number
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CAT_PALETTE: { color: string; bg: string }[] = [
   { color: 'oklch(0.55 0.12 55)',   bg: 'oklch(0.96 0.03 70)' },
   { color: 'oklch(0.50 0.08 50)',   bg: 'oklch(0.96 0.03 60)' },
@@ -30,6 +38,7 @@ export const CAT_PALETTE: { color: string; bg: string }[] = [
   { color: 'oklch(0.50 0.14 15)',   bg: 'oklch(0.96 0.035 15)' },
 ]
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getPaletteByColor = (color: string | null | undefined) => {
   if (!color) return CAT_PALETTE[0]!
   const found = CAT_PALETTE.find(p => p.color === color)
@@ -48,6 +57,7 @@ const ICON_CHOICES = [
 export function CategoryEditDialog({
   cat,
   defaultKind,
+  defaultParentRowId,
   onClose,
   onSave,
   onDelete,
@@ -57,6 +67,7 @@ export function CategoryEditDialog({
 }: {
   cat: ExpenseCategory | null
   defaultKind: ExpenseType
+  defaultParentRowId?: number | null
   onClose: () => void
   onSave: (values: ExpenseCategoryFormValues) => void
   onDelete?: () => void
@@ -73,6 +84,9 @@ export function CategoryEditDialog({
     const idx = CAT_PALETTE.findIndex(p => p.color === cat.color)
     return idx >= 0 ? idx : 0
   })
+  const [parentRowId, setParentRowId] = useState<number | null>(
+    cat?.parentRowId ?? defaultParentRowId ?? null,
+  )
   const [touched, setTouched] = useState(false)
 
   const palette = CAT_PALETTE[paletteIdx]!
@@ -92,6 +106,16 @@ export function CategoryEditDialog({
         : null
       : null
 
+  // 상위 카테고리 후보: 같은 expenseType의 최상위(parentRowId=null)이고
+  // 본인 자신 제외, 본인이 이미 자식을 가진 부모인 경우는 parent 변경 불가(깊이 2+ 방지)
+  const selfHasChildren = cat?.hasChildren ?? false
+  const parentOptions = existing.filter(c =>
+    c.expenseType === kind &&
+    c.parentRowId == null &&
+    c.rowId !== cat?.rowId
+  )
+  const parentDisabled = selfHasChildren
+
   const save = () => {
     setTouched(true)
     if (!valid) return
@@ -101,7 +125,7 @@ export function CategoryEditDialog({
       color: palette.color,
       expenseType: kind,
       sortOrder: cat?.sortOrder,
-      parentRowId: cat?.parentRowId ?? null,
+      parentRowId: parentDisabled ? (cat?.parentRowId ?? null) : parentRowId,
     }
     onSave(values)
   }
@@ -174,6 +198,35 @@ export function CategoryEditDialog({
             수입
           </button>
         </div>
+      </div>
+
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">
+          상위 카테고리
+          <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400, marginLeft: 4 }}>(선택)</span>
+        </label>
+        <Select
+          value={parentRowId == null ? '__root__' : String(parentRowId)}
+          onValueChange={(v) => setParentRowId(v === '__root__' ? null : Number(v))}
+          disabled={parentDisabled || parentOptions.length === 0}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="— 최상위 카테고리로 두기 —" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__root__">— 최상위 카테고리로 두기 —</SelectItem>
+            {parentOptions.map(p => (
+              <SelectItem key={p.rowId} value={String(p.rowId)}>
+                {p.categoryName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {parentDisabled && (
+          <div className="cat-edit__help" style={{ color: 'var(--fg-tertiary)', marginTop: 4 }}>
+            하위 카테고리가 있어 상위를 변경할 수 없어요.
+          </div>
+        )}
       </div>
 
       <div className="p-field" style={{ marginBottom: 14 }}>

@@ -7,6 +7,13 @@ import {
 import { KRW } from '@/shared/lib/porest/format'
 import { CatIcon, TxRow } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 
 export interface TxDraft extends Tx {
   memo?: string
@@ -148,18 +155,21 @@ export function TxDetailDialog({
               </div>
             )}
             editor={() => (
-              <select
-                className="p-input"
+              <Select
                 value={draft.cat}
-                onChange={e => setDraft({ ...draft, cat: e.target.value as CategoryKey })}
-                style={{ padding: '6px 10px', fontSize: 13 }}
+                onValueChange={(v) => setDraft({ ...draft, cat: v as CategoryKey })}
               >
-                {(Object.keys(CATEGORIES) as CategoryKey[]).map(k => (
-                  <option key={k} value={k}>
-                    {CATEGORIES[k].label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-[180px] h-8 text-[13px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(CATEGORIES) as CategoryKey[]).map(k => (
+                    <SelectItem key={k} value={k}>
+                      {CATEGORIES[k].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           />
           <Field
@@ -189,18 +199,21 @@ export function TxDetailDialog({
             editing={editing}
             render={() => <span style={{ fontWeight: 500 }}>{cur.account}</span>}
             editor={() => (
-              <select
-                className="p-input"
+              <Select
                 value={draft.account}
-                onChange={e => setDraft({ ...draft, account: e.target.value })}
-                style={{ padding: '6px 10px', fontSize: 13 }}
+                onValueChange={(v) => setDraft({ ...draft, account: v })}
               >
-                {[...ACCOUNTS.map(a => a.name), ...CARDS.map(ca => ca.name)].map(a => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-[180px] h-8 text-[13px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[...ACCOUNTS.map(a => a.name), ...CARDS.map(ca => ca.name)].map(a => (
+                    <SelectItem key={a} value={a}>
+                      {a}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           />
           <Field

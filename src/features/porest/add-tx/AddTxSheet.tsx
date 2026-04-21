@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { CATEGORIES, type CategoryKey } from '@/shared/lib/porest/data'
 import { CatIcon } from '@/shared/ui/porest/primitives'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 
 export type TxType = 'expense' | 'income' | 'transfer'
 
@@ -163,13 +170,18 @@ export function AddTxSheet({ onClose, mobile }: { onClose: () => void; mobile: b
         >
           결제 수단
         </label>
-        <select className="p-input p-select" value={account} onChange={e => setAccount(e.target.value)}>
-          <option>신한 Deep Dream</option>
-          <option>현대 M Boost</option>
-          <option>신한 체크</option>
-          <option>토스 체크</option>
-          <option>현금</option>
-        </select>
+        <Select value={account} onValueChange={setAccount}>
+          <SelectTrigger>
+            <SelectValue placeholder="결제 수단 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="신한 Deep Dream">신한 Deep Dream</SelectItem>
+            <SelectItem value="현대 M Boost">현대 M Boost</SelectItem>
+            <SelectItem value="신한 체크">신한 체크</SelectItem>
+            <SelectItem value="토스 체크">토스 체크</SelectItem>
+            <SelectItem value="현금">현금</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div style={{ marginBottom: 14 }}>
         <label
