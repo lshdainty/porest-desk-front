@@ -360,8 +360,8 @@ export const StatsPage = () => {
       <div className="sec-head" style={{ marginBottom: 6 }}>
         <h2 style={{ fontSize: 15 }}>요일·시간대 지출 패턴</h2>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-        이번 달 거래를 요일과 시간대 구간으로 묶어 본 히트맵이에요
+      <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 16 }}>
+        색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
       {heatmapQ.isLoading ? (
         <div
@@ -401,8 +401,8 @@ export const StatsPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: `64px repeat(${HEAT_COLS.length}, 1fr)`,
-              gap: 6,
+              gridTemplateColumns: `72px repeat(${HEAT_COLS.length}, 1fr)`,
+              gap: mobile ? 6 : 8,
               alignItems: 'center',
             }}
           >
@@ -412,10 +412,11 @@ export const StatsPage = () => {
               <span
                 key={col.dow}
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: 'var(--fg-tertiary)',
                   textAlign: 'center',
+                  paddingBottom: 4,
                 }}
               >
                 {col.label}
@@ -427,14 +428,18 @@ export const StatsPage = () => {
               <Fragment key={row.label}>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     color: 'var(--fg-tertiary)',
-                    lineHeight: 1.3,
-                    paddingRight: 4,
+                    lineHeight: 1.35,
+                    paddingRight: 6,
                   }}
                 >
-                  <div style={{ fontWeight: 600, color: 'var(--fg-secondary)' }}>{row.label}</div>
-                  <div style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>{row.sub}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--fg-primary)', fontSize: 13 }}>
+                    {row.label}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                    {row.sub}
+                  </div>
                 </div>
                 {HEAT_COLS.map((col, cIdx) => {
                   const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0
@@ -444,17 +449,17 @@ export const StatsPage = () => {
                       key={`${row.label}-${col.dow}`}
                       title={`${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
-                        height: mobile ? 40 : 48,
-                        borderRadius: 6,
+                        height: mobile ? 64 : 96,
+                        borderRadius: 10,
                         background: heatColor(value),
                         border: isPeak
-                          ? '1.5px solid var(--mossy-700)'
+                          ? '2px solid var(--mossy-800)'
                           : '1px solid var(--border-subtle)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: mobile ? 10.5 : 12,
-                        fontWeight: 600,
+                        fontSize: mobile ? 12 : 15,
+                        fontWeight: 700,
                         color: heatTextColor(value),
                         letterSpacing: '-0.01em',
                         fontVariantNumeric: 'tabular-nums',
