@@ -125,7 +125,7 @@ function Summary({
         </div>
         <div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
-          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 700 }}>
+          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--berry-700)' }}>
             {isLoading ? '—' : `−${KRW(monthOut)}`}
           </div>
         </div>

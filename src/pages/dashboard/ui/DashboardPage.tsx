@@ -334,7 +334,7 @@ function HomeDesktop() {
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>지출</div>
-              <div className="num" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>
+              <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--berry-700)', letterSpacing: '-0.02em' }}>
                 {monthlyQ.isLoading ? '—' : `−${KRW(expense)}원`}
               </div>
             </div>
@@ -494,7 +494,7 @@ function HomeDesktop() {
                       {p.dateLabel}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                  <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--berry-700)' }}>
                     −{KRW(p.amount)}
                   </div>
                 </div>
@@ -736,7 +736,7 @@ function HomeMobile() {
           </div>
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
-            <div className="num" style={{ fontSize: 17, fontWeight: 700 }}>−{KRW(expense)}</div>
+            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--berry-700)' }}>−{KRW(expense)}</div>
           </div>
         </div>
       </div>
