@@ -41,8 +41,19 @@ export const CAT_PALETTE: { color: string; bg: string }[] = [
 // eslint-disable-next-line react-refresh/only-export-components
 export const getPaletteByColor = (color: string | null | undefined) => {
   if (!color) return CAT_PALETTE[0]!
+  // 1) CAT_PALETTE 와 정확히 일치하는 oklch/var 문자열이면 그 팔레트 사용
   const found = CAT_PALETTE.find(p => p.color === color)
-  return found ?? CAT_PALETTE[0]!
+  if (found) return found
+  // 2) hex(#RRGGBB) 로 들어오면 그 색을 그대로 아이콘 색으로 쓰고
+  //    배경은 같은 hex 의 10% 알파로 파생 — DB 시드/외부 입력 호환.
+  if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color)) {
+    const hex = color.length === 4
+      ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
+      : color
+    return { color: hex, bg: `${hex}1a` }
+  }
+  // 3) 알 수 없는 형식은 첫 팔레트 폴백
+  return CAT_PALETTE[0]!
 }
 
 const ICON_CHOICES = [

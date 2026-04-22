@@ -2,13 +2,8 @@ import type { ReactNode } from 'react'
 import { KRW } from '@/shared/lib/porest/format'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
+import { getPaletteByColor } from '@/features/porest/dialogs'
 import { Icon } from './primitives'
-
-function hashHue(text: string): number {
-  let h = 0
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) & 0xffffffff
-  return Math.abs(h) % 360
-}
 
 /**
  * expenseDate 표시 라벨:
@@ -22,12 +17,11 @@ function formatExpenseDateLabel(raw: string): string {
 }
 
 export function CategoryChip({
-  name,
   color,
   icon,
   size = 'md',
 }: {
-  name: string
+  name?: string
   color?: string | null
   icon?: string | null
   size?: 'sm' | 'md' | 'lg'
@@ -35,24 +29,23 @@ export function CategoryChip({
   const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : 40
   const radius = size === 'sm' ? 10 : size === 'lg' ? 14 : 12
   const iconSize = size === 'sm' ? 16 : size === 'lg' ? 22 : 18
-  const hue = hashHue(name || 'unknown')
-  const fallbackBg = `oklch(0.96 0.03 ${hue})`
-  const fallbackFg = `oklch(0.48 0.12 ${hue})`
+  // hex / oklch / var 문자열을 모두 인식해 tint + 아이콘 색 조합 생성
+  const palette = getPaletteByColor(color)
   return (
     <span
       style={{
         width: dim,
         height: dim,
         borderRadius: radius,
-        background: color ?? fallbackBg,
-        color: color ? '#fff' : fallbackFg,
+        background: palette.bg,
+        color: palette.color,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
       }}
     >
-      <Icon name={icon || 'circle'} size={iconSize} strokeWidth={1.9} />
+      <Icon name={icon || 'tag'} size={iconSize} strokeWidth={1.9} />
     </span>
   )
 }

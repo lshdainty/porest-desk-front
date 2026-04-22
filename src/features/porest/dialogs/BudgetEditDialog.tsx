@@ -34,8 +34,12 @@ export function BudgetEditDialog({
 }) {
   const isNew = !budget
 
-  // 선택 가능한 카테고리 = EXPENSE 타입 + 자식 없는(leaf) 카테고리
-  const selectableCats = categories.filter(c => c.expenseType === 'EXPENSE' && !c.hasChildren)
+  // 선택 가능한 카테고리 = EXPENSE 타입의 **부모 카테고리(top-level)** 만.
+  // 자식 leaf 는 현재 허용 안 함 — 자식의 지출은 부모로 roll-up 되어 집계됨.
+  // 향후 leaf 단위 예산 요청 들어오면 제한을 풀면 됨.
+  const selectableCats = categories.filter(
+    c => c.expenseType === 'EXPENSE' && c.parentRowId == null,
+  )
 
   const usedCatIds = new Set(
     existing
@@ -172,7 +176,7 @@ export function BudgetEditDialog({
                         color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                       }}
                     >
-                      {c.categoryName.split('·')[0]}
+                      {c.categoryName}
                     </span>
                   </button>
                 )
