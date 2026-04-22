@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/shared/ui/sidebar'
+import { useCurrentUser } from '@/features/user'
 
 export interface NavItem {
   id: string
@@ -38,6 +39,10 @@ export const NAV: NavItem[] = [
 export function PorestSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { data: currentUser } = useCurrentUser()
+  const userName = currentUser?.userName ?? ''
+  const userEmail = currentUser?.userEmail ?? ''
+  const userInitial = userName.charAt(0) || '·'
 
   const isActive = (path: string) =>
     path === '/desk' ? location.pathname === path : location.pathname.startsWith(path)
@@ -103,12 +108,12 @@ export function PorestSidebar() {
                 className="flex size-8 shrink-0 items-center justify-center rounded-full"
                 style={{ background: 'var(--mossy-200)', color: 'var(--mossy-800)', fontWeight: 600, fontSize: 12 }}
               >
-                김
+                {userInitial}
               </span>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold" style={{ fontSize: 13.5 }}>김민서</span>
+                <span className="truncate font-semibold" style={{ fontSize: 13.5 }}>{userName || '사용자'}</span>
                 <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
-                  minseo@porest.cloud
+                  {userEmail || '—'}
                 </span>
               </div>
               <ChevronsUpDown

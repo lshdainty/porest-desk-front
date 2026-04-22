@@ -45,7 +45,7 @@ const CalendarMonthViewSkeleton = () => {
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined }}
+                style={{ color: isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined }}
               >
                 {day}
               </span>

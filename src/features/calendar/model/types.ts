@@ -12,9 +12,9 @@ export interface IBuiltinSource {
 }
 
 export const BUILTIN_SOURCES: IBuiltinSource[] = [
-  { id: 'holiday', labelKey: 'calendar.source.holiday', color: '#ef4444', enabled: true },
-  { id: 'expense', labelKey: 'calendar.source.expense', color: '#22c55e', enabled: false },
-  { id: 'todo', labelKey: 'calendar.source.todo', color: '#a855f7', enabled: false },
+  { id: 'holiday', labelKey: 'calendar.source.holiday', color: '#C85561', enabled: true },
+  { id: 'expense', labelKey: 'calendar.source.expense', color: '#5F6D3F', enabled: false },
+  { id: 'todo', labelKey: 'calendar.source.todo', color: '#7D5AA3', enabled: false },
 ]
 
 export type TEventColor =

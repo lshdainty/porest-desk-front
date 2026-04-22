@@ -14,6 +14,7 @@ import { useAsset, useAssets } from '@/features/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
+import { TxDetailDialog } from '@/features/porest/dialogs/TxDetailDialog'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type Filter = 'all' | 'income' | 'expense'
@@ -412,7 +413,7 @@ function filterActiveCount(v: FilterValue | null): number {
   return n
 }
 
-/** 행 클릭 → 편집 AddTxSheet 오픈. Desktop/Mobile 공용. */
+/** 행 클릭 → 상세 TxDetailDialog → 편집 버튼 → AddTxSheet. Desktop/Mobile 공용. */
 function EditableList({
   expenses,
   isLoading,
@@ -422,6 +423,8 @@ function EditableList({
   isLoading: boolean
   mobile: boolean
 }) {
+  // detail: 상세 보기, editing: 편집 폼
+  const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
 
   return (
@@ -430,8 +433,19 @@ function EditableList({
         expenses={expenses}
         mobile={mobile}
         isLoading={isLoading}
-        onItemClick={(e) => setEditing(e)}
+        onItemClick={(e) => setDetail(e)}
       />
+      {detail && !editing && (
+        <TxDetailDialog
+          expense={detail}
+          mobile={mobile}
+          onClose={() => setDetail(null)}
+          onEdit={(e) => {
+            setDetail(null)
+            setEditing(e)
+          }}
+        />
+      )}
       {editing && (
         <AddTxSheet
           expense={editing}

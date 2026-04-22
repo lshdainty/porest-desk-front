@@ -505,7 +505,7 @@ export const StatsPage = () => {
                 <div
                   style={{
                     height: 4,
-                    background: 'var(--mist-100)',
+                    background: 'var(--pd-surface-inset)',
                     borderRadius: 999,
                     overflow: 'hidden',
                   }}
@@ -595,7 +595,7 @@ export const StatsPage = () => {
               key={i}
               style={{
                 height: 28,
-                background: 'var(--mist-100)',
+                background: 'var(--pd-surface-inset)',
                 borderRadius: 8,
                 opacity: 0.6 + (i % 2) * 0.2,
               }}
@@ -609,7 +609,7 @@ export const StatsPage = () => {
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
             fontSize: 13,
-            background: 'var(--mist-100)',
+            background: 'var(--pd-surface-inset)',
             borderRadius: 12,
           }}
         >

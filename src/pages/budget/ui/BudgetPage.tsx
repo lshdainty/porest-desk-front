@@ -12,6 +12,7 @@ import {
   useExpenseCategories,
   useMonthlySummary,
 } from '@/features/expense'
+import { useUserPreferences } from '@/features/user'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { getPaletteByColor } from '@/features/porest/dialogs'
 
@@ -129,6 +130,10 @@ export const BudgetPage = () => {
   const summaryQ = useMonthlySummary(year, month)
   const categoriesQ = useExpenseCategories()
   const complianceQ = useBudgetCompliance(6)
+  const preferencesQ = useUserPreferences()
+
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
+  const warnRatio = warnThreshold / 100
 
   const goToSettings = () => navigate('/desk/settings?section=budget')
 
@@ -161,7 +166,7 @@ export const BudgetPage = () => {
   // 전체 지출은 언제나 이번 달 EXPENSE 총합 (미분류 포함)
   const totalSpent = totalExpense
   const pct = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0
-  const headerState = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+  const headerState = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
   const isLoading = budgetsQ.isLoading || summaryQ.isLoading
 
   // 전체 상한 대비 카테고리 할당 상태
@@ -190,7 +195,7 @@ export const BudgetPage = () => {
   const healthyList = categoryBudgets.filter(b => {
     if (b.categoryRowId == null) return false
     const spent = spentByCategory.get(b.categoryRowId) ?? 0
-    return b.budgetAmount > 0 && spent / b.budgetAmount <= 0.85
+    return b.budgetAmount > 0 && spent / b.budgetAmount <= warnRatio
   })
 
   // ---- Cards ----
@@ -620,7 +625,7 @@ export const BudgetPage = () => {
             const spent = spentByCategory.get(catId) ?? 0
             const limit = b.budgetAmount
             const p = limit > 0 ? (spent / limit) * 100 : 0
-            const state = p > 100 ? 'over' : p > 85 ? 'warn' : ''
+            const state = p > 100 ? 'over' : p > warnThreshold ? 'warn' : ''
 
             return (
               <div key={b.rowId}>

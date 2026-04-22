@@ -341,7 +341,7 @@ function AssetCompositionCard({
                     margin: row.clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
                   }}
-                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--mist-100)' } : undefined}
+                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--pd-hover-bg)' } : undefined}
                   onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
                 >
@@ -365,7 +365,7 @@ function AssetCompositionCard({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                       style={{
-                        flex: 1, height: 6, background: 'var(--mist-100)',
+                        flex: 1, height: 6, background: 'var(--pd-surface-inset)',
                         borderRadius: 99, overflow: 'hidden',
                       }}
                     >
@@ -610,7 +610,7 @@ function SavingGoalItem({
       </div>
       <div
         style={{
-          height: 6, background: 'var(--mist-100)',
+          height: 6, background: 'var(--pd-surface-inset)',
           borderRadius: 99, overflow: 'hidden',
         }}
       >

@@ -8,3 +8,4 @@ export { CategoryEditDialog, CAT_PALETTE, getPaletteByColor, type CategoryItem }
 export { CategoryManager } from './CategoryManager'
 export { AccountManager } from './AccountManager'
 export { BudgetManager } from './BudgetManager'
+export { NotificationsManager } from './NotificationsManager'

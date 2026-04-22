@@ -12,7 +12,7 @@ import {
   User,
   Wallet,
 } from 'lucide-react'
-import { AccountManager, BudgetManager, CategoryManager } from '@/features/porest/dialogs'
+import { AccountManager, BudgetManager, CategoryManager, NotificationsManager } from '@/features/porest/dialogs'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type SectionId = 'categories' | 'accounts' | 'budget' | 'appearance' | 'notifications' | 'data' | 'account'
@@ -68,10 +68,11 @@ export const SettingsPage = () => {
   const renderBody = (m: boolean) => {
     if (!activeSection) return null
     switch (activeSection.id) {
-      case 'categories': return <CategoryManager mobile={m} />
-      case 'accounts':   return <AccountManager mobile={m} />
-      case 'budget':     return <BudgetManager mobile={m} />
-      default:           return <PlaceholderSection section={activeSection} />
+      case 'categories':    return <CategoryManager mobile={m} />
+      case 'accounts':      return <AccountManager mobile={m} />
+      case 'budget':        return <BudgetManager mobile={m} />
+      case 'notifications': return <NotificationsManager mobile={m} />
+      default:              return <PlaceholderSection section={activeSection} />
     }
   }
 
