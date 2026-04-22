@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { Bell, Search } from 'lucide-react'
+import { useUnreadCount } from '@/features/notification'
 import { NAV } from './PorestSidebar'
 
 const MTITLE: Record<string, string> = {
@@ -24,12 +25,13 @@ function title(pathname: string) {
 export function MobileHeader() {
   const location = useLocation()
   const isHome = location.pathname === '/desk'
+  const { data: unreadCount = 0 } = useUnreadCount()
   return (
     <div className="m-header">
       <h1>{title(location.pathname)}</h1>
       <button className="ico-btn" aria-label={isHome ? '알림' : '검색'}>
         {isHome ? <Bell size={20} /> : <Search size={20} />}
-        {isHome && <span className="dot" />}
+        {isHome && unreadCount > 0 && <span className="dot" />}
       </button>
     </div>
   )

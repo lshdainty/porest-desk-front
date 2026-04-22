@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
 import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 import { Separator } from '@/shared/ui/separator'
@@ -37,6 +38,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   const location = useLocation()
   const navigate = useNavigate()
   const hidden = useHideAmounts()
+  const { data: unreadCount = 0 } = useUnreadCount()
   const { title, sub } = titleFor(location.pathname)
   const [notifOpen, setNotifOpen] = useState(false)
 
@@ -67,7 +69,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
           onClick={() => setNotifOpen(v => !v)}
         >
           <Bell size={18} />
-          <span className="dot" />
+          {unreadCount > 0 && <span className="dot" />}
         </button>
         <button
           className="top__icon-btn"
