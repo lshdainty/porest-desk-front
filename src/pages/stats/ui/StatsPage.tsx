@@ -34,14 +34,16 @@ const DONUT_COLORS = [
   'var(--mossy-700)',
 ]
 
-// 6-step heatmap palette (pale → deep mossy) — 디자인 시스템 spec
+// 6-step heatmap palette (empty → deep mossy).
+// color-mix 로 --mossy-500 을 투명도 다르게 섞어 라이트/다크 양쪽에서 자동 적응.
+// 레벨 0 은 semantic muted bg 로 두어 "빈 셀" 구분 명확.
 const HEAT_PALETTE: { bg: string; fg: string }[] = [
-  { bg: 'oklch(0.965 0.01 110)', fg: 'oklch(0.55 0.02 110)' }, // 0 — empty/zero
-  { bg: 'oklch(0.92 0.04 115)',  fg: 'oklch(0.38 0.05 110)' }, // 1
-  { bg: 'oklch(0.82 0.07 120)',  fg: 'oklch(0.30 0.05 110)' }, // 2
-  { bg: 'oklch(0.68 0.10 125)',  fg: 'oklch(0.99 0 0)' },      // 3
-  { bg: 'oklch(0.52 0.11 125)',  fg: 'oklch(0.99 0 0)' },      // 4
-  { bg: 'oklch(0.385 0.11 125)', fg: 'oklch(0.99 0 0)' },      // 5 peak
+  { bg: 'var(--bg-muted)',                                                 fg: 'var(--fg-tertiary)' },    // 0 empty
+  { bg: 'color-mix(in oklch, var(--mossy-500) 18%, transparent)',          fg: 'var(--fg-primary)' },     // 1
+  { bg: 'color-mix(in oklch, var(--mossy-500) 35%, transparent)',          fg: 'var(--fg-primary)' },     // 2
+  { bg: 'color-mix(in oklch, var(--mossy-500) 55%, transparent)',          fg: 'var(--fg-on-brand)' },    // 3
+  { bg: 'color-mix(in oklch, var(--mossy-500) 75%, transparent)',          fg: 'var(--fg-on-brand)' },    // 4
+  { bg: 'var(--mossy-500)',                                                fg: 'var(--fg-on-brand)' },    // 5 peak
 ]
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
@@ -443,7 +445,7 @@ export const StatsPage = () => {
                     margin: clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
                   }}
-                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--mist-100)' } : undefined}
+                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--pd-hover-bg)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
                 >

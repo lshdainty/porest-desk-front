@@ -22,38 +22,45 @@ export interface CategoryItem {
   count: number
 }
 
+// CAT_PALETTE: 팔레트 피커에서 사용자가 고르는 기준 색 정의.
+// color 는 아이콘 색(진한 톤), bg 는 color 를 알파로 섞어 바탕 tint 를 생성.
+// color-mix() 로 라이트/다크 모두 자연 적응 — 라이트에선 파스텔, 다크에선 어둔 tint.
+// (color-mix 는 Chrome 111+/Safari 16.4+/Firefox 113+ 에서 지원)
 // eslint-disable-next-line react-refresh/only-export-components
 export const CAT_PALETTE: { color: string; bg: string }[] = [
-  { color: 'oklch(0.55 0.12 55)',   bg: 'oklch(0.96 0.03 70)' },
-  { color: 'oklch(0.50 0.08 50)',   bg: 'oklch(0.96 0.03 60)' },
-  { color: 'oklch(0.50 0.1 230)',   bg: 'oklch(0.96 0.02 230)' },
-  { color: 'oklch(0.50 0.12 340)',  bg: 'oklch(0.96 0.035 340)' },
-  { color: 'oklch(0.50 0.1 140)',   bg: 'oklch(0.96 0.025 135)' },
-  { color: 'oklch(0.55 0.13 25)',   bg: 'oklch(0.96 0.03 25)' },
-  { color: 'oklch(0.50 0.12 290)',  bg: 'oklch(0.96 0.035 290)' },
-  { color: 'oklch(0.48 0.012 195)', bg: 'var(--mist-200)' },
-  { color: 'oklch(0.52 0.1 215)',   bg: 'oklch(0.96 0.03 210)' },
-  { color: 'var(--bark-700)',       bg: 'var(--bark-100)' },
-  { color: 'var(--mossy-800)',      bg: 'var(--mossy-100)' },
-  { color: 'oklch(0.50 0.14 15)',   bg: 'oklch(0.96 0.035 15)' },
+  { color: 'oklch(0.55 0.12 55)',   bg: 'color-mix(in oklch, oklch(0.55 0.12 55) 18%, transparent)' },
+  { color: 'oklch(0.50 0.08 50)',   bg: 'color-mix(in oklch, oklch(0.50 0.08 50) 18%, transparent)' },
+  { color: 'oklch(0.50 0.1 230)',   bg: 'color-mix(in oklch, oklch(0.50 0.1 230) 18%, transparent)' },
+  { color: 'oklch(0.50 0.12 340)',  bg: 'color-mix(in oklch, oklch(0.50 0.12 340) 18%, transparent)' },
+  { color: 'oklch(0.50 0.1 140)',   bg: 'color-mix(in oklch, oklch(0.50 0.1 140) 18%, transparent)' },
+  { color: 'oklch(0.55 0.13 25)',   bg: 'color-mix(in oklch, oklch(0.55 0.13 25) 18%, transparent)' },
+  { color: 'oklch(0.50 0.12 290)',  bg: 'color-mix(in oklch, oklch(0.50 0.12 290) 18%, transparent)' },
+  { color: 'oklch(0.48 0.012 195)', bg: 'color-mix(in oklch, oklch(0.48 0.012 195) 18%, transparent)' },
+  { color: 'oklch(0.52 0.1 215)',   bg: 'color-mix(in oklch, oklch(0.52 0.1 215) 18%, transparent)' },
+  { color: 'var(--bark-700)',       bg: 'color-mix(in oklch, var(--bark-700) 18%, transparent)' },
+  { color: 'var(--mossy-800)',      bg: 'color-mix(in oklch, var(--mossy-800) 18%, transparent)' },
+  { color: 'oklch(0.50 0.14 15)',   bg: 'color-mix(in oklch, oklch(0.50 0.14 15) 18%, transparent)' },
 ]
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const getPaletteByColor = (color: string | null | undefined) => {
-  if (!color) return CAT_PALETTE[0]!
-  // 1) CAT_PALETTE 와 정확히 일치하는 oklch/var 문자열이면 그 팔레트 사용
+  // 0) 색상 값 없음 (예: "전체" 예산처럼 categoryRowId=null) → semantic 토큰 사용
+  //    → light/dark 자동 반영
+  if (!color) {
+    return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
+  }
+  // 1) CAT_PALETTE 와 정확히 일치 → 해당 팔레트 (bg 는 이미 color-mix 알파)
   const found = CAT_PALETTE.find(p => p.color === color)
   if (found) return found
-  // 2) hex(#RRGGBB) 로 들어오면 그 색을 그대로 아이콘 색으로 쓰고
-  //    배경은 같은 hex 의 10% 알파로 파생 — DB 시드/외부 입력 호환.
+  // 2) hex → 아이콘 색은 hex 그대로, bg 는 18% 알파 mix 로 tint. 라이트/다크 모두 적응.
   if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color)) {
     const hex = color.length === 4
       ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
       : color
-    return { color: hex, bg: `${hex}1a` }
+    return { color: hex, bg: `color-mix(in oklch, ${hex} 18%, transparent)` }
   }
-  // 3) 알 수 없는 형식은 첫 팔레트 폴백
-  return CAT_PALETTE[0]!
+  // 3) 알 수 없는 형식 → semantic 폴백
+  return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
 }
 
 const ICON_CHOICES = [

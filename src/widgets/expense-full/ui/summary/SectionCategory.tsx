@@ -221,8 +221,8 @@ export const SectionCategory = ({
                 onClick={() => handleCategoryClick(item.rowId)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors cursor-pointer ${
                   selectedParentId === item.rowId
-                    ? 'bg-primary/10 ring-1 ring-primary/30'
-                    : 'hover:bg-muted/50'
+                    ? 'bg-[var(--bg-brand-subtle)] ring-1 ring-[var(--border-brand)]'
+                    : 'hover:bg-[var(--pd-hover-bg)]'
                 }`}
               >
                 <div

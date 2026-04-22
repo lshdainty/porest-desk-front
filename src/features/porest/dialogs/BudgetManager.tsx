@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   useExpenseBudgets,
   useExpenseCategories,
@@ -321,6 +321,26 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
             </div>
           </div>
+          {monthlyBudget != null && remaining < 0 && (
+            <div
+              style={{
+                marginTop: 10,
+                padding: '8px 12px',
+                background: 'var(--status-danger-subtle)',
+                border: '1px solid var(--berry-300)',
+                borderRadius: 8,
+                fontSize: 12,
+                color: 'var(--status-danger-fg)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <AlertTriangle size={13} />
+              카테고리 한도 합이 전체 상한을 {KRW(Math.abs(remaining))}원 초과했어요.
+              전체 상한을 올리거나 카테고리 한도를 줄여주세요.
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>

@@ -255,7 +255,7 @@ export function AddTxSheet({ onClose, mobile, expense }: Props) {
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 2,
           padding: 3,
-          background: 'var(--mist-200)',
+          background: 'var(--pd-surface-inset)',
           borderRadius: 10,
           marginBottom: 20,
         }}
@@ -380,7 +380,10 @@ export function AddTxSheet({ onClose, mobile, expense }: Props) {
                           width: 32,
                           height: 32,
                           borderRadius: 10,
-                          background: `oklch(from ${color} l c h / 0.14)`,
+                          // color-mix 로 18% 알파 tint — light/dark 모두 자연 적응.
+                          // 기존 `oklch(from ${color} l c h / 0.14)` 는 다크모드에서
+                          // 알파가 낮아 카테고리 구분이 어려웠음.
+                          background: `color-mix(in oklch, ${color} 18%, transparent)`,
                           color,
                           display: 'inline-flex',
                           alignItems: 'center',

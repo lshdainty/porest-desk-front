@@ -441,11 +441,11 @@
 .p-btn--primary:hover:not(:disabled) { background: var(--bg-brand-hover); }
 .p-btn--primary:active:not(:disabled) { background: var(--bg-brand-press); }
 .p-btn--secondary { background: var(--bg-surface); color: var(--fg-primary); border-color: var(--border-default); }
-.p-btn--secondary:hover:not(:disabled) { background: var(--mist-100); border-color: var(--border-strong); }
+.p-btn--secondary:hover:not(:disabled) { background: var(--bg-muted); border-color: var(--border-strong); }
 .p-btn--outline { background: transparent; color: var(--fg-brand); border-color: var(--mossy-300); }
 .p-btn--outline:hover:not(:disabled) { background: var(--bg-brand-subtle); border-color: var(--mossy-500); }
 .p-btn--ghost { background: transparent; color: var(--fg-primary); }
-.p-btn--ghost:hover:not(:disabled) { background: var(--mist-200); }
+.p-btn--ghost:hover:not(:disabled) { background: var(--bg-muted); }
 .p-btn--destructive { background: var(--status-danger); color: #fff; }
 .p-btn--destructive:hover:not(:disabled) { background: var(--berry-700); }
 .p-btn--warm { background: var(--bark-200); color: var(--bark-900); }
@@ -494,8 +494,9 @@
 }
 .p-card--elevated { box-shadow: var(--shadow-md); }
 .p-card--inset    { background: var(--bg-sunken); border: 0; box-shadow: none; }
-.p-card--brand    { background: var(--mossy-50); border-color: var(--mossy-200); }
-.p-card--warm     { background: var(--bark-100); border-color: var(--bark-200); }
+/* semantic 토큰 사용 → light/dark 자동 플립. primitive mossy-50/bark-100 직접 쓰면 다크에서 flip 안 됨. */
+.p-card--brand    { background: var(--bg-brand-subtle); border-color: var(--bg-brand-muted); }
+.p-card--warm     { background: var(--bg-section-warm); border-color: var(--border-warm); }
 .p-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .p-card__title { font-size: var(--fs-h4); font-weight: var(--fw-semi); color: var(--fg-primary); letter-spacing: -0.008em; }
 .p-card__desc  { font-size: var(--fs-body-sm); color: var(--fg-secondary); margin-top: 2px; }

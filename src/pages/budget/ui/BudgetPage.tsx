@@ -307,11 +307,11 @@ export const BudgetPage = () => {
               style={{
                 marginTop: 10,
                 padding: '8px 12px',
-                background: 'oklch(0.96 0.04 20)',
+                background: 'var(--status-danger-subtle)',
                 border: '1px solid var(--berry-300)',
                 borderRadius: 8,
                 fontSize: 12,
-                color: 'var(--berry-700)',
+                color: 'var(--status-danger-fg)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
@@ -447,7 +447,7 @@ export const BudgetPage = () => {
         <div
           style={{
             padding: 14,
-            background: overList.length > 0 ? 'oklch(0.96 0.04 20)' : 'var(--bg-surface)',
+            background: overList.length > 0 ? 'var(--status-danger-subtle)' : 'var(--bg-surface)',
             border: `1px solid ${overList.length > 0 ? 'var(--berry-300)' : 'var(--border-subtle)'}`,
             borderRadius: 12,
           }}

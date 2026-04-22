@@ -252,14 +252,19 @@ function HomeDesktop() {
         )
       }
     }
+    const totalExpense = monthly?.totalExpense ?? 0
     return budgets.slice(0, 4).map(b => {
-      const spent = b.categoryRowId != null ? spentByCat.get(b.categoryRowId) ?? 0 : 0
+      // 전체 상한(categoryRowId === null) 은 이번 달 모든 EXPENSE 합계를
+      // 사용금액으로 사용 — 카테고리 예산이 없는 지출도 포함.
+      const spent = b.categoryRowId == null
+        ? totalExpense
+        : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
       const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
-        categoryName: cat?.categoryName ?? b.categoryName,
+        categoryName: cat?.categoryName ?? b.categoryName ?? '전체',
         icon: cat?.icon ?? 'tag',
         color: cat?.color,
         budgetAmount: b.budgetAmount,
