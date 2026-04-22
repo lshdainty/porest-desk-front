@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import {
@@ -55,11 +56,13 @@ type CompliancePayload = {
 }
 
 function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: CompliancePayload[] }) {
+  const hidden = useHideAmounts()
   if (!active || !payload?.length) return null
   const d = payload[0]?.payload
   if (!d) return null
   const p = Number(d.percent ?? 0)
   const over = p > 100
+  const maskNum = (n: number) => (hidden ? '••••' : n.toLocaleString('ko-KR'))
   return (
     <div
       style={{
@@ -100,13 +103,13 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
           <span>지출</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
-            {Number(d.spent ?? 0).toLocaleString('ko-KR')}원
+            {maskNum(Number(d.spent ?? 0))}원
           </span>
         </div>
         <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
           <span>한도</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
-            {Number(d.limit ?? 0).toLocaleString('ko-KR')}원
+            {maskNum(Number(d.limit ?? 0))}원
           </span>
         </div>
       </div>
@@ -117,6 +120,8 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 export const BudgetPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const navigate = useNavigate()
+  const hidden = useHideAmounts()
+  const mask = (n: number) => (hidden ? '••••' : KRW(n))
   const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
 
@@ -222,10 +227,10 @@ export const BudgetPage = () => {
               className="num"
               style={{ fontSize: mobile ? 24 : 30, fontWeight: 800, letterSpacing: '-0.03em' }}
             >
-              {KRW(totalSpent)}
+              {mask(totalSpent)}
             </div>
             <div style={{ fontSize: 14, color: 'var(--fg-secondary)', fontWeight: 500 }}>
-              / {KRW(totalLimit)}원
+              / {mask(totalLimit)}원
             </div>
           </div>
           <div className="budget-bar" style={{ height: 10 }}>
@@ -246,8 +251,8 @@ export const BudgetPage = () => {
             <span>{pct.toFixed(0)}% 사용</span>
             <span>
               {totalLimit - totalSpent >= 0
-                ? `남은 예산 ${KRW(totalLimit - totalSpent)}원`
-                : `한도 ${KRW(totalSpent - totalLimit)}원 초과`}
+                ? `남은 예산 ${mask(totalLimit - totalSpent)}원`
+                : `한도 ${mask(totalSpent - totalLimit)}원 초과`}
             </span>
           </div>
           <div
@@ -265,7 +270,7 @@ export const BudgetPage = () => {
                 전체 상한
               </div>
               <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
-                {KRW(overallLimit)}원
+                {mask(overallLimit)}원
               </div>
             </div>
             <div>
@@ -273,7 +278,7 @@ export const BudgetPage = () => {
                 카테고리 할당
               </div>
               <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
-                {KRW(categoryLimitSum)}원
+                {mask(categoryLimitSum)}원
               </div>
             </div>
             <div>
@@ -288,8 +293,12 @@ export const BudgetPage = () => {
                   color: overAllocated ? 'var(--berry-700)' : 'var(--mossy-700)',
                 }}
               >
-                {overAllocated ? '−' : '+'}
-                {KRW(Math.abs(allocable))}원
+                {hidden ? '••••' : (
+                  <>
+                    {overAllocated ? '−' : '+'}
+                    {KRW(Math.abs(allocable))}원
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -309,7 +318,7 @@ export const BudgetPage = () => {
               }}
             >
               <AlertTriangle size={13} />
-              카테고리 한도 합이 전체 상한을 {KRW(categoryLimitSum - overallLimit)}원 초과했어요.
+              카테고리 한도 합이 전체 상한을 {mask(categoryLimitSum - overallLimit)}원 초과했어요.
               전체 상한을 올리거나 카테고리 한도를 줄여주세요.
             </div>
           )}
@@ -326,7 +335,7 @@ export const BudgetPage = () => {
           전체 상한이 아직 설정되지 않았어요. 우측 상단 <strong>예산 설정</strong> 버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.
           {categoryLimitSum > 0 && (
             <div style={{ marginTop: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
-              현재 카테고리 한도 합계: {KRW(categoryLimitSum)}원
+              현재 카테고리 한도 합계: {mask(categoryLimitSum)}원
             </div>
           )}
         </div>
@@ -404,7 +413,7 @@ export const BudgetPage = () => {
             일평균 지출
           </div>
           <div className="num" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            {KRW(dailyActual)}
+            {mask(dailyActual)}
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
           </div>
         </div>
@@ -421,7 +430,7 @@ export const BudgetPage = () => {
               color: 'var(--fg-brand-strong)',
             }}
           >
-            {KRW(dailyTarget)}
+            {mask(dailyTarget)}
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
           </div>
         </div>
@@ -631,8 +640,8 @@ export const BudgetPage = () => {
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
                     <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
-                        ? `한도 ${KRW(spent - limit)}원 초과`
-                        : `남은 예산 ${KRW(Math.max(0, limit - spent))}원`}
+                        ? `한도 ${mask(spent - limit)}원 초과`
+                        : `남은 예산 ${mask(Math.max(0, limit - spent))}원`}
                     </div>
                   </div>
                   <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
@@ -643,10 +652,10 @@ export const BudgetPage = () => {
                         color: state === 'over' ? 'var(--berry-700)' : 'var(--fg-primary)',
                       }}
                     >
-                      {KRW(spent)}
+                      {mask(spent)}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>
-                      / {KRW(limit)}
+                      / {mask(limit)}
                     </div>
                   </div>
                 </div>
