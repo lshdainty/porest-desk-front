@@ -469,7 +469,15 @@ export const StatsPage = () => {
   const maxMerchantAmt = Math.max(1, ...topMerchants.map(m => m.totalAmount))
 
   const TopMerchantsCard = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <div
+      className="p-card"
+      style={{
+        padding: mobile ? 18 : 22,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>많이 쓴 가맹점 TOP 5</h2>
       </div>
@@ -478,7 +486,15 @@ export const StatsPage = () => {
       ) : topMerchants.length === 0 ? (
         <EmptyBox text="가맹점 데이터가 없습니다" />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
           {topMerchants.map((m, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span

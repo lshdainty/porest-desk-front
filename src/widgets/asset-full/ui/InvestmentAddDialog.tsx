@@ -175,7 +175,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
                                     borderColor: 'transparent',
                                   }
                                 : {
-                                    background: 'var(--mist-100)',
+                                    background: 'var(--pd-surface-subtle)',
                                     color: 'var(--fg-secondary)',
                                     borderColor: 'transparent',
                                   }

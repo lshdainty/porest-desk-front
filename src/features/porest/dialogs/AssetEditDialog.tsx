@@ -477,7 +477,7 @@ export function AssetEditDialog({
                               style={{
                                 width: 44,
                                 height: 28,
-                                background: getBrandColor(c.company?.name)?.bg ?? 'var(--mist-400)',
+                                background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
                               }}
                             >
                               {(c.company?.name ?? c.cardName).slice(0, 1)}
@@ -569,7 +569,7 @@ export function AssetEditDialog({
                                         borderColor: 'transparent',
                                       }
                                     : {
-                                        background: 'var(--mist-100)',
+                                        background: 'var(--pd-surface-subtle)',
                                         color: 'var(--fg-secondary)',
                                         borderColor: 'transparent',
                                       }
@@ -610,7 +610,7 @@ export function AssetEditDialog({
                                       borderColor: 'transparent',
                                     }
                                   : {
-                                      background: 'var(--mist-100)',
+                                      background: 'var(--pd-surface-subtle)',
                                       color: 'var(--fg-secondary)',
                                       borderColor: 'transparent',
                                     }

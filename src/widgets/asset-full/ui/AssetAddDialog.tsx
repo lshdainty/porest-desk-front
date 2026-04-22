@@ -183,7 +183,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
                                     borderColor: 'transparent',
                                   }
                                 : {
-                                    background: 'var(--mist-100)',
+                                    background: 'var(--pd-surface-subtle)',
                                     color: 'var(--fg-secondary)',
                                     borderColor: 'transparent',
                                   }
