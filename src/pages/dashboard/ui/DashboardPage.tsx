@@ -241,8 +241,15 @@ function HomeDesktop() {
 
     const spentByCat = new Map<number, number>()
     for (const c of monthly?.categoryBreakdown ?? []) {
-      if (c.expenseType === 'EXPENSE' && c.categoryRowId != null) {
-        spentByCat.set(c.categoryRowId, c.totalAmount)
+      if (c.expenseType !== 'EXPENSE' || c.categoryRowId == null) continue
+      // 본인에 누적
+      spentByCat.set(c.categoryRowId, (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount)
+      // 예산이 부모(top-level) 에 걸리므로 자식 지출은 부모에도 roll-up.
+      if (c.parentCategoryRowId != null) {
+        spentByCat.set(
+          c.parentCategoryRowId,
+          (spentByCat.get(c.parentCategoryRowId) ?? 0) + c.totalAmount,
+        )
       }
     }
     return budgets.slice(0, 4).map(b => {
