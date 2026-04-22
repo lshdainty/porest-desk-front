@@ -26,11 +26,11 @@ const buttonVariants = cva(
         outline:
           "bg-transparent text-[var(--fg-brand)] border-[var(--mossy-300)] hover:bg-[var(--bg-brand-subtle)] hover:border-[var(--border-brand)]",
         secondary:
-          "bg-[var(--bg-surface)] text-[var(--fg-primary)] border-[var(--border-default)] hover:bg-[var(--mist-100)] hover:border-[var(--border-strong)]",
+          "bg-[var(--bg-surface)] text-[var(--fg-primary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)]",
         ghost:
-          "bg-transparent text-[var(--fg-primary)] hover:bg-[var(--mist-200)]",
+          "bg-transparent text-[var(--fg-primary)] hover:bg-[var(--bg-muted)]",
         warm:
-          "bg-[var(--bark-200)] text-[var(--bark-900)] hover:bg-[var(--bark-300)]",
+          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-[var(--bg-muted)]",
         link:
           "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px]",
       },

@@ -153,7 +153,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                     width: 32,
                     height: 32,
                     borderRadius: 8,
-                    background: 'var(--mist-100)',
+                    background: 'var(--pd-surface-subtle)',
                     color: 'var(--fg-secondary)',
                     display: 'inline-flex',
                     alignItems: 'center',

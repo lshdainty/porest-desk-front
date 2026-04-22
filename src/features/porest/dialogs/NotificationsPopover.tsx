@@ -15,13 +15,13 @@ function iconFor(type: NotificationType): {
 } {
   switch (type) {
     case 'BUDGET_ALERT':
-      return { Icon: AlertTriangle, bg: 'var(--sunlit-100)', fg: 'var(--sunlit-700)' }
+      return { Icon: AlertTriangle, bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)' }
     case 'TODO_REMINDER':
       return { Icon: ListChecks, bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)' }
     case 'EVENT_REMINDER':
-      return { Icon: CalendarClock, bg: 'var(--sky-100)', fg: 'var(--sky-700)' }
+      return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
     default:
-      return { Icon: Bell, bg: 'var(--mist-200)', fg: 'var(--fg-secondary)' }
+      return { Icon: Bell, bg: 'var(--pd-surface-inset)', fg: 'var(--fg-secondary)' }
   }
 }
 

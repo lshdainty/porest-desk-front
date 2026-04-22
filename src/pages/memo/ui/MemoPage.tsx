@@ -5,12 +5,15 @@ import type { Memo } from '@/entities/memo'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
+// 메모 카드 5색 팔레트. 각 색의 원색을 alpha 로 섞어 기저 bg 에 오버레이 —
+// light/dark 모두 자연 적응. 기존 --mossy-100 등 primitive 를 그대로 쓰면
+// 다크모드에서 라이트 톤이 유지돼 카드가 튀어 보였음.
 const CARD_COLORS = [
-  'var(--mossy-100)',
-  'var(--sunlit-100)',
-  'var(--bark-100)',
-  'oklch(0.95 0.035 290)',
-  'var(--mist-100)',
+  'color-mix(in oklch, var(--mossy-500) 18%, transparent)',   // 모시 그린
+  'color-mix(in oklch, var(--sunlit-500) 18%, transparent)',  // 햇살 옐로
+  'color-mix(in oklch, var(--bark-500) 18%, transparent)',    // 바크 브라운
+  'color-mix(in oklch, oklch(0.55 0.15 290) 18%, transparent)', // 라벤더
+  'var(--bg-muted)',                                          // 뉴트럴
 ]
 
 const formatDate = (iso: string) => {

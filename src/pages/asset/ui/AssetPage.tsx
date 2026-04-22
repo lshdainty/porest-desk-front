@@ -147,19 +147,19 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
             <stop offset="100%" stopColor="var(--mossy-500)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+        <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
         <XAxis
           dataKey="monthLabel"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
           tickMargin={8}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
           tickFormatter={fmtAxisNum}
-          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
           width={52}
         />
         <ChartTooltip
@@ -560,8 +560,8 @@ function SavingGoalItem({
                 style={{
                   marginLeft: 8,
                   padding: '1px 6px',
-                  background: 'var(--mossy-100, #e4f4e1)',
-                  color: 'var(--mossy-700)',
+                  background: 'var(--bg-brand-subtle)',
+                  color: 'var(--fg-brand-strong)',
                   fontSize: 10.5,
                   fontWeight: 600,
                   borderRadius: 6,
@@ -727,7 +727,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
       style={{
         height,
         borderRadius: 12,
-        background: 'linear-gradient(90deg, var(--mist-100), var(--mist-200), var(--mist-100))',
+        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
         ...style,

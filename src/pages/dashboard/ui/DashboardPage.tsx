@@ -105,21 +105,21 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
       <RcBarChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 8 }} barGap={8} barCategoryGap="55%">
         <CartesianGrid
           vertical={false}
-          stroke="var(--mist-200)"
+          stroke="var(--border-subtle)"
           strokeDasharray="3 3"
         />
         <XAxis
           dataKey="label"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
           tickMargin={8}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
           tickFormatter={fmtAxisNum}
-          tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+          tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
           width={48}
         />
         <ChartTooltip cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
@@ -149,7 +149,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
       style={{
         height,
         borderRadius: 12,
-        background: 'linear-gradient(90deg, var(--mist-100), var(--mist-200), var(--mist-100))',
+        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
         ...style,
@@ -510,7 +510,7 @@ function HomeDesktop() {
                   <span
                     style={{
                       width: 38, height: 38, borderRadius: 10,
-                      background: p.d <= 7 ? 'var(--sunlit-100)' : 'var(--mist-200)',
+                      background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
                       color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em',
@@ -606,7 +606,7 @@ function HomeDesktop() {
                     width: 38,
                     height: 38,
                     borderRadius: 10,
-                    background: ev.daysUntil <= 3 ? 'var(--sunlit-100)' : 'var(--mist-200)',
+                    background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
                     color: ev.daysUntil <= 3 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                     display: 'inline-flex',
                     alignItems: 'center',

@@ -290,8 +290,8 @@ export function MonthPicker({
                   style={{
                     padding: '10px 0',
                     borderRadius: 8,
-                    border: isSel ? '1px solid var(--mossy-500)' : '1px solid transparent',
-                    background: isSel ? 'var(--mossy-100)' : 'transparent',
+                    border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
+                    background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
                     color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     fontSize: 13,
                     fontWeight: isSel ? 700 : 500,

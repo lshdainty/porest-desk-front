@@ -106,7 +106,7 @@ export function PorestSidebar() {
             <SidebarMenuButton size="lg">
               <span
                 className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                style={{ background: 'var(--mossy-200)', color: 'var(--mossy-800)', fontWeight: 600, fontSize: 12 }}
+                style={{ background: 'var(--bg-brand-muted)', color: 'var(--fg-brand-strong)', fontWeight: 600, fontSize: 12 }}
               >
                 {userInitial}
               </span>

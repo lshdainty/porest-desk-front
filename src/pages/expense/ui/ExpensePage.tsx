@@ -31,7 +31,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
       style={{
         height,
         borderRadius: 12,
-        background: 'linear-gradient(90deg, var(--mist-100), var(--mist-200), var(--mist-100))',
+        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
         ...style,
@@ -376,9 +376,9 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         padding: '6px 10px 6px 12px',
-        background: 'var(--mossy-100)',
+        background: 'var(--bg-brand-subtle)',
         color: 'var(--fg-brand-strong)',
-        border: '1px solid var(--mossy-200)',
+        border: '1px solid var(--border-brand)',
         borderRadius: 999,
         fontSize: 12.5,
         fontWeight: 600,

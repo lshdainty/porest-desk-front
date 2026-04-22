@@ -207,8 +207,8 @@ export function FilterDialog({
                 style={{
                   flex: 1,
                   padding: 10,
-                  background: active ? 'var(--bg-brand-subtle)' : 'var(--mist-50)',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                  background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
+                  border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                   borderRadius: 10,
                   fontWeight: 700,
                   fontSize: 13,
@@ -315,9 +315,9 @@ export function FilterDialog({
                   onClick={() => setAssetIds(toggleIn(assetIds, a.rowId))}
                   style={{
                     padding: '8px 12px',
-                    background: active ? 'var(--mossy-100)' : 'var(--mist-50)',
+                    background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                    border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                    border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                     borderRadius: 999,
                     fontSize: 12,
                     fontWeight: 600,

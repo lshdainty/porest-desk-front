@@ -239,7 +239,7 @@ export function AssetDetailDialog({
         </div>
         {trendLoading ? (
           <div style={{
-            height: 160, background: 'var(--mist-100)', borderRadius: 10,
+            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 10,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
@@ -247,7 +247,7 @@ export function AssetDetailDialog({
           </div>
         ) : chartData.length === 0 ? (
           <div style={{
-            height: 160, background: 'var(--mist-100)', borderRadius: 10,
+            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 10,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
@@ -262,12 +262,12 @@ export function AssetDetailDialog({
                   <stop offset="100%" stopColor="var(--color-balance)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
               <XAxis
                 dataKey="label"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
                 tickMargin={6}
                 interval="preserveStartEnd"
                 minTickGap={18}
@@ -276,7 +276,7 @@ export function AssetDetailDialog({
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={fmtAxisNum}
-                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
                 width={44}
               />
               <ChartTooltip

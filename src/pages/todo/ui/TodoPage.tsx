@@ -7,8 +7,8 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; fg: string; label: string }> = {
   HIGH: { bg: 'oklch(0.95 0.03 15)', fg: 'var(--berry-700)', label: '중요' },
-  MEDIUM: { bg: 'var(--sunlit-100)', fg: 'var(--sunlit-700)', label: '보통' },
-  LOW: { bg: 'var(--mossy-100)', fg: 'var(--mossy-700)', label: '여유' },
+  MEDIUM: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)', label: '보통' },
+  LOW: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)', label: '여유' },
 }
 
 export const TodoPage = () => {
@@ -79,7 +79,7 @@ export const TodoPage = () => {
                         fontWeight: 600,
                         padding: '2px 7px',
                         borderRadius: 999,
-                        background: tag.color ? `${tag.color}22` : 'var(--mist-200)',
+                        background: tag.color ? `${tag.color}22` : 'var(--pd-surface-inset)',
                         color: tag.color ?? 'var(--fg-secondary)',
                       }}
                     >

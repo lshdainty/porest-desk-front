@@ -884,18 +884,18 @@ export const StatsPage = () => {
                   <stop offset="100%" stopColor="var(--color-expense)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
               <XAxis
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
                 tickMargin={8}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -989,18 +989,18 @@ export const StatsPage = () => {
           style={{ height: mobile ? 180 : 220 }}
         >
           <BarChart data={trendChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+            <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+              tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
               tickMargin={8}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 10, fill: 'var(--mist-500)' }}
+              tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
               tickFormatter={fmtTick}
               width={52}
             />
@@ -1317,7 +1317,7 @@ export const StatsPage = () => {
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.prev / maxCompareAmt) * 100}%`,
-                        background: 'var(--mossy-200)',
+                        background: 'var(--bg-brand-muted)',
                         borderRadius: 999,
                       }}
                     />

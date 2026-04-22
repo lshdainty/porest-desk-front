@@ -63,12 +63,12 @@ export const DutchPayPage = () => {
         className="p-card p-card--warm"
         style={{
           padding: mobile ? 18 : 24,
-          background: 'var(--bark-100)',
-          border: '1px solid var(--bark-200)',
+          background: 'var(--bg-section-warm)',
+          border: '1px solid var(--border-warm)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <div style={{ fontSize: 12, color: 'var(--bark-700)', fontWeight: 600 }}>진행 중 정산</div>
+          <div style={{ fontSize: 12, color: 'var(--fg-on-warm)', fontWeight: 600 }}>진행 중 정산</div>
           <button
             onClick={() => settleAll.mutate(d.rowId)}
             disabled={settleAll.isPending}
@@ -107,7 +107,7 @@ export const DutchPayPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--bark-200)' }}>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-warm)' }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 10 }}>참여자</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {d.participants.map((p, i) => renderParticipantRow(d.rowId, p, i))}
@@ -118,8 +118,8 @@ export const DutchPayPage = () => {
   }
 
   const renderParticipantRow = (dutchPayId: number, p: DutchPayParticipant, idx: number) => {
-    const pillBg = p.isPaid ? 'var(--mossy-100)' : 'var(--sunlit-100)'
-    const pillFg = p.isPaid ? 'var(--mossy-700)' : 'var(--sunlit-700)'
+    const pillBg = p.isPaid ? 'var(--bg-brand-subtle)' : 'var(--status-warning-subtle)'
+    const pillFg = p.isPaid ? 'var(--fg-brand-strong)' : 'var(--status-warning-fg)'
     const pillLabel = p.isPaid ? '송금 완료' : '미정산'
 
     return (
@@ -209,7 +209,7 @@ export const DutchPayPage = () => {
               width: 32,
               height: 32,
               borderRadius: 10,
-              background: 'var(--mist-100)',
+              background: 'var(--pd-surface-subtle)',
               color: 'var(--fg-secondary)',
               display: 'inline-flex',
               alignItems: 'center',

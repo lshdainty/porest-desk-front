@@ -14,9 +14,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--mist-200)] text-[var(--mist-800)]",
+          "bg-[var(--bg-sunken)] text-[var(--fg-primary)]",
         secondary:
-          "bg-[var(--mist-200)] text-[var(--mist-800)]",
+          "bg-[var(--bg-sunken)] text-[var(--fg-primary)]",
         destructive:
           "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
         danger:
@@ -24,7 +24,7 @@ const badgeVariants = cva(
         outline:
           "bg-transparent text-[var(--fg-secondary)] shadow-[inset_0_0_0_1px_var(--border-default)]",
         brand:
-          "bg-[var(--mossy-100)] text-[var(--mossy-800)]",
+          "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
         solid:
           "bg-[var(--mossy-600)] text-white",
         success:
@@ -34,7 +34,7 @@ const badgeVariants = cva(
         info:
           "bg-[var(--status-info-subtle)] text-[var(--status-info-fg)]",
         warm:
-          "bg-[var(--bark-200)] text-[var(--bark-800)]",
+          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)]",
       },
     },
     defaultVariants: {

@@ -107,8 +107,8 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 style={{
                   width: 68,
                   height: 44,
-                  background: companyColor?.bg ?? 'var(--mist-200)',
-                  color: companyColor?.fg ?? '#fff',
+                  background: companyColor?.bg ?? 'var(--pd-surface-inset)',
+                  color: companyColor?.fg ?? 'var(--fg-primary)',
                 }}
               >
                 <CreditCard size={20} />
@@ -208,7 +208,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                           style={{
                             width: 44,
                             height: 28,
-                            background: getBrandColor(c.company?.name)?.bg ?? 'var(--mist-400)',
+                            background: getBrandColor(c.company?.name)?.bg ?? 'var(--pd-divider-strong)',
                           }}
                         >
                           {(c.company?.name ?? c.cardName).slice(0, 1)}

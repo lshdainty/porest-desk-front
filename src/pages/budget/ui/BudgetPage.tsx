@@ -363,7 +363,7 @@ export const BudgetPage = () => {
         style={{
           position: 'relative',
           height: 12,
-          background: 'var(--mist-100)',
+          background: 'var(--pd-surface-inset)',
           borderRadius: 99,
           overflow: 'hidden',
           marginBottom: 10,
@@ -551,7 +551,7 @@ export const BudgetPage = () => {
             style={{ height: 180 }}
           >
             <BarChart data={data} margin={{ top: 24, right: 8, left: 8, bottom: 8 }} barCategoryGap="25%">
-              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
               <XAxis
                 dataKey="label"
                 tickLine={false}
@@ -573,7 +573,7 @@ export const BudgetPage = () => {
                         ? 'var(--berry-500)'
                         : d.active
                           ? 'var(--mossy-600)'
-                          : 'var(--mist-300)'
+                          : 'var(--pd-divider-strong)'
                     }
                   />
                 ))}

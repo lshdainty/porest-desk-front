@@ -388,8 +388,8 @@
 
   ::-webkit-scrollbar { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--mist-300); border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--mist-400); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
   :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: var(--radius-xs); }
 }
@@ -502,7 +502,7 @@
 .p-card__desc  { font-size: var(--fs-body-sm); color: var(--fg-secondary); margin-top: 2px; }
 
 /* Progress */
-.p-progress { width: 100%; height: 6px; background: var(--mist-200); border-radius: 999px; overflow: hidden; }
+.p-progress { width: 100%; height: 6px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; }
 .p-progress__bar { height: 100%; background: var(--mossy-500); border-radius: inherit; transition: width var(--dur-slow) var(--ease-decel); }
 .p-progress--lg { height: 10px; }
 .p-progress--warning .p-progress__bar { background: var(--sunlit-500); }

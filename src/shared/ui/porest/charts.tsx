@@ -117,7 +117,7 @@ export function LineChart({
           const y = padT + innerH - (v / range) * innerH
           return (
             <g key={i}>
-              <line x1={padL} x2={w - padR} y1={y} y2={y} stroke="var(--mist-200)" strokeWidth="1" />
+              <line x1={padL} x2={w - padR} y1={y} y2={y} stroke="var(--border-subtle)" strokeWidth="1" />
               <text
                 x={padL - 6}
                 y={y + 3}
@@ -294,7 +294,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 x2={w - padR}
                 y1={y}
                 y2={y}
-                stroke="var(--mist-200)"
+                stroke="var(--border-subtle)"
                 strokeWidth="1"
                 strokeDasharray={i === 0 ? '0' : '3 3'}
               />
@@ -445,7 +445,7 @@ export function Donut({
         <PieChart width={size} height={size}>
           {!hasValue && (
             <Pie
-              data={[{ value: 1, fill: 'var(--mist-200)' }]}
+              data={[{ value: 1, fill: 'var(--pd-surface-inset)' }]}
               dataKey="value"
               innerRadius={innerRadius}
               outerRadius={outerRadius}

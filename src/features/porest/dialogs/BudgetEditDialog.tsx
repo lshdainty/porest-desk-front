@@ -130,7 +130,7 @@ export function BudgetEditDialog({
             <div
               style={{
                 padding: 12,
-                background: 'var(--mist-100)',
+                background: 'var(--pd-surface-subtle)',
                 borderRadius: 10,
                 fontSize: 12,
                 color: 'var(--fg-secondary)',
@@ -208,9 +208,9 @@ export function BudgetEditDialog({
               onClick={() => setLimit(String(p))}
               style={{
                 padding: '6px 12px',
-                background: active ? 'var(--mossy-100)' : 'var(--mist-50)',
+                background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 999,
                 fontSize: 12,
                 fontWeight: 600,
@@ -282,9 +282,9 @@ export function MonthlyBudgetDialog({
               onClick={() => setV(String(p))}
               style={{
                 padding: '6px 12px',
-                background: active ? 'var(--mossy-100)' : 'var(--mist-50)',
+                background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 999,
                 fontSize: 12,
                 fontWeight: 600,
