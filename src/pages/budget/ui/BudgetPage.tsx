@@ -1,25 +1,18 @@
 import { useMemo, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, Copy, Plus } from 'lucide-react'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import { AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
+import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
-import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import {
   useBudgetCompliance,
-  useCreateExpenseBudget,
-  useDeleteExpenseBudget,
   useExpenseBudgets,
   useExpenseCategories,
   useMonthlySummary,
-  useUpdateExpenseBudget,
 } from '@/features/expense'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
-import {
-  BudgetEditDialog,
-  MonthlyBudgetDialog,
-  type BudgetDraft,
-  getPaletteByColor,
-} from '@/features/porest/dialogs'
+import { getPaletteByColor } from '@/features/porest/dialogs'
 
 type OutletCtx = { mobile: boolean }
 
@@ -28,33 +21,111 @@ const currentMonthKey = () => {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`
 }
 
-const prevMonthKey = (key: string): string => {
-  const [y, m] = key.split('-').map(Number) as [number, number]
-  if (m === 1) return `${y - 1}-12`
-  return `${y}-${String(m - 1).padStart(2, '0')}`
+const complianceChartConfig = {
+  percent: { label: '이행률', color: 'var(--mossy-600)' },
+} satisfies ChartConfig
+
+type ComplianceTickProps = {
+  x?: number
+  y?: number
+  payload?: { value?: string; index?: number }
+}
+
+// 마지막(이번 달) 레이블만 볼드 + primary 컬러.
+function ComplianceMonthTick({ x, y, payload }: ComplianceTickProps) {
+  const last = (payload?.index ?? 0) === 5
+  return (
+    <text
+      x={x}
+      y={(y ?? 0) + 14}
+      textAnchor="middle"
+      style={{
+        fontSize: 11,
+        fontWeight: last ? 700 : 500,
+        fill: last ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+      }}
+    >
+      {payload?.value}
+    </text>
+  )
+}
+
+type CompliancePayload = {
+  payload?: { label?: string; percent?: number; limit?: number; spent?: number }
+}
+
+function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: CompliancePayload[] }) {
+  if (!active || !payload?.length) return null
+  const d = payload[0]?.payload
+  if (!d) return null
+  const p = Number(d.percent ?? 0)
+  const over = p > 100
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 10,
+        boxShadow: 'var(--shadow-md)',
+        padding: '8px 12px',
+        fontSize: 11.5,
+        minWidth: 160,
+      }}
+    >
+      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+        {d.label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span
+          style={{
+            width: 8, height: 8, borderRadius: 2,
+            background: over ? 'var(--berry-500)' : 'var(--mossy-600)',
+          }}
+        />
+        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>한도 대비</span>
+        <span
+          className="num"
+          style={{
+            marginLeft: 'auto', fontSize: 12, fontWeight: 700,
+            color: over ? 'var(--berry-700)' : 'var(--fg-primary)',
+          }}
+        >
+          {p.toFixed(1)}%
+        </span>
+      </div>
+      <div style={{
+        marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--border-subtle)',
+        display: 'flex', flexDirection: 'column', gap: 3,
+      }}>
+        <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
+          <span>지출</span>
+          <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
+            {Number(d.spent ?? 0).toLocaleString('ko-KR')}원
+          </span>
+        </div>
+        <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
+          <span>한도</span>
+          <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
+            {Number(d.limit ?? 0).toLocaleString('ko-KR')}원
+          </span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export const BudgetPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const navigate = useNavigate()
   const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
-  const prevKey = prevMonthKey(monthKey)
-  const [prevY, prevM] = prevKey.split('-').map(Number) as [number, number]
 
   const budgetsQ = useExpenseBudgets({ year, month })
-  const prevBudgetsQ = useExpenseBudgets({ year: prevY, month: prevM })
   const summaryQ = useMonthlySummary(year, month)
   const categoriesQ = useExpenseCategories()
   const complianceQ = useBudgetCompliance(6)
 
-  const createMut = useCreateExpenseBudget()
-  const updateMut = useUpdateExpenseBudget()
-  const deleteMut = useDeleteExpenseBudget()
-
-  const [editing, setEditing] = useState<ExpenseBudget | 'new' | null>(null)
-  const [editMonthly, setEditMonthly] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState<ExpenseBudget | null>(null)
-  const [confirmCopy, setConfirmCopy] = useState(false)
+  const goToSettings = () => navigate('/desk/settings?section=budget')
 
   const budgets: ExpenseBudget[] = budgetsQ.data ?? []
   const categoryMap = useMemo(() => {
@@ -117,87 +188,6 @@ export const BudgetPage = () => {
     return b.budgetAmount > 0 && spent / b.budgetAmount <= 0.85
   })
 
-  const submitting = createMut.isPending || updateMut.isPending || deleteMut.isPending
-
-  // ---- Mutations ----
-  const saveCategoryBudget = (draft: BudgetDraft) => {
-    const target = editing !== 'new' && editing ? editing : null
-    if (target) {
-      updateMut.mutate(
-        { id: target.rowId, budgetAmount: draft.budgetAmount },
-        { onSuccess: () => setEditing(null) },
-      )
-      return
-    }
-    const dup = categoryBudgets.find(b => b.categoryRowId === draft.categoryRowId)
-    if (dup) {
-      updateMut.mutate(
-        { id: dup.rowId, budgetAmount: draft.budgetAmount },
-        { onSuccess: () => setEditing(null) },
-      )
-    } else {
-      createMut.mutate(
-        {
-          categoryRowId: draft.categoryRowId,
-          budgetAmount: draft.budgetAmount,
-          budgetYear: year,
-          budgetMonth: month,
-        },
-        { onSuccess: () => setEditing(null) },
-      )
-    }
-  }
-
-  const saveMonthlyBudget = (value: number) => {
-    if (overallBudget) {
-      updateMut.mutate(
-        { id: overallBudget.rowId, budgetAmount: value },
-        { onSuccess: () => setEditMonthly(false) },
-      )
-    } else {
-      createMut.mutate(
-        {
-          categoryRowId: null,
-          budgetAmount: value,
-          budgetYear: year,
-          budgetMonth: month,
-        },
-        { onSuccess: () => setEditMonthly(false) },
-      )
-    }
-  }
-
-  const onDelete = (b: ExpenseBudget) => {
-    deleteMut.mutate(b.rowId, { onSuccess: () => setConfirmDelete(null) })
-  }
-
-  const copyFromLastMonth = () => {
-    const prevList = prevBudgetsQ.data ?? []
-    if (prevList.length === 0) {
-      setConfirmCopy(false)
-      return
-    }
-    const existingByKey = new Map<string, ExpenseBudget>()
-    for (const b of budgets) {
-      existingByKey.set(`${b.categoryRowId ?? 'overall'}`, b)
-    }
-    for (const p of prevList) {
-      const key = `${p.categoryRowId ?? 'overall'}`
-      const exists = existingByKey.get(key)
-      if (exists) {
-        updateMut.mutate({ id: exists.rowId, budgetAmount: p.budgetAmount })
-      } else {
-        createMut.mutate({
-          categoryRowId: p.categoryRowId ?? null,
-          budgetAmount: p.budgetAmount,
-          budgetYear: year,
-          budgetMonth: month,
-        })
-      }
-    }
-    setConfirmCopy(false)
-  }
-
   // ---- Cards ----
   const HeaderCard = (
     <div
@@ -211,19 +201,9 @@ export const BudgetPage = () => {
           fontWeight: 600,
           letterSpacing: '0.02em',
           marginBottom: 2,
-          display: 'flex',
-          alignItems: 'center',
         }}
       >
         {month}월 전체 상한
-        <button
-          type="button"
-          className="p-btn p-btn--ghost p-btn--sm"
-          style={{ marginLeft: 'auto' }}
-          onClick={() => setEditMonthly(true)}
-        >
-          {overallBudget ? '수정' : '설정'}
-        </button>
       </div>
       <div
         style={{
@@ -343,7 +323,7 @@ export const BudgetPage = () => {
             lineHeight: 1.6,
           }}
         >
-          전체 상한이 아직 설정되지 않았어요. 우측 상단 <strong>설정</strong> 버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.
+          전체 상한이 아직 설정되지 않았어요. 우측 상단 <strong>예산 설정</strong> 버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.
           {categoryLimitSum > 0 && (
             <div style={{ marginTop: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
               현재 카테고리 한도 합계: {KRW(categoryLimitSum)}원
@@ -524,7 +504,16 @@ export const BudgetPage = () => {
   )
 
   const ComplianceCard = (() => {
-    const data = complianceQ.data ?? []
+    const rows = complianceQ.data ?? []
+    const data = rows.map(b => ({
+      label: `${b.month}월`,
+      percent: b.compliancePercent,
+      limit: b.totalLimit,
+      spent: b.totalSpent,
+      year: b.year,
+      month: b.month,
+      active: b.year === year && b.month === month,
+    }))
     return (
       <div className="p-card" style={{ padding: 22 }}>
         <div className="sec-head" style={{ marginBottom: 16 }}>
@@ -542,72 +531,47 @@ export const BudgetPage = () => {
             아직 이행률 데이터가 없어요
           </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              gap: 10,
-              height: 140,
-              paddingBottom: 28,
-              position: 'relative',
-            }}
+          <ChartContainer
+            config={complianceChartConfig}
+            className="aspect-auto w-full"
+            style={{ height: 180 }}
           >
-            {data.map(b => {
-              const active = b.year === year && b.month === month
-              const p = b.compliancePercent
-              const barH = Math.min(100, p) * 0.9
-              return (
-                <div
-                  key={`${b.year}-${b.month}`}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 6,
-                    height: '100%',
-                    justifyContent: 'flex-end',
-                    position: 'relative',
-                  }}
-                >
-                  <div
-                    className="num"
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: p > 100 ? 'var(--berry-700)' : active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                    }}
-                  >
-                    {p.toFixed(0)}%
-                  </div>
-                  <div
-                    style={{
-                      width: '100%',
-                      maxWidth: 36,
-                      height: `${barH}%`,
-                      background: p > 100
-                        ? 'var(--berry-400)'
-                        : active
-                          ? 'var(--bg-brand)'
-                          : 'var(--mist-300)',
-                      borderRadius: '6px 6px 0 0',
-                    }}
+            <BarChart data={data} margin={{ top: 24, right: 8, left: 8, bottom: 8 }} barCategoryGap="25%">
+              <CartesianGrid vertical={false} stroke="var(--mist-200)" strokeDasharray="3 3" />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tick={ComplianceMonthTick}
+                tickMargin={6}
+              />
+              <YAxis hide domain={[0, (dmax: number) => Math.max(100, dmax)]} />
+              <ChartTooltip
+                cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.06 }}
+                content={<ComplianceTooltip />}
+              />
+              <Bar dataKey="percent" radius={[6, 6, 0, 0]} isAnimationActive>
+                {data.map(d => (
+                  <Cell
+                    key={`${d.year}-${d.month}`}
+                    fill={
+                      d.percent > 100
+                        ? 'var(--berry-500)'
+                        : d.active
+                          ? 'var(--mossy-600)'
+                          : 'var(--mist-300)'
+                    }
                   />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: -22,
-                      fontSize: 11,
-                      color: active ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
-                      fontWeight: active ? 700 : 500,
-                    }}
-                  >
-                    {b.month}월
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                ))}
+                <LabelList
+                  dataKey="percent"
+                  position="top"
+                  formatter={(v: unknown) => `${Math.round(Number(v ?? 0))}%`}
+                  style={{ fontSize: 11, fontWeight: 700, fill: 'var(--fg-primary)' }}
+                />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
         )}
       </div>
     )
@@ -620,14 +584,6 @@ export const BudgetPage = () => {
         <span style={{ marginLeft: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
           {categoryBudgets.length}개 설정됨
         </span>
-        <button
-          className="p-btn p-btn--ghost p-btn--sm"
-          style={{ marginLeft: 'auto' }}
-          type="button"
-          onClick={() => setEditing('new')}
-        >
-          <Plus size={13} /> 추가
-        </button>
       </div>
       {isLoading ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
@@ -635,7 +591,15 @@ export const BudgetPage = () => {
         </div>
       ) : categoryBudgets.length === 0 ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
-          카테고리별 예산이 없어요
+          <div>카테고리별 예산이 없어요</div>
+          <button
+            type="button"
+            className="p-btn p-btn--ghost p-btn--sm"
+            style={{ marginTop: 10, color: 'var(--fg-brand-strong)' }}
+            onClick={goToSettings}
+          >
+            예산 설정하러 가기 →
+          </button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -671,13 +635,6 @@ export const BudgetPage = () => {
                         : `남은 예산 ${KRW(Math.max(0, limit - spent))}원`}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="p-btn p-btn--ghost p-btn--sm"
-                    onClick={() => setEditing(b)}
-                  >
-                    수정
-                  </button>
                   <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
                     <div
                       style={{
@@ -711,85 +668,12 @@ export const BudgetPage = () => {
     <>
       <MonthPicker value={monthKey} onChange={setMonthKey} />
       <button
-        className="p-btn p-btn--secondary p-btn--sm"
-        type="button"
-        onClick={() => setConfirmCopy(true)}
-        disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
-        title={
-          (prevBudgetsQ.data?.length ?? 0) === 0
-            ? '복사할 지난달 예산이 없어요'
-            : '지난달 한도를 이번 달로 복사'
-        }
-      >
-        <Copy size={13} /> 지난달 복사
-      </button>
-      <button
         className="p-btn p-btn--primary p-btn--sm"
         type="button"
-        onClick={() => setEditing('new')}
+        onClick={goToSettings}
       >
-        <Plus size={14} /> 카테고리 예산
+        <Settings size={14} /> 예산 설정
       </button>
-    </>
-  )
-
-  const Dialogs = (
-    <>
-      {editing && (
-        <BudgetEditDialog
-          budget={editing === 'new' ? null : editing}
-          categories={categoriesQ.data ?? []}
-          existing={categoryBudgets}
-          onClose={() => setEditing(null)}
-          onSave={saveCategoryBudget}
-          onDelete={
-            editing !== 'new'
-              ? () => {
-                  setConfirmDelete(editing)
-                  setEditing(null)
-                }
-              : undefined
-          }
-          mobile={mobile}
-          submitting={submitting}
-        />
-      )}
-      {editMonthly && (
-        <MonthlyBudgetDialog
-          value={overallBudget?.budgetAmount ?? 0}
-          onClose={() => setEditMonthly(false)}
-          onSave={saveMonthlyBudget}
-          mobile={mobile}
-          submitting={submitting}
-        />
-      )}
-      {confirmDelete && (
-        <ConfirmDialog
-          title="예산 삭제"
-          message={`"${
-            (confirmDelete.categoryRowId != null
-              ? categoryMap.get(confirmDelete.categoryRowId)?.categoryName
-              : null) ??
-            confirmDelete.categoryName ??
-            '이'
-          }" 카테고리 예산을 삭제하시겠어요?`}
-          confirmLabel="삭제"
-          danger
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() => onDelete(confirmDelete)}
-        />
-      )}
-      {confirmCopy && (
-        <ConfirmDialog
-          title="지난달 예산 복사"
-          message={`${prevY}년 ${prevM}월 예산 한도(${
-            prevBudgetsQ.data?.length ?? 0
-          }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
-          confirmLabel="복사"
-          onCancel={() => setConfirmCopy(false)}
-          onConfirm={copyFromLastMonth}
-        />
-      )}
     </>
   )
 
@@ -804,7 +688,6 @@ export const BudgetPage = () => {
         {StatusTiles}
         {ListCard}
         {ComplianceCard}
-        {Dialogs}
       </div>
     )
   }
@@ -829,7 +712,6 @@ export const BudgetPage = () => {
           {ComplianceCard}
         </div>
       </div>
-      {Dialogs}
     </div>
   )
 }

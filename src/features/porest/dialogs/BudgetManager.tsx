@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   useExpenseBudgets,
   useExpenseCategories,
@@ -10,17 +10,30 @@ import {
 } from '@/features/expense'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { KRW } from '@/shared/lib/porest/format'
-import { Icon } from '@/shared/ui/porest/primitives'
+import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
 
+const currentMonthKey = () => {
+  const n = new Date()
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`
+}
+
+const prevMonthKey = (key: string): string => {
+  const [y, m] = key.split('-').map(Number) as [number, number]
+  if (m === 1) return `${y - 1}-12`
+  return `${y}-${String(m - 1).padStart(2, '0')}`
+}
+
 export function BudgetManager({ mobile }: { mobile: boolean }) {
-  const now = new Date()
-  const [year] = useState<number>(now.getFullYear())
-  const [month] = useState<number>(now.getMonth() + 1)
+  const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
+  const [year, month] = monthKey.split('-').map(Number) as [number, number]
+  const prevKey = prevMonthKey(monthKey)
+  const [prevY, prevM] = prevKey.split('-').map(Number) as [number, number]
 
   const { data: budgets, isLoading: loadingBudgets } = useExpenseBudgets({ year, month })
+  const prevBudgetsQ = useExpenseBudgets({ year: prevY, month: prevM })
   const { data: categories, isLoading: loadingCategories } = useExpenseCategories()
   const { data: monthlySummary, isLoading: loadingSummary } = useMonthlySummary(year, month)
 
@@ -31,6 +44,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const [editing, setEditing] = useState<ExpenseBudget | 'new' | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<ExpenseBudget | null>(null)
   const [editMonthly, setEditMonthly] = useState(false)
+  const [confirmCopy, setConfirmCopy] = useState(false)
 
   const budgetList = budgets ?? []
   const categoryList: ExpenseCategory[] = categories ?? []
@@ -133,6 +147,31 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     deleteMut.mutate(b.rowId, { onSuccess: () => setConfirmDelete(null) })
   }
 
+  const copyFromLastMonth = () => {
+    const prevList = prevBudgetsQ.data ?? []
+    if (prevList.length === 0) {
+      setConfirmCopy(false)
+      return
+    }
+    const existingByKey = new Map<string, ExpenseBudget>()
+    for (const b of budgetList) existingByKey.set(`${b.categoryRowId ?? 'overall'}`, b)
+    for (const p of prevList) {
+      const key = `${p.categoryRowId ?? 'overall'}`
+      const exists = existingByKey.get(key)
+      if (exists) {
+        updateMut.mutate({ id: exists.rowId, budgetAmount: p.budgetAmount })
+      } else {
+        createMut.mutate({
+          categoryRowId: p.categoryRowId ?? null,
+          budgetAmount: p.budgetAmount,
+          budgetYear: year,
+          budgetMonth: month,
+        })
+      }
+    }
+    setConfirmCopy(false)
+  }
+
   const submitting = createMut.isPending || updateMut.isPending || deleteMut.isPending
 
   return (
@@ -146,12 +185,42 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요.
               </p>
             </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <MonthPicker value={monthKey} onChange={setMonthKey} />
+              <button
+                className="p-btn p-btn--secondary p-btn--sm"
+                type="button"
+                onClick={() => setConfirmCopy(true)}
+                disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
+                title={
+                  (prevBudgetsQ.data?.length ?? 0) === 0
+                    ? '복사할 지난달 예산이 없어요'
+                    : '지난달 한도를 이번 달로 복사'
+                }
+              >
+                <Copy size={13} /> 지난달 복사
+              </button>
+              <button
+                className="p-btn p-btn--primary p-btn--sm"
+                onClick={() => setEditing('new')}
+                disabled={loading}
+              >
+                <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
+              </button>
+            </div>
+          </div>
+        )}
+
+        {mobile && (
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+            <MonthPicker value={monthKey} onChange={setMonthKey} />
             <button
-              className="p-btn p-btn--primary"
-              onClick={() => setEditing('new')}
-              disabled={loading}
+              className="p-btn p-btn--secondary p-btn--sm"
+              type="button"
+              onClick={() => setConfirmCopy(true)}
+              disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
             >
-              <Plus size={14} strokeWidth={2.4} />카테고리 예산 추가
+              <Copy size={12} /> 지난달 복사
             </button>
           </div>
         )}
@@ -408,6 +477,17 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           danger
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => onDelete(confirmDelete)}
+        />
+      )}
+      {confirmCopy && (
+        <ConfirmDialog
+          title="지난달 예산 복사"
+          message={`${prevY}년 ${prevM}월 예산 한도(${
+            prevBudgetsQ.data?.length ?? 0
+          }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
+          confirmLabel="복사"
+          onCancel={() => setConfirmCopy(false)}
+          onConfirm={copyFromLastMonth}
         />
       )}
     </>

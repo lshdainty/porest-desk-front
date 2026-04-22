@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
   ChevronLeft,
@@ -34,9 +34,34 @@ const SECTIONS: SectionDef[] = [
   { id: 'account', label: '계정', icon: User, desc: '프로필·보안·로그아웃' },
 ]
 
+const SECTION_IDS: SectionId[] = SECTIONS.map(s => s.id)
+
 export const SettingsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
-  const [section, setSection] = useState<SectionId | 'menu'>(mobile ? 'menu' : 'categories')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const querySection = (() => {
+    const q = searchParams.get('section')
+    return q && (SECTION_IDS as string[]).includes(q) ? (q as SectionId) : null
+  })()
+  const [section, setSection] = useState<SectionId | 'menu'>(
+    querySection ?? (mobile ? 'menu' : 'categories'),
+  )
+
+  // URL 쿼리 변화를 섹션 상태에 반영 (외부에서 딥링크 들어오면 스위치).
+  useEffect(() => {
+    if (querySection && querySection !== section) setSection(querySection)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
+  const changeSection = (next: SectionId | 'menu') => {
+    setSection(next)
+    const p = new URLSearchParams(searchParams)
+    if (next === 'menu') p.delete('section')
+    else p.set('section', next)
+    setSearchParams(p, { replace: true })
+  }
 
   const activeSection = section === 'menu' ? null : SECTIONS.find(s => s.id === section) ?? null
 
@@ -74,7 +99,7 @@ export const SettingsPage = () => {
               return (
                 <button
                   key={s.id}
-                  onClick={() => setSection(s.id)}
+                  onClick={() => changeSection(s.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -130,7 +155,7 @@ export const SettingsPage = () => {
           }}
         >
           <button
-            onClick={() => setSection('menu')}
+            onClick={() => changeSection('menu')}
             style={{
               border: 0,
               background: 'transparent',
@@ -188,7 +213,7 @@ export const SettingsPage = () => {
             return (
               <button
                 key={s.id}
-                onClick={() => setSection(s.id)}
+                onClick={() => changeSection(s.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

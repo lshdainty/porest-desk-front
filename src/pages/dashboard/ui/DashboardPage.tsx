@@ -6,7 +6,7 @@ import {
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
-import { MonthPicker } from '@/shared/ui/porest/primitives'
+import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -14,10 +14,12 @@ import { useDashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
 import {
   useExpenses,
+  useExpenseCategories,
   useMonthlySummary,
   useMonthlyTrend,
   useExpenseBudgets,
 } from '@/features/expense'
+import { getPaletteByColor } from '@/features/porest/dialogs'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 
@@ -187,6 +189,7 @@ function HomeDesktop() {
   const trendQ = useMonthlyTrend(6)
   const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd })
   const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
+  const categoriesQ = useExpenseCategories()
   const recurringQ = useRecurringTransactions()
 
   const summary = dashboardQ.data
@@ -232,6 +235,10 @@ function HomeDesktop() {
 
   const budgetItems = useMemo(() => {
     const budgets = budgetsQ.data ?? []
+    const cats = categoriesQ.data ?? []
+    const catMap = new Map<number, (typeof cats)[number]>()
+    for (const c of cats) catMap.set(c.rowId, c)
+
     const spentByCat = new Map<number, number>()
     for (const c of monthly?.categoryBreakdown ?? []) {
       if (c.expenseType === 'EXPENSE' && c.categoryRowId != null) {
@@ -242,9 +249,19 @@ function HomeDesktop() {
       const spent = b.categoryRowId != null ? spentByCat.get(b.categoryRowId) ?? 0 : 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
       const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
-      return { rowId: b.rowId, categoryName: b.categoryName, budgetAmount: b.budgetAmount, spent, pct, state }
+      const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
+      return {
+        rowId: b.rowId,
+        categoryName: cat?.categoryName ?? b.categoryName,
+        icon: cat?.icon ?? 'tag',
+        color: cat?.color,
+        budgetAmount: b.budgetAmount,
+        spent,
+        pct,
+        state,
+      }
     })
-  }, [budgetsQ.data, monthly])
+  }, [budgetsQ.data, categoriesQ.data, monthly])
 
   const upcomingPayments = useMemo(() => {
     const today = new Date()
@@ -422,18 +439,20 @@ function HomeDesktop() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {budgetItems.map(b => (
+              {budgetItems.map(b => {
+                const palette = getPaletteByColor(b.color)
+                return (
                 <div key={b.rowId}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span
                       style={{
-                        width: 28, height: 28, borderRadius: 8,
-                        background: 'var(--mossy-100)', color: 'var(--mossy-800)',
+                        width: 32, height: 32, borderRadius: 10,
+                        background: palette.bg, color: palette.color,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, fontWeight: 700, flexShrink: 0,
+                        flexShrink: 0,
                       }}
                     >
-                      {(b.categoryName ?? '·').slice(0, 1)}
+                      <Icon name={b.icon} size={16} strokeWidth={1.9} />
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>{b.categoryName ?? '전체'}</span>
                     <span
@@ -458,7 +477,8 @@ function HomeDesktop() {
                     />
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

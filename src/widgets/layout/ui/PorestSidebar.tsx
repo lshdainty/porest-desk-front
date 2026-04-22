@@ -11,7 +11,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -22,17 +21,16 @@ export interface NavItem {
   label: string
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>
   path: string
-  badge?: number
 }
 
 export const NAV: NavItem[] = [
   { id: 'home',     label: '홈',        icon: LayoutDashboard, path: '/desk' },
   { id: 'assets',   label: '자산',      icon: Wallet,          path: '/desk/asset' },
-  { id: 'tx',       label: '가계부',    icon: Receipt,         path: '/desk/expense',  badge: 27 },
+  { id: 'tx',       label: '가계부',    icon: Receipt,         path: '/desk/expense' },
   { id: 'stats',    label: '통계·분석', icon: ChartPie,        path: '/desk/stats' },
-  { id: 'budget',   label: '예산',      icon: Target,          path: '/desk/budget',   badge: 5 },
+  { id: 'budget',   label: '예산',      icon: Target,          path: '/desk/budget' },
   { id: 'calendar', label: '캘린더',    icon: CalendarDays,    path: '/desk/calendar' },
-  { id: 'todo',     label: '할 일',     icon: ListChecks,      path: '/desk/todo',     badge: 4 },
+  { id: 'todo',     label: '할 일',     icon: ListChecks,      path: '/desk/todo' },
   { id: 'dutch',    label: '더치페이',  icon: UsersRound,      path: '/desk/dutch-pay' },
   { id: 'memo',     label: '메모',      icon: NotebookPen,     path: '/desk/memo' },
 ]
@@ -60,7 +58,6 @@ export function PorestSidebar() {
                 <IconComp />
                 <span>{it.label}</span>
               </SidebarMenuButton>
-              {it.badge != null && <SidebarMenuBadge>{it.badge}</SidebarMenuBadge>}
             </SidebarMenuItem>
           )
         })}
