@@ -12,6 +12,7 @@ import {
   useMerchantSummary,
   useExpenseHeatmap,
   useExpenseCategories,
+  useExpenses,
 } from '@/features/expense'
 import type { CategoryBreakdown, HeatmapCell, ExpenseCategory } from '@/entities/expense'
 import { renderIcon } from '@/shared/lib'
@@ -189,6 +190,8 @@ export const StatsPage = () => {
   const endDateObj = new Date(year, month, 0) // last day of month
   const endDate = `${year}-${String(month).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
   const merchantQ = useMerchantSummary(startDate, endDate)
+  // 추이 탭 '월' 모드에서 일별 시리즈를 그리려면 해당 월의 raw 거래 목록이 필요.
+  const monthExpensesQ = useExpenses({ startDate, endDate })
   const heatmapQ = useExpenseHeatmap(year, month)
 
   const categoryBreakdown: CategoryBreakdown[] = useMemo(
@@ -819,16 +822,35 @@ export const StatsPage = () => {
         .sort((a, b) => a.month - b.month),
     [monthlyAmounts, periodMonths],
   )
-  const trendChartData = useMemo(
-    () =>
-      trendMonths.map(m => ({
-        month: `${String(m.month).padStart(2, '0')}월`,
-        income: m.totalIncome,
-        expense: m.totalExpense,
-        savings: m.totalIncome - m.totalExpense,
-      })),
-    [trendMonths],
-  )
+  // '1m' 모드: 해당 월 1일~말일의 일별 수입/지출을 버킷에 누적.
+  // 다른 모드: 기존 월 단위 시리즈 유지.
+  const trendChartData = useMemo(() => {
+    if (period === '1m') {
+      const exps = monthExpensesQ.data ?? []
+      const days = new Date(year, month, 0).getDate()
+      const byDay = new Map<number, { income: number; expense: number }>()
+      for (let d = 1; d <= days; d++) byDay.set(d, { income: 0, expense: 0 })
+      for (const e of exps) {
+        const day = Number(e.expenseDate.slice(8, 10))
+        const bucket = byDay.get(day)
+        if (!bucket) continue
+        if (e.expenseType === 'INCOME') bucket.income += e.amount
+        else bucket.expense += e.amount
+      }
+      return Array.from(byDay.entries()).map(([d, v]) => ({
+        month: `${String(d).padStart(2, '0')}일`,
+        income: v.income,
+        expense: v.expense,
+        savings: v.income - v.expense,
+      }))
+    }
+    return trendMonths.map(m => ({
+      month: `${String(m.month).padStart(2, '0')}월`,
+      income: m.totalIncome,
+      expense: m.totalExpense,
+      savings: m.totalIncome - m.totalExpense,
+    }))
+  }, [period, trendMonths, monthExpensesQ.data, year, month])
 
   const sumIn = trendMonths.reduce((s, m) => s + m.totalIncome, 0)
   const sumOut = trendMonths.reduce((s, m) => s + m.totalExpense, 0)
@@ -891,6 +913,8 @@ export const StatsPage = () => {
                 axisLine={false}
                 tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
                 tickMargin={8}
+                interval="preserveStartEnd"
+                minTickGap={mobile ? 16 : 24}
               />
               <YAxis
                 tickLine={false}
@@ -975,7 +999,7 @@ export const StatsPage = () => {
   const SavingsBars = (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>월별 순저축</h2>
+        <h2 style={{ fontSize: 15 }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</h2>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </div>
       {yearlyQ.isLoading ? (
@@ -996,6 +1020,8 @@ export const StatsPage = () => {
               axisLine={false}
               tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
               tickMargin={8}
+              interval="preserveStartEnd"
+              minTickGap={mobile ? 16 : 24}
             />
             <YAxis
               tickLine={false}
@@ -1025,7 +1051,7 @@ export const StatsPage = () => {
                   key={i}
                   fill={
                     d.savings < 0
-                      ? 'var(--berry-400)'
+                      ? 'var(--berry-500)'
                       : d.month === `${month}월`
                         ? 'var(--mossy-700)'
                         : 'var(--mossy-400)'
