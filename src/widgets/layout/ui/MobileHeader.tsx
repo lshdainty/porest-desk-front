@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Bell, Calendar, CheckSquare, Info, Search, Wallet } from 'lucide-react'
+import { Bell, Calendar, CheckSquare, Eye, EyeOff, Info, Moon, Search, Sun, Wallet } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import {
   Drawer,
@@ -10,6 +10,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/shared/ui/drawer'
+import { useTheme } from '@/shared/ui/theme-provider'
+import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import {
   useDeleteNotification,
   useMarkAllRead,
@@ -62,11 +64,30 @@ export function MobileHeader() {
   const isHome = location.pathname === '/desk'
   const [isNotifOpen, setIsNotifOpen] = useState(false)
   const { data: unreadCount = 0 } = useUnreadCount()
+  const { resolvedTheme, setTheme } = useTheme()
+  const hidden = useHideAmounts()
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   return (
     <>
       <div className="m-header">
         <h1>{title(location.pathname)}</h1>
+        <button
+          className="ico-btn"
+          aria-label={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
+          title={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
+          onClick={toggleTheme}
+        >
+          {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+        <button
+          className="ico-btn"
+          aria-label={hidden ? '금액 표시' : '금액 가리기'}
+          title={hidden ? '금액 표시' : '금액 가리기'}
+          onClick={togglePdHideAmounts}
+        >
+          {hidden ? <EyeOff size={20} /> : <Eye size={20} />}
+        </button>
         <button
           className="ico-btn"
           aria-label={isHome ? '알림' : '검색'}
