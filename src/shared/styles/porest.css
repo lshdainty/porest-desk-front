@@ -339,9 +339,10 @@
   transition: color var(--dur-fast);
   position: relative;
 }
-.m-tab svg { color: var(--fg-tertiary); }
+/* > svg: 직접 자식만 매칭 — FAB 의 <span><svg/></span> 는 영향 없음 */
+.m-tab > svg { color: var(--fg-tertiary); }
 .m-tab.active { color: var(--fg-brand-strong); font-weight: 600; }
-.m-tab.active svg { color: var(--fg-brand-strong); }
+.m-tab.active > svg { color: var(--fg-brand-strong); }
 
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
