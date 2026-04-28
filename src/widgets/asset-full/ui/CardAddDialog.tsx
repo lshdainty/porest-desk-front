@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { CreditCard, Search } from 'lucide-react'
 import {
   Dialog,
@@ -7,9 +7,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/shared/ui/dialog'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { useIsMobile } from '@/shared/hooks'
 import { KRW } from '@/shared/lib/porest/format'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { useCardCatalogs } from '@/features/card-catalog'
@@ -23,6 +32,7 @@ interface CardAddDialogProps {
 }
 
 export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
+  const isMobile = useIsMobile()
   const [cardType, setCardType] = useState<CardType>('CREDIT')
   const [keyword, setKeyword] = useState('')
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
@@ -88,14 +98,8 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
     )
   }
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 bg-[var(--bg-surface)]">
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
-          <DialogTitle className="text-[17px] font-bold tracking-tight">카드 추가</DialogTitle>
-        </DialogHeader>
-
-        <div className="px-6 pt-5 pb-2 flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
+  const bodyContent = (
+    <Fragment>
           <div className="flex items-center gap-3">
             {selected?.imgUrl ? (
               <img
@@ -298,19 +302,49 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               청구될 금액을 입력하세요. 총 부채에 반영됩니다.
             </p>
           </div>
-        </div>
+    </Fragment>
+  )
 
-        <DialogFooter className="px-6 py-4 border-t border-[var(--border-subtle)] mt-2 gap-2 sm:gap-2">
-          <Button variant="ghost" onClick={handleClose} disabled={createMut.isPending}>
-            취소
-          </Button>
-          <Button
-            variant="default"
-            onClick={handleSubmit}
-            disabled={createMut.isPending || !selected}
-          >
-            {createMut.isPending ? '저장 중…' : selected ? '추가' : '카드 선택 필요'}
-          </Button>
+  const footerButtons = (
+    <Fragment>
+      <Button variant="ghost" onClick={handleClose} disabled={createMut.isPending}>
+        취소
+      </Button>
+      <Button
+        variant="default"
+        onClick={handleSubmit}
+        disabled={createMut.isPending || !selected}
+      >
+        {createMut.isPending ? '저장 중…' : selected ? '추가' : '카드 선택 필요'}
+      </Button>
+    </Fragment>
+  )
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+        <DrawerContent className="max-h-[90%]">
+          <DrawerHeader>
+            <DrawerTitle>카드 추가</DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody className="flex flex-col gap-5">{bodyContent}</DrawerBody>
+          <DrawerFooter>{footerButtons}</DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+      <DialogContent className="sm:max-w-lg p-0 gap-0 bg-[var(--bg-surface)]">
+        <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
+          <DialogTitle className="text-[17px] font-bold tracking-tight">카드 추가</DialogTitle>
+        </DialogHeader>
+        <div className="px-6 pt-5 pb-2 flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
+          {bodyContent}
+        </div>
+        <DialogFooter className="px-6 py-4 border-t border-[var(--border-subtle)] mt-2 flex-row justify-end gap-2 sm:gap-2">
+          {footerButtons}
         </DialogFooter>
       </DialogContent>
     </Dialog>

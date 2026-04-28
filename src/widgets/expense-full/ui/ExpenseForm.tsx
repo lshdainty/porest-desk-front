@@ -465,9 +465,7 @@ export const ExpenseForm = ({
             </DrawerTitle>
           </DrawerHeader>
           <DrawerBody>{formContent}</DrawerBody>
-          <DrawerFooter className="flex-row gap-2">
-            {footerContent}
-          </DrawerFooter>
+          <DrawerFooter>{footerContent}</DrawerFooter>
         </DrawerContent>
       </Drawer>
     )

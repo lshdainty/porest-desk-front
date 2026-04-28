@@ -76,13 +76,15 @@ const DrawerBody = ({
 )
 DrawerBody.displayName = "DrawerBody"
 
+// 데스크탑 다이얼로그 footer 와 동일한 패턴: 우측 정렬 가로 배치.
+// 삭제 등 좌측 배치할 버튼은 className="mr-auto" 로 밀어내기.
 const DrawerFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-auto flex flex-col gap-2 border-t border-[var(--border-subtle)] p-4",
+      "mt-auto flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-5 py-3",
       className
     )}
     {...props}
