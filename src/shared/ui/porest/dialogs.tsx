@@ -41,7 +41,7 @@ export function ModalShell({
               type="button"
               onClick={onClose}
               aria-label="닫기"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-[var(--pd-hover-bg)] text-[var(--fg-primary)]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--pd-hover-bg)] hover:text-[var(--fg-primary)] transition-colors"
             >
               <X size={18} />
             </button>
