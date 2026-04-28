@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
 
 export type ModalSize = 'sm' | 'md' | 'lg'
 
@@ -19,32 +26,36 @@ export function ModalShell({
   mobile: boolean
 }) {
   if (mobile) {
+    // vaul Drawer (swipe-to-dismiss 지원, 디자인 토큰은 .sheet 와 동일)
     return (
-      <div className="overlay" onClick={onClose}>
-        <div className="sheet sheet--tall" onClick={e => e.stopPropagation()}>
-          <div className="sheet__handle" />
-          <div className="sheet__head">
-            <h3>{title}</h3>
-            <button className="close" onClick={onClose} aria-label="닫기">
+      <Drawer
+        open={true}
+        onOpenChange={open => {
+          if (!open) onClose()
+        }}
+      >
+        <DrawerContent className="max-h-[88%]">
+          <DrawerHeader>
+            <DrawerTitle className="flex-1">{title}</DrawerTitle>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="닫기"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-[var(--pd-hover-bg)] text-[var(--fg-primary)]"
+            >
               <X size={18} />
             </button>
-          </div>
-          <div className="sheet__body">{children}</div>
+          </DrawerHeader>
+          <DrawerBody>{children}</DrawerBody>
           {footer && (
             <div
-              style={{
-                padding: '12px 20px',
-                borderTop: '1px solid var(--border-subtle)',
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-              }}
+              className="flex items-center gap-2 border-t border-[var(--border-subtle)] px-5 py-3"
             >
               {footer}
             </div>
           )}
-        </div>
-      </div>
+        </DrawerContent>
+      </Drawer>
     )
   }
   return (

@@ -3,6 +3,14 @@ import { useLocation } from 'react-router-dom'
 import { Bell, Calendar, CheckSquare, Info, Search, Wallet } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
+import {
   useDeleteNotification,
   useMarkAllRead,
   useMarkRead,
@@ -68,12 +76,23 @@ export function MobileHeader() {
           {isHome && unreadCount > 0 && <span className="dot" />}
         </button>
       </div>
-      {isNotifOpen && <MobileNotificationSheet onClose={() => setIsNotifOpen(false)} />}
+      {isHome && (
+        <MobileNotificationSheet
+          open={isNotifOpen}
+          onOpenChange={setIsNotifOpen}
+        />
+      )}
     </>
   )
 }
 
-function MobileNotificationSheet({ onClose }: { onClose: () => void }) {
+function MobileNotificationSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const { data: notifications = [] } = useNotifications()
   const { data: unreadCount = 0 } = useUnreadCount()
   const markRead = useMarkRead()
@@ -85,38 +104,31 @@ function MobileNotificationSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <>
-      <div className="notif-backdrop" onClick={onClose} />
-      <div className="notif-pop" role="dialog" aria-label="알림">
-        <div className="notif-pop__head">
-          <div>
-            <div className="notif-pop__title">알림</div>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <div className="flex-1">
+            <DrawerTitle>알림</DrawerTitle>
             {unreadCount > 0 && (
-              <div className="notif-pop__sub">
-                <b>{unreadCount}</b>개의 새 알림
-              </div>
+              <DrawerDescription>
+                <b className="text-[var(--fg-brand-strong)]">{unreadCount}</b>
+                개의 새 알림
+              </DrawerDescription>
             )}
           </div>
           {unreadCount > 0 && (
             <button
-              className="notif-pop__read-all"
               onClick={() => markAllRead.mutate()}
               disabled={markAllRead.isPending}
+              className="rounded-md px-2 py-1 text-xs font-semibold text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] disabled:opacity-50"
             >
               모두 읽음
             </button>
           )}
-        </div>
-        <div className="notif-pop__body">
+        </DrawerHeader>
+        <DrawerBody className="p-0">
           {notifications.length === 0 ? (
-            <div
-              style={{
-                padding: '40px 20px',
-                textAlign: 'center',
-                color: 'var(--fg-tertiary)',
-                fontSize: 13,
-              }}
-            >
+            <div className="px-5 py-10 text-center text-sm text-[var(--fg-tertiary)]">
               새 알림이 없습니다
             </div>
           ) : (
@@ -149,14 +161,7 @@ function MobileNotificationSheet({ onClose }: { onClose: () => void }) {
                     deleteNotif.mutate(n.rowId)
                   }}
                   disabled={deleteNotif.isPending}
-                  style={{
-                    border: 0,
-                    background: 'transparent',
-                    color: 'var(--fg-tertiary)',
-                    cursor: 'pointer',
-                    padding: 4,
-                    fontSize: 11,
-                  }}
+                  className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--fg-tertiary)]"
                   aria-label="삭제"
                 >
                   ×
@@ -164,8 +169,8 @@ function MobileNotificationSheet({ onClose }: { onClose: () => void }) {
               </div>
             ))
           )}
-        </div>
-      </div>
-    </>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
   )
 }

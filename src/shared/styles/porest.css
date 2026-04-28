@@ -696,39 +696,8 @@
 .modal__body { flex: 1 1 auto; min-height: 0; padding: 22px; overflow-y: auto; }
 .modal__foot { padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border-subtle); background: var(--pd-surface-inset); flex-shrink: 0; }
 
-/* Sheet (mobile) */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: oklch(0.15 0.01 180 / 0.45);
-  z-index: 100;
-  display: flex;
-  align-items: flex-end;
-  animation: fadeIn 200ms var(--ease-standard);
-}
-.sheet {
-  width: 100%;
-  background: var(--bg-surface);
-  border-radius: 20px 20px 0 0;
-  padding: 8px 0 24px;
-  max-height: 88%;
-  display: flex;
-  flex-direction: column;
-  animation: sheetUp 280ms var(--ease-standard);
-}
-@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.sheet__handle { width: 40px; height: 4px; background: var(--pd-divider-strong); border-radius: 999px; margin: 6px auto 8px; }
-.sheet__head { padding: 8px 20px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); }
-.sheet__head h3 { font-size: 17px; font-weight: 700; flex: 1; }
-.sheet__head .close {
-  width: 32px; height: 32px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--pd-hover-bg);
-  border: 0; border-radius: 999px;
-  cursor: pointer;
-  color: var(--fg-primary);
-}
-.sheet__body { padding: 20px; overflow-y: auto; flex: 1; }
+/* Sheet (mobile) — vaul 기반 Drawer (shared/ui/drawer.tsx) 로 대체됨.
+   .sheet, .sheet__*, .overlay, @keyframes sheetUp 모두 제거. */
 
 /* Utility */
 .stack { display: flex; flex-direction: column; }
@@ -749,7 +718,6 @@
 .modal--sm { width: 420px; max-width: calc(100vw - 32px); }
 .modal--md { width: 560px; max-width: calc(100vw - 32px); }
 .modal--lg { width: 720px; max-width: calc(100vw - 32px); }
-.sheet--tall { max-height: 88vh; }
 
 .p-btn--danger {
   background: var(--berry-500, oklch(0.58 0.18 25));
@@ -1224,18 +1192,8 @@
   box-sizing: content-box;
 }
 
-@media (max-width: 640px) {
-  .notif-pop {
-    top: auto;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    max-width: 100%;
-    max-height: 85vh;
-    border-radius: 20px 20px 0 0;
-  }
-}
+/* Note: 모바일 알림은 vaul Drawer (MobileHeader > MobileNotificationSheet) 로
+   분기하므로 .notif-pop 의 모바일 변형은 제거. .notif-pop 은 데스크탑 popover 전용. */
 
 /* ------------------------------------------------------------------------
  * Tabs — .p-tabs (bottom underline)

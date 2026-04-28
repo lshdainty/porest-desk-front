@@ -4,8 +4,8 @@ import { History, FlaskConical, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from '@/shared/ui/sheet'
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody,
+} from '@/shared/ui/drawer'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -257,22 +257,22 @@ export const CalculatorFullWidget = () => {
           />
         </div>
 
-        {/* History bottom sheet */}
-        <Sheet open={showHistory} onOpenChange={setShowHistory}>
-          <SheetContent side="bottom" className="max-h-[60vh]">
-            <SheetHeader>
-              <SheetTitle>{t('history')}</SheetTitle>
-            </SheetHeader>
-            <div className="h-[50vh]">
+        {/* History bottom drawer (vaul, swipe-to-dismiss) */}
+        <Drawer open={showHistory} onOpenChange={setShowHistory}>
+          <DrawerContent className="max-h-[60vh]">
+            <DrawerHeader>
+              <DrawerTitle>{t('history')}</DrawerTitle>
+            </DrawerHeader>
+            <DrawerBody className="p-0">
               <CalculatorHistory
                 histories={histories || []}
                 onSelectResult={handleSelectResult}
                 onClearAll={handleClearAllHistories}
                 isClearing={deleteAllHistories.isPending}
               />
-            </div>
-          </SheetContent>
-        </Sheet>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
 
         {/* Clear history confirmation */}
         <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>

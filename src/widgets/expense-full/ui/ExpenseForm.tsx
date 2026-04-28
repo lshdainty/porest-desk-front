@@ -15,8 +15,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/shared/ui/dialog'
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter,
-} from '@/shared/ui/sheet'
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerBody,
+} from '@/shared/ui/drawer'
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/shared/ui/popover'
@@ -454,22 +454,22 @@ export const ExpenseForm = ({
     </>
   )
 
-  // 모바일: 바텀시트(Sheet side=bottom) 사용
+  // 모바일: vaul 기반 Drawer (swipe-to-dismiss 지원)
   if (isMobile) {
     return (
-      <Sheet open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-xl px-4 pb-8 pt-4">
-          <SheetHeader className="mb-4">
-            <SheetTitle>
+      <Drawer open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader>
+            <DrawerTitle>
               {expense ? t('editTransaction') : t('addTransaction')}
-            </SheetTitle>
-          </SheetHeader>
-          {formContent}
-          <SheetFooter className="mt-4 flex-row gap-2">
+            </DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody>{formContent}</DrawerBody>
+          <DrawerFooter className="flex-row gap-2">
             {footerContent}
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     )
   }
 
