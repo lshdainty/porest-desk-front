@@ -25,6 +25,7 @@ interface CardAddDialogProps {
 export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   const [cardType, setCardType] = useState<CardType>('CREDIT')
   const [keyword, setKeyword] = useState('')
+  const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
   const [selected, setSelected] = useState<CardCatalogSummary | null>(null)
   const [nickname, setNickname] = useState('')
   const [outstandingStr, setOutstandingStr] = useState('0')
@@ -33,6 +34,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   const catalogQ = useCardCatalogs({
     keyword: keyword.trim() || undefined,
     cardType,
+    includeDiscontinued: includeDiscontinued || undefined,
     page: 0,
     size: 40,
   })
@@ -49,6 +51,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   const reset = () => {
     setCardType('CREDIT')
     setKeyword('')
+    setIncludeDiscontinued(false)
     setSelected(null)
     setNickname('')
     setOutstandingStr('0')
@@ -156,11 +159,25 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-[13px] font-medium">카드 상품</Label>
-              {catalogQ.data?.meta?.totalElements != null && (
-                <span className="text-[11px] text-[var(--fg-tertiary)]">
-                  총 {catalogQ.data.meta.totalElements}건
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                <label
+                  className="p-switch"
+                  style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', gap: 6 }}
+                  title="단종된 카드 상품도 검색 결과에 포함합니다"
+                >
+                  <input
+                    type="checkbox"
+                    checked={includeDiscontinued}
+                    onChange={e => setIncludeDiscontinued(e.target.checked)}
+                  />
+                  단종 포함
+                </label>
+                {catalogQ.data?.meta?.totalElements != null && (
+                  <span className="text-[11px] text-[var(--fg-tertiary)]">
+                    총 {catalogQ.data.meta.totalElements}건
+                  </span>
+                )}
+              </div>
             </div>
             <div className="relative mb-2">
               <Search
@@ -185,6 +202,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               ) : (
                 items.map(c => {
                   const active = selected?.rowId === c.rowId
+                  const discontinued = c.isDiscontinued === 'Y'
                   return (
                     <button
                       key={c.rowId}
@@ -193,6 +211,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
                       style={{
                         background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                        opacity: discontinued && !active ? 0.7 : 1,
                       }}
                     >
                       {c.imgUrl ? (
@@ -216,13 +235,25 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                       )}
                       <div className="flex-1 min-w-0">
                         <div
-                          className="truncate text-[13px]"
+                          className="truncate text-[13px] flex items-center gap-1.5"
                           style={{
                             color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                             fontWeight: active ? 600 : 500,
                           }}
                         >
-                          {c.cardName}
+                          <span className="truncate">{c.cardName}</span>
+                          {discontinued && (
+                            <span
+                              className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
+                              style={{
+                                background: 'var(--bg-disabled)',
+                                color: 'var(--fg-tertiary)',
+                                letterSpacing: '0.02em',
+                              }}
+                            >
+                              단종
+                            </span>
+                          )}
                         </div>
                         <div className="truncate text-[11.5px] text-[var(--fg-tertiary)] mt-0.5">
                           {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
