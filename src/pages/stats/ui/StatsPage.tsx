@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -101,7 +101,6 @@ function PorestChartTooltip({
 }: TrendTooltipProps & {
   rows: { dataKey: string; label: string; color: string; format?: (v: number) => string }[]
 }) {
-  const hidden = useHideAmounts()
   if (!active || !payload || payload.length === 0) return null
   return (
     <div
@@ -129,7 +128,6 @@ function PorestChartTooltip({
         const item = payload.find(p => p.dataKey === row.dataKey)
         if (!item) return null
         const v = Number(item.value ?? 0)
-        const text = hidden ? '••••••' : row.format ? row.format(v) : `${KRW(v)}원`
         return (
           <div
             key={row.dataKey}
@@ -154,7 +152,14 @@ function PorestChartTooltip({
                 color: 'var(--fg-primary)',
               }}
             >
-              {text}
+              {row.format ? (
+                <MaskAmount>{row.format(v)}</MaskAmount>
+              ) : (
+                <>
+                  <MaskAmount>{KRW(v)}</MaskAmount>
+                  <HideUnit>원</HideUnit>
+                </>
+              )}
             </span>
           </div>
         )
@@ -166,7 +171,6 @@ function PorestChartTooltip({
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const hidden = useHideAmounts()
-  const mask = (s: string | number, fallback = '••••••') => (hidden ? fallback : String(s))
   const initial = getCurrentYearMonth()
   const [tab, setTab] = useState<TabKey>('cat')
   const [period, setPeriod] = useState<PeriodKey>('1m')
@@ -422,7 +426,8 @@ export const StatsPage = () => {
           >
             <div className="lbl">{donutCenterLbl}</div>
             <div className="val num" style={{ fontSize: 20 }}>
-              {hidden ? '••••••' : `${KRW(donutTotal)}원`}
+              <MaskAmount>{KRW(donutTotal)}</MaskAmount>
+              <HideUnit>원</HideUnit>
             </div>
           </Donut>
           <div className="cat-legend" style={{ width: '100%' }}>
@@ -457,7 +462,9 @@ export const StatsPage = () => {
                   <span className="cat-legend__pct num">
                     {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
                   </span>
-                  <span className="cat-legend__amt num">{mask(KRW(s.amount), '••••')}</span>
+                  <span className="cat-legend__amt num">
+                    <MaskAmount mask="••••">{KRW(s.amount)}</MaskAmount>
+                  </span>
                 </div>
               )
             })}
@@ -518,7 +525,8 @@ export const StatsPage = () => {
                     {m.count}회
                   </span>
                   <span className="num" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700 }}>
-                    {hidden ? '••••••' : `${KRW(m.totalAmount)}원`}
+                    <MaskAmount>{KRW(m.totalAmount)}</MaskAmount>
+                    <HideUnit>원</HideUnit>
                   </span>
                 </div>
                 <div
@@ -705,7 +713,7 @@ export const StatsPage = () => {
                         transition: 'background var(--dur-fast) var(--ease-standard)',
                       }}
                     >
-                      {hidden && value > 0 ? '••' : shortAmount(value)}
+                      <MaskAmount mask={value > 0 ? '••' : '—'}>{shortAmount(value)}</MaskAmount>
                     </div>
                   )
                 })}
@@ -741,7 +749,8 @@ export const StatsPage = () => {
             </div>
             <span>많음</span>
             <span style={{ marginLeft: 'auto' }}>
-              총 {hidden ? '••••••' : `${KRW(heatmapTotal)}원`}
+              총 <MaskAmount>{KRW(heatmapTotal)}</MaskAmount>
+              <HideUnit>원</HideUnit>
             </span>
           </div>
         </>
@@ -760,28 +769,30 @@ export const StatsPage = () => {
   const avgLabel = period === '1m' ? '하루 평균' : '월 평균'
   const avgDivisor = period === '1m' ? daysInMonth : periodMonths.length
   const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
-  const avgSub = period !== '1m'
-    ? `${periodMonths.length}개월 합계 ${hidden ? '••••••' : `${KRW(periodTotalExpense)}원`}`
+  const avgSub: React.ReactNode = period !== '1m'
+    ? <>{periodMonths.length}개월 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
       ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
       : '전월 비교 불가'
 
-  const highlights = [
+  const highlights: { lbl: string; val: React.ReactNode; sub: React.ReactNode }[] = [
     {
       lbl: '가장 많이 쓴 카테고리',
       val: categoryTop?.name ?? '—',
-      sub: categoryTop ? (hidden ? '••••••' : `${KRW(categoryTop.amount)}원`) : '데이터 없음',
+      sub: categoryTop
+        ? <><MaskAmount>{KRW(categoryTop.amount)}</MaskAmount><HideUnit>원</HideUnit></>
+        : '데이터 없음',
     },
     {
       lbl: '가장 많이 쓴 가맹점',
       val: topMerchant?.merchant ?? '—',
       sub: topMerchant
-        ? `${topMerchant.count}회 · ${hidden ? '••••••' : `${KRW(topMerchant.totalAmount)}원`}`
+        ? <>{topMerchant.count}회 · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
         : '데이터 없음',
     },
     {
       lbl: avgLabel,
-      val: hidden ? '••••••' : `${KRW(avgValue)}원`,
+      val: <><MaskAmount>{KRW(avgValue)}</MaskAmount><HideUnit>원</HideUnit></>,
       sub: avgSub,
     },
   ]
@@ -975,12 +986,12 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      {[
-        { lbl: statLabelIn, val: hidden ? '••••••' : KRW(Math.round(avgIn)) + '원' },
-        { lbl: statLabelOut, val: hidden ? '••••••' : KRW(Math.round(avgOut)) + '원' },
-        { lbl: statLabelSave, val: hidden ? '••••••' : KRW(Math.round(avgSave)) + '원' },
+      {([
+        { lbl: statLabelIn, val: <><MaskAmount>{KRW(Math.round(avgIn))}</MaskAmount><HideUnit>원</HideUnit></> },
+        { lbl: statLabelOut, val: <><MaskAmount>{KRW(Math.round(avgOut))}</MaskAmount><HideUnit>원</HideUnit></> },
+        { lbl: statLabelSave, val: <><MaskAmount>{KRW(Math.round(avgSave))}</MaskAmount><HideUnit>원</HideUnit></> },
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
-      ].map((s, i) => (
+      ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         <div key={i} className="p-card" style={{ padding: 16 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
             {s.lbl}
@@ -1177,14 +1188,8 @@ export const StatsPage = () => {
           className="num"
           style={{ fontSize: mobile ? 18 : 22, fontWeight: 800, letterSpacing: '-0.02em' }}
         >
-          {hidden ? (
-            '••••••'
-          ) : (
-            <>
-              {KRW(totalNow)}
-              <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
-            </>
-          )}
+          <MaskAmount>{KRW(totalNow)}</MaskAmount>
+          <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
         </div>
       </div>
       <div className="p-card" style={{ padding: 16 }}>
@@ -1200,14 +1205,8 @@ export const StatsPage = () => {
             color: 'var(--fg-secondary)',
           }}
         >
-          {hidden ? (
-            '••••••'
-          ) : (
-            <>
-              {KRW(totalPrev)}
-              <span style={{ fontSize: 14, marginLeft: 2 }}>원</span>
-            </>
-          )}
+          <MaskAmount>{KRW(totalPrev)}</MaskAmount>
+          <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
         </div>
       </div>
       <div className="p-card" style={{ padding: 16 }}>
@@ -1232,14 +1231,12 @@ export const StatsPage = () => {
         </div>
         <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>
           {totalPrev > 0 ? (
-            hidden ? (
-              '••••••'
-            ) : (
-              <>
-                {momUp ? '+' : '−'}
-                {KRW(Math.abs(totalNow - totalPrev))}원
-              </>
-            )
+            <>
+              <MaskAmount>
+                {momUp ? '+' : '−'}{KRW(Math.abs(totalNow - totalPrev))}
+              </MaskAmount>
+              <HideUnit>원</HideUnit>
+            </>
           ) : noPrevText}
         </div>
       </div>
@@ -1305,7 +1302,8 @@ export const StatsPage = () => {
                     <div style={{ fontSize: 13.5, fontWeight: 600 }}>{r.name}</div>
                   </div>
                   <span className="num" style={{ fontSize: 13, fontWeight: 700 }}>
-                    {hidden ? '••••••' : `${KRW(r.now)}원`}
+                    <MaskAmount>{KRW(r.now)}</MaskAmount>
+                    <HideUnit>원</HideUnit>
                   </span>
                   <span
                     style={{

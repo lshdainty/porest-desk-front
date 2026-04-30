@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Pencil, Repeat, Scissors, Trash2, Users } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
@@ -194,9 +195,13 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               color: amountColor,
             }}
           >
-            {isIncome ? '+' : '−'}
-            {KRW(expense.amount, { abs: true })}
-            <span style={{ fontSize: 18, marginLeft: 2 }}>원</span>
+            <MaskAmount>
+              {isIncome ? '+' : '−'}
+              {KRW(expense.amount, { abs: true })}
+            </MaskAmount>
+            <HideUnit>
+              <span style={{ fontSize: 18, marginLeft: 2 }}>원</span>
+            </HideUnit>
           </div>
           {(day || time) && (
             <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 6 }}>
@@ -240,8 +245,11 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             label="금액"
             value={
               <span className="num" style={{ fontWeight: 700 }}>
-                {isIncome ? '+' : '−'}
-                {KRW(expense.amount, { abs: true })}원
+                <MaskAmount>
+                  {isIncome ? '+' : '−'}
+                  {KRW(expense.amount, { abs: true })}
+                </MaskAmount>
+                <HideUnit>원</HideUnit>
               </span>
             }
           />
@@ -306,7 +314,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
                 이번 달{' '}
                 <b className="num" style={{ color: 'var(--fg-secondary)' }}>
-                  {merchantMonthCount}회 · {KRW(merchantMonthTotal)}원
+                  {merchantMonthCount}회 · <MaskAmount>{KRW(merchantMonthTotal)}</MaskAmount>
+                  <HideUnit>원</HideUnit>
                 </b>
               </span>
             </div>

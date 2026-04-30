@@ -5,7 +5,12 @@ import {
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
-import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import {
+  HideUnit,
+  MaskAmount,
+  togglePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
@@ -38,12 +43,10 @@ type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<strin
 type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
 
 function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
-  const hidden = useHideAmounts()
   if (!active || !payload || payload.length === 0) return null
   const income = Number(payload.find(p => p.dataKey === 'income')?.value ?? 0)
   const expense = Number(payload.find(p => p.dataKey === 'expense')?.value ?? 0)
   const saving = income - expense
-  const mask = (n: number) => (hidden ? '••••••' : `${KRW(n)}원`)
   return (
     <div
       style={{
@@ -63,14 +66,16 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
-          {mask(income)}
+          <MaskAmount>{KRW(income)}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
-          {mask(expense)}
+          <MaskAmount>{KRW(expense)}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
       </div>
       <div style={{
@@ -85,7 +90,8 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             color: saving >= 0 ? 'var(--mossy-700)' : 'var(--berry-600)',
           }}
         >
-          {hidden ? '••••••' : <>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}원</>}
+          <MaskAmount>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
       </div>
     </div>
@@ -325,8 +331,8 @@ function HomeDesktop() {
             </button>
           </div>
           <div className="balance-hero__amount num">
-            {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(netWorth)}
-            <span className="unit">원</span>
+            {assetSummaryQ.isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
+            <HideUnit><span className="unit">원</span></HideUnit>
           </div>
           <div className="balance-hero__sub">
             지난달 대비
@@ -334,19 +340,27 @@ function HomeDesktop() {
               {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               {' '}
               {isUp ? '+' : ''}{changePercent.toFixed(1)}%
-              {!hidden && changeAmount !== 0 && (
-                <>{' '}({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)</>
+              {changeAmount !== 0 && (
+                <HideUnit>
+                  <>{' '}({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)</>
+                </HideUnit>
               )}
             </span>
           </div>
           <div className="balance-hero__split">
             <div>
               <div className="l">총 자산</div>
-              <div className="v num">{hidden ? '••••••' : KRW(totalAssets) + '원'}</div>
+              <div className="v num">
+                <MaskAmount>{KRW(totalAssets)}</MaskAmount>
+                <HideUnit>원</HideUnit>
+              </div>
             </div>
             <div>
               <div className="l">총 부채</div>
-              <div className="v num">{hidden ? '••••••' : '−' + KRW(totalDebt) + '원'}</div>
+              <div className="v num">
+                <MaskAmount>−{KRW(totalDebt)}</MaskAmount>
+                <HideUnit>원</HideUnit>
+              </div>
             </div>
           </div>
         </div>
@@ -360,19 +374,28 @@ function HomeDesktop() {
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>수입</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--mossy-700)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `+${KRW(income)}원`}
+                {monthlyQ.isLoading
+                  ? '—'
+                  : <><MaskAmount>+{KRW(income)}</MaskAmount><HideUnit>원</HideUnit></>}
               </div>
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>지출</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--berry-700)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `−${KRW(expense)}원`}
+                {monthlyQ.isLoading
+                  ? '—'
+                  : <><MaskAmount>−{KRW(expense)}</MaskAmount><HideUnit>원</HideUnit></>}
               </div>
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>잔액</div>
               <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--fg-brand-strong)', letterSpacing: '-0.02em' }}>
-                {monthlyQ.isLoading ? '—' : hidden ? '••••••' : `${balance >= 0 ? '+' : '-'}${KRW(Math.abs(balance))}원`}
+                {monthlyQ.isLoading
+                  ? '—'
+                  : <>
+                      <MaskAmount>{balance >= 0 ? '+' : '-'}{KRW(Math.abs(balance))}</MaskAmount>
+                      <HideUnit>원</HideUnit>
+                    </>}
               </div>
             </div>
           </div>
@@ -422,7 +445,9 @@ function HomeDesktop() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Donut segments={donutSegs} size={160} stroke={22}>
                 <div className="lbl">이번 달 지출</div>
-                <div className="val num">{hidden ? '••••' : `${(donutTotal / 10000).toFixed(1)}만원`}</div>
+                <div className="val num">
+                  <MaskAmount mask="••••">{(donutTotal / 10000).toFixed(1)}만원</MaskAmount>
+                </div>
               </Donut>
               <div className="cat-legend">
                 {donutSegs.map((s, i) => (
@@ -430,7 +455,9 @@ function HomeDesktop() {
                     <span className="cat-legend__sw" style={{ background: s.color }} />
                     <span className="cat-legend__name">{s.label}</span>
                     <span className="cat-legend__pct num">{((s.value / donutTotal) * 100).toFixed(0)}%</span>
-                    <span className="cat-legend__amt num">{hidden ? '••••' : KRW(s.value)}</span>
+                    <span className="cat-legend__amt num">
+                      <MaskAmount mask="••••">{KRW(s.value)}</MaskAmount>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -474,12 +501,10 @@ function HomeDesktop() {
                         color: b.state === 'over' ? 'var(--berry-700)' : 'var(--fg-secondary)',
                       }}
                     >
-                      {hidden ? '••••' : (
-                        <>
-                          {KRW(b.spent)}
-                          <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}> / {KRW(b.budgetAmount)}</span>
-                        </>
-                      )}
+                      <MaskAmount mask="••••">
+                        {KRW(b.spent)}
+                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}> / {KRW(b.budgetAmount)}</span>
+                      </MaskAmount>
                     </span>
                   </div>
                   <div className="budget-bar">
@@ -533,7 +558,7 @@ function HomeDesktop() {
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--berry-700)' }}>
-                    {hidden ? '••••' : `−${KRW(p.amount)}`}
+                    <MaskAmount mask="••••">−{KRW(p.amount)}</MaskAmount>
                   </div>
                 </div>
               ))}
@@ -698,8 +723,8 @@ function HomeMobile() {
           </button>
         </div>
         <div className="balance-hero__amount num">
-          {assetSummaryQ.isLoading ? '—' : hidden ? '••••••' : KRW(netWorth)}
-          <span className="unit">원</span>
+          {assetSummaryQ.isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
+          <HideUnit><span className="unit">원</span></HideUnit>
         </div>
         <div className="balance-hero__sub">
           지난달 대비
@@ -712,11 +737,15 @@ function HomeMobile() {
         <div className="balance-hero__split">
           <div>
             <div className="l">자산</div>
-            <div className="v num">{hidden ? '••••' : KRW(totalAssets)}</div>
+            <div className="v num">
+              <MaskAmount mask="••••">{KRW(totalAssets)}</MaskAmount>
+            </div>
           </div>
           <div>
             <div className="l">부채</div>
-            <div className="v num">{hidden ? '••••' : '−' + KRW(totalDebt)}</div>
+            <div className="v num">
+              <MaskAmount mask="••••">−{KRW(totalDebt)}</MaskAmount>
+            </div>
           </div>
         </div>
       </div>
@@ -769,13 +798,13 @@ function HomeMobile() {
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>수입</div>
             <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--mossy-700)' }}>
-              {hidden ? '••••••' : `+${KRW(income)}`}
+              <MaskAmount>+{KRW(income)}</MaskAmount>
             </div>
           </div>
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
             <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--berry-700)' }}>
-              {hidden ? '••••••' : `−${KRW(expense)}`}
+              <MaskAmount>−{KRW(expense)}</MaskAmount>
             </div>
           </div>
         </div>

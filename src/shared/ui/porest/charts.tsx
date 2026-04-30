@@ -435,7 +435,7 @@ export function Donut({
     fill: s.color,
   }))
   const config: ChartConfig = Object.fromEntries(
-    data.map((d, i) => [d.name || `seg-${i}`, { label: d.name, color: segments[i].color }]),
+    data.map((d, i) => [d.name || `seg-${i}`, { label: d.name, color: segments[i]?.color }]),
   )
   // 빈 데이터면 mist-200 링만 렌더.
   const hasValue = data.some(d => d.value > 0)

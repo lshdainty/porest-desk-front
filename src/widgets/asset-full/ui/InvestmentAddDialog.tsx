@@ -42,6 +42,7 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
   '외국계': '외국계',
   '증권사': '증권사',
   '가상자산': '가상자산거래소',
+  '기타': '기타',
 }
 
 interface InvestmentAddDialogProps {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { KRW } from '@/shared/lib/porest/format'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
 import { Icon } from './primitives'
@@ -59,7 +59,6 @@ export function ExpenseRow({
   onClick?: (e: Expense) => void
   right?: ReactNode
 }) {
-  const hidden = useHideAmounts()
   const isIncome = expense.expenseType === 'INCOME'
   return (
     <div className="tx-row" onClick={() => onClick?.(expense)}>
@@ -91,7 +90,8 @@ export function ExpenseRow({
       <div>
         {right ?? (
           <div className={`tx-row__amt ${isIncome ? 'income' : ''}`}>
-            {hidden ? '••••••' : <>{isIncome ? '+' : '-'}{KRW(expense.amount, { abs: true })}원</>}
+            <MaskAmount>{isIncome ? '+' : '-'}{KRW(expense.amount, { abs: true })}</MaskAmount>
+            <HideUnit>원</HideUnit>
           </div>
         )}
       </div>

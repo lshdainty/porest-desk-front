@@ -40,6 +40,7 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
   '외국계': '외국계',
   '증권사': '증권사',
   '가상자산': '가상자산거래소',
+  '기타': '기타',
 }
 import { useCardCatalogs } from '@/features/card-catalog'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
@@ -154,18 +155,26 @@ export function AssetEditDialog({
     }
     setSelectedCard({
       rowId: item.cardCatalog.rowId,
+      externalCardId: 0,
       cardName: item.cardCatalog.cardName,
-      imgUrl: item.cardCatalog.imgUrl,
       cardType: item.assetType === 'CHECK_CARD' ? 'CHECK' : 'CREDIT',
-      annualFee: { amount: 0, currency: 'KRW' },
+      benefitType: 'POINT',
+      isDiscontinued: 'N',
+      onlyOnline: 'N',
+      launchDate: null,
+      imgUrl: item.cardCatalog.imgUrl,
+      detailUrl: null,
+      annualFee: { amount: 0, label: null },
+      performance: { requiredAmount: 0, requiredText: null, isRequired: 'N' },
       company: item.cardCatalog.companyName
         ? {
             rowId: 0,
             name: item.cardCatalog.companyName,
+            nameEng: '',
             logoUrl: item.cardCatalog.companyLogoUrl,
           }
         : null,
-    } as CardCatalogSummary)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.rowId])
 

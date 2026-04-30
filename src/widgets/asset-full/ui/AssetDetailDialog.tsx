@@ -11,7 +11,12 @@ import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
-import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import {
+  HideUnit,
+  MaskAmount,
+  togglePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 
 function fmtAxisNum(v: number): string {
@@ -52,7 +57,8 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
-          {KRW(val)}원
+          <MaskAmount>{KRW(val)}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
       </div>
     </div>
@@ -195,15 +201,13 @@ export function AssetDetailDialog({
             color: isCard ? 'var(--berry-700)' : 'var(--fg-primary)',
           }}
         >
-          {hidden ? (
-            '••••••'
-          ) : (
-            <>
-              {isCard ? '−' : ''}
-              {KRW(absBalance)}
-              <span style={{ fontSize: 16, marginLeft: 2 }}>원</span>
-            </>
-          )}
+          <MaskAmount>
+            {isCard ? '−' : ''}
+            {KRW(absBalance)}
+          </MaskAmount>
+          <HideUnit>
+            <span style={{ fontSize: 16, marginLeft: 2 }}>원</span>
+          </HideUnit>
         </div>
       </div>
 

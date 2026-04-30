@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
 import { KRW } from '@/shared/lib/porest/format'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
 
 type LucideIconName = keyof typeof LucideIcons
@@ -51,7 +51,6 @@ export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 
 export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
   const c = CATEGORIES[tx.cat]
   const isIncome = tx.amt > 0
-  const hidden = useHideAmounts()
   return (
     <div className="tx-row" onClick={() => onClick?.(tx)}>
       <CatIcon cat={tx.cat} />
@@ -71,7 +70,8 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
       </div>
       <div>
         <div className={`tx-row__amt ${isIncome ? 'income' : ''}`}>
-          {hidden ? '••••••' : <>{isIncome ? '+' : '-'}{KRW(tx.amt, { abs: true })}원</>}
+          <MaskAmount>{isIncome ? '+' : '-'}{KRW(tx.amt, { abs: true })}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </div>
       </div>
     </div>
@@ -135,39 +135,6 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
       style={{ background: acc.color, width: size, height: size, fontSize: size * 0.35 }}
     >
       {letter}
-    </span>
-  )
-}
-
-export function Amt({
-  value,
-  children,
-  mask = '••••',
-  className = '',
-  style = {},
-}: {
-  value?: number
-  children?: React.ReactNode
-  mask?: string
-  className?: string
-  style?: React.CSSProperties
-}) {
-  const hidden = useHideAmounts()
-  if (hidden)
-    return (
-      <span className={className} style={style}>
-        {mask}
-      </span>
-    )
-  if (value != null)
-    return (
-      <span className={className} style={style}>
-        {KRW(value)}
-      </span>
-    )
-  return (
-    <span className={className} style={style}>
-      {children}
     </span>
   )
 }

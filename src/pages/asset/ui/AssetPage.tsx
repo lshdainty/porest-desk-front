@@ -8,7 +8,12 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
-import { togglePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import {
+  HideUnit,
+  MaskAmount,
+  togglePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -53,12 +58,10 @@ function NetWorthTooltip({
   active,
   payload,
   label,
-  hidden,
 }: {
   active?: boolean
   payload?: NetWorthPayload[]
   label?: string
-  hidden: boolean
 }) {
   if (!active || !payload?.length) return null
   const v = Number(payload[0]?.value ?? 0)
@@ -82,7 +85,8 @@ function NetWorthTooltip({
           className="num"
           style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--fg-primary)' }}
         >
-          {hidden ? '••••••' : `${KRW(v)}원`}
+          <MaskAmount>{KRW(v)}</MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
       </div>
     </div>
@@ -90,7 +94,6 @@ function NetWorthTooltip({
 }
 
 function NetWorthChart({ height = 180 }: { height?: number }) {
-  const hidden = useHideAmounts()
   const trendQ = useNetWorthTrend(12)
   const data = useMemo(
     () =>
@@ -164,7 +167,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
         />
         <ChartTooltip
           cursor={{ stroke: 'var(--fg-tertiary)', strokeDasharray: '3 3' }}
-          content={<NetWorthTooltip hidden={hidden} />}
+          content={<NetWorthTooltip />}
         />
         <Area
           type="monotone"
@@ -204,8 +207,6 @@ function AssetCompositionCard({
   loans: Asset[]
   netWorth: number
 }) {
-  const hidden = useHideAmounts()
-  const mask = (n: number) => (hidden ? '••••' : KRW(n))
   const [active, setActive] = useState<AssetGroupKey | null>(null)
 
   const groupAssets: Record<AssetGroupKey, Asset[]> = {
@@ -267,11 +268,9 @@ function AssetCompositionCard({
     ? activeTotal
     : netWorth
 
-  const totalLabel = hidden
-    ? '••••'
-    : Math.abs(centerVal) >= 10_000_000
-      ? `${(centerVal / 10_000_000).toFixed(2)}천만`
-      : `${(centerVal / 10_000).toFixed(0)}만`
+  const totalLabel = Math.abs(centerVal) >= 10_000_000
+    ? `${(centerVal / 10_000_000).toFixed(2)}천만`
+    : `${(centerVal / 10_000).toFixed(0)}만`
 
   const today = new Date()
   const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일 기준`
@@ -317,7 +316,9 @@ function AssetCompositionCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Donut size={180} stroke={24} segments={segments}>
             <div className="lbl">{centerLbl}</div>
-            <div className="val num" style={{ fontSize: 15 }}>{totalLabel}</div>
+            <div className="val num" style={{ fontSize: 15 }}>
+              <MaskAmount mask="••••">{totalLabel}</MaskAmount>
+            </div>
           </Donut>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
             {rows.map(row => {
@@ -359,7 +360,7 @@ function AssetCompositionCard({
                       {row.label}
                     </span>
                     <span className="num" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700 }}>
-                      {mask(row.amt)}
+                      <MaskAmount mask="••••">{KRW(row.amt)}</MaskAmount>
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -398,7 +399,6 @@ function AssetCompositionCard({
 
 function UpcomingBillsCard() {
   const navigate = useNavigate()
-  const hidden = useHideAmounts()
   // 백엔드에서 EXPENSE·활성·nextDate>=today 필터 + limit 6 — 프론트 필터 불필요.
   const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 })
   const today = new Date()
@@ -500,7 +500,7 @@ function UpcomingBillsCard() {
                   </div>
                 </div>
                 <div className="num" style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
-                  {hidden ? '••••' : `−${KRW(it.amount)}`}
+                  <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
                 </div>
               </button>
             )
@@ -773,9 +773,6 @@ function TypeGroup({
   onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
 }) {
-  const hidden = useHideAmounts()
-  const mask = (n: number) => (hidden ? '••••••' : KRW(n))
-
   return (
     <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
@@ -784,12 +781,10 @@ function TypeGroup({
           className="num"
           style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: totalColor }}
         >
-          {negativeTotal
-            ? hidden
-              ? '••••••'
-              : `−${KRW(total)}`
-            : mask(total)}
-          원
+          <MaskAmount>
+            {negativeTotal ? `−${KRW(total)}` : KRW(total)}
+          </MaskAmount>
+          <HideUnit>원</HideUnit>
         </span>
         <button
           className="p-btn p-btn--ghost p-btn--sm"
@@ -847,12 +842,12 @@ function TypeGroup({
                 {a.memo && <div className="acc-card__num">{a.memo}</div>}
               </div>
               <div className="num acc-card__amt">
-                {negativeTotal
-                  ? hidden
-                    ? '••••••'
-                    : `−${KRW(Math.abs(a.balance))}`
-                  : mask(a.balance)}
-                원
+                <MaskAmount>
+                  {negativeTotal
+                    ? `−${KRW(Math.abs(a.balance))}`
+                    : KRW(a.balance)}
+                </MaskAmount>
+                <HideUnit>원</HideUnit>
               </div>
             </div>
           ))}
@@ -882,7 +877,6 @@ function SummaryCard({
   isLoading: boolean
 }) {
   const hidden = useHideAmounts()
-  const mask = (n: number) => (hidden ? '••••••' : KRW(n))
   const isUp = changeAmount >= 0
 
   return (
@@ -914,8 +908,10 @@ function SummaryCard({
           marginBottom: 6,
         }}
       >
-        {isLoading ? '—' : mask(netWorth)}
-        <span style={{ fontSize: mobile ? 16 : 20, fontWeight: 700, marginLeft: 4 }}>원</span>
+        {isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
+        <HideUnit>
+          <span style={{ fontSize: mobile ? 16 : 20, fontWeight: 700, marginLeft: 4 }}>원</span>
+        </HideUnit>
       </div>
       <div
         style={{
@@ -939,10 +935,12 @@ function SummaryCard({
         >
           {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
           {isUp ? '+' : ''}{changePercent.toFixed(1)}%
-          {!hidden && changeAmount !== 0 && (
-            <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 500 }}>
-              ({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)
-            </span>
+          {changeAmount !== 0 && (
+            <HideUnit>
+              <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 500 }}>
+                ({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)
+              </span>
+            </HideUnit>
           )}
         </span>
         <span style={{ color: 'var(--fg-tertiary)' }}>지난달 대비</span>
@@ -963,13 +961,13 @@ function SummaryCard({
         <div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>계좌·예금</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 700 }}>
-            {mask(accountsTotal)}
+            <MaskAmount>{KRW(accountsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>투자</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 700 }}>
-            {mask(investmentsTotal)}
+            <MaskAmount>{KRW(investmentsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
@@ -978,7 +976,7 @@ function SummaryCard({
             className="num"
             style={{ fontSize: mobile ? 14 : 16, fontWeight: 700, color: 'var(--berry-700)' }}
           >
-            {hidden ? '••••••' : `−${KRW(cardsTotal)}`}
+            <MaskAmount>−{KRW(cardsTotal)}</MaskAmount>
           </div>
         </div>
       </div>
