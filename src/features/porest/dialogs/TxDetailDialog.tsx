@@ -10,10 +10,16 @@ import {
   useExpenseCategories,
   useSearchExpenses,
 } from '@/features/expense'
+import { useExpenseSplits } from '@/features/expense-split'
+import { useRecurringTransactions } from '@/features/recurring-transaction'
+import { useDutchPays } from '@/features/dutch-pay'
 import { useAssets } from '@/features/asset'
 import type { Expense, ExpenseCategory } from '@/entities/expense'
 import type { Asset } from '@/entities/asset'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { SplitTxDialog } from './SplitTxDialog'
+import { RecurringFromTxDialog } from './RecurringFromTxDialog'
+import { DutchPayFromTxDialog } from './DutchPayFromTxDialog'
 
 const toDayKey = (iso?: string | null): string => (iso ? iso.slice(0, 10) : '')
 const toTimeKey = (iso?: string | null): string | null => {
@@ -32,10 +38,22 @@ type Props = {
 
 export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [openSub, setOpenSub] = useState<'split' | 'recurring' | 'dutch' | null>(null)
   const deleteMut = useDeleteExpense()
 
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
+  const splitsQ = useExpenseSplits(expense.rowId)
+  const recurringsQ = useRecurringTransactions()
+  const dutchPaysQ = useDutchPays()
+
+  const linkedRecurring = (recurringsQ.data ?? []).filter(
+    r => r.sourceExpenseRowId === expense.rowId,
+  )
+  const linkedDutchPays = (dutchPaysQ.data ?? []).filter(
+    d => d.sourceExpenseRowId === expense.rowId,
+  )
+  const splitCount = splitsQ.data?.length ?? 0
 
   const category: ExpenseCategory | undefined = (categoriesQ.data ?? []).find(
     c => c.rowId === expense.categoryRowId,
@@ -297,11 +315,26 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           />
         </div>
 
-        {/* Quick actions — 기능 대기 중. 시각적 디자인 유지 */}
+        {/* Quick actions — 분할/반복/더치페이 진입 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 16 }}>
-          <QuickBtn Icon={Scissors} label="내역 분할" />
-          <QuickBtn Icon={Repeat} label="반복 설정" />
-          <QuickBtn Icon={Users} label="더치페이" />
+          <QuickBtn
+            Icon={Scissors}
+            label="내역 분할"
+            badge={splitCount > 0 ? `${splitCount}개` : null}
+            onClick={() => setOpenSub('split')}
+          />
+          <QuickBtn
+            Icon={Repeat}
+            label="반복 설정"
+            badge={linkedRecurring.length > 0 ? '연결됨' : null}
+            onClick={() => setOpenSub('recurring')}
+          />
+          <QuickBtn
+            Icon={Users}
+            label="더치페이"
+            badge={linkedDutchPays.length > 0 ? `${linkedDutchPays.length}건` : null}
+            onClick={() => setOpenSub('dutch')}
+          />
         </div>
 
         {/* Merchant history */}
@@ -345,6 +378,16 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {openSub === 'split' && (
+        <SplitTxDialog expense={expense} onClose={() => setOpenSub(null)} mobile={mobile} />
+      )}
+      {openSub === 'recurring' && (
+        <RecurringFromTxDialog expense={expense} onClose={() => setOpenSub(null)} mobile={mobile} />
+      )}
+      {openSub === 'dutch' && (
+        <DutchPayFromTxDialog expense={expense} onClose={() => setOpenSub(null)} mobile={mobile} />
+      )}
     </>
   )
 }
@@ -372,14 +415,20 @@ function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
 function QuickBtn({
   Icon,
   label,
+  onClick,
+  badge,
 }: {
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   label: string
+  onClick?: () => void
+  badge?: string | null
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       style={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -388,18 +437,34 @@ function QuickBtn({
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
         borderRadius: 12,
-        cursor: 'not-allowed',
+        cursor: onClick ? 'pointer' : 'not-allowed',
         fontFamily: 'inherit',
         color: 'var(--fg-secondary)',
-        opacity: 0.55,
+        opacity: onClick ? 1 : 0.55,
       }}
-      disabled
-      title="개발 중"
+      disabled={!onClick}
     >
       <Icon size={18} strokeWidth={1.9} />
       <span style={{ fontSize: 11.5, color: 'var(--fg-secondary)', fontWeight: 600 }}>
         {label}
       </span>
+      {badge && (
+        <span
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            fontSize: 10,
+            fontWeight: 700,
+            padding: '2px 6px',
+            borderRadius: 999,
+            background: 'var(--bg-brand-subtle)',
+            color: 'var(--fg-brand-strong)',
+          }}
+        >
+          {badge}
+        </span>
+      )}
     </button>
   )
 }

@@ -1,6 +1,12 @@
 import { apiClient } from '@/shared/api'
 import type { ApiResponse } from '@/shared/types'
-import type { UserGroup, UserGroupDetail, GroupFormValues, GroupRole } from '@/entities/group'
+import type {
+  UserGroup,
+  UserGroupDetail,
+  GroupFormValues,
+  GroupRole,
+  SiblingGroupMember,
+} from '@/entities/group'
 
 export const groupApi = {
   createGroup: async (data: GroupFormValues): Promise<UserGroup> => {
@@ -11,6 +17,11 @@ export const groupApi = {
   getGroups: async (): Promise<UserGroup[]> => {
     const resp: ApiResponse<{ groups: UserGroup[] }> = await apiClient.get('/v1/groups')
     return resp.data.groups
+  },
+
+  getSiblingMembers: async (): Promise<SiblingGroupMember[]> => {
+    const resp: ApiResponse<{ members: SiblingGroupMember[] }> = await apiClient.get('/v1/groups/members')
+    return resp.data.members
   },
 
   getGroup: async (id: number): Promise<UserGroupDetail> => {

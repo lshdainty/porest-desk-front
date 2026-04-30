@@ -4,6 +4,7 @@ export { groupTypeApi } from './api/groupTypeApi'
 export {
   useGroups,
   useGroup,
+  useSiblingGroupMembers,
   useCreateGroup,
   useUpdateGroup,
   useDeleteGroup,

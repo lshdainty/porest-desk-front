@@ -10,6 +10,7 @@ export interface RecurringTransaction {
   categoryName: string | null
   assetRowId: number | null
   assetName: string | null
+  sourceExpenseRowId: number | null
   expenseType: ExpenseType
   amount: number
   description: string | null
@@ -24,6 +25,8 @@ export interface RecurringTransaction {
   nextExecutionDate: string
   lastExecutedAt: string | null
   isActive: YNType
+  autoLog: boolean
+  notifyDayBefore: boolean
   createAt: string
   modifyAt: string
 }
@@ -31,6 +34,7 @@ export interface RecurringTransaction {
 export interface RecurringTransactionFormValues {
   categoryRowId?: number
   assetRowId?: number
+  sourceExpenseRowId?: number
   expenseType: ExpenseType
   amount: number
   description?: string
@@ -42,4 +46,6 @@ export interface RecurringTransactionFormValues {
   dayOfMonth?: number
   startDate: string
   endDate?: string
+  autoLog?: boolean
+  notifyDayBefore?: boolean
 }

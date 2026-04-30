@@ -133,6 +133,12 @@ export const groupKeys = {
   all: ['groups'] as const,
   list: () => [...groupKeys.all, 'list'] as const,
   detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
+  siblingMembers: () => [...groupKeys.all, 'sibling-members'] as const,
+}
+
+export const expenseSplitKeys = {
+  all: ['expense-splits'] as const,
+  list: (expenseId: number) => [...expenseSplitKeys.all, 'list', expenseId] as const,
 }
 
 export const groupTypeKeys = {

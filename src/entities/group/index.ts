@@ -5,6 +5,7 @@ export type {
   GroupMember,
   UserGroup,
   UserGroupDetail,
+  SiblingGroupMember,
   GroupFormValues,
   EventComment,
   EventCommentFormValues,
