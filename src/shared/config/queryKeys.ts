@@ -106,11 +106,6 @@ export const cardKeys = {
     [...cardKeys.all, 'available-benefits', cardRowId, expenseCategoryRowId] as const,
 }
 
-export const expenseTemplateKeys = {
-  all: ['expense-templates'] as const,
-  list: () => [...expenseTemplateKeys.all, 'list'] as const,
-}
-
 export const recurringTransactionKeys = {
   all: ['recurring-transactions'] as const,
   list: (params?: { upcoming?: boolean; limit?: number }) =>

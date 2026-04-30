@@ -46,6 +46,8 @@ type Props = {
   mobile: boolean
   /** 편집 모드일 때 전달 — 전달되면 수정/삭제, 아니면 신규 생성 */
   expense?: Expense | null
+  /** 신규 생성 시 기본 날짜(yyyy-MM-dd). 미지정이면 오늘. expense가 있으면 무시. */
+  defaultDate?: string
 }
 
 const todayLocal = () => {
@@ -54,7 +56,7 @@ const todayLocal = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-export function AddTxSheet({ onClose, mobile, expense }: Props) {
+export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const isEdit = !!expense
 
   const categoriesQ = useExpenseCategories()
@@ -74,7 +76,7 @@ export function AddTxSheet({ onClose, mobile, expense }: Props) {
   const [amount, setAmount] = useState<string>(expense?.amount ? String(expense.amount) : '')
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState<string>(
-    expense?.expenseDate ? expense.expenseDate.slice(0, 10) : todayLocal(),
+    expense?.expenseDate ? expense.expenseDate.slice(0, 10) : (defaultDate ?? todayLocal()),
   )
   const [merchant, setMerchant] = useState(expense?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')

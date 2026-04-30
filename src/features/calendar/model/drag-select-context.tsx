@@ -5,12 +5,10 @@ import { CalendarDays, Wallet } from 'lucide-react'
 
 import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
-import { useCreateExpense, useExpenseCategories } from '@/features/expense'
-import { useAssets } from '@/features/asset'
+import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
-import { ExpenseForm } from '@/widgets/expense-full/ui/ExpenseForm'
+import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEventFormValues } from '@/entities/calendar'
-import type { ExpenseFormValues } from '@/entities/expense'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/shared/ui/dialog'
@@ -39,6 +37,7 @@ export const useDragSelect = () => {
 
 export const DragSelectProvider = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation('calendar')
+  const isMobile = useIsMobile()
   const [isDragSelecting, setIsDragSelecting] = useState(false)
   const [selectionStart, setSelectionStart] = useState<Date | null>(null)
   const [selectionEnd, setSelectionEnd] = useState<Date | null>(null)
@@ -49,12 +48,6 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
   // Event (schedule) dependencies
   const createEvent = useCreateEvent()
   const { data: labels = [] } = useEventLabels()
-
-  // Expense (transaction) dependencies
-  const createExpense = useCreateExpense()
-  const { data: categories = [] } = useExpenseCategories()
-  const { data: assetsData } = useAssets()
-  const assets = assetsData?.assets ?? []
 
   const startSelection = useCallback((date: Date) => {
     setIsDragSelecting(true)
@@ -117,15 +110,6 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
       },
     })
   }, [createEvent])
-
-  const handleCreateExpense = useCallback((data: ExpenseFormValues) => {
-    createExpense.mutate(data, {
-      onSuccess: () => {
-        setSelectionMode(null)
-        setDialogDateRange(null)
-      },
-    })
-  }, [createExpense])
 
   const handleClose = useCallback(() => {
     setSelectionMode(null)
@@ -205,13 +189,10 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
 
       {/* Expense Form Dialog */}
       {selectionMode === 'expense' && dialogDateRange && (
-        <ExpenseForm
-          categories={categories}
-          assets={assets}
+        <AddTxSheet
+          mobile={isMobile}
           defaultDate={format(dialogDateRange.start, 'yyyy-MM-dd')}
-          onSubmit={handleCreateExpense}
           onClose={handleClose}
-          isLoading={createExpense.isPending}
         />
       )}
     </DragSelectContext.Provider>
