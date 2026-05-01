@@ -199,7 +199,7 @@ export const TodoPage = () => {
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
           <h1>할 일</h1>
-          <div className="sub">가계부 관련 작업 관리</div>
+          <div className="sub">할 일과 작업 관리</div>
         </div>
         <div className="right">{AddBtn}</div>
       </div>

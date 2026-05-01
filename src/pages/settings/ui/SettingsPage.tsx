@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
+  Bookmark,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -19,6 +20,7 @@ import {
   BudgetManager,
   CategoryManager,
   NotificationsManager,
+  PresetManager,
   RecurringManager,
 } from '@/features/porest/dialogs'
 
@@ -28,6 +30,7 @@ type SectionId =
   | 'accounts'
   | 'budget'
   | 'recurring'
+  | 'presets'
   | 'appearance'
   | 'notifications'
   | 'data'
@@ -45,6 +48,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'accounts', label: '계좌·카드 관리', icon: Wallet, desc: '연결된 계좌와 카드 관리' },
   { id: 'budget', label: '예산 설정', icon: Target, desc: '월간 예산 및 카테고리별 한도' },
   { id: 'recurring', label: '반복 거래 관리', icon: Repeat, desc: '구독·고정 결제·정기 수입 일괄 관리' },
+  { id: 'presets', label: '프리셋 관리', icon: Bookmark, desc: '자주 쓰는 내역을 한 번 탭으로 채우기' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
   { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·PDF로 거래 내역 백업' },
@@ -89,6 +93,7 @@ export const SettingsPage = () => {
       case 'accounts':      return <AccountManager mobile={m} />
       case 'budget':        return <BudgetManager mobile={m} />
       case 'recurring':     return <RecurringManager mobile={m} />
+      case 'presets':       return <PresetManager mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       default:              return <PlaceholderSection section={activeSection} />

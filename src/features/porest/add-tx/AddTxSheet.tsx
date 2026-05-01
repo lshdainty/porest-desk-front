@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Bookmark, Info, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { renderIcon } from '@/shared/lib'
+import { KRW } from '@/shared/lib/porest/format'
 import {
   Select,
   SelectContent,
@@ -15,13 +16,17 @@ import {
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import {
   useCreateExpense,
+  useCreateExpenseTemplate,
   useExpenseCategories,
+  useExpenseTemplates,
+  useTouchExpenseTemplate,
   useUpdateExpense,
   useDeleteExpense,
 } from '@/features/expense'
 import { useAssets, useCreateTransfer } from '@/features/asset'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { Asset, AssetType } from '@/entities/asset'
+import type { ExpenseTemplate } from '@/entities/expense-template'
 
 const PAYMENT_METHODS: { v: string; l: string }[] = [
   { v: 'CASH', l: '현금' },
@@ -65,6 +70,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const updateMut = useUpdateExpense()
   const deleteMut = useDeleteExpense()
   const createTransferMut = useCreateTransfer()
+  const touchPresetMut = useTouchExpenseTemplate()
 
   const categories: ExpenseCategory[] = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
   const assets: Asset[] = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data])
@@ -91,6 +97,33 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const [fee, setFee] = useState<string>('')
 
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // 프리셋: 적용 추적 + 저장 다이얼로그
+  const templatesQ = useExpenseTemplates()
+  const templates: ExpenseTemplate[] = useMemo(() => templatesQ.data ?? [], [templatesQ.data])
+  const [activePresetId, setActivePresetId] = useState<number | null>(null)
+  const [savePresetOpen, setSavePresetOpen] = useState(false)
+
+  // 사용 빈도 높은 순으로 8개. 편집 모드에선 프리셋 row 자체가 안 보이므로 무관.
+  const topPresets = useMemo(
+    () => [...templates].sort((a, b) => b.useCount - a.useCount).slice(0, 8),
+    [templates],
+  )
+
+  const clearPresetMark = () => {
+    if (activePresetId != null) setActivePresetId(null)
+  }
+
+  const applyPreset = (p: ExpenseTemplate) => {
+    setType(p.expenseType as TxType)
+    setAmount(p.lockAmount === 'Y' && p.amount != null ? String(p.amount) : '')
+    setCategoryRowId(p.categoryRowId ?? null)
+    setAssetRowId(p.assetRowId ?? null)
+    setMerchant(p.merchant ?? '')
+    setPaymentMethod(p.paymentMethod ?? '')
+    setDescription(p.description ?? '')
+    setActivePresetId(p.rowId)
+  }
 
   // 같은 expenseType의 최상위 카테고리 그리드 (자식은 Select로)
   const topCategories = useMemo(
@@ -193,7 +226,17 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     if (isEdit && expense) {
       updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose })
     } else {
-      createMut.mutate(data, { onSuccess: onClose })
+      const presetIdAtSubmit = activePresetId
+      createMut.mutate(data, {
+        onSuccess: () => {
+          // 거래 저장 성공 후 적용된 프리셋이 있으면 useCount/lastUsedAt 갱신.
+          // 실패해도 거래는 성공했으니 무시(Best-effort).
+          if (presetIdAtSubmit != null) {
+            touchPresetMut.mutate(presetIdAtSubmit)
+          }
+          onClose()
+        },
+      })
     }
   }
 
@@ -273,7 +316,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <button
               key={o.v}
               type="button"
-              onClick={() => !disabled && setType(o.v)}
+              onClick={() => {
+                if (disabled) return
+                setType(o.v)
+                clearPresetMark()
+              }}
               disabled={disabled}
               style={{
                 background: active ? 'var(--bg-surface)' : 'transparent',
@@ -294,6 +341,228 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           )
         })}
       </div>
+
+      {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
+      {!isEdit && type !== 'TRANSFER' && (
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 8,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Bookmark size={13} style={{ color: 'var(--fg-tertiary)' }} />
+              <span
+                style={{
+                  fontSize: 11,
+                  color: 'var(--fg-tertiary)',
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                프리셋 불러오기
+              </span>
+              {activePresetId != null && (
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    color: 'var(--fg-brand-strong)',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    background: 'var(--bg-brand-subtle)',
+                    borderRadius: 4,
+                  }}
+                >
+                  적용됨
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSavePresetOpen(true)}
+              disabled={amountNumber <= 0 || !categoryRowId}
+              style={{
+                background: 'transparent',
+                border: 0,
+                padding: 0,
+                fontSize: 11.5,
+                color: amountNumber > 0 && categoryRowId ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
+                fontWeight: 600,
+                cursor: amountNumber > 0 && categoryRowId ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 3,
+                fontFamily: 'inherit',
+              }}
+            >
+              <Plus size={12} /> 현재 입력값 저장
+            </button>
+          </div>
+
+          {topPresets.length > 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                gap: 6,
+                overflowX: 'auto',
+                paddingBottom: 4,
+                marginLeft: -2,
+                paddingLeft: 2,
+                marginRight: -2,
+                paddingRight: 2,
+                scrollbarWidth: 'thin',
+              }}
+            >
+              {topPresets.map(p => {
+                const active = activePresetId === p.rowId
+                const showAmount = p.lockAmount === 'Y' && p.amount != null
+                const cat = p.categoryRowId != null ? categories.find(c => c.rowId === p.categoryRowId) : undefined
+                const catColor = cat?.color ?? 'var(--mossy-600)'
+                return (
+                  <button
+                    key={p.rowId}
+                    type="button"
+                    onClick={() => applyPreset(p)}
+                    style={{
+                      flex: '0 0 auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 7,
+                      padding: '7px 11px',
+                      background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
+                      border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                      borderRadius: 999,
+                      cursor: 'pointer',
+                      fontSize: 12.5,
+                      fontWeight: active ? 700 : 600,
+                      color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.12s',
+                      boxShadow: active ? '0 0 0 2px var(--bg-brand-subtle)' : 'none',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    {cat && (
+                      <span
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 6,
+                          background: `color-mix(in oklch, ${catColor} 18%, transparent)`,
+                          color: catColor,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {renderIcon(cat.icon, cat.categoryName.charAt(0), 11)}
+                      </span>
+                    )}
+                    <span>{p.templateName}</span>
+                    {showAmount && (
+                      <span
+                        className="num"
+                        style={{
+                          fontSize: 11,
+                          color: active ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {(p.amount as number) >= 10000
+                          ? `${Math.floor((p.amount as number) / 1000)}k`
+                          : KRW(p.amount as number)}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+              {templates.length > topPresets.length && (
+                <span
+                  style={{
+                    flex: '0 0 auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '7px 11px',
+                    background: 'transparent',
+                    border: '1px dashed var(--border-default)',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: 'var(--fg-tertiary)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <MoreHorizontal size={14} />
+                  설정 → 프리셋 관리
+                </span>
+              )}
+            </div>
+          ) : (
+            <div
+              style={{
+                padding: '8px 10px',
+                background: 'var(--pd-surface-inset)',
+                border: '1px dashed var(--border-default)',
+                borderRadius: 8,
+                fontSize: 11.5,
+                color: 'var(--fg-tertiary)',
+              }}
+            >
+              저장된 프리셋이 없어요. 자주 쓰는 내역을 입력 후 “현재 입력값 저장”을 눌러보세요.
+            </div>
+          )}
+
+          {activePresetId != null && (
+            <div
+              style={{
+                marginTop: 8,
+                padding: '8px 10px',
+                background: 'var(--bg-brand-subtle)',
+                border: '1px solid var(--mossy-500)',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Info size={13} style={{ color: 'var(--fg-brand-strong)' }} />
+              <span
+                style={{
+                  fontSize: 11.5,
+                  color: 'var(--fg-brand-strong)',
+                  fontWeight: 600,
+                  flex: 1,
+                }}
+              >
+                프리셋 값이 채워졌어요. 금액·내역만 수정해서 저장하세요.
+              </span>
+              <button
+                type="button"
+                onClick={clearPresetMark}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  padding: 0,
+                  fontSize: 11,
+                  color: 'var(--fg-brand-strong)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  fontFamily: 'inherit',
+                }}
+              >
+                해제
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 큰 금액 */}
       <div
@@ -363,7 +632,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     <button
                       key={c.rowId}
                       type="button"
-                      onClick={() => setCategoryRowId(c.rowId)}
+                      onClick={() => {
+                        const firstChild = childrenByParent.get(c.rowId)?.[0]
+                        setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
+                        clearPresetMark()
+                      }}
                       style={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -464,7 +737,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             </label>
             <Select
               value={paymentMethod || '__none__'}
-              onValueChange={(v) => setPaymentMethod(v === '__none__' ? '' : v)}
+              onValueChange={(v) => {
+                setPaymentMethod(v === '__none__' ? '' : v)
+                clearPresetMark()
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="선택 안 함" />
@@ -490,7 +766,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             </label>
             <Select
               value={assetRowId != null ? String(assetRowId) : '__none__'}
-              onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
+              onValueChange={(v) => {
+                setAssetRowId(v === '__none__' ? null : Number(v))
+                clearPresetMark()
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="선택 안 함" />
@@ -583,6 +862,24 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         />
       </div>
 
+      {savePresetOpen && (
+        <SavePresetDialog
+          mobile={mobile}
+          onClose={() => setSavePresetOpen(false)}
+          seed={{
+            expenseType: type === 'TRANSFER' ? 'EXPENSE' : type,
+            amount: amountNumber,
+            categoryRowId,
+            categoryName: selectedCategory?.categoryName ?? null,
+            assetRowId,
+            assetName: assets.find(a => a.rowId === assetRowId)?.assetName ?? null,
+            merchant,
+            paymentMethod,
+            description,
+          }}
+        />
+      )}
+
       {confirmDelete && (
         <div
           style={{
@@ -624,6 +921,163 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </ModalShell>
+  )
+}
+
+// =========================================================================
+// SavePresetDialog — 현재 입력값을 프리셋으로 저장
+// =========================================================================
+type SavePresetSeed = {
+  expenseType: 'EXPENSE' | 'INCOME'
+  amount: number
+  categoryRowId: number | null
+  categoryName: string | null
+  assetRowId: number | null
+  assetName: string | null
+  merchant: string
+  paymentMethod: string
+  description: string
+}
+
+function SavePresetDialog({
+  onClose,
+  mobile,
+  seed,
+}: {
+  onClose: () => void
+  mobile: boolean
+  seed: SavePresetSeed
+}) {
+  const [name, setName] = useState(seed.merchant || '')
+  const [lockAmount, setLockAmount] = useState(false)
+
+  const createMut = useCreateExpenseTemplate()
+
+  const canSave = name.trim().length > 0 && seed.categoryRowId != null
+
+  const submit = () => {
+    if (!canSave) return
+    createMut.mutate(
+      {
+        templateName: name.trim(),
+        categoryRowId: seed.categoryRowId,
+        assetRowId: seed.assetRowId ?? undefined,
+        expenseType: seed.expenseType,
+        amount: lockAmount ? seed.amount : undefined,
+        description: seed.description || undefined,
+        merchant: seed.merchant || undefined,
+        paymentMethod: seed.paymentMethod || undefined,
+        lockAmount: lockAmount ? 'Y' : 'N',
+      },
+      { onSuccess: onClose },
+    )
+  }
+
+  const Footer = (
+    <>
+      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={createMut.isPending}>
+        취소
+      </button>
+      <button
+        type="button"
+        className="p-btn p-btn--primary"
+        onClick={submit}
+        disabled={!canSave || createMut.isPending}
+      >
+        {createMut.isPending ? '저장 중…' : '저장'}
+      </button>
+    </>
+  )
+
+  return (
+    <ModalShell title="프리셋으로 저장" onClose={onClose} mobile={mobile} size="md" footer={Footer}>
+      {/* 시드 미리보기 */}
+      <div
+        style={{
+          padding: 14,
+          background: 'var(--pd-surface-inset)',
+          borderRadius: 10,
+          marginBottom: 18,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 13.5,
+              fontWeight: 700,
+              color: 'var(--fg-primary)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {seed.merchant || '내역 없음'}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            {seed.categoryName ?? '카테고리 미선택'}
+            {seed.assetName ? ` · ${seed.assetName}` : ''}
+          </div>
+        </div>
+        <div
+          className="num"
+          style={{
+            fontSize: 15,
+            fontWeight: 800,
+            color: seed.expenseType === 'EXPENSE' ? 'var(--berry-700)' : 'var(--mossy-700)',
+          }}
+        >
+          {seed.expenseType === 'EXPENSE' ? '−' : '+'}
+          {KRW(seed.amount)}
+        </div>
+      </div>
+
+      <div className="p-field" style={{ marginBottom: 16 }}>
+        <label className="p-field__label">프리셋 이름</label>
+        <input
+          className="p-input"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="예: 점심 도시락"
+          autoFocus
+        />
+      </div>
+
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 10,
+          padding: 12,
+          background: 'var(--pd-surface-inset)',
+          borderRadius: 10,
+          cursor: 'pointer',
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={lockAmount}
+          onChange={e => setLockAmount(e.target.checked)}
+          style={{ marginTop: 2 }}
+        />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: 1.4 }}>
+            {lockAmount
+              ? `${KRW(seed.amount)}원이 항상 채워집니다.`
+              : '체크 해제 시 금액은 비워두고 매번 직접 입력합니다.'}
+          </div>
+        </div>
+      </label>
+
+      {seed.categoryRowId == null && (
+        <div style={{ marginTop: 10, fontSize: 11.5, color: 'var(--berry-700)' }}>
+          저장하려면 먼저 카테고리를 선택해주세요.
         </div>
       )}
     </ModalShell>

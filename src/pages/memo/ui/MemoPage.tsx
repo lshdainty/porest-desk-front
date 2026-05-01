@@ -178,7 +178,7 @@ export const MemoPage = () => {
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
           <h1>메모</h1>
-          <div className="sub">가계부와 연결된 메모</div>
+          <div className="sub">아이디어와 메모 정리</div>
         </div>
         <div className="right">{AddBtn}</div>
       </div>

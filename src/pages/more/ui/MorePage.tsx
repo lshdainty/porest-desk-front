@@ -29,7 +29,7 @@ const ITEMS: NavItem[] = [
   { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리·추이·비교' },
   { label: '예산', icon: Target, path: '/desk/budget', desc: '카테고리별 한도 관리' },
   { label: '캘린더', icon: CalendarDays, path: '/desk/calendar', desc: '일별 수입·지출' },
-  { label: '할 일', icon: ListChecks, path: '/desk/todo', desc: '가계부 관련 작업' },
+  { label: '할 일', icon: ListChecks, path: '/desk/todo', desc: '할 일과 작업 관리' },
   { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay', desc: '함께 쓴 돈 정산' },
   { label: '메모', icon: NotebookPen, path: '/desk/memo', desc: '간단 메모' },
   { label: '설정', icon: Settings, path: '/desk/settings', desc: '카테고리·계정 등' },

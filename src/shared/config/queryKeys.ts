@@ -54,11 +54,6 @@ export const memoKeys = {
   folders: () => [...memoKeys.all, 'folders'] as const,
 }
 
-export const calculatorKeys = {
-  all: ['calculator'] as const,
-  histories: () => [...calculatorKeys.all, 'histories'] as const,
-}
-
 export const expenseKeys = {
   all: ['expenses'] as const,
   list: <T = Record<string, unknown>>(filters?: T) => [...expenseKeys.all, 'list', filters] as const,
@@ -66,6 +61,7 @@ export const expenseKeys = {
   budgets: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'budgets', params] as const,
   budgetCompliance: (months: number) => [...expenseKeys.all, 'budget-compliance', months] as const,
   recurring: () => [...expenseKeys.all, 'recurring'] as const,
+  templates: () => [...expenseKeys.all, 'templates'] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
   monthlySummary: (year: number, month: number) => [...expenseKeys.all, 'monthly-summary', year, month] as const,
   monthlyTrend: (months: number) => [...expenseKeys.all, 'monthly-trend', months] as const,

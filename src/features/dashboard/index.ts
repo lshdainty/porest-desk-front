@@ -1,6 +1,3 @@
 export { dashboardApi } from './api/dashboardApi'
 export type { DashboardSummary } from './api/dashboardApi'
 export { useDashboardSummary } from './model/useDashboardSummary'
-export { DashboardProvider, useDashboardContext } from './model/DashboardContext'
-export { WIDGETS, defaultLayouts } from './lib/constants'
-export type { Widget } from './lib/constants'

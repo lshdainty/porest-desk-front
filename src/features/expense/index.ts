@@ -3,6 +3,7 @@ export type { ExpenseListParams, ExpenseSearchParams } from './api/expenseApi'
 export { expenseCategoryApi } from './api/expenseCategoryApi'
 export { expenseBudgetApi } from './api/expenseBudgetApi'
 export type { BudgetListParams } from './api/expenseBudgetApi'
+export { expenseTemplateApi } from './api/expenseTemplateApi'
 export {
   useExpenses,
   useCreateExpense,
@@ -34,3 +35,11 @@ export {
   useDeleteExpenseBudget,
   useBudgetCompliance,
 } from './model/useExpenseBudgets'
+export {
+  useExpenseTemplates,
+  useCreateExpenseTemplate,
+  useUpdateExpenseTemplate,
+  useDeleteExpenseTemplate,
+  useUseExpenseTemplate,
+  useTouchExpenseTemplate,
+} from './model/useExpenseTemplates'
