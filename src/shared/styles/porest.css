@@ -654,33 +654,47 @@
 .cat-legend__pct { font-size: 11.5px; color: var(--fg-tertiary); font-variant-numeric: tabular-nums; }
 .cat-legend__amt { font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 
-/* Modal (desktop) */
+/* Modal (desktop) — Radix Dialog 기반.
+   Portal 안에서 Overlay 와 Content 가 sibling 으로 마운트되므로
+   .modal 은 자체 fixed center 로 위치. */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: oklch(0.15 0.01 180 / 0.5);
   z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 200ms var(--ease-standard);
 }
+.modal-overlay[data-state="open"] { animation: fadeIn 200ms var(--ease-standard); }
+.modal-overlay[data-state="closed"] { animation: fadeOut 160ms var(--ease-standard); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 .modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 101;
   width: 520px;
   max-width: calc(100% - 40px);
   background: var(--bg-surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
-  animation: modalIn 220ms var(--ease-spring);
   display: flex;
   flex-direction: column;
   max-height: 86vh;
+  transform: translate(-50%, -50%);
 }
 .modal--sm { width: 420px; }
 .modal--lg { width: 720px; }
-@keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal[data-state="open"] { animation: modalIn 220ms var(--ease-spring); }
+.modal[data-state="closed"] { animation: modalOut 160ms var(--ease-standard); }
+@keyframes modalIn {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.94); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes modalOut {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, calc(-50% + 4px)) scale(0.96); }
+}
 .modal__head { padding: 18px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
 .modal__head h3 { font-size: 17px; font-weight: 700; flex: 1; }
 .modal__head .close {

@@ -20,12 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +67,7 @@ const roleIcons: Record<GroupRole, typeof Crown> = {
 export const GroupFullWidget = () => {
   const { t } = useTranslation('group')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const { data: groups = [], isLoading } = useGroups()
   const createGroup = useCreateGroup()
@@ -429,36 +426,27 @@ export const GroupFullWidget = () => {
       </div>
 
       {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('addGroup')}</DialogTitle>
-          </DialogHeader>
+      {showCreateDialog && (
+        <ModalShell title={t('addGroup')} onClose={() => setShowCreateDialog(false)} mobile={isMobile} size="sm">
           <GroupForm onSubmit={handleCreate} onCancel={() => setShowCreateDialog(false)} isSubmitting={createGroup.isPending} />
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingGroup} onOpenChange={() => setEditingGroup(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('editGroup')}</DialogTitle>
-          </DialogHeader>
+      {editingGroup && (
+        <ModalShell title={t('editGroup')} onClose={() => setEditingGroup(null)} mobile={isMobile} size="sm">
           <GroupForm
             initialData={editingGroup}
             onSubmit={handleUpdate}
             onCancel={() => setEditingGroup(null)}
             isSubmitting={updateGroup.isPending}
           />
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Join Dialog */}
-      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('joinGroup')}</DialogTitle>
-          </DialogHeader>
+      {showJoinDialog && (
+        <ModalShell title={t('joinGroup')} onClose={() => setShowJoinDialog(false)} mobile={isMobile} size="sm">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('inviteCode')}</Label>
@@ -478,8 +466,8 @@ export const GroupFullWidget = () => {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Delete Confirm Dialog */}
       <AlertDialog open={!!deleteTargetId} onOpenChange={() => setDeleteTargetId(null)}>

@@ -1,20 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { CreditCard, Search, Trash2 } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/shared/ui/dialog'
-import {
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/shared/ui/drawer'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -774,33 +760,19 @@ export function AssetEditDialog({
     </Fragment>
   )
 
-  if (mobile) {
-    return (
-      <Drawer open onOpenChange={v => { if (!v) handleClose() }}>
-        <DrawerContent className="max-h-[90%]">
-          <DrawerHeader>
-            <DrawerTitle>{title}</DrawerTitle>
-          </DrawerHeader>
-          <DrawerBody className="flex flex-col gap-5">{bodyContent}</DrawerBody>
-          <DrawerFooter className="justify-between">{footerInner}</DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    )
-  }
-
   return (
-    <Dialog open onOpenChange={v => { if (!v) handleClose() }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 bg-[var(--bg-surface)]">
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
-          <DialogTitle className="text-[17px] font-bold tracking-tight">{title}</DialogTitle>
-        </DialogHeader>
-        <div className="px-6 pt-5 pb-2 flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
-          {bodyContent}
-        </div>
-        <DialogFooter className="px-6 py-4 border-t border-[var(--border-subtle)] mt-2 gap-2 sm:gap-2 flex-row justify-between">
+    <ModalShell
+      title={title}
+      onClose={handleClose}
+      mobile={mobile}
+      size="md"
+      footer={
+        <div className="flex w-full items-center justify-between gap-2">
           {footerInner}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+    >
+      <div className="flex flex-col gap-5">{bodyContent}</div>
+    </ModalShell>
   )
 }

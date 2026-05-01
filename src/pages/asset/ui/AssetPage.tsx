@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  ChevronRight, CreditCard, Eye, EyeOff, MoreHorizontal, Plus, RefreshCw,
+  ChevronRight, CreditCard, Eye, EyeOff, Plus, RefreshCw,
   Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
@@ -17,21 +17,14 @@ import {
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Donut } from '@/shared/ui/porest/charts'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu'
 import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
-import { useSavingGoals, useDeleteSavingGoal } from '@/features/savingGoal'
+import { useSavingGoals } from '@/features/savingGoal'
 import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog'
 import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
-import { SavingGoalContributeDialog } from '@/widgets/asset-full/ui/SavingGoalContributeDialog'
 import { AssetEditDialog, type AssetGroup } from '@/features/porest/dialogs/AssetEditDialog'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
@@ -521,20 +514,19 @@ function formatDeadline(deadline: string | null): string {
 function SavingGoalItem({
   goal,
   onEdit,
-  onDelete,
-  onContribute,
 }: {
   goal: SavingGoal
   onEdit: (g: SavingGoal) => void
-  onDelete: (g: SavingGoal) => void
-  onContribute: (g: SavingGoal) => void
 }) {
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
   const color = goal.color ?? 'var(--mossy-600)'
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
 
   return (
-    <div>
+    <div
+      onClick={() => onEdit(goal)}
+      style={{ cursor: 'pointer' }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span
           style={{
@@ -581,32 +573,6 @@ function SavingGoalItem({
             {KRW(goal.currentAmount)} / {(goal.targetAmount / 10_000).toFixed(0)}만
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="목표 메뉴"
-              style={{
-                width: 28, height: 28, borderRadius: 8,
-                border: 0, background: 'transparent', cursor: 'pointer',
-                color: 'var(--fg-tertiary)', display: 'inline-flex',
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <MoreHorizontal size={14} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onContribute(goal)}>적립</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(goal)}>수정</DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(goal)}
-              style={{ color: 'var(--berry-600)' }}
-            >
-              삭제
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div
         style={{
@@ -625,21 +591,15 @@ function SavingGoalItem({
   )
 }
 
-function SavingGoalsCard() {
+function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   const goalsQ = useSavingGoals()
-  const deleteMut = useDeleteSavingGoal()
-  const [addOpen, setAddOpen] = useState(false)
-  const [editTarget, setEditTarget] = useState<SavingGoal | null>(null)
-  const [contributeTarget, setContributeTarget] = useState<SavingGoal | null>(null)
+  const [dialogState, setDialogState] = useState<
+    { mode: 'add' } | { mode: 'edit'; goal: SavingGoal } | null
+  >(null)
 
   const goals = goalsQ.data?.goals ?? []
   const isLoading = goalsQ.isLoading
   const isEmpty = !isLoading && goals.length === 0
-
-  const handleDelete = (goal: SavingGoal) => {
-    if (!window.confirm(`'${goal.title}' 목표를 삭제할까요?`)) return
-    deleteMut.mutate(goal.rowId)
-  }
 
   return (
     <div className="p-card" style={{ padding: 22 }}>
@@ -649,7 +609,7 @@ function SavingGoalsCard() {
           className="p-btn p-btn--ghost p-btn--sm"
           style={{ marginLeft: 'auto' }}
           type="button"
-          onClick={() => setAddOpen(true)}
+          onClick={() => setDialogState({ mode: 'add' })}
         >
           <Plus size={13} /> 목표 추가
         </button>
@@ -676,7 +636,7 @@ function SavingGoalsCard() {
           <button
             className="p-btn p-btn--primary p-btn--sm"
             type="button"
-            onClick={() => setAddOpen(true)}
+            onClick={() => setDialogState({ mode: 'add' })}
           >
             <Plus size={13} /> 첫 목표 추가하기
           </button>
@@ -687,25 +647,19 @@ function SavingGoalsCard() {
             <SavingGoalItem
               key={g.rowId}
               goal={g}
-              onEdit={setEditTarget}
-              onDelete={handleDelete}
-              onContribute={setContributeTarget}
+              onEdit={goal => setDialogState({ mode: 'edit', goal })}
             />
           ))}
         </div>
       )}
 
-      <SavingGoalAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
-      <SavingGoalAddDialog
-        open={!!editTarget}
-        onClose={() => setEditTarget(null)}
-        goal={editTarget}
-      />
-      <SavingGoalContributeDialog
-        open={!!contributeTarget}
-        onClose={() => setContributeTarget(null)}
-        goal={contributeTarget}
-      />
+      {dialogState && (
+        <SavingGoalAddDialog
+          goal={dialogState.mode === 'edit' ? dialogState.goal : null}
+          mobile={mobile}
+          onClose={() => setDialogState(null)}
+        />
+      )}
     </div>
   )
 }
@@ -1155,7 +1109,7 @@ function AssetDesktop() {
                 onOpenDetail={setDetailAsset}
               />
             )}
-            <SavingGoalsCard />
+            <SavingGoalsCard mobile={false} />
           </div>
         </div>
       )}

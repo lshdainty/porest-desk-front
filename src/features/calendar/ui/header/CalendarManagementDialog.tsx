@@ -13,13 +13,8 @@ import { Button } from '@/shared/ui/button'
 import { ColorPicker } from '@/shared/ui/color-picker'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +37,7 @@ export const CalendarManagementDialog = ({
 }: CalendarManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
   const { data: calendars } = useUserCalendars()
   const createCalendar = useCreateUserCalendar()
   const updateCalendar = useUpdateUserCalendar()
@@ -97,25 +93,20 @@ export const CalendarManagementDialog = ({
     })
   }, [deleteTarget, deleteCalendar])
 
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('manage')}</span>
+      <Button variant="outline" size="sm" className="gap-1.5 mr-2" onClick={openCreateForm}>
+        <Plus size={14} />
+        {t('add')}
+      </Button>
+    </div>
+  )
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>{t('manage')}</DialogTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                onClick={openCreateForm}
-              >
-                <Plus size={14} />
-                {t('add')}
-              </Button>
-            </div>
-          </DialogHeader>
-
+      {open && (
+        <ModalShell title={headerTitle} onClose={() => onOpenChange(false)} mobile={isMobile} size="sm">
           <div className="space-y-2">
             {allCalendars.map((cal) => (
               <div
@@ -156,18 +147,31 @@ export const CalendarManagementDialog = ({
               <p className="py-4 text-center text-sm text-muted-foreground">-</p>
             )}
           </div>
-
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Add/Edit Form Dialog */}
-      <Dialog open={showForm} onOpenChange={(o) => { if (!o) setShowForm(false) }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? t('edit') : t('add')}
-            </DialogTitle>
-          </DialogHeader>
+      {showForm && (
+        <ModalShell
+          title={editing ? t('edit') : t('add')}
+          onClose={() => setShowForm(false)}
+          mobile={isMobile}
+          size="sm"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowForm(false)}>
+                {tc('cancel')}
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!formName.trim() || createCalendar.isPending || updateCalendar.isPending}
+              >
+                {(createCalendar.isPending || updateCalendar.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                {tc('save')}
+              </Button>
+            </>
+          }
+        >
           <div className="space-y-3">
             <div>
               <Label>{t('name')}</Label>
@@ -182,20 +186,8 @@ export const CalendarManagementDialog = ({
               <ColorPicker value={formColor} onChange={setFormColor} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!formName.trim() || createCalendar.isPending || updateCalendar.isPending}
-            >
-              {(createCalendar.isPending || updateCalendar.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

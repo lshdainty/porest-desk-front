@@ -9,9 +9,7 @@ import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEventFormValues } from '@/entities/calendar'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 
 type SelectionMode = 'choose' | 'event' | 'expense'
 
@@ -140,39 +138,34 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
 
       {/* Quick Add Selection Menu */}
       {selectionMode === 'choose' && dialogDateRange && (
-        <Dialog open={true} onOpenChange={(open) => { if (!open) handleClose() }}>
-          <DialogContent className="sm:max-w-xs">
-            <DialogHeader>
-              <DialogTitle>{t('quickAdd.title')}</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-2">
-              <button
-                onClick={handleChooseEvent}
-                className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  <CalendarDays size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{t('quickAdd.addSchedule')}</div>
-                  <div className="text-xs text-muted-foreground">{t('quickAdd.scheduleDesc')}</div>
-                </div>
-              </button>
-              <button
-                onClick={handleChooseExpense}
-                className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                  <Wallet size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{t('quickAdd.addTransaction')}</div>
-                  <div className="text-xs text-muted-foreground">{t('quickAdd.transactionDesc')}</div>
-                </div>
-              </button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ModalShell title={t('quickAdd.title')} onClose={handleClose} mobile={isMobile} size="sm">
+          <div className="grid gap-2">
+            <button
+              onClick={handleChooseEvent}
+              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                <CalendarDays size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{t('quickAdd.addSchedule')}</div>
+                <div className="text-xs text-muted-foreground">{t('quickAdd.scheduleDesc')}</div>
+              </div>
+            </button>
+            <button
+              onClick={handleChooseExpense}
+              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                <Wallet size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{t('quickAdd.addTransaction')}</div>
+                <div className="text-xs text-muted-foreground">{t('quickAdd.transactionDesc')}</div>
+              </div>
+            </button>
+          </div>
+        </ModalShell>
       )}
 
       {/* Event Form Dialog */}

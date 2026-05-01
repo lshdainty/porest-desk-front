@@ -7,9 +7,8 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
 import type { UserCalendar } from '@/entities/user-calendar'
@@ -72,6 +71,7 @@ export const EventForm = ({
   const { t: tc } = useTranslation('common')
   const { data: userCalendars = [] } = useUserCalendars()
   const { data: groups = [] } = useGroups()
+  const isMobile = useIsMobile()
 
   const defaultDate = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
@@ -217,15 +217,25 @@ export const EventForm = ({
     })
   }
 
-  return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {event ? t('editEvent') : t('addEvent')}
-          </DialogTitle>
-        </DialogHeader>
+  const Footer = (
+    <>
+      <Button type="button" variant="outline" onClick={onClose}>
+        {tc('cancel')}
+      </Button>
+      <Button type="button" onClick={handleSubmit(onFormSubmit)} disabled={isLoading}>
+        {isLoading ? tc('loading') : tc('save')}
+      </Button>
+    </>
+  )
 
+  return (
+    <ModalShell
+      title={event ? t('editEvent') : t('addEvent')}
+      onClose={onClose}
+      mobile={isMobile}
+      size="sm"
+      footer={Footer}
+    >
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
@@ -563,16 +573,7 @@ export const EventForm = ({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              {tc('cancel')}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? tc('loading') : tc('save')}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }

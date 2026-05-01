@@ -1,205 +1,450 @@
 import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/shared/ui/dialog'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
-import { Textarea } from '@/shared/ui/textarea'
-import { IconPicker } from '@/shared/ui/icon-picker'
+import { AlertCircle, Trash2 } from 'lucide-react'
+import { DynamicIcon } from 'lucide-react/dynamic'
+import type { IconName } from 'lucide-react/dynamic'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { KRW } from '@/shared/lib/porest/format'
-import { useCreateSavingGoal, useUpdateSavingGoal } from '@/features/savingGoal'
+import {
+  useContributeSavingGoal,
+  useCreateSavingGoal,
+  useDeleteSavingGoal,
+  useUpdateSavingGoal,
+} from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
 
-const PRESET_COLORS: string[] = [
-  'var(--mossy-600)',
-  'var(--sky-500)',
-  'var(--berry-500)',
-  'var(--sunshine-500)',
-  'var(--lavender-500)',
-  'var(--moss-500)',
-  'var(--terracotta-500)',
+const GOAL_ICONS: { k: IconName; label: string }[] = [
+  { k: 'plane', label: '여행' },
+  { k: 'shield', label: '비상금' },
+  { k: 'laptop', label: '전자기기' },
+  { k: 'home', label: '주거' },
+  { k: 'graduation-cap', label: '교육' },
+  { k: 'gift', label: '선물' },
+  { k: 'car', label: '자동차' },
+  { k: 'heart', label: '건강' },
+  { k: 'piggy-bank', label: '저축' },
+  { k: 'wallet', label: '지갑' },
 ]
 
-interface SavingGoalAddDialogProps {
-  open: boolean
-  onClose: () => void
-  /** 있으면 수정 모드, 없으면 생성 모드 */
-  goal?: SavingGoal | null
+const GOAL_COLORS = [
+  'var(--sky-500)',
+  'var(--mossy-600)',
+  'var(--berry-500)',
+  'var(--clay-500)',
+  'oklch(0.60 0.18 290)',
+  'oklch(0.58 0.15 180)',
+]
+
+function formatDeadlineLabel(iso: string): string {
+  if (!iso) return '기한 없음'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '기한 없음'
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
 }
 
-export function SavingGoalAddDialog({ open, onClose, goal }: SavingGoalAddDialogProps) {
-  const editMode = !!goal
+function fmtNum(n: number): string {
+  if (!n) return ''
+  return n.toLocaleString('ko-KR')
+}
+
+function parseNum(v: string): number {
+  const n = parseInt(v.replace(/[^0-9]/g, ''), 10)
+  return isNaN(n) ? 0 : n
+}
+
+interface SavingGoalAddDialogProps {
+  /** null/undefined → 생성 모드, 객체 → 수정 모드 */
+  goal?: SavingGoal | null
+  mobile: boolean
+  onClose: () => void
+}
+
+export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDialogProps) {
+  const isEdit = !!goal
+
   const [title, setTitle] = useState<string>(goal?.title ?? '')
-  const [description, setDescription] = useState<string>(goal?.description ?? '')
-  const [targetStr, setTargetStr] = useState<string>(goal?.targetAmount ? KRW(goal.targetAmount) : '0')
+  const [targetStr, setTargetStr] = useState<string>(
+    goal?.targetAmount ? fmtNum(goal.targetAmount) : '',
+  )
+  const [currentStr, setCurrentStr] = useState<string>(
+    goal?.currentAmount ? fmtNum(goal.currentAmount) : '',
+  )
   const [deadlineDate, setDeadlineDate] = useState<string>(goal?.deadlineDate ?? '')
-  const [icon, setIcon] = useState<string>(goal?.icon ?? 'piggy-bank')
-  const [color, setColor] = useState<string>(goal?.color ?? (PRESET_COLORS[0] ?? 'var(--mossy-600)'))
+  const [icon, setIcon] = useState<IconName>(((goal?.icon as IconName) || 'piggy-bank') as IconName)
+  const [color, setColor] = useState<string>(goal?.color ?? GOAL_COLORS[0]!)
+  const [err, setErr] = useState<string>('')
 
   const createMut = useCreateSavingGoal()
   const updateMut = useUpdateSavingGoal()
-  const isPending = createMut.isPending || updateMut.isPending
+  const contributeMut = useContributeSavingGoal()
+  const deleteMut = useDeleteSavingGoal()
+  const isPending =
+    createMut.isPending ||
+    updateMut.isPending ||
+    contributeMut.isPending ||
+    deleteMut.isPending
 
-  const reset = () => {
-    setTitle('')
-    setDescription('')
-    setTargetStr('0')
-    setDeadlineDate('')
-    setIcon('piggy-bank')
-    setColor(PRESET_COLORS[0] ?? 'var(--mossy-600)')
-  }
-
-  const handleClose = () => {
-    if (isPending) return
-    if (!editMode) reset()
-    onClose()
-  }
+  const target = parseNum(targetStr)
+  const current = parseNum(currentStr)
+  const pct = target > 0 ? (current / target) * 100 : 0
 
   const handleSubmit = () => {
-    const trimmedTitle = title.trim()
-    if (!trimmedTitle) return
-    const targetAmount = Number(targetStr.replace(/[^\d-]/g, '')) || 0
-    if (targetAmount <= 0) return
-
-    const payload = {
-      title: trimmedTitle,
-      description: description.trim() || undefined,
-      targetAmount,
-      deadlineDate: deadlineDate ? deadlineDate : null,
-      icon: icon || null,
-      color: color || null,
+    const t = title.trim()
+    if (!t) {
+      setErr('목표 이름을 입력해주세요')
+      return
     }
+    if (target <= 0) {
+      setErr('목표 금액을 입력해주세요')
+      return
+    }
+    if (current > target) {
+      setErr('현재 금액이 목표보다 클 수 없어요')
+      return
+    }
+    setErr('')
 
-    if (editMode && goal) {
+    if (isEdit && goal) {
       updateMut.mutate(
-        { id: goal.rowId, data: payload },
+        {
+          id: goal.rowId,
+          data: {
+            title: t,
+            targetAmount: target,
+            deadlineDate: deadlineDate || null,
+            icon,
+            color,
+          },
+        },
         {
           onSuccess: () => {
-            onClose()
+            const diff = current - goal.currentAmount
+            if (diff !== 0) {
+              contributeMut.mutate(
+                { id: goal.rowId, data: { amount: diff } },
+                { onSuccess: () => onClose() },
+              )
+            } else {
+              onClose()
+            }
           },
         },
       )
     } else {
       createMut.mutate(
-        { ...payload, currency: 'KRW' },
         {
-          onSuccess: () => {
-            reset()
-            onClose()
+          title: t,
+          targetAmount: target,
+          deadlineDate: deadlineDate || null,
+          icon,
+          color,
+          currency: 'KRW',
+        },
+        {
+          onSuccess: created => {
+            if (current > 0) {
+              contributeMut.mutate(
+                { id: created.rowId, data: { amount: current } },
+                { onSuccess: () => onClose() },
+              )
+            } else {
+              onClose()
+            }
           },
         },
       )
     }
   }
 
+  const handleDelete = () => {
+    if (!goal) return
+    if (!window.confirm(`'${goal.title}' 목표를 삭제할까요?`)) return
+    deleteMut.mutate(goal.rowId, { onSuccess: () => onClose() })
+  }
+
+  const Footer = (
+    <>
+      {isEdit && (
+        <button
+          type="button"
+          className="p-btn p-btn--danger-ghost"
+          onClick={handleDelete}
+          disabled={isPending}
+          style={{ marginRight: 'auto' }}
+        >
+          <Trash2 size={14} /> 삭제
+        </button>
+      )}
+      <button
+        type="button"
+        className="p-btn p-btn--ghost"
+        onClick={onClose}
+        disabled={isPending}
+      >
+        취소
+      </button>
+      <button
+        type="button"
+        className="p-btn p-btn--primary"
+        onClick={handleSubmit}
+        disabled={isPending}
+      >
+        {isPending ? '저장 중…' : isEdit ? '저장' : '추가'}
+      </button>
+    </>
+  )
+
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
-          <DialogTitle className="text-[17px] font-bold tracking-tight">
-            {editMode ? '저축 목표 수정' : '저축 목표 추가'}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="px-6 pt-5 pb-2 flex flex-col gap-5 max-h-[70vh] overflow-y-auto">
-          <div>
-            <Label htmlFor="saving-goal-title" className="text-[13px] font-medium mb-2 block">
-              목표 이름
-            </Label>
-            <Input
-              id="saving-goal-title"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="예: 유럽 여행, 비상금"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="saving-goal-target" className="text-[13px] font-medium mb-2 block">
-              목표 금액 (원)
-            </Label>
-            <Input
-              id="saving-goal-target"
-              inputMode="numeric"
-              value={targetStr}
-              onChange={e => setTargetStr(e.target.value.replace(/[^\d-]/g, ''))}
-              onBlur={() => {
-                const n = Number(targetStr) || 0
-                setTargetStr(n ? KRW(n) : '0')
+    <ModalShell
+      title={isEdit ? '목표 편집' : '저축 목표 추가'}
+      onClose={onClose}
+      mobile={mobile}
+      size="md"
+      footer={Footer}
+    >
+      {/* Preview */}
+      <div
+        style={{
+          padding: 16,
+          background: 'var(--bg-canvas)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 12,
+          marginBottom: 18,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <span
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: `oklch(from ${color} l c h / 0.12)`,
+              color,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <DynamicIcon name={icon} size={17} />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
-              onFocus={() => setTargetStr(prev => prev.replace(/,/g, ''))}
-            />
-          </div>
-
-          <div>
-            <Label className="text-[13px] font-medium mb-2 block">기한 (선택)</Label>
-            <InputDatePicker
-              value={deadlineDate}
-              onValueChange={(v) => setDeadlineDate(v ?? '')}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <div>
-              <Label className="text-[13px] font-medium mb-2 block">아이콘</Label>
-              <IconPicker value={icon} onChange={setIcon} />
+            >
+              {title || '목표 이름'}
             </div>
-            <div className="flex-1 min-w-0">
-              <Label className="text-[13px] font-medium mb-2 block">대표 색상</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {PRESET_COLORS.map(c => {
-                  const active = c === color
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColor(c)}
-                      className="inline-flex items-center justify-center rounded-full border transition-all"
-                      aria-label={`색상 ${c}`}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        background: c,
-                        borderColor: active ? 'var(--fg-primary)' : 'transparent',
-                        borderWidth: active ? 2 : 1,
-                        boxShadow: active ? '0 0 0 2px var(--bg-surface)' : undefined,
-                      }}
-                    />
-                  )
-                })}
-              </div>
+            <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+              {formatDeadlineLabel(deadlineDate)}
             </div>
           </div>
-
-          <div>
-            <Label htmlFor="saving-goal-desc" className="text-[13px] font-medium mb-2 block">
-              메모 (선택)
-            </Label>
-            <Textarea
-              id="saving-goal-desc"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="목표에 대한 간단한 메모"
-              rows={2}
-            />
+          <div style={{ textAlign: 'right' }}>
+            <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+              {pct.toFixed(0)}%
+            </div>
+            <div className="num" style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
+              {current.toLocaleString('ko-KR')} / {target.toLocaleString('ko-KR')}
+            </div>
           </div>
         </div>
+        <div
+          style={{
+            height: 6,
+            background: 'var(--pd-surface-inset)',
+            borderRadius: 99,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              width: `${Math.min(100, pct)}%`,
+              height: '100%',
+              background: color,
+              borderRadius: 99,
+            }}
+          />
+        </div>
+      </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-[var(--border-subtle)] mt-2 gap-2 sm:gap-2">
-          <Button variant="ghost" onClick={handleClose} disabled={isPending}>
-            취소
-          </Button>
-          <Button variant="default" onClick={handleSubmit} disabled={isPending || !title.trim()}>
-            {isPending ? '저장 중…' : editMode ? '수정' : '추가'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">목표 이름</label>
+        <input
+          className="p-input"
+          value={title}
+          onChange={e => {
+            setTitle(e.target.value)
+            setErr('')
+          }}
+          placeholder="예: 유럽 여행"
+          autoFocus
+        />
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div className="p-field">
+          <label className="p-field__label">목표 금액</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              className="p-input num"
+              value={fmtNum(parseNum(targetStr))}
+              onChange={e => {
+                setTargetStr(e.target.value)
+                setErr('')
+              }}
+              placeholder="0"
+              inputMode="numeric"
+              style={{ paddingRight: 28, textAlign: 'right' }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 12.5,
+                color: 'var(--fg-tertiary)',
+                pointerEvents: 'none',
+              }}
+            >
+              원
+            </span>
+          </div>
+        </div>
+        <div className="p-field">
+          <label className="p-field__label">현재 모은 금액</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              className="p-input num"
+              value={fmtNum(parseNum(currentStr))}
+              onChange={e => {
+                setCurrentStr(e.target.value)
+                setErr('')
+              }}
+              placeholder="0"
+              inputMode="numeric"
+              style={{ paddingRight: 28, textAlign: 'right' }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 12.5,
+                color: 'var(--fg-tertiary)',
+                pointerEvents: 'none',
+              }}
+            >
+              원
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">
+          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400 }}>(선택)</span>
+        </label>
+        <InputDatePicker
+          value={deadlineDate}
+          onValueChange={v => setDeadlineDate(v ?? '')}
+        />
+      </div>
+
+      <div className="p-field" style={{ marginBottom: 14 }}>
+        <label className="p-field__label">아이콘</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
+          {GOAL_ICONS.map(g => {
+            const active = icon === g.k
+            return (
+              <button
+                key={g.k}
+                type="button"
+                title={g.label}
+                onClick={() => setIcon(g.k)}
+                style={{
+                  aspectRatio: '1 / 1',
+                  borderRadius: 10,
+                  background: active
+                    ? `oklch(from ${color} l c h / 0.14)`
+                    : 'var(--bg-surface)',
+                  border: active
+                    ? `1.5px solid ${color}`
+                    : '1px solid var(--border-subtle)',
+                  color: active ? color : 'var(--fg-secondary)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <DynamicIcon name={g.k} size={16} />
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="p-field">
+        <label className="p-field__label">색상</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {GOAL_COLORS.map(c => {
+            const active = color === c
+            return (
+              <button
+                key={c}
+                type="button"
+                aria-label={`색상 ${c}`}
+                onClick={() => setColor(c)}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: c,
+                  border: active ? '2px solid var(--fg-primary)' : '2px solid transparent',
+                  boxShadow: active
+                    ? `0 0 0 2px var(--bg-surface), 0 0 0 3.5px ${c}`
+                    : 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              />
+            )
+          })}
+        </div>
+      </div>
+
+      {err && (
+        <div
+          style={{
+            marginTop: 14,
+            padding: '10px 12px',
+            background: 'oklch(0.96 0.04 20)',
+            border: '1px solid var(--berry-300)',
+            borderRadius: 8,
+            fontSize: 12.5,
+            color: 'var(--berry-700)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          <AlertCircle size={13} /> {err}
+        </div>
+      )}
+    </ModalShell>
   )
 }

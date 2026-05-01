@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import {
   Drawer,
@@ -10,6 +11,13 @@ import {
 
 export type ModalSize = 'sm' | 'md' | 'lg'
 
+/**
+ * Porest 디자인 시스템 모달 래퍼.
+ * - 모바일: vaul Drawer (스와이프 닫힘)
+ * - 데스크탑: Radix Dialog + porest .modal CSS (포커스 트랩 / ESC / outside click 자동)
+ *
+ * Unmount 패턴: 부모가 조건부 마운트하면 열림. onClose 호출 시 부모가 unmount.
+ */
 export function ModalShell({
   title,
   onClose,
@@ -26,7 +34,6 @@ export function ModalShell({
   mobile: boolean
 }) {
   if (mobile) {
-    // vaul Drawer (swipe-to-dismiss 지원, 디자인 토큰은 .sheet 와 동일)
     return (
       <Drawer
         open={true}
@@ -58,19 +65,33 @@ export function ModalShell({
       </Drawer>
     )
   }
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className={`modal modal--${size}`} onClick={e => e.stopPropagation()}>
-        <div className="modal__head">
-          <h3>{title}</h3>
-          <button className="close" onClick={onClose} aria-label="닫기">
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal__body">{children}</div>
-        {footer && <div className="modal__foot">{footer}</div>}
-      </div>
-    </div>
+    <DialogPrimitive.Root
+      open={true}
+      onOpenChange={open => {
+        if (!open) onClose()
+      }}
+    >
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="modal-overlay" />
+        <DialogPrimitive.Content
+          className={`modal modal--${size}`}
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
+          <div className="modal__head">
+            <DialogPrimitive.Title asChild>
+              <h3>{title}</h3>
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Close className="close" aria-label="닫기">
+              <X size={18} />
+            </DialogPrimitive.Close>
+          </div>
+          <div className="modal__body">{children}</div>
+          {footer && <div className="modal__foot">{footer}</div>}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   )
 }
 
@@ -92,23 +113,38 @@ export function ConfirmDialog({
   onConfirm: () => void
 }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal modal--sm" onClick={e => e.stopPropagation()}>
-        <div className="modal__head">
-          <h3>{title}</h3>
-        </div>
-        <div className="modal__body">
-          <p style={{ fontSize: 13.5, color: 'var(--fg-secondary)', lineHeight: 1.6, margin: 0 }}>{message}</p>
-        </div>
-        <div className="modal__foot">
-          <button className="p-btn p-btn--ghost" onClick={onCancel}>
-            {cancelLabel}
-          </button>
-          <button className={`p-btn ${danger ? 'p-btn--danger' : 'p-btn--primary'}`} onClick={onConfirm}>
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+    <DialogPrimitive.Root
+      open={true}
+      onOpenChange={open => {
+        if (!open) onCancel()
+      }}
+    >
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="modal-overlay" />
+        <DialogPrimitive.Content className="modal modal--sm">
+          <div className="modal__head">
+            <DialogPrimitive.Title asChild>
+              <h3>{title}</h3>
+            </DialogPrimitive.Title>
+          </div>
+          <div className="modal__body">
+            <p style={{ fontSize: 13.5, color: 'var(--fg-secondary)', lineHeight: 1.6, margin: 0 }}>
+              {message}
+            </p>
+          </div>
+          <div className="modal__foot">
+            <button className="p-btn p-btn--ghost" onClick={onCancel}>
+              {cancelLabel}
+            </button>
+            <button
+              className={`p-btn ${danger ? 'p-btn--danger' : 'p-btn--primary'}`}
+              onClick={onConfirm}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   )
 }

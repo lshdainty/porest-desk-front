@@ -7,9 +7,8 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import { format } from 'date-fns'
 import type { DutchPay, DutchPayFormValues, SplitMethod, ParticipantFormValues } from '@/entities/dutch-pay'
 
@@ -30,6 +29,7 @@ export const DutchPayForm = ({
 }: DutchPayFormProps) => {
   const { t } = useTranslation('dutchPay')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const defaultDate = format(new Date(), 'yyyy-MM-dd')
 
@@ -131,15 +131,25 @@ export const DutchPayForm = ({
     })
   }
 
-  return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {dutchPay ? t('editDutchPay') : t('addDutchPay')}
-          </DialogTitle>
-        </DialogHeader>
+  const Footer = (
+    <>
+      <Button type="button" variant="outline" onClick={onClose}>
+        {tc('cancel')}
+      </Button>
+      <Button type="button" onClick={handleSubmit(onFormSubmit)} disabled={isLoading}>
+        {isLoading ? tc('loading') : tc('save')}
+      </Button>
+    </>
+  )
 
+  return (
+    <ModalShell
+      title={dutchPay ? t('editDutchPay') : t('addDutchPay')}
+      onClose={onClose}
+      mobile={isMobile}
+      size="sm"
+      footer={Footer}
+    >
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           {/* Title */}
           <div className="space-y-1.5">
@@ -252,17 +262,7 @@ export const DutchPayForm = ({
             ))}
           </div>
 
-          {/* Submit */}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              {tc('cancel')}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? tc('loading') : tc('save')}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }
