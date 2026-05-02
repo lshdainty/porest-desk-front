@@ -46,12 +46,14 @@ Card.displayName = "Card"
 
 // sec-head 시각: flex items-center gap-2 mb-3.
 // 부수 메타 정보는 자식 span/div에서 marginLeft:auto 또는 ml-auto 로 우측 밀어내는 패턴.
+// data-slot은 .all 같은 자손 셀렉터(porest.css)가 카드 헤더 안에서도 매칭되게 함.
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
+    data-slot="card-header"
     className={cn("flex items-center gap-2 mb-3", className)}
     {...props}
   />
