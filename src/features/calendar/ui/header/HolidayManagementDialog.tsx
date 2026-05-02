@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit3, Trash2, Plus, RotateCcw, Loader2 } from 'lucide-react'
+import { Edit3, Trash2, Plus, RotateCcw } from 'lucide-react'
 
 import {
   useCalendarHolidays,
@@ -274,9 +274,9 @@ export const HolidayManagementDialog = ({
             <AlertDialogCancel>{t('holiday.deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              loading={deleteHoliday.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteHoliday.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('holiday.deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -584,8 +584,7 @@ export const TodoListWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={deleteTodo.isPending}>
-              {deleteTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <AlertDialogAction onClick={confirmDelete} loading={deleteTodo.isPending}>
               {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

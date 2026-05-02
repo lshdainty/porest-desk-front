@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit3, Trash2, Plus, Loader2 } from 'lucide-react'
+import { Edit3, Trash2, Plus } from 'lucide-react'
 
 import {
   useUserCalendars,
@@ -208,9 +208,9 @@ export const CalendarManagementDialog = ({
             {!deleteTarget?.isDefault && (
               <AlertDialogAction
                 onClick={handleDeleteConfirm}
+                loading={deleteCalendar.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteCalendar.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('delete')}
               </AlertDialogAction>
             )}

@@ -420,10 +420,9 @@ export const MemoEditorWidget = () => {
               <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDelete}
-                disabled={deleteMemo.isPending}
+                loading={deleteMemo.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {t('deleteConfirm.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -610,10 +609,9 @@ export const MemoEditorWidget = () => {
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              disabled={deleteMemo.isPending}
+              loading={deleteMemo.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -341,8 +341,7 @@ export const DutchPayFullWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deleteDutchPay.isPending}>
-              {deleteDutchPay.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <AlertDialogAction onClick={handleDelete} loading={deleteDutchPay.isPending}>
               {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

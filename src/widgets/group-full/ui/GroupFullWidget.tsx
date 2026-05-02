@@ -9,7 +9,6 @@ import {
   User,
   Copy,
   RefreshCw,
-  Loader2,
   Trash2,
   Pencil,
   ChevronRight,
@@ -477,10 +476,9 @@ export const GroupFullWidget = () => {
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteGroup.isPending}
+              loading={deleteGroup.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

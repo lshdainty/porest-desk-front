@@ -203,10 +203,9 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
               <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
-                disabled={deleteTag.isPending}
+                loading={deleteTag.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteTag.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>

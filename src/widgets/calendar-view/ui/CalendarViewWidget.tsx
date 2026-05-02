@@ -264,8 +264,7 @@ export const CalendarViewWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteEvent} disabled={deleteEvent.isPending}>
-              {deleteEvent.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <AlertDialogAction onClick={handleDeleteEvent} loading={deleteEvent.isPending}>
               {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -206,10 +206,9 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
               <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
-                disabled={deleteGroupType.isPending}
+                loading={deleteGroupType.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteGroupType.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
