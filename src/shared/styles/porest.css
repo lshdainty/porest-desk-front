@@ -733,57 +733,6 @@
 .modal--md { width: 560px; max-width: calc(100vw - 32px); }
 .modal--lg { width: 720px; max-width: calc(100vw - 32px); }
 
-.p-btn--danger {
-  background: var(--berry-500, oklch(0.58 0.18 25));
-  color: #fff;
-  border-color: var(--berry-500, oklch(0.58 0.18 25));
-}
-.p-btn--danger:hover:not(:disabled) {
-  background: var(--berry-700, oklch(0.48 0.18 25));
-  border-color: var(--berry-700, oklch(0.48 0.18 25));
-}
-
-.p-input--error {
-  border-color: var(--berry-500, oklch(0.58 0.18 25)) !important;
-  box-shadow: 0 0 0 3px oklch(0.58 0.18 25 / 0.12);
-}
-
-.p-field { display: flex; flex-direction: column; }
-.p-field__label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fg-secondary);
-  margin-bottom: 6px;
-  letter-spacing: -0.005em;
-}
-
-.p-seg {
-  display: inline-flex;
-  background: var(--pd-surface-inset);
-  padding: 4px;
-  border-radius: 10px;
-  gap: 2px;
-  width: 100%;
-  border: 1px solid var(--border-subtle);
-}
-.p-seg__btn {
-  flex: 1;
-  padding: 10px 12px;
-  border: 0;
-  background: transparent;
-  border-radius: 6px;
-  font: 600 13.5px/1 var(--font-sans);
-  color: var(--fg-tertiary);
-  cursor: pointer;
-  font-family: inherit;
-}
-.p-seg__btn:hover:not(.active) { color: var(--fg-secondary); }
-.p-seg__btn.active {
-  background: var(--mossy-700);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-}
 
 .pill {
   display: inline-flex;
@@ -1209,33 +1158,3 @@
 /* Note: 모바일 알림은 vaul Drawer (MobileHeader > MobileNotificationSheet) 로
    분기하므로 .notif-pop 의 모바일 변형은 제거. .notif-pop 은 데스크탑 popover 전용. */
 
-/* ------------------------------------------------------------------------
- * Tabs — .p-tabs (bottom underline)
- * ---------------------------------------------------------------------- */
-.p-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.p-tab {
-  padding: 10px 14px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  color: var(--fg-secondary);
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
-}
-.p-tab:hover {
-  color: var(--fg-primary);
-}
-.p-tab.is-active {
-  color: var(--fg-brand-strong, var(--mossy-800));
-  border-bottom-color: var(--mossy-600);
-  font-weight: 700;
-}
