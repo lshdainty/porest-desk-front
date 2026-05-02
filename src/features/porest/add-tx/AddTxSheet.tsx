@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import {
   useCreateExpense,
   useCreateExpenseTemplate,
@@ -871,12 +872,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 116px', gap: 8 }}>
             <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
-            <Input
-              type="time"
-              className="num"
+            <InputTimePicker
               value={expenseTime}
-              onChange={e => setExpenseTime(e.target.value)}
-              aria-label="시간"
+              onValueChange={setExpenseTime}
+              minuteStep={5}
             />
           </div>
         )}
