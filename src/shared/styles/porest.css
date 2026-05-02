@@ -548,71 +548,9 @@
 .cat-legend__pct { font-size: 11.5px; color: var(--fg-tertiary); font-variant-numeric: tabular-nums; }
 .cat-legend__amt { font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 
-/* Modal (desktop) — Radix Dialog 기반.
-   Portal 안에서 Overlay 와 Content 가 sibling 으로 마운트되므로
-   .modal 은 자체 fixed center 로 위치. */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: oklch(0.15 0.01 180 / 0.5);
-  z-index: 100;
-}
-.modal-overlay[data-state="open"] { animation: fadeIn 200ms var(--ease-standard); }
-.modal-overlay[data-state="closed"] { animation: fadeOut 160ms var(--ease-standard); }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-.modal {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  z-index: 101;
-  width: 520px;
-  max-width: calc(100% - 40px);
-  background: var(--bg-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  max-height: 86vh;
-  transform: translate(-50%, -50%);
-}
-.modal--sm { width: 420px; }
-.modal--lg { width: 720px; }
-.modal[data-state="open"] { animation: modalIn 220ms var(--ease-spring); }
-.modal[data-state="closed"] { animation: modalOut 160ms var(--ease-standard); }
-@keyframes modalIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.94); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-@keyframes modalOut {
-  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  to   { opacity: 0; transform: translate(-50%, calc(-50% + 4px)) scale(0.96); }
-}
-.modal__head { padding: 18px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
-.modal__head h3 { font-size: 17px; font-weight: 700; flex: 1; }
-.modal__head .close {
-  width: 32px; height: 32px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: transparent;
-  border: 0; border-radius: 999px;
-  cursor: pointer;
-  color: var(--fg-secondary);
-}
-.modal__head .close:hover { background: var(--pd-hover-bg); color: var(--fg-primary); }
-/* flex:1 + min-height:0 — flex column 에서 body 만 스크롤하게 */
-.modal__body { flex: 1 1 auto; min-height: 0; padding: 22px; overflow-y: auto; }
-.modal__foot { padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border-subtle); background: var(--pd-surface-inset); flex-shrink: 0; }
-
-/* Sheet (mobile) — vaul 기반 Drawer (shared/ui/drawer.tsx) 로 대체됨.
-   .sheet, .sheet__*, .overlay, @keyframes sheetUp 모두 제거. */
-
-/* =============================================================================
- * Dialogs & Settings — ported from prototype dialogs.css / settings.css
- * ============================================================================= */
-
-.modal--sm { width: 420px; max-width: calc(100vw - 32px); }
-.modal--lg { width: 720px; max-width: calc(100vw - 32px); }
+/* Modal/Dialog 디자인은 shadcn Dialog (shared/ui/dialog.tsx) 로 이전됨.
+   .modal*, .modal-overlay, modalIn/modalOut/fadeIn/fadeOut 모두 제거.
+   호출자는 ModalShell (shared/ui/porest/dialogs.tsx) 또는 Dialog 컴포넌트를 직접 사용. */
 
 .dot-sep {
   width: 2px;
