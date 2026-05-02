@@ -13,11 +13,13 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { KRW } from '@/shared/lib/porest/format'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
   HideUnit,
   MaskAmount,
-  togglePdHideAmounts,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { renderIcon } from '@/shared/lib'
 
 function fmtAxisNum(v: number): string {
@@ -87,6 +89,15 @@ export function AssetDetailDialog({
 }) {
   const navigate = useNavigate()
   const hidden = useHideAmounts()
+  const [unlockOpen, setUnlockOpen] = useState(false)
+
+  const handleHideToggle = () => {
+    if (hidden) {
+      setUnlockOpen(true)
+    } else {
+      enablePdHideAmounts()
+    }
+  }
 
   const group = groupOf(asset)
   const isCard = group === 'card'
@@ -126,7 +137,7 @@ export function AssetDetailDialog({
       <Button
         variant="ghost"
         style={{ marginRight: 'auto' }}
-        onClick={togglePdHideAmounts}
+        onClick={handleHideToggle}
         type="button"
       >
         {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -142,6 +153,7 @@ export function AssetDetailDialog({
   )
 
   return (
+    <>
     <ModalShell title={title} onClose={onClose} size="lg" footer={Footer} mobile={mobile}>
       {/* Hero */}
       <div
@@ -353,5 +365,11 @@ export function AssetDetailDialog({
         </div>
       </div>
     </ModalShell>
+    <HideAmountsUnlockDialog
+      open={unlockOpen}
+      onOpenChange={setUnlockOpen}
+      onVerified={disablePdHideAmounts}
+    />
+    </>
   )
 }

@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
-import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
 import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 import { Separator } from '@/shared/ui/separator'
 import { Button } from '@/shared/ui/button'
@@ -42,6 +47,15 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   const { data: unreadCount = 0 } = useUnreadCount()
   const { title, sub } = titleFor(location.pathname)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [unlockOpen, setUnlockOpen] = useState(false)
+
+  const handleHideToggle = () => {
+    if (hidden) {
+      setUnlockOpen(true)
+    } else {
+      enablePdHideAmounts()
+    }
+  }
 
   return (
     <header className="top">
@@ -58,7 +72,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
       <div className="top__actions">
         <button
           className="top__icon-btn"
-          onClick={togglePdHideAmounts}
+          onClick={handleHideToggle}
           title={hidden ? '금액 표시' : '금액 가리기'}
         >
           {hidden ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -90,6 +104,11 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
           onGoSettings={() => navigate('/desk/settings')}
         />
       )}
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </header>
   )
 }

@@ -9,11 +9,13 @@ import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
   HideUnit,
   MaskAmount,
-  togglePdHideAmounts,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Button } from '@/shared/ui/button'
@@ -902,13 +904,18 @@ function SummaryCard({
 }) {
   const hidden = useHideAmounts()
   const isUp = changeAmount >= 0
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const handleHideToggle = () => {
+    if (hidden) setUnlockOpen(true)
+    else enablePdHideAmounts()
+  }
 
   return (
     <Card style={{ padding: mobile ? 18 : 28, marginBottom: mobile ? 16 : 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500 }}>총 순자산</span>
         <button
-          onClick={togglePdHideAmounts}
+          onClick={handleHideToggle}
           style={{
             background: 'transparent',
             border: 0,
@@ -1004,6 +1011,11 @@ function SummaryCard({
           </div>
         </div>
       </div>
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </Card>
   )
 }
@@ -1060,7 +1072,13 @@ function AssetDesktop() {
   const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
   const [editAsset, setEditAsset] = useState<Asset | null>(null)
+  const [unlockOpen, setUnlockOpen] = useState(false)
   const updateMut = useUpdateAsset()
+
+  const handleHideToggle = () => {
+    if (hidden) setUnlockOpen(true)
+    else enablePdHideAmounts()
+  }
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1076,7 +1094,7 @@ function AssetDesktop() {
           <div className="sub">모든 계좌·카드·투자를 한 곳에서</div>
         </div>
         <div className="right">
-          <Button variant="secondary" size="sm" onClick={togglePdHideAmounts}>
+          <Button variant="secondary" size="sm" onClick={handleHideToggle}>
             {hidden ? <EyeOff size={13} /> : <Eye size={13} />} {hidden ? '보이기' : '가리기'}
           </Button>
           <Button
@@ -1217,6 +1235,11 @@ function AssetDesktop() {
           isSubmitting={updateMut.isPending}
         />
       )}
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </div>
   )
 }

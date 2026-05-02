@@ -16,9 +16,25 @@ export function useHideAmounts(): boolean {
   return hidden
 }
 
+function setPdHideAmounts(next: boolean) {
+  window.__pdHideAmounts = next
+  window.dispatchEvent(new CustomEvent('pd-hide-amounts', { detail: next }))
+}
+
+export function enablePdHideAmounts() {
+  setPdHideAmounts(true)
+}
+
+export function disablePdHideAmounts() {
+  setPdHideAmounts(false)
+}
+
+/**
+ * 토글 (인증 우회). hide 켜기는 자유, 해제는 비밀번호 인증을 원하면
+ * UI 측에서 useHideAmountsUnlock hook 으로 분기 호출할 것.
+ */
 export function togglePdHideAmounts() {
-  window.__pdHideAmounts = !window.__pdHideAmounts
-  window.dispatchEvent(new CustomEvent('pd-hide-amounts', { detail: window.__pdHideAmounts }))
+  setPdHideAmounts(!window.__pdHideAmounts)
 }
 
 export function MaskAmount({

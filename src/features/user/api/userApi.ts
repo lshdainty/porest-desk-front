@@ -17,6 +17,11 @@ export const userApi = {
     if (!resp.success) throw new Error(resp.message)
   },
 
+  verifyPassword: async (password: string): Promise<void> => {
+    const resp: ApiResponse = await apiClient.post('/v1/users/me/verify-password', { password })
+    if (!resp.success) throw new Error(resp.message)
+  },
+
   getPreferences: async (): Promise<UserPreferences> => {
     const resp: ApiResponse<UserPreferences> = await apiClient.get('/v1/users/me/preferences')
     return resp.data

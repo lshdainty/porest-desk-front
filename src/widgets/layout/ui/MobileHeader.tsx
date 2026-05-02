@@ -12,7 +12,12 @@ import {
   DrawerTitle,
 } from '@/shared/ui/drawer'
 import { useTheme } from '@/shared/ui/theme-provider'
-import { useHideAmounts, togglePdHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import {
   useDeleteNotification,
   useMarkAllRead,
@@ -64,10 +69,19 @@ export function MobileHeader() {
   const location = useLocation()
   const isHome = location.pathname === '/desk'
   const [isNotifOpen, setIsNotifOpen] = useState(false)
+  const [unlockOpen, setUnlockOpen] = useState(false)
   const { data: unreadCount = 0 } = useUnreadCount()
   const { resolvedTheme, setTheme } = useTheme()
   const hidden = useHideAmounts()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+
+  const handleHideToggle = () => {
+    if (hidden) {
+      setUnlockOpen(true)
+    } else {
+      enablePdHideAmounts()
+    }
+  }
 
   return (
     <>
@@ -85,7 +99,7 @@ export function MobileHeader() {
           className="ico-btn"
           aria-label={hidden ? '금액 표시' : '금액 가리기'}
           title={hidden ? '금액 표시' : '금액 가리기'}
-          onClick={togglePdHideAmounts}
+          onClick={handleHideToggle}
         >
           {hidden ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
@@ -104,6 +118,11 @@ export function MobileHeader() {
           onOpenChange={setIsNotifOpen}
         />
       )}
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </>
   )
 }

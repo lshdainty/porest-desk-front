@@ -6,11 +6,13 @@ import {
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
   HideUnit,
   MaskAmount,
-  togglePdHideAmounts,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
@@ -182,6 +184,11 @@ function useCurrentMonthKey() {
 function HomeDesktop() {
   const navigate = useNavigate()
   const hidden = useHideAmounts()
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const handleHideToggle = () => {
+    if (hidden) setUnlockOpen(true)
+    else enablePdHideAmounts()
+  }
   const { key: initialKey } = useCurrentMonthKey()
   const [period, setPeriod] = useState(initialKey)
   const [periodY, periodM] = period.split('-').map(Number) as [number, number]
@@ -312,7 +319,7 @@ function HomeDesktop() {
           <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
             <Wallet size={14} /> 순자산 · {periodY}년 {periodM}월
             <button
-              onClick={togglePdHideAmounts}
+              onClick={handleHideToggle}
               title={hidden ? '금액 표시' : '금액 가리기'}
               style={{
                 marginLeft: 'auto',
@@ -661,6 +668,11 @@ function HomeDesktop() {
           </div>
         </Card>
       </div>
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </div>
   )
 }
@@ -668,6 +680,11 @@ function HomeDesktop() {
 function HomeMobile() {
   const navigate = useNavigate()
   const hidden = useHideAmounts()
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const handleHideToggle = () => {
+    if (hidden) setUnlockOpen(true)
+    else enablePdHideAmounts()
+  }
   const { year, month } = useCurrentMonthKey()
 
   const dashboardQ = useDashboardSummary()
@@ -704,7 +721,7 @@ function HomeMobile() {
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
           <Wallet size={13} /> 순자산
           <button
-            onClick={togglePdHideAmounts}
+            onClick={handleHideToggle}
             title={hidden ? '금액 표시' : '금액 가리기'}
             style={{
               marginLeft: 'auto',
@@ -827,6 +844,11 @@ function HomeMobile() {
           )}
         </div>
       </Card>
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={disablePdHideAmounts}
+      />
     </div>
   )
 }
