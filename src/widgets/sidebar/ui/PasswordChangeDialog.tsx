@@ -6,17 +6,11 @@ import { KeyRound, Lock, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { useIsMobile } from '@/shared/hooks'
 
 interface PasswordChangeDialogProps {
   open: boolean
@@ -39,6 +33,7 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
   const { t } = useTranslation('user')
   const { t: tc } = useTranslation('common')
   const changePasswordMutation = useChangePasswordMutation()
+  const isMobile = useIsMobile()
 
   const form = useForm<PasswordChangeFormValues>({
     resolver: zodResolver(createFormSchema(t)),
@@ -78,88 +73,95 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
     )
   }
 
+  if (!open) return null
+
+  const Footer = (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => onOpenChange(false)}
+        disabled={changePasswordMutation.isPending}
+      >
+        {tc('cancel')}
+      </Button>
+      <Button
+        type="button"
+        onClick={form.handleSubmit(onSubmit)}
+        loading={changePasswordMutation.isPending}
+      >
+        {tc('save')}
+      </Button>
+    </>
+  )
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('passwordChange')}</DialogTitle>
-          <DialogDescription>{t('passwordChangeDescription')}</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-1.5">
-              <Label htmlFor="currentPassword" className="flex items-center gap-1.5">
-                <Lock className="h-4 w-4 text-muted-foreground" />
-                {t('currentPassword')}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                placeholder={t('currentPasswordPlaceholder')}
-                {...form.register('currentPassword')}
-              />
-              {form.formState.errors.currentPassword && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.currentPassword.message}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="newPassword" className="flex items-center gap-1.5">
-                <KeyRound className="h-4 w-4 text-muted-foreground" />
-                {t('newPassword')}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="newPassword"
-                type="password"
-                placeholder={t('newPasswordPlaceholder')}
-                {...form.register('newPassword')}
-              />
-              {form.formState.errors.newPassword && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.newPassword.message}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="confirmPassword" className="flex items-center gap-1.5">
-                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                {t('confirmPassword')}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder={t('confirmPasswordPlaceholder')}
-                {...form.register('confirmPassword')}
-              />
-              {form.formState.errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+    <ModalShell
+      title={t('passwordChange')}
+      onClose={() => onOpenChange(false)}
+      mobile={isMobile}
+      size="sm"
+      footer={Footer}
+    >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <p className="text-sm text-muted-foreground mb-4">{t('passwordChangeDescription')}</p>
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="currentPassword" className="flex items-center gap-1.5">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              {t('currentPassword')}
+              <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              placeholder={t('currentPasswordPlaceholder')}
+              {...form.register('currentPassword')}
+            />
+            {form.formState.errors.currentPassword && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.currentPassword.message}
+              </p>
+            )}
           </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={changePasswordMutation.isPending}
-            >
-              {tc('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={changePasswordMutation.isPending}
-            >
-              {changePasswordMutation.isPending ? tc('loading') : tc('save')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <div className="grid gap-1.5">
+            <Label htmlFor="newPassword" className="flex items-center gap-1.5">
+              <KeyRound className="h-4 w-4 text-muted-foreground" />
+              {t('newPassword')}
+              <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="newPassword"
+              type="password"
+              placeholder={t('newPasswordPlaceholder')}
+              {...form.register('newPassword')}
+            />
+            {form.formState.errors.newPassword && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.newPassword.message}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="confirmPassword" className="flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+              {t('confirmPassword')}
+              <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder={t('confirmPasswordPlaceholder')}
+              {...form.register('confirmPassword')}
+            />
+            {form.formState.errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+        </div>
+      </form>
+    </ModalShell>
   )
 }

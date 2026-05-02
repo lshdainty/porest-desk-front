@@ -3,6 +3,7 @@ export type { ExpenseListParams, ExpenseSearchParams } from './api/expenseApi'
 export { expenseCategoryApi } from './api/expenseCategoryApi'
 export { expenseBudgetApi } from './api/expenseBudgetApi'
 export type { BudgetListParams } from './api/expenseBudgetApi'
+export { expenseTemplateApi } from './api/expenseTemplateApi'
 export {
   useExpenses,
   useCreateExpense,
@@ -10,9 +11,11 @@ export {
   useDeleteExpense,
   useDailySummary,
   useMonthlySummary,
+  useMonthlyTrend,
   useWeeklySummary,
   useYearlySummary,
   useMerchantSummary,
+  useExpenseHeatmap,
   useAssetExpenseSummary,
   useSearchExpenses,
   useExpensesByCalendarEvent,
@@ -23,9 +26,20 @@ export {
   useCreateExpenseCategory,
   useUpdateExpenseCategory,
   useDeleteExpenseCategory,
+  useReorderExpenseCategories,
 } from './model/useExpenseCategories'
 export {
   useExpenseBudgets,
   useCreateExpenseBudget,
+  useUpdateExpenseBudget,
   useDeleteExpenseBudget,
+  useBudgetCompliance,
 } from './model/useExpenseBudgets'
+export {
+  useExpenseTemplates,
+  useCreateExpenseTemplate,
+  useUpdateExpenseTemplate,
+  useDeleteExpenseTemplate,
+  useUseExpenseTemplate,
+  useTouchExpenseTemplate,
+} from './model/useExpenseTemplates'

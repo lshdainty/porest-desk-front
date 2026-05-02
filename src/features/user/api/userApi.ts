@@ -7,9 +7,28 @@ export interface ChangePasswordReq {
   confirmPassword: string
 }
 
+export interface UserPreferences {
+  budgetAlertThreshold: number
+}
+
 export const userApi = {
   changePassword: async (data: ChangePasswordReq): Promise<void> => {
     const resp: ApiResponse = await apiClient.patch('/v1/users/me/password', data)
     if (!resp.success) throw new Error(resp.message)
+  },
+
+  verifyPassword: async (password: string): Promise<void> => {
+    const resp: ApiResponse = await apiClient.post('/v1/users/me/verify-password', { password })
+    if (!resp.success) throw new Error(resp.message)
+  },
+
+  getPreferences: async (): Promise<UserPreferences> => {
+    const resp: ApiResponse<UserPreferences> = await apiClient.get('/v1/users/me/preferences')
+    return resp.data
+  },
+
+  updatePreferences: async (data: Partial<UserPreferences>): Promise<UserPreferences> => {
+    const resp: ApiResponse<UserPreferences> = await apiClient.patch('/v1/users/me/preferences', data)
+    return resp.data
   },
 }

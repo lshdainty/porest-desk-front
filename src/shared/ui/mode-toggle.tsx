@@ -1,34 +1,41 @@
-import { Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Button } from '@/shared/ui/button'
+import { Monitor, Moon, Sun } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
 import { useTheme } from '@/shared/ui/theme-provider'
 
+/**
+ * shadcn dark-mode 패턴 (https://ui.shadcn.com/docs/dark-mode/vite) 기반.
+ * TopBar 아이콘 버튼과 시각 통일을 위해 `.top__icon-btn` 클래스 사용.
+ * Light / Dark / System 3가지 옵션.
+ */
 export function ModeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
-  }
-
-  if (!mounted) {
-    return (
-      <Button variant="outline" size="icon">
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
-    )
-  }
+  const { theme, resolvedTheme, setTheme } = useTheme()
 
   return (
-    <Button variant="outline" size="icon" onClick={toggleTheme}>
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="top__icon-btn" aria-label="테마 전환" title="테마 전환">
+          {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme('light')} data-active={theme === 'light'}>
+          <Sun className="mr-2 h-4 w-4" />
+          라이트
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('dark')} data-active={theme === 'dark'}>
+          <Moon className="mr-2 h-4 w-4" />
+          다크
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('system')} data-active={theme === 'system'}>
+          <Monitor className="mr-2 h-4 w-4" />
+          시스템
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

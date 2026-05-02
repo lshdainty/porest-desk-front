@@ -213,7 +213,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPro
           <div className="relative z-20 flex border-b">
             <div className="w-18" />
             <div className="flex-1 border-l py-2 text-center text-xs font-medium">
-              <div style={{ color: isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined }}>
+              <div style={{ color: isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined }}>
                 {format(selectedDate, 'EE', { locale })}{' '}
                 <span className="font-semibold">{format(selectedDate, 'd')}</span>
               </div>

@@ -32,7 +32,7 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
     const summary = map.get(dayKey) ?? { income: 0, expense: 0 }
     const amount = parseExpenseAmount(event.title)
 
-    if (event.color === '#22c55e') {
+    if (event.color === '#5F6D3F') {
       summary.income += amount
     } else {
       summary.expense += amount
@@ -141,7 +141,7 @@ const MonthDayCell = ({
               isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
             )}
             style={{
-              color: isToday(date) ? undefined : (isHoliday || isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
+              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined),
             }}
           >
             {day}
@@ -151,10 +151,10 @@ const MonthDayCell = ({
           {hasExpense && (
             <div className={cn('hidden lg:flex items-center gap-1.5 text-[10px] font-medium min-w-0 truncate', !currentMonth && 'opacity-50')}>
               {expenseSummary.income > 0 && (
-                <span className="truncate" style={{ color: '#22c55e' }}>+{formatNumber(expenseSummary.income)}</span>
+                <span className="truncate" style={{ color: 'var(--mossy-700)' }}>+{formatNumber(expenseSummary.income)}</span>
               )}
               {expenseSummary.expense > 0 && (
-                <span className="truncate" style={{ color: '#ef4444' }}>-{formatNumber(expenseSummary.expense)}</span>
+                <span className="truncate" style={{ color: 'var(--berry-700)' }}>-{formatNumber(expenseSummary.expense)}</span>
               )}
             </div>
           )}
@@ -389,7 +389,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined }}
+                style={{ color: isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined }}
               >
                 {day}
               </span>

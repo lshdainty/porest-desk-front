@@ -1,5 +1,1 @@
-export type {
-  ExpenseTemplate,
-  ExpenseTemplateFormValues,
-  ExpenseTemplateUseValues,
-} from './model/types'
+export type { ExpenseTemplate, ExpenseTemplateFormValues } from './model/types'

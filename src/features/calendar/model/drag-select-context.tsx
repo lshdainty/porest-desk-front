@@ -5,15 +5,11 @@ import { CalendarDays, Wallet } from 'lucide-react'
 
 import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
-import { useCreateExpense, useExpenseCategories } from '@/features/expense'
-import { useAssets } from '@/features/asset'
+import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
-import { ExpenseForm } from '@/widgets/expense-full/ui/ExpenseForm'
+import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEventFormValues } from '@/entities/calendar'
-import type { ExpenseFormValues } from '@/entities/expense'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 
 type SelectionMode = 'choose' | 'event' | 'expense'
 
@@ -39,6 +35,7 @@ export const useDragSelect = () => {
 
 export const DragSelectProvider = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation('calendar')
+  const isMobile = useIsMobile()
   const [isDragSelecting, setIsDragSelecting] = useState(false)
   const [selectionStart, setSelectionStart] = useState<Date | null>(null)
   const [selectionEnd, setSelectionEnd] = useState<Date | null>(null)
@@ -49,12 +46,6 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
   // Event (schedule) dependencies
   const createEvent = useCreateEvent()
   const { data: labels = [] } = useEventLabels()
-
-  // Expense (transaction) dependencies
-  const createExpense = useCreateExpense()
-  const { data: categories = [] } = useExpenseCategories()
-  const { data: assetsData } = useAssets()
-  const assets = assetsData?.assets ?? []
 
   const startSelection = useCallback((date: Date) => {
     setIsDragSelecting(true)
@@ -118,15 +109,6 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
     })
   }, [createEvent])
 
-  const handleCreateExpense = useCallback((data: ExpenseFormValues) => {
-    createExpense.mutate(data, {
-      onSuccess: () => {
-        setSelectionMode(null)
-        setDialogDateRange(null)
-      },
-    })
-  }, [createExpense])
-
   const handleClose = useCallback(() => {
     setSelectionMode(null)
     setDialogDateRange(null)
@@ -156,39 +138,34 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
 
       {/* Quick Add Selection Menu */}
       {selectionMode === 'choose' && dialogDateRange && (
-        <Dialog open={true} onOpenChange={(open) => { if (!open) handleClose() }}>
-          <DialogContent className="sm:max-w-xs">
-            <DialogHeader>
-              <DialogTitle>{t('quickAdd.title')}</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-2">
-              <button
-                onClick={handleChooseEvent}
-                className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  <CalendarDays size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{t('quickAdd.addSchedule')}</div>
-                  <div className="text-xs text-muted-foreground">{t('quickAdd.scheduleDesc')}</div>
-                </div>
-              </button>
-              <button
-                onClick={handleChooseExpense}
-                className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                  <Wallet size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{t('quickAdd.addTransaction')}</div>
-                  <div className="text-xs text-muted-foreground">{t('quickAdd.transactionDesc')}</div>
-                </div>
-              </button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ModalShell title={t('quickAdd.title')} onClose={handleClose} mobile={isMobile} size="sm">
+          <div className="grid gap-2">
+            <button
+              onClick={handleChooseEvent}
+              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                <CalendarDays size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{t('quickAdd.addSchedule')}</div>
+                <div className="text-xs text-muted-foreground">{t('quickAdd.scheduleDesc')}</div>
+              </div>
+            </button>
+            <button
+              onClick={handleChooseExpense}
+              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                <Wallet size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{t('quickAdd.addTransaction')}</div>
+                <div className="text-xs text-muted-foreground">{t('quickAdd.transactionDesc')}</div>
+              </div>
+            </button>
+          </div>
+        </ModalShell>
       )}
 
       {/* Event Form Dialog */}
@@ -205,13 +182,10 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
 
       {/* Expense Form Dialog */}
       {selectionMode === 'expense' && dialogDateRange && (
-        <ExpenseForm
-          categories={categories}
-          assets={assets}
+        <AddTxSheet
+          mobile={isMobile}
           defaultDate={format(dialogDateRange.start, 'yyyy-MM-dd')}
-          onSubmit={handleCreateExpense}
           onClose={handleClose}
-          isLoading={createExpense.isPending}
         />
       )}
     </DragSelectContext.Provider>

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit3, Trash2, Plus, RotateCcw, Loader2 } from 'lucide-react'
+import { Edit3, Trash2, Plus, RotateCcw } from 'lucide-react'
 
 import {
   useCalendarHolidays,
@@ -22,13 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +48,7 @@ export const HolidayManagementDialog = ({
 }: HolidayManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const currentYear = new Date().getFullYear()
   const startDate = `${currentYear}-01-01`
@@ -127,25 +123,20 @@ export const HolidayManagementDialog = ({
     }
   }
 
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('holiday.manage')}</span>
+      <Button variant="outline" size="sm" className="gap-1.5 mr-2" onClick={openCreateForm}>
+        <Plus size={14} />
+        {t('holiday.add')}
+      </Button>
+    </div>
+  )
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>{t('holiday.manage')}</DialogTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                onClick={openCreateForm}
-              >
-                <Plus size={14} />
-                {t('holiday.add')}
-              </Button>
-            </div>
-          </DialogHeader>
-
+      {open && (
+        <ModalShell title={headerTitle} onClose={() => onOpenChange(false)} mobile={isMobile} size="sm">
           <div className="space-y-2">
             {allHolidays.map((holiday) => (
               <div
@@ -185,18 +176,31 @@ export const HolidayManagementDialog = ({
               <p className="py-4 text-center text-sm text-muted-foreground">-</p>
             )}
           </div>
-
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Add/Edit Form Dialog */}
-      <Dialog open={showForm} onOpenChange={(o) => { if (!o) setShowForm(false) }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? t('holiday.edit') : t('holiday.add')}
-            </DialogTitle>
-          </DialogHeader>
+      {showForm && (
+        <ModalShell
+          title={editing ? t('holiday.edit') : t('holiday.add')}
+          onClose={() => setShowForm(false)}
+          mobile={isMobile}
+          size="sm"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowForm(false)}>
+                {tc('cancel')}
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!formName.trim() || !formDate}
+                loading={createHoliday.isPending || updateHoliday.isPending}
+              >
+                {tc('save')}
+              </Button>
+            </>
+          }
+        >
           <div className="space-y-3">
             <div>
               <Label>{t('holiday.date')}</Label>
@@ -237,7 +241,7 @@ export const HolidayManagementDialog = ({
                 className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-primary transition-colors data-[state=checked]:bg-primary"
                 data-state={formRecurring ? 'checked' : 'unchecked'}
                 style={{
-                  backgroundColor: formRecurring ? 'hsl(var(--primary))' : 'transparent',
+                  backgroundColor: formRecurring ? 'var(--primary)' : 'transparent',
                 }}
               >
                 {formRecurring && (
@@ -251,20 +255,8 @@ export const HolidayManagementDialog = ({
               </Label>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!formName.trim() || !formDate || createHoliday.isPending || updateHoliday.isPending}
-            >
-              {(createHoliday.isPending || updateHoliday.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
@@ -282,9 +274,9 @@ export const HolidayManagementDialog = ({
             <AlertDialogCancel>{t('holiday.deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              loading={deleteHoliday.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteHoliday.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('holiday.deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

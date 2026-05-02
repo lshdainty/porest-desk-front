@@ -8,8 +8,11 @@ export type {
   ExpenseCategoryFormValues,
   ExpenseBudget,
   ExpenseBudgetFormValues,
+  YNType,
   DailySummary,
   MonthlySummary,
+  MonthlyTrend,
+  BudgetComplianceMonth,
   CategoryBreakdown,
   ParentCategoryBreakdown,
   WeeklySummary,
@@ -19,6 +22,7 @@ export type {
   AssetExpenseSummary,
   StatsPeriod,
   BudgetVsActualItem,
+  HeatmapCell,
 } from './model/types'
 
 export { buildCategoryTree, getSelectableCategories, aggregateByParent } from './lib/categoryUtils'

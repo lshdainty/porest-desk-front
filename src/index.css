@@ -3,11 +3,342 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =============================================================================
+ * POREST Design System — Foundation Tokens (Mossy Bark)
+ * "조용하고 따뜻한 방향 — 숲에서 자라는 나무 줄기같은"
+ * ========================================================================== */
+:root {
+  /* Mossy Bark (primary) */
+  --mossy-50:  oklch(0.972 0.014 110);
+  --mossy-100: oklch(0.942 0.024 110);
+  --mossy-200: oklch(0.880 0.038 110);
+  --mossy-300: oklch(0.790 0.052 110);
+  --mossy-400: oklch(0.660 0.060 110);
+  --mossy-500: oklch(0.520 0.060 110);
+  --mossy-600: oklch(0.455 0.058 110);
+  --mossy-700: oklch(0.385 0.050 110);
+  --mossy-800: oklch(0.310 0.042 110);
+  --mossy-900: oklch(0.235 0.032 110);
+  --mossy-950: oklch(0.165 0.024 110);
+
+  /* Bark (warm) */
+  --bark-50:  oklch(0.978 0.010 75);
+  --bark-100: oklch(0.948 0.020 72);
+  --bark-200: oklch(0.895 0.032 70);
+  --bark-300: oklch(0.820 0.042 68);
+  --bark-400: oklch(0.680 0.048 62);
+  --bark-500: oklch(0.540 0.048 55);
+  --bark-600: oklch(0.440 0.045 50);
+  --bark-700: oklch(0.355 0.038 45);
+  --bark-800: oklch(0.275 0.028 42);
+  --bark-900: oklch(0.200 0.020 40);
+
+  /* Mist (cool neutral) */
+  --mist-0:   #FFFFFF;
+  --mist-50:  oklch(0.988 0.003 170);
+  --mist-100: oklch(0.974 0.005 170);
+  --mist-200: oklch(0.945 0.007 170);
+  --mist-300: oklch(0.905 0.008 170);
+  --mist-400: oklch(0.830 0.010 175);
+  --mist-500: oklch(0.680 0.012 180);
+  --mist-600: oklch(0.530 0.012 185);
+  --mist-700: oklch(0.400 0.012 190);
+  --mist-800: oklch(0.280 0.012 195);
+  --mist-900: oklch(0.180 0.010 200);
+  --mist-950: oklch(0.115 0.008 200);
+
+  /* Status */
+  --sunlit-100: oklch(0.968 0.030 85);
+  --sunlit-300: oklch(0.875 0.080 85);
+  --sunlit-500: oklch(0.745 0.115 82);
+  --sunlit-700: oklch(0.560 0.105 78);
+  --berry-100:  oklch(0.955 0.025 25);
+  --berry-300:  oklch(0.820 0.075 25);
+  --berry-500:  oklch(0.605 0.135 25);
+  --berry-700:  oklch(0.470 0.115 24);
+  --sky-100:    oklch(0.965 0.020 230);
+  --sky-300:    oklch(0.870 0.055 230);
+  --sky-500:    oklch(0.680 0.090 230);
+  --sky-700:    oklch(0.520 0.085 232);
+  --sprout-100: oklch(0.960 0.030 135);
+  --sprout-300: oklch(0.870 0.070 130);
+  --sprout-500: oklch(0.735 0.105 128);
+  --sprout-700: oklch(0.540 0.095 125);
+
+  /* Semantic — light */
+  --bg-canvas:        var(--mist-100);
+  --bg-surface:       var(--mist-0);
+  --bg-surface-raised: var(--mist-0);
+  --bg-sunken:        var(--mist-200);
+  --bg-muted:         var(--mist-100);
+  --bg-section-warm:  var(--bark-100);
+  --bg-inverse:       var(--mossy-900);
+  --bg-brand:         var(--mossy-500);
+  --bg-brand-hover:   var(--mossy-600);
+  --bg-brand-press:   var(--mossy-700);
+  --bg-brand-subtle:  var(--mossy-50);
+  --bg-brand-muted:   var(--mossy-100);
+  --fg-primary:       var(--mist-950);
+  --fg-secondary:     var(--mist-700);
+  --fg-tertiary:      var(--mist-600);
+  --fg-disabled:      var(--mist-400);
+  --fg-placeholder:   var(--mist-500);
+  --fg-on-brand:      var(--mist-0);
+  --fg-on-warm:       var(--bark-900);
+  --fg-brand:         var(--mossy-700);
+  --fg-brand-strong:  var(--mossy-800);
+  --fg-link:          var(--mossy-700);
+  --fg-link-hover:    var(--mossy-800);
+  --border-subtle:    var(--mist-200);
+  --border-default:   var(--mist-300);
+  --border-strong:    var(--mist-400);
+  --border-focus:     var(--mossy-500);
+  --border-brand:     var(--mossy-500);
+  --border-warm:      var(--bark-300);
+  --status-success:         var(--mossy-600);
+  --status-success-subtle:  var(--mossy-50);
+  --status-success-fg:      var(--mossy-800);
+  --status-warning:         var(--sunlit-500);
+  --status-warning-subtle:  var(--sunlit-100);
+  --status-warning-fg:      var(--sunlit-700);
+  --status-danger:          var(--berry-500);
+  --status-danger-subtle:   var(--berry-100);
+  --status-danger-fg:       var(--berry-700);
+  --status-info:            var(--sky-500);
+  --status-info-subtle:     var(--sky-100);
+  --status-info-fg:         var(--sky-700);
+
+  /* Interaction tints — dark-mode aware. Components MUST use these,
+     never raw --mist-* / --mossy-* / --bark-* primitives, otherwise
+     hover states stay light when the theme flips. */
+  --bg-hover-subtle:      var(--mist-100);
+  --bg-hover-strong:      var(--mist-200);
+  --bg-row-hover:         var(--mist-50);
+  --bg-table-head:        var(--mist-100);
+  --bg-disabled:          var(--mist-100);
+  --bg-track:             var(--mist-300);
+
+  /* Brand-tinted interaction surfaces */
+  --bg-brand-tint:        var(--mossy-50);
+  --bg-brand-tint-strong: var(--mossy-100);
+  --border-brand-soft:    var(--mossy-200);
+  --border-brand-mid:     var(--mossy-300);
+
+  /* Warm (Bark) tinted surfaces */
+  --bg-warm-tint:         var(--bark-100);
+  --bg-warm-tint-strong:  var(--bark-200);
+  --bg-warm-press:        var(--bark-300);
+  --fg-on-warm-strong:    var(--bark-900);
+
+  /* Status interaction colors */
+  --status-success-border: var(--mossy-300);
+  --status-warning-border: var(--sunlit-500);
+  --status-danger-border:  var(--berry-500);
+  --status-danger-press:   var(--berry-700);
+  --status-info-border:    var(--sky-500);
+
+  /* On-color text for solid status fills */
+  --fg-on-danger:  #fff;
+  --fg-on-success: #fff;
+
+  /* Radii — prototype spec */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-0:  0;
+  --space-1:  4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5:  20px; --space-6: 24px; --space-7: 28px; --space-8: 32px;
+  --space-10: 40px; --space-12: 48px; --space-16: 64px; --space-20: 80px;
+
+  /* Shadow (tinted Mossy green-black) */
+  --shadow-xs: 0 1px 2px rgba(28, 36, 20, 0.05);
+  --shadow-sm: 0 1px 2px rgba(28, 36, 20, 0.06), 0 1px 3px rgba(28, 36, 20, 0.04);
+  --shadow-md: 0 4px 8px -2px rgba(28, 36, 20, 0.08), 0 2px 4px -2px rgba(28, 36, 20, 0.05);
+  --shadow-lg: 0 12px 24px -6px rgba(28, 36, 20, 0.12), 0 4px 8px -4px rgba(28, 36, 20, 0.06);
+  --shadow-xl: 0 24px 48px -12px rgba(28, 36, 20, 0.18);
+  --shadow-brand: 0 6px 16px -4px oklch(0.52 0.06 110 / 0.35);
+  --shadow-focus: 0 0 0 3px oklch(0.52 0.06 110 / 0.2);
+
+  /* Typography */
+  --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+               'Apple SD Gothic Neo', 'Noto Sans KR', 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', monospace;
+  --fs-display-xl: 56px; --fs-display-lg: 44px; --fs-display-md: 36px;
+  --fs-h1: 30px; --fs-h2: 24px; --fs-h3: 20px; --fs-h4: 17px;
+  --fs-body-lg: 16px; --fs-body: 14px; --fs-body-sm: 13px; --fs-caption: 12px; --fs-micro: 11px;
+  --lh-tight: 1.15; --lh-snug: 1.3; --lh-normal: 1.5; --lh-loose: 1.7;
+  --fw-regular: 400; --fw-medium: 500; --fw-semi: 600; --fw-bold: 700; --fw-heavy: 800;
+  --tracking-tight: -0.022em; --tracking-snug: -0.012em; --tracking-normal: 0; --tracking-wide: 0.04em;
+
+  /* Motion */
+  --dur-instant: 80ms; --dur-fast: 140ms; --dur-base: 200ms; --dur-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);
+  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-base: 1; --z-sticky: 100; --z-dropdown: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;
+
+  /* ====== shadcn variable mapping → Mossy semantic ====== */
+  --background:           var(--bg-canvas);
+  --foreground:           var(--fg-primary);
+  --card:                 var(--bg-surface);
+  --card-foreground:      var(--fg-primary);
+  --popover:              var(--bg-surface-raised);
+  --popover-foreground:   var(--fg-primary);
+  --primary:              var(--bg-brand);
+  --primary-foreground:   var(--fg-on-brand);
+  --secondary:            var(--mist-100);
+  --secondary-foreground: var(--fg-primary);
+  --muted:                var(--mist-100);
+  --muted-foreground:     var(--fg-tertiary);
+  --accent:               var(--mossy-50);
+  --accent-foreground:    var(--fg-brand-strong);
+  --destructive:          var(--status-danger);
+  --destructive-foreground: #fff;
+  --border:               var(--border-subtle);
+  --input:                var(--border-default);
+  --ring:                 var(--border-focus);
+  --chart-1: var(--mossy-500);
+  --chart-2: var(--berry-500);
+  --chart-3: var(--sky-500);
+  --chart-4: var(--sunlit-500);
+  --chart-5: var(--berry-500);
+  --sidebar:                var(--bg-surface);
+  --sidebar-foreground:     var(--fg-primary);
+  --sidebar-primary:        var(--mossy-500);
+  --sidebar-primary-foreground: var(--fg-on-brand);
+  --sidebar-accent:         var(--mossy-50);
+  --sidebar-accent-foreground: var(--fg-brand-strong);
+  --sidebar-border:         var(--border-subtle);
+  --sidebar-ring:           var(--border-focus);
+  --surface-hero:           var(--mossy-50);
+  --radius: var(--radius-lg);
+}
+
+/* Dark mode — Mossy Bark on near-black canvas */
+.dark, :root.dark, [data-theme='dark'] {
+  --bg-canvas:        var(--mossy-950);
+  --bg-surface:       oklch(0.205 0.022 110);
+  --bg-surface-raised: oklch(0.240 0.025 110);
+  --bg-sunken:        oklch(0.150 0.018 110);
+  --bg-muted:         oklch(0.210 0.020 110);
+  --bg-section-warm:  oklch(0.230 0.028 65);
+  --bg-inverse:       var(--mist-100);
+  --bg-brand:         var(--mossy-400);
+  --bg-brand-hover:   var(--mossy-300);
+  --bg-brand-press:   var(--mossy-200);
+  --bg-brand-subtle:  oklch(0.280 0.045 110 / 0.5);
+  --bg-brand-muted:   oklch(0.235 0.035 110);
+  --fg-primary:       var(--mist-100);
+  --fg-secondary:     var(--mist-400);
+  --fg-tertiary:      var(--mist-500);
+  --fg-disabled:      var(--mist-700);
+  --fg-placeholder:   var(--mist-600);
+  --fg-on-brand:      var(--mossy-950);
+  --fg-on-warm:       var(--bark-100);
+  --fg-brand:         var(--mossy-300);
+  --fg-brand-strong:  var(--mossy-200);
+  --fg-link:          var(--mossy-300);
+  --fg-link-hover:    var(--mossy-200);
+  --border-subtle:    oklch(1 0 0 / 0.07);
+  --border-default:   oklch(1 0 0 / 0.12);
+  --border-strong:    oklch(1 0 0 / 0.20);
+  --border-focus:     var(--mossy-400);
+  --border-brand:     var(--mossy-400);
+  --border-warm:      oklch(1 0 0 / 0.10);
+  --status-success:         var(--mossy-400);
+  --status-success-subtle:  oklch(0.280 0.045 110 / 0.4);
+  --status-success-fg:      var(--mossy-200);
+  --status-warning-subtle:  oklch(0.320 0.060 82 / 0.35);
+  --status-warning-fg:      var(--sunlit-300);
+  --status-danger-subtle:   oklch(0.300 0.055 25 / 0.35);
+  --status-danger-fg:       var(--berry-300);
+  --status-info-subtle:     oklch(0.290 0.050 230 / 0.35);
+  --status-info-fg:         var(--sky-300);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 10px rgba(0,0,0,0.45);
+  --shadow-lg: 0 16px 32px rgba(0,0,0,0.55);
+  --shadow-xl: 0 32px 64px rgba(0,0,0,0.65);
+  --shadow-brand: 0 6px 16px -4px oklch(0.66 0.06 110 / 0.5);
+  --shadow-focus: 0 0 0 3px oklch(0.66 0.06 110 / 0.35);
+
+  /* Interaction tints — dark variants */
+  --bg-hover-subtle:      oklch(1 0 0 / 0.04);
+  --bg-hover-strong:      oklch(1 0 0 / 0.08);
+  --bg-row-hover:         oklch(1 0 0 / 0.03);
+  --bg-table-head:        oklch(1 0 0 / 0.04);
+  --bg-disabled:          oklch(1 0 0 / 0.05);
+  --bg-track:             oklch(1 0 0 / 0.14);
+
+  --bg-brand-tint:        oklch(0.280 0.045 110 / 0.30);
+  --bg-brand-tint-strong: oklch(0.280 0.045 110 / 0.50);
+  --border-brand-soft:    oklch(0.45 0.05 110 / 0.4);
+  --border-brand-mid:     oklch(0.55 0.06 110 / 0.5);
+
+  --bg-warm-tint:         oklch(0.260 0.030 65 / 0.55);
+  --bg-warm-tint-strong:  oklch(0.300 0.035 60 / 0.65);
+  --bg-warm-press:        oklch(0.350 0.038 55 / 0.75);
+  --fg-on-warm-strong:    var(--bark-100);
+
+  --status-success-border: var(--mossy-400);
+  --status-warning-border: var(--sunlit-500);
+  --status-danger-border:  var(--berry-500);
+  --status-danger-press:   var(--berry-300);
+  --status-info-border:    var(--sky-500);
+
+  --fg-on-danger:  #fff;
+  --fg-on-success: var(--mossy-950);
+
+  --background:           var(--bg-canvas);
+  --foreground:           var(--fg-primary);
+  --card:                 var(--bg-surface);
+  --card-foreground:      var(--fg-primary);
+  --popover:              var(--bg-surface-raised);
+  --popover-foreground:   var(--fg-primary);
+  --primary:              var(--bg-brand);
+  --primary-foreground:   var(--fg-on-brand);
+  --secondary:            var(--bg-surface-raised);
+  --secondary-foreground: var(--fg-primary);
+  --muted:                var(--bg-muted);
+  --muted-foreground:     var(--fg-tertiary);
+  --accent:               var(--bg-brand-subtle);
+  --accent-foreground:    var(--fg-brand);
+  --destructive:          var(--status-danger);
+  --destructive-foreground: #fff;
+  --border:               var(--border-subtle);
+  --input:                var(--border-default);
+  --ring:                 var(--border-focus);
+  --chart-1: var(--mossy-400);
+  --chart-2: var(--berry-500);
+  --chart-3: var(--sky-500);
+  --chart-4: var(--sunlit-500);
+  --chart-5: var(--berry-500);
+  --sidebar:                var(--bg-surface);
+  --sidebar-foreground:     var(--fg-primary);
+  --sidebar-primary:        var(--mossy-400);
+  --sidebar-primary-foreground: var(--fg-on-brand);
+  --sidebar-accent:         var(--bg-brand-subtle);
+  --sidebar-accent-foreground: var(--fg-brand);
+  --sidebar-border:         var(--border-subtle);
+  --sidebar-ring:           var(--border-focus);
+  --surface-hero:           var(--bg-brand-subtle);
+}
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+               'Apple SD Gothic Neo', 'Noto Sans KR', 'Inter', 'Segoe UI', sans-serif;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,115 +371,107 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-accent-blue: oklch(0.63 0.19 250);
-  --color-accent-green: oklch(0.65 0.19 145);
-  --color-accent-red: oklch(0.63 0.22 25);
-  --color-accent-purple: oklch(0.58 0.19 290);
-  --color-accent-amber: oklch(0.75 0.15 75);
   --color-surface-hero: var(--surface-hero);
-}
 
-:root {
-  --background: oklch(1.0000 0 0);
-  --foreground: oklch(0.1451 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.1451 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.1451 0 0);
-  --primary: oklch(0.5500 0.1800 250);
-  --primary-foreground: oklch(0.9850 0 0);
-  --secondary: oklch(0.9700 0 0);
-  --secondary-foreground: oklch(0.2050 0 0);
-  --muted: oklch(0.9700 0 0);
-  --muted-foreground: oklch(0.5563 0 0);
-  --accent: oklch(0.9700 0 0);
-  --accent-foreground: oklch(0.2050 0 0);
-  --destructive: oklch(0.5772 0.2452 27.33);
-  --destructive-foreground: oklch(0.9850 0 0);
-  --border: oklch(0.9220 0 0);
-  --input: oklch(0.9220 0 0);
-  --ring: oklch(0.5500 0.1800 250);
-  --chart-1: oklch(0.5500 0.1800 250);
-  --chart-2: oklch(0.6500 0.1900 145);
-  --chart-3: oklch(0.6300 0.2200 25);
-  --chart-4: oklch(0.5800 0.1900 290);
-  --chart-5: oklch(0.7500 0.1500 75);
-  --sidebar: oklch(0.9850 0 0);
-  --sidebar-foreground: oklch(0.1451 0 0);
-  --sidebar-primary: oklch(0.5500 0.1800 250);
-  --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.9700 0 0);
-  --sidebar-accent-foreground: oklch(0.2050 0 0);
-  --sidebar-border: oklch(0.9220 0 0);
-  --sidebar-ring: oklch(0.5500 0.1800 250);
-  --surface-hero: oklch(0.9700 0.0250 250);
-
-  --radius: 0.875rem;
-}
-
-.dark {
-  --background: oklch(0.2178 0 0);
-  --foreground: oklch(0.9850 0 0);
-  --card: oklch(0.2178 0 0);
-  --card-foreground: oklch(0.9850 0 0);
-  --popover: oklch(0.2178 0 0);
-  --popover-foreground: oklch(0.9850 0 0);
-  --primary: oklch(0.7000 0.1500 250);
-  --primary-foreground: oklch(0.1500 0.0300 250);
-  --secondary: oklch(0.2690 0 0);
-  --secondary-foreground: oklch(0.9850 0 0);
-  --muted: oklch(0.2690 0 0);
-  --muted-foreground: oklch(0.7115 0 0);
-  --accent: oklch(0.2690 0 0);
-  --accent-foreground: oklch(0.9850 0 0);
-  --destructive: oklch(0.5772 0.2452 27.33);
-  --destructive-foreground: oklch(0.9850 0 0);
-  --border: oklch(0.2690 0 0);
-  --input: oklch(0.2690 0 0);
-  --ring: oklch(0.7000 0.1500 250);
-  --chart-1: oklch(0.7000 0.1500 250);
-  --chart-2: oklch(0.7500 0.1800 145);
-  --chart-3: oklch(0.7000 0.2000 25);
-  --chart-4: oklch(0.6800 0.1800 290);
-  --chart-5: oklch(0.8000 0.1400 75);
-  --sidebar: oklch(0.2178 0 0);
-  --sidebar-foreground: oklch(0.9850 0 0);
-  --sidebar-primary: oklch(0.7000 0.1500 250);
-  --sidebar-primary-foreground: oklch(0.1500 0.0300 250);
-  --sidebar-accent: oklch(0.2690 0 0);
-  --sidebar-accent-foreground: oklch(0.9850 0 0);
-  --sidebar-border: oklch(0.2690 0 0);
-  --sidebar-ring: oklch(0.7000 0.1500 250);
-  --surface-hero: oklch(0.2650 0.0300 250);
+  --color-mossy-50:  var(--mossy-50);
+  --color-mossy-100: var(--mossy-100);
+  --color-mossy-200: var(--mossy-200);
+  --color-mossy-300: var(--mossy-300);
+  --color-mossy-400: var(--mossy-400);
+  --color-mossy-500: var(--mossy-500);
+  --color-mossy-600: var(--mossy-600);
+  --color-mossy-700: var(--mossy-700);
+  --color-mossy-800: var(--mossy-800);
+  --color-mossy-900: var(--mossy-900);
+  --color-mossy-950: var(--mossy-950);
+  --color-bark-50:   var(--bark-50);
+  --color-bark-100:  var(--bark-100);
+  --color-bark-200:  var(--bark-200);
+  --color-bark-300:  var(--bark-300);
+  --color-bark-400:  var(--bark-400);
+  --color-bark-500:  var(--bark-500);
+  --color-bark-600:  var(--bark-600);
+  --color-bark-700:  var(--bark-700);
+  --color-bark-800:  var(--bark-800);
+  --color-bark-900:  var(--bark-900);
+  --color-mist-0:    var(--mist-0);
+  --color-mist-50:   var(--mist-50);
+  --color-mist-100:  var(--mist-100);
+  --color-mist-200:  var(--mist-200);
+  --color-mist-300:  var(--mist-300);
+  --color-mist-400:  var(--mist-400);
+  --color-mist-500:  var(--mist-500);
+  --color-mist-600:  var(--mist-600);
+  --color-mist-700:  var(--mist-700);
+  --color-mist-800:  var(--mist-800);
+  --color-mist-900:  var(--mist-900);
+  --color-mist-950:  var(--mist-950);
+  --color-berry-100: var(--berry-100);
+  --color-berry-300: var(--berry-300);
+  --color-berry-500: var(--berry-500);
+  --color-berry-700: var(--berry-700);
+  --color-sunlit-100: var(--sunlit-100);
+  --color-sunlit-300: var(--sunlit-300);
+  --color-sunlit-500: var(--sunlit-500);
+  --color-sunlit-700: var(--sunlit-700);
+  --color-sky-100:   var(--sky-100);
+  --color-sky-300:   var(--sky-300);
+  --color-sky-500:   var(--sky-500);
+  --color-sky-700:   var(--sky-700);
+  --color-sprout-100: var(--sprout-100);
+  --color-sprout-300: var(--sprout-300);
+  --color-sprout-500: var(--sprout-500);
+  --color-sprout-700: var(--sprout-700);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  * { @apply border-border outline-ring/50; box-sizing: border-box; }
+  html {
+    font-family: var(--font-sans);
+    color: var(--fg-primary);
+    background: var(--bg-canvas);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-sidebar text-foreground overflow-x-hidden;
+    @apply overflow-x-hidden;
+    font-size: var(--fs-body);
+    line-height: var(--lh-normal);
+    font-feature-settings: 'ss03', 'cv01';
+    background: var(--bg-canvas);
+    color: var(--fg-primary);
   }
+  h1, h2, h3, h4 { margin: 0; color: var(--fg-primary); }
+  h1, .h1 { font-size: var(--fs-h1); font-weight: var(--fw-bold); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); }
+  h2, .h2 { font-size: var(--fs-h2); font-weight: var(--fw-bold); line-height: var(--lh-snug);  letter-spacing: var(--tracking-snug); }
+  h3, .h3 { font-size: var(--fs-h3); font-weight: var(--fw-semi); line-height: var(--lh-snug); }
+  h4, .h4 { font-size: var(--fs-h4); font-weight: var(--fw-semi); line-height: var(--lh-snug); }
 
-  ::-webkit-scrollbar {
-    @apply w-1 h-1;
-  }
+  ::-webkit-scrollbar { @apply w-1.5 h-1.5; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-  ::-webkit-scrollbar-track {
-    @apply bg-muted;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-muted-foreground;
-  }
+  :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: var(--radius-xs); }
 }
 
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .display-xl { font-size: var(--fs-display-xl); font-weight: var(--fw-heavy); letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
+  .display-lg { font-size: var(--fs-display-lg); font-weight: var(--fw-heavy); letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
+  .display-md { font-size: var(--fs-display-md); font-weight: var(--fw-bold); letter-spacing: var(--tracking-snug); line-height: var(--lh-tight); }
+  .body-lg { font-size: var(--fs-body-lg); line-height: var(--lh-normal); }
+  .body-sm { font-size: var(--fs-body-sm); line-height: var(--lh-normal); color: var(--fg-secondary); }
+  .caption {
+    font-size: var(--fs-caption); line-height: var(--lh-snug); color: var(--fg-tertiary);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; font-weight: var(--fw-medium);
   }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .micro { font-size: var(--fs-micro); color: var(--fg-tertiary); }
+  .tabular { font-variant-numeric: tabular-nums; }
 }
+
+
+/* Note: 옛 shadcn 블루 사이드바 오버라이드 제거됨.
+   다크모드 사이드바 토큰은 위쪽 .dark 블록(--sidebar-primary: var(--mossy-400) 등)에서 처리. */

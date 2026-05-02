@@ -10,6 +10,13 @@ export const useGroups = () => {
   })
 }
 
+export const useSiblingGroupMembers = () => {
+  return useQuery({
+    queryKey: groupKeys.siblingMembers(),
+    queryFn: () => groupApi.getSiblingMembers(),
+  })
+}
+
 export const useGroup = (id: number) => {
   return useQuery({
     queryKey: groupKeys.detail(id),

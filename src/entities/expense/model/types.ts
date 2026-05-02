@@ -29,6 +29,7 @@ export interface Expense {
   expenseType: ExpenseType
   amount: number
   description: string | null
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss). 10자 "YYYY-MM-DD" 도 호환됨. */
   expenseDate: string
   merchant: string | null
   paymentMethod: string | null
@@ -46,6 +47,7 @@ export interface ExpenseFormValues {
   expenseType: ExpenseType
   amount: number
   description?: string
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss). 10자 "YYYY-MM-DD" 도 호환됨. */
   expenseDate: string
   merchant?: string
   paymentMethod?: string
@@ -66,11 +68,14 @@ export interface ExpenseCategoryFormValues {
 export interface ExpenseBudget {
   rowId: number
   categoryRowId: number | null
+  categoryName: string | null
   budgetAmount: number
   budgetYear: number
   budgetMonth: number
   createAt: string
 }
+
+export type YNType = 'Y' | 'N'
 
 export interface ExpenseBudgetFormValues {
   categoryRowId?: number | null
@@ -93,12 +98,28 @@ export interface MonthlySummary {
   categoryBreakdown: CategoryBreakdown[]
 }
 
+export interface MonthlyTrend {
+  year: number
+  month: number
+  totalIncome: number
+  totalExpense: number
+}
+
+export interface BudgetComplianceMonth {
+  year: number
+  month: number
+  totalLimit: number
+  totalSpent: number
+  compliancePercent: number
+}
+
 export interface CategoryBreakdown {
   categoryRowId: number
   categoryName: string
   totalAmount: number
   parentCategoryRowId: number | null
   parentCategoryName: string | null
+  expenseType: ExpenseType
 }
 
 export interface ParentCategoryBreakdown {
@@ -149,4 +170,12 @@ export interface AssetExpenseSummary {
   assetName: string
   totalAmount: number
   count: number
+}
+
+export interface HeatmapCell {
+  /** Java DayOfWeek 기준: 1=월 ~ 7=일 */
+  dayOfWeek: number
+  /** 0-23 */
+  hour: number
+  totalAmount: number
 }

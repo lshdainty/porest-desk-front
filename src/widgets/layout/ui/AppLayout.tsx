@@ -1,23 +1,40 @@
+import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/shared/ui/sidebar'
-import { AppSidebar } from '@/widgets/sidebar'
-import { CommandPalette } from '@/widgets/command-palette'
-import { LayoutHeader } from './LayoutHeader'
+import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
+import { PorestSidebar } from './PorestSidebar'
+import { PorestTopBar } from './PorestTopBar'
+import { MobileHeader } from './MobileHeader'
+import { MobileTabBar } from './MobileTabBar'
+import { useDeviceSize } from '@/shared/lib/porest/responsive'
+import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 
 export const AppLayout = () => {
+  const size = useDeviceSize()
+  const [addOpen, setAddOpen] = useState(false)
+
+  if (size === 'mobile') {
+    return (
+      <div className="m-app" data-screen-label="Mobile">
+        <MobileHeader />
+        <div className="m-scroll">
+          <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
+        </div>
+        <MobileTabBar onAdd={() => setAddOpen(true)} />
+        {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
+      </div>
+    )
+  }
+
   return (
-    <SidebarProvider className="h-dvh overflow-hidden">
-      <AppSidebar />
-      <SidebarInset className="overflow-hidden">
-        <LayoutHeader />
-        <div className="flex flex-1 flex-col min-h-0 overflow-x-hidden overflow-y-auto">
-          <Outlet />
+    <SidebarProvider className="h-svh">
+      <PorestSidebar />
+      <SidebarInset className="h-svh overflow-hidden">
+        <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+          <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
         </div>
       </SidebarInset>
-      <CommandPalette />
+      {addOpen && <AddTxSheet mobile={false} onClose={() => setAddOpen(false)} />}
     </SidebarProvider>
   )
 }

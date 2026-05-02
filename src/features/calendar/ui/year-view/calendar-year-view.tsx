@@ -51,7 +51,7 @@ const YearViewDayCell = ({
           isToday(date) && 'bg-primary font-semibold text-primary-foreground'
         )}
         style={{
-          color: isToday(date) ? undefined : (isHoliday || isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined),
+          color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined),
         }}
       >
         {day}
@@ -133,7 +133,7 @@ const YearViewMonth = ({
               <div
                 key={index}
                 className="text-xs font-medium"
-                style={{ color: isSunday ? '#ff6767' : isSaturday ? '#6767ff' : undefined }}
+                style={{ color: isSunday ? 'var(--berry-500)' : isSaturday ? 'var(--sky-500)' : undefined }}
               >
                 {day}
               </div>

@@ -54,21 +54,21 @@ export const memoKeys = {
   folders: () => [...memoKeys.all, 'folders'] as const,
 }
 
-export const calculatorKeys = {
-  all: ['calculator'] as const,
-  histories: () => [...calculatorKeys.all, 'histories'] as const,
-}
-
 export const expenseKeys = {
   all: ['expenses'] as const,
   list: <T = Record<string, unknown>>(filters?: T) => [...expenseKeys.all, 'list', filters] as const,
   categories: () => [...expenseKeys.all, 'categories'] as const,
   budgets: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'budgets', params] as const,
+  budgetCompliance: (months: number) => [...expenseKeys.all, 'budget-compliance', months] as const,
+  recurring: () => [...expenseKeys.all, 'recurring'] as const,
+  templates: () => [...expenseKeys.all, 'templates'] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
   monthlySummary: (year: number, month: number) => [...expenseKeys.all, 'monthly-summary', year, month] as const,
+  monthlyTrend: (months: number) => [...expenseKeys.all, 'monthly-trend', months] as const,
   weeklySummary: (weekStart: string, weekEnd: string) => [...expenseKeys.all, 'weekly-summary', weekStart, weekEnd] as const,
   yearlySummary: (year: number) => [...expenseKeys.all, 'yearly-summary', year] as const,
   merchantSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'merchant-summary', params] as const,
+  heatmap: (year: number, month: number) => [...expenseKeys.all, 'heatmap', year, month] as const,
   assetSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'asset-summary', params] as const,
   search: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'search', params] as const,
   byCalendarEvent: (eventId: number) => [...expenseKeys.all, 'by-calendar-event', eventId] as const,
@@ -79,18 +79,33 @@ export const assetKeys = {
   all: ['assets'] as const,
   list: () => [...assetKeys.all, 'list'] as const,
   detail: (id: number) => [...assetKeys.all, 'detail', id] as const,
-  summary: () => [...assetKeys.all, 'summary'] as const,
+  summary: (year?: number, month?: number) =>
+    [...assetKeys.all, 'summary', year ?? null, month ?? null] as const,
+  netWorthTrend: (months: number) => [...assetKeys.all, 'net-worth-trend', months] as const,
+  balanceTrend: (assetId: number, weeks: number) => [...assetKeys.all, 'balance-trend', assetId, weeks] as const,
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
 }
 
-export const expenseTemplateKeys = {
-  all: ['expense-templates'] as const,
-  list: () => [...expenseTemplateKeys.all, 'list'] as const,
+export const savingGoalKeys = {
+  all: ['saving-goals'] as const,
+  list: () => [...savingGoalKeys.all, 'list'] as const,
+  detail: (id: number) => [...savingGoalKeys.all, 'detail', id] as const,
+}
+
+export const cardKeys = {
+  all: ['cards'] as const,
+  catalogs: <T = Record<string, unknown>>(params?: T) => [...cardKeys.all, 'catalogs', params] as const,
+  catalogDetail: (id: number) => [...cardKeys.all, 'catalog', id] as const,
+  performance: (assetRowId: number, yearMonth: string) => [...cardKeys.all, 'performance', assetRowId, yearMonth] as const,
+  benefitMappings: () => [...cardKeys.all, 'benefit-mappings'] as const,
+  availableBenefits: (cardRowId: number, expenseCategoryRowId: number) =>
+    [...cardKeys.all, 'available-benefits', cardRowId, expenseCategoryRowId] as const,
 }
 
 export const recurringTransactionKeys = {
   all: ['recurring-transactions'] as const,
-  list: () => [...recurringTransactionKeys.all, 'list'] as const,
+  list: (params?: { upcoming?: boolean; limit?: number }) =>
+    [...recurringTransactionKeys.all, 'list', params ?? {}] as const,
 }
 
 export const notificationKeys = {
@@ -109,6 +124,12 @@ export const groupKeys = {
   all: ['groups'] as const,
   list: () => [...groupKeys.all, 'list'] as const,
   detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
+  siblingMembers: () => [...groupKeys.all, 'sibling-members'] as const,
+}
+
+export const expenseSplitKeys = {
+  all: ['expense-splits'] as const,
+  list: (expenseId: number) => [...expenseSplitKeys.all, 'list', expenseId] as const,
 }
 
 export const groupTypeKeys = {

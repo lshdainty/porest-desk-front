@@ -5,15 +5,18 @@ import type {
   ExpenseFormValues,
   DailySummary,
   MonthlySummary,
+  MonthlyTrend,
   WeeklySummary,
   YearlySummary,
   MerchantSummary,
   AssetExpenseSummary,
+  HeatmapCell,
 } from '@/entities/expense'
 
 export interface ExpenseListParams {
   expenseType?: string
   categoryId?: number
+  assetId?: number
   startDate?: string
   endDate?: string
 }
@@ -61,6 +64,11 @@ export const expenseApi = {
     return resp.data
   },
 
+  getMonthlyTrend: async (months = 6): Promise<MonthlyTrend[]> => {
+    const resp: ApiResponse<{ trends: MonthlyTrend[] }> = await apiClient.get('/v1/expenses/summary/trend', { params: { months } })
+    return resp.data.trends
+  },
+
   getWeeklySummary: async (weekStart: string, weekEnd: string): Promise<WeeklySummary> => {
     const resp: ApiResponse<WeeklySummary> = await apiClient.get('/v1/expenses/summary/weekly', { params: { weekStart, weekEnd } })
     return resp.data
@@ -79,6 +87,11 @@ export const expenseApi = {
   getAssetSummary: async (startDate?: string, endDate?: string): Promise<{ assets: AssetExpenseSummary[] }> => {
     const resp: ApiResponse<{ assets: AssetExpenseSummary[] }> = await apiClient.get('/v1/expenses/summary/by-asset', { params: { startDate, endDate } })
     return resp.data
+  },
+
+  getHeatmap: async (year: number, month: number): Promise<HeatmapCell[]> => {
+    const resp: ApiResponse<{ cells: HeatmapCell[] }> = await apiClient.get('/v1/expenses/summary/heatmap', { params: { year, month } })
+    return resp.data.cells
   },
 
   searchExpenses: async (params: ExpenseSearchParams): Promise<Expense[]> => {

@@ -5,9 +5,8 @@ import { cn, renderIcon } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -33,6 +32,7 @@ const COLOR_OPTIONS = [
 export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const { data: projects = [], isLoading } = useTodoProjects()
   const createProject = useCreateTodoProject()
@@ -86,25 +86,20 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
     })
   }
 
-  return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{t('projects')}</DialogTitle>
-            {!showForm && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openCreateForm}
-              >
-                <Plus size={14} className="mr-1" />
-                {t('addProject')}
-              </Button>
-            )}
-          </div>
-        </DialogHeader>
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('projects')}</span>
+      {!showForm && (
+        <Button variant="outline" size="sm" onClick={openCreateForm} className="mr-2">
+          <Plus size={14} className="mr-1" />
+          {t('addProject')}
+        </Button>
+      )}
+    </div>
+  )
 
+  return (
+    <ModalShell title={headerTitle} onClose={onClose} mobile={isMobile} size="sm">
         <div>
           {showForm ? (
             <div className="space-y-3">
@@ -164,9 +159,8 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                 <Button
                   className="flex-1"
                   onClick={handleSave}
-                  disabled={createProject.isPending || updateProject.isPending}
+                  loading={createProject.isPending || updateProject.isPending}
                 >
-                  {(createProject.isPending || updateProject.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>
@@ -238,16 +232,14 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
               <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
-                disabled={deleteProject.isPending}
+                loading={deleteProject.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteProject.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }

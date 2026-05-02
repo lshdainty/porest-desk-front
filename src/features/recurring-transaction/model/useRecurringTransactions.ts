@@ -3,11 +3,11 @@ import { recurringTransactionKeys } from '@/shared/config'
 import { recurringTransactionApi } from '../api/recurringTransactionApi'
 import type { RecurringTransactionFormValues } from '@/entities/recurring-transaction'
 
-export const useRecurringTransactions = () => {
+export const useRecurringTransactions = (params?: { upcoming?: boolean; limit?: number }) => {
   return useQuery({
-    queryKey: recurringTransactionKeys.list(),
+    queryKey: recurringTransactionKeys.list(params),
     queryFn: async () => {
-      const response = await recurringTransactionApi.getRecurrings()
+      const response = await recurringTransactionApi.getRecurrings(params)
       return response.recurringTransactions
     },
   })

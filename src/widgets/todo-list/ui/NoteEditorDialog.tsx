@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pin, Trash2, Check, Loader2 } from 'lucide-react'
+import { Pin, Trash2, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -9,9 +9,8 @@ import { RichTextEditor } from '@/shared/ui/rich-text-editor'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/shared/ui/select'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +41,7 @@ interface NoteEditorDialogProps {
 export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEditorDialogProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -101,40 +101,47 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
     )
   }
 
-  if (!todo) return null
+  if (!todo || !open) return null
+
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('type.NOTE')}</span>
+      <div className="flex items-center gap-1 mr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={handleTogglePin}
+          title={todo.isPinned ? t('note.unpin') : t('note.pin')}
+        >
+          <Pin size={16} className={cn(todo.isPinned && 'text-primary')} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:text-destructive"
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          <Trash2 size={16} />
+        </Button>
+      </div>
+    </div>
+  )
+
+  const Footer = (
+    <>
+      <Button variant="outline" onClick={onClose}>
+        {tc('cancel')}
+      </Button>
+      <Button onClick={handleSave} disabled={!title.trim()} loading={updateTodo.isPending}>
+        {tc('save')}
+      </Button>
+    </>
+  )
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>{t('type.NOTE')}</DialogTitle>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={handleTogglePin}
-                  title={todo.isPinned ? t('note.unpin') : t('note.pin')}
-                >
-                  <Pin
-                    size={16}
-                    className={cn(todo.isPinned && 'text-primary')}
-                  />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 size={16} />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
+      <ModalShell title={headerTitle} onClose={onClose} mobile={isMobile} size="lg" footer={Footer}>
           <div className="space-y-4">
             <Input
               value={title}
@@ -205,21 +212,7 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
               </div>
             )}
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose}>
-              {tc('cancel')}
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={updateTodo.isPending || !title.trim()}
-            >
-              {updateTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </ModalShell>
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
@@ -229,8 +222,7 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deleteTodo.isPending}>
-              {deleteTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <AlertDialogAction onClick={handleDelete} loading={deleteTodo.isPending}>
               {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Check, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
 import {
   useEventLabels,
@@ -28,6 +27,7 @@ const labelColorOptions = [
 export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const { data: labels = [] } = useEventLabels()
   const createLabel = useCreateEventLabel()
@@ -79,25 +79,22 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
     if (editingLabel?.rowId === id) resetForm()
   }
 
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{t('labels')}</DialogTitle>
-            {!isAdding && !editingLabel && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleStartAdd}
-              >
-                <Plus size={14} className="mr-1" />
-                {t('addLabel')}
-              </Button>
-            )}
-          </div>
-        </DialogHeader>
+  if (!open) return null
 
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('labels')}</span>
+      {!isAdding && !editingLabel && (
+        <Button variant="outline" size="sm" onClick={handleStartAdd} className="mr-2">
+          <Plus size={14} className="mr-1" />
+          {t('addLabel')}
+        </Button>
+      )}
+    </div>
+  )
+
+  return (
+    <ModalShell title={headerTitle} onClose={onClose} mobile={isMobile} size="sm">
         <div className="space-y-3">
           {/* Existing labels */}
           {labels.map(label => (
@@ -123,9 +120,9 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => handleDelete(label.rowId)}
-                disabled={deleteLabel.isPending}
+                loading={deleteLabel.isPending}
               >
-                <Trash2 size={14} />
+                {!deleteLabel.isPending && <Trash2 size={14} />}
               </Button>
             </div>
           ))}
@@ -170,10 +167,10 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                   className="flex-1"
                   size="sm"
                   onClick={handleSave}
-                  disabled={!formName.trim() || createLabel.isPending || updateLabel.isPending}
+                  disabled={!formName.trim()}
+                  loading={createLabel.isPending || updateLabel.isPending}
                 >
                   <Check size={12} className="mr-1" />
-                  {(createLabel.isPending || updateLabel.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>
@@ -181,7 +178,6 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
           )}
 
         </div>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }

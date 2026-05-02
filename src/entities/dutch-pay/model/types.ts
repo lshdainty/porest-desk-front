@@ -2,6 +2,7 @@ export type SplitMethod = 'EQUAL' | 'CUSTOM' | 'RATIO'
 
 export interface DutchPayParticipant {
   rowId: number
+  userRowId: number | null
   participantName: string
   amount: number
   isPaid: boolean
@@ -11,6 +12,7 @@ export interface DutchPayParticipant {
 export interface DutchPay {
   rowId: number
   userRowId: number
+  sourceExpenseRowId: number | null
   title: string
   description: string | null
   totalAmount: number
@@ -24,6 +26,7 @@ export interface DutchPay {
 }
 
 export interface DutchPayFormValues {
+  sourceExpenseRowId?: number
   title: string
   description?: string
   totalAmount: number
@@ -34,6 +37,7 @@ export interface DutchPayFormValues {
 }
 
 export interface ParticipantFormValues {
+  userRowId?: number | null
   participantName: string
   amount: number
 }

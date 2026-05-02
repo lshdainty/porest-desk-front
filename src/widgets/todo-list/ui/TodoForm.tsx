@@ -11,9 +11,8 @@ import { Textarea } from '@/shared/ui/textarea'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/shared/ui/select'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import type { TodoProject } from '@/entities/todo-project'
 import type { TodoTag } from '@/entities/todo-tag'
@@ -33,6 +32,7 @@ const priorityOptions: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
 export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, isLoading }: TodoFormProps) => {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 
@@ -113,19 +113,21 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
     })
   }
 
-  return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            {parentId
-              ? t('addSubtask')
-              : todo
-                ? t('editTodo')
-                : t('createTodo')}
-          </DialogTitle>
-        </DialogHeader>
+  const title = parentId ? t('addSubtask') : todo ? t('editTodo') : t('createTodo')
 
+  const Footer = (
+    <>
+      <Button type="button" variant="outline" onClick={onClose}>
+        {tc('cancel')}
+      </Button>
+      <Button type="button" onClick={handleSubmit(onFormSubmit)} loading={isLoading}>
+        {tc('save')}
+      </Button>
+    </>
+  )
+
+  return (
+    <ModalShell title={title} onClose={onClose} mobile={isMobile} size="sm" footer={Footer}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
@@ -246,16 +248,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
             </div>
           )}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              {tc('cancel')}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? tc('loading') : tc('save')}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }

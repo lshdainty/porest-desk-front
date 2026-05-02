@@ -3,18 +3,38 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
+// POREST Design System — .p-badge spec
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  [
+    "inline-flex items-center gap-1 rounded-full",
+    "px-2 py-0.5 text-xs font-semibold leading-[1.4] tracking-normal",
+    "transition-colors focus:outline-none focus-visible:shadow-[var(--shadow-focus)]",
+  ].join(" "),
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "bg-[var(--bg-sunken)] text-foreground",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-[var(--bg-sunken)] text-foreground",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
+        danger:
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
+        outline:
+          "bg-transparent text-[var(--fg-secondary)] shadow-[inset_0_0_0_1px_var(--border-default)]",
+        brand:
+          "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
+        solid:
+          "bg-[var(--mossy-600)] text-white",
+        success:
+          "bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]",
+        warning:
+          "bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]",
+        info:
+          "bg-[var(--status-info-subtle)] text-[var(--status-info-fg)]",
+        warm:
+          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)]",
       },
     },
     defaultVariants: {

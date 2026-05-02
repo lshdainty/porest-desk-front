@@ -46,6 +46,13 @@ export interface UserGroupDetail {
   createAt: string
 }
 
+export interface SiblingGroupMember {
+  userRowId: number
+  userName: string
+  userEmail: string
+  sharedGroupRowIds: number[]
+}
+
 export interface GroupFormValues {
   groupName: string
   description?: string

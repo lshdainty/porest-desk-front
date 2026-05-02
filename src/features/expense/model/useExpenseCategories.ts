@@ -43,3 +43,15 @@ export const useDeleteExpenseCategory = () => {
     },
   })
 }
+
+export const useReorderExpenseCategories = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (items: { categoryRowId: number; sortOrder: number; parentRowId: number | null }[]) =>
+      expenseCategoryApi.reorderCategories(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: expenseKeys.categories() })
+    },
+  })
+}

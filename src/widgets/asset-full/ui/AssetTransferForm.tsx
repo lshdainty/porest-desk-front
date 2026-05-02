@@ -12,13 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 
 interface AssetTransferFormProps {
   assets: Asset[]
@@ -30,6 +25,7 @@ interface AssetTransferFormProps {
 export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: AssetTransferFormProps) => {
   const { t } = useTranslation('asset')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const [fromAssetRowId, setFromAssetRowId] = useState<number>(assets[0]?.rowId ?? 0)
   const [toAssetRowId, setToAssetRowId] = useState<number>(assets[1]?.rowId ?? 0)
@@ -51,90 +47,92 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
     })
   }, [fromAssetRowId, toAssetRowId, amount, fee, description, transferDate, onSubmit])
 
+  const Footer = (
+    <>
+      <Button variant="outline" onClick={onClose} disabled={isLoading}>
+        {tc('cancel')}
+      </Button>
+      <Button onClick={handleSubmit} disabled={!amount || fromAssetRowId === toAssetRowId} loading={isLoading}>
+        {tc('save')}
+      </Button>
+    </>
+  )
+
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('addTransfer')}</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3">
-          <div>
-            <Label>{t('form.fromAsset')}</Label>
-            <Select value={String(fromAssetRowId)} onValueChange={(value) => setFromAssetRowId(Number(value))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {assets.map((asset) => (
-                  <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>{t('form.toAsset')}</Label>
-            <Select value={String(toAssetRowId)} onValueChange={(value) => setToAssetRowId(Number(value))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {assets.map((asset) => (
-                  <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>{t('form.amount')}</Label>
-            <Input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={t('form.amountPlaceholder')}
-            />
-          </div>
-
-          <div>
-            <Label>{t('form.fee')}</Label>
-            <Input
-              type="number"
-              value={fee}
-              onChange={(e) => setFee(e.target.value)}
-              placeholder="0"
-            />
-          </div>
-
-          <div>
-            <Label>{t('form.date')}</Label>
-            <InputDatePicker
-              value={transferDate}
-              onValueChange={(v) => setTransferDate(v)}
-            />
-          </div>
-
-          <div>
-            <Label>{t('form.description')}</Label>
-            <Input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('form.descriptionPlaceholder')}
-            />
-          </div>
+    <ModalShell
+      title={t('addTransfer')}
+      onClose={onClose}
+      mobile={isMobile}
+      size="sm"
+      footer={Footer}
+    >
+      <div className="space-y-3">
+        <div>
+          <Label>{t('form.fromAsset')}</Label>
+          <Select value={String(fromAssetRowId)} onValueChange={(value) => setFromAssetRowId(Number(value))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {assets.map((asset) => (
+                <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {tc('cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || !amount || fromAssetRowId === toAssetRowId}>
-            {isLoading ? tc('loading') : tc('save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <Label>{t('form.toAsset')}</Label>
+          <Select value={String(toAssetRowId)} onValueChange={(value) => setToAssetRowId(Number(value))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {assets.map((asset) => (
+                <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>{t('form.amount')}</Label>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={t('form.amountPlaceholder')}
+          />
+        </div>
+
+        <div>
+          <Label>{t('form.fee')}</Label>
+          <Input
+            type="number"
+            value={fee}
+            onChange={(e) => setFee(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
+        <div>
+          <Label>{t('form.date')}</Label>
+          <InputDatePicker
+            value={transferDate}
+            onValueChange={(v) => setTransferDate(v)}
+          />
+        </div>
+
+        <div>
+          <Label>{t('form.description')}</Label>
+          <Input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t('form.descriptionPlaceholder')}
+          />
+        </div>
+      </div>
+    </ModalShell>
   )
 }

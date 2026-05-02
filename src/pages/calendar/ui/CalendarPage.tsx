@@ -1,33 +1,23 @@
-import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { parseISO, isValid } from 'date-fns'
-import { CalendarProvider } from '@/features/calendar/model/calendar-context'
+import { useOutletContext } from 'react-router-dom'
 import { CalendarContent } from '@/features/calendar/ui/CalendarContent'
-import type { TCalendarView } from '@/features/calendar/model/types'
+import { CalendarProvider } from '@/features/calendar/model/calendar-context'
 
-const VALID_VIEWS: TCalendarView[] = ['day', 'week', 'month', 'year', 'agenda']
+type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 export const CalendarPage = () => {
-  const [searchParams] = useSearchParams()
-
-  const { initialDate, initialView } = useMemo(() => {
-    const dateParam = searchParams.get('date')
-    const viewParam = searchParams.get('view') as TCalendarView | null
-
-    let date: Date | undefined
-    if (dateParam) {
-      const parsed = parseISO(dateParam)
-      if (isValid(parsed)) date = parsed
-    }
-
-    const view = viewParam && VALID_VIEWS.includes(viewParam) ? viewParam : undefined
-
-    return { initialDate: date, initialView: view }
-  }, [searchParams])
+  const { mobile } = useOutletContext<OutletCtx>()
 
   return (
-    <div className="h-full">
-      <CalendarProvider events={[]} initialDate={initialDate} initialView={initialView}>
+    <div
+      style={{
+        height: mobile ? 'calc(100dvh - 132px)' : 'calc(100dvh - 56px)',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+      }}
+    >
+      <CalendarProvider events={[]} initialView={mobile ? 'agenda' : 'month'}>
         <CalendarContent />
       </CalendarProvider>
     </div>

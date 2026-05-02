@@ -9,7 +9,6 @@ import {
   User,
   Copy,
   RefreshCw,
-  Loader2,
   Trash2,
   Pencil,
   ChevronRight,
@@ -20,12 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +66,7 @@ const roleIcons: Record<GroupRole, typeof Crown> = {
 export const GroupFullWidget = () => {
   const { t } = useTranslation('group')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const { data: groups = [], isLoading } = useGroups()
   const createGroup = useCreateGroup()
@@ -241,11 +237,9 @@ export const GroupFullWidget = () => {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => handleRegenerateCode(groupDetail.rowId)}
-                disabled={regenerateInviteCode.isPending}
+                loading={regenerateInviteCode.isPending}
               >
-                {regenerateInviteCode.isPending
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <RefreshCw className="h-3.5 w-3.5" />}
+                {!regenerateInviteCode.isPending && <RefreshCw className="h-3.5 w-3.5" />}
               </Button>
             </div>
 
@@ -301,7 +295,7 @@ export const GroupFullWidget = () => {
                                   size="icon"
                                   className="h-7 w-7 text-destructive"
                                   onClick={() => handleRemoveMember(groupDetail.rowId, member.rowId)}
-                                  disabled={removeMember.isPending}
+                                  loading={removeMember.isPending}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -429,36 +423,27 @@ export const GroupFullWidget = () => {
       </div>
 
       {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('addGroup')}</DialogTitle>
-          </DialogHeader>
+      {showCreateDialog && (
+        <ModalShell title={t('addGroup')} onClose={() => setShowCreateDialog(false)} mobile={isMobile} size="sm">
           <GroupForm onSubmit={handleCreate} onCancel={() => setShowCreateDialog(false)} isSubmitting={createGroup.isPending} />
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingGroup} onOpenChange={() => setEditingGroup(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('editGroup')}</DialogTitle>
-          </DialogHeader>
+      {editingGroup && (
+        <ModalShell title={t('editGroup')} onClose={() => setEditingGroup(null)} mobile={isMobile} size="sm">
           <GroupForm
             initialData={editingGroup}
             onSubmit={handleUpdate}
             onCancel={() => setEditingGroup(null)}
             isSubmitting={updateGroup.isPending}
           />
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Join Dialog */}
-      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('joinGroup')}</DialogTitle>
-          </DialogHeader>
+      {showJoinDialog && (
+        <ModalShell title={t('joinGroup')} onClose={() => setShowJoinDialog(false)} mobile={isMobile} size="sm">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('inviteCode')}</Label>
@@ -472,14 +457,13 @@ export const GroupFullWidget = () => {
               <Button variant="outline" onClick={() => setShowJoinDialog(false)} disabled={joinGroup.isPending}>
                 {tc('cancel')}
               </Button>
-              <Button onClick={handleJoin} disabled={joinGroup.isPending}>
-                {joinGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button onClick={handleJoin} loading={joinGroup.isPending}>
                 {t('join')}
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </ModalShell>
+      )}
 
       {/* Delete Confirm Dialog */}
       <AlertDialog open={!!deleteTargetId} onOpenChange={() => setDeleteTargetId(null)}>
@@ -492,10 +476,9 @@ export const GroupFullWidget = () => {
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteGroup.isPending}
+              loading={deleteGroup.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

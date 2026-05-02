@@ -260,7 +260,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleConfirmDelete} loading={deleteEvent.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t('deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

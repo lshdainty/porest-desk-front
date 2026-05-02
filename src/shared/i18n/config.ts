@@ -8,7 +8,6 @@ import koLayout from '@/locales/ko/layout.json'
 import koTodo from '@/locales/ko/todo.json'
 import koCalendar from '@/locales/ko/calendar.json'
 import koMemo from '@/locales/ko/memo.json'
-import koCalculator from '@/locales/ko/calculator.json'
 import koTimer from '@/locales/ko/timer.json'
 import koExpense from '@/locales/ko/expense.json'
 import koAsset from '@/locales/ko/asset.json'
@@ -24,7 +23,6 @@ import enLayout from '@/locales/en/layout.json'
 import enTodo from '@/locales/en/todo.json'
 import enCalendar from '@/locales/en/calendar.json'
 import enMemo from '@/locales/en/memo.json'
-import enCalculator from '@/locales/en/calculator.json'
 import enTimer from '@/locales/en/timer.json'
 import enExpense from '@/locales/en/expense.json'
 import enAsset from '@/locales/en/asset.json'
@@ -41,7 +39,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 
 // 네임스페이스 목록
 export const NAMESPACES = [
-  'common', 'layout', 'todo', 'calendar', 'memo', 'calculator',
+  'common', 'layout', 'todo', 'calendar', 'memo',
   'timer', 'expense', 'asset', 'dashboard', 'dutchPay',
   'notification', 'group', 'login', 'user'
 ] as const
@@ -55,7 +53,6 @@ const resources = {
     todo: koTodo,
     calendar: koCalendar,
     memo: koMemo,
-    calculator: koCalculator,
     timer: koTimer,
     expense: koExpense,
     asset: koAsset,
@@ -72,7 +69,6 @@ const resources = {
     todo: enTodo,
     calendar: enCalendar,
     memo: enMemo,
-    calculator: enCalculator,
     timer: enTimer,
     expense: enExpense,
     asset: enAsset,

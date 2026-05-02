@@ -4,9 +4,8 @@ import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/shared/ui/dialog'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -32,6 +31,7 @@ const COLOR_OPTIONS = [
 export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManagementDialogProps) => {
   const { t } = useTranslation('group')
   const { t: tc } = useTranslation('common')
+  const isMobile = useIsMobile()
 
   const { data: groupTypes = [], isLoading } = useGroupTypes()
   const createGroupType = useCreateGroupType()
@@ -81,25 +81,22 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
     })
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{t('groupTypeManagement')}</DialogTitle>
-            {!showForm && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openCreateForm}
-              >
-                <Plus size={14} className="mr-1" />
-                {t('addGroupType')}
-              </Button>
-            )}
-          </div>
-        </DialogHeader>
+  if (!open) return null
 
+  const headerTitle = (
+    <div className="flex items-center justify-between flex-1">
+      <span>{t('groupTypeManagement')}</span>
+      {!showForm && (
+        <Button variant="outline" size="sm" onClick={openCreateForm} className="mr-2">
+          <Plus size={14} className="mr-1" />
+          {t('addGroupType')}
+        </Button>
+      )}
+    </div>
+  )
+
+  return (
+    <ModalShell title={headerTitle} onClose={() => onOpenChange(false)} mobile={isMobile} size="sm">
         <div>
           {showForm ? (
             <div className="space-y-3">
@@ -140,9 +137,8 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
                 <Button
                   className="flex-1"
                   onClick={handleSave}
-                  disabled={createGroupType.isPending || updateGroupType.isPending}
+                  loading={createGroupType.isPending || updateGroupType.isPending}
                 >
-                  {(createGroupType.isPending || updateGroupType.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>
@@ -210,16 +206,14 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
               <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
-                disabled={deleteGroupType.isPending}
+                loading={deleteGroupType.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteGroupType.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </DialogContent>
-    </Dialog>
+    </ModalShell>
   )
 }

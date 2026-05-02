@@ -2,7 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { assetKeys } from '@/shared/config'
 import { assetApi } from '../api/assetApi'
 import type { TransferListParams } from '../api/assetApi'
-import type { AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues, ReorderItem } from '@/entities/asset'
+import type {
+  AssetFormValues,
+  AssetUpdateFormValues,
+  AssetTransferFormValues,
+  ReorderItem,
+} from '@/entities/asset'
 
 export const useAssets = () => {
   return useQuery({
@@ -19,10 +24,30 @@ export const useAsset = (id: number) => {
   })
 }
 
-export const useAssetSummary = () => {
+export const useAssetSummary = (year?: number, month?: number) => {
   return useQuery({
-    queryKey: assetKeys.summary(),
-    queryFn: () => assetApi.getAssetSummary(),
+    queryKey: assetKeys.summary(year, month),
+    queryFn: () => assetApi.getAssetSummary(year, month),
+  })
+}
+
+export const useNetWorthTrend = (months = 12) => {
+  return useQuery({
+    queryKey: assetKeys.netWorthTrend(months),
+    queryFn: () => assetApi.getNetWorthTrend(months),
+    enabled: months > 0,
+  })
+}
+
+export const useAssetBalanceTrend = (assetId: number, weeks: number) => {
+  return useQuery({
+    queryKey: assetKeys.balanceTrend(assetId, weeks),
+    queryFn: () => assetApi.getAssetBalanceTrend(assetId, weeks),
+    enabled: assetId > 0 && weeks > 0,
+    // 자산 잔액 추이는 자주 바뀌지 않으므로 5분간 fresh.
+    // 탭(3개월/6개월/1년) 전환 시 이미 조회한 기간은 즉시 재사용.
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 }
 

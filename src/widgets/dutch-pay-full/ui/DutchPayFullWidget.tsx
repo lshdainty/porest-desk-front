@@ -273,7 +273,7 @@ export const DutchPayFullWidget = () => {
                           size="sm"
                           className="h-7 bg-green-600 text-xs hover:bg-green-700"
                           onClick={() => handleSettleAll(dp.rowId)}
-                          disabled={settleAll.isPending}
+                          loading={settleAll.isPending}
                         >
                           <CheckCheck size={12} />
                           {t('settleAll')}
@@ -341,8 +341,7 @@ export const DutchPayFullWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deleteDutchPay.isPending}>
-              {deleteDutchPay.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <AlertDialogAction onClick={handleDelete} loading={deleteDutchPay.isPending}>
               {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

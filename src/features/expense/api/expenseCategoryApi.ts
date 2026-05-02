@@ -22,4 +22,11 @@ export const expenseCategoryApi = {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/category/${id}`)
     return resp.data
   },
+
+  reorderCategories: async (
+    items: { categoryRowId: number; sortOrder: number; parentRowId: number | null }[],
+  ): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.patch('/v1/expense/categories/reorder', { items })
+    return resp.data
+  },
 }
