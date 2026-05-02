@@ -4,6 +4,7 @@ import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
 import { Icon } from './primitives'
+import { TX_ROW } from './tx-row-tokens'
 
 /**
  * expenseDate 표시 라벨:
@@ -61,27 +62,27 @@ export function ExpenseRow({
 }) {
   const isIncome = expense.expenseType === 'INCOME'
   return (
-    <div className="tx-row" onClick={() => onClick?.(expense)}>
+    <div className={TX_ROW.className} onClick={() => onClick?.(expense)}>
       <CategoryChip
         name={expense.categoryName ?? '기타'}
         color={expense.categoryColor ?? null}
         icon={expense.categoryIcon ?? null}
       />
-      <div className="tx-row__meta">
-        <div className="tx-row__title">
+      <div style={TX_ROW.metaStyle}>
+        <div style={TX_ROW.titleStyle}>
           {expense.merchant ?? expense.description ?? expense.categoryName ?? '거래'}
         </div>
-        <div className="tx-row__sub">
+        <div style={TX_ROW.subStyle}>
           <span>{expense.categoryName ?? '기타'}</span>
           {expense.assetName && (
             <>
-              <span className="sep" />
+              <span style={TX_ROW.sepStyle} />
               <span>{expense.assetName}</span>
             </>
           )}
           {expense.expenseDate && (
             <>
-              <span className="sep" />
+              <span style={TX_ROW.sepStyle} />
               <span>{formatExpenseDateLabel(expense.expenseDate)}</span>
             </>
           )}
@@ -89,7 +90,7 @@ export function ExpenseRow({
       </div>
       <div>
         {right ?? (
-          <div className={`tx-row__amt ${isIncome ? 'income' : ''}`}>
+          <div style={TX_ROW.amtStyle(isIncome)}>
             <MaskAmount>{isIncome ? '+' : '-'}{KRW(expense.amount, { abs: true })}</MaskAmount>
             <HideUnit>원</HideUnit>
           </div>

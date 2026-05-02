@@ -186,16 +186,43 @@ export function CategoryEditDialog({
       footer={Footer}
       mobile={mobile}
     >
-      <div className="cat-edit__preview">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: 14,
+          background: 'var(--pd-surface-subtle)',
+          borderRadius: 10,
+          marginBottom: 20,
+        }}
+      >
         <span
-          className="cat-edit__preview-chip"
-          style={{ background: palette.bg, color: palette.color }}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            background: palette.bg,
+            color: palette.color,
+          }}
         >
           <Icon name={icon} size={20} strokeWidth={1.9} />
         </span>
         <div>
-          <div className="cat-edit__preview-label">{labelTrim || '새 카테고리'}</div>
-          <div className="cat-edit__preview-sub">
+          <div
+            style={{
+              font: '700 15px/1.3 var(--font-sans)',
+              color: 'var(--fg-primary)',
+              letterSpacing: '-0.015em',
+            }}
+          >
+            {labelTrim || '새 카테고리'}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {kind === 'EXPENSE' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
           </div>
         </div>
@@ -237,7 +264,14 @@ export function CategoryEditDialog({
           </SelectContent>
         </Select>
         {parentDisabled && (
-          <div className="cat-edit__help" style={{ color: 'var(--fg-tertiary)', marginTop: 4 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: 'var(--fg-tertiary)',
+              marginTop: 4,
+              textAlign: 'right',
+            }}
+          >
             하위 카테고리가 있어 상위를 변경할 수 없어요.
           </div>
         )}
@@ -256,41 +290,94 @@ export function CategoryEditDialog({
           maxLength={14}
           autoFocus
         />
-        <div className="cat-edit__help">
-          {err ? <span className="err">{err}</span> : <span>{labelTrim.length}/12</span>}
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--fg-tertiary)',
+            marginTop: 4,
+            textAlign: 'right',
+          }}
+        >
+          {err ? (
+            <span style={{ color: 'var(--berry-700)' }}>{err}</span>
+          ) : (
+            <span>{labelTrim.length}/12</span>
+          )}
         </div>
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>색상</FieldLabel>
-        <div className="cat-edit__colors">
-          {CAT_PALETTE.map((p, i) => (
-            <button
-              type="button"
-              key={i}
-              className={`cat-edit__color ${paletteIdx === i ? 'active' : ''}`}
-              onClick={() => setPaletteIdx(i)}
-              style={{ background: p.bg, color: p.color }}
-              aria-label={`색상 ${i + 1}`}
-            >
-              {paletteIdx === i && <Check size={14} strokeWidth={2.6} />}
-            </button>
-          ))}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: 8,
+          }}
+        >
+          {CAT_PALETTE.map((p, i) => {
+            const active = paletteIdx === i
+            return (
+              <button
+                type="button"
+                key={i}
+                className="hover:scale-105"
+                onClick={() => setPaletteIdx(i)}
+                style={{
+                  aspectRatio: '1',
+                  border: '2px solid',
+                  borderColor: active ? 'currentColor' : 'transparent',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: p.bg,
+                  color: p.color,
+                  transition: 'transform var(--dur-fast)',
+                }}
+                aria-label={`색상 ${i + 1}`}
+              >
+                {active && <Check size={14} strokeWidth={2.6} />}
+              </button>
+            )
+          })}
         </div>
       </Field>
 
       <Field style={{ marginBottom: 4 }}>
         <FieldLabel>아이콘</FieldLabel>
-        <div className="cat-edit__icons">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(8, 1fr)',
+            gap: 6,
+            maxHeight: 180,
+            overflowY: 'auto',
+            padding: 2,
+          }}
+        >
           {ICON_CHOICES.map(ic => {
             const active = icon === ic
             return (
               <button
                 type="button"
                 key={ic}
-                className={`cat-edit__icon ${active ? 'active' : ''}`}
+                className="hover:bg-[var(--pd-hover-bg)] hover:text-[var(--fg-primary)]"
                 onClick={() => setIcon(ic)}
-                style={active ? { background: palette.bg, color: palette.color, borderColor: palette.color } : {}}
+                style={{
+                  aspectRatio: '1',
+                  border: active
+                    ? `1.5px solid ${palette.color}`
+                    : '1px solid var(--border-subtle)',
+                  borderRadius: 8,
+                  background: active ? palette.bg : 'var(--bg-surface)',
+                  color: active ? palette.color : 'var(--fg-secondary)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 aria-label={ic}
               >
                 <Icon name={ic} size={16} strokeWidth={1.9} />

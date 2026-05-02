@@ -640,12 +640,17 @@ export const BudgetPage = () => {
               <div key={b.rowId}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <span
-                    className="cat-row__icon"
                     style={{
-                      background: palette.bg,
-                      color: palette.color,
                       width: 36,
                       height: 36,
+                      borderRadius: 10,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      fontWeight: 700,
+                      background: palette.bg,
+                      color: palette.color,
                     }}
                   >
                     <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />

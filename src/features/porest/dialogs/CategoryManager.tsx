@@ -20,6 +20,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
+import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -140,34 +142,45 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
 
   return (
     <>
-      <div className="cat-mgr">
+      <ManagerShell>
         {!mobile && (
-          <div className="cat-mgr__head">
-            <div>
-              <h2 className="cat-mgr__title">카테고리 관리</h2>
-              <p className="cat-mgr__sub">
-                지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요.
-              </p>
-            </div>
-            <Button onClick={() => setEditing({ kind: 'new' })}>
-              <Plus size={14} strokeWidth={2.4} />
-              카테고리 추가
-            </Button>
-          </div>
+          <ManagerHead
+            title="카테고리 관리"
+            description="지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요."
+            actions={
+              <Button onClick={() => setEditing({ kind: 'new' })}>
+                <Plus size={14} strokeWidth={2.4} />
+                카테고리 추가
+              </Button>
+            }
+          />
         )}
 
-        <div className="cat-mgr__toolbar">
-          <div className="cat-mgr__tabs">
-            <button className={tab === 'EXPENSE' ? 'active' : ''} onClick={() => setTab('EXPENSE')}>
-              지출 <span className="cnt">{counts.expense}</span>
-            </button>
-            <button className={tab === 'INCOME' ? 'active' : ''} onClick={() => setTab('INCOME')}>
-              수입 <span className="cnt">{counts.income}</span>
-            </button>
-          </div>
-          <div className="cat-mgr__search">
-            <Search size={14} />
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="카테고리 검색" />
+        <div style={MANAGER_LAYOUT.toolbarStyle}>
+          <ManagerTabs<ExpenseType>
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'EXPENSE', label: '지출', count: counts.expense },
+              { value: 'INCOME', label: '수입', count: counts.income },
+            ]}
+          />
+          <div style={MANAGER_LAYOUT.searchWrapStyle}>
+            <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="카테고리 검색"
+              style={MANAGER_LAYOUT.searchInputStyle}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = 'var(--border-focus)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-focus)'
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                e.currentTarget.style.boxShadow = ''
+              }}
+            />
           </div>
         </div>
 
@@ -214,7 +227,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             <span>카테고리 추가</span>
           </button>
         )}
-      </div>
+      </ManagerShell>
 
       {editing && (
         <CategoryEditDialog
@@ -347,14 +360,21 @@ function SortableRow({
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="cat-row">
+    <div ref={setNodeRef} style={style} className={MANAGE_ROW.className}>
       <button
         type="button"
-        className="cat-row__drag"
         aria-label="드래그로 순서 변경"
         {...attributes}
         {...listeners}
-        style={{ cursor: 'grab', touchAction: 'none' }}
+        style={{
+          cursor: 'grab',
+          touchAction: 'none',
+          background: 'transparent',
+          border: 0,
+          color: 'var(--fg-tertiary)',
+          padding: 0,
+          display: 'inline-flex',
+        }}
       >
         <GripVertical size={16} />
       </button>
@@ -376,14 +396,13 @@ function SortableRow({
         </button>
       )}
       <span
-        className="cat-row__icon"
-        style={{ background: palette.bg, color: palette.color }}
+        style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
       >
         <Icon name={cat.icon ?? 'tag'} size={18} strokeWidth={1.9} />
       </span>
-      <div className="cat-row__text">
-        <div className="cat-row__label">{cat.categoryName}</div>
-        <div className="cat-row__meta">
+      <div style={MANAGE_ROW.textStyle}>
+        <div style={MANAGE_ROW.labelStyle}>{cat.categoryName}</div>
+        <div style={MANAGE_ROW.metaStyle}>
           {cat.expenseType === 'EXPENSE' ? '지출' : '수입'}
           {isParent && hasChildren && (
             <>
@@ -394,7 +413,7 @@ function SortableRow({
         </div>
       </div>
       {!mobile ? (
-        <div className="cat-row__actions">
+        <div className={MANAGE_ROW.actionsClassName}>
           {isParent && onAddChild && (
             <Button variant="ghost" size="sm" onClick={onAddChild} title="하위 추가">
               <Plus size={13} />
@@ -407,14 +426,14 @@ function SortableRow({
           <Button
             variant="ghost"
             size="sm"
-            className="cat-row__del"
+            className={MANAGE_ROW.delClassName}
             onClick={onDelete}
           >
             <Trash2 size={13} />
           </Button>
         </div>
       ) : (
-        <button className="cat-row__more" onClick={onEdit}>
+        <button style={MANAGE_ROW.moreStyle} onClick={onEdit}>
           <ChevronRight size={18} />
         </button>
       )}

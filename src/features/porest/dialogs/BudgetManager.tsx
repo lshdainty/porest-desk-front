@@ -13,6 +13,8 @@ import { KRW } from '@/shared/lib/porest/format'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
+import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
 import { Card } from '@/shared/ui/card'
@@ -178,40 +180,38 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
 
   return (
     <>
-      <div className="cat-mgr">
+      <ManagerShell>
         {!mobile && (
-          <div className="cat-mgr__head">
-            <div>
-              <h2 className="cat-mgr__title">예산 설정</h2>
-              <p className="cat-mgr__sub">
-                월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <MonthPicker value={monthKey} onChange={setMonthKey} />
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={() => setConfirmCopy(true)}
-                disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
-                title={
-                  (prevBudgetsQ.data?.length ?? 0) === 0
-                    ? '복사할 지난달 예산이 없어요'
-                    : '지난달 한도를 이번 달로 복사'
-                }
-              >
-                <Copy size={13} /> 지난달 복사
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setEditing('new')}
-                disabled={loading}
-              >
-                <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
-              </Button>
-            </div>
-          </div>
+          <ManagerHead
+            title="예산 설정"
+            description="월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요."
+            actions={
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <MonthPicker value={monthKey} onChange={setMonthKey} />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  onClick={() => setConfirmCopy(true)}
+                  disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
+                  title={
+                    (prevBudgetsQ.data?.length ?? 0) === 0
+                      ? '복사할 지난달 예산이 없어요'
+                      : '지난달 한도를 이번 달로 복사'
+                  }
+                >
+                  <Copy size={13} /> 지난달 복사
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setEditing('new')}
+                  disabled={loading}
+                >
+                  <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
+                </Button>
+              </div>
+            }
+          />
         )}
 
         {mobile && (
@@ -387,12 +387,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               return (
                 <div
                   key={b.rowId}
-                  className="cat-row"
+                  className={MANAGE_ROW.className}
                   style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}
                 >
                   <span
-                    className="cat-row__icon"
-                    style={{ background: palette.bg, color: palette.color }}
+                    style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
                   >
                     <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
                   </span>
@@ -428,7 +427,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                     </div>
                   </div>
                   {!mobile && (
-                    <div className="cat-row__actions">
+                    <div className={MANAGE_ROW.actionsClassName}>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -439,7 +438,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="cat-row__del"
+                        className={MANAGE_ROW.delClassName}
                         onClick={() => setConfirmDelete(b)}
                       >
                         <Trash2 size={13} />
@@ -462,7 +461,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             <span>카테고리 예산 추가</span>
           </button>
         )}
-      </div>
+      </ManagerShell>
 
       {editing && (
         <BudgetEditDialog

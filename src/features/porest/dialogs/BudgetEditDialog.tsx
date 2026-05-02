@@ -110,18 +110,45 @@ export function BudgetEditDialog({
       footer={Footer}
       mobile={mobile}
     >
-      <div className="cat-edit__preview">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: 14,
+          background: 'var(--pd-surface-subtle)',
+          borderRadius: 10,
+          marginBottom: 20,
+        }}
+      >
         <span
-          className="cat-edit__preview-chip"
-          style={{ background: palette.bg, color: palette.color }}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            background: palette.bg,
+            color: palette.color,
+          }}
         >
           <Icon name={selectedCat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
         </span>
         <div>
-          <div className="cat-edit__preview-label">
+          <div
+            style={{
+              font: '700 15px/1.3 var(--font-sans)',
+              color: 'var(--fg-primary)',
+              letterSpacing: '-0.015em',
+            }}
+          >
             {selectedCat?.categoryName ?? '카테고리 선택'}
           </div>
-          <div className="cat-edit__preview-sub">월 한도 {KRW(parseInt(limit) || 0)}원</div>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            월 한도 {KRW(parseInt(limit) || 0)}원
+          </div>
         </div>
       </div>
 
@@ -166,8 +193,17 @@ export function BudgetEditDialog({
                     }}
                   >
                     <span
-                      className="cat-ico cat-ico--sm"
-                      style={{ background: p.bg, color: p.color }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 10,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        background: p.bg,
+                        color: p.color,
+                      }}
                     >
                       <Icon name={c.icon ?? 'tag'} size={16} strokeWidth={1.9} />
                     </span>

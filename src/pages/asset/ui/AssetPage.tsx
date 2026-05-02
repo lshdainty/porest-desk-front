@@ -705,9 +705,111 @@ function AssetLogo({ asset }: { asset: Asset }) {
   const fg = brand?.fg ?? '#fff'
   const iconChar = asset.icon && asset.icon.trim().length > 0 ? asset.icon.trim().charAt(0) : null
   return (
-    <span className="acc-card__logo" style={{ background: bg, color: fg }}>
+    <span
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 14,
+        fontWeight: 800,
+        letterSpacing: '-0.02em',
+        flexShrink: 0,
+        background: bg,
+        color: fg,
+      }}
+    >
       {iconChar ?? label}
     </span>
+  )
+}
+
+// AssetCard: 기존 .acc-card / __meta / __name / __num / __amt CSS spec 보존.
+// hover: border-color, translate, shadow 효과는 Tailwind hover + arbitrary value 로 매핑.
+function AssetCard({
+  asset,
+  negativeAmount = false,
+  onOpenDetail,
+}: {
+  asset: Asset
+  negativeAmount?: boolean
+  onOpenDetail: (asset: Asset) => void
+}) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      className={[
+        'flex items-center gap-[14px] cursor-pointer',
+        'border border-solid',
+        'transition-all duration-[var(--dur-fast)]',
+        'hover:-translate-y-px hover:shadow-[var(--shadow-sm)]',
+        'hover:border-[var(--border-default)]',
+      ].join(' ')}
+      style={{
+        background: 'var(--bg-surface)',
+        borderColor: 'var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '16px 18px',
+      }}
+      onClick={() => onOpenDetail(asset)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpenDetail(asset)
+        }
+      }}
+    >
+      <AssetLogo asset={asset} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-primary)' }}>
+          {asset.assetName}
+          {asset.institution && (
+            <span
+              style={{
+                fontWeight: 500,
+                color: 'var(--fg-tertiary)',
+                fontSize: 12,
+                marginLeft: 6,
+              }}
+            >
+              {asset.institution}
+            </span>
+          )}
+        </div>
+        {asset.memo && (
+          <div
+            style={{
+              fontSize: 11.5,
+              color: 'var(--fg-tertiary)',
+              marginTop: 1,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {asset.memo}
+          </div>
+        )}
+      </div>
+      <div
+        className="num"
+        style={{
+          fontSize: 16,
+          fontWeight: 700,
+          fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.02em',
+          flexShrink: 0,
+        }}
+      >
+        <MaskAmount>
+          {negativeAmount
+            ? `−${KRW(Math.abs(asset.balance))}`
+            : KRW(asset.balance)}
+        </MaskAmount>
+        <HideUnit>원</HideUnit>
+      </div>
+    </div>
   )
 }
 
@@ -766,48 +868,12 @@ function TypeGroup({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {assets.map(a => (
-            <div
+            <AssetCard
               key={a.rowId}
-              role="button"
-              tabIndex={0}
-              className="acc-card"
-              style={{ cursor: 'pointer' }}
-              onClick={() => onOpenDetail(a)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onOpenDetail(a)
-                }
-              }}
-            >
-              <AssetLogo asset={a} />
-              <div className="acc-card__meta">
-                <div className="acc-card__name">
-                  {a.assetName}
-                  {a.institution && (
-                    <span
-                      style={{
-                        fontWeight: 500,
-                        color: 'var(--fg-tertiary)',
-                        fontSize: 12,
-                        marginLeft: 6,
-                      }}
-                    >
-                      {a.institution}
-                    </span>
-                  )}
-                </div>
-                {a.memo && <div className="acc-card__num">{a.memo}</div>}
-              </div>
-              <div className="num acc-card__amt">
-                <MaskAmount>
-                  {negativeTotal
-                    ? `−${KRW(Math.abs(a.balance))}`
-                    : KRW(a.balance)}
-                </MaskAmount>
-                <HideUnit>원</HideUnit>
-              </div>
-            </div>
+              asset={a}
+              negativeAmount={negativeTotal}
+              onOpenDetail={onOpenDetail}
+            />
           ))}
         </div>
       )}

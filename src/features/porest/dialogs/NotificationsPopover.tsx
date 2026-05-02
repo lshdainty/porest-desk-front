@@ -61,23 +61,71 @@ export function NotificationsPopover({
   return (
     <>
       <div className="notif-backdrop" onClick={onClose} />
-      <div className="notif-pop" role="dialog" aria-label="알림">
-        <div className="notif-pop__head">
+      <div
+        role="dialog"
+        aria-label="알림"
+        style={{
+          position: 'fixed',
+          top: 58,
+          right: 20,
+          width: 380,
+          maxWidth: 'calc(100vw - 32px)',
+          maxHeight: 'min(640px, calc(100vh - 80px))',
+          zIndex: 90,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 16,
+          boxShadow: '0 18px 50px -12px rgba(20, 28, 22, 0.24), 0 4px 14px -2px rgba(20, 28, 22, 0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '16px 18px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            borderBottom: '1px solid var(--border-subtle)',
+          }}
+        >
           <div>
-            <div className="notif-pop__title">알림</div>
+            <div
+              style={{
+                font: '700 15px/1.3 var(--font-sans)',
+                letterSpacing: '-0.015em',
+                color: 'var(--fg-primary)',
+              }}
+            >
+              알림
+            </div>
             {unreadCount > 0 ? (
-              <div className="notif-pop__sub">
-                읽지 않은 알림 <b>{unreadCount}</b>개
+              <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                읽지 않은 알림 <b style={{ color: 'var(--fg-brand-strong)' }}>{unreadCount}</b>개
               </div>
             ) : (
               !isLoading && items.length === 0 && (
-                <div className="notif-pop__sub">새 알림이 없어요</div>
+                <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                  새 알림이 없어요
+                </div>
               )
             )}
           </div>
           {unreadCount > 0 && (
             <button
-              className="notif-pop__read-all"
+              className="hover:bg-[var(--bg-brand-subtle)]"
+              style={{
+                marginLeft: 'auto',
+                border: 0,
+                background: 'transparent',
+                color: 'var(--fg-brand-strong)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: 6,
+              }}
               onClick={() => markAllRead.mutate()}
               disabled={markAllRead.isPending}
             >
@@ -85,7 +133,7 @@ export function NotificationsPopover({
             </button>
           )}
         </div>
-        <div className="notif-pop__body">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
           {isLoading && (
             <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
               불러오는 중…
@@ -121,9 +169,30 @@ export function NotificationsPopover({
             )
           })}
         </div>
-        <div className="notif-pop__foot">
+        <div
+          style={{
+            padding: '10px 14px',
+            borderTop: '1px solid var(--border-subtle)',
+            background: 'var(--pd-surface-inset)',
+          }}
+        >
           <button
-            className="notif-pop__all"
+            className="hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
+            style={{
+              width: '100%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              border: 0,
+              background: 'transparent',
+              color: 'var(--fg-secondary)',
+              fontSize: 12.5,
+              fontWeight: 600,
+              padding: 8,
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
             onClick={() => {
               onClose()
               onGoSettings?.()

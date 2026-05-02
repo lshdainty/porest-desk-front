@@ -4,6 +4,7 @@ import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/li
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
+import { TX_ROW } from './tx-row-tokens'
 
 type LucideIconName = keyof typeof LucideIcons
 
@@ -36,40 +37,77 @@ export function Icon({
   return <Comp size={size} strokeWidth={strokeWidth} className={className} style={{ flexShrink: 0, ...style }} />
 }
 
+// CatIcon: data-cat 매트릭스를 컴포넌트 안 룩업으로 이전.
+// 기존 .cat-ico[data-cat="..."] CSS 색상 spec 그대로 보존.
+const CAT_ICO_PALETTE: Record<string, { bg: string; color: string }> = {
+  food:      { bg: 'oklch(0.96 0.03 70)',   color: 'oklch(0.48 0.12 55)' },
+  transport: { bg: 'oklch(0.96 0.02 230)',  color: 'oklch(0.48 0.1 230)' },
+  shopping:  { bg: 'oklch(0.96 0.035 340)', color: 'oklch(0.48 0.12 340)' },
+  cafe:      { bg: 'oklch(0.96 0.03 60)',   color: 'oklch(0.44 0.08 50)' },
+  income:    { bg: 'var(--mossy-100)',      color: 'var(--mossy-800)' },
+  living:    { bg: 'oklch(0.96 0.025 135)', color: 'oklch(0.48 0.1 140)' },
+  medical:   { bg: 'oklch(0.96 0.03 25)',   color: 'oklch(0.52 0.13 25)' },
+  leisure:   { bg: 'oklch(0.96 0.035 290)', color: 'oklch(0.48 0.12 290)' },
+  bill:      { bg: 'var(--mist-200)',       color: 'var(--mist-700)' },
+  edu:       { bg: 'oklch(0.96 0.03 210)',  color: 'oklch(0.5 0.1 215)' },
+  saving:    { bg: 'var(--bark-100)',       color: 'var(--bark-700)' },
+}
+
+const CAT_ICO_DIMS = {
+  sm: { w: 32, r: 10, icon: 16 },
+  md: { w: 40, r: 12, icon: 18 },
+  lg: { w: 48, r: 14, icon: 22 },
+} as const
+
 export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 'md' | 'lg' }) {
   const def = CATEGORIES[cat]
   if (!def) return null
-  const sizeCls = size === 'sm' ? 'cat-ico--sm' : size === 'lg' ? 'cat-ico--lg' : ''
-  const iconSize = size === 'sm' ? 16 : size === 'lg' ? 22 : 18
+  const dim = CAT_ICO_DIMS[size]
+  const palette = CAT_ICO_PALETTE[cat] ?? { bg: 'var(--bg-surface)', color: 'var(--fg-secondary)' }
   return (
-    <span className={`cat-ico ${sizeCls}`} data-cat={cat}>
-      <Icon name={def.icon} size={iconSize} strokeWidth={1.9} />
+    <span
+      data-cat={cat}
+      style={{
+        width: dim.w,
+        height: dim.w,
+        borderRadius: dim.r,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        background: palette.bg,
+        color: palette.color,
+      }}
+    >
+      <Icon name={def.icon} size={dim.icon} strokeWidth={1.9} />
     </span>
   )
 }
 
+// tx-row CSS spec: tx-row-tokens.ts (TX_ROW) 토큰 재사용.
+// (별도 파일로 분리한 것은 react-refresh/only-export-components 를 만족하기 위함.)
 export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
   const c = CATEGORIES[tx.cat]
   const isIncome = tx.amt > 0
   return (
-    <div className="tx-row" onClick={() => onClick?.(tx)}>
+    <div className={TX_ROW.className} onClick={() => onClick?.(tx)}>
       <CatIcon cat={tx.cat} />
-      <div className="tx-row__meta">
-        <div className="tx-row__title">{tx.title}</div>
-        <div className="tx-row__sub">
+      <div style={TX_ROW.metaStyle}>
+        <div style={TX_ROW.titleStyle}>{tx.title}</div>
+        <div style={TX_ROW.subStyle}>
           <span>{c?.label}</span>
-          <span className="sep" />
+          <span style={TX_ROW.sepStyle} />
           <span>{tx.account}</span>
           {tx.time && (
             <>
-              <span className="sep" />
+              <span style={TX_ROW.sepStyle} />
               <span>{tx.time}</span>
             </>
           )}
         </div>
       </div>
       <div>
-        <div className={`tx-row__amt ${isIncome ? 'income' : ''}`}>
+        <div style={TX_ROW.amtStyle(isIncome)}>
           <MaskAmount>{isIncome ? '+' : '-'}{KRW(tx.amt, { abs: true })}</MaskAmount>
           <HideUnit>원</HideUnit>
         </div>
@@ -131,8 +169,20 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
   const letter = acc.bank[0]
   return (
     <span
-      className="acc-card__logo"
-      style={{ background: acc.color, width: size, height: size, fontSize: size * 0.35 }}
+      style={{
+        background: acc.color,
+        width: size,
+        height: size,
+        fontSize: size * 0.35,
+        borderRadius: 10,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 800,
+        letterSpacing: '-0.02em',
+        color: '#fff',
+        flexShrink: 0,
+      }}
     >
       {letter}
     </span>

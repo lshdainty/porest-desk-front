@@ -1,5 +1,6 @@
 import { useUpdateUserPreferences, useUserPreferences } from '@/features/user'
 import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const preferencesQ = useUserPreferences()
@@ -8,16 +9,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
 
   return (
-    <div className="cat-mgr">
+    <ManagerShell>
       {!mobile && (
-        <div className="cat-mgr__head">
-          <div>
-            <h2 className="cat-mgr__title">알림 설정</h2>
-            <p className="cat-mgr__sub">
-              예산 초과·결제 예정 등 이벤트 알림 임계와 동작을 설정합니다.
-            </p>
-          </div>
-        </div>
+        <ManagerHead
+          title="알림 설정"
+          description="예산 초과·결제 예정 등 이벤트 알림 임계와 동작을 설정합니다."
+        />
       )}
 
       <Card style={{ padding: 22 }}>
@@ -81,6 +78,6 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           </div>
         )}
       </Card>
-    </div>
+    </ManagerShell>
   )
 }

@@ -11,6 +11,8 @@ import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
+import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { AssetEditDialog, type AssetGroup } from './AssetEditDialog'
 
@@ -88,36 +90,30 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
   return (
     <>
-      <div className="cat-mgr">
+      <ManagerShell>
         {!mobile && (
-          <div className="cat-mgr__head">
-            <div>
-              <h2 className="cat-mgr__title">계좌·카드 관리</h2>
-              <p className="cat-mgr__sub">
-                연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요.
-              </p>
-            </div>
-            <Button
-              onClick={() => setEditing({ mode: 'create', group: tab })}
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              {groupLabel(tab)} 추가
-            </Button>
-          </div>
+          <ManagerHead
+            title="계좌·카드 관리"
+            description="연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요."
+            actions={
+              <Button onClick={() => setEditing({ mode: 'create', group: tab })}>
+                <Plus size={14} strokeWidth={2.4} />
+                {groupLabel(tab)} 추가
+              </Button>
+            }
+          />
         )}
 
-        <div className="cat-mgr__toolbar">
-          <div className="cat-mgr__tabs">
-            <button className={tab === 'account' ? 'active' : ''} onClick={() => setTab('account')}>
-              계좌·예금 <span className="cnt">{counts.account}</span>
-            </button>
-            <button className={tab === 'card' ? 'active' : ''} onClick={() => setTab('card')}>
-              카드 <span className="cnt">{counts.card}</span>
-            </button>
-            <button className={tab === 'invest' ? 'active' : ''} onClick={() => setTab('invest')}>
-              투자 <span className="cnt">{counts.invest}</span>
-            </button>
-          </div>
+        <div style={MANAGER_LAYOUT.toolbarStyle}>
+          <ManagerTabs<AssetGroup>
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'account', label: '계좌·예금', count: counts.account },
+              { value: 'card', label: '카드', count: counts.card },
+              { value: 'invest', label: '투자', count: counts.invest },
+            ]}
+          />
           <div style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>
             총{' '}
             <span className="num" style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>
@@ -144,24 +140,23 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 return (
                   <div
                     key={asset.rowId}
-                    className="cat-row"
+                    className={MANAGE_ROW.className}
                     style={{ cursor: 'pointer' }}
                     onClick={() => setDetail(asset)}
                   >
                     <span
-                      className="cat-row__icon"
                       style={{
+                        ...MANAGE_ROW.iconStyle,
                         background: accentColor,
                         color: '#fff',
-                        fontWeight: 700,
                         fontSize: 13,
                       }}
                     >
                       {asset.icon ? renderIcon(asset.icon, iconChar, 14) : iconChar}
                     </span>
-                    <div className="cat-row__text">
-                      <div className="cat-row__label">{asset.assetName}</div>
-                      <div className="cat-row__meta">
+                    <div style={MANAGE_ROW.textStyle}>
+                      <div style={MANAGE_ROW.labelStyle}>{asset.assetName}</div>
+                      <div style={MANAGE_ROW.metaStyle}>
                         {asset.institution || asset.assetType.replace('_', ' ').toLowerCase()}
                         {asset.memo && (
                           <>
@@ -191,7 +186,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       )}
                     </div>
                     {!mobile ? (
-                      <div className="cat-row__actions" onClick={e => e.stopPropagation()}>
+                      <div className={MANAGE_ROW.actionsClassName} onClick={e => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -202,7 +197,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="cat-row__del"
+                          className={MANAGE_ROW.delClassName}
                           onClick={() => setConfirmDelete(asset)}
                         >
                           <Trash2 size={13} />
@@ -210,7 +205,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       </div>
                     ) : (
                       <button
-                        className="cat-row__more"
+                        style={MANAGE_ROW.moreStyle}
                         onClick={e => {
                           e.stopPropagation()
                           setDetail(asset)
@@ -241,7 +236,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
             <span>{groupLabel(tab)} 추가</span>
           </button>
         )}
-      </div>
+      </ManagerShell>
 
       {editing && (
         <AssetEditDialog
