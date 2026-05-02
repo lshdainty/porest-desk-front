@@ -164,9 +164,9 @@ export const CalendarManagementDialog = ({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!formName.trim() || createCalendar.isPending || updateCalendar.isPending}
+                disabled={!formName.trim()}
+                loading={createCalendar.isPending || updateCalendar.isPending}
               >
-                {(createCalendar.isPending || updateCalendar.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('save')}
               </Button>
             </>

@@ -259,6 +259,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           }
           confirmLabel="삭제"
           danger
+          loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => !confirmDelete.hasChildren && onDelete(confirmDelete)}
         />

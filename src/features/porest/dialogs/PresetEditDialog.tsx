@@ -114,9 +114,10 @@ export function PresetEditDialog({
       <Button
         type="button"
         onClick={submit}
-        disabled={!canSave || submitting}
+        disabled={!canSave}
+        loading={submitting}
       >
-        {submitting ? '저장 중…' : isNew ? '추가' : '저장'}
+        {isNew ? '추가' : '저장'}
       </Button>
     </>
   )

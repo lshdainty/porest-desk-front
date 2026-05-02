@@ -372,8 +372,9 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         <ConfirmDialog
           title="거래 삭제"
           message={`"${displayMerchant}" 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.`}
-          confirmLabel={deleteMut.isPending ? '삭제 중…' : '삭제'}
+          confirmLabel="삭제"
           danger
+          loading={deleteMut.isPending}
           onCancel={() => !deleteMut.isPending && setConfirmDelete(false)}
           onConfirm={handleConfirmDelete}
         />

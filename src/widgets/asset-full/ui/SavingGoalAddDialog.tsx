@@ -172,7 +172,8 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           variant="ghost"
           className="text-[var(--status-danger)] hover:text-[var(--berry-700)]"
           onClick={handleDelete}
-          disabled={isPending}
+          loading={deleteMut.isPending}
+          disabled={createMut.isPending || updateMut.isPending || contributeMut.isPending}
           style={{ marginRight: 'auto' }}
         >
           <Trash2 size={14} /> 삭제
@@ -189,9 +190,10 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
       <Button
         type="button"
         onClick={handleSubmit}
-        disabled={isPending}
+        loading={createMut.isPending || updateMut.isPending || contributeMut.isPending}
+        disabled={deleteMut.isPending}
       >
-        {isPending ? '저장 중…' : isEdit ? '저장' : '추가'}
+        {isEdit ? '저장' : '추가'}
       </Button>
     </>
   )

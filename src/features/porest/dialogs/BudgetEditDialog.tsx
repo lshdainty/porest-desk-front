@@ -95,7 +95,8 @@ export function BudgetEditDialog({
       </Button>
       <Button
         onClick={save}
-        disabled={(touched && !valid) || submitting}
+        disabled={touched && !valid}
+        loading={submitting}
       >
         {isNew ? '추가' : '저장'}
       </Button>
@@ -289,7 +290,8 @@ export function MonthlyBudgetDialog({
       </Button>
       <Button
         onClick={() => onSave(parseInt(v) || 0)}
-        disabled={submitting || (parseInt(v) || 0) <= 0}
+        disabled={(parseInt(v) || 0) <= 0}
+        loading={submitting}
       >
         저장
       </Button>

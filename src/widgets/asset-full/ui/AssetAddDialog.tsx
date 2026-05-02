@@ -115,8 +115,8 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
       <Button variant="ghost" onClick={handleClose} disabled={createMut.isPending}>
         취소
       </Button>
-      <Button variant="default" onClick={handleSubmit} disabled={createMut.isPending}>
-        {createMut.isPending ? '저장 중…' : '추가'}
+      <Button variant="default" onClick={handleSubmit} loading={createMut.isPending}>
+        추가
       </Button>
     </>
   )

@@ -213,10 +213,11 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       <Button
         type="button"
         onClick={handleSave}
-        disabled={!matched || submitting || participants.length === 0}
+        disabled={!matched || participants.length === 0}
+        loading={submitting}
       >
         <Send size={14} />
-        {submitting ? '생성 중…' : '정산 만들기'}
+        정산 만들기
       </Button>
     </>
   )

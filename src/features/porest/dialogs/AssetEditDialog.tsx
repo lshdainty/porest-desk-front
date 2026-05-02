@@ -753,8 +753,8 @@ export function AssetEditDialog({
         <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
           취소
         </Button>
-        <Button variant="default" onClick={handleSubmit} disabled={isSubmitting || !canSubmit}>
-          {isSubmitting ? '저장 중…' : isNew ? '추가' : '저장'}
+        <Button variant="default" onClick={handleSubmit} disabled={!canSubmit} loading={isSubmitting}>
+          {isNew ? '추가' : '저장'}
         </Button>
       </div>
     </Fragment>

@@ -88,9 +88,9 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
       <Button
         type="button"
         onClick={form.handleSubmit(onSubmit)}
-        disabled={changePasswordMutation.isPending}
+        loading={changePasswordMutation.isPending}
       >
-        {changePasswordMutation.isPending ? tc('loading') : tc('save')}
+        {tc('save')}
       </Button>
     </>
   )

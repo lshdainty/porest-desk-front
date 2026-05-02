@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Bell, Calendar, Loader2, Zap } from 'lucide-react'
+import { Bell, Calendar, Zap } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -111,11 +111,10 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       <Button
         type="button"
         onClick={handleSave}
-        disabled={!ready || submitting}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        disabled={!ready}
+        loading={submitting}
       >
-        {submitting && <Loader2 size={14} className="animate-spin" />}
-        {submitting ? '저장 중…' : '반복 저장'}
+        반복 저장
       </Button>
     </>
   )

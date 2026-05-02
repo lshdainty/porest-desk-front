@@ -503,6 +503,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           }" 카테고리 예산을 삭제하시겠어요?`}
           confirmLabel="삭제"
           danger
+          loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => onDelete(confirmDelete)}
         />
@@ -514,6 +515,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             prevBudgetsQ.data?.length ?? 0
           }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
           confirmLabel="복사"
+          loading={createMut.isPending || updateMut.isPending}
           onCancel={() => setConfirmCopy(false)}
           onConfirm={copyFromLastMonth}
         />

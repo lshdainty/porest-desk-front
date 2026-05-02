@@ -273,7 +273,7 @@ export const DutchPayFullWidget = () => {
                           size="sm"
                           className="h-7 bg-green-600 text-xs hover:bg-green-700"
                           onClick={() => handleSettleAll(dp.rowId)}
-                          disabled={settleAll.isPending}
+                          loading={settleAll.isPending}
                         >
                           <CheckCheck size={12} />
                           {t('settleAll')}

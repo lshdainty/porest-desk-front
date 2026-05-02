@@ -301,9 +301,10 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
       <Button
         variant="default"
         onClick={handleSubmit}
-        disabled={createMut.isPending || !selected}
+        disabled={!selected}
+        loading={createMut.isPending}
       >
-        {createMut.isPending ? '저장 중…' : selected ? '추가' : '카드 선택 필요'}
+        {selected ? '추가' : '카드 선택 필요'}
       </Button>
     </>
   )

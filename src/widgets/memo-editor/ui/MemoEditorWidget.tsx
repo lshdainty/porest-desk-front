@@ -323,9 +323,9 @@ export const MemoEditorWidget = () => {
                           : 'text-muted-foreground hover:text-foreground'
                       )}
                       onClick={() => handleTogglePin(selectedMemo.rowId)}
-                      disabled={togglePin.isPending}
+                      loading={togglePin.isPending}
                     >
-                      <Pin size={18} />
+                      {!togglePin.isPending && <Pin size={18} />}
                     </Button>
                     <Button
                       variant="ghost"
@@ -352,9 +352,9 @@ export const MemoEditorWidget = () => {
                 <Button
                   size="sm"
                   onClick={() => handleSave()}
-                  disabled={!isDirty || updateMemo.isPending}
+                  disabled={!isDirty}
+                  loading={updateMemo.isPending}
                 >
-                  {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>
@@ -507,9 +507,9 @@ export const MemoEditorWidget = () => {
                   )}
                   onClick={() => handleTogglePin(selectedMemo.rowId)}
                   title={selectedMemo.isPinned ? t('unpin') : t('pin')}
-                  disabled={togglePin.isPending}
+                  loading={togglePin.isPending}
                 >
-                  <Pin size={16} />
+                  {!togglePin.isPending && <Pin size={16} />}
                 </Button>
               </div>
               <div className="flex items-center gap-2">
@@ -558,9 +558,9 @@ export const MemoEditorWidget = () => {
                 <Button
                   size="sm"
                   onClick={() => handleSave()}
-                  disabled={!isDirty || updateMemo.isPending}
+                  disabled={!isDirty}
+                  loading={updateMemo.isPending}
                 >
-                  {updateMemo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>

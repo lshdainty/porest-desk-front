@@ -282,6 +282,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           message={`"${confirmDelete.assetName}"을(를) 목록에서 제거합니다. 연결된 거래 내역은 유지됩니다.`}
           confirmLabel="삭제"
           danger
+          loading={deleteAsset.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => handleDelete(confirmDelete)}
         />

@@ -222,8 +222,8 @@ export const EventForm = ({
       <Button type="button" variant="outline" onClick={onClose}>
         {tc('cancel')}
       </Button>
-      <Button type="button" onClick={handleSubmit(onFormSubmit)} disabled={isLoading}>
-        {isLoading ? tc('loading') : tc('save')}
+      <Button type="button" onClick={handleSubmit(onFormSubmit)} loading={isLoading}>
+        {tc('save')}
       </Button>
     </>
   )

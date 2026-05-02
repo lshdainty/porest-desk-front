@@ -334,8 +334,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
               이미 저장된 거래 내역에는 영향이 없습니다.
             </>
           }
-          confirmLabel={deleteMut.isPending ? '삭제 중…' : '삭제'}
+          confirmLabel="삭제"
           danger
+          loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={onDelete}
         />

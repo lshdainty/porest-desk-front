@@ -52,8 +52,8 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
       <Button variant="outline" onClick={onClose} disabled={isLoading}>
         {tc('cancel')}
       </Button>
-      <Button onClick={handleSubmit} disabled={isLoading || !amount || fromAssetRowId === toAssetRowId}>
-        {isLoading ? tc('loading') : tc('save')}
+      <Button onClick={handleSubmit} disabled={!amount || fromAssetRowId === toAssetRowId} loading={isLoading}>
+        {tc('save')}
       </Button>
     </>
   )

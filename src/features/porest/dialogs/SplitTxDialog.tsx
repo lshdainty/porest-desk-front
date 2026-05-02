@@ -153,7 +153,8 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
           variant="ghost"
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
           onClick={handleDeleteAll}
-          disabled={submitting}
+          loading={deleteAllMut.isPending}
+          disabled={replaceMut.isPending}
         >
           <Trash2 size={14} /> 분할 해제
         </Button>
@@ -199,9 +200,10 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
       <Button
         type="button"
         onClick={handleSave}
-        disabled={!matched || submitting}
+        disabled={!matched}
+        loading={replaceMut.isPending}
       >
-        {replaceMut.isPending ? '저장 중…' : '분할 저장'}
+        분할 저장
       </Button>
     </>
   )

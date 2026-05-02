@@ -81,7 +81,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       <Button variant="outline" onClick={onClose} disabled={isLoading}>
         {tc('cancel')}
       </Button>
-      <Button onClick={handleSubmit} disabled={isLoading || !assetName.trim()}>
+      <Button onClick={handleSubmit} disabled={!assetName.trim()} loading={isLoading}>
         {tc('save')}
       </Button>
     </>

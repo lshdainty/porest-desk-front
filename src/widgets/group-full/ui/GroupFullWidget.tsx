@@ -238,11 +238,9 @@ export const GroupFullWidget = () => {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => handleRegenerateCode(groupDetail.rowId)}
-                disabled={regenerateInviteCode.isPending}
+                loading={regenerateInviteCode.isPending}
               >
-                {regenerateInviteCode.isPending
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <RefreshCw className="h-3.5 w-3.5" />}
+                {!regenerateInviteCode.isPending && <RefreshCw className="h-3.5 w-3.5" />}
               </Button>
             </div>
 
@@ -298,7 +296,7 @@ export const GroupFullWidget = () => {
                                   size="icon"
                                   className="h-7 w-7 text-destructive"
                                   onClick={() => handleRemoveMember(groupDetail.rowId, member.rowId)}
-                                  disabled={removeMember.isPending}
+                                  loading={removeMember.isPending}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -460,8 +458,7 @@ export const GroupFullWidget = () => {
               <Button variant="outline" onClick={() => setShowJoinDialog(false)} disabled={joinGroup.isPending}>
                 {tc('cancel')}
               </Button>
-              <Button onClick={handleJoin} disabled={joinGroup.isPending}>
-                {joinGroup.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button onClick={handleJoin} loading={joinGroup.isPending}>
                 {t('join')}
               </Button>
             </div>

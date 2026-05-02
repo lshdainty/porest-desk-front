@@ -111,8 +111,8 @@ export const GroupForm = ({ initialData, onSubmit, onCancel, isSubmitting }: Gro
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           {tc('cancel')}
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? tc('loading') : tc('save')}
+        <Button type="submit" loading={isSubmitting}>
+          {tc('save')}
         </Button>
       </div>
     </form>

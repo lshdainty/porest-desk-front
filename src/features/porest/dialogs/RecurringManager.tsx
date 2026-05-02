@@ -393,8 +393,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         <ConfirmDialog
           title="반복 거래 삭제"
           message={`"${displayTitle(items.find(i => i.rowId === confirmDeleteId)!)}" 반복 설정을 삭제할까요? 이미 기록된 거래는 그대로 남아요.`}
-          confirmLabel={deleteMut.isPending ? '삭제 중…' : '삭제'}
+          confirmLabel="삭제"
           danger
+          loading={deleteMut.isPending}
           onConfirm={() => removeItem(confirmDeleteId)}
           onCancel={() => !deleteMut.isPending && setConfirmDeleteId(null)}
         />

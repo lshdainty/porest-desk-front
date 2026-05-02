@@ -92,7 +92,7 @@ export function CardBenefitMappingEditor() {
                   variant="ghost"
                   size="sm"
                   onClick={() => deleteMutation.mutate(m.rowId)}
-                  disabled={deleteMutation.isPending}
+                  loading={deleteMutation.isPending}
                 >
                   초기화
                 </Button>

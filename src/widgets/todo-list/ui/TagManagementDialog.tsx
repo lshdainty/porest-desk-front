@@ -134,9 +134,8 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                 <Button
                   className="flex-1"
                   onClick={handleSave}
-                  disabled={createTag.isPending || updateTag.isPending}
+                  loading={createTag.isPending || updateTag.isPending}
                 >
-                  {(createTag.isPending || updateTag.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>

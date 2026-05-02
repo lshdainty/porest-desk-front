@@ -137,9 +137,8 @@ export const GroupTypeManagementDialog = ({ open, onOpenChange }: GroupTypeManag
                 <Button
                   className="flex-1"
                   onClick={handleSave}
-                  disabled={createGroupType.isPending || updateGroupType.isPending}
+                  loading={createGroupType.isPending || updateGroupType.isPending}
                 >
-                  {(createGroupType.isPending || updateGroupType.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>

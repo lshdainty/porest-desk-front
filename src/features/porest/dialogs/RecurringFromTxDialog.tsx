@@ -103,9 +103,10 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       <Button
         type="button"
         onClick={handleSave}
-        disabled={!ready || submitting}
+        disabled={!ready}
+        loading={submitting}
       >
-        {submitting ? '저장 중…' : '반복 저장'}
+        반복 저장
       </Button>
     </>
   )

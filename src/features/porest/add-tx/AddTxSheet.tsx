@@ -299,9 +299,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       <Button
         type="button"
         onClick={save}
-        disabled={!canSave || submitting}
+        disabled={!canSave}
+        loading={submitting}
       >
-        {submitting ? '저장 중…' : isEdit ? '저장' : '추가'}
+        {isEdit ? '저장' : '추가'}
       </Button>
     </>
   )
@@ -944,7 +945,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 type="button"
                 variant="destructive"
                 onClick={doDelete}
-                disabled={submitting}
+                loading={submitting}
               >
                 삭제
               </Button>
@@ -1013,9 +1014,10 @@ function SavePresetDialog({
       <Button
         type="button"
         onClick={submit}
-        disabled={!canSave || createMut.isPending}
+        disabled={!canSave}
+        loading={createMut.isPending}
       >
-        {createMut.isPending ? '저장 중…' : '저장'}
+        저장
       </Button>
     </>
   )

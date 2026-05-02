@@ -105,6 +105,7 @@ export function ConfirmDialog({
   confirmLabel = '확인',
   cancelLabel = '취소',
   danger,
+  loading,
   onCancel,
   onConfirm,
 }: {
@@ -113,6 +114,7 @@ export function ConfirmDialog({
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
+  loading?: boolean
   onCancel: () => void
   onConfirm: () => void
 }) {
@@ -140,12 +142,13 @@ export function ConfirmDialog({
           </p>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={onCancel}>
+          <Button variant="ghost" onClick={onCancel} disabled={loading}>
             {cancelLabel}
           </Button>
           <Button
             variant={danger ? 'destructive' : 'default'}
             onClick={onConfirm}
+            loading={loading}
           >
             {confirmLabel}
           </Button>

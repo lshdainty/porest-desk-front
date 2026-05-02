@@ -159,9 +159,8 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                 <Button
                   className="flex-1"
                   onClick={handleSave}
-                  disabled={createProject.isPending || updateProject.isPending}
+                  loading={createProject.isPending || updateProject.isPending}
                 >
-                  {(createProject.isPending || updateProject.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>

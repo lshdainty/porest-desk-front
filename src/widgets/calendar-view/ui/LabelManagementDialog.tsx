@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Check, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -120,9 +120,9 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => handleDelete(label.rowId)}
-                disabled={deleteLabel.isPending}
+                loading={deleteLabel.isPending}
               >
-                <Trash2 size={14} />
+                {!deleteLabel.isPending && <Trash2 size={14} />}
               </Button>
             </div>
           ))}
@@ -167,10 +167,10 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                   className="flex-1"
                   size="sm"
                   onClick={handleSave}
-                  disabled={!formName.trim() || createLabel.isPending || updateLabel.isPending}
+                  disabled={!formName.trim()}
+                  loading={createLabel.isPending || updateLabel.isPending}
                 >
                   <Check size={12} className="mr-1" />
-                  {(createLabel.isPending || updateLabel.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                   {tc('save')}
                 </Button>
               </div>

@@ -193,9 +193,9 @@ export const HolidayManagementDialog = ({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!formName.trim() || !formDate || createHoliday.isPending || updateHoliday.isPending}
+                disabled={!formName.trim() || !formDate}
+                loading={createHoliday.isPending || updateHoliday.isPending}
               >
-                {(createHoliday.isPending || updateHoliday.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
                 {tc('save')}
               </Button>
             </>

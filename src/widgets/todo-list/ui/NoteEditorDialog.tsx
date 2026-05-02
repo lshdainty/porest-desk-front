@@ -133,8 +133,7 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
       <Button variant="outline" onClick={onClose}>
         {tc('cancel')}
       </Button>
-      <Button onClick={handleSave} disabled={updateTodo.isPending || !title.trim()}>
-        {updateTodo.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+      <Button onClick={handleSave} disabled={!title.trim()} loading={updateTodo.isPending}>
         {tc('save')}
       </Button>
     </>
