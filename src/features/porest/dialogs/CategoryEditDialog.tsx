@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Check, Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
 import {
   Select,
   SelectContent,
@@ -9,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
 
 /** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
@@ -151,27 +155,26 @@ export function CategoryEditDialog({
   const Footer = (
     <>
       {onDelete ? (
-        <button
-          className="p-btn p-btn--ghost"
+        <Button
+          variant="ghost"
           onClick={onDelete}
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
           disabled={submitting}
         >
           <Trash2 size={14} />삭제
-        </button>
+        </Button>
       ) : (
         <span style={{ marginRight: 'auto' }} />
       )}
-      <button className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
-        className="p-btn p-btn--primary"
+      </Button>
+      <Button
         onClick={save}
         disabled={(touched && !valid) || submitting}
       >
         {submitting ? '저장 중…' : isNew ? '추가' : '저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -198,31 +201,24 @@ export function CategoryEditDialog({
         </div>
       </div>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">구분</label>
-        <div className="p-seg">
-          <button
-            type="button"
-            className={`p-seg__btn ${kind === 'EXPENSE' ? 'active' : ''}`}
-            onClick={() => setKind('EXPENSE')}
-          >
-            지출
-          </button>
-          <button
-            type="button"
-            className={`p-seg__btn ${kind === 'INCOME' ? 'active' : ''}`}
-            onClick={() => setKind('INCOME')}
-          >
-            수입
-          </button>
-        </div>
-      </div>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>구분</FieldLabel>
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          value={kind}
+          onValueChange={(v) => v && setKind(v as ExpenseType)}
+        >
+          <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
+          <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
+        </ToggleGroup>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>
           상위 카테고리
           <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400, marginLeft: 4 }}>(선택)</span>
-        </label>
+        </FieldLabel>
         <Select
           value={parentRowId == null ? '__root__' : String(parentRowId)}
           onValueChange={(v) => setParentRowId(v === '__root__' ? null : Number(v))}
@@ -245,12 +241,12 @@ export function CategoryEditDialog({
             하위 카테고리가 있어 상위를 변경할 수 없어요.
           </div>
         )}
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">이름</label>
-        <input
-          className={`p-input ${err ? 'p-input--error' : ''}`}
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>이름</FieldLabel>
+        <Input
+          aria-invalid={!!err}
           value={label}
           onChange={e => {
             setLabel(e.target.value)
@@ -263,10 +259,10 @@ export function CategoryEditDialog({
         <div className="cat-edit__help">
           {err ? <span className="err">{err}</span> : <span>{labelTrim.length}/12</span>}
         </div>
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">색상</label>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>색상</FieldLabel>
         <div className="cat-edit__colors">
           {CAT_PALETTE.map((p, i) => (
             <button
@@ -281,10 +277,10 @@ export function CategoryEditDialog({
             </button>
           ))}
         </div>
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 4 }}>
-        <label className="p-field__label">아이콘</label>
+      <Field style={{ marginBottom: 4 }}>
+        <FieldLabel>아이콘</FieldLabel>
         <div className="cat-edit__icons">
           {ICON_CHOICES.map(ic => {
             const active = icon === ic
@@ -302,7 +298,7 @@ export function CategoryEditDialog({
             )
           })}
         </div>
-      </div>
+      </Field>
     </ModalShell>
   )
 }

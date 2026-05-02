@@ -4,6 +4,8 @@ import { Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { MonthPicker } from '@/shared/ui/porest/primitives'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useExpenses,
@@ -189,29 +191,28 @@ function ExpenseList({
 
   if (isLoading) {
     return (
-      <div
-        className="p-card"
+      <Card
         style={{ padding: mobile ? '12px 14px' : '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}
       >
         <Skeleton height={56} />
         <Skeleton height={56} />
         <Skeleton height={56} />
-      </div>
+      </Card>
     )
   }
 
   if (grouped.length === 0) {
     return (
-      <div className="p-card" style={{ padding: '48px 20px', textAlign: 'center' }}>
+      <Card style={{ padding: '48px 20px', textAlign: 'center' }}>
         <div style={{ fontSize: 14, color: 'var(--fg-tertiary)', fontWeight: 500 }}>
           내역이 없어요
         </div>
-      </div>
+      </Card>
     )
   }
 
   return (
-    <div className="p-card" style={{ padding: mobile ? '4px 18px 8px' : '4px 24px 8px' }}>
+    <Card style={{ padding: mobile ? '4px 18px 8px' : '4px 24px 8px' }}>
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d)
         const out = items
@@ -242,7 +243,7 @@ function ExpenseList({
           </div>
         )
       })}
-    </div>
+    </Card>
   )
 }
 
@@ -477,12 +478,12 @@ function ExpenseDesktop() {
           <div className="sub">모든 거래 내역</div>
         </div>
         <div className="right">
-          <button className="p-btn p-btn--secondary p-btn--sm" onClick={() => setFilterOpen(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setFilterOpen(true)}>
             <Filter size={13} /> 필터{activeCount > 0 && ` · ${activeCount}`}
-          </button>
-          <button className="p-btn p-btn--secondary p-btn--sm" onClick={notifyComing}>
+          </Button>
+          <Button variant="secondary" size="sm" onClick={notifyComing}>
             <Download size={13} /> 내보내기
-          </button>
+          </Button>
         </div>
       </div>
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}

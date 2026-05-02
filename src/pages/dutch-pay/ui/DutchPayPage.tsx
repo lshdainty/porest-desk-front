@@ -7,6 +7,7 @@ import {
   useSettleAll,
 } from '@/features/dutch-pay'
 import type { DutchPay, DutchPayParticipant } from '@/entities/dutch-pay'
+import { Card } from '@/shared/ui/card'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -58,9 +59,9 @@ export const DutchPayPage = () => {
     const paidCount = d.participants.filter(p => p.isPaid).length
 
     return (
-      <div
+      <Card
         key={d.rowId}
-        className="p-card p-card--warm"
+        variant="warm"
         style={{
           padding: mobile ? 18 : 24,
           background: 'var(--bg-section-warm)',
@@ -113,7 +114,7 @@ export const DutchPayPage = () => {
             {d.participants.map((p, i) => renderParticipantRow(d.rowId, p, i))}
           </div>
         </div>
-      </div>
+      </Card>
     )
   }
 
@@ -189,7 +190,7 @@ export const DutchPayPage = () => {
   ) : null
 
   const CompletedSection = completed.length > 0 ? (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 12 }}>
         <h2 style={{ fontSize: 15 }}>완료된 정산</h2>
       </div>
@@ -230,12 +231,11 @@ export const DutchPayPage = () => {
           </div>
         </div>
       ))}
-    </div>
+    </Card>
   ) : null
 
   const EmptyState = (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: 40,
         textAlign: 'center',
@@ -244,12 +244,11 @@ export const DutchPayPage = () => {
       }}
     >
       아직 정산 내역이 없어요
-    </div>
+    </Card>
   )
 
   const LoadingState = (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: 40,
         textAlign: 'center',
@@ -258,7 +257,7 @@ export const DutchPayPage = () => {
       }}
     >
       불러오는 중…
-    </div>
+    </Card>
   )
 
   const Body = dutchPaysQ.isLoading

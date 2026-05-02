@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Bookmark, Info, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
+import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import {
@@ -27,6 +31,7 @@ import { useAssets, useCreateTransfer } from '@/features/asset'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
+import { Card } from '@/shared/ui/card'
 
 const PAYMENT_METHODS: { v: string; l: string }[] = [
   { v: 'CASH', l: '현금' },
@@ -61,6 +66,19 @@ const todayLocal = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+const nowTimeLocal = () => {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+// "YYYY-MM-DDTHH:mm[:ss]" 또는 "YYYY-MM-DD HH:mm[:ss]" 에서 HH:mm 추출
+const extractTime = (s?: string | null) => {
+  if (!s) return null
+  const m = /[T ](\d{2}:\d{2})/.exec(s)
+  return m ? m[1] : null
+}
+
 export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const isEdit = !!expense
 
@@ -83,6 +101,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState<string>(
     expense?.expenseDate ? expense.expenseDate.slice(0, 10) : (defaultDate ?? todayLocal()),
+  )
+  const [expenseTime, setExpenseTime] = useState<string>(
+    () => extractTime(expense?.expenseDate) ?? nowTimeLocal(),
   )
   const [merchant, setMerchant] = useState(expense?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
@@ -219,7 +240,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       expenseType: type,
       amount: amountNumber,
       description: description || undefined,
-      expenseDate,
+      expenseDate: `${expenseDate}T${expenseTime}`,
       merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
     }
@@ -261,27 +282,26 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const Footer = (
     <>
       {isEdit && (
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--ghost"
+          variant="ghost"
           onClick={onDeleteClick}
           disabled={submitting}
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
         >
           <Trash2 size={14} /> 삭제
-        </button>
+        </Button>
       )}
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={save}
         disabled={!canSave || submitting}
       >
         {submitting ? '저장 중…' : isEdit ? '저장' : '추가'}
-      </button>
+      </Button>
     </>
   )
 
@@ -597,8 +617,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           {amountFormatted}
           <span style={{ fontSize: 20, color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 700 }}>원</span>
         </div>
-        <input
-          className="p-input num"
+        <Input
+          className="num"
           value={amount}
           onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
           placeholder="0"
@@ -720,21 +740,20 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           )}
 
           {/* 거래처 */}
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">{type === 'INCOME' ? '수입처' : '거래처'}</label>
-            <input
-              className="p-input"
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>{type === 'INCOME' ? '수입처' : '거래처'}</FieldLabel>
+            <Input
               value={merchant}
               onChange={e => setMerchant(e.target.value)}
               placeholder={type === 'INCOME' ? '예: (주)포레스트' : '예: 스타벅스 강남점'}
             />
-          </div>
+          </Field>
 
           {/* 결제 수단 — 먼저 선택, 계좌·카드 목록을 필터링 */}
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>
               {type === 'INCOME' ? '수입 방식' : '결제 수단'}
-            </label>
+            </FieldLabel>
             <Select
               value={paymentMethod || '__none__'}
               onValueChange={(v) => {
@@ -752,18 +771,18 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
           {/* 계좌·카드 — 결제 수단에 맞춰 필터 */}
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>
               {type === 'INCOME' ? '입금 계좌' : '계좌·카드'}
               {paymentMethod && filteredAssets.length !== assets.length && (
                 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400, marginLeft: 4 }}>
                   ({PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? ''} 기준)
                 </span>
               )}
-            </label>
+            </FieldLabel>
             <Select
               value={assetRowId != null ? String(assetRowId) : '__none__'}
               onValueChange={(v) => {
@@ -788,13 +807,13 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 해당 결제 수단에 연결된 자산이 없어요.
               </div>
             )}
-          </div>
+          </Field>
         </>
       ) : (
         <>
           {/* 이체: 출금 → 입금 */}
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">출금 계좌</label>
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>출금 계좌</FieldLabel>
             <Select
               value={fromAssetRowId != null ? String(fromAssetRowId) : ''}
               onValueChange={(v) => setFromAssetRowId(v ? Number(v) : null)}
@@ -810,9 +829,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">입금 계좌</label>
+          </Field>
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>입금 계좌</FieldLabel>
             <Select
               value={toAssetRowId != null ? String(toAssetRowId) : ''}
               onValueChange={(v) => setToAssetRowId(v ? Number(v) : null)}
@@ -830,37 +849,49 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="p-field" style={{ marginBottom: 14 }}>
-            <label className="p-field__label">수수료 (선택)</label>
-            <input
-              className="p-input num"
+          </Field>
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>수수료 (선택)</FieldLabel>
+            <Input
+              className="num"
               value={fee}
               onChange={e => setFee(e.target.value.replace(/[^0-9]/g, ''))}
               placeholder="0"
               inputMode="numeric"
             />
-          </div>
+          </Field>
         </>
       )}
 
-      {/* 날짜 */}
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">날짜</label>
-        <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
-      </div>
+      {/* 날짜·시간 (TRANSFER는 시간 없음 — 백엔드 transferDate가 LocalDate) */}
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>{type === 'TRANSFER' ? '날짜' : '날짜·시간'}</FieldLabel>
+        {type === 'TRANSFER' ? (
+          <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 116px', gap: 8 }}>
+            <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
+            <Input
+              type="time"
+              className="num"
+              value={expenseTime}
+              onChange={e => setExpenseTime(e.target.value)}
+              aria-label="시간"
+            />
+          </div>
+        )}
+      </Field>
 
       {/* 메모 */}
-      <div className="p-field" style={{ marginBottom: 4 }}>
-        <label className="p-field__label">메모</label>
-        <textarea
-          className="p-textarea"
+      <Field style={{ marginBottom: 4 }}>
+        <FieldLabel>메모</FieldLabel>
+        <Textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="선택 사항"
           style={{ minHeight: 64 }}
         />
-      </div>
+      </Field>
 
       {savePresetOpen && (
         <SavePresetDialog
@@ -893,8 +924,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           }}
           onClick={() => !submitting && setConfirmDelete(false)}
         >
-          <div
-            className="p-card"
+          <Card
             style={{ width: 360, padding: 20 }}
             onClick={e => e.stopPropagation()}
           >
@@ -903,24 +933,24 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button
+              <Button
                 type="button"
-                className="p-btn p-btn--ghost"
+                variant="ghost"
                 onClick={() => setConfirmDelete(false)}
                 disabled={submitting}
               >
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className="p-btn p-btn--danger"
+                variant="destructive"
                 onClick={doDelete}
                 disabled={submitting}
               >
                 삭제
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </ModalShell>
@@ -978,17 +1008,16 @@ function SavePresetDialog({
 
   const Footer = (
     <>
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={createMut.isPending}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={createMut.isPending}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={submit}
         disabled={!canSave || createMut.isPending}
       >
         {createMut.isPending ? '저장 중…' : '저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -1037,16 +1066,15 @@ function SavePresetDialog({
         </div>
       </div>
 
-      <div className="p-field" style={{ marginBottom: 16 }}>
-        <label className="p-field__label">프리셋 이름</label>
-        <input
-          className="p-input"
+      <Field style={{ marginBottom: 16 }}>
+        <FieldLabel>프리셋 이름</FieldLabel>
+        <Input
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="예: 점심 도시락"
           autoFocus
         />
-      </div>
+      </Field>
 
       <label
         style={{

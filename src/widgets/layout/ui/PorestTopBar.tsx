@@ -6,6 +6,7 @@ import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 import { Separator } from '@/shared/ui/separator'
+import { Button } from '@/shared/ui/button'
 import { ModeToggle } from '@/shared/ui/mode-toggle'
 import { NAV } from './PorestSidebar'
 
@@ -78,10 +79,10 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
         >
           <Settings size={18} />
         </button>
-        <button className="p-btn p-btn--primary p-btn--sm" style={{ marginLeft: 6 }} onClick={onOpenAdd}>
+        <Button size="sm" style={{ marginLeft: 6 }} onClick={onOpenAdd}>
           <Plus size={14} strokeWidth={2.4} />
           내역 추가
-        </button>
+        </Button>
       </div>
       {notifOpen && (
         <NotificationsPopover

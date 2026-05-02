@@ -7,6 +7,7 @@ import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
@@ -122,21 +123,21 @@ export function AssetDetailDialog({
 
   const Footer = (
     <>
-      <button
-        className="p-btn p-btn--ghost"
+      <Button
+        variant="ghost"
         style={{ marginRight: 'auto' }}
         onClick={togglePdHideAmounts}
         type="button"
       >
         {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
         {hidden ? '금액 표시' : '금액 가리기'}
-      </button>
+      </Button>
       {onEdit && (
-        <button className="p-btn p-btn--ghost" onClick={() => onEdit(asset)}>
+        <Button variant="ghost" onClick={() => onEdit(asset)}>
           <Pencil size={14} />편집
-        </button>
+        </Button>
       )}
-      <button className="p-btn p-btn--primary" onClick={onClose}>확인</button>
+      <Button onClick={onClose}>확인</Button>
     </>
   )
 

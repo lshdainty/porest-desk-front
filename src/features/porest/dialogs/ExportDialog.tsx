@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { CheckCircle2, Download, PieChart, Receipt, Target, Wallet } from 'lucide-react'
 import { TX } from '@/shared/lib/porest/data'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
 type FileFormat = 'csv' | 'xlsx' | 'pdf'
 type Period = 'week' | 'month' | '3m' | 'year' | 'custom'
@@ -43,17 +47,17 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
       <span style={{ marginRight: 'auto', fontSize: 12, color: 'var(--fg-tertiary)' }}>
         약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
       </span>
-      <button className="p-btn p-btn--ghost" onClick={onClose}>취소</button>
-      <button className="p-btn p-btn--primary" onClick={onClose}>
+      <Button variant="ghost" onClick={onClose}>취소</Button>
+      <Button onClick={onClose}>
         <Download size={14} /> {format.toUpperCase()} 내보내기
-      </button>
+      </Button>
     </>
   )
 
   return (
     <ModalShell title="내보내기" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <div className="p-field" style={{ marginBottom: 18 }}>
-        <label className="p-field__label">파일 형식</label>
+      <Field style={{ marginBottom: 18 }}>
+        <FieldLabel>파일 형식</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {FORMATS.map(o => {
             const active = format === o.v
@@ -89,22 +93,22 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
             )
           })}
         </div>
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 18 }}>
-        <label className="p-field__label">기간</label>
-        <div className="p-seg">
+      <Field style={{ marginBottom: 18 }}>
+        <FieldLabel>기간</FieldLabel>
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          value={period}
+          onValueChange={(v) => v && setPeriod(v as Period)}
+        >
           {PERIODS.map(o => (
-            <button
-              key={o.v}
-              type="button"
-              className={`p-seg__btn ${period === o.v ? 'active' : ''}`}
-              onClick={() => setPeriod(o.v)}
-            >
+            <ToggleGroupItem key={o.v} value={o.v}>
               {o.l}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         {period === 'custom' && (
           <div
             style={{
@@ -115,15 +119,15 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
               marginTop: 10,
             }}
           >
-            <input className="p-input" type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
+            <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
             <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
-            <input className="p-input" type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} />
+            <Input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} />
           </div>
         )}
-      </div>
+      </Field>
 
-      <div className="p-field">
-        <label className="p-field__label">포함할 내용</label>
+      <Field>
+        <FieldLabel>포함할 내용</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {INCLUDES.map(o => {
             const active = includes.includes(o.v)
@@ -170,7 +174,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
             )
           })}
         </div>
-      </div>
+      </Field>
     </ModalShell>
   )
 }

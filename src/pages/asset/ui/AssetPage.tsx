@@ -16,6 +16,8 @@ import {
 } from '@/shared/lib/porest/hide-amounts'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 import { Donut } from '@/shared/ui/porest/charts'
 import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
@@ -269,7 +271,7 @@ function AssetCompositionCard({
   const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일 기준`
 
   return (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 16 }}>
         <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
@@ -386,7 +388,7 @@ function AssetCompositionCard({
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -419,7 +421,7 @@ function UpcomingBillsCard() {
   }
 
   return (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 14, display: 'flex', alignItems: 'center' }}>
         <h2 style={{ fontSize: 15 }}>예정된 결제 · 고정지출</h2>
         <button
@@ -500,7 +502,7 @@ function UpcomingBillsCard() {
           })}
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -602,17 +604,18 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   const isEmpty = !isLoading && goals.length === 0
 
   return (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>저축 목표</h2>
-        <button
-          className="p-btn p-btn--ghost p-btn--sm"
+        <Button
+          variant="ghost"
+          size="sm"
           style={{ marginLeft: 'auto' }}
           type="button"
           onClick={() => setDialogState({ mode: 'add' })}
         >
           <Plus size={13} /> 목표 추가
-        </button>
+        </Button>
       </div>
       {isLoading ? (
         <div
@@ -633,13 +636,13 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
           >
             저축 목표를 추가해보세요
           </div>
-          <button
-            className="p-btn p-btn--primary p-btn--sm"
+          <Button
+            size="sm"
             type="button"
             onClick={() => setDialogState({ mode: 'add' })}
           >
             <Plus size={13} /> 첫 목표 추가하기
-          </button>
+          </Button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -660,7 +663,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
           onClose={() => setDialogState(null)}
         />
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -728,7 +731,7 @@ function TypeGroup({
   negativeTotal?: boolean
 }) {
   return (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>{title}</h2>
         <span
@@ -740,13 +743,14 @@ function TypeGroup({
           </MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
-        <button
-          className="p-btn p-btn--ghost p-btn--sm"
+        <Button
+          variant="ghost"
+          size="sm"
           style={{ marginLeft: 8 }}
           onClick={onAdd}
         >
           <Plus size={13} />추가
-        </button>
+        </Button>
       </div>
       {assets.length === 0 ? (
         <div
@@ -807,7 +811,7 @@ function TypeGroup({
           ))}
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -834,7 +838,7 @@ function SummaryCard({
   const isUp = changeAmount >= 0
 
   return (
-    <div className="p-card" style={{ padding: mobile ? 18 : 28, marginBottom: mobile ? 16 : 20 }}>
+    <Card style={{ padding: mobile ? 18 : 28, marginBottom: mobile ? 16 : 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500 }}>총 순자산</span>
         <button
@@ -934,7 +938,7 @@ function SummaryCard({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -1006,19 +1010,20 @@ function AssetDesktop() {
           <div className="sub">모든 계좌·카드·투자를 한 곳에서</div>
         </div>
         <div className="right">
-          <button className="p-btn p-btn--secondary p-btn--sm" onClick={togglePdHideAmounts}>
+          <Button variant="secondary" size="sm" onClick={togglePdHideAmounts}>
             {hidden ? <EyeOff size={13} /> : <Eye size={13} />} {hidden ? '보이기' : '가리기'}
-          </button>
-          <button
-            className="p-btn p-btn--secondary p-btn--sm"
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={g.refetch}
             disabled={g.isFetching}
           >
             <RefreshCw size={13} /> 새로고침
-          </button>
-          <button className="p-btn p-btn--primary p-btn--sm" onClick={() => setAddOpen(true)}>
+          </Button>
+          <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} /> 계좌 추가
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1031,7 +1036,7 @@ function AssetDesktop() {
           </div>
         </div>
       ) : isEmpty ? (
-        <div className="p-card" style={{ padding: '64px 20px', textAlign: 'center' }}>
+        <Card style={{ padding: '64px 20px', textAlign: 'center' }}>
           <div
             style={{
               fontSize: 14,
@@ -1042,10 +1047,10 @@ function AssetDesktop() {
           >
             아직 등록된 자산이 없어요
           </div>
-          <button className="p-btn p-btn--primary p-btn--sm" onClick={() => setAddOpen(true)}>
+          <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} /> 첫 자산 추가하기
-          </button>
-        </div>
+          </Button>
+        </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1178,7 +1183,7 @@ function AssetMobile() {
   if (isEmpty) {
     return (
       <div style={{ padding: '4px 20px 24px' }}>
-        <div className="p-card" style={{ padding: '48px 20px', textAlign: 'center' }}>
+        <Card style={{ padding: '48px 20px', textAlign: 'center' }}>
           <div
             style={{
               fontSize: 14,
@@ -1189,10 +1194,10 @@ function AssetMobile() {
           >
             아직 등록된 자산이 없어요
           </div>
-          <button className="p-btn p-btn--primary p-btn--sm" onClick={() => setAddOpen(true)}>
+          <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} /> 첫 자산 추가하기
-          </button>
-        </div>
+          </Button>
+        </Card>
         <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       </div>
     )

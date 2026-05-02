@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom'
 import { NotebookPen, Pin, Plus } from 'lucide-react'
 import { useMemos } from '@/features/memo'
 import type { Memo } from '@/entities/memo'
+import { Card } from '@/shared/ui/card'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -55,12 +56,11 @@ export const MemoPage = () => {
     </button>
   )
 
-  const Card = (m: Memo, i: number) => {
+  const MemoCard = (m: Memo, i: number) => {
     const color = CARD_COLORS[i % CARD_COLORS.length]!
     return (
-      <div
+      <Card
         key={m.rowId}
-        className="p-card"
         style={{
           padding: 18,
           background: color,
@@ -111,7 +111,7 @@ export const MemoPage = () => {
             {m.content}
           </div>
         )}
-      </div>
+      </Card>
     )
   }
 
@@ -123,13 +123,12 @@ export const MemoPage = () => {
         gap: 12,
       }}
     >
-      {sorted.map(Card)}
+      {sorted.map(MemoCard)}
     </div>
   )
 
   const LoadingState = (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: 40,
         textAlign: 'center',
@@ -138,12 +137,11 @@ export const MemoPage = () => {
       }}
     >
       불러오는 중…
-    </div>
+    </Card>
   )
 
   const EmptyState = (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: 40,
         textAlign: 'center',
@@ -152,7 +150,7 @@ export const MemoPage = () => {
       }}
     >
       아직 메모가 없어요
-    </div>
+    </Card>
   )
 
   const Body = memosQ.isLoading

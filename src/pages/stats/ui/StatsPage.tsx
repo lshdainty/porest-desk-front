@@ -6,6 +6,8 @@ import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-a
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
+import { Card } from '@/shared/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   useMonthlySummary,
   useYearlySummary,
@@ -320,24 +322,24 @@ export const StatsPage = () => {
       ? `${year}년 ${Math.ceil(month / 3)}분기`
       : `${year}년`
 
-  const Tabs = (
-    <div className="p-tabs" style={{ marginBottom: mobile ? 14 : 20 }}>
-      {([
-        { v: 'cat', l: '카테고리' },
-        { v: 'trend', l: '추이' },
-        { v: 'compare', l: '비교' },
-      ] as { v: TabKey; l: string }[]).map(t => (
-        <button
-          key={t.v}
-          type="button"
-          className={`p-tab ${tab === t.v ? 'is-active' : ''}`}
-          aria-selected={tab === t.v}
-          onClick={() => setTab(t.v)}
-        >
-          {t.l}
-        </button>
-      ))}
-    </div>
+  const StatsTabs = (
+    <Tabs
+      value={tab}
+      onValueChange={(v) => setTab(v as TabKey)}
+      style={{ marginBottom: mobile ? 14 : 20 }}
+    >
+      <TabsList variant="underline">
+        {([
+          { v: 'cat', l: '카테고리' },
+          { v: 'trend', l: '추이' },
+          { v: 'compare', l: '비교' },
+        ] as { v: TabKey; l: string }[]).map(t => (
+          <TabsTrigger key={t.v} value={t.v} variant="underline">
+            {t.l}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 
   const PeriodSeg = (
@@ -376,7 +378,7 @@ export const StatsPage = () => {
     : `${periodLbl} 지출`
 
   const DonutCard = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 24 }}>
+    <Card style={{ padding: mobile ? 18 : 24 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
           {isDrilled ? (
@@ -471,7 +473,7 @@ export const StatsPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 
   const merchants = merchantQ.data?.merchants ?? []
@@ -479,8 +481,7 @@ export const StatsPage = () => {
   const maxMerchantAmt = Math.max(1, ...topMerchants.map(m => m.totalAmount))
 
   const TopMerchantsCard = (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: mobile ? 18 : 22,
         display: 'flex',
@@ -551,7 +552,7 @@ export const StatsPage = () => {
           ))}
         </div>
       )}
-    </div>
+    </Card>
   )
 
   // ---------- HEATMAP (요일 × 시간대 구간) ----------
@@ -602,7 +603,7 @@ export const StatsPage = () => {
   }
 
   const HeatmapCard = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 6 }}>
         <h2 style={{ fontSize: 15 }}>요일·시간대 지출 패턴</h2>
       </div>
@@ -755,7 +756,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
-    </div>
+    </Card>
   )
 
   const topMerchant = topMerchants[0]
@@ -806,7 +807,7 @@ export const StatsPage = () => {
       }}
     >
       {highlights.map((h, i) => (
-        <div key={i} className="p-card" style={{ padding: 18 }}>
+        <Card key={i} style={{ padding: 18 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 10 }}>
             {h.lbl}
           </div>
@@ -814,7 +815,7 @@ export const StatsPage = () => {
             <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>{h.val}</div>
             <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   )
@@ -890,7 +891,7 @@ export const StatsPage = () => {
         : v.toLocaleString('ko-KR')
 
   const TrendBig = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 24 }}>
+    <Card style={{ padding: mobile ? 18 : 24 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>{periodLbl} 수입·지출 추이</h2>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
@@ -975,7 +976,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
-    </div>
+    </Card>
   )
 
   const TrendStats = (
@@ -992,7 +993,7 @@ export const StatsPage = () => {
         { lbl: statLabelSave, val: <><MaskAmount>{KRW(Math.round(avgSave))}</MaskAmount><HideUnit>원</HideUnit></> },
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
-        <div key={i} className="p-card" style={{ padding: 16 }}>
+        <Card key={i} style={{ padding: 16 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
             {s.lbl}
           </div>
@@ -1002,13 +1003,13 @@ export const StatsPage = () => {
           >
             {s.val}
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   )
 
   const SavingsBars = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</h2>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
@@ -1073,7 +1074,7 @@ export const StatsPage = () => {
           </BarChart>
         </ChartContainer>
       )}
-    </div>
+    </Card>
   )
 
   // ---------- COMPARE TAB ----------
@@ -1180,7 +1181,7 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      <div className="p-card" style={{ padding: 16 }}>
+      <Card style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
           {periodNow} 지출
         </div>
@@ -1191,8 +1192,8 @@ export const StatsPage = () => {
           <MaskAmount>{KRW(totalNow)}</MaskAmount>
           <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
         </div>
-      </div>
-      <div className="p-card" style={{ padding: 16 }}>
+      </Card>
+      <Card style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
           {periodPrev} 지출
         </div>
@@ -1208,8 +1209,8 @@ export const StatsPage = () => {
           <MaskAmount>{KRW(totalPrev)}</MaskAmount>
           <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
         </div>
-      </div>
-      <div className="p-card" style={{ padding: 16 }}>
+      </Card>
+      <Card style={{ padding: 16 }}>
         <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 6 }}>
           {momLabel}
         </div>
@@ -1239,12 +1240,12 @@ export const StatsPage = () => {
             </>
           ) : noPrevText}
         </div>
-      </div>
+      </Card>
     </div>
   )
 
   const CompareCategory = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>카테고리별 {momLabel}</h2>
         <div
@@ -1352,7 +1353,7 @@ export const StatsPage = () => {
           })}
         </div>
       )}
-    </div>
+    </Card>
   )
 
   const Content =
@@ -1392,7 +1393,7 @@ export const StatsPage = () => {
   if (mobile) {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
-        {Tabs}
+        {StatsTabs}
         {Content}
       </div>
     )
@@ -1406,7 +1407,7 @@ export const StatsPage = () => {
           <div className="sub">카테고리·추이·인사이트</div>
         </div>
       </div>
-      {Tabs}
+      {StatsTabs}
       {Content}
     </div>
   )

@@ -12,8 +12,10 @@ import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { KRW } from '@/shared/lib/porest/format'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { Card } from '@/shared/ui/card'
 
 const currentMonthKey = () => {
   const n = new Date()
@@ -187,8 +189,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <MonthPicker value={monthKey} onChange={setMonthKey} />
-              <button
-                className="p-btn p-btn--secondary p-btn--sm"
+              <Button
+                variant="secondary"
+                size="sm"
                 type="button"
                 onClick={() => setConfirmCopy(true)}
                 disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
@@ -199,14 +202,14 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 }
               >
                 <Copy size={13} /> 지난달 복사
-              </button>
-              <button
-                className="p-btn p-btn--primary p-btn--sm"
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => setEditing('new')}
                 disabled={loading}
               >
                 <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -214,18 +217,19 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         {mobile && (
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
             <MonthPicker value={monthKey} onChange={setMonthKey} />
-            <button
-              className="p-btn p-btn--secondary p-btn--sm"
+            <Button
+              variant="secondary"
+              size="sm"
               type="button"
               onClick={() => setConfirmCopy(true)}
               disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
             >
               <Copy size={12} /> 지난달 복사
-            </button>
+            </Button>
           </div>
         )}
 
-        <div className="p-card p-card--brand" style={{ padding: 20 }}>
+        <Card variant="brand" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
               <div
@@ -251,8 +255,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 </div>
               )}
             </div>
-            <button
-              className="p-btn p-btn--ghost p-btn--sm"
+            <Button
+              variant="ghost"
+              size="sm"
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditMonthly(true)}
               disabled={loading}
@@ -266,7 +271,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   <Plus size={13} />예산 설정
                 </>
               )}
-            </button>
+            </Button>
           </div>
           {monthlyBudget && (
             <div className="budget-bar" style={{ height: 10, marginTop: 14 }}>
@@ -341,21 +346,22 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               전체 상한을 올리거나 카테고리 한도를 줄여주세요.
             </div>
           )}
-        </div>
+        </Card>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
           <div style={{ fontSize: 13, fontWeight: 700 }}>
             카테고리별 예산 · {categoryBudgets.length}개
           </div>
           {mobile && (
-            <button
-              className="p-btn p-btn--ghost p-btn--sm"
+            <Button
+              variant="ghost"
+              size="sm"
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditing('new')}
               disabled={loading}
             >
               <Plus size={12} />추가
-            </button>
+            </Button>
           )}
         </div>
 
@@ -423,18 +429,21 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   </div>
                   {!mobile && (
                     <div className="cat-row__actions">
-                      <button
-                        className="p-btn p-btn--ghost p-btn--sm"
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setEditing(b)}
                       >
                         <Pencil size={13} />
-                      </button>
-                      <button
-                        className="p-btn p-btn--ghost p-btn--sm cat-row__del"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="cat-row__del"
                         onClick={() => setConfirmDelete(b)}
                       >
                         <Trash2 size={13} />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>

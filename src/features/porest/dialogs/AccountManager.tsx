@@ -10,6 +10,7 @@ import {
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { AssetEditDialog, type AssetGroup } from './AssetEditDialog'
 
@@ -96,13 +97,12 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요.
               </p>
             </div>
-            <button
-              className="p-btn p-btn--primary"
+            <Button
               onClick={() => setEditing({ mode: 'create', group: tab })}
             >
               <Plus size={14} strokeWidth={2.4} />
               {groupLabel(tab)} 추가
-            </button>
+            </Button>
           </div>
         )}
 
@@ -192,18 +192,21 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                     </div>
                     {!mobile ? (
                       <div className="cat-row__actions" onClick={e => e.stopPropagation()}>
-                        <button
-                          className="p-btn p-btn--ghost p-btn--sm"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setEditing({ mode: 'edit', asset })}
                         >
                           <Pencil size={13} />편집
-                        </button>
-                        <button
-                          className="p-btn p-btn--ghost p-btn--sm cat-row__del"
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="cat-row__del"
                           onClick={() => setConfirmDelete(asset)}
                         >
                           <Trash2 size={13} />
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <button

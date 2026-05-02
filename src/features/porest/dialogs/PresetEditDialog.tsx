@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
 import { renderIcon } from '@/shared/lib'
 import {
   Select,
@@ -105,17 +108,16 @@ export function PresetEditDialog({
 
   const Footer = (
     <>
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={submit}
         disabled={!canSave || submitting}
       >
         {submitting ? '저장 중…' : isNew ? '추가' : '저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -166,19 +168,18 @@ export function PresetEditDialog({
         })}
       </div>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">프리셋 이름</label>
-        <input
-          className="p-input"
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>프리셋 이름</FieldLabel>
+        <Input
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="예: 점심 도시락"
           autoFocus
         />
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">카테고리</label>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>카테고리</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
           {topCategories.map(c => {
             const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
@@ -237,20 +238,19 @@ export function PresetEditDialog({
             )
           })}
         </div>
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">기본 내역</label>
-        <input
-          className="p-input"
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>기본 내역</FieldLabel>
+        <Input
           value={merchant}
           onChange={e => setMerchant(e.target.value)}
           placeholder="예: 한솥 도시락"
         />
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">결제 수단</label>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>결제 수단</FieldLabel>
         <Select
           value={paymentMethod || '__none__'}
           onValueChange={(v) => setPaymentMethod(v === '__none__' ? '' : v)}
@@ -267,10 +267,10 @@ export function PresetEditDialog({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">계좌·카드</label>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>계좌·카드</FieldLabel>
         <Select
           value={assetRowId != null ? String(assetRowId) : '__none__'}
           onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
@@ -287,7 +287,7 @@ export function PresetEditDialog({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Field>
 
       <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 10, marginBottom: 4 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -307,12 +307,12 @@ export function PresetEditDialog({
 
         {lockAmount && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
-            <label className="p-field__label" style={{ marginBottom: 4 }}>
+            <FieldLabel style={{ marginBottom: 4 }}>
               고정 금액
-            </label>
+            </FieldLabel>
             <div style={{ position: 'relative' }}>
-              <input
-                className="p-input num"
+              <Input
+                className="num"
                 value={amount}
                 onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="0"

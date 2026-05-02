@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Plus, Scissors, Trash2, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import {
   Select,
   SelectContent,
@@ -146,15 +148,15 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
   const Footer = (
     <>
       {(splitsQ.data?.length ?? 0) > 0 && (
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--ghost"
+          variant="ghost"
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
           onClick={handleDeleteAll}
           disabled={submitting}
         >
           <Trash2 size={14} /> 분할 해제
-        </button>
+        </Button>
       )}
       {matched ? (
         <span
@@ -191,17 +193,16 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
           {remainder > 0 ? `${KRW(remainder)}원 부족` : `${KRW(-remainder)}원 초과`}
         </span>
       )}
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={handleSave}
         disabled={!matched || submitting}
       >
         {replaceMut.isPending ? '저장 중…' : '분할 저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -278,8 +279,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
               {idx + 1}
             </span>
 
-            <input
-              className="p-input"
+            <Input
               value={r.label}
               onChange={e => updateRow(r.uid, { label: e.target.value })}
               placeholder="항목 이름 (선택)"
@@ -303,8 +303,8 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             </Select>
 
             <div style={{ position: 'relative' }}>
-              <input
-                className="p-input num"
+              <Input
+                className="num"
                 value={r.amount}
                 onChange={e => updateRow(r.uid, { amount: e.target.value.replace(/[^0-9]/g, '') })}
                 inputMode="numeric"
@@ -352,12 +352,12 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
       </div>
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'space-between' }}>
-        <button type="button" className="p-btn p-btn--ghost" onClick={addRow} disabled={submitting}>
+        <Button type="button" variant="ghost" onClick={addRow} disabled={submitting}>
           <Plus size={14} /> 항목 추가
-        </button>
-        <button type="button" className="p-btn p-btn--ghost" onClick={splitEvenly} disabled={submitting}>
+        </Button>
+        <Button type="button" variant="ghost" onClick={splitEvenly} disabled={submitting}>
           <Scissors size={14} /> 균등 분배
-        </button>
+        </Button>
       </div>
 
       {/* 분할 비율 */}

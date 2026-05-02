@@ -8,6 +8,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/shared/ui/drawer'
+import { Button } from '@/shared/ui/button'
 
 export type ModalSize = 'sm' | 'md' | 'lg'
 
@@ -133,15 +134,15 @@ export function ConfirmDialog({
             </p>
           </div>
           <div className="modal__foot">
-            <button className="p-btn p-btn--ghost" onClick={onCancel}>
+            <Button variant="ghost" onClick={onCancel}>
               {cancelLabel}
-            </button>
-            <button
-              className={`p-btn ${danger ? 'p-btn--danger' : 'p-btn--primary'}`}
+            </Button>
+            <Button
+              variant={danger ? 'destructive' : 'default'}
               onClick={onConfirm}
             >
               {confirmLabel}
-            </button>
+            </Button>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

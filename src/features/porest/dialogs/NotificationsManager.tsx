@@ -1,4 +1,5 @@
 import { useUpdateUserPreferences, useUserPreferences } from '@/features/user'
+import { Card } from '@/shared/ui/card'
 
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const preferencesQ = useUserPreferences()
@@ -19,7 +20,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         </div>
       )}
 
-      <div className="p-card" style={{ padding: 22 }}>
+      <Card style={{ padding: 22 }}>
         <div className="sec-head" style={{ marginBottom: 12 }}>
           <h2 style={{ fontSize: 15 }}>예산 알림 임계값</h2>
           <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--fg-tertiary)' }}>
@@ -79,7 +80,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

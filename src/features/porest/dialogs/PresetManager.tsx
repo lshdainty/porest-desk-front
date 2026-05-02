@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import { PresetEditDialog } from './PresetEditDialog'
+import { Card } from '@/shared/ui/card'
 
 type SortKey = 'used' | 'recent' | 'name'
 
@@ -140,18 +142,17 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             </button>
           ))}
         </div>
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--primary"
           style={{ padding: '7px 12px', fontSize: 13 }}
           onClick={() => setEditing('new')}
         >
           <Plus size={14} /> 프리셋 추가
-        </button>
+        </Button>
       </div>
 
       {/* List */}
-      <div className="p-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <Card style={{ padding: 0, overflow: 'hidden' }}>
         {templatesQ.isLoading ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
             불러오는 중…
@@ -315,7 +316,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             )
           })
         )}
-      </div>
+      </Card>
 
       {editing != null && (
         <PresetEditDialog

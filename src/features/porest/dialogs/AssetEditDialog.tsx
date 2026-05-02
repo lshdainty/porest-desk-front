@@ -4,6 +4,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
@@ -429,14 +430,13 @@ export function AssetEditDialog({
                   <Label className="text-[13px] font-medium">카드 상품</Label>
                   <div className="flex items-center gap-3">
                     <label
-                      className="p-switch"
+                      className="inline-flex items-center cursor-pointer select-none"
                       style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', gap: 6 }}
                       title="단종된 카드 상품도 검색 결과에 포함합니다"
                     >
-                      <input
-                        type="checkbox"
+                      <Switch
                         checked={includeDiscontinued}
-                        onChange={e => setIncludeDiscontinued(e.target.checked)}
+                        onCheckedChange={setIncludeDiscontinued}
                       />
                       단종 포함
                     </label>

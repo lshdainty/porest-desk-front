@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Check, Divide, ListOrdered, Percent, Plus, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Textarea } from '@/shared/ui/textarea'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
@@ -204,18 +207,17 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           {KRW(perPersonAmount)}원
         </b>
       </span>
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={handleSave}
         disabled={!matched || submitting || participants.length === 0}
       >
         <Send size={14} />
         {submitting ? '생성 중…' : '정산 만들기'}
-      </button>
+      </Button>
     </>
   )
 
@@ -413,8 +415,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
               {splitMethod === 'CUSTOM' && !p.isMe && (
                 <div style={{ position: 'relative', width: 110 }}>
-                  <input
-                    className="p-input num"
+                  <Input
+                    className="num"
                     value={p.customAmount}
                     onChange={e => updateOther(p.uid, { customAmount: e.target.value.replace(/[^0-9]/g, '') })}
                     inputMode="numeric"
@@ -445,8 +447,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
               {splitMethod === 'RATIO' && !p.isMe && (
                 <div style={{ position: 'relative', width: 84 }}>
-                  <input
-                    className="p-input num"
+                  <Input
+                    className="num"
                     value={p.ratio}
                     onChange={e => updateOther(p.uid, { ratio: e.target.value.replace(/[^0-9.]/g, '') })}
                     inputMode="decimal"
@@ -511,8 +513,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
       {/* 추가 input */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-        <input
-          className="p-input"
+        <Input
           value={manualName}
           onChange={e => setManualName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addManual() } }}
@@ -520,14 +521,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           disabled={submitting}
           style={{ flex: 1 }}
         />
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--secondary"
+          variant="secondary"
           onClick={addManual}
           disabled={submitting || !manualName.trim()}
         >
           <UserPlus size={14} /> 추가
-        </button>
+        </Button>
       </div>
 
       {/* 빠른 추가 chips */}
@@ -567,8 +568,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
       {/* 요청 메시지 */}
       <Section title="요청 메시지 (선택)" tightTop>
-        <textarea
-          className="p-input"
+        <Textarea
           value={requestMessage}
           onChange={e => setRequestMessage(e.target.value)}
           placeholder="참여자에게 함께 보낼 한마디를 적어주세요"

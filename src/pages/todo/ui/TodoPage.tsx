@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { useTodos, useToggleTodoStatus } from '@/features/todo'
 import type { Todo, TodoPriority } from '@/entities/todo'
+import { Button } from '@/shared/ui/button'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -109,8 +110,8 @@ export const TodoPage = () => {
   }
 
   const AddBtn = (
-    <button
-      className="p-btn p-btn--primary p-btn--sm"
+    <Button
+      size="sm"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -126,7 +127,7 @@ export const TodoPage = () => {
       }}
     >
       <Plus size={14} /> 할 일 추가
-    </button>
+    </Button>
   )
 
   const SectionHead = (label: string, count: number) => (

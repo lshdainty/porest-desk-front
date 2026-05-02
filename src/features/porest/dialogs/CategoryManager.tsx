@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Icon } from '@/shared/ui/porest/primitives'
+import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import {
   useExpenseCategories,
@@ -148,10 +149,10 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                 지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요.
               </p>
             </div>
-            <button className="p-btn p-btn--primary" onClick={() => setEditing({ kind: 'new' })}>
+            <Button onClick={() => setEditing({ kind: 'new' })}>
               <Plus size={14} strokeWidth={2.4} />
               카테고리 추가
-            </button>
+            </Button>
           </div>
         )}
 
@@ -395,20 +396,22 @@ function SortableRow({
       {!mobile ? (
         <div className="cat-row__actions">
           {isParent && onAddChild && (
-            <button className="p-btn p-btn--ghost p-btn--sm" onClick={onAddChild} title="하위 추가">
+            <Button variant="ghost" size="sm" onClick={onAddChild} title="하위 추가">
               <Plus size={13} />
               하위
-            </button>
+            </Button>
           )}
-          <button className="p-btn p-btn--ghost p-btn--sm" onClick={onEdit}>
+          <Button variant="ghost" size="sm" onClick={onEdit}>
             <Pencil size={13} />편집
-          </button>
-          <button
-            className="p-btn p-btn--ghost p-btn--sm cat-row__del"
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cat-row__del"
             onClick={onDelete}
           >
             <Trash2 size={13} />
-          </button>
+          </Button>
         </div>
       ) : (
         <button className="cat-row__more" onClick={onEdit}>

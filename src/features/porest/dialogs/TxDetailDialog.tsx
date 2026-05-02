@@ -4,6 +4,7 @@ import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useDeleteExpense,
@@ -124,33 +125,32 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
 
   const Footer = (
     <>
-      <button
+      <Button
         type="button"
-        className="p-btn p-btn--ghost"
+        variant="ghost"
         style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
         onClick={() => setConfirmDelete(true)}
         disabled={deleteMut.isPending}
       >
         <Trash2 size={14} />삭제
-      </button>
+      </Button>
       {onEdit && (
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--ghost"
+          variant="ghost"
           onClick={handleEdit}
           disabled={deleteMut.isPending}
         >
           <Pencil size={14} />편집
-        </button>
+        </Button>
       )}
-      <button
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={onClose}
         disabled={deleteMut.isPending}
       >
         확인
-      </button>
+      </Button>
     </>
   )
 

@@ -24,6 +24,7 @@ import { useExpenseCategories } from '@/features/expense'
 import type { RecurringTransaction } from '@/entities/recurring-transaction'
 import { getPaletteByColor } from './CategoryEditDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
+import { Card } from '@/shared/ui/card'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
@@ -121,18 +122,18 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Summary stats */}
-      <div className="p-card" style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+      <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
           <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
           <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
           <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
           <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
         </div>
-      </div>
+      </Card>
 
       {/* Next 7 days */}
       {stats.next7.length > 0 && (
-        <div className="p-card" style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+        <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
             <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
@@ -204,11 +205,11 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               )
             })}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Filter chips + list */}
-      <div className="p-card" style={{ padding: 0, overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+      <Card style={{ padding: 0, overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
           {FILTERS.map(f => {
@@ -377,7 +378,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             )
           })}
         </div>
-      </div>
+      </Card>
 
       {editing && (
         <RecurringEditDialog

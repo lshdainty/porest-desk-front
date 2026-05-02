@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { KRW } from '@/shared/lib/porest/format'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
@@ -76,27 +79,26 @@ export function BudgetEditDialog({
   const Footer = (
     <>
       {onDelete ? (
-        <button
-          className="p-btn p-btn--ghost"
+        <Button
+          variant="ghost"
           onClick={onDelete}
           style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
           disabled={submitting}
         >
           <Trash2 size={14} />삭제
-        </button>
+        </Button>
       ) : (
         <span style={{ marginRight: 'auto' }} />
       )}
-      <button className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
-        className="p-btn p-btn--primary"
+      </Button>
+      <Button
         onClick={save}
         disabled={(touched && !valid) || submitting}
       >
         {isNew ? '추가' : '저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -124,8 +126,8 @@ export function BudgetEditDialog({
       </div>
 
       {isNew && (
-        <div className="p-field" style={{ marginBottom: 14 }}>
-          <label className="p-field__label">카테고리</label>
+        <Field style={{ marginBottom: 14 }}>
+          <FieldLabel>카테고리</FieldLabel>
           {availableCats.length === 0 ? (
             <div
               style={{
@@ -183,13 +185,13 @@ export function BudgetEditDialog({
               })}
             </div>
           )}
-        </div>
+        </Field>
       )}
 
-      <div className="p-field" style={{ marginBottom: 10 }}>
-        <label className="p-field__label">월 한도 (원)</label>
-        <input
-          className="p-input num"
+      <Field style={{ marginBottom: 10 }}>
+        <FieldLabel>월 한도 (원)</FieldLabel>
+        <Input
+          className="num"
           value={limit}
           onChange={e => {
             setLimit(e.target.value.replace(/[^0-9]/g, ''))
@@ -197,7 +199,7 @@ export function BudgetEditDialog({
           }}
           inputMode="numeric"
         />
-      </div>
+      </Field>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {PRESETS.map(p => {
           const active = parseInt(limit) === p
@@ -246,32 +248,31 @@ export function MonthlyBudgetDialog({
   const Footer = (
     <>
       <span style={{ marginRight: 'auto' }} />
-      <button className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
-        className="p-btn p-btn--primary"
+      </Button>
+      <Button
         onClick={() => onSave(parseInt(v) || 0)}
         disabled={submitting || (parseInt(v) || 0) <= 0}
       >
         저장
-      </button>
+      </Button>
     </>
   )
 
   return (
     <ModalShell title="월 예산 수정" onClose={onClose} size="sm" footer={Footer} mobile={mobile}>
-      <div className="p-field" style={{ marginBottom: 10 }}>
-        <label className="p-field__label">월 총 예산 (원)</label>
-        <input
-          className="p-input num"
+      <Field style={{ marginBottom: 10 }}>
+        <FieldLabel>월 총 예산 (원)</FieldLabel>
+        <Input
+          className="num"
           style={{ fontSize: 20, fontWeight: 700 }}
           value={v}
           onChange={e => setV(e.target.value.replace(/[^0-9]/g, ''))}
           inputMode="numeric"
           autoFocus
         />
-      </div>
+      </Field>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {presets.map(p => {
           const active = parseInt(v) === p

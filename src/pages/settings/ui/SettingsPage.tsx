@@ -23,6 +23,7 @@ import {
   PresetManager,
   RecurringManager,
 } from '@/features/porest/dialogs'
+import { Card } from '@/shared/ui/card'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type SectionId =
@@ -270,8 +271,7 @@ export const SettingsPage = () => {
 function PlaceholderSection({ section }: { section: SectionDef }) {
   const IconComp = section.icon
   return (
-    <div
-      className="p-card"
+    <Card
       style={{
         padding: 40,
         textAlign: 'center',
@@ -308,6 +308,6 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
       >
         다음 단계에서 구현
       </div>
-    </div>
+    </Card>
   )
 }

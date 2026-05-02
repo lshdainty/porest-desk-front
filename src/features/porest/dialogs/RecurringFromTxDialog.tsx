@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Bell, Zap, Calendar } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
@@ -94,17 +97,16 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
   const Footer = (
     <>
-      <button type="button" className="p-btn p-btn--ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={handleSave}
         disabled={!ready || submitting}
       >
         {submitting ? '저장 중…' : '반복 저장'}
-      </button>
+      </Button>
     </>
   )
 
@@ -157,18 +159,18 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
       {/* 반복 주기 */}
       <Section title="반복 주기">
-        <div className="p-seg">
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          value={frequency}
+          onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}
+        >
           {FREQS.map(o => (
-            <button
-              key={o.v}
-              type="button"
-              className={`p-seg__btn ${frequency === o.v ? 'active' : ''}`}
-              onClick={() => setFrequency(o.v)}
-            >
+            <ToggleGroupItem key={o.v} value={o.v}>
               {o.l}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </Section>
 
       {/* 요일 (매주) */}
@@ -207,8 +209,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         <Section title="반복 일자">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 13, color: 'var(--fg-secondary)' }}>매월</span>
-            <input
-              className="p-input num"
+            <Input
+              className="num"
               value={dayOfMonth}
               onChange={e => {
                 const n = Math.min(31, Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '')) || 1))
@@ -241,8 +243,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
             sub={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 총
-                <input
-                  className="p-input num"
+                <Input
+                  className="num"
                   value={endCount}
                   onChange={e => setEndCount(e.target.value.replace(/[^0-9]/g, ''))}
                   onClick={e => { e.stopPropagation(); setEndMode('COUNT') }}

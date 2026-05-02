@@ -4,7 +4,11 @@ import type { Asset } from '@/entities/asset'
 import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
 import { renderIcon } from '@/shared/lib'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
 export type FilterPeriod = 'week' | 'month' | '3m' | 'custom'
 
@@ -135,34 +139,34 @@ export function FilterDialog({
 
   const Footer = (
     <>
-      <button className="p-btn p-btn--ghost" onClick={reset} style={{ marginRight: 'auto' }}>
+      <Button variant="ghost" onClick={reset} style={{ marginRight: 'auto' }}>
         초기화
-      </button>
-      <button className="p-btn p-btn--ghost" onClick={onClose}>
+      </Button>
+      <Button variant="ghost" onClick={onClose}>
         취소
-      </button>
-      <button className="p-btn p-btn--primary" onClick={apply} disabled={customInvalid}>
+      </Button>
+      <Button onClick={apply} disabled={customInvalid}>
         필터 적용
-      </button>
+      </Button>
     </>
   )
 
   return (
     <ModalShell title="필터" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <div className="p-field" style={{ marginBottom: 16 }}>
-        <label className="p-field__label">기간</label>
-        <div className="p-seg">
+      <Field style={{ marginBottom: 16 }}>
+        <FieldLabel>기간</FieldLabel>
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          value={period}
+          onValueChange={(v) => v && selectPeriod(v as FilterPeriod)}
+        >
           {PERIODS.map(o => (
-            <button
-              key={o.v}
-              type="button"
-              className={`p-seg__btn ${period === o.v ? 'active' : ''}`}
-              onClick={() => selectPeriod(o.v)}
-            >
+            <ToggleGroupItem key={o.v} value={o.v}>
               {o.l}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         {period === 'custom' && (
           <div style={{ marginTop: 10 }}>
             <div
@@ -192,10 +196,10 @@ export function FilterDialog({
             )}
           </div>
         )}
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 16 }}>
-        <label className="p-field__label">거래 종류</label>
+      <Field style={{ marginBottom: 16 }}>
+        <FieldLabel>거래 종류</FieldLabel>
         <div style={{ display: 'flex', gap: 8 }}>
           {TYPES.map(o => {
             const active = types.includes(o.v)
@@ -227,18 +231,18 @@ export function FilterDialog({
             )
           })}
         </div>
-      </div>
+      </Field>
 
       {parentCategories.length > 0 && (
-        <div className="p-field" style={{ marginBottom: 16 }}>
-          <label className="p-field__label">
+        <Field style={{ marginBottom: 16 }}>
+          <FieldLabel>
             카테고리
             {categoryIds.length > 0 && (
               <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
                 · {categoryIds.length}개 선택
               </span>
             )}
-          </label>
+          </FieldLabel>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
             {parentCategories.map(c => {
               const active = categoryIds.includes(c.rowId)
@@ -292,19 +296,19 @@ export function FilterDialog({
               )
             })}
           </div>
-        </div>
+        </Field>
       )}
 
       {assets.length > 0 && (
-        <div className="p-field" style={{ marginBottom: 16 }}>
-          <label className="p-field__label">
+        <Field style={{ marginBottom: 16 }}>
+          <FieldLabel>
             계좌·카드
             {assetIds.length > 0 && (
               <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
                 · {assetIds.length}개 선택
               </span>
             )}
-          </label>
+          </FieldLabel>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {assets.map(a => {
               const active = assetIds.includes(a.rowId)
@@ -330,29 +334,29 @@ export function FilterDialog({
               )
             })}
           </div>
-        </div>
+        </Field>
       )}
 
-      <div className="p-field">
-        <label className="p-field__label">금액 범위</label>
+      <Field>
+        <FieldLabel>금액 범위</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
-          <input
-            className="p-input num"
+          <Input
+            className="num"
             value={min}
             onChange={e => setMin(e.target.value.replace(/[^0-9]/g, ''))}
             placeholder="최소 금액"
             inputMode="numeric"
           />
           <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
-          <input
-            className="p-input num"
+          <Input
+            className="num"
             value={max}
             onChange={e => setMax(e.target.value.replace(/[^0-9]/g, ''))}
             placeholder="최대 금액"
             inputMode="numeric"
           />
         </div>
-      </div>
+      </Field>
     </ModalShell>
   )
 }

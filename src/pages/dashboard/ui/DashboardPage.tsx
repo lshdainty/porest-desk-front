@@ -15,6 +15,7 @@ import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
+import { Card } from '@/shared/ui/card'
 import { useDashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
 import {
@@ -365,7 +366,7 @@ function HomeDesktop() {
           </div>
         </div>
 
-        <div className="p-card" style={{ padding: 24 }}>
+        <Card style={{ padding: 24 }}>
           <div className="sec-head" style={{ marginBottom: 18 }}>
             <h2>{periodM}월 수입·지출</h2>
             <MonthPicker value={period} onChange={setPeriod} />
@@ -406,9 +407,9 @@ function HomeDesktop() {
               {trendQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="p-card" style={{ padding: 24 }}>
+        <Card style={{ padding: 24 }}>
           <div className="sec-head">
             <h2>최근 거래</h2>
             <button className="all" onClick={() => navigate('/desk/expense')}>
@@ -426,11 +427,11 @@ function HomeDesktop() {
               <ExpenseRow key={t.rowId} expense={t} onClick={() => navigate('/desk/expense')} />
             ))}
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="dash-grid__right">
-        <div className="p-card" style={{ padding: 22 }}>
+        <Card style={{ padding: 22 }}>
           <div className="sec-head">
             <h2>카테고리</h2>
             <button className="all" onClick={() => navigate('/desk/stats')}>
@@ -463,9 +464,9 @@ function HomeDesktop() {
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="p-card" style={{ padding: 22 }}>
+        <Card style={{ padding: 22 }}>
           <div className="sec-head">
             <h2>예산</h2>
             <button className="all" onClick={() => navigate('/desk/budget')}>
@@ -518,9 +519,9 @@ function HomeDesktop() {
               })}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="p-card" style={{ padding: 22 }}>
+        <Card style={{ padding: 22 }}>
           <div className="sec-head">
             <h2>예정된 결제</h2>
           </div>
@@ -564,9 +565,9 @@ function HomeDesktop() {
               ))}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="p-card" style={{ padding: 22 }}>
+        <Card style={{ padding: 22 }}>
           <div className="sec-head">
             <h2>할 일</h2>
             <button className="all" onClick={() => navigate('/desk/todo')}>
@@ -614,9 +615,9 @@ function HomeDesktop() {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
-        <div className="p-card" style={{ padding: 22 }}>
+        <Card style={{ padding: 22 }}>
           <div className="sec-head">
             <h2>예정된 일정</h2>
             <button className="all" onClick={() => navigate('/desk/calendar')}>
@@ -658,7 +659,7 @@ function HomeDesktop() {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   )
@@ -789,7 +790,7 @@ function HomeMobile() {
         })}
       </div>
 
-      <div className="p-card" style={{ padding: 18 }}>
+      <Card style={{ padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.015em' }}>{month}월 가계부</div>
           <TrendingUp size={14} style={{ marginLeft: 'auto', color: 'var(--mossy-700)' }} />
@@ -808,9 +809,9 @@ function HomeMobile() {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="p-card" style={{ padding: 18 }}>
+      <Card style={{ padding: 18 }}>
         <div className="sec-head" style={{ marginBottom: 6 }}>
           <h2 style={{ fontSize: 15 }}>최근 거래</h2>
           <button className="all" onClick={() => navigate('/desk/expense')}>전체</button>
@@ -825,7 +826,7 @@ function HomeMobile() {
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

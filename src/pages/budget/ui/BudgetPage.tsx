@@ -5,6 +5,9 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'rec
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import {
   useBudgetCompliance,
@@ -199,8 +202,8 @@ export const BudgetPage = () => {
 
   // ---- Cards ----
   const HeaderCard = (
-    <div
-      className="p-card p-card--brand"
+    <Card
+      variant="brand"
       style={{ padding: mobile ? 18 : 24, marginBottom: mobile ? 12 : 0 }}
     >
       <div
@@ -346,19 +349,19 @@ export const BudgetPage = () => {
           )}
         </div>
       )}
-    </div>
+    </Card>
   )
 
   const PaceCard = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>지출 페이스</h2>
-        <span
-          className={`p-badge ${onTrack ? 'p-badge--success' : 'p-badge--warning'}`}
+        <Badge
+          variant={onTrack ? 'success' : 'warning'}
           style={{ marginLeft: 'auto' }}
         >
           {onTrack ? '정상 속도' : '빠른 속도'}
-        </span>
+        </Badge>
       </div>
       <div
         style={{
@@ -445,11 +448,11 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 
   const StatusTiles = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>예산 현황</h2>
       </div>
@@ -519,7 +522,7 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 
   const ComplianceCard = (() => {
@@ -534,7 +537,7 @@ export const BudgetPage = () => {
       active: b.year === year && b.month === month,
     }))
     return (
-      <div className="p-card" style={{ padding: 22 }}>
+      <Card style={{ padding: 22 }}>
         <div className="sec-head" style={{ marginBottom: 16 }}>
           <h2 style={{ fontSize: 15 }}>최근 6개월 예산 이행률</h2>
           <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
@@ -592,12 +595,12 @@ export const BudgetPage = () => {
             </BarChart>
           </ChartContainer>
         )}
-      </div>
+      </Card>
     )
   })()
 
   const ListCard = (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div className="sec-head" style={{ marginBottom: 14 }}>
         <h2 style={{ fontSize: 15 }}>카테고리별 예산</h2>
         <span style={{ marginLeft: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
@@ -611,14 +614,15 @@ export const BudgetPage = () => {
       ) : categoryBudgets.length === 0 ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
           <div>카테고리별 예산이 없어요</div>
-          <button
+          <Button
             type="button"
-            className="p-btn p-btn--ghost p-btn--sm"
+            variant="ghost"
+            size="sm"
             style={{ marginTop: 10, color: 'var(--fg-brand-strong)' }}
             onClick={goToSettings}
           >
             예산 설정하러 가기 →
-          </button>
+          </Button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -680,19 +684,19 @@ export const BudgetPage = () => {
           })}
         </div>
       )}
-    </div>
+    </Card>
   )
 
   const PageControls = (
     <>
       <MonthPicker value={monthKey} onChange={setMonthKey} />
-      <button
-        className="p-btn p-btn--primary p-btn--sm"
+      <Button
+        size="sm"
         type="button"
         onClick={goToSettings}
       >
         <Settings size={14} /> 예산 설정
-      </button>
+      </Button>
     </>
   )
 

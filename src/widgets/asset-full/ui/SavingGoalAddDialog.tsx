@@ -3,6 +3,9 @@ import { AlertCircle, Trash2 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import {
   useContributeSavingGoal,
@@ -164,32 +167,32 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const Footer = (
     <>
       {isEdit && (
-        <button
+        <Button
           type="button"
-          className="p-btn p-btn--danger-ghost"
+          variant="ghost"
+          className="text-[var(--status-danger)] hover:text-[var(--berry-700)]"
           onClick={handleDelete}
           disabled={isPending}
           style={{ marginRight: 'auto' }}
         >
           <Trash2 size={14} /> 삭제
-        </button>
+        </Button>
       )}
-      <button
+      <Button
         type="button"
-        className="p-btn p-btn--ghost"
+        variant="ghost"
         onClick={onClose}
         disabled={isPending}
       >
         취소
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className="p-btn p-btn--primary"
         onClick={handleSubmit}
         disabled={isPending}
       >
         {isPending ? '저장 중…' : isEdit ? '저장' : '추가'}
-      </button>
+      </Button>
     </>
   )
 
@@ -271,10 +274,9 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         </div>
       </div>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">목표 이름</label>
-        <input
-          className="p-input"
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>목표 이름</FieldLabel>
+        <Input
           value={title}
           onChange={e => {
             setTitle(e.target.value)
@@ -283,7 +285,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           placeholder="예: 유럽 여행"
           autoFocus
         />
-      </div>
+      </Field>
 
       <div
         style={{
@@ -293,11 +295,11 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           marginBottom: 14,
         }}
       >
-        <div className="p-field">
-          <label className="p-field__label">목표 금액</label>
+        <Field>
+          <FieldLabel>목표 금액</FieldLabel>
           <div style={{ position: 'relative' }}>
-            <input
-              className="p-input num"
+            <Input
+              className="num"
               value={fmtNum(parseNum(targetStr))}
               onChange={e => {
                 setTargetStr(e.target.value)
@@ -321,12 +323,12 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
               원
             </span>
           </div>
-        </div>
-        <div className="p-field">
-          <label className="p-field__label">현재 모은 금액</label>
+        </Field>
+        <Field>
+          <FieldLabel>현재 모은 금액</FieldLabel>
           <div style={{ position: 'relative' }}>
-            <input
-              className="p-input num"
+            <Input
+              className="num"
               value={fmtNum(parseNum(currentStr))}
               onChange={e => {
                 setCurrentStr(e.target.value)
@@ -350,21 +352,21 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
               원
             </span>
           </div>
-        </div>
+        </Field>
       </div>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>
           목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400 }}>(선택)</span>
-        </label>
+        </FieldLabel>
         <InputDatePicker
           value={deadlineDate}
           onValueChange={v => setDeadlineDate(v ?? '')}
         />
-      </div>
+      </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label className="p-field__label">아이콘</label>
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>아이콘</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
           {GOAL_ICONS.map(g => {
             const active = icon === g.k
@@ -396,10 +398,10 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             )
           })}
         </div>
-      </div>
+      </Field>
 
-      <div className="p-field">
-        <label className="p-field__label">색상</label>
+      <Field>
+        <FieldLabel>색상</FieldLabel>
         <div style={{ display: 'flex', gap: 8 }}>
           {GOAL_COLORS.map(c => {
             const active = color === c
@@ -425,7 +427,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             )
           })}
         </div>
-      </div>
+      </Field>
 
       {err && (
         <div
