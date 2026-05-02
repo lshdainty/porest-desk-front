@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info, Loader2 } from 'lucide-react'
+import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'lucide-react'
 import { cn } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {
   useNotifications,
@@ -75,14 +76,16 @@ export const NotificationBell = () => {
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold">{t('title')}</h3>
             {unreadCount > 0 && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={markAllRead.isPending}
                 onClick={() => markAllRead.mutate()}
-                disabled={markAllRead.isPending}
-                className="flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
+                className="text-primary hover:bg-transparent hover:text-primary hover:underline"
               >
-                {markAllRead.isPending ? <Loader2 size={12} className="animate-spin" /> : <CheckCheck size={12} />}
+                {!markAllRead.isPending && <CheckCheck size={12} />}
                 {t('markAllRead')}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -123,16 +126,19 @@ export const NotificationBell = () => {
                       {formatTimeAgo(notification.createAt)}
                     </span>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    loading={deleteNotification.isPending}
                     onClick={(e) => {
                       e.stopPropagation()
                       deleteNotification.mutate(notification.rowId)
                     }}
-                    disabled={deleteNotification.isPending}
-                    className="mt-0.5 shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-destructive transition-colors disabled:opacity-50"
+                    className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-destructive"
+                    aria-label="delete"
                   >
-                    {deleteNotification.isPending ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                  </button>
+                    {!deleteNotification.isPending && <Trash2 size={12} />}
+                  </Button>
                 </div>
               ))
             )}

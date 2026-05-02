@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router-dom'
 import { Check, Plus } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   useDutchPays,
@@ -70,24 +71,15 @@ export const DutchPayPage = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
           <div style={{ fontSize: 12, color: 'var(--fg-on-warm)', fontWeight: 600 }}>진행 중 정산</div>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            className="ml-auto"
+            loading={settleAll.isPending}
             onClick={() => settleAll.mutate(d.rowId)}
-            disabled={settleAll.isPending}
-            style={{
-              marginLeft: 'auto',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 8,
-              padding: '4px 10px',
-              fontSize: 11.5,
-              fontWeight: 600,
-              color: 'var(--fg-primary)',
-              cursor: settleAll.isPending ? 'not-allowed' : 'pointer',
-              opacity: settleAll.isPending ? 0.5 : 1,
-            }}
           >
             전체 정산 완료
-          </button>
+          </Button>
         </div>
         <div style={{ fontSize: mobile ? 18 : 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>
           {d.title}
@@ -148,23 +140,14 @@ export const DutchPayPage = () => {
           </div>
         </div>
         {!p.isPaid ? (
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={markPaid.isPending}
             onClick={() => markPaid.mutate({ dutchPayId, participantId: p.rowId })}
-            disabled={markPaid.isPending}
-            style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontSize: 12,
-              fontWeight: 600,
-              color: 'var(--fg-primary)',
-              cursor: markPaid.isPending ? 'not-allowed' : 'pointer',
-              opacity: markPaid.isPending ? 0.5 : 1,
-            }}
           >
             송금 완료
-          </button>
+          </Button>
         ) : (
           <span
             style={{

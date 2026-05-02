@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ListChecks,
 } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
 import type { Notification, NotificationType } from '@/entities/notification'
 
@@ -113,24 +114,15 @@ export function NotificationsPopover({
             )}
           </div>
           {unreadCount > 0 && (
-            <button
-              className="hover:bg-[var(--bg-brand-subtle)]"
-              style={{
-                marginLeft: 'auto',
-                border: 0,
-                background: 'transparent',
-                color: 'var(--fg-brand-strong)',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: 6,
-              }}
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={markAllRead.isPending}
               onClick={() => markAllRead.mutate()}
-              disabled={markAllRead.isPending}
+              className="ml-auto text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
             >
               모두 읽음
-            </button>
+            </Button>
           )}
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>

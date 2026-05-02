@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Bell, Calendar, CheckSquare, Eye, EyeOff, Info, Moon, Search, Sun, Wallet } from 'lucide-react'
+import { Bell, Calendar, CheckSquare, Eye, EyeOff, Info, Moon, Search, Sun, Wallet, X } from 'lucide-react'
 import { cn } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 import {
   Drawer,
   DrawerBody,
@@ -138,13 +139,15 @@ function MobileNotificationSheet({
             )}
           </div>
           {unreadCount > 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={markAllRead.isPending}
               onClick={() => markAllRead.mutate()}
-              disabled={markAllRead.isPending}
-              className="rounded-md px-2 py-1 text-xs font-semibold text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] disabled:opacity-50"
+              className="text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
             >
               모두 읽음
-            </button>
+            </Button>
           )}
         </DrawerHeader>
         <DrawerBody className="p-0">
@@ -176,17 +179,19 @@ function MobileNotificationSheet({
                   <div className="notif-row__desc">{n.message}</div>
                 </div>
                 <div className="notif-row__time">{timeAgo(n.createAt)}</div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  loading={deleteNotif.isPending}
                   onClick={e => {
                     e.stopPropagation()
                     deleteNotif.mutate(n.rowId)
                   }}
-                  disabled={deleteNotif.isPending}
-                  className="cursor-pointer border-0 bg-transparent p-1 text-[11px] text-[var(--fg-tertiary)]"
+                  className="h-7 w-7 text-[var(--fg-tertiary)]"
                   aria-label="삭제"
                 >
-                  ×
-                </button>
+                  <X size={12} />
+                </Button>
               </div>
             ))
           )}
