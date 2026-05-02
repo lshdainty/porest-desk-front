@@ -20,17 +20,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--bg-brand)] text-[var(--fg-on-brand)] hover:bg-[var(--bg-brand-hover)] active:bg-[var(--bg-brand-press)]",
+          "bg-primary text-primary-foreground hover:bg-[var(--bg-brand-hover)] active:bg-[var(--bg-brand-press)]",
         destructive:
-          "bg-[var(--status-danger)] text-white hover:bg-[var(--berry-700)]",
+          "bg-destructive text-destructive-foreground hover:bg-[var(--berry-700)]",
         outline:
-          "bg-transparent text-[var(--fg-brand)] border-[var(--mossy-300)] hover:bg-[var(--bg-brand-subtle)] hover:border-[var(--border-brand)]",
+          "bg-transparent text-[var(--fg-brand)] border-[var(--mossy-300)] hover:bg-accent hover:border-[var(--border-brand)]",
         secondary:
-          "bg-[var(--bg-surface)] text-[var(--fg-primary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)]",
+          "bg-card text-foreground border-input hover:bg-muted hover:border-[var(--border-strong)]",
         ghost:
-          "bg-transparent text-[var(--fg-primary)] hover:bg-[var(--bg-muted)]",
+          "bg-transparent text-foreground hover:bg-muted",
         warm:
-          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-[var(--bg-muted)]",
+          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-muted",
         link:
           "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px]",
       },

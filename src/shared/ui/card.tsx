@@ -6,16 +6,16 @@ import { cn } from "@/shared/lib/index"
 // POREST Design System — .p-card spec
 // padding은 호출자가 지정 (인라인 또는 CardContent/CardHeader 사용).
 const cardVariants = cva(
-  "rounded-[var(--radius-lg)] border text-[var(--fg-primary)] transition-[background-color,border-color,box-shadow] duration-[140ms]",
+  "rounded-[var(--radius-lg)] border text-card-foreground transition-[background-color,border-color,box-shadow] duration-[140ms]",
   {
     variants: {
       variant: {
         default:
-          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-[var(--shadow-sm)]",
+          "bg-card border-border shadow-[var(--shadow-sm)]",
         elevated:
-          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-[var(--shadow-md)]",
+          "bg-card border-border shadow-[var(--shadow-md)]",
         outline:
-          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-none",
+          "bg-card border-border shadow-none",
         inset:
           "bg-[var(--bg-sunken)] border-0 shadow-none",
         brand:
@@ -66,7 +66,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-[17px] font-semibold leading-snug tracking-[-0.008em] text-[var(--fg-primary)]",
+      "text-[17px] font-semibold leading-snug tracking-[-0.008em] text-foreground",
       className
     )}
     {...props}
@@ -101,7 +101,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center gap-2 mt-4 pt-3.5 border-t border-[var(--border-subtle)]",
+      "flex items-center gap-2 mt-4 pt-3.5 border-t border-border",
       className
     )}
     {...props}

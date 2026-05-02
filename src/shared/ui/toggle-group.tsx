@@ -19,7 +19,7 @@ const ToggleGroup = React.forwardRef<
 >(({ className, variant, size, children, ...props }, ref) => {
   // POREST .p-seg — sunken bar for segmented control.
   const wrapper = variant === "segmented"
-    ? "inline-flex w-full gap-[2px] rounded-[10px] border border-[var(--border-subtle)] bg-[var(--pd-surface-inset)] p-1"
+    ? "inline-flex w-full gap-[2px] rounded-[10px] border border-border bg-[var(--pd-surface-inset)] p-1"
     : "flex items-center justify-center gap-1"
   return (
     <ToggleGroupPrimitive.Root

@@ -10,9 +10,9 @@ const Tabs = TabsPrimitive.Root
 const tabsListVariants = cva("", {
   variants: {
     variant: {
-      pill: "inline-flex h-9 items-center justify-center rounded-lg bg-[var(--bg-sunken)] p-[3px] gap-1 text-[var(--fg-tertiary)]",
+      pill: "inline-flex h-9 items-center justify-center rounded-lg bg-[var(--bg-sunken)] p-[3px] gap-1 text-muted-foreground",
       underline:
-        "flex gap-0 border-b border-[var(--border-subtle)] bg-transparent p-0 h-auto rounded-none",
+        "flex gap-0 border-b border-border bg-transparent p-0 h-auto rounded-none",
     },
   },
   defaultVariants: { variant: "pill" },
@@ -23,9 +23,9 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       variant: {
-        pill: "rounded-[var(--radius-sm)] px-3 py-1 data-[state=active]:bg-[var(--bg-surface)] data-[state=active]:text-[var(--fg-primary)] data-[state=active]:shadow-[var(--shadow-xs)]",
+        pill: "rounded-[var(--radius-sm)] px-3 py-1 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-[var(--shadow-xs)]",
         underline:
-          "rounded-none px-3.5 py-2.5 text-[13px] text-[var(--fg-secondary)] border-b-2 border-transparent -mb-px hover:text-[var(--fg-primary)] data-[state=active]:text-[var(--fg-brand-strong)] data-[state=active]:border-[var(--bg-brand-hover)] data-[state=active]:font-semibold",
+          "rounded-none px-3.5 py-2.5 text-[13px] text-[var(--fg-secondary)] border-b-2 border-transparent -mb-px hover:text-foreground data-[state=active]:text-[var(--fg-brand-strong)] data-[state=active]:border-[var(--bg-brand-hover)] data-[state=active]:font-semibold",
       },
     },
     defaultVariants: { variant: "pill" },

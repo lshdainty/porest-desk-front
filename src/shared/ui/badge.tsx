@@ -14,9 +14,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--bg-sunken)] text-[var(--fg-primary)]",
+          "bg-[var(--bg-sunken)] text-foreground",
         secondary:
-          "bg-[var(--bg-sunken)] text-[var(--fg-primary)]",
+          "bg-[var(--bg-sunken)] text-foreground",
         destructive:
           "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
         danger:
