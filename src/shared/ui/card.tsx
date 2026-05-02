@@ -1,20 +1,47 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+// POREST Design System — .p-card spec
+// padding은 호출자가 지정 (인라인 또는 CardContent/CardHeader 사용).
+const cardVariants = cva(
+  "rounded-[var(--radius-lg)] border text-[var(--fg-primary)] transition-[background-color,border-color,box-shadow] duration-[140ms]",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-[var(--shadow-sm)]",
+        elevated:
+          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-[var(--shadow-md)]",
+        outline:
+          "bg-[var(--bg-surface)] border-[var(--border-subtle)] shadow-none",
+        inset:
+          "bg-[var(--bg-sunken)] border-0 shadow-none",
+        brand:
+          "bg-[var(--bg-brand-tint)] border-[var(--border-brand-soft)] shadow-[var(--shadow-sm)]",
+        warm:
+          "bg-[var(--bg-warm-tint)] border-[var(--bg-warm-tint-strong)] shadow-[var(--shadow-sm)]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+type CardProps = React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof cardVariants>
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant }), className)}
+      {...props}
+    />
+  )
+)
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
@@ -23,7 +50,10 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn(
+      "flex items-start justify-between gap-3 mb-3",
+      className
+    )}
     {...props}
   />
 ))
@@ -36,7 +66,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-[17px] font-semibold leading-snug tracking-[-0.008em] text-[var(--fg-primary)]",
       className
     )}
     {...props}
@@ -50,7 +80,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-[13px] text-[var(--fg-secondary)] mt-0.5", className)}
     {...props}
   />
 ))
@@ -60,7 +90,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-5", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -70,10 +100,21 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn(
+      "flex items-center gap-2 mt-4 pt-3.5 border-t border-[var(--border-subtle)]",
+      className
+    )}
     {...props}
   />
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  cardVariants,
+}
