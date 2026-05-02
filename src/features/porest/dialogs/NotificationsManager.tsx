@@ -1,5 +1,5 @@
 import { useUpdateUserPreferences, useUserPreferences } from '@/features/user'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const preferencesQ = useUserPreferences()
@@ -21,12 +21,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       )}
 
       <Card style={{ padding: 22 }}>
-        <div className="sec-head" style={{ marginBottom: 12 }}>
-          <h2 style={{ fontSize: 15 }}>예산 알림 임계값</h2>
+        <CardHeader>
+          <CardTitle style={{ fontSize: 15 }}>예산 알림 임계값</CardTitle>
           <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--fg-tertiary)' }}>
             현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
           </span>
-        </div>
+        </CardHeader>
         <div
           style={{
             fontSize: 12,

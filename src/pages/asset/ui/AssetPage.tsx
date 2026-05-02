@@ -17,7 +17,7 @@ import {
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Donut } from '@/shared/ui/porest/charts'
 import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
@@ -272,8 +272,8 @@ function AssetCompositionCard({
 
   return (
     <Card style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <CardHeader style={{ marginBottom: 16 }}>
+        <CardTitle style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
             <>
               <button
@@ -298,11 +298,11 @@ function AssetCompositionCard({
           ) : (
             '자산 구성'
           )}
-        </h2>
+        </CardTitle>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
           {dateLabel}
         </span>
-      </div>
+      </CardHeader>
       {segments.length === 0 ? (
         <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
           {active ? '등록된 항목이 없어요' : '자산 데이터가 없어요'}
@@ -422,8 +422,8 @@ function UpcomingBillsCard() {
 
   return (
     <Card style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14, display: 'flex', alignItems: 'center' }}>
-        <h2 style={{ fontSize: 15 }}>예정된 결제 · 고정지출</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>예정된 결제 · 고정지출</CardTitle>
         <button
           type="button"
           onClick={() => goToSettings()}
@@ -435,7 +435,7 @@ function UpcomingBillsCard() {
         >
           전체 보기 <ChevronRight size={12} />
         </button>
-      </div>
+      </CardHeader>
       {recurringQ.isLoading ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
           불러오는 중…
@@ -605,8 +605,8 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
 
   return (
     <Card style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>저축 목표</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>저축 목표</CardTitle>
         <Button
           variant="ghost"
           size="sm"
@@ -616,7 +616,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
         >
           <Plus size={13} /> 목표 추가
         </Button>
-      </div>
+      </CardHeader>
       {isLoading ? (
         <div
           style={{
@@ -732,8 +732,8 @@ function TypeGroup({
 }) {
   return (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>{title}</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>{title}</CardTitle>
         <span
           className="num"
           style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: totalColor }}
@@ -751,7 +751,7 @@ function TypeGroup({
         >
           <Plus size={13} />추가
         </Button>
-      </div>
+      </CardHeader>
       {assets.length === 0 ? (
         <div
           style={{

@@ -15,7 +15,7 @@ import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 import { useDashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
 import {
@@ -367,10 +367,10 @@ function HomeDesktop() {
         </div>
 
         <Card style={{ padding: 24 }}>
-          <div className="sec-head" style={{ marginBottom: 18 }}>
-            <h2>{periodM}월 수입·지출</h2>
+          <CardHeader style={{ marginBottom: 18 }}>
+            <CardTitle>{periodM}월 수입·지출</CardTitle>
             <MonthPicker value={period} onChange={setPeriod} />
-          </div>
+          </CardHeader>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>수입</div>
@@ -410,12 +410,12 @@ function HomeDesktop() {
         </Card>
 
         <Card style={{ padding: 24 }}>
-          <div className="sec-head">
-            <h2>최근 거래</h2>
+          <CardHeader>
+            <CardTitle>최근 거래</CardTitle>
             <button className="all" onClick={() => navigate('/desk/expense')}>
               전체 보기 <ChevronRight size={14} />
             </button>
-          </div>
+          </CardHeader>
           <div>
             {recentQ.isLoading && <Skeleton height={60} />}
             {!recentQ.isLoading && recentTx.length === 0 && (
@@ -432,12 +432,12 @@ function HomeDesktop() {
 
       <div className="dash-grid__right">
         <Card style={{ padding: 22 }}>
-          <div className="sec-head">
-            <h2>카테고리</h2>
+          <CardHeader>
+            <CardTitle>카테고리</CardTitle>
             <button className="all" onClick={() => navigate('/desk/stats')}>
               자세히 <ChevronRight size={14} />
             </button>
-          </div>
+          </CardHeader>
           {donutSegs.length === 0 ? (
             <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
               {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없습니다'}
@@ -467,12 +467,12 @@ function HomeDesktop() {
         </Card>
 
         <Card style={{ padding: 22 }}>
-          <div className="sec-head">
-            <h2>예산</h2>
+          <CardHeader>
+            <CardTitle>예산</CardTitle>
             <button className="all" onClick={() => navigate('/desk/budget')}>
               예산 관리 <ChevronRight size={14} />
             </button>
-          </div>
+          </CardHeader>
           {budgetItems.length === 0 ? (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
               {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
@@ -522,9 +522,9 @@ function HomeDesktop() {
         </Card>
 
         <Card style={{ padding: 22 }}>
-          <div className="sec-head">
-            <h2>예정된 결제</h2>
-          </div>
+          <CardHeader>
+            <CardTitle>예정된 결제</CardTitle>
+          </CardHeader>
           {upcomingPayments.length === 0 ? (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
               {recurringQ.isLoading ? '불러오는 중…' : '예정된 결제가 없어요'}
@@ -568,12 +568,12 @@ function HomeDesktop() {
         </Card>
 
         <Card style={{ padding: 22 }}>
-          <div className="sec-head">
-            <h2>할 일</h2>
+          <CardHeader>
+            <CardTitle>할 일</CardTitle>
             <button className="all" onClick={() => navigate('/desk/todo')}>
               관리 <ChevronRight size={14} />
             </button>
-          </div>
+          </CardHeader>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {summary?.recentTodos?.slice(0, 4).map(td => (
               <div
@@ -618,12 +618,12 @@ function HomeDesktop() {
         </Card>
 
         <Card style={{ padding: 22 }}>
-          <div className="sec-head">
-            <h2>예정된 일정</h2>
+          <CardHeader>
+            <CardTitle>예정된 일정</CardTitle>
             <button className="all" onClick={() => navigate('/desk/calendar')}>
               캘린더 <ChevronRight size={14} />
             </button>
-          </div>
+          </CardHeader>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {summary?.upcomingEvents?.slice(0, 3).map(ev => (
               <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -812,10 +812,10 @@ function HomeMobile() {
       </Card>
 
       <Card style={{ padding: 18 }}>
-        <div className="sec-head" style={{ marginBottom: 6 }}>
-          <h2 style={{ fontSize: 15 }}>최근 거래</h2>
+        <CardHeader style={{ marginBottom: 6 }}>
+          <CardTitle style={{ fontSize: 15 }}>최근 거래</CardTitle>
           <button className="all" onClick={() => navigate('/desk/expense')}>전체</button>
-        </div>
+        </CardHeader>
         <div>
           {recentTx.map(t => (
             <ExpenseRow key={t.rowId} expense={t} onClick={() => navigate('/desk/expense')} />

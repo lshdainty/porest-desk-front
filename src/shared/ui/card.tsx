@@ -44,29 +44,29 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 )
 Card.displayName = "Card"
 
+// sec-head 시각: flex items-center gap-2 mb-3.
+// 부수 메타 정보는 자식 span/div에서 marginLeft:auto 또는 ml-auto 로 우측 밀어내는 패턴.
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "flex items-start justify-between gap-3 mb-3",
-      className
-    )}
+    className={cn("flex items-center gap-2 mb-3", className)}
     {...props}
   />
 ))
 CardHeader.displayName = "CardHeader"
 
+// sec-head h2 시각: 16px / 700 / -0.015em
 const CardTitle = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <h2
     ref={ref}
     className={cn(
-      "text-[17px] font-semibold leading-snug tracking-[-0.008em] text-foreground",
+      "text-base font-bold tracking-[-0.015em] leading-snug text-foreground",
       className
     )}
     {...props}
@@ -90,7 +90,8 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-5", className)} {...props} />
+  // padding 미지정. 외곽 <Card>의 padding 또는 CardContent className에서 지정.
+  <div ref={ref} className={cn(className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 

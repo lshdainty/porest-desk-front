@@ -7,7 +7,7 @@ import {
   useSettleAll,
 } from '@/features/dutch-pay'
 import type { DutchPay, DutchPayParticipant } from '@/entities/dutch-pay'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -191,9 +191,9 @@ export const DutchPayPage = () => {
 
   const CompletedSection = completed.length > 0 ? (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 12 }}>
-        <h2 style={{ fontSize: 15 }}>완료된 정산</h2>
-      </div>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>완료된 정산</CardTitle>
+      </CardHeader>
       {completed.map((d, i) => (
         <div
           key={d.rowId}

@@ -6,7 +6,7 @@ import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-a
 import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   useMonthlySummary,
@@ -379,8 +379,8 @@ export const StatsPage = () => {
 
   const DonutCard = (
     <Card style={{ padding: mobile ? 18 : 24 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
           {isDrilled ? (
             <>
               <button
@@ -405,9 +405,9 @@ export const StatsPage = () => {
           ) : (
             '카테고리별 지출'
           )}
-        </h2>
+        </CardTitle>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
-      </div>
+      </CardHeader>
       {donutLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : donutView.length === 0 ? (
@@ -489,9 +489,9 @@ export const StatsPage = () => {
         height: '100%',
       }}
     >
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>많이 쓴 가맹점 TOP 5</h2>
-      </div>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>많이 쓴 가맹점 TOP 5</CardTitle>
+      </CardHeader>
       {merchantQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : topMerchants.length === 0 ? (
@@ -604,9 +604,9 @@ export const StatsPage = () => {
 
   const HeatmapCard = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 6 }}>
-        <h2 style={{ fontSize: 15 }}>요일·시간대 지출 패턴</h2>
-      </div>
+      <CardHeader style={{ marginBottom: 6 }}>
+        <CardTitle style={{ fontSize: 15 }}>요일·시간대 지출 패턴</CardTitle>
+      </CardHeader>
       <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
@@ -892,10 +892,10 @@ export const StatsPage = () => {
 
   const TrendBig = (
     <Card style={{ padding: mobile ? 18 : 24 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>{periodLbl} 수입·지출 추이</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>{periodLbl} 수입·지출 추이</CardTitle>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
-      </div>
+      </CardHeader>
       {yearlyQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : trendChartData.length === 0 ? (
@@ -1010,10 +1010,10 @@ export const StatsPage = () => {
 
   const SavingsBars = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</CardTitle>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
-      </div>
+      </CardHeader>
       {yearlyQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : trendChartData.length === 0 ? (
@@ -1246,8 +1246,8 @@ export const StatsPage = () => {
 
   const CompareCategory = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>카테고리별 {momLabel}</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>카테고리별 {momLabel}</CardTitle>
         <div
           style={{
             marginLeft: 'auto',
@@ -1266,7 +1266,7 @@ export const StatsPage = () => {
             {periodPrev}
           </span>
         </div>
-      </div>
+      </CardHeader>
       {compareLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : compareRows.length === 0 ? (

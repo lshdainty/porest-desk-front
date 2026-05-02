@@ -7,7 +7,7 @@ import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import {
   useBudgetCompliance,
@@ -354,15 +354,15 @@ export const BudgetPage = () => {
 
   const PaceCard = (
     <Card style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>지출 페이스</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>지출 페이스</CardTitle>
         <Badge
           variant={onTrack ? 'success' : 'warning'}
           style={{ marginLeft: 'auto' }}
         >
           {onTrack ? '정상 속도' : '빠른 속도'}
         </Badge>
-      </div>
+      </CardHeader>
       <div
         style={{
           position: 'relative',
@@ -453,9 +453,9 @@ export const BudgetPage = () => {
 
   const StatusTiles = (
     <Card style={{ padding: 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>예산 현황</h2>
-      </div>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>예산 현황</CardTitle>
+      </CardHeader>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div
           style={{
@@ -538,12 +538,12 @@ export const BudgetPage = () => {
     }))
     return (
       <Card style={{ padding: 22 }}>
-        <div className="sec-head" style={{ marginBottom: 16 }}>
-          <h2 style={{ fontSize: 15 }}>최근 6개월 예산 이행률</h2>
+        <CardHeader style={{ marginBottom: 16 }}>
+          <CardTitle style={{ fontSize: 15 }}>최근 6개월 예산 이행률</CardTitle>
           <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
             한도 대비 지출 %
           </span>
-        </div>
+        </CardHeader>
         {complianceQ.isLoading ? (
           <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
             불러오는 중…
@@ -601,12 +601,12 @@ export const BudgetPage = () => {
 
   const ListCard = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div className="sec-head" style={{ marginBottom: 14 }}>
-        <h2 style={{ fontSize: 15 }}>카테고리별 예산</h2>
+      <CardHeader>
+        <CardTitle style={{ fontSize: 15 }}>카테고리별 예산</CardTitle>
         <span style={{ marginLeft: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
           {categoryBudgets.length}개 설정됨
         </span>
-      </div>
+      </CardHeader>
       {isLoading ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
           불러오는 중…
