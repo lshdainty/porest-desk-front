@@ -33,7 +33,7 @@ import type { Expense } from '@/entities/expense'
 
 const barChartConfig = {
   income:  { label: '수입', color: 'var(--bg-brand)' },
-  expense: { label: '지출', color: 'var(--berry-500)' },
+  expense: { label: '지출', color: 'var(--fg-expense)' },
 } satisfies ChartConfig
 
 function fmtAxisNum(v: number) {
@@ -66,7 +66,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         {label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--bg-brand)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--bg-brand)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
           <MaskAmount>{KRW(income)}</MaskAmount>
@@ -74,7 +74,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
           <MaskAmount>{KRW(expense)}</MaskAmount>
@@ -90,7 +90,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
           className="num"
           style={{
             marginLeft: 'auto', fontSize: 12, fontWeight: 700,
-            color: saving >= 0 ? 'var(--fg-brand)' : 'var(--berry-600)',
+            color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
           }}
         >
           <MaskAmount>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}</MaskAmount>
@@ -617,7 +617,7 @@ function HomeDesktop() {
                     height: 6,
                     borderRadius: 'var(--radius-pill)',
                     background:
-                      td.priority === 'HIGH' ? 'var(--berry-500)'
+                      td.priority === 'HIGH' ? 'var(--fg-expense)'
                       : td.priority === 'MEDIUM' ? 'var(--sunlit-500)'
                       : 'var(--bg-brand)',
                   }}

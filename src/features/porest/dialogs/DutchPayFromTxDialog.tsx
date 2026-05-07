@@ -335,13 +335,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           style={{
             width: 18,
             height: 18,
-            borderRadius: 5,
+            borderRadius: 'var(--radius-xs)',
             border: `2px solid ${includeMyself ? 'var(--fg-income)' : 'var(--border-default)'}`,
             background: includeMyself ? 'var(--fg-income)' : 'transparent',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
+            color: 'var(--fg-on-brand)',
             flexShrink: 0,
           }}
         >

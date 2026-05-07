@@ -332,7 +332,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 marginTop: 10,
                 padding: '8px 12px',
                 background: 'var(--status-danger-subtle)',
-                border: '1px solid var(--berry-300)',
+                border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
                 borderRadius: 'var(--radius-md)',
                 fontSize: 12,
                 color: 'var(--status-danger-fg)',

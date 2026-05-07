@@ -172,7 +172,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           style={{
             background: `linear-gradient(135deg, ${palette.bg}, var(--bg-surface))`,
             border: `1px solid color-mix(in oklch, ${palette.color} 20%, transparent)`,
-            borderRadius: 16,
+            borderRadius: 'var(--radius-xl)',
             padding: 22,
             marginBottom: 18,
             textAlign: 'center',
@@ -248,7 +248,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                   style={{
                     width: 10,
                     height: 10,
-                    borderRadius: 3,
+                    borderRadius: 'var(--radius-2xs)',
                     background: palette.color,
                   }}
                 />

@@ -139,7 +139,7 @@ function PorestChartTooltip({
               style={{
                 width: 10,
                 height: 10,
-                borderRadius: 2,
+                borderRadius: 'var(--radius-2xs)',
                 background: row.color,
                 flexShrink: 0,
               }}
@@ -741,7 +741,7 @@ export const StatsPage = () => {
                   style={{
                     width: 18,
                     height: 10,
-                    borderRadius: 2,
+                    borderRadius: 'var(--radius-2xs)',
                     background: c.bg,
                     border: '1px solid oklch(0.90 0.01 110)',
                   }}
@@ -877,7 +877,7 @@ export const StatsPage = () => {
 
   const trendChartConfig: ChartConfig = {
     income: { label: '수입', color: 'var(--border-brand)' },
-    expense: { label: '지출', color: 'var(--berry-500)' },
+    expense: { label: '지출', color: 'var(--fg-expense)' },
   }
   const savingsChartConfig: ChartConfig = {
     savings: { label: '순저축', color: 'var(--bg-brand)' },
@@ -941,7 +941,7 @@ export const StatsPage = () => {
                   <PorestChartTooltip
                     rows={[
                       { dataKey: 'income', label: '수입', color: 'var(--border-brand)' },
-                      { dataKey: 'expense', label: '지출', color: 'var(--berry-500)' },
+                      { dataKey: 'expense', label: '지출', color: 'var(--fg-expense)' },
                     ]}
                   />
                 }
@@ -968,10 +968,10 @@ export const StatsPage = () => {
           </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--border-brand)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--berry-500)' }} /> 지출
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} /> 지출
             </span>
           </div>
         </>
@@ -1063,7 +1063,7 @@ export const StatsPage = () => {
                   key={i}
                   fill={
                     d.savings < 0
-                      ? 'var(--berry-500)'
+                      ? 'var(--fg-expense)'
                       : d.month === `${month}월`
                         ? 'var(--fg-income)'
                         : 'var(--mossy-400)'
@@ -1258,11 +1258,11 @@ export const StatsPage = () => {
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--bg-brand)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--bg-brand)' }} />
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-300)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--mossy-300)' }} />
             {periodPrev}
           </span>
         </div>

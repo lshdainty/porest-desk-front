@@ -470,7 +470,7 @@ function ToggleRow({
             width: 18,
             height: 18,
             borderRadius: 'var(--radius-pill)',
-            background: '#fff',
+            background: 'var(--bg-surface)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
             transition: 'left 0.15s',
           }}

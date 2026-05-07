@@ -122,7 +122,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Summary stats */}
-      <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+      <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
           <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
           <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
@@ -133,7 +133,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
       {/* Next 7 days */}
       {stats.next7.length > 0 && (
-        <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+        <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
             <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
@@ -156,8 +156,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     gap: 12,
                     padding: '10px 12px',
                     borderRadius: 'var(--radius-tile)',
-                    background: isToday ? 'color-mix(in oklch, var(--berry-600) 8%, transparent)' : 'var(--pd-surface-inset)',
-                    border: isToday ? '1px solid color-mix(in oklch, var(--berry-600) 25%, transparent)' : '1px solid transparent',
+                    background: isToday ? 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' : 'var(--pd-surface-inset)',
+                    border: isToday ? '1px solid color-mix(in oklch, var(--fg-expense) 25%, transparent)' : '1px solid transparent',
                   }}
                 >
                   <span
@@ -169,8 +169,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       fontWeight: 700,
                       padding: '4px 8px',
                       borderRadius: 'var(--radius-sm)',
-                      background: isToday ? 'var(--berry-600)' : 'var(--bg-surface)',
-                      color: isToday ? '#fff' : 'var(--fg-secondary)',
+                      background: isToday ? 'var(--fg-expense)' : 'var(--bg-surface)',
+                      color: isToday ? 'var(--fg-on-danger)' : 'var(--fg-secondary)',
                     }}
                   >
                     {isToday ? '오늘' : `D-${days}`}
@@ -209,7 +209,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       )}
 
       {/* Filter chips + list */}
-      <Card style={{ padding: 0, overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 14 }}>
+      <Card style={{ padding: 0, overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
           {FILTERS.map(f => {
@@ -494,7 +494,7 @@ function RecAction({
         borderRadius: 'var(--radius-md)',
         border: '1px solid transparent',
         background: 'transparent',
-        color: tone === 'danger' ? 'var(--berry-600)' : 'var(--fg-secondary)',
+        color: tone === 'danger' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled && !loading ? 0.45 : 1,
         display: 'inline-flex',
@@ -506,7 +506,7 @@ function RecAction({
       onMouseEnter={e => {
         if (isDisabled) return
         e.currentTarget.style.background = tone === 'danger'
-          ? 'color-mix(in oklch, var(--berry-500) 10%, transparent)'
+          ? 'color-mix(in oklch, var(--fg-expense) 10%, transparent)'
           : 'var(--pd-surface-inset)'
       }}
       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}

@@ -237,7 +237,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
                           color: 'var(--fg-income)',
-                          borderRadius: 3,
+                          borderRadius: 'var(--radius-2xs)',
                         }}
                       >
                         수입
@@ -251,7 +251,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           padding: '1px 5px',
                           background: 'var(--pd-surface-inset)',
                           color: 'var(--fg-tertiary)',
-                          borderRadius: 3,
+                          borderRadius: 'var(--radius-2xs)',
                         }}
                       >
                         금액 비움
@@ -347,7 +347,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
 
 function PMStat({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 8 }}>
+    <div style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
       <div
         style={{
           fontSize: 10.5,

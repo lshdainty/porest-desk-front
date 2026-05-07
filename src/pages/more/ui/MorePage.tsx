@@ -77,7 +77,7 @@ export const MorePage = () => {
                 style={{
                   width: 38,
                   height: 38,
-                  borderRadius: 11,
+                  borderRadius: 'var(--radius-lg)',
                   background: 'var(--bg-brand-subtle)',
                   color: 'var(--fg-brand-strong)',
                   display: 'inline-flex',

@@ -17,7 +17,7 @@ const PARTICIPANT_COLORS = [
   'var(--bark-500)',
   'var(--sky-500)',
   'var(--sunlit-500)',
-  'var(--berry-500)',
+  'var(--fg-expense)',
   'var(--fg-income)',
 ]
 
@@ -123,7 +123,7 @@ export const DutchPayPage = () => {
             height: 36,
             borderRadius: 'var(--radius-pill)',
             background: colorFor(idx),
-            color: '#fff',
+            color: 'var(--fg-on-brand)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',

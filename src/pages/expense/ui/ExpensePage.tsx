@@ -609,7 +609,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 padding: '0 4px',
                 borderRadius: 'var(--radius-pill)',
                 background: 'var(--bg-brand-hover)',
-                color: '#fff',
+                color: 'var(--fg-on-brand)',
                 fontSize: 10,
                 fontWeight: 700,
                 display: 'inline-flex',

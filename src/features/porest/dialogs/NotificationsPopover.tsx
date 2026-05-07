@@ -75,7 +75,7 @@ export function NotificationsPopover({
           zIndex: 90,
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 16,
+          borderRadius: 'var(--radius-xl)',
           boxShadow: '0 18px 50px -12px rgba(20, 28, 22, 0.24), 0 4px 14px -2px rgba(20, 28, 22, 0.08)',
           display: 'flex',
           flexDirection: 'column',

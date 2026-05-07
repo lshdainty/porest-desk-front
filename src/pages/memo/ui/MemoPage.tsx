@@ -73,7 +73,7 @@ export const MemoPage = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {m.isPinned ? (
-            <Pin size={13} style={{ color: 'var(--berry-600)' }} />
+            <Pin size={13} style={{ color: 'var(--fg-expense)' }} />
           ) : (
             <NotebookPen size={14} style={{ color: 'var(--fg-secondary)' }} />
           )}

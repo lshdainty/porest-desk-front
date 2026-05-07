@@ -135,7 +135,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 const isCard = g === 'card'
                 const amt = Math.abs(asset.balance ?? 0)
                 const neg = isCard
-                const accentColor = asset.color || '#6b7280'
+                const accentColor = asset.color || 'var(--fg-tertiary)'
                 const iconChar = (asset.institution || asset.assetName || '?').charAt(0)
                 return (
                   <div
@@ -148,7 +148,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       style={{
                         ...MANAGE_ROW.iconStyle,
                         background: accentColor,
-                        color: '#fff',
+                        color: 'var(--fg-on-brand)',
                         fontSize: 13,
                       }}
                     >

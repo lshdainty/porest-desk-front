@@ -76,7 +76,7 @@ function NetWorthTooltip({
     >
       <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--border-brand)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>순자산</span>
         <span
           className="num"
@@ -187,7 +187,7 @@ type AssetGroupKey = 'cash' | 'invest' | 'card' | 'loan'
 const GROUP_META: Record<AssetGroupKey, { label: string; color: string }> = {
   cash: { label: '현금·예금', color: 'var(--sky-500)' },
   invest: { label: '투자', color: 'var(--bg-brand)' },
-  card: { label: '카드', color: 'var(--berry-500)' },
+  card: { label: '카드', color: 'var(--fg-expense)' },
   loan: { label: '대출', color: 'var(--sunlit-700)' },
 }
 
@@ -344,7 +344,7 @@ function AssetCompositionCard({
                   title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, background: row.color, flexShrink: 0 }} />
+                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: row.color, flexShrink: 0 }} />
                     <span
                       style={{
                         fontSize: 13,
@@ -364,13 +364,13 @@ function AssetCompositionCard({
                     <div
                       style={{
                         flex: 1, height: 6, background: 'var(--pd-surface-inset)',
-                        borderRadius: 99, overflow: 'hidden',
+                        borderRadius: 'var(--radius-pill)', overflow: 'hidden',
                       }}
                     >
                       <div
                         style={{
                           width: `${pct}%`, height: '100%',
-                          background: row.color, borderRadius: 99,
+                          background: row.color, borderRadius: 'var(--radius-pill)',
                         }}
                       />
                     </div>
@@ -489,7 +489,7 @@ function UpcomingBillsCard() {
                   <div
                     style={{
                       fontSize: 11.5, marginTop: 1,
-                      color: urgent ? 'var(--berry-600)' : 'var(--fg-tertiary)',
+                      color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
                       fontWeight: urgent ? 600 : 400,
                     }}
                   >
@@ -581,13 +581,13 @@ function SavingGoalItem({
       <div
         style={{
           height: 6, background: 'var(--pd-surface-inset)',
-          borderRadius: 99, overflow: 'hidden',
+          borderRadius: 'var(--radius-pill)', overflow: 'hidden',
         }}
       >
         <div
           style={{
             width: `${Math.min(100, pct)}%`, height: '100%',
-            background: color, borderRadius: 99,
+            background: color, borderRadius: 'var(--radius-pill)',
           }}
         />
       </div>
@@ -959,7 +959,7 @@ function SummaryCard({
             display: 'inline-flex',
             alignItems: 'center',
             gap: 2,
-            color: isUp ? 'var(--fg-income)' : 'var(--berry-500)',
+            color: isUp ? 'var(--fg-income)' : 'var(--fg-expense)',
             fontWeight: 600,
             fontVariantNumeric: 'tabular-nums',
           }}

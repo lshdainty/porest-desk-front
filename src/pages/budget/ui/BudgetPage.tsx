@@ -84,8 +84,8 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span
           style={{
-            width: 8, height: 8, borderRadius: 2,
-            background: over ? 'var(--berry-500)' : 'var(--bg-brand)',
+            width: 8, height: 8, borderRadius: 'var(--radius-2xs)',
+            background: over ? 'var(--fg-expense)' : 'var(--bg-brand)',
           }}
         />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>한도 대비</span>
@@ -317,7 +317,7 @@ export const BudgetPage = () => {
                 marginTop: 10,
                 padding: '8px 12px',
                 background: 'var(--status-danger-subtle)',
-                border: '1px solid var(--berry-300)',
+                border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
                 borderRadius: 'var(--radius-md)',
                 fontSize: 12,
                 color: 'var(--status-danger-fg)',
@@ -368,7 +368,7 @@ export const BudgetPage = () => {
           position: 'relative',
           height: 12,
           background: 'var(--pd-surface-inset)',
-          borderRadius: 99,
+          borderRadius: 'var(--radius-pill)',
           overflow: 'hidden',
           marginBottom: 10,
         }}
@@ -380,8 +380,8 @@ export const BudgetPage = () => {
             top: 0,
             height: '100%',
             width: `${Math.min(100, pct)}%`,
-            background: pct > 100 ? 'var(--berry-500)' : 'var(--bg-brand)',
-            borderRadius: 99,
+            background: pct > 100 ? 'var(--fg-expense)' : 'var(--bg-brand)',
+            borderRadius: 'var(--radius-pill)',
           }}
         />
         <div
@@ -392,7 +392,7 @@ export const BudgetPage = () => {
             width: 2,
             height: 18,
             background: 'var(--fg-primary)',
-            borderRadius: 2,
+            borderRadius: 'var(--radius-2xs)',
           }}
         />
       </div>
@@ -461,7 +461,7 @@ export const BudgetPage = () => {
           style={{
             padding: 14,
             background: overList.length > 0 ? 'var(--status-danger-subtle)' : 'var(--bg-surface)',
-            border: `1px solid ${overList.length > 0 ? 'var(--berry-300)' : 'var(--border-subtle)'}`,
+            border: `1px solid ${overList.length > 0 ? 'color-mix(in oklch, var(--fg-expense) 30%, transparent)' : 'var(--border-subtle)'}`,
             borderRadius: 'var(--radius-lg)',
           }}
         >
@@ -578,7 +578,7 @@ export const BudgetPage = () => {
                     key={`${d.year}-${d.month}`}
                     fill={
                       d.percent > 100
-                        ? 'var(--berry-500)'
+                        ? 'var(--fg-expense)'
                         : d.active
                           ? 'var(--bg-brand)'
                           : 'var(--pd-divider-strong)'

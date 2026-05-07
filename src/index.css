@@ -150,6 +150,7 @@
   --bg-transfer-subtle: var(--status-info-subtle);
 
   /* Radii — prototype spec */
+  --radius-2xs:  2px;   /* chart marker / legend swatch */
   --radius-xs:   4px;
   --radius-sm:   6px;
   --radius-md:   8px;
