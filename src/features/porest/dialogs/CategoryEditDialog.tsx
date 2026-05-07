@@ -158,7 +158,7 @@ export function CategoryEditDialog({
         <Button
           variant="ghost"
           onClick={onDelete}
-          style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           disabled={submitting}
         >
           <Trash2 size={14} />삭제
@@ -194,7 +194,7 @@ export function CategoryEditDialog({
           gap: 12,
           padding: 14,
           background: 'var(--pd-surface-subtle)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
       >
@@ -202,7 +202,7 @@ export function CategoryEditDialog({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -300,7 +300,7 @@ export function CategoryEditDialog({
           }}
         >
           {err ? (
-            <span style={{ color: 'var(--berry-700)' }}>{err}</span>
+            <span style={{ color: 'var(--fg-expense)' }}>{err}</span>
           ) : (
             <span>{labelTrim.length}/12</span>
           )}
@@ -328,7 +328,7 @@ export function CategoryEditDialog({
                   aspectRatio: '1',
                   border: '2px solid',
                   borderColor: active ? 'currentColor' : 'transparent',
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -371,7 +371,7 @@ export function CategoryEditDialog({
                   border: active
                     ? `1.5px solid ${palette.color}`
                     : '1px solid var(--border-subtle)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--radius-md)',
                   background: active ? palette.bg : 'var(--bg-surface)',
                   color: active ? palette.color : 'var(--fg-secondary)',
                   cursor: 'pointer',

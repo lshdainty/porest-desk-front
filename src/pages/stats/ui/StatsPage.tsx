@@ -34,7 +34,7 @@ const DONUT_COLORS = [
   'oklch(0.50 0.1 230)',
   'oklch(0.55 0.13 25)',
   'var(--bark-700)',
-  'var(--mossy-700)',
+  'var(--fg-income)',
 ]
 
 // 6-step heatmap palette (empty → deep mossy).
@@ -42,11 +42,11 @@ const DONUT_COLORS = [
 // 레벨 0 은 semantic muted bg 로 두어 "빈 셀" 구분 명확.
 const HEAT_PALETTE: { bg: string; fg: string }[] = [
   { bg: 'var(--bg-muted)',                                                 fg: 'var(--fg-tertiary)' },    // 0 empty
-  { bg: 'color-mix(in oklch, var(--mossy-500) 18%, transparent)',          fg: 'var(--fg-primary)' },     // 1
-  { bg: 'color-mix(in oklch, var(--mossy-500) 35%, transparent)',          fg: 'var(--fg-primary)' },     // 2
-  { bg: 'color-mix(in oklch, var(--mossy-500) 55%, transparent)',          fg: 'var(--fg-on-brand)' },    // 3
-  { bg: 'color-mix(in oklch, var(--mossy-500) 75%, transparent)',          fg: 'var(--fg-on-brand)' },    // 4
-  { bg: 'var(--mossy-500)',                                                fg: 'var(--fg-on-brand)' },    // 5 peak
+  { bg: 'color-mix(in oklch, var(--border-brand) 18%, transparent)',          fg: 'var(--fg-primary)' },     // 1
+  { bg: 'color-mix(in oklch, var(--border-brand) 35%, transparent)',          fg: 'var(--fg-primary)' },     // 2
+  { bg: 'color-mix(in oklch, var(--border-brand) 55%, transparent)',          fg: 'var(--fg-on-brand)' },    // 3
+  { bg: 'color-mix(in oklch, var(--border-brand) 75%, transparent)',          fg: 'var(--fg-on-brand)' },    // 4
+  { bg: 'var(--border-brand)',                                                fg: 'var(--fg-on-brand)' },    // 5 peak
 ]
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
@@ -109,7 +109,7 @@ function PorestChartTooltip({
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '10px 12px',
         fontSize: 12,
@@ -450,7 +450,7 @@ export const StatsPage = () => {
                   } : undefined}
                   style={{
                     cursor: clickable ? 'pointer' : 'default',
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-md)',
                     padding: clickable ? '4px 6px' : undefined,
                     margin: clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
@@ -513,7 +513,7 @@ export const StatsPage = () => {
                   width: 24,
                   fontSize: 12,
                   fontWeight: 700,
-                  color: i < 3 ? 'var(--mossy-700)' : 'var(--fg-tertiary)',
+                  color: i < 3 ? 'var(--fg-income)' : 'var(--fg-tertiary)',
                   textAlign: 'center',
                 }}
               >
@@ -534,7 +534,7 @@ export const StatsPage = () => {
                   style={{
                     height: 4,
                     background: 'var(--pd-surface-inset)',
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     overflow: 'hidden',
                   }}
                 >
@@ -543,7 +543,7 @@ export const StatsPage = () => {
                       width: `${(m.totalAmount / maxMerchantAmt) * 100}%`,
                       height: '100%',
                       background: colorFor(i),
-                      borderRadius: 999,
+                      borderRadius: 'var(--radius-pill)',
                     }}
                   />
                 </div>
@@ -624,7 +624,7 @@ export const StatsPage = () => {
               style={{
                 height: 28,
                 background: 'var(--pd-surface-inset)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 opacity: 0.6 + (i % 2) * 0.2,
               }}
             />
@@ -638,7 +638,7 @@ export const StatsPage = () => {
             color: 'var(--fg-tertiary)',
             fontSize: 13,
             background: 'var(--pd-surface-inset)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           이번 달 거래가 아직 적어요
@@ -699,7 +699,7 @@ export const StatsPage = () => {
                       title={hidden ? `${row.label}·${col.label}` : `${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
                         aspectRatio: mobile ? '0.9' : '1.1',
-                        borderRadius: 6,
+                        borderRadius: 'var(--radius-sm)',
                         background: pal.bg,
                         display: 'flex',
                         alignItems: 'center',
@@ -876,11 +876,11 @@ export const StatsPage = () => {
   const statLabelSave = isSingle ? '순저축' : '평균 저축'
 
   const trendChartConfig: ChartConfig = {
-    income: { label: '수입', color: 'var(--mossy-500)' },
+    income: { label: '수입', color: 'var(--border-brand)' },
     expense: { label: '지출', color: 'var(--berry-500)' },
   }
   const savingsChartConfig: ChartConfig = {
-    savings: { label: '순저축', color: 'var(--mossy-600)' },
+    savings: { label: '순저축', color: 'var(--bg-brand)' },
   }
 
   const fmtTick = (v: number) =>
@@ -940,7 +940,7 @@ export const StatsPage = () => {
                 content={
                   <PorestChartTooltip
                     rows={[
-                      { dataKey: 'income', label: '수입', color: 'var(--mossy-500)' },
+                      { dataKey: 'income', label: '수입', color: 'var(--border-brand)' },
                       { dataKey: 'expense', label: '지출', color: 'var(--berry-500)' },
                     ]}
                   />
@@ -968,7 +968,7 @@ export const StatsPage = () => {
           </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-500)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--border-brand)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--berry-500)' }} /> 지출
@@ -1043,14 +1043,14 @@ export const StatsPage = () => {
               width={52}
             />
             <ChartTooltip
-              cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.05 }}
+              cursor={{ fill: 'var(--border-brand)', fillOpacity: 0.05 }}
               content={
                 <PorestChartTooltip
                   rows={[
                     {
                       dataKey: 'savings',
                       label: '순저축',
-                      color: 'var(--mossy-600)',
+                      color: 'var(--bg-brand)',
                       format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
                     },
                   ]}
@@ -1065,7 +1065,7 @@ export const StatsPage = () => {
                     d.savings < 0
                       ? 'var(--berry-500)'
                       : d.month === `${month}월`
-                        ? 'var(--mossy-700)'
+                        ? 'var(--fg-income)'
                         : 'var(--mossy-400)'
                   }
                 />
@@ -1220,7 +1220,7 @@ export const StatsPage = () => {
             fontSize: mobile ? 18 : 22,
             fontWeight: 800,
             letterSpacing: '-0.02em',
-            color: momUp ? 'var(--berry-700)' : 'var(--mossy-700)',
+            color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         >
           {totalPrev > 0 ? (
@@ -1258,7 +1258,7 @@ export const StatsPage = () => {
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--mossy-600)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--bg-brand)' }} />
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -1288,7 +1288,7 @@ export const StatsPage = () => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 10,
+                      borderRadius: 'var(--radius-tile)',
                       background: iconBg,
                       color: iconFg,
                       display: 'inline-flex',
@@ -1315,8 +1315,8 @@ export const StatsPage = () => {
                       color: r.prev === 0
                         ? 'var(--fg-tertiary)'
                         : up
-                          ? 'var(--berry-700)'
-                          : 'var(--mossy-700)',
+                          ? 'var(--fg-expense)'
+                          : 'var(--fg-income)',
                     }}
                   >
                     {r.prev > 0 ? (
@@ -1325,25 +1325,25 @@ export const StatsPage = () => {
                   </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
-                  <div style={{ position: 'relative', height: 10, background: 'var(--bg-subtle)', borderRadius: 999 }}>
+                  <div style={{ position: 'relative', height: 10, background: 'var(--bg-subtle)', borderRadius: 'var(--radius-pill)' }}>
                     <div
                       style={{
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.now / maxCompareAmt) * 100}%`,
-                        background: 'var(--mossy-600)',
-                        borderRadius: 999,
+                        background: 'var(--bg-brand)',
+                        borderRadius: 'var(--radius-pill)',
                       }}
                     />
                   </div>
-                  <div style={{ position: 'relative', height: 6, background: 'var(--bg-subtle)', borderRadius: 999 }}>
+                  <div style={{ position: 'relative', height: 6, background: 'var(--bg-subtle)', borderRadius: 'var(--radius-pill)' }}>
                     <div
                       style={{
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.prev / maxCompareAmt) * 100}%`,
                         background: 'var(--bg-brand-muted)',
-                        borderRadius: 999,
+                        borderRadius: 'var(--radius-pill)',
                       }}
                     />
                   </div>

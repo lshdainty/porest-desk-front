@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
-import { renderIcon } from '@/shared/lib'
 import {
   Select,
   SelectContent,
@@ -138,13 +138,13 @@ export function PresetEditDialog({
           gap: 2,
           padding: 3,
           background: 'var(--pd-surface-inset)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           marginBottom: 16,
         }}
       >
         {(['EXPENSE', 'INCOME'] as const).map(v => {
           const active = type === v
-          const color = v === 'EXPENSE' ? 'var(--berry-700)' : 'var(--mossy-700)'
+          const color = v === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)'
           return (
             <button
               key={v}
@@ -157,7 +157,7 @@ export function PresetEditDialog({
                 padding: '8px 0',
                 fontSize: 13,
                 fontWeight: 700,
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 boxShadow: active ? 'var(--shadow-xs)' : 'none',
                 fontFamily: 'inherit',
@@ -181,64 +181,25 @@ export function PresetEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>카테고리</FieldLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+        <CategoryGrid>
           {topCategories.map(c => {
             const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
             const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
-            const active = selectedParentId === c.rowId
-            const color = c.color ?? 'var(--mossy-600)'
             return (
-              <button
+              <CategoryTile
                 key={c.rowId}
-                type="button"
+                name={c.categoryName}
+                color={c.color ?? undefined}
+                icon={c.icon}
+                active={selectedParentId === c.rowId}
                 onClick={() => {
                   const firstChild = childrenByParent.get(c.rowId)?.[0]
                   setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
                 }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '8px 4px',
-                  background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid transparent',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <span
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    background: `color-mix(in oklch, ${color} 18%, transparent)`,
-                    color,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {renderIcon(c.icon, c.categoryName.charAt(0), 16)}
-                </span>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: active ? 700 : 500,
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '100%',
-                  }}
-                >
-                  {c.categoryName}
-                </span>
-              </button>
+              />
             )
           })}
-        </div>
+        </CategoryGrid>
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
@@ -290,7 +251,7 @@ export function PresetEditDialog({
         </Select>
       </Field>
 
-      <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 10, marginBottom: 4 }}>
+      <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
           <input
             type="checkbox"

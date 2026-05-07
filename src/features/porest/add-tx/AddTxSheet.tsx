@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Bookmark, Info, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Textarea } from '@/shared/ui/textarea'
@@ -275,8 +276,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
   // 타입별 강조 색
   const amountColor =
-    type === 'EXPENSE' ? 'var(--berry-700)'
-    : type === 'INCOME' ? 'var(--mossy-700)'
+    type === 'EXPENSE' ? 'var(--fg-expense)'
+    : type === 'INCOME' ? 'var(--fg-income)'
     : 'var(--fg-primary)'
   const amountPrefix = type === 'EXPENSE' ? '−' : type === 'INCOME' ? '+' : ''
 
@@ -288,7 +289,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           variant="ghost"
           onClick={onDeleteClick}
           disabled={submitting}
-          style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
         >
           <Trash2 size={14} /> 삭제
         </Button>
@@ -323,14 +324,14 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           gap: 2,
           padding: 3,
           background: 'var(--pd-surface-inset)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
       >
         {([
-          { v: 'EXPENSE', l: '지출', c: 'var(--berry-700)' },
-          { v: 'INCOME', l: '수입', c: 'var(--mossy-700)' },
-          { v: 'TRANSFER', l: '이체', c: 'var(--fg-primary)' },
+          { v: 'EXPENSE', l: '지출', c: 'var(--fg-expense)' },
+          { v: 'INCOME', l: '수입', c: 'var(--fg-income)' },
+          { v: 'TRANSFER', l: '이체', c: 'var(--fg-transfer)' },
         ] as { v: TxType; l: string; c: string }[]).map(o => {
           const active = type === o.v
           const disabled = isEdit && o.v !== (expense?.expenseType ?? type) // edit 모드는 타입 변경 막음
@@ -351,7 +352,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 padding: '8px 0',
                 fontSize: 13.5,
                 fontWeight: 700,
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.4 : 1,
                 fontFamily: 'inherit',
@@ -396,7 +397,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     fontWeight: 700,
                     padding: '2px 6px',
                     background: 'var(--bg-brand-subtle)',
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-xs)',
                   }}
                 >
                   적용됨
@@ -443,7 +444,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 const active = activePresetId === p.rowId
                 const showAmount = p.lockAmount === 'Y' && p.amount != null
                 const cat = p.categoryRowId != null ? categories.find(c => c.rowId === p.categoryRowId) : undefined
-                const catColor = cat?.color ?? 'var(--mossy-600)'
+                const catColor = cat?.color ?? 'var(--bg-brand)'
                 return (
                   <button
                     key={p.rowId}
@@ -456,8 +457,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       gap: 7,
                       padding: '7px 11px',
                       background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                      border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                      borderRadius: 999,
+                      border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-pill)',
                       cursor: 'pointer',
                       fontSize: 12.5,
                       fontWeight: active ? 700 : 600,
@@ -473,7 +474,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                         style={{
                           width: 18,
                           height: 18,
-                          borderRadius: 6,
+                          borderRadius: 'var(--radius-sm)',
                           background: `color-mix(in oklch, ${catColor} 18%, transparent)`,
                           color: catColor,
                           display: 'inline-flex',
@@ -513,7 +514,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     padding: '7px 11px',
                     background: 'transparent',
                     border: '1px dashed var(--border-default)',
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     fontSize: 12,
                     fontWeight: 600,
                     color: 'var(--fg-tertiary)',
@@ -531,7 +532,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 padding: '8px 10px',
                 background: 'var(--pd-surface-inset)',
                 border: '1px dashed var(--border-default)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 fontSize: 11.5,
                 color: 'var(--fg-tertiary)',
               }}
@@ -546,8 +547,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 marginTop: 8,
                 padding: '8px 10px',
                 background: 'var(--bg-brand-subtle)',
-                border: '1px solid var(--mossy-500)',
-                borderRadius: 8,
+                border: '1px solid var(--border-brand)',
+                borderRadius: 'var(--radius-md)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -621,66 +622,22 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               >
                 카테고리
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-                {topCategories.map(c => {
-                  const active = selectedParentId === c.rowId
-                  const color = c.color ?? 'var(--mossy-600)'
-                  return (
-                    <button
-                      key={c.rowId}
-                      type="button"
-                      onClick={() => {
-                        const firstChild = childrenByParent.get(c.rowId)?.[0]
-                        setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
-                        clearPresetMark()
-                      }}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 4,
-                        padding: '10px 4px',
-                        background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                        border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                        borderRadius: 10,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 10,
-                          // color-mix 로 18% 알파 tint — light/dark 모두 자연 적응.
-                          // 기존 `oklch(from ${color} l c h / 0.14)` 는 다크모드에서
-                          // 알파가 낮아 카테고리 구분이 어려웠음.
-                          background: `color-mix(in oklch, ${color} 18%, transparent)`,
-                          color,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {renderIcon(c.icon, c.categoryName.charAt(0), 18)}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: active ? 700 : 500,
-                          color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          maxWidth: '100%',
-                        }}
-                      >
-                        {c.categoryName}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
+              <CategoryGrid>
+                {topCategories.map(c => (
+                  <CategoryTile
+                    key={c.rowId}
+                    name={c.categoryName}
+                    color={c.color ?? undefined}
+                    icon={c.icon}
+                    active={selectedParentId === c.rowId}
+                    onClick={() => {
+                      const firstChild = childrenByParent.get(c.rowId)?.[0]
+                      setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
+                      clearPresetMark()
+                    }}
+                  />
+                ))}
+              </CategoryGrid>
 
               {/* 하위 카테고리 (선택된 부모에 자식이 있을 때) */}
               {selectedParentId != null
@@ -1004,7 +961,7 @@ function SavePresetDialog({
         style={{
           padding: 14,
           background: 'var(--pd-surface-inset)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           marginBottom: 18,
           display: 'flex',
           alignItems: 'center',
@@ -1034,7 +991,7 @@ function SavePresetDialog({
           style={{
             fontSize: 15,
             fontWeight: 800,
-            color: seed.expenseType === 'EXPENSE' ? 'var(--berry-700)' : 'var(--mossy-700)',
+            color: seed.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         >
           {seed.expenseType === 'EXPENSE' ? '−' : '+'}
@@ -1059,7 +1016,7 @@ function SavePresetDialog({
           gap: 10,
           padding: 12,
           background: 'var(--pd-surface-inset)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           cursor: 'pointer',
         }}
       >
@@ -1080,7 +1037,7 @@ function SavePresetDialog({
       </label>
 
       {seed.categoryRowId == null && (
-        <div style={{ marginTop: 10, fontSize: 11.5, color: 'var(--berry-700)' }}>
+        <div style={{ marginTop: 10, fontSize: 11.5, color: 'var(--fg-expense)' }}>
           저장하려면 먼저 카테고리를 선택해주세요.
         </div>
       )}

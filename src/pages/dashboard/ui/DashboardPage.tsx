@@ -55,7 +55,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
         fontSize: 11.5,
@@ -157,7 +157,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
     <div
       style={{
         height,
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
@@ -333,7 +333,7 @@ function HomeDesktop() {
                 color: 'inherit',
                 width: 28,
                 height: 28,
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -394,7 +394,7 @@ function HomeDesktop() {
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>지출</div>
-              <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--berry-700)', letterSpacing: '-0.02em' }}>
+              <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--fg-expense)', letterSpacing: '-0.02em' }}>
                 {monthlyQ.isLoading
                   ? '—'
                   : <><MaskAmount>−{KRW(expense)}</MaskAmount><HideUnit>원</HideUnit></>}
@@ -509,7 +509,7 @@ function HomeDesktop() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span
                       style={{
-                        width: 32, height: 32, borderRadius: 10,
+                        width: 32, height: 32, borderRadius: 'var(--radius-tile)',
                         background: palette.bg, color: palette.color,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
@@ -522,7 +522,7 @@ function HomeDesktop() {
                       className="num"
                       style={{
                         marginLeft: 'auto', fontSize: 12, fontWeight: 600,
-                        color: b.state === 'over' ? 'var(--berry-700)' : 'var(--fg-secondary)',
+                        color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
                       }}
                     >
                       <MaskAmount mask="••••">
@@ -558,7 +558,7 @@ function HomeDesktop() {
                 <div key={p.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span
                     style={{
-                      width: 38, height: 38, borderRadius: 10,
+                      width: 38, height: 38, borderRadius: 'var(--radius-tile)',
                       background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
                       color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -581,7 +581,7 @@ function HomeDesktop() {
                       {p.dateLabel}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--berry-700)' }}>
+                  <div className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--fg-expense)' }}>
                     <MaskAmount mask="••••">−{KRW(p.amount)}</MaskAmount>
                   </div>
                 </div>
@@ -615,7 +615,7 @@ function HomeDesktop() {
                   style={{
                     width: 6,
                     height: 6,
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     background:
                       td.priority === 'HIGH' ? 'var(--berry-500)'
                       : td.priority === 'MEDIUM' ? 'var(--sunlit-500)'
@@ -654,7 +654,7 @@ function HomeDesktop() {
                   style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 10,
+                    borderRadius: 'var(--radius-tile)',
                     background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
                     color: ev.daysUntil <= 3 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                     display: 'inline-flex',
@@ -751,7 +751,7 @@ function HomeMobile() {
               color: 'inherit',
               width: 26,
               height: 26,
-              borderRadius: 999,
+              borderRadius: 'var(--radius-pill)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -799,7 +799,7 @@ function HomeMobile() {
               style={{
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 14,
+                borderRadius: 'var(--radius-card)',
                 padding: '14px 8px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -812,7 +812,7 @@ function HomeMobile() {
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   background: 'var(--bg-brand-subtle)',
                   color: 'var(--fg-brand-strong)',
                   display: 'inline-flex',
@@ -842,7 +842,7 @@ function HomeMobile() {
           </div>
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
-            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--berry-700)' }}>
+            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-expense)' }}>
               <MaskAmount>−{KRW(expense)}</MaskAmount>
             </div>
           </div>
@@ -923,7 +923,7 @@ function UpcomingMobileCard({
           </div>
           {events.map(ev => (
             <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-              <span style={{ width: 8, height: 8, borderRadius: 999, background: ev.color || 'var(--fg-brand)', marginRight: 8 }} />
+              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color || 'var(--fg-brand)', marginRight: 8 }} />
               <span style={{ flex: 1, fontSize: 13, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {ev.title}
               </span>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
+import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -82,7 +83,7 @@ export function BudgetEditDialog({
         <Button
           variant="ghost"
           onClick={onDelete}
-          style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           disabled={submitting}
         >
           <Trash2 size={14} />삭제
@@ -118,7 +119,7 @@ export function BudgetEditDialog({
           gap: 12,
           padding: 14,
           background: 'var(--pd-surface-subtle)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
       >
@@ -126,7 +127,7 @@ export function BudgetEditDialog({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -161,7 +162,7 @@ export function BudgetEditDialog({
               style={{
                 padding: 12,
                 background: 'var(--pd-surface-subtle)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-tile)',
                 fontSize: 12,
                 color: 'var(--fg-secondary)',
               }}
@@ -169,58 +170,18 @@ export function BudgetEditDialog({
               모든 지출 카테고리에 이미 예산이 설정되어 있어요.
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-              {availableCats.map(c => {
-                const active = categoryRowId === c.rowId
-                const p = getPaletteByColor(c.color)
-                return (
-                  <button
-                    key={c.rowId}
-                    type="button"
-                    onClick={() => setCategoryRowId(c.rowId)}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: '10px 4px',
-                      background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                      border: active
-                        ? '1px solid var(--mossy-500)'
-                        : '1px solid var(--border-subtle)',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 10,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        background: p.bg,
-                        color: p.color,
-                      }}
-                    >
-                      <Icon name={c.icon ?? 'tag'} size={16} strokeWidth={1.9} />
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 10.5,
-                        fontWeight: active ? 700 : 500,
-                        color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                      }}
-                    >
-                      {c.categoryName}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+            <CategoryGrid>
+              {availableCats.map(c => (
+                <CategoryTile
+                  key={c.rowId}
+                  name={c.categoryName}
+                  color={getPaletteByColor(c.color).color}
+                  icon={c.icon}
+                  active={categoryRowId === c.rowId}
+                  onClick={() => setCategoryRowId(c.rowId)}
+                />
+              ))}
+            </CategoryGrid>
           )}
         </Field>
       )}
@@ -250,7 +211,7 @@ export function BudgetEditDialog({
                 background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -324,7 +285,7 @@ export function MonthlyBudgetDialog({
                 background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',

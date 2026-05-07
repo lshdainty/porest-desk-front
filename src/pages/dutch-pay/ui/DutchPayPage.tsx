@@ -13,12 +13,12 @@ import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 const PARTICIPANT_COLORS = [
-  'var(--mossy-500)',
+  'var(--border-brand)',
   'var(--bark-500)',
   'var(--sky-500)',
   'var(--sunlit-500)',
   'var(--berry-500)',
-  'var(--mossy-700)',
+  'var(--fg-income)',
 ]
 
 const nameInitial = (name: string) => (name && name.length > 0 ? name[0]! : '?')
@@ -44,7 +44,7 @@ export const DutchPayPage = () => {
         background: 'var(--bg-brand)',
         color: 'var(--fg-on-brand)',
         border: 0,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
         fontWeight: 700,
@@ -121,7 +121,7 @@ export const DutchPayPage = () => {
           style={{
             width: 36,
             height: 36,
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             background: colorFor(idx),
             color: '#fff',
             display: 'inline-flex',
@@ -154,7 +154,7 @@ export const DutchPayPage = () => {
               fontSize: 11,
               fontWeight: 700,
               padding: '3px 9px',
-              borderRadius: 999,
+              borderRadius: 'var(--radius-pill)',
               background: pillBg,
               color: pillFg,
             }}
@@ -192,7 +192,7 @@ export const DutchPayPage = () => {
             style={{
               width: 32,
               height: 32,
-              borderRadius: 10,
+              borderRadius: 'var(--radius-tile)',
               background: 'var(--pd-surface-subtle)',
               color: 'var(--fg-secondary)',
               display: 'inline-flex',

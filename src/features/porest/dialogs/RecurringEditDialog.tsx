@@ -135,7 +135,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           gap: 12,
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: '12px 14px',
           marginBottom: 18,
         }}
@@ -144,7 +144,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           style={{
             width: 38,
             height: 38,
-            borderRadius: 10,
+            borderRadius: 'var(--radius-tile)',
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',
@@ -194,10 +194,10 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
                   style={{
                     padding: '10px 0',
                     background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                    border: `1px solid ${active ? 'var(--mossy-700)' : 'var(--border-subtle)'}`,
+                    border: `1px solid ${active ? 'var(--fg-income)' : 'var(--border-subtle)'}`,
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     fontWeight: active ? 700 : 500,
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     fontSize: 12.5,
                     cursor: 'pointer',
                     fontFamily: 'inherit',
@@ -302,7 +302,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
             padding: '12px 14px',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -318,7 +318,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
                   padding: '4px 10px',
                   background: 'var(--pd-surface-inset)',
                   border: '1px solid var(--border-subtle)',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   fontSize: 12,
                   fontWeight: 600,
                 }}
@@ -368,8 +368,8 @@ function RadioCard({
         alignItems: 'flex-start',
         padding: '12px 14px',
         background: selected ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-        border: `1px solid ${selected ? 'var(--mossy-700)' : 'var(--border-subtle)'}`,
-        borderRadius: 12,
+        border: `1px solid ${selected ? 'var(--fg-income)' : 'var(--border-subtle)'}`,
+        borderRadius: 'var(--radius-lg)',
         cursor: 'pointer',
         transition: 'background 0.15s, border-color 0.15s',
       }}
@@ -380,9 +380,9 @@ function RadioCard({
           marginTop: 2,
           width: 16,
           height: 16,
-          borderRadius: 999,
-          border: `2px solid ${selected ? 'var(--mossy-700)' : 'var(--border-default)'}`,
-          background: selected ? 'var(--mossy-700)' : 'transparent',
+          borderRadius: 'var(--radius-pill)',
+          border: `2px solid ${selected ? 'var(--fg-income)' : 'var(--border-default)'}`,
+          background: selected ? 'var(--fg-income)' : 'transparent',
           boxShadow: selected ? 'inset 0 0 0 3px var(--bg-surface)' : 'none',
           flexShrink: 0,
         }}
@@ -421,14 +421,14 @@ function ToggleRow({
         padding: '12px 14px',
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
       }}
     >
       <span
         style={{
           width: 32,
           height: 32,
-          borderRadius: 8,
+          borderRadius: 'var(--radius-md)',
           background: 'var(--pd-surface-inset)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
@@ -451,9 +451,9 @@ function ToggleRow({
         style={{
           width: 38,
           height: 22,
-          borderRadius: 999,
+          borderRadius: 'var(--radius-pill)',
           border: 0,
-          background: value ? 'var(--mossy-700)' : 'var(--border-default)',
+          background: value ? 'var(--fg-income)' : 'var(--border-default)',
           position: 'relative',
           cursor: 'pointer',
           padding: 0,
@@ -468,7 +468,7 @@ function ToggleRow({
             left: value ? 18 : 2,
             width: 18,
             height: 18,
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             background: '#fff',
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
             transition: 'left 0.15s',

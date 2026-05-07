@@ -106,7 +106,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                 onClick={() => setTheme(opt.k)}
                 style={{
                   padding: '16px 14px',
-                  borderRadius: 12,
+                  borderRadius: 'var(--radius-lg)',
                   border: active
                     ? '1.5px solid var(--mossy-500, var(--fg-brand-strong))'
                     : '1px solid var(--border-subtle)',
@@ -126,7 +126,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
+                    borderRadius: 'var(--radius-tile)',
                     background: swatchBg,
                     border: '1px solid var(--border-subtle)',
                     display: 'inline-flex',
@@ -182,7 +182,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
             padding: 4,
             background: 'var(--bg-canvas)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 10,
+            borderRadius: 'var(--radius-tile)',
           }}
         >
           {DENSITY_OPTIONS.map(opt => {
@@ -195,7 +195,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                 style={{
                   flex: 1,
                   padding: '10px 12px',
-                  borderRadius: 8,
+                  borderRadius: 'var(--radius-md)',
                   background: active ? 'var(--bg-surface)' : 'transparent',
                   border: 'none',
                   boxShadow: active ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
@@ -220,7 +220,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >
@@ -250,7 +250,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   style={{
                     width: 32,
                     height: 32,
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-md)',
                     background: 'var(--bg-canvas)',
                     display: 'inline-flex',
                     alignItems: 'center',

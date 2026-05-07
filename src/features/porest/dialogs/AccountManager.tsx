@@ -173,7 +173,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                           fontSize: 14,
                           fontWeight: 700,
                           letterSpacing: '-0.01em',
-                          color: neg ? 'var(--berry-700)' : 'var(--fg-primary)',
+                          color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
                         {neg ? '−' : ''}

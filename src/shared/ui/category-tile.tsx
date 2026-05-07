@@ -51,7 +51,8 @@ export function CategoryTile({
           width: 32,
           height: 32,
           borderRadius: "var(--radius-tile)",
-          background: `oklch(from ${color} l c h / 0.14)`,
+          // 18% color-mix — 다크모드에서도 자연스럽게 채도 유지.
+          background: `color-mix(in oklch, ${color} 18%, transparent)`,
           color,
           display: "inline-flex",
           alignItems: "center",

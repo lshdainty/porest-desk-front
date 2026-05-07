@@ -32,7 +32,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
     <div
       style={{
         height,
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
@@ -111,7 +111,7 @@ function Summary({
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 14,
+        borderRadius: 'var(--radius-card)',
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
       }}
@@ -137,7 +137,7 @@ function Summary({
         </div>
         <div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>지출</div>
-          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--berry-700)' }}>
+          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--fg-expense)' }}>
             {isLoading ? '—' : <MaskAmount>−{KRW(monthOut)}</MaskAmount>}
           </div>
         </div>
@@ -148,7 +148,7 @@ function Summary({
             style={{
               fontSize: mobile ? 16 : 18,
               fontWeight: 700,
-              color: balance >= 0 ? 'var(--fg-brand-strong)' : 'var(--berry-700)',
+              color: balance >= 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
             }}
           >
             {isLoading
@@ -390,7 +390,7 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
         background: 'var(--bg-brand-subtle)',
         color: 'var(--fg-brand-strong)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 999,
+        borderRadius: 'var(--radius-pill)',
         fontSize: 12.5,
         fontWeight: 600,
         marginBottom: 12,
@@ -585,7 +585,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             position: 'relative',
             width: 36,
             height: 36,
-            borderRadius: 10,
+            borderRadius: 'var(--radius-tile)',
             border: '1px solid var(--border-subtle)',
             background: 'transparent',
             color: 'var(--fg-secondary)',
@@ -607,7 +607,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 minWidth: 16,
                 height: 16,
                 padding: '0 4px',
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 background: 'var(--bg-brand-hover)',
                 color: '#fff',
                 fontSize: 10,
@@ -626,7 +626,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           style={{
             width: 36,
             height: 36,
-            borderRadius: 10,
+            borderRadius: 'var(--radius-tile)',
             border: 0,
             background: 'var(--bg-brand)',
             color: 'var(--fg-on-brand)',

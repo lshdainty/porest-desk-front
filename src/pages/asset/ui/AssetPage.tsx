@@ -41,7 +41,7 @@ function assetGroupOf(asset: Asset): AssetGroup {
 }
 
 const netWorthChartConfig = {
-  netWorth: { label: '순자산', color: 'var(--mossy-500)' },
+  netWorth: { label: '순자산', color: 'var(--border-brand)' },
 } satisfies ChartConfig
 
 function fmtAxisNum(v: number) {
@@ -67,7 +67,7 @@ function NetWorthTooltip({
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
         fontSize: 11.5,
@@ -76,7 +76,7 @@ function NetWorthTooltip({
     >
       <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--border-brand)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>순자산</span>
         <span
           className="num"
@@ -143,8 +143,8 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
         <defs>
           <linearGradient id="netWorthFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--mossy-500)" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="var(--mossy-500)" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--border-brand)" stopOpacity={0.25} />
+            <stop offset="100%" stopColor="var(--border-brand)" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
@@ -169,11 +169,11 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
         <Area
           type="monotone"
           dataKey="netWorth"
-          stroke="var(--mossy-500)"
+          stroke="var(--border-brand)"
           strokeWidth={2}
           fill="url(#netWorthFill)"
-          dot={{ fill: 'var(--mossy-500)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
-          activeDot={{ r: 6, fill: 'var(--mossy-500)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
+          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+          activeDot={{ r: 6, fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
         />
       </AreaChart>
     </ChartContainer>
@@ -186,7 +186,7 @@ type AssetGroupKey = 'cash' | 'invest' | 'card' | 'loan'
 
 const GROUP_META: Record<AssetGroupKey, { label: string; color: string }> = {
   cash: { label: '현금·예금', color: 'var(--sky-500)' },
-  invest: { label: '투자', color: 'var(--mossy-600)' },
+  invest: { label: '투자', color: 'var(--bg-brand)' },
   card: { label: '카드', color: 'var(--berry-500)' },
   loan: { label: '대출', color: 'var(--sunlit-700)' },
 }
@@ -334,7 +334,7 @@ function AssetCompositionCard({
                   } : undefined}
                   style={{
                     cursor: row.clickable ? 'pointer' : 'default',
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-md)',
                     padding: row.clickable ? '4px 6px' : undefined,
                     margin: row.clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
@@ -460,7 +460,7 @@ function UpcomingBillsCard() {
                   padding: '12px 14px',
                   background: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
-                  borderRadius: 12,
+                  borderRadius: 'var(--radius-lg)',
                   minWidth: 0,
                   cursor: 'pointer',
                   textAlign: 'left',
@@ -470,8 +470,8 @@ function UpcomingBillsCard() {
               >
                 <span
                   style={{
-                    width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                    background: 'var(--mossy-50)', color: 'var(--mossy-700)',
+                    width: 32, height: 32, borderRadius: 'var(--radius-tile)', flexShrink: 0,
+                    background: 'var(--bg-income-subtle)', color: 'var(--fg-income)',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
@@ -523,7 +523,7 @@ function SavingGoalItem({
   onEdit: (g: SavingGoal) => void
 }) {
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
-  const color = goal.color ?? 'var(--mossy-600)'
+  const color = goal.color ?? 'var(--bg-brand)'
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
 
   return (
@@ -534,7 +534,7 @@ function SavingGoalItem({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span
           style={{
-            width: 32, height: 32, borderRadius: 10,
+            width: 32, height: 32, borderRadius: 'var(--radius-tile)',
             background: `oklch(from ${color} l c h / 0.12)`,
             color,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -560,7 +560,7 @@ function SavingGoalItem({
                   color: 'var(--fg-brand-strong)',
                   fontSize: 10.5,
                   fontWeight: 600,
-                  borderRadius: 6,
+                  borderRadius: 'var(--radius-sm)',
                 }}
               >
                 달성
@@ -685,7 +685,7 @@ function Skeleton({ height = 120, style = {} }: { height?: number; style?: React
     <div
       style={{
         height,
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.2s infinite',
@@ -711,7 +711,7 @@ function AssetLogo({ asset }: { asset: Asset }) {
       style={{
         width: 40,
         height: 40,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -959,7 +959,7 @@ function SummaryCard({
             display: 'inline-flex',
             alignItems: 'center',
             gap: 2,
-            color: isUp ? 'var(--mossy-700)' : 'var(--berry-500)',
+            color: isUp ? 'var(--fg-income)' : 'var(--berry-500)',
             fontWeight: 600,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -1005,7 +1005,7 @@ function SummaryCard({
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>카드값</div>
           <div
             className="num"
-            style={{ fontSize: mobile ? 14 : 16, fontWeight: 700, color: 'var(--berry-700)' }}
+            style={{ fontSize: mobile ? 14 : 16, fontWeight: 700, color: 'var(--fg-expense)' }}
           >
             <MaskAmount>−{KRW(cardsTotal)}</MaskAmount>
           </div>
@@ -1180,7 +1180,7 @@ function AssetDesktop() {
               title="카드"
               assets={g.cards}
               total={g.cardsTotal}
-              totalColor="var(--berry-700)"
+              totalColor="var(--fg-expense)"
               negativeTotal
               mobile={false}
               onAdd={() => setCardOpen(true)}
@@ -1191,7 +1191,7 @@ function AssetDesktop() {
                 title="대출"
                 assets={g.loans}
                 total={g.loansTotal}
-                totalColor="var(--berry-700)"
+                totalColor="var(--fg-expense)"
                 negativeTotal
                 mobile={false}
                 onAdd={() => setAddOpen(true)}
@@ -1327,7 +1327,7 @@ function AssetMobile() {
           title="카드"
           assets={g.cards}
           total={g.cardsTotal}
-          totalColor="var(--berry-700)"
+          totalColor="var(--fg-expense)"
           negativeTotal
           mobile
           onAdd={() => setCardOpen(true)}
@@ -1338,7 +1338,7 @@ function AssetMobile() {
             title="대출"
             assets={g.loans}
             total={g.loansTotal}
-            totalColor="var(--berry-700)"
+            totalColor="var(--fg-expense)"
             negativeTotal
             mobile
             onAdd={() => setAddOpen(true)}

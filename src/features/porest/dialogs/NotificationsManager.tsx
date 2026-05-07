@@ -47,7 +47,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               updateMut.mutate({ budgetAlertThreshold: v })
             }}
             disabled={preferencesQ.isLoading || updateMut.isPending}
-            style={{ flex: 1, accentColor: 'var(--mossy-600)' }}
+            style={{ flex: 1, accentColor: 'var(--bg-brand)' }}
           />
           <span
             className="num"
@@ -73,7 +73,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <span>100</span>
         </div>
         {updateMut.isError && (
-          <div style={{ fontSize: 11.5, color: 'var(--berry-700)', marginTop: 6 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--fg-expense)', marginTop: 6 }}>
             저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
           </div>
         )}

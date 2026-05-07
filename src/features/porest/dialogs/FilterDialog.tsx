@@ -190,7 +190,7 @@ export function FilterDialog({
               />
             </div>
             {customInvalid && (
-              <div style={{ fontSize: 11.5, color: 'var(--berry-700)', marginTop: 6 }}>
+              <div style={{ fontSize: 11.5, color: 'var(--fg-expense)', marginTop: 6 }}>
                 시작일이 종료일보다 늦을 수 없습니다.
               </div>
             )}

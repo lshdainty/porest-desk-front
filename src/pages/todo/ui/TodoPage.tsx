@@ -7,7 +7,7 @@ import { Button } from '@/shared/ui/button'
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; fg: string; label: string }> = {
-  HIGH: { bg: 'oklch(0.95 0.03 15)', fg: 'var(--berry-700)', label: '중요' },
+  HIGH: { bg: 'oklch(0.95 0.03 15)', fg: 'var(--fg-expense)', label: '중요' },
   MEDIUM: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)', label: '보통' },
   LOW: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)', label: '여유' },
 }
@@ -32,7 +32,7 @@ export const TodoPage = () => {
           alignItems: 'center',
           gap: 12,
           padding: '12px 14px',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
           cursor: 'pointer',
@@ -43,7 +43,7 @@ export const TodoPage = () => {
           type="checkbox"
           checked={isDone}
           onChange={() => toggleStatus.mutate(t.rowId)}
-          style={{ width: 18, height: 18, accentColor: 'var(--mossy-600)' }}
+          style={{ width: 18, height: 18, accentColor: 'var(--bg-brand)' }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
@@ -79,7 +79,7 @@ export const TodoPage = () => {
                         fontSize: 10.5,
                         fontWeight: 600,
                         padding: '2px 7px',
-                        borderRadius: 999,
+                        borderRadius: 'var(--radius-pill)',
                         background: tag.color ? `${tag.color}22` : 'var(--pd-surface-inset)',
                         color: tag.color ?? 'var(--fg-secondary)',
                       }}
@@ -97,7 +97,7 @@ export const TodoPage = () => {
             fontSize: 11,
             fontWeight: 700,
             padding: '3px 9px',
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             background: prio.bg,
             color: prio.fg,
             flexShrink: 0,
@@ -119,7 +119,7 @@ export const TodoPage = () => {
         background: 'var(--bg-brand)',
         color: 'var(--fg-on-brand)',
         border: 0,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
         fontWeight: 700,

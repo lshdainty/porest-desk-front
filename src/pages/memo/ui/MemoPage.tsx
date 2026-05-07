@@ -10,7 +10,7 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 // light/dark 모두 자연 적응. 기존 --mossy-100 등 primitive 를 그대로 쓰면
 // 다크모드에서 라이트 톤이 유지돼 카드가 튀어 보였음.
 const CARD_COLORS = [
-  'color-mix(in oklch, var(--mossy-500) 18%, transparent)',   // 모시 그린
+  'color-mix(in oklch, var(--border-brand) 18%, transparent)',   // 모시 그린
   'color-mix(in oklch, var(--sunlit-500) 18%, transparent)',  // 햇살 옐로
   'color-mix(in oklch, var(--bark-500) 18%, transparent)',    // 바크 브라운
   'color-mix(in oklch, oklch(0.55 0.15 290) 18%, transparent)', // 라벤더
@@ -45,7 +45,7 @@ export const MemoPage = () => {
         background: 'var(--bg-brand)',
         color: 'var(--fg-on-brand)',
         border: 0,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
         fontWeight: 700,

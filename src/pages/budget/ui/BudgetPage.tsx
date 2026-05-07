@@ -27,7 +27,7 @@ const currentMonthKey = () => {
 }
 
 const complianceChartConfig = {
-  percent: { label: '이행률', color: 'var(--mossy-600)' },
+  percent: { label: '이행률', color: 'var(--bg-brand)' },
 } satisfies ChartConfig
 
 type ComplianceTickProps = {
@@ -71,7 +71,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
         fontSize: 11.5,
@@ -85,7 +85,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         <span
           style={{
             width: 8, height: 8, borderRadius: 2,
-            background: over ? 'var(--berry-500)' : 'var(--mossy-600)',
+            background: over ? 'var(--berry-500)' : 'var(--bg-brand)',
           }}
         />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>한도 대비</span>
@@ -93,7 +93,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
           className="num"
           style={{
             marginLeft: 'auto', fontSize: 12, fontWeight: 700,
-            color: over ? 'var(--berry-700)' : 'var(--fg-primary)',
+            color: over ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
           {p.toFixed(1)}%
@@ -300,7 +300,7 @@ export const BudgetPage = () => {
                 style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  color: overAllocated ? 'var(--berry-700)' : 'var(--mossy-700)',
+                  color: overAllocated ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
                 <MaskAmount mask="••••">
@@ -318,7 +318,7 @@ export const BudgetPage = () => {
                 padding: '8px 12px',
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid var(--berry-300)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 fontSize: 12,
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
@@ -462,7 +462,7 @@ export const BudgetPage = () => {
             padding: 14,
             background: overList.length > 0 ? 'var(--status-danger-subtle)' : 'var(--bg-surface)',
             border: `1px solid ${overList.length > 0 ? 'var(--berry-300)' : 'var(--border-subtle)'}`,
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           <div
@@ -471,7 +471,7 @@ export const BudgetPage = () => {
               alignItems: 'center',
               gap: 6,
               fontSize: 11.5,
-              color: overList.length > 0 ? 'var(--berry-700)' : 'var(--fg-tertiary)',
+              color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
               fontWeight: 600,
               marginBottom: 6,
             }}
@@ -484,7 +484,7 @@ export const BudgetPage = () => {
               fontSize: 24,
               fontWeight: 800,
               letterSpacing: '-0.02em',
-              color: overList.length > 0 ? 'var(--berry-700)' : 'var(--fg-primary)',
+              color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-primary)',
             }}
           >
             {overList.length}
@@ -498,7 +498,7 @@ export const BudgetPage = () => {
             padding: 14,
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           <div
@@ -507,7 +507,7 @@ export const BudgetPage = () => {
               alignItems: 'center',
               gap: 6,
               fontSize: 11.5,
-              color: 'var(--mossy-700)',
+              color: 'var(--fg-income)',
               fontWeight: 600,
               marginBottom: 6,
             }}
@@ -569,7 +569,7 @@ export const BudgetPage = () => {
               />
               <YAxis hide domain={[0, (dmax: number) => Math.max(100, dmax)]} />
               <ChartTooltip
-                cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.06 }}
+                cursor={{ fill: 'var(--border-brand)', fillOpacity: 0.06 }}
                 content={<ComplianceTooltip />}
               />
               <Bar dataKey="percent" radius={[6, 6, 0, 0]} isAnimationActive>
@@ -580,7 +580,7 @@ export const BudgetPage = () => {
                       d.percent > 100
                         ? 'var(--berry-500)'
                         : d.active
-                          ? 'var(--mossy-600)'
+                          ? 'var(--bg-brand)'
                           : 'var(--pd-divider-strong)'
                     }
                   />
@@ -643,7 +643,7 @@ export const BudgetPage = () => {
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: 10,
+                      borderRadius: 'var(--radius-tile)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -668,7 +668,7 @@ export const BudgetPage = () => {
                       style={{
                         fontSize: 14,
                         fontWeight: 700,
-                        color: state === 'over' ? 'var(--berry-700)' : 'var(--fg-primary)',
+                        color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                       }}
                     >
                       <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>

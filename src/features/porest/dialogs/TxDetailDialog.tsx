@@ -128,7 +128,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
       <Button
         type="button"
         variant="ghost"
-        style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+        style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
         onClick={() => setConfirmDelete(true)}
         disabled={deleteMut.isPending}
       >
@@ -183,7 +183,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               style={{
                 width: 40,
                 height: 40,
-                borderRadius: 12,
+                borderRadius: 'var(--radius-lg)',
                 background: palette.bg,
                 color: palette.color,
                 display: 'inline-flex',
@@ -236,7 +236,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             flexDirection: 'column',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >
@@ -355,7 +355,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               style={{
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 12,
+                borderRadius: 'var(--radius-lg)',
                 padding: '4px 14px',
               }}
             >
@@ -436,7 +436,7 @@ function QuickBtn({
         padding: '16px 4px',
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         cursor: onClick ? 'pointer' : 'not-allowed',
         fontFamily: 'inherit',
         color: 'var(--fg-secondary)',
@@ -457,7 +457,7 @@ function QuickBtn({
             fontSize: 10,
             fontWeight: 700,
             padding: '2px 6px',
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             background: 'var(--bg-brand-subtle)',
             color: 'var(--fg-brand-strong)',
           }}

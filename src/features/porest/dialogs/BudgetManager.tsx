@@ -318,7 +318,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 style={{
                   fontSize: 15,
                   fontWeight: 700,
-                  color: remaining < 0 ? 'var(--berry-700)' : 'var(--mossy-700)',
+                  color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
                 {remaining >= 0 ? '+' : ''}
@@ -333,7 +333,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 padding: '8px 12px',
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid var(--berry-300)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 fontSize: 12,
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
@@ -404,7 +404,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                           marginLeft: 'auto',
                           fontSize: 13,
                           fontWeight: 700,
-                          color: state === 'over' ? 'var(--berry-700)' : 'var(--fg-primary)',
+                          color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
                         {KRW(spent)}

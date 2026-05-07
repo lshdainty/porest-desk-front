@@ -67,7 +67,7 @@ export const MorePage = () => {
                 padding: '18px 14px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 14,
+                borderRadius: 'var(--radius-card)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 fontFamily: 'inherit',

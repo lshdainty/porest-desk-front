@@ -151,7 +151,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
         <Button
           type="button"
           variant="ghost"
-          style={{ color: 'var(--berry-700)', marginRight: 'auto' }}
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           onClick={handleDeleteAll}
           loading={deleteAllMut.isPending}
           disabled={replaceMut.isPending}
@@ -169,7 +169,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             padding: '4px 10px',
             background: 'color-mix(in oklch, var(--fg-brand) 12%, transparent)',
             color: 'var(--fg-brand)',
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             fontSize: 11.5,
             fontWeight: 700,
           }}
@@ -184,9 +184,9 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             gap: 4,
             marginRight: 'auto',
             padding: '4px 10px',
-            background: 'color-mix(in oklch, var(--berry-700) 12%, transparent)',
-            color: 'var(--berry-700)',
-            borderRadius: 999,
+            background: 'color-mix(in oklch, var(--fg-expense) 12%, transparent)',
+            color: 'var(--fg-expense)',
+            borderRadius: 'var(--radius-pill)',
             fontSize: 11.5,
             fontWeight: 700,
           }}
@@ -222,7 +222,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
           justifyContent: 'space-between',
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: '12px 14px',
           marginBottom: 14,
         }}
@@ -261,14 +261,14 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
               padding: '8px 10px',
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: 12,
+              borderRadius: 'var(--radius-lg)',
             }}
           >
             <span
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 background: 'var(--pd-surface-inset)',
                 color: 'var(--fg-secondary)',
                 display: 'inline-flex',
@@ -348,7 +348,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 justifyContent: 'center',
                 background: 'transparent',
                 border: 0,
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 color: 'var(--fg-tertiary)',
                 cursor: 'pointer',
               }}
@@ -377,7 +377,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
           style={{
             display: 'flex',
             height: 10,
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
             background: 'var(--pd-surface-inset)',
             border: '1px solid var(--border-subtle)',
@@ -403,7 +403,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 style={{
                   width: 8,
                   height: 8,
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   background: seg.color,
                 }}
               />

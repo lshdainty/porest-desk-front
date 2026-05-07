@@ -182,7 +182,7 @@ export function NotificationsPopover({
               fontSize: 12.5,
               fontWeight: 600,
               padding: 8,
-              borderRadius: 8,
+              borderRadius: 'var(--radius-md)',
               cursor: 'pointer',
             }}
             onClick={() => {

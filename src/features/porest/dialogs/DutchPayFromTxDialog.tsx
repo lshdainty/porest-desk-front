@@ -29,7 +29,7 @@ const PARTICIPANT_PALETTE = [
   { color: 'oklch(0.55 0.10 90)', bg: 'color-mix(in oklch, oklch(0.55 0.10 90) 18%, transparent)' },
 ]
 
-const ME_PALETTE = { color: 'var(--mossy-700)', bg: 'color-mix(in oklch, var(--mossy-700) 18%, transparent)' }
+const ME_PALETTE = { color: 'var(--fg-income)', bg: 'color-mix(in oklch, var(--fg-income) 18%, transparent)' }
 
 type Participant = {
   uid: string
@@ -236,7 +236,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           gap: 12,
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: '12px 14px',
           marginBottom: 18,
         }}
@@ -245,7 +245,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           style={{
             width: 38,
             height: 38,
-            borderRadius: 10,
+            borderRadius: 'var(--radius-tile)',
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',
@@ -280,8 +280,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 style={{
                   padding: '12px 12px',
                   background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                  border: `1px solid ${active ? 'var(--mossy-700)' : 'var(--border-subtle)'}`,
-                  borderRadius: 12,
+                  border: `1px solid ${active ? 'var(--fg-income)' : 'var(--border-subtle)'}`,
+                  borderRadius: 'var(--radius-lg)',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
@@ -325,7 +325,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           padding: '12px 14px',
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           marginBottom: 18,
           cursor: 'pointer',
         }}
@@ -336,8 +336,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
             width: 18,
             height: 18,
             borderRadius: 5,
-            border: `2px solid ${includeMyself ? 'var(--mossy-700)' : 'var(--border-default)'}`,
-            background: includeMyself ? 'var(--mossy-700)' : 'transparent',
+            border: `2px solid ${includeMyself ? 'var(--fg-income)' : 'var(--border-default)'}`,
+            background: includeMyself ? 'var(--fg-income)' : 'transparent',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -375,14 +375,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 padding: '10px 14px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 12,
+                borderRadius: 'var(--radius-lg)',
               }}
             >
               <span
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   background: palette.bg,
                   color: palette.color,
                   display: 'inline-flex',
@@ -404,9 +404,9 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       fontSize: 10,
                       fontWeight: 700,
                       padding: '2px 7px',
-                      borderRadius: 999,
-                      background: 'color-mix(in oklch, var(--mossy-700) 12%, transparent)',
-                      color: 'var(--mossy-700)',
+                      borderRadius: 'var(--radius-pill)',
+                      background: 'color-mix(in oklch, var(--fg-income) 12%, transparent)',
+                      color: 'var(--fg-income)',
                     }}
                   >
                     나
@@ -497,7 +497,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                     justifyContent: 'center',
                     background: 'transparent',
                     border: 0,
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     color: 'var(--fg-tertiary)',
                     cursor: 'pointer',
                   }}
@@ -547,7 +547,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   alignItems: 'center',
                   gap: 6,
                   padding: '5px 10px 5px 8px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   background: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
                   cursor: 'pointer',
@@ -558,7 +558,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 }}
                 title={m.userEmail}
               >
-                <span aria-hidden style={{ width: 8, height: 8, borderRadius: 999, background: palette.color }} />
+                <span aria-hidden style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: palette.color }} />
                 {m.userName}
                 <Plus size={12} color="var(--fg-tertiary)" />
               </button>
@@ -580,7 +580,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       </Section>
 
       {!matched && (
-        <p style={{ fontSize: 11.5, color: 'var(--berry-700)', marginTop: 8 }}>
+        <p style={{ fontSize: 11.5, color: 'var(--fg-expense)', marginTop: 8 }}>
           {remainder > 0
             ? `합계가 총액보다 ${KRW(remainder)}원 부족합니다.`
             : `합계가 총액보다 ${KRW(-remainder)}원 초과합니다.`}

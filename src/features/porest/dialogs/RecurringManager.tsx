@@ -155,7 +155,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     alignItems: 'center',
                     gap: 12,
                     padding: '10px 12px',
-                    borderRadius: 10,
+                    borderRadius: 'var(--radius-tile)',
                     background: isToday ? 'color-mix(in oklch, var(--berry-600) 8%, transparent)' : 'var(--pd-surface-inset)',
                     border: isToday ? '1px solid color-mix(in oklch, var(--berry-600) 25%, transparent)' : '1px solid transparent',
                   }}
@@ -168,7 +168,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       fontSize: 11,
                       fontWeight: 700,
                       padding: '4px 8px',
-                      borderRadius: 6,
+                      borderRadius: 'var(--radius-sm)',
                       background: isToday ? 'var(--berry-600)' : 'var(--bg-surface)',
                       color: isToday ? '#fff' : 'var(--fg-secondary)',
                     }}
@@ -179,7 +179,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 10,
+                      borderRadius: 'var(--radius-tile)',
                       background: palette.bg,
                       color: palette.color,
                       display: 'inline-flex',
@@ -198,7 +198,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       {it.assetName ?? '계좌 없음'} · {recurringSummary(it)}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 14, fontWeight: 700, color: isExpense ? 'var(--berry-700)' : 'var(--mossy-700)' }}>
+                  <div className="num" style={{ fontSize: 14, fontWeight: 700, color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
                     {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                 className="num"
                 style={{
                   padding: '6px 12px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   border: '1px solid ' + (active ? 'transparent' : 'var(--border-subtle)'),
                   background: active ? 'var(--bg-brand)' : 'var(--bg-surface)',
                   color: active ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
@@ -271,7 +271,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   style={{
                     width: 32,
                     height: 32,
-                    borderRadius: 10,
+                    borderRadius: 'var(--radius-tile)',
                     background: palette.bg,
                     color: palette.color,
                     display: 'inline-flex',
@@ -301,7 +301,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           fontSize: 10,
                           fontWeight: 700,
                           padding: '2px 6px',
-                          borderRadius: 4,
+                          borderRadius: 'var(--radius-xs)',
                           background: 'var(--pd-surface-inset)',
                           color: 'var(--fg-tertiary)',
                         }}
@@ -310,7 +310,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       </span>
                     )}
                     {it.autoLog && (
-                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--mossy-600)' }}>
+                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--bg-brand)' }}>
                         <Zap size={11} strokeWidth={2.4} />
                       </span>
                     )}
@@ -330,7 +330,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       fontSize: 14,
                       fontWeight: 700,
-                      color: isExpense ? 'var(--berry-700)' : 'var(--mossy-700)',
+                      color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
                       textAlign: 'right',
                       minWidth: 110,
                     }}
@@ -345,7 +345,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       style={{
                         fontSize: 13,
                         fontWeight: 700,
-                        color: isExpense ? 'var(--berry-700)' : 'var(--mossy-700)',
+                        color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
                         marginRight: 4,
                       }}
                     >
@@ -411,7 +411,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             padding: '10px 18px',
             background: 'var(--fg-primary)',
             color: 'var(--bg-surface)',
-            borderRadius: 999,
+            borderRadius: 'var(--radius-pill)',
             fontSize: 13,
             fontWeight: 600,
             boxShadow: '0 8px 28px -10px rgba(0,0,0,0.25)',
@@ -437,8 +437,8 @@ function RecStat({
   tone?: 'expense' | 'income' | 'muted'
 }) {
   const color =
-    tone === 'expense' ? 'var(--berry-700)'
-    : tone === 'income' ? 'var(--mossy-700)'
+    tone === 'expense' ? 'var(--fg-expense)'
+    : tone === 'income' ? 'var(--fg-income)'
     : tone === 'muted' ? 'var(--fg-tertiary)'
     : 'var(--fg-primary)'
   return (
@@ -491,7 +491,7 @@ function RecAction({
       style={{
         width: 32,
         height: 32,
-        borderRadius: 8,
+        borderRadius: 'var(--radius-md)',
         border: '1px solid transparent',
         background: 'transparent',
         color: tone === 'danger' ? 'var(--berry-600)' : 'var(--fg-secondary)',

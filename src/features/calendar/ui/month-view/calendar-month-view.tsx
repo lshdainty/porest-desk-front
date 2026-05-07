@@ -151,10 +151,10 @@ const MonthDayCell = ({
           {hasExpense && (
             <div className={cn('hidden lg:flex items-center gap-1.5 text-[10px] font-medium min-w-0 truncate', !currentMonth && 'opacity-50')}>
               {expenseSummary.income > 0 && (
-                <span className="truncate" style={{ color: 'var(--mossy-700)' }}>+{formatNumber(expenseSummary.income)}</span>
+                <span className="truncate" style={{ color: 'var(--fg-income)' }}>+{formatNumber(expenseSummary.income)}</span>
               )}
               {expenseSummary.expense > 0 && (
-                <span className="truncate" style={{ color: 'var(--berry-700)' }}>-{formatNumber(expenseSummary.expense)}</span>
+                <span className="truncate" style={{ color: 'var(--fg-expense)' }}>-{formatNumber(expenseSummary.expense)}</span>
               )}
             </div>
           )}

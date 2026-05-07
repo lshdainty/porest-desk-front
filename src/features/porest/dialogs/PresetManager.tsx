@@ -57,8 +57,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         style={{
           padding: 14,
           background: 'var(--bg-brand-subtle)',
-          border: '1px solid var(--mossy-500)',
-          borderRadius: 10,
+          border: '1px solid var(--border-brand)',
+          borderRadius: 'var(--radius-tile)',
           display: 'flex',
           alignItems: 'flex-start',
           gap: 12,
@@ -69,7 +69,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             flexShrink: 0,
             width: 32,
             height: 32,
-            borderRadius: 8,
+            borderRadius: 'var(--radius-md)',
             background: 'var(--bg-surface)',
             display: 'flex',
             alignItems: 'center',
@@ -111,7 +111,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             gap: 2,
             padding: 2,
             background: 'var(--pd-surface-inset)',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-md)',
           }}
         >
           {(
@@ -132,7 +132,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 padding: '6px 10px',
                 fontSize: 12,
                 fontWeight: sortBy === o.k ? 700 : 500,
-                borderRadius: 6,
+                borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 boxShadow: sortBy === o.k ? 'var(--shadow-xs)' : 'none',
                 fontFamily: 'inherit',
@@ -164,7 +164,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 display: 'inline-flex',
                 width: 48,
                 height: 48,
-                borderRadius: 12,
+                borderRadius: 'var(--radius-lg)',
                 background: 'var(--pd-surface-inset)',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -201,9 +201,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     flexShrink: 0,
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
+                    borderRadius: 'var(--radius-tile)',
                     background: cat
-                      ? `color-mix(in oklch, ${cat.color ?? 'var(--mossy-600)'} 18%, transparent)`
+                      ? `color-mix(in oklch, ${cat.color ?? 'var(--bg-brand)'} 18%, transparent)`
                       : 'var(--pd-surface-inset)',
                     color: cat?.color ?? 'var(--fg-tertiary)',
                     display: 'flex',
@@ -235,8 +235,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           fontSize: 10,
                           fontWeight: 700,
                           padding: '1px 5px',
-                          background: 'var(--mossy-100)',
-                          color: 'var(--mossy-700)',
+                          background: 'var(--bg-income-subtle)',
+                          color: 'var(--fg-income)',
                           borderRadius: 3,
                         }}
                       >
@@ -297,7 +297,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     style={{
                       fontSize: mobile ? 12.5 : 14,
                       fontWeight: 700,
-                      color: p.expenseType === 'EXPENSE' ? 'var(--berry-700)' : 'var(--mossy-700)',
+                      color: p.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
                     }}
                   >
                     {lock && p.amount != null
@@ -391,14 +391,14 @@ function PMIconBtn({
       style={{
         width: 32,
         height: 32,
-        borderRadius: 8,
+        borderRadius: 'var(--radius-md)',
         background: 'transparent',
         border: 0,
         cursor: 'pointer',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: tone === 'danger' ? 'var(--berry-700)' : 'var(--fg-secondary)',
+        color: tone === 'danger' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
         fontFamily: 'inherit',
       }}
     >

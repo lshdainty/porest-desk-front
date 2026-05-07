@@ -209,7 +209,7 @@ export function AssetEditDialog({
     return getBrandColor(brand)
   }, [editingGroup, brand, cardBrandColor])
 
-  const previewBg = brandColor?.bg ?? item?.color ?? 'var(--mossy-500)'
+  const previewBg = brandColor?.bg ?? item?.color ?? 'var(--border-brand)'
   const previewFg = brandColor?.fg ?? '#fff'
 
   const previewName = (() => {
@@ -743,7 +743,7 @@ export function AssetEditDialog({
             variant="ghost"
             onClick={onDelete}
             disabled={isSubmitting}
-            style={{ color: 'var(--berry-700)' }}
+            style={{ color: 'var(--fg-expense)' }}
           >
             <Trash2 size={14} />삭제
           </Button>

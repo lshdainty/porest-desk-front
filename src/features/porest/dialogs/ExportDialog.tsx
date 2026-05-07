@@ -69,8 +69,8 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                 style={{
                   padding: 14,
                   background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                  borderRadius: 12,
+                  border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   fontFamily: 'inherit',
@@ -86,7 +86,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   >
                     {o.l}
                   </span>
-                  {active && <CheckCircle2 size={14} style={{ color: 'var(--mossy-600)', marginLeft: 'auto' }} />}
+                  {active && <CheckCircle2 size={14} style={{ color: 'var(--bg-brand)', marginLeft: 'auto' }} />}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{o.d}</div>
               </button>
@@ -140,9 +140,9 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   alignItems: 'center',
                   gap: 12,
                   padding: 12,
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                  border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
+                  border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                   cursor: 'pointer',
                 }}
               >
@@ -150,13 +150,13 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   type="checkbox"
                   checked={active}
                   onChange={() => toggle(o.v)}
-                  style={{ width: 17, height: 17, accentColor: 'var(--mossy-600)' }}
+                  style={{ width: 17, height: 17, accentColor: 'var(--bg-brand)' }}
                 />
                 <span
                   style={{
                     width: 32,
                     height: 32,
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-md)',
                     background: 'var(--pd-surface-subtle)',
                     color: 'var(--fg-secondary)',
                     display: 'inline-flex',

@@ -114,7 +114,7 @@ export const SettingsPage = () => {
               display: 'flex',
               flexDirection: 'column',
               background: 'var(--bg-surface)',
-              borderRadius: 14,
+              borderRadius: 'var(--radius-card)',
               margin: '0 12px',
               overflow: 'hidden',
               border: '1px solid var(--border-subtle)',
@@ -144,7 +144,7 @@ export const SettingsPage = () => {
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: 10,
+                      borderRadius: 'var(--radius-tile)',
                       background: 'var(--bg-brand-subtle)',
                       color: 'var(--fg-brand-strong)',
                       display: 'inline-flex',
@@ -230,7 +230,7 @@ export const SettingsPage = () => {
             padding: 8,
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 14,
+            borderRadius: 'var(--radius-card)',
           }}
         >
           {SECTIONS.map(s => {
@@ -248,7 +248,7 @@ export const SettingsPage = () => {
                   border: 0,
                   background: active ? 'var(--bg-brand-subtle)' : 'transparent',
                   color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   fontSize: 13,
                   fontWeight: active ? 600 : 500,
                   cursor: 'pointer',
@@ -277,14 +277,14 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
         textAlign: 'center',
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 14,
+        borderRadius: 'var(--radius-card)',
       }}
     >
       <div
         style={{
           width: 48,
           height: 48,
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           background: 'var(--bg-brand-subtle)',
           color: 'var(--fg-brand-strong)',
           display: 'inline-flex',
