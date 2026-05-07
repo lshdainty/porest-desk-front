@@ -478,8 +478,8 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--pd-surface-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   font-size: 12px;
   font-weight: 500;
