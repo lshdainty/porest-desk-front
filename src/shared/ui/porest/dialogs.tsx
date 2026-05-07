@@ -65,7 +65,7 @@ export function ModalShell({
           <DrawerBody>{children}</DrawerBody>
           {footer && (
             <div
-              className="flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-5 py-3"
+              className="flex items-center justify-end gap-2 px-5 py-3"
             >
               {footer}
             </div>

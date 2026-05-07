@@ -84,7 +84,7 @@ const DrawerFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-auto flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-5 py-3",
+      "mt-auto flex items-center justify-end gap-2 px-5 py-3",
       className
     )}
     {...props}

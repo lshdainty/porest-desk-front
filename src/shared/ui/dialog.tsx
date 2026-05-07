@@ -114,14 +114,14 @@ const DialogBody = ({
 )
 DialogBody.displayName = "DialogBody"
 
-// .modal__foot — padding 14 22 + flex justify-end + gap 8 + border-top + sunken bg
+// .modal__foot — padding 14 22 + flex justify-end + gap 8
 const DialogFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex shrink-0 items-center justify-end gap-2 px-[22px] py-[14px] border-t border-[var(--border-subtle)] bg-[var(--pd-surface-inset)]",
+      "flex shrink-0 items-center justify-end gap-2 px-[22px] py-[14px]",
       className
     )}
     {...props}
