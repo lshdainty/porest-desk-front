@@ -460,7 +460,7 @@
 
   ::-webkit-scrollbar { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--radius-pill); }
   ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
   :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: var(--radius-xs); }
