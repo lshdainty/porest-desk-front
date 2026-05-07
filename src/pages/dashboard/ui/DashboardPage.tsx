@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  ChevronRight, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
+  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
@@ -18,7 +18,7 @@ import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
-import { useDashboardSummary } from '@/features/dashboard'
+import { useDashboardSummary, type DashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
 import {
   useExpenses,
@@ -828,6 +828,8 @@ function HomeMobile() {
         </div>
       </Card>
 
+      <UpcomingMobileCard summary={summary} onCalendar={() => navigate('/desk/calendar')} onTodos={() => navigate('/desk/todo')} />
+
       <Card style={{ padding: 18 }}>
         <CardHeader style={{ marginBottom: 6 }}>
           <CardTitle style={{ fontSize: 15 }}>최근 거래</CardTitle>
@@ -850,5 +852,93 @@ function HomeMobile() {
         onVerified={disablePdHideAmounts}
       />
     </div>
+  )
+}
+
+/**
+ * 모바일 홈에 끼우는 카드 — 다가오는 일정 + 최근 할 일.
+ * Flutter `_UpcomingCard` 미러 (events 3건 + todos 3건, 둘 다 비면 hidden).
+ */
+function UpcomingMobileCard({
+  summary,
+  onCalendar,
+  onTodos,
+}: {
+  summary: DashboardSummary | undefined
+  onCalendar: () => void
+  onTodos: () => void
+}) {
+  if (!summary) return null
+  const events = summary.upcomingEvents.slice(0, 3)
+  const todos = summary.recentTodos.slice(0, 3)
+  if (events.length === 0 && todos.length === 0) return null
+
+  return (
+    <Card style={{ padding: '18px 18px 14px' }}>
+      {events.length > 0 && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+            <CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />
+            <span style={{ marginLeft: 6, fontSize: 13, fontWeight: 700, color: 'var(--fg-primary)' }}>
+              다가오는 일정
+            </span>
+            <button
+              onClick={onCalendar}
+              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+          {events.map(ev => (
+            <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: ev.color || 'var(--fg-brand)', marginRight: 8 }} />
+              <span style={{ flex: 1, fontSize: 13, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {ev.title}
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
+                {ev.daysUntil === 0 ? '오늘' : ev.daysUntil === 1 ? '내일' : `D-${ev.daysUntil}`}
+              </span>
+            </div>
+          ))}
+          {todos.length > 0 && <div style={{ height: 12 }} />}
+        </>
+      )}
+      {todos.length > 0 && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+            <CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />
+            <span style={{ marginLeft: 6, fontSize: 13, fontWeight: 700, color: 'var(--fg-primary)' }}>
+              최근 할 일
+            </span>
+            <button
+              onClick={onTodos}
+              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+          {todos.map(td => {
+            const done = td.status === 'COMPLETED'
+            return (
+              <div key={td.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+                {done ? (
+                  <CheckCircle2 size={14} style={{ color: 'var(--status-success-fg)', marginRight: 8 }} />
+                ) : (
+                  <Circle size={14} style={{ color: 'var(--fg-tertiary)', marginRight: 8 }} />
+                )}
+                <span style={{ flex: 1, fontSize: 13, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {td.title}
+                </span>
+                {td.dueDate && (
+                  <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
+                    {td.dueDate.slice(5, 10)}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </>
+      )}
+    </Card>
   )
 }

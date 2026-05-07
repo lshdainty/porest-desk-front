@@ -14,6 +14,8 @@ const StatsPage = lazy(() => import('@/pages/stats/ui/StatsPage').then(m => ({ d
 const BudgetPage = lazy(() => import('@/pages/budget/ui/BudgetPage').then(m => ({ default: m.BudgetPage })))
 const SettingsPage = lazy(() => import('@/pages/settings/ui/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const MorePage = lazy(() => import('@/pages/more/ui/MorePage').then(m => ({ default: m.MorePage })))
+const SearchPage = lazy(() => import('@/pages/search/ui/SearchPage').then(m => ({ default: m.SearchPage })))
+const NotificationsPage = lazy(() => import('@/pages/notifications/ui/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const CardDetailPage = lazy(() => import('@/pages/card').then(m => ({ default: m.CardDetailPage })))
 const CardSettingsPage = lazy(() => import('@/pages/card').then(m => ({ default: m.CardSettingsPage })))
 const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
@@ -49,6 +51,8 @@ export const AppRouter = () => {
               <Route path="/desk/group" element={<GroupPage />} />
               <Route path="/desk/settings" element={<SettingsPage />} />
               <Route path="/desk/more" element={<MorePage />} />
+              <Route path="/desk/search" element={<SearchPage />} />
+              <Route path="/desk/notifications" element={<NotificationsPage />} />
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
