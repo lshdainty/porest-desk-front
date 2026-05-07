@@ -42,7 +42,7 @@ export const CAT_PALETTE: { color: string; bg: string }[] = [
   { color: 'oklch(0.48 0.012 195)', bg: 'color-mix(in oklch, oklch(0.48 0.012 195) 18%, transparent)' },
   { color: 'oklch(0.52 0.1 215)',   bg: 'color-mix(in oklch, oklch(0.52 0.1 215) 18%, transparent)' },
   { color: 'var(--bark-700)',       bg: 'color-mix(in oklch, var(--bark-700) 18%, transparent)' },
-  { color: 'var(--mossy-800)',      bg: 'color-mix(in oklch, var(--mossy-800) 18%, transparent)' },
+  { color: 'var(--fg-brand-strong)',      bg: 'color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)' },
   { color: 'oklch(0.50 0.14 15)',   bg: 'color-mix(in oklch, oklch(0.50 0.14 15) 18%, transparent)' },
 ]
 

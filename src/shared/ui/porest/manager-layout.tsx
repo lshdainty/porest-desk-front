@@ -50,7 +50,7 @@ export const MANAGER_LAYOUT = {
   searchInputStyle: {
     padding: '8px 12px 8px 30px',
     border: '1px solid var(--border-subtle)',
-    borderRadius: 10,
+    borderRadius: 'var(--radius-tile)',
     font: '13px/1 var(--font-sans)',
     background: 'var(--bg-surface)',
     color: 'var(--fg-primary)',
@@ -102,7 +102,7 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
   padding: '8px 16px',
   border: 0,
   background: 'transparent',
-  borderRadius: 6,
+  borderRadius: 'var(--radius-sm)',
   font: '600 13px/1 var(--font-sans)',
   cursor: 'pointer',
   display: 'inline-flex',
@@ -113,10 +113,10 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 }
 
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  background: 'var(--mossy-700)',
-  color: '#fff',
+  background: 'var(--fg-income)',
+  color: 'var(--fg-on-brand)',
   fontWeight: 700,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+  boxShadow: 'var(--shadow-sm)',
 }
 
 const TAB_CNT_BASE_STYLE: CSSProperties = {
@@ -124,7 +124,7 @@ const TAB_CNT_BASE_STYLE: CSSProperties = {
   color: 'var(--fg-tertiary)',
   background: 'var(--bg-surface)',
   padding: '2px 7px',
-  borderRadius: 999,
+  borderRadius: 'var(--radius-pill)',
   fontWeight: 700,
   minWidth: 20,
   textAlign: 'center',
@@ -132,7 +132,7 @@ const TAB_CNT_BASE_STYLE: CSSProperties = {
 
 const TAB_CNT_ACTIVE_STYLE: CSSProperties = {
   background: 'rgba(255,255,255,0.22)',
-  color: '#fff',
+  color: 'var(--fg-on-brand)',
 }
 
 export function ManagerTabs<T extends string>({
@@ -150,7 +150,7 @@ export function ManagerTabs<T extends string>({
         display: 'inline-flex',
         background: 'var(--pd-surface-inset)',
         padding: 4,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         gap: 2,
         border: '1px solid var(--border-subtle)',
       }}

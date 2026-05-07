@@ -414,7 +414,7 @@ export function AssetEditDialog({
                         className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
                         style={
                           active
-                            ? { background: 'var(--mossy-800)', color: 'var(--fg-on-brand)' }
+                            ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
                             : { background: 'transparent', color: 'var(--fg-secondary)' }
                         }
                       >
@@ -672,7 +672,7 @@ export function AssetEditDialog({
                       className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
                       style={
                         active
-                          ? { background: 'var(--mossy-800)', color: 'var(--fg-on-brand)' }
+                          ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
                           : { background: 'transparent', color: 'var(--fg-secondary)' }
                       }
                     >

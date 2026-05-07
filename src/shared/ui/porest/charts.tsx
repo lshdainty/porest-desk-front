@@ -6,7 +6,7 @@ import { KRW } from '@/shared/lib/porest/format'
 export function Sparkline({
   values,
   height = 40,
-  color = 'var(--mossy-500)',
+  color = 'var(--border-brand)',
   fill = true,
 }: {
   values: number[]
@@ -57,7 +57,7 @@ export function LineChart({
   series,
   labels,
   height = 200,
-  colors = ['var(--mossy-500)', 'var(--berry-500)'],
+  colors = ['var(--border-brand)', 'var(--fg-expense)'],
   yFormat,
 }: {
   series: LineSeries[]
@@ -192,7 +192,7 @@ export function LineChart({
                 [placeRight ? 'left' : 'right']: `calc(${placeRight ? xPct : 100 - xPct}% + 12px)`,
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
                 fontSize: 11.5,
@@ -213,7 +213,7 @@ export function LineChart({
                     style={{
                       width: 8,
                       height: 8,
-                      borderRadius: 2,
+                      borderRadius: 'var(--radius-2xs)',
                       background: colors[si] || colors[0],
                       display: 'inline-block',
                     }}
@@ -312,7 +312,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
           return (
             <g key={i}>
               {isHover && (
-                <rect x={padL + i * groupW} y={padT} width={groupW} height={innerH} fill="var(--mossy-500)" opacity="0.06" />
+                <rect x={padL + i * groupW} y={padT} width={groupW} height={innerH} fill="var(--border-brand)" opacity="0.06" />
               )}
               <rect
                 x={cx - barW - 2}
@@ -320,7 +320,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 width={barW}
                 height={padT + innerH - yIn}
                 rx="3"
-                fill="var(--mossy-500)"
+                fill="var(--border-brand)"
                 opacity={isHover ? 1 : 0.92}
               />
               <rect
@@ -329,7 +329,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 width={barW}
                 height={padT + innerH - yEx}
                 rx="3"
-                fill="var(--berry-500)"
+                fill="var(--fg-expense)"
                 opacity={isHover ? 1 : 0.92}
               />
               <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--mist-500)" textAnchor="middle">
@@ -353,7 +353,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 [placeRight ? 'left' : 'right']: `calc(${placeRight ? xPct : 100 - xPct}% + 12px)`,
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
                 fontSize: 11.5,
@@ -366,14 +366,14 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
                 <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--berry-500)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
                 <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
                   {KRW(d.expense)}원
@@ -396,7 +396,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                     marginLeft: 'auto',
                     fontSize: 12,
                     fontWeight: 700,
-                    color: d.income - d.expense >= 0 ? 'var(--mossy-700)' : 'var(--berry-600)',
+                    color: d.income - d.expense >= 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
                   }}
                 >
                   {d.income - d.expense >= 0 ? '+' : '−'}

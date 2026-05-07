@@ -20,13 +20,13 @@ const alertVariants = cva(
       variant: {
         default: "",
         success:
-          "bg-[var(--status-success-subtle)] text-[var(--status-success-fg)] border-[var(--mossy-300)]",
+          "bg-[var(--status-success-subtle)] text-[var(--status-success-fg)] border-[var(--border-brand-mid)]",
         warning:
           "bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)] border-[var(--sunlit-500)]",
         danger:
-          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] border-[var(--berry-500)]",
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] border-[var(--fg-expense)]",
         destructive:
-          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] border-[var(--berry-500)]",
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] border-[var(--fg-expense)]",
         info:
           "bg-[var(--status-info-subtle)] text-[var(--status-info-fg)] border-[var(--sky-500)]",
       },

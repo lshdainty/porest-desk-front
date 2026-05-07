@@ -22,7 +22,7 @@ export interface CategoryTileProps {
 
 export function CategoryTile({
   name,
-  color = "var(--mossy-600)",
+  color = "var(--bg-brand)",
   icon,
   active,
   onClick,

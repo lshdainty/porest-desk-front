@@ -31,7 +31,7 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
                 style={{
                   width: 44,
                   height: 44,
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   background: 'var(--bg-brand)',
                   color: 'var(--fg-on-brand)',
                   display: 'inline-flex',

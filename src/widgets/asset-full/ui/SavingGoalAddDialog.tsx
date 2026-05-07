@@ -30,8 +30,8 @@ const GOAL_ICONS: { k: IconName; label: string }[] = [
 
 const GOAL_COLORS = [
   'var(--sky-500)',
-  'var(--mossy-600)',
-  'var(--berry-500)',
+  'var(--bg-brand)',
+  'var(--fg-expense)',
   'var(--clay-500)',
   'oklch(0.60 0.18 290)',
   'oklch(0.58 0.15 180)',
@@ -170,7 +170,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         <Button
           type="button"
           variant="ghost"
-          className="text-[var(--status-danger)] hover:text-[var(--berry-700)]"
+          className="text-[var(--status-danger)] hover:text-[var(--fg-expense)]"
           onClick={handleDelete}
           loading={deleteMut.isPending}
           disabled={createMut.isPending || updateMut.isPending || contributeMut.isPending}
@@ -212,7 +212,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           padding: 16,
           background: 'var(--bg-canvas)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           marginBottom: 18,
         }}
       >
@@ -221,7 +221,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             style={{
               width: 36,
               height: 36,
-              borderRadius: 10,
+              borderRadius: 'var(--radius-tile)',
               background: `oklch(from ${color} l c h / 0.12)`,
               color,
               display: 'inline-flex',
@@ -261,7 +261,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           style={{
             height: 6,
             background: 'var(--pd-surface-inset)',
-            borderRadius: 99,
+            borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
           }}
         >
@@ -270,7 +270,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
               width: `${Math.min(100, pct)}%`,
               height: '100%',
               background: color,
-              borderRadius: 99,
+              borderRadius: 'var(--radius-pill)',
             }}
           />
         </div>
@@ -380,7 +380,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 onClick={() => setIcon(g.k)}
                 style={{
                   aspectRatio: '1 / 1',
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   background: active
                     ? `oklch(from ${color} l c h / 0.14)`
                     : 'var(--bg-surface)',
@@ -416,7 +416,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 10,
+                  borderRadius: 'var(--radius-tile)',
                   background: c,
                   border: active ? '2px solid var(--fg-primary)' : '2px solid transparent',
                   boxShadow: active
@@ -437,10 +437,10 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             marginTop: 14,
             padding: '10px 12px',
             background: 'oklch(0.96 0.04 20)',
-            border: '1px solid var(--berry-300)',
-            borderRadius: 8,
+            border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
+            borderRadius: 'var(--radius-md)',
             fontSize: 12.5,
-            color: 'var(--berry-700)',
+            color: 'var(--fg-expense)',
             display: 'flex',
             alignItems: 'center',
             gap: 6,

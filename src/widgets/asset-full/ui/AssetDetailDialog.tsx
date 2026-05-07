@@ -45,7 +45,7 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
       style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
         fontSize: 11.5,
@@ -57,7 +57,7 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--color-balance)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
           <MaskAmount>{KRW(val)}</MaskAmount>
@@ -160,7 +160,7 @@ export function AssetDetailDialog({
         style={{
           background: `linear-gradient(135deg, ${color}1a, ${color}08)`,
           border: `1px solid ${color}33`,
-          borderRadius: 16,
+          borderRadius: 'var(--radius-xl)',
           padding: 22,
           marginBottom: 18,
         }}
@@ -170,7 +170,7 @@ export function AssetDetailDialog({
             style={{
               width: 48,
               height: 48,
-              borderRadius: 12,
+              borderRadius: 'var(--radius-lg)',
               background: color,
               color: '#fff',
               display: 'inline-flex',
@@ -211,7 +211,7 @@ export function AssetDetailDialog({
             fontSize: 28,
             fontWeight: 800,
             letterSpacing: '-0.03em',
-            color: isCard ? 'var(--berry-700)' : 'var(--fg-primary)',
+            color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
           <MaskAmount>
@@ -256,7 +256,7 @@ export function AssetDetailDialog({
         </div>
         {trendLoading ? (
           <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 10,
+            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
@@ -264,7 +264,7 @@ export function AssetDetailDialog({
           </div>
         ) : chartData.length === 0 ? (
           <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 10,
+            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 12.5,
           }}>
@@ -344,7 +344,7 @@ export function AssetDetailDialog({
           style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             padding: '4px 14px',
           }}
         >

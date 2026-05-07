@@ -198,7 +198,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   borderRadius: 'var(--radius-md)',
                   background: active ? 'var(--bg-surface)' : 'transparent',
                   border: 'none',
-                  boxShadow: active ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                  boxShadow: active ? 'var(--shadow-xs)' : 'none',
                   color: active ? 'var(--fg-primary)' : 'var(--fg-secondary)',
                   fontSize: 13,
                   fontWeight: active ? 600 : 500,

@@ -66,7 +66,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
   const brandColor = useMemo(() => getBrandColor(brand), [brand])
   const previewName = productName.trim() || '새 투자 상품'
   const previewLetter = (brand[0] ?? '?').trim()
-  const previewBg = brandColor?.bg ?? 'var(--mossy-500)'
+  const previewBg = brandColor?.bg ?? 'var(--border-brand)'
   const previewFg = brandColor?.fg ?? '#fff'
 
   const reset = () => {

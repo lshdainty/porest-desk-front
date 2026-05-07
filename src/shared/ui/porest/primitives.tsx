@@ -44,13 +44,13 @@ const CAT_ICO_PALETTE: Record<string, { bg: string; color: string }> = {
   transport: { bg: 'oklch(0.96 0.02 230)',  color: 'oklch(0.48 0.1 230)' },
   shopping:  { bg: 'oklch(0.96 0.035 340)', color: 'oklch(0.48 0.12 340)' },
   cafe:      { bg: 'oklch(0.96 0.03 60)',   color: 'oklch(0.44 0.08 50)' },
-  income:    { bg: 'var(--mossy-100)',      color: 'var(--mossy-800)' },
+  income:    { bg: 'var(--bg-brand-subtle)',      color: 'var(--fg-brand-strong)' },
   living:    { bg: 'oklch(0.96 0.025 135)', color: 'oklch(0.48 0.1 140)' },
   medical:   { bg: 'oklch(0.96 0.03 25)',   color: 'oklch(0.52 0.13 25)' },
   leisure:   { bg: 'oklch(0.96 0.035 290)', color: 'oklch(0.48 0.12 290)' },
   bill:      { bg: 'var(--mist-200)',       color: 'var(--mist-700)' },
   edu:       { bg: 'oklch(0.96 0.03 210)',  color: 'oklch(0.5 0.1 215)' },
-  saving:    { bg: 'var(--bark-100)',       color: 'var(--bark-700)' },
+  saving:    { bg: 'var(--bg-warm-tint)',       color: 'var(--bark-700)' },
 }
 
 const CAT_ICO_DIMS = {
@@ -138,7 +138,7 @@ export function SegPicker<T extends string>({
 
 export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: boolean }) {
   const up = pct > 0
-  const color = up ? 'var(--mossy-700)' : 'var(--berry-500)'
+  const color = up ? 'var(--fg-income)' : 'var(--fg-expense)'
   return (
     <span
       style={{
@@ -174,13 +174,13 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
         width: size,
         height: size,
         fontSize: size * 0.35,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-tile)',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontWeight: 800,
         letterSpacing: '-0.02em',
-        color: '#fff',
+        color: 'var(--fg-on-brand)',
         flexShrink: 0,
       }}
     >
@@ -233,7 +233,7 @@ export function MonthPicker({
         style={{
           background: 'transparent',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-tile)',
           padding: '6px 12px',
           fontSize: 12.5,
           fontWeight: 600,
@@ -255,7 +255,7 @@ export function MonthPicker({
             [align]: 0,
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 14,
+            borderRadius: 'var(--radius-card)',
             boxShadow: 'var(--shadow-lg)',
             padding: 14,
             zIndex: 100,
@@ -306,7 +306,7 @@ export function MonthPicker({
                   onClick={() => pick(mm)}
                   style={{
                     padding: '10px 0',
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-md)',
                     border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
                     background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
                     color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
@@ -339,7 +339,7 @@ export function MonthPicker({
               style={{
                 flex: 1,
                 padding: 8,
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 12,
@@ -365,7 +365,7 @@ export function MonthPicker({
               style={{
                 flex: 1,
                 padding: 8,
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 12,

@@ -414,7 +414,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             borderRadius: 'var(--radius-pill)',
             fontSize: 13,
             fontWeight: 600,
-            boxShadow: '0 8px 28px -10px rgba(0,0,0,0.25)',
+            boxShadow: 'var(--shadow-lg)',
             zIndex: 100,
           }}
         >

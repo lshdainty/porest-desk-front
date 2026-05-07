@@ -26,7 +26,7 @@ const badgeVariants = cva(
         brand:
           "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
         solid:
-          "bg-[var(--mossy-600)] text-white",
+          "bg-[var(--bg-brand)] text-[var(--fg-on-brand)]",
         success:
           "bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]",
         warning:

@@ -471,7 +471,7 @@ function ToggleRow({
             height: 18,
             borderRadius: 'var(--radius-pill)',
             background: 'var(--bg-surface)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            boxShadow: 'var(--shadow-sm)',
             transition: 'left 0.15s',
           }}
         />

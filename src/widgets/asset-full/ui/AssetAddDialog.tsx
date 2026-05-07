@@ -68,7 +68,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
   const brandColor = useMemo(() => getBrandColor(brand), [brand])
   const previewName = nickname.trim() || '새 계좌'
   const previewLetter = (brand[0] ?? '?').trim()
-  const previewBg = brandColor?.bg ?? 'var(--mossy-500)'
+  const previewBg = brandColor?.bg ?? 'var(--border-brand)'
   const previewFg = brandColor?.fg ?? '#fff'
 
   const reset = () => {
@@ -235,7 +235,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
                   className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
                   style={
                     active
-                      ? { background: 'var(--mossy-800)', color: 'var(--fg-on-brand)' }
+                      ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
                       : { background: 'transparent', color: 'var(--fg-secondary)' }
                   }
                 >

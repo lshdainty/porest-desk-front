@@ -78,12 +78,12 @@ export function PorestSidebar() {
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
               <div
                 className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg text-white"
-                style={{ background: 'linear-gradient(135deg, var(--mossy-600), var(--mossy-800))' }}
+                style={{ background: 'linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong))' }}
               >
                 <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em' }}>P</span>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold" style={{ color: 'var(--mossy-800)', letterSpacing: '-0.02em' }}>
+                <span className="truncate font-semibold" style={{ color: 'var(--fg-brand-strong)', letterSpacing: '-0.02em' }}>
                   POREST
                 </span>
                 <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>

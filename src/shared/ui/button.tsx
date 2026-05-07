@@ -23,9 +23,9 @@ const buttonVariants = cva(
         default:
           "bg-primary text-primary-foreground hover:bg-[var(--bg-brand-hover)] active:bg-[var(--bg-brand-press)]",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-[var(--berry-700)]",
+          "bg-destructive text-destructive-foreground hover:bg-[var(--fg-expense)]",
         outline:
-          "bg-transparent text-[var(--fg-brand)] border-[var(--mossy-300)] hover:bg-accent hover:border-[var(--border-brand)]",
+          "bg-transparent text-[var(--fg-brand)] border-[var(--border-brand-mid)] hover:bg-accent hover:border-[var(--border-brand)]",
         secondary:
           "bg-card text-foreground border-input hover:bg-muted hover:border-[var(--border-strong)]",
         ghost:

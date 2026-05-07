@@ -24,13 +24,13 @@ export const MANAGE_ROW = {
   iconStyle: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 'var(--radius-tile)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
     fontWeight: 700,
-    color: '#fff',
+    color: 'var(--fg-on-brand)',
   } as CSSProperties,
   /** 텍스트 영역 style (기존 .cat-row__text) */
   textStyle: { flex: 1, minWidth: 0 } as CSSProperties,
@@ -62,10 +62,10 @@ export const MANAGE_ROW = {
     display: 'inline-flex',
   } as CSSProperties,
   /**
-   * 삭제 버튼에 적용 (기존 .cat-row__del:hover { color: var(--berry-700) }).
+   * 삭제 버튼에 적용 (기존 .cat-row__del:hover { color: var(--fg-expense) }).
    * Button 컴포넌트의 hover bg/text 를 그대로 두기 위해 hover:!text-* 만 적용.
    */
-  delClassName: 'hover:!text-[var(--berry-700)]',
+  delClassName: 'hover:!text-[var(--fg-expense)]',
 } as const
 
 export function ManageRow({

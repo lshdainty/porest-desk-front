@@ -1262,7 +1262,7 @@ export const StatsPage = () => {
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--mossy-300)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand-mid)' }} />
             {periodPrev}
           </span>
         </div>
