@@ -220,7 +220,7 @@ function ExpenseList({
   }
 
   return (
-    <Card style={{ padding: mobile ? '4px 18px 8px' : '4px 24px 8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 14 : 18 }}>
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d)
         const out = items
@@ -231,36 +231,55 @@ function ExpenseList({
           .reduce((s, t) => s + Math.abs(t.amount), 0)
         return (
           <div key={d}>
-            <div className="day-head">
-              <span className="date">{md}</span>
-              <span>{dow}요일</span>
-              <span className="sum num">
-                {out > 0 && <span className="out"><MaskAmount>−{KRW(out)}</MaskAmount></span>}
-                {inn > 0 && <span className="in"><MaskAmount>+{KRW(inn)}</MaskAmount></span>}
+            {/* 날짜 헤더 — 카드 밖 평문 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '0 4px 8px',
+                fontSize: 13,
+              }}
+            >
+              <span style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>{md}</span>
+              <span style={{ color: 'var(--fg-tertiary)' }}>{dow}</span>
+              <span className="num" style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
+                {out > 0 && (
+                  <span style={{ color: 'var(--berry-700)', fontWeight: 600 }}>
+                    <MaskAmount>−{KRW(out)}</MaskAmount>
+                  </span>
+                )}
+                {inn > 0 && (
+                  <span style={{ color: 'var(--fg-brand)', fontWeight: 600 }}>
+                    <MaskAmount>+{KRW(inn)}</MaskAmount>
+                  </span>
+                )}
               </span>
             </div>
-            <div>
-              {items.map(e => {
+            {/* 거래 카드 — divider 로 구분 */}
+            <Card style={{ padding: 0, overflow: 'hidden' }}>
+              {items.map((e, i) => {
                 const isFocus = focusTxId === e.rowId
                 return (
                   <div
                     key={e.rowId}
                     ref={isFocus ? focusRef : undefined}
-                    style={isFocus ? {
-                      background: 'var(--bg-brand-subtle)',
-                      borderRadius: 12,
+                    style={{
+                      borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+                      background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
                       transition: 'background 0.4s',
-                    } : undefined}
+                      padding: '0 14px',
+                    }}
                   >
                     <ExpenseRow expense={e} onClick={onItemClick} />
                   </div>
                 )
               })}
-            </div>
+            </Card>
           </div>
         )
       })}
-    </Card>
+    </div>
   )
 }
 
