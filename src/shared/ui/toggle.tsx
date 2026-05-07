@@ -17,7 +17,7 @@ const toggleVariants = cva(
         // POREST .p-seg__btn — segmented control item.
         // Use with <ToggleGroup variant="segmented"> for the sunken bar background.
         segmented: [
-          "flex-1 gap-0 rounded-[6px] bg-transparent px-3 py-2.5",
+          "flex-1 gap-0 rounded-[6px] bg-transparent px-3 py-1.5",
           "text-[13.5px] font-semibold leading-none text-muted-foreground",
           "hover:bg-transparent hover:text-[var(--fg-secondary)]",
           "data-[state=on]:bg-[var(--bg-brand)] data-[state=on]:text-[var(--fg-on-brand)] data-[state=on]:font-bold",
