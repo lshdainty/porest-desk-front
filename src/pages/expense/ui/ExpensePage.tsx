@@ -5,6 +5,7 @@ import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useExpenses,
@@ -232,30 +233,7 @@ function ExpenseList({
         return (
           <div key={d}>
             {/* 날짜 헤더 — 카드 밖 평문 */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '0 4px 8px',
-                fontSize: 13,
-              }}
-            >
-              <span style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>{md}</span>
-              <span style={{ color: 'var(--fg-tertiary)' }}>{dow}</span>
-              <span className="num" style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
-                {out > 0 && (
-                  <span style={{ color: 'var(--berry-700)', fontWeight: 600 }}>
-                    <MaskAmount>−{KRW(out)}</MaskAmount>
-                  </span>
-                )}
-                {inn > 0 && (
-                  <span style={{ color: 'var(--fg-brand)', fontWeight: 600 }}>
-                    <MaskAmount>+{KRW(inn)}</MaskAmount>
-                  </span>
-                )}
-              </span>
-            </div>
+            <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
             {/* 거래 카드 — divider 로 구분 */}
             <Card style={{ padding: 0, overflow: 'hidden' }}>
               {items.map((e, i) => {

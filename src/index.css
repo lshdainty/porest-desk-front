@@ -141,6 +141,14 @@
   --fg-on-danger:  #fff;
   --fg-on-success: #fff;
 
+  /* Tx semantic — 거래 종류별 색 (지출=danger 톤, 수입=brand 톤, 이체=info 톤) */
+  --fg-expense:        var(--status-danger-fg);
+  --fg-income:         var(--fg-brand);
+  --fg-transfer:       var(--status-info-fg);
+  --bg-expense-subtle: var(--status-danger-subtle);
+  --bg-income-subtle:  var(--bg-brand-subtle);
+  --bg-transfer-subtle: var(--status-info-subtle);
+
   /* Radii — prototype spec */
   --radius-xs:   4px;
   --radius-sm:   6px;

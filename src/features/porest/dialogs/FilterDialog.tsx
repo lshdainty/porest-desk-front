@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Check } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
-import { renderIcon } from '@/shared/lib'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { TxTypeToggle, type TxTypeOption } from '@/shared/ui/tx-type-toggle'
 
 export type FilterPeriod = 'week' | 'month' | '3m' | 'custom'
 
@@ -44,9 +44,9 @@ const PERIODS: { v: FilterPeriod; l: string }[] = [
   { v: 'custom', l: '직접 선택' },
 ]
 
-const TYPES: { v: ExpenseType; l: string; c: string }[] = [
-  { v: 'EXPENSE', l: '지출', c: 'var(--berry-700)' },
-  { v: 'INCOME', l: '수입', c: 'var(--mossy-700)' },
+const TYPES: TxTypeOption[] = [
+  { value: 'EXPENSE', label: '지출' },
+  { value: 'INCOME', label: '수입' },
 ]
 
 function toggleIn<T>(arr: T[], v: T): T[] {
@@ -200,37 +200,12 @@ export function FilterDialog({
 
       <Field style={{ marginBottom: 16 }}>
         <FieldLabel>거래 종류</FieldLabel>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {TYPES.map(o => {
-            const active = types.includes(o.v)
-            return (
-              <button
-                key={o.v}
-                type="button"
-                onClick={() => setTypes(toggleIn(types, o.v))}
-                style={{
-                  flex: 1,
-                  padding: 10,
-                  background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
-                  border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                  borderRadius: 10,
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  color: active ? o.c : 'var(--fg-tertiary)',
-                  fontFamily: 'inherit',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4,
-                }}
-              >
-                {active && <Check size={12} />}
-                {o.l}
-              </button>
-            )
-          })}
-        </div>
+        <TxTypeToggle
+          options={TYPES}
+          value={types}
+          onChange={(v) => setTypes(v as ExpenseType[])}
+          mode="multi"
+        />
       </Field>
 
       {parentCategories.length > 0 && (
@@ -243,59 +218,18 @@ export function FilterDialog({
               </span>
             )}
           </FieldLabel>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-            {parentCategories.map(c => {
-              const active = categoryIds.includes(c.rowId)
-              const color = c.color ?? 'var(--mossy-600)'
-              return (
-                <button
-                  key={c.rowId}
-                  type="button"
-                  onClick={() => setCategoryIds(toggleIn(categoryIds, c.rowId))}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 4,
-                    padding: '10px 4px',
-                    background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                    border: active ? '1px solid var(--mossy-500)' : '1px solid var(--border-subtle)',
-                    borderRadius: 10,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 10,
-                      background: `oklch(from ${color} l c h / 0.14)`,
-                      color,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {renderIcon(c.icon, c.categoryName.charAt(0), 18)}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: active ? 700 : 500,
-                      color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '100%',
-                    }}
-                  >
-                    {c.categoryName}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+          <CategoryGrid>
+            {parentCategories.map(c => (
+              <CategoryTile
+                key={c.rowId}
+                name={c.categoryName}
+                color={c.color ?? undefined}
+                icon={c.icon}
+                active={categoryIds.includes(c.rowId)}
+                onClick={() => setCategoryIds(toggleIn(categoryIds, c.rowId))}
+              />
+            ))}
+          </CategoryGrid>
         </Field>
       )}
 
@@ -322,7 +256,7 @@ export function FilterDialog({
                     background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                     border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                    borderRadius: 999,
+                    borderRadius: 'var(--radius-pill)',
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: 'pointer',
