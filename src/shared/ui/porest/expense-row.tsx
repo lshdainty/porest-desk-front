@@ -7,14 +7,13 @@ import { Icon } from './primitives'
 import { TX_ROW } from './tx-row-tokens'
 
 /**
- * expenseDate 표시 라벨:
- *   - DATETIME ("YYYY-MM-DDTHH:mm(:ss)") 이고 시간이 00:00 이 아니면 "HH:mm"
- *   - 그 외 (10자 날짜 or 00:00 시간) 이면 "MM-DD"
+ * expenseDate 의 시각 부분만 표시 ("HH:mm").
+ * day-head 가 이미 날짜를 보여주므로 행에서는 시각 정보만 (시각이 00:00 이면 표시 안 함).
  */
-function formatExpenseDateLabel(raw: string): string {
+function formatExpenseTimeLabel(raw: string): string | null {
   const time = raw.length >= 16 ? raw.slice(11, 16) : ''
   if (time && time !== '00:00') return time
-  return raw.slice(5, 10)
+  return null
 }
 
 export function CategoryChip({
@@ -80,10 +79,10 @@ export function ExpenseRow({
               <span>{expense.assetName}</span>
             </>
           )}
-          {expense.expenseDate && (
+          {expense.expenseDate && formatExpenseTimeLabel(expense.expenseDate) && (
             <>
               <span style={TX_ROW.sepStyle} />
-              <span>{formatExpenseDateLabel(expense.expenseDate)}</span>
+              <span>{formatExpenseTimeLabel(expense.expenseDate)}</span>
             </>
           )}
         </div>

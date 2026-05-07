@@ -667,13 +667,13 @@ function MonthArrowButton({
       aria-label={dir === 'prev' ? '이전 달' : '다음 달'}
       onClick={handle}
       style={{
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        border: '1px solid var(--border-subtle)',
+        width: 28,
+        height: 28,
+        border: 'none',
         background: 'transparent',
         color: 'var(--fg-secondary)',
         cursor: 'pointer',
+        padding: 0,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
