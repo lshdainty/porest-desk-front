@@ -20,7 +20,7 @@ const toggleVariants = cva(
           "flex-1 gap-0 rounded-[6px] bg-transparent px-3 py-2.5",
           "text-[13.5px] font-semibold leading-none text-muted-foreground",
           "hover:bg-transparent hover:text-[var(--fg-secondary)]",
-          "data-[state=on]:bg-[var(--mossy-700)] data-[state=on]:text-white data-[state=on]:font-bold",
+          "data-[state=on]:bg-[var(--mossy-500)] data-[state=on]:text-white data-[state=on]:font-bold",
           "data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.15)]",
         ].join(" "),
       },
