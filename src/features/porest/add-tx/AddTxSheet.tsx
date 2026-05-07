@@ -586,48 +586,23 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         </div>
       )}
 
-      {/* 큰 금액 */}
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '20px 0 24px',
-          borderBottom: '1px solid var(--border-subtle)',
-          marginBottom: 20,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--fg-tertiary)',
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            marginBottom: 8,
-          }}
-        >
-          금액
-        </div>
-        <div
-          className="num"
-          style={{
-            fontSize: 36,
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            color: amountColor,
-          }}
-        >
-          {amountPrefix}
-          {amountFormatted}
-          <span style={{ fontSize: 20, color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 700 }}>원</span>
-        </div>
+      {/* 금액 — 다른 필드와 동일한 라벨+인풋 (모바일 처럼 깔끔하게) */}
+      <Field style={{ marginBottom: 18 }}>
+        <FieldLabel>금액</FieldLabel>
         <Input
           className="num"
           value={amount}
           onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
           placeholder="0"
           inputMode="numeric"
-          style={{ marginTop: 10, textAlign: 'center', fontSize: 15 }}
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: amountColor,
+            background: 'var(--bg-surface)',
+          }}
         />
-      </div>
+      </Field>
 
       {type !== 'TRANSFER' ? (
         <>
