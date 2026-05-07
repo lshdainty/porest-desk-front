@@ -213,7 +213,7 @@ export function BudgetEditDialog({
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-pill)',
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
               }}
@@ -265,7 +265,7 @@ export function MonthlyBudgetDialog({
         <FieldLabel>월 총 예산 (원)</FieldLabel>
         <Input
           className="num"
-          style={{ fontSize: 20, fontWeight: 700 }}
+          style={{ fontSize: 20, fontWeight: 'var(--fw-bold)' }}
           value={v}
           onChange={e => setV(e.target.value.replace(/[^0-9]/g, ''))}
           inputMode="numeric"
@@ -287,7 +287,7 @@ export function MonthlyBudgetDialog({
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-pill)',
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
               }}

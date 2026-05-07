@@ -236,7 +236,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 style={{
                   fontSize: 11,
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 700,
+                  fontWeight: 'var(--fw-bold)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   marginBottom: 6,
@@ -245,12 +245,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 {month}월 총 예산
               </div>
               {monthlyBudget ? (
-                <div className="num" style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em' }}>
+                <div className="num" style={{ fontSize: 28, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.03em' }}>
                   {KRW(monthlyLimit)}
                   <span style={{ fontSize: 16, marginLeft: 3 }}>원</span>
                 </div>
               ) : (
-                <div style={{ fontSize: 15, color: 'var(--fg-tertiary)', fontWeight: 600 }}>
+                <div style={{ fontSize: 15, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)' }}>
                   설정되지 않음
                 </div>
               )}
@@ -294,30 +294,30 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             }}
           >
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 사용
               </div>
-              <div className="num" style={{ fontSize: 15, fontWeight: 700 }}>
+              <div className="num" style={{ fontSize: 15, fontWeight: 'var(--fw-bold)' }}>
                 {KRW(totalSpent)}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당됨
               </div>
-              <div className="num" style={{ fontSize: 15, fontWeight: 700 }}>
+              <div className="num" style={{ fontSize: 15, fontWeight: 'var(--fw-bold)' }}>
                 {KRW(totalAssigned)}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당 가능
               </div>
               <div
                 className="num"
                 style={{
                   fontSize: 15,
-                  fontWeight: 700,
+                  fontWeight: 'var(--fw-bold)',
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
@@ -349,7 +349,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </Card>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
-          <div style={{ fontSize: 13, fontWeight: 700 }}>
+          <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)' }}>
             카테고리별 예산 · {categoryBudgets.length}개
           </div>
           {mobile && (
@@ -397,18 +397,18 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
+                      <div style={{ fontSize: 14, fontWeight: 'var(--fw-semi)' }}>{label}</div>
                       <div
                         className="num"
                         style={{
                           marginLeft: 'auto',
                           fontSize: 13,
-                          fontWeight: 700,
+                          fontWeight: 'var(--fw-bold)',
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
                         {KRW(spent)}
-                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: 500 }}>
+                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
                           {' '}
                           / {KRW(limitAmt)}
                         </span>

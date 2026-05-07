@@ -201,7 +201,7 @@ export function LineChart({
                 zIndex: 5,
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+              <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
                 {labels[hover.i]}
               </div>
               {series.map((s, si) => (
@@ -224,7 +224,7 @@ export function LineChart({
                     style={{
                       marginLeft: 'auto',
                       fontSize: 12,
-                      fontWeight: 700,
+                      fontWeight: 'var(--fw-bold)',
                       color: 'var(--fg-primary)',
                     }}
                   >
@@ -362,20 +362,20 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 zIndex: 5,
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+              <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
                 <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
                 <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>지출</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.expense)}원
                 </span>
               </div>
@@ -395,7 +395,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   style={{
                     marginLeft: 'auto',
                     fontSize: 12,
-                    fontWeight: 700,
+                    fontWeight: 'var(--fw-bold)',
                     color: d.income - d.expense >= 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
                   }}
                 >

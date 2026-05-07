@@ -351,7 +351,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 border: 0,
                 padding: '8px 0',
                 fontSize: 13.5,
-                fontWeight: 700,
+                fontWeight: 'var(--fw-bold)',
                 borderRadius: 'var(--radius-md)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.4 : 1,
@@ -382,7 +382,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 style={{
                   fontSize: 11,
                   color: 'var(--fg-tertiary)',
-                  fontWeight: 600,
+                  fontWeight: 'var(--fw-semi)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                 }}
@@ -394,7 +394,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   style={{
                     fontSize: 10.5,
                     color: 'var(--fg-brand-strong)',
-                    fontWeight: 700,
+                    fontWeight: 'var(--fw-bold)',
                     padding: '2px 6px',
                     background: 'var(--bg-brand-subtle)',
                     borderRadius: 'var(--radius-xs)',
@@ -414,7 +414,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 padding: 0,
                 fontSize: 11.5,
                 color: amountNumber > 0 && categoryRowId ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                fontWeight: 600,
+                fontWeight: 'var(--fw-semi)',
                 cursor: amountNumber > 0 && categoryRowId ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
@@ -493,7 +493,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                         style={{
                           fontSize: 11,
                           color: active ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                          fontWeight: 600,
+                          fontWeight: 'var(--fw-semi)',
                         }}
                       >
                         {(p.amount as number) >= 10000
@@ -516,7 +516,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     border: '1px dashed var(--border-default)',
                     borderRadius: 'var(--radius-pill)',
                     fontSize: 12,
-                    fontWeight: 600,
+                    fontWeight: 'var(--fw-semi)',
                     color: 'var(--fg-tertiary)',
                     whiteSpace: 'nowrap',
                   }}
@@ -559,7 +559,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 style={{
                   fontSize: 11.5,
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 600,
+                  fontWeight: 'var(--fw-semi)',
                   flex: 1,
                 }}
               >
@@ -574,7 +574,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   padding: 0,
                   fontSize: 11,
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 700,
+                  fontWeight: 'var(--fw-bold)',
                   cursor: 'pointer',
                   textDecoration: 'underline',
                   fontFamily: 'inherit',
@@ -598,7 +598,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           inputMode="numeric"
           style={{
             fontSize: 18,
-            fontWeight: 700,
+            fontWeight: 'var(--fw-bold)',
             color: amountColor,
             background: 'var(--bg-surface)',
           }}
@@ -614,7 +614,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 style={{
                   fontSize: 11,
                   color: 'var(--fg-tertiary)',
-                  fontWeight: 600,
+                  fontWeight: 'var(--fw-semi)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   marginBottom: 10,
@@ -712,7 +712,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <FieldLabel>
               {type === 'INCOME' ? '입금 계좌' : '계좌·카드'}
               {paymentMethod && filteredAssets.length !== assets.length && (
-                <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400, marginLeft: 4 }}>
+                <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)', marginLeft: 4 }}>
                   ({PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? ''} 기준)
                 </span>
               )}
@@ -860,7 +860,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             style={{ width: 360, padding: 20 }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>거래 삭제</div>
+            <div style={{ fontSize: 16, fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
             <div style={{ fontSize: 13.5, color: 'var(--fg-secondary)', lineHeight: 1.6, marginBottom: 16 }}>
               선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
             </div>
@@ -972,7 +972,7 @@ function SavePresetDialog({
           <div
             style={{
               fontSize: 13.5,
-              fontWeight: 700,
+              fontWeight: 'var(--fw-bold)',
               color: 'var(--fg-primary)',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -990,7 +990,7 @@ function SavePresetDialog({
           className="num"
           style={{
             fontSize: 15,
-            fontWeight: 800,
+            fontWeight: 'var(--fw-heavy)',
             color: seed.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         >
@@ -1027,7 +1027,7 @@ function SavePresetDialog({
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
+          <div style={{ fontSize: 13, fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: 1.4 }}>
             {lockAmount
               ? `${KRW(seed.amount)}원이 항상 채워집니다.`

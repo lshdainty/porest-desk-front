@@ -180,7 +180,7 @@ export function NotificationsPopover({
               background: 'transparent',
               color: 'var(--fg-secondary)',
               fontSize: 12.5,
-              fontWeight: 600,
+              fontWeight: 'var(--fw-semi)',
               padding: 8,
               borderRadius: 'var(--radius-md)',
               cursor: 'pointer',

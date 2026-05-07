@@ -52,14 +52,14 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
         {label}
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 'var(--fw-bold)' }}>
           <MaskAmount>{KRW(val)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
@@ -176,7 +176,7 @@ export function AssetDetailDialog({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 700,
+              fontWeight: 'var(--fw-bold)',
               fontSize: 18,
               flexShrink: 0,
             }}
@@ -184,7 +184,7 @@ export function AssetDetailDialog({
             {renderIcon(asset.icon, asset.assetName.charAt(0), 22)}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.015em' }}>
+            <div style={{ fontSize: 16, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.015em' }}>
               {asset.assetName}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
@@ -198,7 +198,7 @@ export function AssetDetailDialog({
           style={{
             fontSize: 11,
             color: 'var(--fg-tertiary)',
-            fontWeight: 600,
+            fontWeight: 'var(--fw-semi)',
             letterSpacing: '0.06em',
             marginBottom: 4,
           }}
@@ -209,7 +209,7 @@ export function AssetDetailDialog({
           className="num"
           style={{
             fontSize: 28,
-            fontWeight: 800,
+            fontWeight: 'var(--fw-heavy)',
             letterSpacing: '-0.03em',
             color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
@@ -227,7 +227,7 @@ export function AssetDetailDialog({
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
           <div className="seg" style={{ marginLeft: 'auto' }}>
@@ -317,7 +317,7 @@ export function AssetDetailDialog({
       {/* Recent tx */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', margin: 0 }}>
             최근 거래{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
           </h4>
           <button
@@ -330,7 +330,7 @@ export function AssetDetailDialog({
               color: 'var(--fg-secondary)',
               cursor: 'pointer',
               fontSize: 12.5,
-              fontWeight: 600,
+              fontWeight: 'var(--fw-semi)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 2,

@@ -51,7 +51,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           />
           <span
             className="num"
-            style={{ fontSize: 14, fontWeight: 700, minWidth: 44, textAlign: 'right' }}
+            style={{ fontSize: 14, fontWeight: 'var(--fw-bold)', minWidth: 44, textAlign: 'right' }}
           >
             {warnThreshold}%
           </span>

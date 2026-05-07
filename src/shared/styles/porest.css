@@ -62,11 +62,11 @@
   padding: 18px 20px 14px;
   border-bottom: 1px solid var(--border-subtle);
 }
-.side__head .wordmark { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: var(--fg-brand-strong); }
+.side__head .wordmark { font-size: 16px; font-weight: var(--fw-heavy); letter-spacing: -0.02em; color: var(--fg-brand-strong); }
 .side__head .mark-logo {
   width: 28px; height: 28px; border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong));
-  color: var(--fg-on-brand); font-size: 14px; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--fg-on-brand); font-size: 14px; font-weight: var(--fw-heavy); letter-spacing: -0.03em;
   display: inline-flex; align-items: center; justify-content: center;
 }
 .side__collapse {
@@ -86,7 +86,7 @@
 .side__scroll { flex: 1; overflow-y: auto; padding: 14px 10px 20px; }
 .side__glabel {
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: var(--fw-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--fg-tertiary);
@@ -98,7 +98,7 @@
   gap: 10px;
   padding: 8px 10px;
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--fg-secondary);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -115,10 +115,10 @@
 .side__item.active {
   background: var(--bg-brand-subtle);
   color: var(--fg-brand-strong);
-  font-weight: 600;
+  font-weight: var(--fw-semi);
 }
 .side__item.active svg { color: var(--fg-brand-strong); }
-.side__item .count { margin-left: auto; font-size: 11px; color: var(--fg-tertiary); font-weight: 500; }
+.side__item .count { margin-left: auto; font-size: 11px; color: var(--fg-tertiary); font-weight: var(--fw-medium); }
 .side__item.active .count { color: var(--fg-brand); }
 .side__foot { padding: 12px; border-top: 1px solid var(--border-subtle); }
 .side__user {
@@ -131,7 +131,7 @@
 }
 .side__user:hover { background: var(--pd-hover-bg); }
 .side__user .info { flex: 1; min-width: 0; }
-.side__user .name { font-size: 13.5px; font-weight: 600; color: var(--fg-primary); }
+.side__user .name { font-size: 13.5px; font-weight: var(--fw-semi); color: var(--fg-primary); }
 .side__user .sub  { font-size: 11.5px; color: var(--fg-tertiary); }
 
 .side--collapsed .side__head {
@@ -165,7 +165,7 @@
   font-size: 9.5px;
   padding: 1px 5px;
   border-radius: var(--radius-pill);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   line-height: 1.3;
 }
 .side--collapsed .side__foot { padding: 8px; }
@@ -185,7 +185,7 @@
 }
 .top__title {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--fw-semi);
   color: var(--fg-primary);
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -268,7 +268,7 @@
   gap: 12px;
   flex-shrink: 0;
 }
-.m-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; flex: 1; }
+.m-header h1 { font-size: 22px; font-weight: var(--fw-bold); letter-spacing: -0.02em; flex: 1; }
 .m-header .ico-btn {
   width: 36px; height: 36px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -309,7 +309,7 @@
   border: 0;
   padding: 6px 2px;
   font-size: 10.5px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--fg-tertiary);
   cursor: pointer;
   border-radius: var(--radius-md);
@@ -318,7 +318,7 @@
 }
 /* > svg: 직접 자식만 매칭 — FAB 의 <span><svg/></span> 는 영향 없음 */
 .m-tab > svg { color: var(--fg-tertiary); }
-.m-tab.active { color: var(--fg-brand-strong); font-weight: 600; }
+.m-tab.active { color: var(--fg-brand-strong); font-weight: var(--fw-semi); }
 .m-tab.active > svg { color: var(--fg-brand-strong); }
 
 /* =============================================================================
@@ -346,7 +346,7 @@
 }
 .balance-hero__eyebrow {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   opacity: 0.72;
   letter-spacing: -0.005em;
   display: flex;
@@ -356,7 +356,7 @@
 }
 .balance-hero__amount {
   font-size: 34px;
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   letter-spacing: -0.03em;
   line-height: 1.1;
   display: flex;
@@ -364,7 +364,7 @@
   gap: 4px;
   font-variant-numeric: tabular-nums;
 }
-.balance-hero__amount .unit { font-size: 18px; font-weight: 600; opacity: 0.8; }
+.balance-hero__amount .unit { font-size: 18px; font-weight: var(--fw-semi); opacity: 0.8; }
 .balance-hero__sub {
   display: flex;
   align-items: center;
@@ -387,7 +387,7 @@
 .balance-hero__split > div { padding-right: 12px; }
 .balance-hero__split > div + div { padding-left: 16px; padding-right: 0; border-left: 1px solid rgba(255, 255, 255, 0.14); }
 .balance-hero__split .l { font-size: 11.5px; opacity: 0.7; margin-bottom: 4px; }
-.balance-hero__split .v { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
+.balance-hero__split .v { font-size: 16px; font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
 
 /* CardHeader 우측 액션 링크. <button className="all"> 패턴 — sec-head 흡수 후 잔존. */
 [data-slot="card-header"] .all {
@@ -417,13 +417,13 @@
   padding: 14px 0 8px;
   font-size: 12.5px;
   color: var(--fg-tertiary);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   border-bottom: 1px solid var(--border-subtle);
 }
-.day-head .date { font-weight: 700; color: var(--fg-primary); font-size: 14px; }
+.day-head .date { font-weight: var(--fw-bold); color: var(--fg-primary); font-size: 14px; }
 .day-head .sum { margin-left: auto; font-variant-numeric: tabular-nums; }
-.day-head .sum .out { color: var(--fg-expense); font-weight: 600; }
-.day-head .sum .in { color: var(--fg-income); font-weight: 600; margin-left: 8px; }
+.day-head .sum .out { color: var(--fg-expense); font-weight: var(--fw-semi); }
+.day-head .sum .in { color: var(--fg-income); font-weight: var(--fw-semi); margin-left: 8px; }
 
 .budget-bar {
   position: relative;
@@ -460,7 +460,7 @@
   border: 0;
   padding: 6px 14px;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: var(--fw-semi);
   color: var(--fg-secondary);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -482,7 +482,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--fg-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -512,7 +512,7 @@
 /* Page container — 홈(.dash-grid)과 동일 사이드 여백, max-width 제한 없음 */
 .page { padding: 24px 28px 48px; width: 100%; }
 .page__head { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 20px; }
-.page__head h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }
+.page__head h1 { font-size: 24px; font-weight: var(--fw-bold); letter-spacing: -0.025em; }
 .page__head .sub { font-size: 13px; color: var(--fg-tertiary); margin-top: 2px; }
 .page__head .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
@@ -524,16 +524,16 @@
   align-items: center; justify-content: center;
   pointer-events: none;
 }
-.donut-wrap .center .lbl { font-size: 11px; color: var(--fg-tertiary); font-weight: 500; }
-.donut-wrap .center .val { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-top: 2px; }
+.donut-wrap .center .lbl { font-size: 11px; color: var(--fg-tertiary); font-weight: var(--fw-medium); }
+.donut-wrap .center .val { font-size: 18px; font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-top: 2px; }
 
 /* Category legend */
 .cat-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .cat-legend__row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; font-size: 13px; }
 .cat-legend__sw { width: 10px; height: 10px; border-radius: var(--radius-2xs); }
-.cat-legend__name { font-weight: 500; }
+.cat-legend__name { font-weight: var(--fw-medium); }
 .cat-legend__pct { font-size: 11.5px; color: var(--fg-tertiary); font-variant-numeric: tabular-nums; }
-.cat-legend__amt { font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.cat-legend__amt { font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 
 /* Modal/Dialog 디자인은 shadcn Dialog (shared/ui/dialog.tsx) 로 이전됨.
    .modal*, .modal-overlay, modalIn/modalOut/fadeIn/fadeOut 모두 제거.
@@ -610,7 +610,7 @@
 .notif-row__time {
   font-size: 11px;
   color: var(--fg-tertiary);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   white-space: nowrap;
   flex-shrink: 0;
   margin-top: 2px;

@@ -203,7 +203,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
     <>
       <span style={{ marginRight: 'auto', fontSize: 13, color: 'var(--fg-secondary)' }}>
         1인당{' '}
-        <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: 800 }}>
+        <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-heavy)' }}>
           {KRW(perPersonAmount)}원
         </b>
       </span>
@@ -256,12 +256,12 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700 }}>{defaultTitle}</div>
+          <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)' }}>{defaultTitle}</div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {expenseDateTime || expenseDay}
           </div>
         </div>
-        <div className="num" style={{ fontWeight: 800 }}>
+        <div className="num" style={{ fontWeight: 'var(--fw-heavy)' }}>
           {KRW(totalAbs)}원
         </div>
       </div>
@@ -296,7 +296,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    fontWeight: 700,
+                    fontWeight: 'var(--fw-bold)',
                     fontSize: 13,
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                   }}
@@ -347,13 +347,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700 }}>나도 포함해서 분배</span>
+        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 'var(--fw-bold)' }}>나도 포함해서 분배</span>
         <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
       </div>
 
       {/* 참여자 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-secondary)' }}>참여자</span>
+        <span style={{ fontSize: 12, fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)' }}>참여자</span>
         <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginLeft: 6 }}>
           ({participants.length}명)
         </span>
@@ -388,7 +388,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 700,
+                  fontWeight: 'var(--fw-bold)',
                   fontSize: 13,
                   flexShrink: 0,
                 }}
@@ -397,12 +397,12 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               </span>
 
               <span style={{ flex: 1, minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontWeight: 600, fontSize: 13.5 }}>{p.name}</span>
+                <span style={{ fontWeight: 'var(--fw-semi)', fontSize: 13.5 }}>{p.name}</span>
                 {p.isMe && (
                   <span
                     style={{
                       fontSize: 10,
-                      fontWeight: 700,
+                      fontWeight: 'var(--fw-bold)',
                       padding: '2px 7px',
                       borderRadius: 'var(--radius-pill)',
                       background: 'color-mix(in oklch, var(--fg-income) 12%, transparent)',
@@ -441,7 +441,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'CUSTOM' && p.isMe && (
-                <span className="num" style={{ fontWeight: 700, fontSize: 13.5 }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 13.5 }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -473,13 +473,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'RATIO' && (
-                <span className="num" style={{ fontWeight: 700, fontSize: 13.5, minWidth: 80, textAlign: 'right' }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 13.5, minWidth: 80, textAlign: 'right' }}>
                   {KRW(amt)}원
                 </span>
               )}
 
               {splitMethod === 'EQUAL' && (
-                <span className="num" style={{ fontWeight: 700, fontSize: 13.5 }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 13.5 }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -553,7 +553,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                   fontSize: 12,
-                  fontWeight: 600,
+                  fontWeight: 'var(--fw-semi)',
                   color: 'var(--fg-primary)',
                 }}
                 title={m.userEmail}
@@ -601,7 +601,7 @@ function Section({
 }) {
   return (
     <div style={{ marginBottom: 16, marginTop: tightTop ? 4 : 0 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 12, fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}

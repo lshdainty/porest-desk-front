@@ -346,6 +346,12 @@
 @theme inline {
   --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
                'Apple SD Gothic Neo', 'Noto Sans KR', 'Inter', 'Segoe UI', sans-serif;
+  /* Tailwind font-X 클래스 → 우리 --fw-* 토큰 매핑 */
+  --font-weight-normal: var(--fw-regular);
+  --font-weight-medium: var(--fw-medium);
+  --font-weight-semibold: var(--fw-semi);
+  --font-weight-bold: var(--fw-bold);
+  --font-weight-extrabold: var(--fw-heavy);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);

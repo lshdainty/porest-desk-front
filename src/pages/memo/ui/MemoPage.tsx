@@ -48,7 +48,7 @@ export const MemoPage = () => {
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
-        fontWeight: 700,
+        fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
     >
@@ -80,7 +80,7 @@ export const MemoPage = () => {
           <span
             style={{
               fontSize: 11,
-              fontWeight: 700,
+              fontWeight: 'var(--fw-bold)',
               color: 'var(--fg-secondary)',
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
@@ -92,7 +92,7 @@ export const MemoPage = () => {
             {formatDate(m.createAt)}
           </span>
         </div>
-        <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.015em', color: 'var(--fg-primary)' }}>
+        <div style={{ fontSize: 15, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.015em', color: 'var(--fg-primary)' }}>
           {m.title}
         </div>
         {m.content && (
@@ -163,7 +163,7 @@ export const MemoPage = () => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>메모</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>메모</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

@@ -213,7 +213,7 @@ export function FilterDialog({
           <FieldLabel>
             카테고리
             {categoryIds.length > 0 && (
-              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', marginLeft: 4 }}>
                 · {categoryIds.length}개 선택
               </span>
             )}
@@ -238,7 +238,7 @@ export function FilterDialog({
           <FieldLabel>
             계좌·카드
             {assetIds.length > 0 && (
-              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 600, marginLeft: 4 }}>
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', marginLeft: 4 }}>
                 · {assetIds.length}개 선택
               </span>
             )}
@@ -258,7 +258,7 @@ export function FilterDialog({
                     border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-pill)',
                     fontSize: 12,
-                    fontWeight: 600,
+                    fontWeight: 'var(--fw-semi)',
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                   }}

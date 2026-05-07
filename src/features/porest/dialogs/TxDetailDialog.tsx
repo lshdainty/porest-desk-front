@@ -198,7 +198,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             style={{
               fontSize: 13,
               color: 'var(--fg-secondary)',
-              fontWeight: 500,
+              fontWeight: 'var(--fw-medium)',
               marginBottom: 4,
             }}
           >
@@ -208,7 +208,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             className="num"
             style={{
               fontSize: 34,
-              fontWeight: 800,
+              fontWeight: 'var(--fw-heavy)',
               letterSpacing: '-0.03em',
               color: amountColor,
             }}
@@ -252,7 +252,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                     background: palette.color,
                   }}
                 />
-                <span style={{ fontWeight: 600 }}>
+                <span style={{ fontWeight: 'var(--fw-semi)' }}>
                   {category?.categoryName ?? '미분류'}
                 </span>
               </div>
@@ -261,7 +261,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           <FieldRow
             label="금액"
             value={
-              <span className="num" style={{ fontWeight: 700 }}>
+              <span className="num" style={{ fontWeight: 'var(--fw-bold)' }}>
                 <MaskAmount>
                   {isIncome ? '+' : '−'}
                   {KRW(expense.amount, { abs: true })}
@@ -274,7 +274,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             <FieldRow
               label="계좌·카드"
               value={
-                <span style={{ fontWeight: 500 }}>
+                <span style={{ fontWeight: 'var(--fw-medium)' }}>
                   {asset.institution
                     ? `${asset.institution} · ${asset.assetName}`
                     : asset.assetName}
@@ -285,13 +285,13 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           {paymentMethodLabel && (
             <FieldRow
               label="결제 수단"
-              value={<span style={{ fontWeight: 500 }}>{paymentMethodLabel}</span>}
+              value={<span style={{ fontWeight: 'var(--fw-medium)' }}>{paymentMethodLabel}</span>}
             />
           )}
           <FieldRow
             label="날짜·시간"
             value={
-              <span style={{ fontWeight: 500 }}>
+              <span style={{ fontWeight: 'var(--fw-medium)' }}>
                 {day}
                 {time && ` ${time}`}
               </span>
@@ -302,7 +302,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             value={
               <span
                 style={{
-                  fontWeight: 500,
+                  fontWeight: 'var(--fw-medium)',
                   color: expense.description
                     ? 'var(--fg-primary)'
                     : 'var(--fg-tertiary)',
@@ -340,7 +340,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         {merchantKey && history.length > 0 && (
           <div style={{ marginTop: 22 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8 }}>
-              <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>
+              <h4 style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', margin: 0 }}>
                 {merchantKey}에서의 이전 거래
               </h4>
               <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
@@ -445,7 +445,7 @@ function QuickBtn({
       disabled={!onClick}
     >
       <Icon size={18} strokeWidth={1.9} />
-      <span style={{ fontSize: 11.5, color: 'var(--fg-secondary)', fontWeight: 600 }}>
+      <span style={{ fontSize: 11.5, color: 'var(--fg-secondary)', fontWeight: 'var(--fw-semi)' }}>
         {label}
       </span>
       {badge && (
@@ -455,7 +455,7 @@ function QuickBtn({
             top: 6,
             right: 6,
             fontSize: 10,
-            fontWeight: 700,
+            fontWeight: 'var(--fw-bold)',
             padding: '2px 6px',
             borderRadius: 'var(--radius-pill)',
             background: 'var(--bg-brand-subtle)',

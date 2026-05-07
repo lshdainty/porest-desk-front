@@ -146,7 +146,7 @@ export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: 
         alignItems: 'center',
         gap: 2,
         color,
-        fontWeight: 600,
+        fontWeight: 'var(--fw-semi)',
         fontVariantNumeric: 'tabular-nums',
         fontSize: small ? 11.5 : 12.5,
         letterSpacing: '-0.005em',
@@ -156,7 +156,7 @@ export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: 
       {up ? '+' : ''}
       {pct.toFixed(1)}%
       {amt != null && (
-        <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 500 }}>
+        <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 'var(--fw-medium)' }}>
           ({up ? '+' : '−'}
           {KRW(amt, { abs: true })}원)
         </span>
@@ -178,7 +178,7 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontWeight: 800,
+        fontWeight: 'var(--fw-heavy)',
         letterSpacing: '-0.02em',
         color: 'var(--fg-on-brand)',
         flexShrink: 0,
@@ -236,7 +236,7 @@ export function MonthPicker({
           borderRadius: 'var(--radius-tile)',
           padding: '6px 12px',
           fontSize: 12.5,
-          fontWeight: 600,
+          fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
           alignItems: 'center',
@@ -276,7 +276,7 @@ export function MonthPicker({
             >
               <ChevronLeft size={16} />
             </button>
-            <div style={{ flex: 1, textAlign: 'center', fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em' }}>
+            <div style={{ flex: 1, textAlign: 'center', fontSize: 14, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.01em' }}>
               {viewY}년
             </div>
             <button
@@ -343,7 +343,7 @@ export function MonthPicker({
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 color: 'var(--fg-primary)',
@@ -369,7 +369,7 @@ export function MonthPicker({
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 color: 'var(--fg-primary)',

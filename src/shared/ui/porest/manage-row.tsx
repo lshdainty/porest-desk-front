@@ -29,7 +29,7 @@ export const MANAGE_ROW = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     color: 'var(--fg-on-brand)',
   } as CSSProperties,
   /** 텍스트 영역 style (기존 .cat-row__text) */

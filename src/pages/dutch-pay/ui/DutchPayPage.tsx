@@ -47,7 +47,7 @@ export const DutchPayPage = () => {
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
-        fontWeight: 700,
+        fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
     >
@@ -70,7 +70,7 @@ export const DutchPayPage = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <div style={{ fontSize: 12, color: 'var(--fg-on-warm)', fontWeight: 600 }}>진행 중 정산</div>
+          <div style={{ fontSize: 12, color: 'var(--fg-on-warm)', fontWeight: 'var(--fw-semi)' }}>진행 중 정산</div>
           <Button
             variant="secondary"
             size="sm"
@@ -81,27 +81,27 @@ export const DutchPayPage = () => {
             전체 정산 완료
           </Button>
         </div>
-        <div style={{ fontSize: mobile ? 18 : 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>
+        <div style={{ fontSize: mobile ? 18 : 22, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.02em', marginBottom: 6 }}>
           {d.title}
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--fg-secondary)', marginBottom: 18 }}>
           {d.dutchPayDate} · {d.participants.length}명 · {paidCount}/{d.participants.length} 정산 완료
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>총 금액</div>
-          <div className="num" style={{ fontSize: mobile ? 22 : 26, fontWeight: 800, letterSpacing: '-0.025em' }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 금액</div>
+          <div className="num" style={{ fontSize: mobile ? 22 : 26, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.025em' }}>
             {KRW(d.totalAmount)}원
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>1인당</div>
-          <div className="num" style={{ fontSize: 16, fontWeight: 700 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>1인당</div>
+          <div className="num" style={{ fontSize: 16, fontWeight: 'var(--fw-bold)' }}>
             {KRW(perPerson)}원
           </div>
         </div>
 
         <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-warm)' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 10 }}>참여자</div>
+          <div style={{ fontSize: 12, fontWeight: 'var(--fw-semi)', color: 'var(--fg-secondary)', marginBottom: 10 }}>참여자</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {d.participants.map((p, i) => renderParticipantRow(d.rowId, p, i))}
           </div>
@@ -127,14 +127,14 @@ export const DutchPayPage = () => {
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 700,
+            fontWeight: 'var(--fw-bold)',
             flexShrink: 0,
           }}
         >
           {nameInitial(p.participantName)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.participantName}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-semi)' }}>{p.participantName}</div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
             분담 {KRW(p.amount)}원{p.paidAt ? ` · ${p.paidAt.slice(0, 10)}` : ''}
           </div>
@@ -152,7 +152,7 @@ export const DutchPayPage = () => {
           <span
             style={{
               fontSize: 11,
-              fontWeight: 700,
+              fontWeight: 'var(--fw-bold)',
               padding: '3px 9px',
               borderRadius: 'var(--radius-pill)',
               background: pillBg,
@@ -204,12 +204,12 @@ export const DutchPayPage = () => {
             <Check size={16} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 600 }}>{d.title}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-semi)' }}>{d.title}</div>
             <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
               {d.dutchPayDate} · {d.participants.length}명
             </div>
           </div>
-          <div className="num" style={{ fontSize: 13.5, fontWeight: 700 }}>
+          <div className="num" style={{ fontSize: 13.5, fontWeight: 'var(--fw-bold)' }}>
             {KRW(d.totalAmount)}원
           </div>
         </div>
@@ -258,7 +258,7 @@ export const DutchPayPage = () => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>더치페이</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>더치페이</h2>
           <div style={{ marginLeft: 'auto' }}>{CreateBtn}</div>
         </div>
         {Body}

@@ -143,7 +143,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                     style={{
                       display: 'block',
                       fontSize: 13.5,
-                      fontWeight: 600,
+                      fontWeight: 'var(--fw-semi)',
                       color: 'var(--fg-primary)',
                     }}
                   >
@@ -256,7 +256,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: 15,
-                    fontWeight: 700,
+                    fontWeight: 'var(--fw-bold)',
                     color: 'var(--fg-primary)',
                     flexShrink: 0,
                   }}
@@ -268,7 +268,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                     style={{
                       display: 'block',
                       fontSize: 13.5,
-                      fontWeight: 600,
+                      fontWeight: 'var(--fw-semi)',
                       color: 'var(--fg-primary)',
                     }}
                   >
@@ -307,7 +307,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontSize: 12.5,
-        fontWeight: 600,
+        fontWeight: 'var(--fw-semi)',
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
         letterSpacing: '0.04em',

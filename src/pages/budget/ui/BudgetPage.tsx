@@ -78,7 +78,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         minWidth: 160,
       }}
     >
-      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4 }}>
+      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
         {d.label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -92,7 +92,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         <span
           className="num"
           style={{
-            marginLeft: 'auto', fontSize: 12, fontWeight: 700,
+            marginLeft: 'auto', fontSize: 12, fontWeight: 'var(--fw-bold)',
             color: over ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
@@ -105,14 +105,14 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
       }}>
         <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
           <span>지출</span>
-          <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
+          <span className="num" style={{ marginLeft: 'auto', fontWeight: 'var(--fw-semi)' }}>
             <MaskAmount mask="••••">{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <HideUnit>원</HideUnit>
           </span>
         </div>
         <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
           <span>한도</span>
-          <span className="num" style={{ marginLeft: 'auto', fontWeight: 600 }}>
+          <span className="num" style={{ marginLeft: 'auto', fontWeight: 'var(--fw-semi)' }}>
             <MaskAmount mask="••••">{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <HideUnit>원</HideUnit>
           </span>
@@ -210,7 +210,7 @@ export const BudgetPage = () => {
         style={{
           fontSize: 12,
           color: 'var(--fg-brand-strong)',
-          fontWeight: 600,
+          fontWeight: 'var(--fw-semi)',
           letterSpacing: '0.02em',
           marginBottom: 2,
         }}
@@ -232,11 +232,11 @@ export const BudgetPage = () => {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
             <div
               className="num"
-              style={{ fontSize: mobile ? 24 : 30, fontWeight: 800, letterSpacing: '-0.03em' }}
+              style={{ fontSize: mobile ? 24 : 30, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.03em' }}
             >
               <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--fg-secondary)', fontWeight: 500 }}>
+            <div style={{ fontSize: 14, color: 'var(--fg-secondary)', fontWeight: 'var(--fw-medium)' }}>
               / <MaskAmount mask="••••">{KRW(totalLimit)}</MaskAmount>
               <HideUnit>원</HideUnit>
             </div>
@@ -274,32 +274,32 @@ export const BudgetPage = () => {
             }}
           >
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 전체 상한
               </div>
-              <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+              <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
                 <MaskAmount mask="••••">{KRW(overallLimit)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 카테고리 할당
               </div>
-              <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+              <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
                 <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당 가능
               </div>
               <div
                 className="num"
                 style={{
                   fontSize: 14,
-                  fontWeight: 700,
+                  fontWeight: 'var(--fw-bold)',
                   color: overAllocated ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
@@ -418,32 +418,32 @@ export const BudgetPage = () => {
         }}
       >
         <div>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
             일평균 지출
           </div>
-          <div className="num" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <div className="num" style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.02em' }}>
             <MaskAmount mask="••••">{KRW(dailyActual)}</MaskAmount>
             <HideUnit>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+              <span style={{ fontSize: 12, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
             </HideUnit>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
             남은 일 권장 지출
           </div>
           <div
             className="num"
             style={{
               fontSize: 18,
-              fontWeight: 700,
+              fontWeight: 'var(--fw-bold)',
               letterSpacing: '-0.02em',
               color: 'var(--fg-brand-strong)',
             }}
           >
             <MaskAmount mask="••••">{KRW(dailyTarget)}</MaskAmount>
             <HideUnit>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+              <span style={{ fontSize: 12, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
             </HideUnit>
           </div>
         </div>
@@ -472,7 +472,7 @@ export const BudgetPage = () => {
               gap: 6,
               fontSize: 11.5,
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
-              fontWeight: 600,
+              fontWeight: 'var(--fw-semi)',
               marginBottom: 6,
             }}
           >
@@ -482,13 +482,13 @@ export const BudgetPage = () => {
             className="num"
             style={{
               fontSize: 24,
-              fontWeight: 800,
+              fontWeight: 'var(--fw-heavy)',
               letterSpacing: '-0.02em',
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-primary)',
             }}
           >
             {overList.length}
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
               카테고리
             </span>
           </div>
@@ -508,15 +508,15 @@ export const BudgetPage = () => {
               gap: 6,
               fontSize: 11.5,
               color: 'var(--fg-income)',
-              fontWeight: 600,
+              fontWeight: 'var(--fw-semi)',
               marginBottom: 6,
             }}
           >
             <CheckCircle2 size={13} /> 여유
           </div>
-          <div className="num" style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>
+          <div className="num" style={{ fontSize: 24, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.02em' }}>
             {healthyList.length}
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-tertiary)', marginLeft: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
               카테고리
             </span>
           </div>
@@ -589,7 +589,7 @@ export const BudgetPage = () => {
                   dataKey="percent"
                   position="top"
                   formatter={(v: unknown) => `${Math.round(Number(v ?? 0))}%`}
-                  style={{ fontSize: 11, fontWeight: 700, fill: 'var(--fg-primary)' }}
+                  style={{ fontSize: 11, fontWeight: 'var(--fw-bold)', fill: 'var(--fg-primary)' }}
                 />
               </Bar>
             </BarChart>
@@ -648,7 +648,7 @@ export const BudgetPage = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      fontWeight: 700,
+                      fontWeight: 'var(--fw-bold)',
                       background: palette.bg,
                       color: palette.color,
                     }}
@@ -656,7 +656,7 @@ export const BudgetPage = () => {
                     <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 'var(--fw-semi)' }}>{name}</div>
                     <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
                         ? <>한도 <MaskAmount mask="••••">{KRW(spent - limit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>
@@ -667,13 +667,13 @@ export const BudgetPage = () => {
                     <div
                       style={{
                         fontSize: 14,
-                        fontWeight: 700,
+                        fontWeight: 'var(--fw-bold)',
                         color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                       }}
                     >
                       <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500 }}>
+                    <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
                       / <MaskAmount mask="••••">{KRW(limit)}</MaskAmount>
                     </div>
                   </div>

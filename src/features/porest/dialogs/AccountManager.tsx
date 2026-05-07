@@ -116,7 +116,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           />
           <div style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>
             총{' '}
-            <span className="num" style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>
+            <span className="num" style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               {KRW(totalInTab)}원
             </span>
           </div>
@@ -171,7 +171,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         className="num"
                         style={{
                           fontSize: 14,
-                          fontWeight: 700,
+                          fontWeight: 'var(--fw-bold)',
                           letterSpacing: '-0.01em',
                           color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}

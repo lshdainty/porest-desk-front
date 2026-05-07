@@ -42,7 +42,7 @@ export const MorePage = () => {
   return (
     <div style={{ padding: '4px 0 24px' }}>
       <div style={{ padding: '0 16px 12px' }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>더보기</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>더보기</h2>
         <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>
       </div>
       <div
@@ -94,7 +94,7 @@ export const MorePage = () => {
                     alignItems: 'center',
                     gap: 4,
                     fontSize: 14,
-                    fontWeight: 700,
+                    fontWeight: 'var(--fw-bold)',
                     color: 'var(--fg-primary)',
                     letterSpacing: '-0.01em',
                   }}

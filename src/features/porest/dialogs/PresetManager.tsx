@@ -79,7 +79,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           <Bookmark size={16} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
+          <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
             프리셋이란?
           </div>
           <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.55 }}>
@@ -173,7 +173,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             >
               <Bookmark size={22} />
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)', marginBottom: 4 }}>
+            <div style={{ fontSize: 14, fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', marginBottom: 4 }}>
               저장된 프리셋이 없어요
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>
@@ -220,7 +220,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     <div
                       style={{
                         fontSize: 13.5,
-                        fontWeight: 700,
+                        fontWeight: 'var(--fw-bold)',
                         color: 'var(--fg-primary)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -233,7 +233,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       <span
                         style={{
                           fontSize: 10,
-                          fontWeight: 700,
+                          fontWeight: 'var(--fw-bold)',
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
                           color: 'var(--fg-income)',
@@ -247,7 +247,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       <span
                         style={{
                           fontSize: 10,
-                          fontWeight: 600,
+                          fontWeight: 'var(--fw-semi)',
                           padding: '1px 5px',
                           background: 'var(--pd-surface-inset)',
                           color: 'var(--fg-tertiary)',
@@ -296,7 +296,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     className="num"
                     style={{
                       fontSize: mobile ? 12.5 : 14,
-                      fontWeight: 700,
+                      fontWeight: 'var(--fw-bold)',
                       color: p.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
                     }}
                   >
@@ -351,7 +351,7 @@ function PMStat({ label, value }: { label: string; value: string }) {
       <div
         style={{
           fontSize: 10.5,
-          fontWeight: 600,
+          fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
@@ -362,7 +362,7 @@ function PMStat({ label, value }: { label: string; value: string }) {
       </div>
       <div
         className="num"
-        style={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}
+        style={{ fontSize: 17, fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}
       >
         {value}
       </div>

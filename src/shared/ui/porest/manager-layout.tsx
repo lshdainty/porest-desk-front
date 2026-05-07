@@ -115,7 +115,7 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
   background: 'var(--fg-income)',
   color: 'var(--fg-on-brand)',
-  fontWeight: 700,
+  fontWeight: 'var(--fw-bold)',
   boxShadow: 'var(--shadow-sm)',
 }
 
@@ -125,7 +125,7 @@ const TAB_CNT_BASE_STYLE: CSSProperties = {
   background: 'var(--bg-surface)',
   padding: '2px 7px',
   borderRadius: 'var(--radius-pill)',
-  fontWeight: 700,
+  fontWeight: 'var(--fw-bold)',
   minWidth: 20,
   textAlign: 'center',
 }

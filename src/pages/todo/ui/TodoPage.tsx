@@ -49,7 +49,7 @@ export const TodoPage = () => {
           <div
             style={{
               fontSize: 13.5,
-              fontWeight: 600,
+              fontWeight: 'var(--fw-semi)',
               textDecoration: isDone ? 'line-through' : 'none',
               color: 'var(--fg-primary)',
             }}
@@ -77,7 +77,7 @@ export const TodoPage = () => {
                       key={tag.rowId}
                       style={{
                         fontSize: 10.5,
-                        fontWeight: 600,
+                        fontWeight: 'var(--fw-semi)',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
                         background: tag.color ? `${tag.color}22` : 'var(--pd-surface-inset)',
@@ -95,7 +95,7 @@ export const TodoPage = () => {
         <span
           style={{
             fontSize: 11,
-            fontWeight: 700,
+            fontWeight: 'var(--fw-bold)',
             padding: '3px 9px',
             borderRadius: 'var(--radius-pill)',
             background: prio.bg,
@@ -122,7 +122,7 @@ export const TodoPage = () => {
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 13,
-        fontWeight: 700,
+        fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
     >
@@ -135,7 +135,7 @@ export const TodoPage = () => {
       style={{
         fontSize: 11,
         color: 'var(--fg-tertiary)',
-        fontWeight: 600,
+        fontWeight: 'var(--fw-semi)',
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
         marginBottom: 2,
@@ -187,7 +187,7 @@ export const TodoPage = () => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>할 일</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>할 일</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

@@ -236,7 +236,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             <div
               style={{
                 fontSize: 14,
-                fontWeight: 700,
+                fontWeight: 'var(--fw-bold)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -249,7 +249,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+            <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
               {pct.toFixed(0)}%
             </div>
             <div className="num" style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
@@ -359,7 +359,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>
-          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 400 }}>(선택)</span>
+          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)' }}>(선택)</span>
         </FieldLabel>
         <InputDatePicker
           value={deadlineDate}
