@@ -18,16 +18,16 @@ export const MANAGER_LAYOUT = {
   } as CSSProperties,
   titleStyle: {
     font: '700 20px/1.3 var(--font-sans)',
-    letterSpacing: '-0.02em',
+    letterSpacing: 'var(--tracking-tight)',
     margin: '0 0 4px',
     color: 'var(--fg-primary)',
   } as CSSProperties,
   subStyle: {
-    fontSize: 13,
+    fontSize: 'var(--fs-body-sm)',
     color: 'var(--fg-tertiary)',
     margin: 0,
     maxWidth: '52ch',
-    lineHeight: 1.55,
+    lineHeight: 'var(--lh-normal)',
   } as CSSProperties,
   toolbarStyle: {
     display: 'flex',
@@ -120,7 +120,7 @@ const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
 }
 
 const TAB_CNT_BASE_STYLE: CSSProperties = {
-  fontSize: 11,
+  fontSize: 'var(--fs-micro)',
   color: 'var(--fg-tertiary)',
   background: 'var(--bg-surface)',
   padding: '2px 7px',

@@ -38,12 +38,12 @@ export const MANAGE_ROW = {
   labelStyle: {
     font: '600 14px/1.3 var(--font-sans)',
     color: 'var(--fg-primary)',
-    letterSpacing: '-0.01em',
+    letterSpacing: 'var(--tracking-snug)',
     marginBottom: 2,
   } as CSSProperties,
   /** 보조 메타 style (기존 .cat-row__meta) */
   metaStyle: {
-    fontSize: 11.5,
+    fontSize: 'var(--fs-caption)',
     color: 'var(--fg-tertiary)',
     display: 'flex',
     alignItems: 'center',

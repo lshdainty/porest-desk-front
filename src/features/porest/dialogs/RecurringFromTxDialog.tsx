@@ -113,7 +113,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
   return (
     <ModalShell title="반복 설정" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 13, color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 1.55 }}>
+      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
         이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
       </p>
 
@@ -145,10 +145,10 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
+          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
             {expense.merchant || expense.description || '거래'}
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {expenseDay} 시작
           </div>
         </div>
@@ -192,7 +192,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     fontWeight: active ? 700 : 500,
                     borderRadius: 'var(--radius-pill)',
-                    fontSize: 12.5,
+                    fontSize: 'var(--fs-body-sm)',
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                   }}
@@ -209,7 +209,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       {frequency === 'MONTHLY' && (
         <Section title="반복 일자">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, color: 'var(--fg-secondary)' }}>매월</span>
+            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>매월</span>
             <Input
               className="num"
               value={dayOfMonth}
@@ -220,8 +220,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
               inputMode="numeric"
               style={{ width: 64, textAlign: 'center' }}
             />
-            <span style={{ fontSize: 13, color: 'var(--fg-secondary)' }}>일</span>
-            <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginLeft: 8 }}>
+            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>일</span>
+            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
               해당 일이 없는 달은 말일에 처리됩니다
             </span>
           </div>
@@ -308,7 +308,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 12, fontWeight: 'var(--fw-bold)' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>다음 예정일</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
@@ -320,7 +320,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                   background: 'var(--pd-surface-inset)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
-                  fontSize: 12,
+                  fontSize: 'var(--fs-caption)',
                   fontWeight: 'var(--fw-semi)',
                 }}
               >
@@ -337,7 +337,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 12, fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -389,9 +389,9 @@ function RadioCard({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
         {sub && (
-          <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
             {sub}
           </div>
         )}
@@ -441,8 +441,8 @@ function ToggleRow({
         <Icon size={16} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-bold)' }}>{title}</div>
-        <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
+        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
       <button
         type="button"

@@ -107,7 +107,7 @@ export const SettingsPage = () => {
         <div style={{ padding: '4px 0 24px' }}>
           <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Settings size={18} style={{ color: 'var(--fg-secondary)' }} />
-            <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>설정</h2>
+            <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>설정</h2>
           </div>
           <div
             style={{
@@ -156,8 +156,8 @@ export const SettingsPage = () => {
                     <IconComp size={18} strokeWidth={1.9} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>{s.label}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>{s.desc}</div>
+                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>{s.label}</div>
+                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{s.desc}</div>
                   </div>
                   <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)' }} />
                 </button>
@@ -193,7 +193,7 @@ export const SettingsPage = () => {
           >
             <ChevronLeft size={22} />
           </button>
-          <h2 style={{ flex: 1, margin: 0, fontSize: 17, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.015em' }}>
+          <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
             {activeSection?.label}
           </h2>
         </div>
@@ -249,7 +249,7 @@ export const SettingsPage = () => {
                   background: active ? 'var(--bg-brand-subtle)' : 'transparent',
                   color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                   borderRadius: 'var(--radius-tile)',
-                  fontSize: 13,
+                  fontSize: 'var(--fs-body-sm)',
                   fontWeight: active ? 600 : 500,
                   cursor: 'pointer',
                   textAlign: 'left',
@@ -295,14 +295,14 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
       >
         <IconComp size={22} strokeWidth={1.9} />
       </div>
-      <div style={{ fontSize: 15, fontWeight: 'var(--fw-bold)', marginBottom: 4 }}>{section.label}</div>
-      <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>{section.desc}</div>
+      <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 4 }}>{section.label}</div>
+      <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)' }}>{section.desc}</div>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 'var(--fs-micro)',
           color: 'var(--fg-tertiary)',
           marginTop: 14,
-          letterSpacing: '0.06em',
+          letterSpacing: 'var(--tracking-wide)',
           textTransform: 'uppercase',
         }}
       >

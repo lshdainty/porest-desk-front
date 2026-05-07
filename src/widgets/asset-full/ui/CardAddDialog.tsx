@@ -155,7 +155,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               <div className="flex items-center gap-3">
                 <label
                   className="inline-flex items-center cursor-pointer select-none"
-                  style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', gap: 6 }}
+                  style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
                   title="단종된 카드 상품도 검색 결과에 포함합니다"
                 >
                   <Switch
@@ -240,7 +240,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                               style={{
                                 background: 'var(--bg-disabled)',
                                 color: 'var(--fg-tertiary)',
-                                letterSpacing: '0.02em',
+                                letterSpacing: 'var(--tracking-wide)',
                               }}
                             >
                               단종

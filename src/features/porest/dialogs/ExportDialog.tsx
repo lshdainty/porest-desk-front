@@ -44,7 +44,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
 
   const Footer = (
     <>
-      <span style={{ marginRight: 'auto', fontSize: 12, color: 'var(--fg-tertiary)' }}>
+      <span style={{ marginRight: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
         약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
       </span>
       <Button variant="ghost" onClick={onClose}>취소</Button>
@@ -80,7 +80,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   <span
                     style={{
                       fontWeight: 'var(--fw-bold)',
-                      fontSize: 14,
+                      fontSize: 'var(--fs-body)',
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     }}
                   >
@@ -88,7 +88,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   </span>
                   {active && <CheckCircle2 size={14} style={{ color: 'var(--bg-brand)', marginLeft: 'auto' }} />}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{o.d}</div>
+                <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>{o.d}</div>
               </button>
             )
           })}
@@ -167,8 +167,8 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   <IconComp size={15} />
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-semi)' }}>{o.l}</div>
-                  <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
+                  <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{o.l}</div>
+                  <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
                 </div>
               </label>
             )

@@ -55,7 +55,7 @@ export function NotificationsPage() {
             alignItems: 'center',
             gap: 8,
             color: 'var(--fg-secondary)',
-            fontSize: 13,
+            fontSize: 'var(--fs-body-sm)',
           }}
         >
           <b style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-bold)' }}>{unreadCount}</b>

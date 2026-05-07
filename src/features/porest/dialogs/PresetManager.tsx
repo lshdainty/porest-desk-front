@@ -79,10 +79,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           <Bookmark size={16} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
+          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
             프리셋이란?
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.55 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-normal)' }}>
             자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.
           </div>
         </div>
@@ -130,7 +130,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 color: sortBy === o.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
                 border: 0,
                 padding: '6px 10px',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 fontWeight: sortBy === o.k ? 700 : 500,
                 borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
@@ -144,7 +144,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         </div>
         <Button
           type="button"
-          style={{ padding: '7px 12px', fontSize: 13 }}
+          style={{ padding: '7px 12px', fontSize: 'var(--fs-body-sm)' }}
           onClick={() => setEditing('new')}
         >
           <Plus size={14} /> 프리셋 추가
@@ -154,7 +154,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       {/* List */}
       <Card style={{ padding: 0, overflow: 'hidden' }}>
         {templatesQ.isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
             불러오는 중…
           </div>
         ) : sorted.length === 0 ? (
@@ -173,10 +173,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             >
               <Bookmark size={22} />
             </div>
-            <div style={{ fontSize: 14, fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', marginBottom: 4 }}>
               저장된 프리셋이 없어요
             </div>
-            <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>
+            <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)' }}>
               자주 쓰는 내역을 추가해 매번 입력하는 수고를 줄여보세요.
             </div>
           </div>
@@ -219,7 +219,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <div
                       style={{
-                        fontSize: 13.5,
+                        fontSize: 'var(--fs-body)',
                         fontWeight: 'var(--fw-bold)',
                         color: 'var(--fg-primary)',
                         overflow: 'hidden',
@@ -232,7 +232,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     {p.expenseType === 'INCOME' && (
                       <span
                         style={{
-                          fontSize: 10,
+                          fontSize: 'var(--fs-micro)',
                           fontWeight: 'var(--fw-bold)',
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
@@ -246,7 +246,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     {!lock && (
                       <span
                         style={{
-                          fontSize: 10,
+                          fontSize: 'var(--fs-micro)',
                           fontWeight: 'var(--fw-semi)',
                           padding: '1px 5px',
                           background: 'var(--pd-surface-inset)',
@@ -260,7 +260,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   </div>
                   <div
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 'var(--fs-caption)',
                       color: 'var(--fg-tertiary)',
                       display: 'flex',
                       alignItems: 'center',
@@ -350,11 +350,11 @@ function PMStat({ label, value }: { label: string; value: string }) {
     <div style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
       <div
         style={{
-          fontSize: 10.5,
+          fontSize: 'var(--fs-micro)',
           fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
-          letterSpacing: '0.04em',
+          letterSpacing: 'var(--tracking-wide)',
           marginBottom: 4,
         }}
       >
@@ -362,7 +362,7 @@ function PMStat({ label, value }: { label: string; value: string }) {
       </div>
       <div
         className="num"
-        style={{ fontSize: 17, fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}
+        style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)', letterSpacing: 'var(--tracking-tight)' }}
       >
         {value}
       </div>

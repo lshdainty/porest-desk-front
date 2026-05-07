@@ -235,7 +235,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 14,
+                fontSize: 'var(--fs-body)',
                 fontWeight: 'var(--fw-bold)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -244,15 +244,15 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             >
               {title || '목표 이름'}
             </div>
-            <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
               {formatDeadlineLabel(deadlineDate)}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
+            <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
               {pct.toFixed(0)}%
             </div>
-            <div className="num" style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
+            <div className="num" style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
               {current.toLocaleString('ko-KR')} / {target.toLocaleString('ko-KR')}
             </div>
           </div>
@@ -317,7 +317,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 right: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                fontSize: 12.5,
+                fontSize: 'var(--fs-body-sm)',
                 color: 'var(--fg-tertiary)',
                 pointerEvents: 'none',
               }}
@@ -346,7 +346,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 right: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                fontSize: 12.5,
+                fontSize: 'var(--fs-body-sm)',
                 color: 'var(--fg-tertiary)',
                 pointerEvents: 'none',
               }}
@@ -439,7 +439,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             background: 'oklch(0.96 0.04 20)',
             border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
             borderRadius: 'var(--radius-md)',
-            fontSize: 12.5,
+            fontSize: 'var(--fs-body-sm)',
             color: 'var(--fg-expense)',
             display: 'flex',
             alignItems: 'center',

@@ -112,13 +112,13 @@ function PorestChartTooltip({
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '10px 12px',
-        fontSize: 12,
+        fontSize: 'var(--fs-caption)',
         minWidth: 150,
       }}
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 'var(--fs-micro)',
           color: 'var(--fg-tertiary)',
           fontWeight: 'var(--fw-semi)',
           marginBottom: 6,
@@ -144,12 +144,12 @@ function PorestChartTooltip({
                 flexShrink: 0,
               }}
             />
-            <span style={{ fontSize: 12, color: 'var(--fg-secondary)' }}>{row.label}</span>
+            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
             <span
               className="num"
               style={{
                 marginLeft: 'auto',
-                fontSize: 13,
+                fontSize: 'var(--fs-body-sm)',
                 fontWeight: 'var(--fw-bold)',
                 color: 'var(--fg-primary)',
               }}
@@ -364,7 +364,7 @@ export const StatsPage = () => {
         padding: '32px 0',
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
       }}
     >
       {text}
@@ -380,7 +380,7 @@ export const StatsPage = () => {
   const DonutCard = (
     <Card style={{ padding: mobile ? 18 : 24 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {isDrilled ? (
             <>
               <button
@@ -391,7 +391,7 @@ export const StatsPage = () => {
                   border: 0,
                   color: 'var(--fg-secondary)',
                   cursor: 'pointer',
-                  fontSize: 14,
+                  fontSize: 'var(--fs-body)',
                   fontWeight: 'var(--fw-medium)',
                   padding: 0,
                   fontFamily: 'inherit',
@@ -427,7 +427,7 @@ export const StatsPage = () => {
             stroke={28}
           >
             <div className="lbl">{donutCenterLbl}</div>
-            <div className="val num" style={{ fontSize: 20 }}>
+            <div className="val num" style={{ fontSize: 'var(--fs-h3)' }}>
               <MaskAmount>{KRW(donutTotal)}</MaskAmount>
               <HideUnit>원</HideUnit>
             </div>
@@ -490,7 +490,7 @@ export const StatsPage = () => {
       }}
     >
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>많이 쓴 가맹점 TOP 5</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>많이 쓴 가맹점 TOP 5</CardTitle>
       </CardHeader>
       {merchantQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
@@ -511,7 +511,7 @@ export const StatsPage = () => {
               <span
                 style={{
                   width: 24,
-                  fontSize: 12,
+                  fontSize: 'var(--fs-caption)',
                   fontWeight: 'var(--fw-bold)',
                   color: i < 3 ? 'var(--fg-income)' : 'var(--fg-tertiary)',
                   textAlign: 'center',
@@ -521,11 +521,11 @@ export const StatsPage = () => {
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 'var(--fw-semi)' }}>{m.merchant}</span>
-                  <span style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{m.merchant}</span>
+                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
                     {m.count}회
                   </span>
-                  <span className="num" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 'var(--fw-bold)' }}>
+                  <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
                     <MaskAmount>{KRW(m.totalAmount)}</MaskAmount>
                     <HideUnit>원</HideUnit>
                   </span>
@@ -605,9 +605,9 @@ export const StatsPage = () => {
   const HeatmapCard = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <CardHeader style={{ marginBottom: 6 }}>
-        <CardTitle style={{ fontSize: 15 }}>요일·시간대 지출 패턴</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>요일·시간대 지출 패턴</CardTitle>
       </CardHeader>
-      <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 16 }}>
+      <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
       {heatmapQ.isLoading ? (
@@ -636,7 +636,7 @@ export const StatsPage = () => {
             padding: '40px 0',
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
-            fontSize: 13,
+            fontSize: 'var(--fs-body-sm)',
             background: 'var(--pd-surface-inset)',
             borderRadius: 'var(--radius-lg)',
           }}
@@ -659,7 +659,7 @@ export const StatsPage = () => {
               <span
                 key={col.dow}
                 style={{
-                  fontSize: 12,
+                  fontSize: 'var(--fs-caption)',
                   fontWeight: 'var(--fw-semi)',
                   color: 'var(--fg-tertiary)',
                   textAlign: 'center',
@@ -675,16 +675,16 @@ export const StatsPage = () => {
               <Fragment key={row.label}>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 'var(--fs-caption)',
                     color: 'var(--fg-tertiary)',
-                    lineHeight: 1.35,
+                    lineHeight: 'var(--lh-snug)',
                     paddingRight: 6,
                   }}
                 >
-                  <div style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', fontSize: 13 }}>
+                  <div style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', fontSize: 'var(--fs-body-sm)' }}>
                     {row.label}
                   </div>
-                  <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                     {row.sub}
                   </div>
                 </div>
@@ -729,7 +729,7 @@ export const StatsPage = () => {
               alignItems: 'center',
               gap: 8,
               marginTop: 14,
-              fontSize: 11,
+              fontSize: 'var(--fs-micro)',
               color: 'var(--fg-tertiary)',
             }}
           >
@@ -808,12 +808,12 @@ export const StatsPage = () => {
     >
       {highlights.map((h, i) => (
         <Card key={i} style={{ padding: 18 }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 10 }}>
+          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 10 }}>
             {h.lbl}
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.01em' }}>{h.val}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{h.val}</div>
+            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
           </div>
         </Card>
       ))}
@@ -893,7 +893,7 @@ export const StatsPage = () => {
   const TrendBig = (
     <Card style={{ padding: mobile ? 18 : 24 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>{periodLbl} 수입·지출 추이</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
       </CardHeader>
       {yearlyQ.isLoading ? (
@@ -923,7 +923,7 @@ export const StatsPage = () => {
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
                 tickMargin={8}
                 interval="preserveStartEnd"
                 minTickGap={mobile ? 16 : 24}
@@ -931,7 +931,7 @@ export const StatsPage = () => {
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -966,7 +966,7 @@ export const StatsPage = () => {
               />
             </AreaChart>
           </ChartContainer>
-          <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--fg-secondary)' }}>
+          <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} /> 수입
             </span>
@@ -994,12 +994,12 @@ export const StatsPage = () => {
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         <Card key={i} style={{ padding: 16 }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
             {s.lbl}
           </div>
           <div
             className="num"
-            style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.02em' }}
+            style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
           >
             {s.val}
           </div>
@@ -1011,8 +1011,8 @@ export const StatsPage = () => {
   const SavingsBars = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</CardTitle>
-        <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</CardTitle>
+        <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </CardHeader>
       {yearlyQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
@@ -1030,7 +1030,7 @@ export const StatsPage = () => {
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
+              tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
               tickMargin={8}
               interval="preserveStartEnd"
               minTickGap={mobile ? 16 : 24}
@@ -1038,7 +1038,7 @@ export const StatsPage = () => {
             <YAxis
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
+              tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
               tickFormatter={fmtTick}
               width={52}
             />
@@ -1182,19 +1182,19 @@ export const StatsPage = () => {
       }}
     >
       <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
           {periodNow} 지출
         </div>
         <div
           className="num"
-          style={{ fontSize: mobile ? 18 : 22, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.02em' }}
+          style={{ fontSize: mobile ? 18 : 22, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
         >
           <MaskAmount>{KRW(totalNow)}</MaskAmount>
-          <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
+          <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2 }}>원</span></HideUnit>
         </div>
       </Card>
       <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
           {periodPrev} 지출
         </div>
         <div
@@ -1202,16 +1202,16 @@ export const StatsPage = () => {
           style={{
             fontSize: mobile ? 18 : 22,
             fontWeight: 'var(--fw-heavy)',
-            letterSpacing: '-0.02em',
+            letterSpacing: 'var(--tracking-tight)',
             color: 'var(--fg-secondary)',
           }}
         >
           <MaskAmount>{KRW(totalPrev)}</MaskAmount>
-          <HideUnit><span style={{ fontSize: 14, marginLeft: 2 }}>원</span></HideUnit>
+          <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2 }}>원</span></HideUnit>
         </div>
       </Card>
       <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
           {momLabel}
         </div>
         <div
@@ -1219,7 +1219,7 @@ export const StatsPage = () => {
           style={{
             fontSize: mobile ? 18 : 22,
             fontWeight: 'var(--fw-heavy)',
-            letterSpacing: '-0.02em',
+            letterSpacing: 'var(--tracking-tight)',
             color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         >
@@ -1230,7 +1230,7 @@ export const StatsPage = () => {
             </>
           ) : '—'}
         </div>
-        <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
           {totalPrev > 0 ? (
             <>
               <MaskAmount>
@@ -1247,13 +1247,13 @@ export const StatsPage = () => {
   const CompareCategory = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>카테고리별 {momLabel}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리별 {momLabel}</CardTitle>
         <div
           style={{
             marginLeft: 'auto',
             display: 'flex',
             gap: 12,
-            fontSize: 11,
+            fontSize: 'var(--fs-micro)',
             color: 'var(--fg-tertiary)',
           }}
         >
@@ -1300,15 +1300,15 @@ export const StatsPage = () => {
                     {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 'var(--fw-semi)' }}>{r.name}</div>
+                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{r.name}</div>
                   </div>
-                  <span className="num" style={{ fontSize: 13, fontWeight: 'var(--fw-bold)' }}>
+                  <span className="num" style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
                     <MaskAmount>{KRW(r.now)}</MaskAmount>
                     <HideUnit>원</HideUnit>
                   </span>
                   <span
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 'var(--fs-caption)',
                       fontWeight: 'var(--fw-bold)',
                       minWidth: 56,
                       textAlign: 'right',

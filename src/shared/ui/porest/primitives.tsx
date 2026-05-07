@@ -149,7 +149,7 @@ export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: 
         fontWeight: 'var(--fw-semi)',
         fontVariantNumeric: 'tabular-nums',
         fontSize: small ? 11.5 : 12.5,
-        letterSpacing: '-0.005em',
+        letterSpacing: 'var(--tracking-snug)',
       }}
     >
       {up ? <TrendingUp size={small ? 12 : 14} strokeWidth={2.2} /> : <TrendingDown size={small ? 12 : 14} strokeWidth={2.2} />}
@@ -179,7 +179,7 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
         alignItems: 'center',
         justifyContent: 'center',
         fontWeight: 'var(--fw-heavy)',
-        letterSpacing: '-0.02em',
+        letterSpacing: 'var(--tracking-tight)',
         color: 'var(--fg-on-brand)',
         flexShrink: 0,
       }}
@@ -235,7 +235,7 @@ export function MonthPicker({
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-tile)',
           padding: '6px 12px',
-          fontSize: 12.5,
+          fontSize: 'var(--fs-body-sm)',
           fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
@@ -258,7 +258,7 @@ export function MonthPicker({
             borderRadius: 'var(--radius-card)',
             boxShadow: 'var(--shadow-lg)',
             padding: 14,
-            zIndex: 100,
+            zIndex: 'var(--z-sticky)',
             width: 260,
           } as React.CSSProperties}
         >
@@ -276,7 +276,7 @@ export function MonthPicker({
             >
               <ChevronLeft size={16} />
             </button>
-            <div style={{ flex: 1, textAlign: 'center', fontSize: 14, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.01em' }}>
+            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
               {viewY}년
             </div>
             <button
@@ -310,7 +310,7 @@ export function MonthPicker({
                     border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
                     background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
                     color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                    fontSize: 13,
+                    fontSize: 'var(--fs-body-sm)',
                     fontWeight: isSel ? 700 : 500,
                     cursor: isFuture ? 'not-allowed' : 'pointer',
                     opacity: isFuture ? 0.4 : 1,
@@ -342,7 +342,7 @@ export function MonthPicker({
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -368,7 +368,7 @@ export function MonthPicker({
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',

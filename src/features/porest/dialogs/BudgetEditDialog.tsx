@@ -143,12 +143,12 @@ export function BudgetEditDialog({
             style={{
               font: '700 15px/1.3 var(--font-sans)',
               color: 'var(--fg-primary)',
-              letterSpacing: '-0.015em',
+              letterSpacing: 'var(--tracking-snug)',
             }}
           >
             {selectedCat?.categoryName ?? '카테고리 선택'}
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             월 한도 {KRW(parseInt(limit) || 0)}원
           </div>
         </div>
@@ -163,7 +163,7 @@ export function BudgetEditDialog({
                 padding: 12,
                 background: 'var(--pd-surface-subtle)',
                 borderRadius: 'var(--radius-tile)',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 color: 'var(--fg-secondary)',
               }}
             >
@@ -212,7 +212,7 @@ export function BudgetEditDialog({
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-pill)',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -265,7 +265,7 @@ export function MonthlyBudgetDialog({
         <FieldLabel>월 총 예산 (원)</FieldLabel>
         <Input
           className="num"
-          style={{ fontSize: 20, fontWeight: 'var(--fw-bold)' }}
+          style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)' }}
           value={v}
           onChange={e => setV(e.target.value.replace(/[^0-9]/g, ''))}
           inputMode="numeric"
@@ -286,7 +286,7 @@ export function MonthlyBudgetDialog({
                 color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                 border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-pill)',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',

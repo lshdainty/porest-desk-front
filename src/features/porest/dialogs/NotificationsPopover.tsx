@@ -72,7 +72,7 @@ export function NotificationsPopover({
           width: 380,
           maxWidth: 'calc(100vw - 32px)',
           maxHeight: 'min(640px, calc(100vh - 80px))',
-          zIndex: 90,
+          zIndex: 'var(--z-sticky)',
           background: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-xl)',
@@ -95,19 +95,19 @@ export function NotificationsPopover({
             <div
               style={{
                 font: '700 15px/1.3 var(--font-sans)',
-                letterSpacing: '-0.015em',
+                letterSpacing: 'var(--tracking-snug)',
                 color: 'var(--fg-primary)',
               }}
             >
               알림
             </div>
             {unreadCount > 0 ? (
-              <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                 읽지 않은 알림 <b style={{ color: 'var(--fg-brand-strong)' }}>{unreadCount}</b>개
               </div>
             ) : (
               !isLoading && items.length === 0 && (
-                <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                   새 알림이 없어요
                 </div>
               )
@@ -127,12 +127,12 @@ export function NotificationsPopover({
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
           {isLoading && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
               불러오는 중…
             </div>
           )}
           {!isLoading && items.length === 0 && (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
               아직 알림이 없어요
             </div>
           )}
@@ -179,7 +179,7 @@ export function NotificationsPopover({
               border: 0,
               background: 'transparent',
               color: 'var(--fg-secondary)',
-              fontSize: 12.5,
+              fontSize: 'var(--fs-body-sm)',
               fontWeight: 'var(--fw-semi)',
               padding: 8,
               borderRadius: 'var(--radius-md)',

@@ -47,7 +47,7 @@ export const MemoPage = () => {
         border: 0,
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
         fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
@@ -79,28 +79,28 @@ export const MemoPage = () => {
           )}
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--fs-micro)',
               fontWeight: 'var(--fw-bold)',
               color: 'var(--fg-secondary)',
               textTransform: 'uppercase',
-              letterSpacing: '0.04em',
+              letterSpacing: 'var(--tracking-wide)',
             }}
           >
             {m.isPinned ? '고정' : '메모'}
           </span>
-          <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fg-tertiary)' }}>
+          <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
             {formatDate(m.createAt)}
           </span>
         </div>
-        <div style={{ fontSize: 15, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.015em', color: 'var(--fg-primary)' }}>
+        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)', color: 'var(--fg-primary)' }}>
           {m.title}
         </div>
         {m.content && (
           <div
             style={{
-              fontSize: 12.5,
+              fontSize: 'var(--fs-body-sm)',
               color: 'var(--fg-secondary)',
-              lineHeight: 1.55,
+              lineHeight: 'var(--lh-normal)',
               display: '-webkit-box',
               WebkitLineClamp: 4,
               WebkitBoxOrient: 'vertical',
@@ -133,7 +133,7 @@ export const MemoPage = () => {
         padding: 40,
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
       }}
     >
       불러오는 중…
@@ -146,7 +146,7 @@ export const MemoPage = () => {
         padding: 40,
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
       }}
     >
       아직 메모가 없어요
@@ -163,7 +163,7 @@ export const MemoPage = () => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>메모</h2>
+          <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>메모</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

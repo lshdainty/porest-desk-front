@@ -142,7 +142,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   <span
                     style={{
                       display: 'block',
-                      fontSize: 13.5,
+                      fontSize: 'var(--fs-body)',
                       fontWeight: 'var(--fw-semi)',
                       color: 'var(--fg-primary)',
                     }}
@@ -152,7 +152,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   <span
                     style={{
                       display: 'block',
-                      fontSize: 11.5,
+                      fontSize: 'var(--fs-caption)',
                       color: 'var(--fg-tertiary)',
                       marginTop: 2,
                     }}
@@ -200,7 +200,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   border: 'none',
                   boxShadow: active ? 'var(--shadow-xs)' : 'none',
                   color: active ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                  fontSize: 13,
+                  fontSize: 'var(--fs-body-sm)',
                   fontWeight: active ? 600 : 500,
                   cursor: 'pointer',
                   transition: 'all 0.15s',
@@ -255,7 +255,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 15,
+                    fontSize: 'var(--fs-body-lg)',
                     fontWeight: 'var(--fw-bold)',
                     color: 'var(--fg-primary)',
                     flexShrink: 0,
@@ -267,7 +267,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                   <span
                     style={{
                       display: 'block',
-                      fontSize: 13.5,
+                      fontSize: 'var(--fs-body)',
                       fontWeight: 'var(--fw-semi)',
                       color: 'var(--fg-primary)',
                     }}
@@ -278,7 +278,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                     className="num"
                     style={{
                       display: 'block',
-                      fontSize: 11.5,
+                      fontSize: 'var(--fs-caption)',
                       color: 'var(--fg-tertiary)',
                       marginTop: 1,
                     }}
@@ -306,11 +306,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 12.5,
+        fontSize: 'var(--fs-body-sm)',
         fontWeight: 'var(--fw-semi)',
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
-        letterSpacing: '0.04em',
+        letterSpacing: 'var(--tracking-wide)',
         marginBottom: 10,
       }}
     >

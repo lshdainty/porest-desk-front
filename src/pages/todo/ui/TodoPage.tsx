@@ -48,7 +48,7 @@ export const TodoPage = () => {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 13.5,
+              fontSize: 'var(--fs-body)',
               fontWeight: 'var(--fw-semi)',
               textDecoration: isDone ? 'line-through' : 'none',
               color: 'var(--fg-primary)',
@@ -58,7 +58,7 @@ export const TodoPage = () => {
           </div>
           <div
             style={{
-              fontSize: 11.5,
+              fontSize: 'var(--fs-caption)',
               color: 'var(--fg-tertiary)',
               marginTop: 2,
               display: 'flex',
@@ -76,7 +76,7 @@ export const TodoPage = () => {
                     <span
                       key={tag.rowId}
                       style={{
-                        fontSize: 10.5,
+                        fontSize: 'var(--fs-micro)',
                         fontWeight: 'var(--fw-semi)',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
@@ -94,7 +94,7 @@ export const TodoPage = () => {
         </div>
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--fs-micro)',
             fontWeight: 'var(--fw-bold)',
             padding: '3px 9px',
             borderRadius: 'var(--radius-pill)',
@@ -121,7 +121,7 @@ export const TodoPage = () => {
         border: 0,
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
         fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
@@ -133,10 +133,10 @@ export const TodoPage = () => {
   const SectionHead = (label: string, count: number) => (
     <div
       style={{
-        fontSize: 11,
+        fontSize: 'var(--fs-micro)',
         color: 'var(--fg-tertiary)',
         fontWeight: 'var(--fw-semi)',
-        letterSpacing: '0.06em',
+        letterSpacing: 'var(--tracking-wide)',
         textTransform: 'uppercase',
         marginBottom: 2,
       }}
@@ -151,7 +151,7 @@ export const TodoPage = () => {
         padding: '16px 0',
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 12.5,
+        fontSize: 'var(--fs-body-sm)',
       }}
     >
       {msg}
@@ -161,11 +161,11 @@ export const TodoPage = () => {
   const Body = (
     <>
       {todosQ.isLoading ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
           불러오는 중…
         </div>
       ) : todos.length === 0 ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
           할 일이 없어요
         </div>
       ) : (
@@ -187,7 +187,7 @@ export const TodoPage = () => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>할 일</h2>
+          <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>할 일</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

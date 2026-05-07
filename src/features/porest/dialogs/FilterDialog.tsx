@@ -190,7 +190,7 @@ export function FilterDialog({
               />
             </div>
             {customInvalid && (
-              <div style={{ fontSize: 11.5, color: 'var(--fg-expense)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
                 시작일이 종료일보다 늦을 수 없습니다.
               </div>
             )}
@@ -257,7 +257,7 @@ export function FilterDialog({
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
                     border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-pill)',
-                    fontSize: 12,
+                    fontSize: 'var(--fs-caption)',
                     fontWeight: 'var(--fw-semi)',
                     cursor: 'pointer',
                     fontFamily: 'inherit',

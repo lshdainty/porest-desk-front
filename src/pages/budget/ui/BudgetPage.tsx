@@ -46,7 +46,7 @@ function ComplianceMonthTick({ x, y, payload }: ComplianceTickProps) {
       y={yNum + 14}
       textAnchor="middle"
       style={{
-        fontSize: 11,
+        fontSize: 'var(--fs-micro)',
         fontWeight: last ? 700 : 500,
         fill: last ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
       }}
@@ -74,11 +74,11 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 11.5,
+        fontSize: 'var(--fs-caption)',
         minWidth: 160,
       }}
     >
-      <div style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
         {d.label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -88,11 +88,11 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
             background: over ? 'var(--fg-expense)' : 'var(--bg-brand)',
           }}
         />
-        <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>한도 대비</span>
+        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>한도 대비</span>
         <span
           className="num"
           style={{
-            marginLeft: 'auto', fontSize: 12, fontWeight: 'var(--fw-bold)',
+            marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)',
             color: over ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
@@ -103,14 +103,14 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--border-subtle)',
         display: 'flex', flexDirection: 'column', gap: 3,
       }}>
-        <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
+        <div style={{ display: 'flex', fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>
           <span>지출</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: 'var(--fw-semi)' }}>
             <MaskAmount mask="••••">{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <HideUnit>원</HideUnit>
           </span>
         </div>
-        <div style={{ display: 'flex', fontSize: 11, color: 'var(--fg-secondary)' }}>
+        <div style={{ display: 'flex', fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>
           <span>한도</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: 'var(--fw-semi)' }}>
             <MaskAmount mask="••••">{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
@@ -208,10 +208,10 @@ export const BudgetPage = () => {
     >
       <div
         style={{
-          fontSize: 12,
+          fontSize: 'var(--fs-caption)',
           color: 'var(--fg-brand-strong)',
           fontWeight: 'var(--fw-semi)',
-          letterSpacing: '0.02em',
+          letterSpacing: 'var(--tracking-wide)',
           marginBottom: 2,
         }}
       >
@@ -219,9 +219,9 @@ export const BudgetPage = () => {
       </div>
       <div
         style={{
-          fontSize: 11.5,
+          fontSize: 'var(--fs-caption)',
           color: 'var(--fg-tertiary)',
-          lineHeight: 1.45,
+          lineHeight: 'var(--lh-normal)',
           marginBottom: 10,
         }}
       >
@@ -232,11 +232,11 @@ export const BudgetPage = () => {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
             <div
               className="num"
-              style={{ fontSize: mobile ? 24 : 30, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.03em' }}
+              style={{ fontSize: mobile ? 24 : 30, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
             >
               <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--fg-secondary)', fontWeight: 'var(--fw-medium)' }}>
+            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', fontWeight: 'var(--fw-medium)' }}>
               / <MaskAmount mask="••••">{KRW(totalLimit)}</MaskAmount>
               <HideUnit>원</HideUnit>
             </div>
@@ -251,7 +251,7 @@ export const BudgetPage = () => {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              fontSize: 12,
+              fontSize: 'var(--fs-caption)',
               color: 'var(--fg-secondary)',
               marginTop: 8,
             }}
@@ -274,31 +274,31 @@ export const BudgetPage = () => {
             }}
           >
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 전체 상한
               </div>
-              <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
+              <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
                 <MaskAmount mask="••••">{KRW(overallLimit)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 카테고리 할당
               </div>
-              <div className="num" style={{ fontSize: 14, fontWeight: 'var(--fw-bold)' }}>
+              <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
                 <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당 가능
               </div>
               <div
                 className="num"
                 style={{
-                  fontSize: 14,
+                  fontSize: 'var(--fs-body)',
                   fontWeight: 'var(--fw-bold)',
                   color: overAllocated ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
@@ -319,7 +319,7 @@ export const BudgetPage = () => {
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
                 borderRadius: 'var(--radius-md)',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
                 alignItems: 'center',
@@ -336,14 +336,14 @@ export const BudgetPage = () => {
         <div
           style={{
             padding: '14px 0 2px',
-            fontSize: 13,
+            fontSize: 'var(--fs-body-sm)',
             color: 'var(--fg-secondary)',
-            lineHeight: 1.6,
+            lineHeight: 'var(--lh-loose)',
           }}
         >
           전체 상한이 아직 설정되지 않았어요. 우측 상단 <strong>예산 설정</strong> 버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.
           {categoryLimitSum > 0 && (
-            <div style={{ marginTop: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+            <div style={{ marginTop: 8, fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
               현재 카테고리 한도 합계: <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount><HideUnit>원</HideUnit>
             </div>
           )}
@@ -355,7 +355,7 @@ export const BudgetPage = () => {
   const PaceCard = (
     <Card style={{ padding: 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>지출 페이스</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>지출 페이스</CardTitle>
         <Badge
           variant={onTrack ? 'success' : 'warning'}
           style={{ marginLeft: 'auto' }}
@@ -400,7 +400,7 @@ export const BudgetPage = () => {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontSize: 11.5,
+          fontSize: 'var(--fs-caption)',
           color: 'var(--fg-tertiary)',
           marginBottom: 16,
         }}
@@ -418,32 +418,32 @@ export const BudgetPage = () => {
         }}
       >
         <div>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
             일평균 지출
           </div>
-          <div className="num" style={{ fontSize: 18, fontWeight: 'var(--fw-bold)', letterSpacing: '-0.02em' }}>
+          <div className="num" style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-tight)' }}>
             <MaskAmount mask="••••">{KRW(dailyActual)}</MaskAmount>
             <HideUnit>
-              <span style={{ fontSize: 12, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+              <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
             </HideUnit>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>
             남은 일 권장 지출
           </div>
           <div
             className="num"
             style={{
-              fontSize: 18,
+              fontSize: 'var(--fs-h4)',
               fontWeight: 'var(--fw-bold)',
-              letterSpacing: '-0.02em',
+              letterSpacing: 'var(--tracking-tight)',
               color: 'var(--fg-brand-strong)',
             }}
           >
             <MaskAmount mask="••••">{KRW(dailyTarget)}</MaskAmount>
             <HideUnit>
-              <span style={{ fontSize: 12, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+              <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
             </HideUnit>
           </div>
         </div>
@@ -454,7 +454,7 @@ export const BudgetPage = () => {
   const StatusTiles = (
     <Card style={{ padding: 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>예산 현황</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산 현황</CardTitle>
       </CardHeader>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div
@@ -470,7 +470,7 @@ export const BudgetPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              fontSize: 11.5,
+              fontSize: 'var(--fs-caption)',
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
               fontWeight: 'var(--fw-semi)',
               marginBottom: 6,
@@ -481,14 +481,14 @@ export const BudgetPage = () => {
           <div
             className="num"
             style={{
-              fontSize: 24,
+              fontSize: 'var(--fs-h2)',
               fontWeight: 'var(--fw-heavy)',
-              letterSpacing: '-0.02em',
+              letterSpacing: 'var(--tracking-tight)',
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-primary)',
             }}
           >
             {overList.length}
-            <span style={{ fontSize: 13, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
+            <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
               카테고리
             </span>
           </div>
@@ -506,7 +506,7 @@ export const BudgetPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              fontSize: 11.5,
+              fontSize: 'var(--fs-caption)',
               color: 'var(--fg-income)',
               fontWeight: 'var(--fw-semi)',
               marginBottom: 6,
@@ -514,9 +514,9 @@ export const BudgetPage = () => {
           >
             <CheckCircle2 size={13} /> 여유
           </div>
-          <div className="num" style={{ fontSize: 24, fontWeight: 'var(--fw-heavy)', letterSpacing: '-0.02em' }}>
+          <div className="num" style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>
             {healthyList.length}
-            <span style={{ fontSize: 13, fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
+            <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
               카테고리
             </span>
           </div>
@@ -539,17 +539,17 @@ export const BudgetPage = () => {
     return (
       <Card style={{ padding: 22 }}>
         <CardHeader style={{ marginBottom: 16 }}>
-          <CardTitle style={{ fontSize: 15 }}>최근 6개월 예산 이행률</CardTitle>
-          <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>최근 6개월 예산 이행률</CardTitle>
+          <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
             한도 대비 지출 %
           </span>
         </CardHeader>
         {complianceQ.isLoading ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
             불러오는 중…
           </div>
         ) : data.length === 0 ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
             아직 이행률 데이터가 없어요
           </div>
         ) : (
@@ -589,7 +589,7 @@ export const BudgetPage = () => {
                   dataKey="percent"
                   position="top"
                   formatter={(v: unknown) => `${Math.round(Number(v ?? 0))}%`}
-                  style={{ fontSize: 11, fontWeight: 'var(--fw-bold)', fill: 'var(--fg-primary)' }}
+                  style={{ fontSize: 'var(--fs-micro)', fontWeight: 'var(--fw-bold)', fill: 'var(--fg-primary)' }}
                 />
               </Bar>
             </BarChart>
@@ -602,17 +602,17 @@ export const BudgetPage = () => {
   const ListCard = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>카테고리별 예산</CardTitle>
-        <span style={{ marginLeft: 8, fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리별 예산</CardTitle>
+        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
           {categoryBudgets.length}개 설정됨
         </span>
       </CardHeader>
       {isLoading ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
           불러오는 중…
         </div>
       ) : categoryBudgets.length === 0 ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 13 }}>
+        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
           <div>카테고리별 예산이 없어요</div>
           <Button
             type="button"
@@ -656,8 +656,8 @@ export const BudgetPage = () => {
                     <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 'var(--fw-semi)' }}>{name}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{name}</div>
+                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
                         ? <>한도 <MaskAmount mask="••••">{KRW(spent - limit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>
                         : <>남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limit - spent))}</MaskAmount><HideUnit>원</HideUnit></>}
@@ -666,14 +666,14 @@ export const BudgetPage = () => {
                   <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
                     <div
                       style={{
-                        fontSize: 14,
+                        fontSize: 'var(--fs-body)',
                         fontWeight: 'var(--fw-bold)',
                         color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                       }}
                     >
                       <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+                    <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
                       / <MaskAmount mask="••••">{KRW(limit)}</MaskAmount>
                     </div>
                   </div>

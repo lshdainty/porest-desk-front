@@ -170,7 +170,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             background: 'color-mix(in oklch, var(--fg-brand) 12%, transparent)',
             color: 'var(--fg-brand)',
             borderRadius: 'var(--radius-pill)',
-            fontSize: 11.5,
+            fontSize: 'var(--fs-caption)',
             fontWeight: 'var(--fw-bold)',
           }}
         >
@@ -187,7 +187,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             background: 'color-mix(in oklch, var(--fg-expense) 12%, transparent)',
             color: 'var(--fg-expense)',
             borderRadius: 'var(--radius-pill)',
-            fontSize: 11.5,
+            fontSize: 'var(--fs-caption)',
             fontWeight: 'var(--fw-bold)',
           }}
         >
@@ -210,7 +210,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
 
   return (
     <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 13, color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 1.55 }}>
+      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
         하나의 결제를 카테고리·항목별로 나누어 기록합니다. 예: 마트에서 식품과 생활품을 함께 결제한 경우.
       </p>
 
@@ -228,18 +228,18 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
         }}
       >
         <div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>원 거래</div>
-          <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 14 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>원 거래</div>
+          <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)' }}>
             {expense.merchant || expense.description || '거래'}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>총액</div>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>총액</div>
           <div
             className="num"
             style={{
               fontWeight: 'var(--fw-heavy)',
-              fontSize: 17,
+              fontSize: 'var(--fs-h4)',
               color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)',
             }}
           >
@@ -275,7 +275,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 'var(--fw-bold)',
-                fontSize: 12,
+                fontSize: 'var(--fs-caption)',
               }}
             >
               {idx + 1}
@@ -326,7 +326,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                   right: 10,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  fontSize: 12,
+                  fontSize: 'var(--fs-caption)',
                   color: 'var(--fg-tertiary)',
                   pointerEvents: 'none',
                 }}
@@ -370,7 +370,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
 
       {/* 분할 비율 */}
       <div style={{ marginTop: 4 }}>
-        <div style={{ fontSize: 12, fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 6 }}>
           분할 비율
         </div>
         <div
@@ -397,7 +397,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
           {ratioSegments.map((seg, i) => (
-            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5 }}>
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 'var(--fs-caption)' }}>
               <span
                 aria-hidden
                 style={{

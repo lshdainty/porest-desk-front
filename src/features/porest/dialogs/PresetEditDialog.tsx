@@ -155,7 +155,7 @@ export function PresetEditDialog({
                 color: active ? color : 'var(--fg-secondary)',
                 border: 0,
                 padding: '8px 0',
-                fontSize: 13,
+                fontSize: 'var(--fs-body-sm)',
                 fontWeight: 'var(--fw-bold)',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
@@ -260,8 +260,8 @@ export function PresetEditDialog({
             style={{ width: 16, height: 16, accentColor: 'var(--fg-brand-strong)' }}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>고정 금액 사용</div>
-            <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>고정 금액 사용</div>
+            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               꺼두면 불러올 때 금액이 비어있어요. 매번 다른 금액일 때 편해요.
             </div>
           </div>
@@ -278,7 +278,7 @@ export function PresetEditDialog({
                 value={amount}
                 onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="0"
-                style={{ paddingRight: 36, textAlign: 'right', fontSize: 15, fontWeight: 'var(--fw-bold)' }}
+                style={{ paddingRight: 36, textAlign: 'right', fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}
                 inputMode="numeric"
               />
               <span
@@ -287,7 +287,7 @@ export function PresetEditDialog({
                   right: 12,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  fontSize: 13,
+                  fontSize: 'var(--fs-body-sm)',
                   color: 'var(--fg-tertiary)',
                   fontWeight: 'var(--fw-bold)',
                   pointerEvents: 'none',

@@ -196,7 +196,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           </div>
           <div
             style={{
-              fontSize: 13,
+              fontSize: 'var(--fs-body-sm)',
               color: 'var(--fg-secondary)',
               fontWeight: 'var(--fw-medium)',
               marginBottom: 4,
@@ -207,9 +207,9 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           <div
             className="num"
             style={{
-              fontSize: 34,
+              fontSize: 'var(--fs-display-md)',
               fontWeight: 'var(--fw-heavy)',
-              letterSpacing: '-0.03em',
+              letterSpacing: 'var(--tracking-tight)',
               color: amountColor,
             }}
           >
@@ -218,11 +218,11 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               {KRW(expense.amount, { abs: true })}
             </MaskAmount>
             <HideUnit>
-              <span style={{ fontSize: 18, marginLeft: 2 }}>원</span>
+              <span style={{ fontSize: 'var(--fs-h4)', marginLeft: 2 }}>원</span>
             </HideUnit>
           </div>
           {(day || time) && (
-            <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
               {day}
               {time && ` · ${time}`}
             </div>
@@ -340,10 +340,10 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         {merchantKey && history.length > 0 && (
           <div style={{ marginTop: 22 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8 }}>
-              <h4 style={{ fontSize: 13, fontWeight: 'var(--fw-bold)', margin: 0 }}>
+              <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
                 {merchantKey}에서의 이전 거래
               </h4>
-              <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+              <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
                 이번 달{' '}
                 <b className="num" style={{ color: 'var(--fg-secondary)' }}>
                   {merchantMonthCount}회 · <MaskAmount>{KRW(merchantMonthTotal)}</MaskAmount>
@@ -400,7 +400,7 @@ function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
         alignItems: 'center',
         padding: '14px 16px',
         background: 'var(--bg-surface)',
-        fontSize: 13,
+        fontSize: 'var(--fs-body-sm)',
         gap: 12,
       }}
     >
@@ -445,7 +445,7 @@ function QuickBtn({
       disabled={!onClick}
     >
       <Icon size={18} strokeWidth={1.9} />
-      <span style={{ fontSize: 11.5, color: 'var(--fg-secondary)', fontWeight: 'var(--fw-semi)' }}>
+      <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', fontWeight: 'var(--fw-semi)' }}>
         {label}
       </span>
       {badge && (
@@ -454,7 +454,7 @@ function QuickBtn({
             position: 'absolute',
             top: 6,
             right: 6,
-            fontSize: 10,
+            fontSize: 'var(--fs-micro)',
             fontWeight: 'var(--fw-bold)',
             padding: '2px 6px',
             borderRadius: 'var(--radius-pill)',

@@ -19,17 +19,17 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       <Card style={{ padding: 22 }}>
         <CardHeader>
-          <CardTitle style={{ fontSize: 15 }}>예산 알림 임계값</CardTitle>
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--fg-tertiary)' }}>
+          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산 알림 임계값</CardTitle>
+          <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
             현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
           </span>
         </CardHeader>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 'var(--fs-caption)',
             color: 'var(--fg-secondary)',
             marginBottom: 12,
-            lineHeight: 1.5,
+            lineHeight: 'var(--lh-normal)',
           }}
         >
           예산 사용률이 이 값을 넘으면 <strong>경고</strong> 상태로 표시되고 알림을 받습니다.
@@ -51,7 +51,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           />
           <span
             className="num"
-            style={{ fontSize: 14, fontWeight: 'var(--fw-bold)', minWidth: 44, textAlign: 'right' }}
+            style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', minWidth: 44, textAlign: 'right' }}
           >
             {warnThreshold}%
           </span>
@@ -60,7 +60,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            fontSize: 10.5,
+            fontSize: 'var(--fs-micro)',
             color: 'var(--fg-tertiary)',
             padding: '0 2px',
           }}
@@ -73,7 +73,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <span>100</span>
         </div>
         {updateMut.isError && (
-          <div style={{ fontSize: 11.5, color: 'var(--fg-expense)', marginTop: 6 }}>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
             저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
           </div>
         )}
