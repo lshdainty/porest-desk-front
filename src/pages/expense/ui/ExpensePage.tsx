@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
@@ -181,13 +181,21 @@ function ExpenseList({
   mobile,
   isLoading,
   onItemClick,
+  focusTxId,
 }: {
   expenses: Expense[]
   mobile: boolean
   isLoading: boolean
   onItemClick?: (expense: Expense) => void
+  focusTxId?: number | null
 }) {
   const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
+  const focusRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (focusTxId && focusRef.current) {
+      focusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [focusTxId, expenses.length])
 
   if (isLoading) {
     return (
@@ -232,13 +240,22 @@ function ExpenseList({
               </span>
             </div>
             <div>
-              {items.map(e => (
-                <ExpenseRow
-                  key={e.rowId}
-                  expense={e}
-                  onClick={onItemClick}
-                />
-              ))}
+              {items.map(e => {
+                const isFocus = focusTxId === e.rowId
+                return (
+                  <div
+                    key={e.rowId}
+                    ref={isFocus ? focusRef : undefined}
+                    style={isFocus ? {
+                      background: 'var(--bg-brand-subtle)',
+                      borderRadius: 12,
+                      transition: 'background 0.4s',
+                    } : undefined}
+                  >
+                    <ExpenseRow expense={e} onClick={onItemClick} />
+                  </div>
+                )
+              })}
             </div>
           </div>
         )
@@ -415,10 +432,12 @@ function EditableList({
   expenses,
   isLoading,
   mobile,
+  focusTxId,
 }: {
   expenses: Expense[]
   isLoading: boolean
   mobile: boolean
+  focusTxId?: number | null
 }) {
   // detail: 상세 보기, editing: 편집 폼
   const [detail, setDetail] = useState<Expense | null>(null)
@@ -431,6 +450,7 @@ function EditableList({
         mobile={mobile}
         isLoading={isLoading}
         onItemClick={(e) => setDetail(e)}
+        focusTxId={focusTxId}
       />
       {detail && !editing && (
         <TxDetailDialog
@@ -455,8 +475,11 @@ function EditableList({
 }
 
 function ExpenseDesktop() {
+  const [searchParams] = useSearchParams()
+  const initialMonth = searchParams.get('month') || currentMonthKey()
+  const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
-  const [month, setMonth] = useState<string>(currentMonthKey())
+  const [month, setMonth] = useState<string>(initialMonth)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -503,6 +526,7 @@ function ExpenseDesktop() {
         expenses={expenses}
         isLoading={isLoadingList}
         mobile={false}
+        focusTxId={focusTxId}
       />
       {filterOpen && (
         <FilterDialog
@@ -522,8 +546,11 @@ function ExpenseDesktop() {
 }
 
 function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
+  const [searchParams] = useSearchParams()
+  const initialMonth = searchParams.get('month') || currentMonthKey()
+  const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
-  const [month, setMonth] = useState<string>(currentMonthKey())
+  const [month, setMonth] = useState<string>(initialMonth)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -620,6 +647,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         expenses={expenses}
         isLoading={isLoadingList}
         mobile
+        focusTxId={focusTxId}
       />
       {filterOpen && (
         <FilterDialog

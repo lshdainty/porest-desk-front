@@ -234,8 +234,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 1,
-            background: 'var(--border-subtle)',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 12,
             overflow: 'hidden',

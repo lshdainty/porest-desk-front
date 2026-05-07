@@ -219,8 +219,13 @@ function HomeDesktop() {
   const expense = monthly?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
   const balance = income - expense
 
+  const todayDStr = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
   const recentTx: Expense[] = (recentQ.data ?? [])
     .slice()
+    .filter(t => !t.expenseDate || t.expenseDate.slice(0, 10) <= todayDStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
     .slice(0, 6)
 
@@ -431,7 +436,18 @@ function HomeDesktop() {
               </div>
             )}
             {recentTx.map(t => (
-              <ExpenseRow key={t.rowId} expense={t} onClick={() => navigate('/desk/expense')} />
+              <ExpenseRow
+                key={t.rowId}
+                expense={t}
+                onClick={() => {
+                  const m = t.expenseDate?.slice(0, 7) ?? ''
+                  const params = new URLSearchParams()
+                  if (m) params.set('month', m)
+                  params.set('txId', String(t.rowId))
+                  navigate(`/desk/expense?${params.toString()}`)
+                }}
+                showDate
+              />
             ))}
           </div>
         </Card>
@@ -703,8 +719,13 @@ function HomeMobile() {
   const income = monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
   const expense = monthlyQ.data?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
 
+  const todayStr = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
   const recentTx: Expense[] = (recentQ.data ?? [])
     .slice()
+    .filter(t => !t.expenseDate || t.expenseDate.slice(0, 10) <= todayStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
     .slice(0, 4)
 
@@ -837,7 +858,18 @@ function HomeMobile() {
         </CardHeader>
         <div>
           {recentTx.map(t => (
-            <ExpenseRow key={t.rowId} expense={t} onClick={() => navigate('/desk/expense')} />
+            <ExpenseRow
+              key={t.rowId}
+              expense={t}
+              onClick={() => {
+                const m = t.expenseDate?.slice(0, 7) ?? ''
+                const params = new URLSearchParams()
+                if (m) params.set('month', m)
+                params.set('txId', String(t.rowId))
+                navigate(`/desk/expense?${params.toString()}`)
+              }}
+              showDate
+            />
           ))}
           {recentTx.length === 0 && (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 12 }}>

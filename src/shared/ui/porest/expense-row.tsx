@@ -16,6 +16,18 @@ function formatExpenseTimeLabel(raw: string): string | null {
   return null
 }
 
+/**
+ * "M월 D일 (요일)" — 홈 최근 거래처럼 day-head 가 없는 컨텍스트에서 사용.
+ */
+const DOW = ['일', '월', '화', '수', '목', '금', '토']
+function formatExpenseDateFull(raw: string): string {
+  const day = raw.slice(0, 10)
+  if (day.length !== 10) return day
+  const [, m, d] = day.split('-').map(Number)
+  const dow = DOW[new Date(`${day}T00:00:00`).getDay()]
+  return `${m}월 ${d}일 (${dow})`
+}
+
 export function CategoryChip({
   color,
   icon,
@@ -54,10 +66,13 @@ export function ExpenseRow({
   expense,
   onClick,
   right,
+  showDate,
 }: {
   expense: Expense
   onClick?: (e: Expense) => void
   right?: ReactNode
+  /** true 면 day-head 가 없는 컨텍스트(홈 최근거래 등)에서 시각 대신 "M월 D일 (요일)" 표시 */
+  showDate?: boolean
 }) {
   const isIncome = expense.expenseType === 'INCOME'
   return (
@@ -79,12 +94,19 @@ export function ExpenseRow({
               <span>{expense.assetName}</span>
             </>
           )}
-          {expense.expenseDate && formatExpenseTimeLabel(expense.expenseDate) && (
-            <>
-              <span style={TX_ROW.sepStyle} />
-              <span>{formatExpenseTimeLabel(expense.expenseDate)}</span>
-            </>
-          )}
+          {expense.expenseDate && (showDate
+            ? (
+              <>
+                <span style={TX_ROW.sepStyle} />
+                <span>{formatExpenseDateFull(expense.expenseDate)}</span>
+              </>
+            )
+            : formatExpenseTimeLabel(expense.expenseDate) && (
+              <>
+                <span style={TX_ROW.sepStyle} />
+                <span>{formatExpenseTimeLabel(expense.expenseDate)}</span>
+              </>
+            ))}
         </div>
       </div>
       <div>

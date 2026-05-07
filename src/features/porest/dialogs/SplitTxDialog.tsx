@@ -292,7 +292,13 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
               value={r.categoryRowId ? String(r.categoryRowId) : ''}
               onValueChange={val => updateRow(r.uid, { categoryRowId: Number(val) })}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                style={{
+                  background: 'var(--bg-surface)',
+                  height: 36,
+                  minHeight: 36,
+                }}
+              >
                 <SelectValue placeholder="카테고리" />
               </SelectTrigger>
               <SelectContent>
