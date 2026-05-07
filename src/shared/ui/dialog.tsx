@@ -87,14 +87,14 @@ const DialogContent = React.forwardRef<
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-// .modal__head — padding 18 22 + flex + border-bottom + flex-shrink-0
+// .modal__head — padding 18 22 + flex + flex-shrink-0
 const DialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex shrink-0 items-center gap-3 px-[22px] py-[18px] border-b border-[var(--border-subtle)]",
+      "flex shrink-0 items-center gap-3 px-[22px] py-[18px]",
       className
     )}
     {...props}
