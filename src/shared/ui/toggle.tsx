@@ -30,6 +30,12 @@ const toggleVariants = cva(
         lg: "h-11 px-5 min-w-11",
       },
     },
+    compoundVariants: [
+      // segmented 변형은 size.default 의 h-10 (40px) 을 무력화 — padding 으로 높이 결정
+      { variant: "segmented", size: "default", class: "h-7 min-w-0 px-3" },
+      { variant: "segmented", size: "sm", class: "h-7 min-w-0 px-3" },
+      { variant: "segmented", size: "lg", class: "h-8 min-w-0 px-3" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
