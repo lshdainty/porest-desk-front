@@ -6,54 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select"
 import { CalendarIcon } from "lucide-react"
 import * as React from "react"
-import type { DropdownProps } from "react-day-picker"
-
-/**
- * react-day-picker 의 month/year 네이티브 select 를 shadcn Select 로 교체.
- * 시맨틱 토큰(brand) 적용된 컴포넌트로 일관성 확보.
- */
-function CalendarDropdown({ value, options = [], onChange }: DropdownProps) {
-  const handleValueChange = (next: string) => {
-    if (!onChange) return
-    const event = {
-      target: { value: next },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>
-    onChange(event)
-  }
-  const current = options.find(o => o.value === Number(value))
-  return (
-    <Select value={String(value)} onValueChange={handleValueChange}>
-      <SelectTrigger
-        className="h-8 px-2 py-0 gap-1 text-sm font-medium border-0 bg-transparent shadow-none focus:ring-0 focus:ring-offset-0 hover:bg-[var(--bg-muted)]"
-      >
-        <SelectValue>{current?.label ?? String(value)}</SelectValue>
-      </SelectTrigger>
-      <SelectContent
-        className="max-h-[260px]"
-        style={{ background: 'var(--bg-surface)' } as React.CSSProperties}
-      >
-        {options.map(opt => (
-          <SelectItem
-            key={opt.value}
-            value={String(opt.value)}
-            disabled={opt.disabled}
-          >
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
 
 function formatDate(date: Date | undefined) {
   if (!date) return ""
@@ -190,7 +144,13 @@ export function InputDatePicker({
             onSelect={handleDateSelect}
             startMonth={startMonth}
             endMonth={endMonth}
-            components={{ Dropdown: CalendarDropdown }}
+            classNames={{
+              // 월/년 dropdown 을 SelectTrigger 와 동일한 스타일로 (border + shadow + 패딩)
+              dropdown_root:
+                "relative flex items-center gap-1 rounded-md border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-xs px-2 h-8 text-sm font-medium has-focus:border-[var(--border-brand)] has-focus:ring-2 has-focus:ring-[var(--border-brand)]/30",
+              caption_label:
+                "flex items-center gap-1 select-none [&>svg]:text-[var(--fg-tertiary)] [&>svg]:size-3.5",
+            }}
           />
         </PopoverContent>
       </Popover>
