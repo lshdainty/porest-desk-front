@@ -167,8 +167,8 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             gap: 4,
             marginRight: 'auto',
             padding: '4px 10px',
-            background: 'color-mix(in oklch, var(--mossy-700) 12%, transparent)',
-            color: 'var(--mossy-700)',
+            background: 'color-mix(in oklch, var(--fg-brand) 12%, transparent)',
+            color: 'var(--fg-brand)',
             borderRadius: 999,
             fontSize: 11.5,
             fontWeight: 700,
@@ -240,7 +240,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             style={{
               fontWeight: 800,
               fontSize: 17,
-              color: isIncome ? 'var(--mossy-700)' : 'var(--fg-primary)',
+              color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)',
             }}
           >
             {isIncome ? '+' : '−'}{KRW(totalAbs)}원

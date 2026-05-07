@@ -129,7 +129,7 @@ function Summary({
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>수입</div>
           <div
             className="num"
-            style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--mossy-700)' }}
+            style={{ fontSize: mobile ? 16 : 18, fontWeight: 700, color: 'var(--fg-brand)' }}
           >
             {isLoading ? '—' : <MaskAmount>+{KRW(monthIn)}</MaskAmount>}
           </div>
@@ -611,7 +611,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 height: 16,
                 padding: '0 4px',
                 borderRadius: 999,
-                background: 'var(--mossy-600)',
+                background: 'var(--bg-brand-hover)',
                 color: '#fff',
                 fontSize: 10,
                 fontWeight: 700,

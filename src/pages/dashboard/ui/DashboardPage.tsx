@@ -32,7 +32,7 @@ import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 
 const barChartConfig = {
-  income:  { label: '수입', color: 'var(--mossy-500)' },
+  income:  { label: '수입', color: 'var(--bg-brand)' },
   expense: { label: '지출', color: 'var(--berry-500)' },
 } satisfies ChartConfig
 
@@ -66,7 +66,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         {label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--mossy-500)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--bg-brand)' }} />
         <span style={{ fontSize: 11, color: 'var(--fg-secondary)' }}>수입</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700 }}>
           <MaskAmount>{KRW(income)}</MaskAmount>
@@ -90,7 +90,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
           className="num"
           style={{
             marginLeft: 'auto', fontSize: 12, fontWeight: 700,
-            color: saving >= 0 ? 'var(--mossy-700)' : 'var(--berry-600)',
+            color: saving >= 0 ? 'var(--fg-brand)' : 'var(--berry-600)',
           }}
         >
           <MaskAmount>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}</MaskAmount>
@@ -131,7 +131,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
           tick={{ fontSize: 10, fill: 'var(--fg-tertiary)' }}
           width={48}
         />
-        <ChartTooltip cursor={{ fill: 'var(--mossy-500)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
+        <ChartTooltip cursor={{ fill: 'var(--bg-brand)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
         <Bar dataKey="income"  fill="var(--color-income)"  radius={4} barSize={28} />
         <Bar dataKey="expense" fill="var(--color-expense)" radius={4} barSize={28} />
       </RcBarChart>
@@ -237,7 +237,7 @@ function HomeDesktop() {
       .slice(0, 6)
     return items.map((c, i) => ({
       value: c.totalAmount,
-      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--mossy-500)',
+      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
       label: c.categoryName,
     }))
   }, [monthly])
@@ -386,7 +386,7 @@ function HomeDesktop() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 4 }}>수입</div>
-              <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--mossy-700)', letterSpacing: '-0.02em' }}>
+              <div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--fg-brand)', letterSpacing: '-0.02em' }}>
                 {monthlyQ.isLoading
                   ? '—'
                   : <><MaskAmount>+{KRW(income)}</MaskAmount><HideUnit>원</HideUnit></>}
@@ -619,7 +619,7 @@ function HomeDesktop() {
                     background:
                       td.priority === 'HIGH' ? 'var(--berry-500)'
                       : td.priority === 'MEDIUM' ? 'var(--sunlit-500)'
-                      : 'var(--mossy-500)',
+                      : 'var(--bg-brand)',
                   }}
                 />
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-primary)', flex: 1 }}>
@@ -831,12 +831,12 @@ function HomeMobile() {
       <Card style={{ padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.015em' }}>{month}월 가계부</div>
-          <TrendingUp size={14} style={{ marginLeft: 'auto', color: 'var(--mossy-700)' }} />
+          <TrendingUp size={14} style={{ marginLeft: 'auto', color: 'var(--fg-brand)' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', fontWeight: 500, marginBottom: 2 }}>수입</div>
-            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--mossy-700)' }}>
+            <div className="num" style={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-brand)' }}>
               <MaskAmount>+{KRW(income)}</MaskAmount>
             </div>
           </div>

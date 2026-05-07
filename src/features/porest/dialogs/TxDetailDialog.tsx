@@ -155,7 +155,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   )
 
   const title = isIncome ? '수입 상세' : '지출 상세'
-  const amountColor = isIncome ? 'var(--mossy-700)' : 'var(--fg-primary)'
+  const amountColor = isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)'
   const displayMerchant = expense.merchant ?? expense.description ?? category?.categoryName ?? '거래'
 
   return (
