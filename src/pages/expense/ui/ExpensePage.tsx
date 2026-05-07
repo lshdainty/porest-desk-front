@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
-import { Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
-import { MonthPicker } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
@@ -120,8 +119,9 @@ function Summary({
         <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em' }}>
           {y}년 {Number(m)}월
         </div>
-        <div style={{ marginLeft: 'auto' }}>
-          <MonthPicker value={month} onChange={onMonthChange} />
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
+          <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
@@ -639,3 +639,47 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 }
 
 export default ExpensePage
+
+/**
+ * 월 ± 1 이동 화살표 버튼.
+ * 멀리 떨어진 월 선택은 상세 필터에서 처리. 여기서는 단순 prev/next.
+ */
+function MonthArrowButton({
+  dir,
+  month,
+  onChange,
+}: {
+  dir: 'prev' | 'next'
+  month: string
+  onChange: (m: string) => void
+}) {
+  const handle = () => {
+    const [yStr, mStr] = month.split('-')
+    let y = Number(yStr)
+    let m = Number(mStr) + (dir === 'prev' ? -1 : 1)
+    if (m < 1) { y -= 1; m = 12 }
+    if (m > 12) { y += 1; m = 1 }
+    onChange(`${y}-${String(m).padStart(2, '0')}`)
+  }
+  return (
+    <button
+      type="button"
+      aria-label={dir === 'prev' ? '이전 달' : '다음 달'}
+      onClick={handle}
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        border: '1px solid var(--border-subtle)',
+        background: 'transparent',
+        color: 'var(--fg-secondary)',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {dir === 'prev' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+    </button>
+  )
+}
