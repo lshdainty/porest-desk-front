@@ -1417,11 +1417,13 @@ export const StatsPage = () => {
   void totalIncome
 
   if (mobile) {
-    // 탭은 화면 가로 전체에 그려지도록 padding 밖으로 빼고, content 만 16px padding
+    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭)
     return (
-      <div style={{ paddingTop: 4, paddingBottom: 24 }}>
-        {StatsTabs}
-        <div style={{ padding: '0 16px' }}>{Content}</div>
+      <div style={{ paddingBottom: 24 }}>
+        <div style={{ background: 'var(--bg-surface)' }}>
+          {StatsTabs}
+        </div>
+        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
       </div>
     )
   }
