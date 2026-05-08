@@ -223,11 +223,29 @@ function HomeDesktop() {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })()
-  const recentTx: Expense[] = (recentQ.data ?? [])
+  // 오늘 쓴 거래만
+  const todayTx: Expense[] = (recentQ.data ?? [])
     .slice()
-    .filter(t => !t.expenseDate || t.expenseDate.slice(0, 10) <= todayDStr)
+    .filter(t => t.expenseDate?.slice(0, 10) === todayDStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-    .slice(0, 6)
+  const todayTotal = todayTx
+    .filter(t => t.expenseType === 'EXPENSE')
+    .reduce((s, t) => s + t.amount, 0)
+
+  // 일평균 + 전월 대비 — 가계부 카드 요약 라인용
+  const _today = new Date()
+  const _isCurMonth = _today.getFullYear() === periodY && _today.getMonth() + 1 === periodM
+  const _daysInMonth = new Date(periodY, periodM, 0).getDate()
+  const _dayOfMonth = _isCurMonth ? _today.getDate() : _daysInMonth
+  const dailyAvg = Math.round(expense / Math.max(1, _dayOfMonth))
+  const trendArr = trendQ.data ?? []
+  const prevExpense = (() => {
+    if (trendArr.length < 2) return 0
+    const idx = trendArr.findIndex(t => t.year === periodY && t.month === periodM)
+    if (idx > 0) return trendArr[idx - 1]?.totalExpense ?? 0
+    return trendArr[trendArr.length - 2]?.totalExpense ?? 0
+  })()
+  const savingsPct = prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0
 
   const donutSegs = useMemo(() => {
     const items = (monthly?.categoryBreakdown ?? [])
@@ -419,23 +437,58 @@ function HomeDesktop() {
               {trendQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
             </div>
           )}
+          <div style={{
+            marginTop: 16,
+            paddingTop: 14,
+            borderTop: '1px solid var(--border-subtle)',
+            fontSize: 'var(--fs-body-sm)',
+            color: 'var(--fg-secondary)',
+            lineHeight: 'var(--lh-normal)',
+          }}>
+            하루 평균{' '}
+            <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-bold)' }}>
+              <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
+            </span>
+            <HideUnit>원</HideUnit>
+            {' 썼어요.'}
+            {prevExpense > 0 && (
+              <>
+                {' 전월 대비 '}
+                <span style={{
+                  color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
+                  fontWeight: 'var(--fw-bold)',
+                }}>
+                  {Math.abs(savingsPct).toFixed(0)}%
+                </span>
+                {savingsPct > 0 ? ' 절약 중이에요.' : savingsPct < 0 ? ' 더 썼어요.' : ' 동일해요.'}
+              </>
+            )}
+          </div>
         </Card>
 
         <Card style={{ padding: 24 }}>
           <CardHeader>
-            <CardTitle>최근 거래</CardTitle>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+              <CardTitle>오늘 쓴 돈</CardTitle>
+              {todayTotal > 0 && (
+                <span className="num" style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-expense)', fontWeight: 'var(--fw-bold)' }}>
+                  <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
+                  <HideUnit>원</HideUnit>
+                </span>
+              )}
+            </div>
             <button className="all" onClick={() => navigate('/desk/expense')}>
               전체 보기 <ChevronRight size={14} />
             </button>
           </CardHeader>
           <div>
             {recentQ.isLoading && <Skeleton height={60} />}
-            {!recentQ.isLoading && recentTx.length === 0 && (
+            {!recentQ.isLoading && todayTx.length === 0 && (
               <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-                아직 거래가 없어요
+                오늘은 아직 쓴 돈이 없어요
               </div>
             )}
-            {recentTx.map(t => (
+            {todayTx.map(t => (
               <ExpenseRow
                 key={t.rowId}
                 expense={t}
@@ -446,7 +499,6 @@ function HomeDesktop() {
                   params.set('txId', String(t.rowId))
                   navigate(`/desk/expense?${params.toString()}`)
                 }}
-                showDate
               />
             ))}
           </div>
@@ -701,16 +753,30 @@ function HomeMobile() {
     if (hidden) setUnlockOpen(true)
     else enablePdHideAmounts()
   }
-  const { year, month } = useCurrentMonthKey()
+  const { key: initialKey } = useCurrentMonthKey()
+  const [period, setPeriod] = useState(initialKey)
+  const [year, month] = period.split('-').map(Number) as [number, number]
 
-  const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary(year, month)
   const pad2m = (n: number) => String(n).padStart(2, '0')
   const monthStartM = `${year}-${pad2m(month)}-01`
   const monthEndDayM = new Date(year, month, 0).getDate()
   const monthEndM = `${year}-${pad2m(month)}-${pad2m(monthEndDayM)}`
+
+  // 전월 — '전월 대비 N% 절약 중이에요' 계산용
+  const prevDate = new Date(year, month - 2, 1)
+  const prevY = prevDate.getFullYear()
+  const prevM = prevDate.getMonth() + 1
+  const prevStart = `${prevY}-${pad2m(prevM)}-01`
+  const prevEndDay = new Date(prevY, prevM, 0).getDate()
+  const prevEnd = `${prevY}-${pad2m(prevM)}-${pad2m(prevEndDay)}`
+
+  const dashboardQ = useDashboardSummary()
+  const assetSummaryQ = useAssetSummary(year, month)
   const monthlyQ = useRangeSummary(monthStartM, monthEndM)
-  const recentQ = useExpenses()
+  const prevMonthlyQ = useRangeSummary(prevStart, prevEnd)
+  const recentQ = useExpenses({ startDate: monthStartM, endDate: monthEndM })
+  const budgetsQ = useExpenseBudgets({ year, month })
+  const categoriesQ = useExpenseCategories()
 
   const summary = dashboardQ.data
   const assetSummary = assetSummaryQ.data
@@ -722,16 +788,73 @@ function HomeMobile() {
   const isUp = changeAmount >= 0
   const income = monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
   const expense = monthlyQ.data?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
+  const prevExpense = prevMonthlyQ.data?.totalExpense ?? 0
 
-  const todayStr = (() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  })()
-  const recentTx: Expense[] = (recentQ.data ?? [])
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${pad2m(today.getMonth() + 1)}-${pad2m(today.getDate())}`
+  const isCurMonth = today.getFullYear() === year && today.getMonth() + 1 === month
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const dayOfMonth = isCurMonth ? today.getDate() : daysInMonth
+  const dailyAvg = Math.round(expense / Math.max(1, dayOfMonth))
+  const savingsPct = prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0
+
+  // 오늘 쓴 거래만
+  const todayTx: Expense[] = (recentQ.data ?? [])
     .slice()
-    .filter(t => !t.expenseDate || t.expenseDate.slice(0, 10) <= todayStr)
+    .filter(t => t.expenseDate?.slice(0, 10) === todayStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-    .slice(0, 4)
+  const todayTotal = todayTx
+    .filter(t => t.expenseType === 'EXPENSE')
+    .reduce((s, t) => s + t.amount, 0)
+
+  // 도넛 — top-level 카테고리만, 상위 4개
+  const donutSegs = useMemo(() => {
+    const items = (monthlyQ.data?.categoryBreakdown ?? [])
+      .filter(c => c.expenseType === 'EXPENSE' && c.parentCategoryRowId == null)
+      .slice()
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 4)
+    return items.map((c, i) => ({
+      value: c.totalAmount,
+      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
+      label: c.categoryName,
+    }))
+  }, [monthlyQ.data])
+  const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
+
+  // 예산 — 상위 3건
+  const budgetItems = useMemo(() => {
+    const budgets = budgetsQ.data ?? []
+    const cats = categoriesQ.data ?? []
+    const catMap = new Map<number, (typeof cats)[number]>()
+    for (const c of cats) catMap.set(c.rowId, c)
+
+    const spentByCat = new Map<number, number>()
+    for (const c of monthlyQ.data?.categoryBreakdown ?? []) {
+      if (c.expenseType !== 'EXPENSE' || c.categoryRowId == null) continue
+      spentByCat.set(c.categoryRowId, (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount)
+      if (c.parentCategoryRowId != null) {
+        spentByCat.set(c.parentCategoryRowId, (spentByCat.get(c.parentCategoryRowId) ?? 0) + c.totalAmount)
+      }
+    }
+    const totalEx = monthlyQ.data?.totalExpense ?? 0
+    return budgets.slice(0, 3).map(b => {
+      const spent = b.categoryRowId == null ? totalEx : spentByCat.get(b.categoryRowId) ?? 0
+      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
+      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
+      return {
+        rowId: b.rowId,
+        categoryName: cat?.categoryName ?? b.categoryName ?? '전체',
+        icon: cat?.icon ?? 'tag',
+        color: cat?.color,
+        budgetAmount: b.budgetAmount,
+        spent,
+        pct,
+        state,
+      }
+    })
+  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data])
 
   const quick: { label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string }[] = [
     { label: '자산', icon: Wallet, path: '/desk/asset' },
@@ -835,7 +958,9 @@ function HomeMobile() {
       <Card style={{ padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{month}월 가계부</div>
-          <TrendingUp size={14} style={{ marginLeft: 'auto', color: 'var(--fg-brand)' }} />
+          <div style={{ marginLeft: 'auto' }}>
+            <MonthPicker value={period} onChange={setPeriod} />
+          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
@@ -851,17 +976,132 @@ function HomeMobile() {
             </div>
           </div>
         </div>
+        <div style={{
+          marginTop: 14,
+          paddingTop: 14,
+          borderTop: '1px solid var(--border-subtle)',
+          fontSize: 'var(--fs-caption)',
+          color: 'var(--fg-secondary)',
+          lineHeight: 'var(--lh-normal)',
+        }}>
+          하루 평균{' '}
+          <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-bold)' }}>
+            <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
+          </span>
+          <HideUnit>원</HideUnit>
+          {' 썼어요.'}
+          {prevExpense > 0 && (
+            <>
+              {' 전월 대비 '}
+              <span style={{
+                color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
+                fontWeight: 'var(--fw-bold)',
+              }}>
+                {Math.abs(savingsPct).toFixed(0)}%
+              </span>
+              {savingsPct > 0 ? ' 절약 중이에요.' : savingsPct < 0 ? ' 더 썼어요.' : ' 동일해요.'}
+            </>
+          )}
+        </div>
+      </Card>
+
+      <Card style={{ padding: 18 }}>
+        <CardHeader>
+          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리</CardTitle>
+          <button className="all" onClick={() => navigate('/desk/stats')}>
+            자세히 <ChevronRight size={14} />
+          </button>
+        </CardHeader>
+        {donutSegs.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+            {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없어요'}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Donut segments={donutSegs} size={120} stroke={18}>
+              <div className="lbl" style={{ fontSize: 'var(--fs-micro)' }}>지출</div>
+              <div className="val num" style={{ fontSize: 'var(--fs-body)' }}>
+                <MaskAmount mask="••••">{(donutTotal / 10000).toFixed(0)}만</MaskAmount>
+              </div>
+            </Donut>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {donutSegs.map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: s.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {s.label}
+                  </span>
+                  <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-primary)', fontWeight: 'var(--fw-semi)' }}>
+                    <MaskAmount mask="••••">{(s.value / 10000).toFixed(0)}만</MaskAmount>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Card style={{ padding: 18 }}>
+        <CardHeader>
+          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산</CardTitle>
+          <button className="all" onClick={() => navigate('/desk/budget')}>
+            전체 <ChevronRight size={14} />
+          </button>
+        </CardHeader>
+        {budgetItems.length === 0 ? (
+          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+            {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {budgetItems.map(b => {
+              const palette = getPaletteByColor(b.color)
+              return (
+                <div key={b.rowId}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{
+                      width: 28, height: 28, borderRadius: 'var(--radius-tile)',
+                      background: palette.bg, color: palette.color,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <Icon name={b.icon} size={14} strokeWidth={1.9} />
+                    </span>
+                    <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', flex: 1 }}>{b.categoryName}</span>
+                    <span className="num" style={{
+                      fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)',
+                      color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
+                    }}>
+                      <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}> / {KRW(b.budgetAmount)}</span>
+                    </span>
+                  </div>
+                  <div className="budget-bar" style={{ height: 6 }}>
+                    <div className={`budget-bar__fill ${b.state}`} style={{ width: `${Math.min(100, b.pct)}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </Card>
 
       <UpcomingMobileCard summary={summary} onCalendar={() => navigate('/desk/calendar')} onTodos={() => navigate('/desk/todo')} />
 
       <Card style={{ padding: 18 }}>
         <CardHeader style={{ marginBottom: 6 }}>
-          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>최근 거래</CardTitle>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>오늘 쓴 돈</CardTitle>
+            {todayTotal > 0 && (
+              <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', fontWeight: 'var(--fw-bold)' }}>
+                <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
+                <HideUnit>원</HideUnit>
+              </span>
+            )}
+          </div>
           <button className="all" onClick={() => navigate('/desk/expense')}>전체</button>
         </CardHeader>
         <div>
-          {recentTx.map(t => (
+          {todayTx.map(t => (
             <ExpenseRow
               key={t.rowId}
               expense={t}
@@ -872,12 +1112,11 @@ function HomeMobile() {
                 params.set('txId', String(t.rowId))
                 navigate(`/desk/expense?${params.toString()}`)
               }}
-              showDate
             />
           ))}
-          {recentTx.length === 0 && (
+          {todayTx.length === 0 && (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-              거래가 없어요
+              오늘은 아직 쓴 돈이 없어요
             </div>
           )}
         </div>
