@@ -352,13 +352,19 @@ export const StatsPage = () => {
       onValueChange={(v) => setTab(v as TabKey)}
       style={{ marginBottom: mobile ? 14 : 20 }}
     >
-      <TabsList variant="underline">
+      {/* 모바일에선 탭이 전체 폭을 균등 분할 — 플러터 앱과 매칭 */}
+      <TabsList variant="underline" className={mobile ? 'w-full' : undefined}>
         {([
           { v: 'cat', l: '카테고리' },
           { v: 'trend', l: '추이' },
           { v: 'compare', l: '비교' },
         ] as { v: TabKey; l: string }[]).map(t => (
-          <TabsTrigger key={t.v} value={t.v} variant="underline">
+          <TabsTrigger
+            key={t.v}
+            value={t.v}
+            variant="underline"
+            className={mobile ? 'flex-1' : undefined}
+          >
             {t.l}
           </TabsTrigger>
         ))}
