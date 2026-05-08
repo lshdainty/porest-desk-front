@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { Calendar as CalendarIcon } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { SegPicker } from '@/shared/ui/porest/primitives'
@@ -232,6 +231,7 @@ export const StatsPage = () => {
   const [tab, setTab] = useState<TabKey>('cat')
   const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
   const [activeParentId, setActiveParentId] = useState<number | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   // 기간·탭 변경 시 드릴다운 해제
   useEffect(() => setActiveParentId(null), [period.from, period.to, period.segMode, tab])
@@ -366,28 +366,42 @@ export const StatsPage = () => {
     </Tabs>
   )
 
+  // '사용자 지정' 활성 시 라벨에 실제 기간 표시. 다른 모드면 '사용자 지정' 그대로.
+  const customLabel =
+    period.segMode === 'custom'
+      ? (period.from.getFullYear() === period.to.getFullYear()
+          ? `${period.from.getMonth() + 1}/${period.from.getDate()} ~ ${period.to.getMonth() + 1}/${period.to.getDate()}`
+          : `${fmt(period.from)} ~ ${fmt(period.to)}`)
+      : '사용자 지정'
+
   const PeriodSeg = (
-    <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-      <RangePickerButton
-        value={{ from: period.from, to: period.to }}
-        onChange={(r) => setPeriod({ from: r.from, to: r.to, segMode: 'custom' })}
-      />
+    <div style={{ position: 'relative', display: 'inline-block' }}>
       <SegPicker
         options={[
           { value: 'm', label: '월' },
           { value: 'q', label: '분기' },
           { value: 'y', label: '년' },
-          { value: 'custom', label: '사용자 지정' },
+          { value: 'custom', label: customLabel },
         ]}
         value={period.segMode}
         onChange={(v) => {
           if (v === 'm') setPeriod(monthRangeOf(new Date()))
           else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
           else if (v === 'y') setPeriod(yearRangeOf(new Date()))
-          // 'custom' 클릭 시: 현재 from/to 유지하고 segMode 만 전환 → 사용자가 캘린더로 직접 조정
-          else setPeriod((p) => ({ ...p, segMode: 'custom' }))
+          // 'custom' 클릭: 피커 오픈만 — 확정 시점에 segMode 변경
+          else setPickerOpen(true)
         }}
       />
+      {pickerOpen && (
+        <RangePickerPopover
+          initial={{ from: period.from, to: period.to }}
+          onCancel={() => setPickerOpen(false)}
+          onConfirm={(r) => {
+            setPeriod({ from: r.from, to: r.to, segMode: 'custom' })
+            setPickerOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 
@@ -1404,123 +1418,93 @@ export const StatsPage = () => {
 }
 
 // ───────────────────────────────────────────────────────────
-// RangePickerButton — 캘린더 아이콘 버튼 + popover (react-day-picker mode='range')
+// RangePickerPopover — 트리거 없는 popover (parent 가 open 제어).
+// react-day-picker mode='range' + 적용/취소 버튼.
 // ───────────────────────────────────────────────────────────
-function RangePickerButton({
-  value,
-  onChange,
-  align = 'left',
+function RangePickerPopover({
+  initial,
+  onCancel,
+  onConfirm,
 }: {
-  value: { from: Date; to: Date }
-  onChange: (range: { from: Date; to: Date }) => void
-  align?: 'left' | 'right'
+  initial: { from: Date; to: Date }
+  onCancel: () => void
+  onConfirm: (range: { from: Date; to: Date }) => void
 }) {
-  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(
-    () => ({ from: value.from, to: value.to }),
+    () => ({ from: initial.from, to: initial.to }),
   )
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (!open) return
-    setDraft({ from: value.from, to: value.to })
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) onCancel()
     }
-    document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
-  }, [open, value.from, value.to])
-
-  const labelShort = (d: Date) =>
-    `${d.getFullYear() === new Date().getFullYear() ? '' : `${String(d.getFullYear()).slice(2)}.`}${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+    // mouseup 으로 등록 — 트리거 click 의 mouseup 과 충돌하지 않도록 microtask 후 등록
+    const id = window.setTimeout(() => document.addEventListener('mousedown', onDoc), 0)
+    return () => {
+      window.clearTimeout(id)
+      document.removeEventListener('mousedown', onDoc)
+    }
+  }, [onCancel])
 
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        title={`${fmt(value.from)} ~ ${fmt(value.to)}`}
-        style={{
-          background: 'transparent',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-tile)',
-          padding: '6px 10px',
-          fontSize: 'var(--fs-body-sm)',
-          fontWeight: 'var(--fw-semi)',
-          color: 'var(--fg-secondary)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-        }}
-      >
-        <CalendarIcon size={14} />
-        <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
-          {labelShort(value.from)} ~ {labelShort(value.to)}
-        </span>
-      </button>
-      {open && (
-        <div
+    <div
+      ref={ref}
+      style={{
+        position: 'absolute',
+        top: 'calc(100% + 6px)',
+        right: 0,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-card)',
+        boxShadow: 'var(--shadow-lg)',
+        padding: 12,
+        zIndex: 'var(--z-sticky)',
+      } as React.CSSProperties}
+    >
+      <Calendar
+        mode="range"
+        numberOfMonths={2}
+        selected={{ from: draft.from, to: draft.to }}
+        onSelect={(range) => setDraft({ from: range?.from, to: range?.to })}
+        defaultMonth={draft.from ?? initial.from}
+      />
+      <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+        <button
+          onClick={onCancel}
           style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            [align]: 0,
-            background: 'var(--bg-surface)',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-card)',
-            boxShadow: 'var(--shadow-lg)',
-            padding: 12,
-            zIndex: 'var(--z-sticky)',
-          } as React.CSSProperties}
+            background: 'transparent',
+            fontSize: 'var(--fs-caption)',
+            fontWeight: 'var(--fw-semi)',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            color: 'var(--fg-secondary)',
+          }}
         >
-          <Calendar
-            mode="range"
-            numberOfMonths={2}
-            selected={{ from: draft.from, to: draft.to }}
-            onSelect={(range) => setDraft({ from: range?.from, to: range?.to })}
-            defaultMonth={draft.from ?? value.from}
-          />
-          <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => setOpen(false)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
-                background: 'transparent',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: 'var(--fw-semi)',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: 'var(--fg-secondary)',
-              }}
-            >
-              취소
-            </button>
-            <button
-              disabled={!draft.from || !draft.to}
-              onClick={() => {
-                if (draft.from && draft.to) {
-                  onChange({ from: draft.from, to: draft.to })
-                  setOpen(false)
-                }
-              }}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-md)',
-                border: 0,
-                background: !draft.from || !draft.to ? 'var(--bg-muted)' : 'var(--bg-brand)',
-                color: !draft.from || !draft.to ? 'var(--fg-tertiary)' : 'var(--fg-on-brand)',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: 'var(--fw-bold)',
-                cursor: !draft.from || !draft.to ? 'not-allowed' : 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              적용
-            </button>
-          </div>
-        </div>
-      )}
+          취소
+        </button>
+        <button
+          disabled={!draft.from || !draft.to}
+          onClick={() => {
+            if (draft.from && draft.to) onConfirm({ from: draft.from, to: draft.to })
+          }}
+          style={{
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-md)',
+            border: 0,
+            background: !draft.from || !draft.to ? 'var(--bg-muted)' : 'var(--bg-brand)',
+            color: !draft.from || !draft.to ? 'var(--fg-tertiary)' : 'var(--fg-on-brand)',
+            fontSize: 'var(--fs-caption)',
+            fontWeight: 'var(--fw-bold)',
+            cursor: !draft.from || !draft.to ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          적용
+        </button>
+      </div>
     </div>
   )
 }
