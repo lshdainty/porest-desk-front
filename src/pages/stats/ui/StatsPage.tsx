@@ -911,8 +911,14 @@ export const StatsPage = () => {
         savings: v.income - v.expense,
       }))
     }
+    // 모든 버킷이 같은 해면 'MM' 만 (년 prefix 생략) — 년/단일년도 사용자기간
+    const allSameYear =
+      monthlyBuckets.length > 0 &&
+      monthlyBuckets.every(b => b.year === monthlyBuckets[0]!.year)
     return monthlyBuckets.map(b => ({
-      month: `${b.year}.${String(b.month).padStart(2, '0')}`,
+      month: allSameYear
+        ? String(b.month).padStart(2, '0')
+        : `${b.year}.${String(b.month).padStart(2, '0')}`,
       income: b.totalIncome,
       expense: b.totalExpense,
       savings: b.totalIncome - b.totalExpense,
