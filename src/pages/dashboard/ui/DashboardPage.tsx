@@ -30,6 +30,7 @@ import {
 import { getPaletteByColor } from '@/features/porest/dialogs'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
+import { aggregateByParent } from '@/entities/expense'
 
 const barChartConfig = {
   income:  { label: '수입', color: 'var(--bg-brand)' },
@@ -248,8 +249,10 @@ function HomeDesktop() {
   const savingsPct = prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0
 
   const donutSegs = useMemo(() => {
-    const items = (monthly?.categoryBreakdown ?? [])
-      .filter(c => c.expenseType === 'EXPENSE')
+    const expenseOnly = (monthly?.categoryBreakdown ?? []).filter(
+      c => c.expenseType === 'EXPENSE',
+    )
+    const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
       .slice(0, 6)
@@ -807,10 +810,12 @@ function HomeMobile() {
     .filter(t => t.expenseType === 'EXPENSE')
     .reduce((s, t) => s + t.amount, 0)
 
-  // 도넛 — top-level 카테고리만, 상위 4개
+  // 도넛 — 부모 카테고리로 롤업 후 상위 4개
   const donutSegs = useMemo(() => {
-    const items = (monthlyQ.data?.categoryBreakdown ?? [])
-      .filter(c => c.expenseType === 'EXPENSE' && c.parentCategoryRowId == null)
+    const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
+      c => c.expenseType === 'EXPENSE',
+    )
+    const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
       .slice(0, 4)
