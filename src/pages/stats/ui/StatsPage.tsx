@@ -977,22 +977,22 @@ export const StatsPage = () => {
                 interval="preserveStartEnd"
                 minTickGap={mobile ? 16 : 24}
               />
-              {/* 좌축: 지출 — 보통 일별 변동 디테일 보기 위함 */}
-              <YAxis
-                yAxisId="expense"
-                tickLine={false}
-                axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-expense)' }}
-                tickFormatter={fmtTick}
-                width={52}
-              />
-              {/* 우축: 수입 — 큰 값 (월급 등) 별도 스케일 */}
+              {/* 좌축: 수입 */}
               <YAxis
                 yAxisId="income"
-                orientation="right"
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-income)' }}
+                tickFormatter={fmtTick}
+                width={52}
+              />
+              {/* 우축: 지출 */}
+              <YAxis
+                yAxisId="expense"
+                orientation="right"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-expense)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
