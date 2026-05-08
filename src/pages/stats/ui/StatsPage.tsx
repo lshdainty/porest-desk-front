@@ -421,9 +421,11 @@ export const StatsPage = () => {
 
   // ---------- CATEGORY TAB ----------
   const donutTotal = donutView.reduce((s, x) => s + x.amount, 0)
+  // 도넛 센터 라벨은 항상 짧게 유지 — custom 모드의 full date range 가 도넛 안으로 침범하지 않도록.
+  const centerPeriodLbl = period.segMode === 'custom' ? '선택 기간' : periodLbl
   const donutCenterLbl = isDrilled
     ? `${activeParent?.name ?? ''} 세부`
-    : `${periodLbl} 지출`
+    : `${centerPeriodLbl} 지출`
 
   const DonutCard = (
     <Card style={{ padding: mobile ? 18 : 24 }}>
