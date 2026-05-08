@@ -3,7 +3,7 @@ import { AlertTriangle, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   useExpenseBudgets,
   useExpenseCategories,
-  useMonthlySummary,
+  useRangeSummary,
   useCreateExpenseBudget,
   useUpdateExpenseBudget,
   useDeleteExpenseBudget,
@@ -39,7 +39,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const { data: budgets, isLoading: loadingBudgets } = useExpenseBudgets({ year, month })
   const prevBudgetsQ = useExpenseBudgets({ year: prevY, month: prevM })
   const { data: categories, isLoading: loadingCategories } = useExpenseCategories()
-  const { data: monthlySummary, isLoading: loadingSummary } = useMonthlySummary(year, month)
+  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
+  const monthEndDate = new Date(year, month, 0).getDate()
+  const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(monthEndDate).padStart(2, '0')}`
+  const { data: monthlySummary, isLoading: loadingSummary } = useRangeSummary(monthStart, monthEnd)
 
   const createMut = useCreateExpenseBudget()
   const updateMut = useUpdateExpenseBudget()

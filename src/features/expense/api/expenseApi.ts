@@ -4,10 +4,8 @@ import type {
   Expense,
   ExpenseFormValues,
   DailySummary,
-  MonthlySummary,
+  RangeSummary,
   MonthlyTrend,
-  WeeklySummary,
-  YearlySummary,
   MerchantSummary,
   AssetExpenseSummary,
   HeatmapCell,
@@ -59,24 +57,14 @@ export const expenseApi = {
     return resp.data
   },
 
-  getMonthlySummary: async (year: number, month: number): Promise<MonthlySummary> => {
-    const resp: ApiResponse<MonthlySummary> = await apiClient.get('/v1/expenses/summary/monthly', { params: { year, month } })
+  getRangeSummary: async (startDate: string, endDate: string): Promise<RangeSummary> => {
+    const resp: ApiResponse<RangeSummary> = await apiClient.get('/v1/expenses/summary/range', { params: { startDate, endDate } })
     return resp.data
   },
 
   getMonthlyTrend: async (months = 6): Promise<MonthlyTrend[]> => {
     const resp: ApiResponse<{ trends: MonthlyTrend[] }> = await apiClient.get('/v1/expenses/summary/trend', { params: { months } })
     return resp.data.trends
-  },
-
-  getWeeklySummary: async (weekStart: string, weekEnd: string): Promise<WeeklySummary> => {
-    const resp: ApiResponse<WeeklySummary> = await apiClient.get('/v1/expenses/summary/weekly', { params: { weekStart, weekEnd } })
-    return resp.data
-  },
-
-  getYearlySummary: async (year: number): Promise<YearlySummary> => {
-    const resp: ApiResponse<YearlySummary> = await apiClient.get('/v1/expenses/summary/yearly', { params: { year } })
-    return resp.data
   },
 
   getMerchantSummary: async (startDate?: string, endDate?: string): Promise<{ merchants: MerchantSummary[] }> => {
@@ -89,8 +77,8 @@ export const expenseApi = {
     return resp.data
   },
 
-  getHeatmap: async (year: number, month: number): Promise<HeatmapCell[]> => {
-    const resp: ApiResponse<{ cells: HeatmapCell[] }> = await apiClient.get('/v1/expenses/summary/heatmap', { params: { year, month } })
+  getHeatmap: async (startDate: string, endDate: string): Promise<HeatmapCell[]> => {
+    const resp: ApiResponse<{ cells: HeatmapCell[] }> = await apiClient.get('/v1/expenses/summary/heatmap', { params: { startDate, endDate } })
     return resp.data.cells
   },
 

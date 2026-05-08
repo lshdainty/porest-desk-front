@@ -90,12 +90,20 @@ export interface DailySummary {
   totalExpense: number
 }
 
-export interface MonthlySummary {
+export interface RangeSummary {
+  startDate: string
+  endDate: string
+  totalIncome: number
+  totalExpense: number
+  categoryBreakdown: CategoryBreakdown[]
+  monthlyBuckets: RangeMonthlyBucket[]
+}
+
+export interface RangeMonthlyBucket {
   year: number
   month: number
   totalIncome: number
   totalExpense: number
-  categoryBreakdown: CategoryBreakdown[]
 }
 
 export interface MonthlyTrend {
@@ -127,27 +135,6 @@ export interface ParentCategoryBreakdown {
   categoryName: string
   totalAmount: number
   children: CategoryBreakdown[]
-}
-
-export interface WeeklySummary {
-  weekStart: string
-  weekEnd: string
-  totalIncome: number
-  totalExpense: number
-}
-
-export interface YearlySummary {
-  year: number
-  totalIncome: number
-  totalExpense: number
-  monthlyAmounts: MonthlyAmount[]
-}
-
-export interface MonthlyAmount {
-  month: number
-  totalIncome: number
-  totalExpense: number
-  categoryBreakdown: CategoryBreakdown[]
 }
 
 export type StatsPeriod = '3m' | '6m' | '1y'

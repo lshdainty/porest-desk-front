@@ -53,11 +53,11 @@ export const useDailySummary = (date: string) => {
   })
 }
 
-export const useMonthlySummary = (year: number, month: number) => {
+export const useRangeSummary = (startDate: string, endDate: string) => {
   return useQuery({
-    queryKey: expenseKeys.monthlySummary(year, month),
-    queryFn: () => expenseApi.getMonthlySummary(year, month),
-    enabled: year > 0 && month > 0,
+    queryKey: expenseKeys.rangeSummary(startDate, endDate),
+    queryFn: () => expenseApi.getRangeSummary(startDate, endDate),
+    enabled: !!startDate && !!endDate,
   })
 }
 
@@ -69,22 +69,6 @@ export const useMonthlyTrend = (months = 6) => {
   })
 }
 
-export const useWeeklySummary = (weekStart: string, weekEnd: string) => {
-  return useQuery({
-    queryKey: expenseKeys.weeklySummary(weekStart, weekEnd),
-    queryFn: () => expenseApi.getWeeklySummary(weekStart, weekEnd),
-    enabled: !!weekStart && !!weekEnd,
-  })
-}
-
-export const useYearlySummary = (year: number) => {
-  return useQuery({
-    queryKey: expenseKeys.yearlySummary(year),
-    queryFn: () => expenseApi.getYearlySummary(year),
-    enabled: year > 0,
-  })
-}
-
 export const useMerchantSummary = (startDate?: string, endDate?: string) => {
   return useQuery({
     queryKey: expenseKeys.merchantSummary({ startDate, endDate }),
@@ -92,11 +76,11 @@ export const useMerchantSummary = (startDate?: string, endDate?: string) => {
   })
 }
 
-export const useExpenseHeatmap = (year: number, month: number) => {
+export const useExpenseHeatmap = (startDate: string, endDate: string) => {
   return useQuery({
-    queryKey: expenseKeys.heatmap(year, month),
-    queryFn: () => expenseApi.getHeatmap(year, month),
-    enabled: year > 0 && month > 0,
+    queryKey: expenseKeys.heatmap(startDate, endDate),
+    queryFn: () => expenseApi.getHeatmap(startDate, endDate),
+    enabled: !!startDate && !!endDate,
   })
 }
 

@@ -1,5 +1,3 @@
 export { AssetUsageChart } from './ui/summary/AssetUsageChart'
 export { BudgetVsActualChart } from './ui/summary/BudgetVsActualChart'
-export { CategoryTrendChart } from './ui/summary/CategoryTrendChart'
 export { MerchantAnalysisChart } from './ui/summary/MerchantAnalysisChart'
-export { YearOverYearChart } from './ui/summary/YearOverYearChart'

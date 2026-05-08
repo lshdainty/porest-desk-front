@@ -1,16 +1,17 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
+import { Calendar as CalendarIcon } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
-import { MonthPicker, SegPicker } from '@/shared/ui/porest/primitives'
+import { SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { Calendar } from '@/shared/ui/calendar'
 import {
-  useMonthlySummary,
-  useYearlySummary,
+  useRangeSummary,
   useMerchantSummary,
   useExpenseHeatmap,
   useExpenseCategories,
@@ -21,7 +22,76 @@ import { renderIcon } from '@/shared/lib'
 
 type OutletCtx = { mobile: boolean }
 type TabKey = 'cat' | 'trend' | 'compare'
-type PeriodKey = '1m' | '3m' | '1y'
+type SegMode = 'm' | 'q' | 'y' | 'custom'
+type RangeState = { from: Date; to: Date; segMode: SegMode }
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+const fmt = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+const monthRangeOf = (now: Date): RangeState => ({
+  from: new Date(now.getFullYear(), now.getMonth(), 1),
+  to: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+  segMode: 'm',
+})
+const quarterRangeOf = (now: Date): RangeState => {
+  const q = Math.floor(now.getMonth() / 3)
+  return {
+    from: new Date(now.getFullYear(), q * 3, 1),
+    to: new Date(now.getFullYear(), q * 3 + 3, 0),
+    segMode: 'q',
+  }
+}
+const yearRangeOf = (now: Date): RangeState => ({
+  from: new Date(now.getFullYear(), 0, 1),
+  to: new Date(now.getFullYear(), 11, 31),
+  segMode: 'y',
+})
+
+const previousRange = ({ from, to, segMode }: RangeState): { from: Date; to: Date } => {
+  if (segMode === 'm') {
+    return {
+      from: new Date(from.getFullYear(), from.getMonth() - 1, 1),
+      to: new Date(from.getFullYear(), from.getMonth(), 0),
+    }
+  }
+  if (segMode === 'q') {
+    return {
+      from: new Date(from.getFullYear(), from.getMonth() - 3, 1),
+      to: new Date(from.getFullYear(), from.getMonth(), 0),
+    }
+  }
+  if (segMode === 'y') {
+    return {
+      from: new Date(from.getFullYear() - 1, 0, 1),
+      to: new Date(from.getFullYear() - 1, 11, 31),
+    }
+  }
+  // custom: 같은 길이 직전 윈도우
+  const days = Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000) + 1
+  const t = new Date(from); t.setDate(t.getDate() - 1)
+  const f = new Date(t); f.setDate(f.getDate() - days + 1)
+  return { from: f, to: t }
+}
+
+const periodLabel = ({ from, to, segMode }: RangeState): string => {
+  if (segMode === 'm') return `${from.getFullYear()}년 ${from.getMonth() + 1}월`
+  if (segMode === 'q') return `${from.getFullYear()}년 ${Math.floor(from.getMonth() / 3) + 1}분기`
+  if (segMode === 'y') return `${from.getFullYear()}년`
+  const sameYear = from.getFullYear() === to.getFullYear()
+  return sameYear
+    ? `${from.getMonth() + 1}/${from.getDate()} ~ ${to.getMonth() + 1}/${to.getDate()}`
+    : `${fmt(from)} ~ ${fmt(to)}`
+}
+
+const labelsOf = ({ segMode }: RangeState) =>
+  segMode === 'm'
+    ? { now: '이번 달', prev: '지난 달', mom: '전월 대비', noPrev: '전월 데이터 없음', avg: '하루 평균' }
+    : segMode === 'q'
+      ? { now: '이번 분기', prev: '지난 분기', mom: '전분기 대비', noPrev: '전분기 데이터 없음', avg: '월 평균' }
+      : segMode === 'y'
+        ? { now: '이번 해', prev: '지난 해', mom: '전년 대비', noPrev: '전년 데이터 없음', avg: '월 평균' }
+        : { now: '선택 기간', prev: '이전 기간', mom: '이전 기간 대비', noPrev: '이전 기간 데이터 없음', avg: '일 평균' }
 
 const DONUT_COLORS = [
   'oklch(0.55 0.12 55)',
@@ -70,20 +140,6 @@ const HEAT_COLS: { label: string; dow: number }[] = [
   { label: '토', dow: 6 },
   { label: '일', dow: 7 },
 ]
-
-const getCurrentYearMonth = () => {
-  const now = new Date()
-  return {
-    key: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
-  }
-}
-
-const prevYearMonth = (year: number, month: number) => {
-  if (month === 1) return { year: year - 1, month: 12 }
-  return { year, month: month - 1 }
-}
 
 const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
 
@@ -173,49 +229,41 @@ function PorestChartTooltip({
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const hidden = useHideAmounts()
-  const initial = getCurrentYearMonth()
   const [tab, setTab] = useState<TabKey>('cat')
-  const [period, setPeriod] = useState<PeriodKey>('1m')
-  const [monthKey, setMonthKey] = useState<string>(initial.key)
+  const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
   const [activeParentId, setActiveParentId] = useState<number | null>(null)
 
-  // 기간·월·탭 변경 시 드릴다운 해제
-  useEffect(() => setActiveParentId(null), [period, monthKey, tab])
+  // 기간·탭 변경 시 드릴다운 해제
+  useEffect(() => setActiveParentId(null), [period.from, period.to, period.segMode, tab])
 
-  const [year, month] = monthKey.split('-').map(Number) as [number, number]
-  const prev = prevYearMonth(year, month)
+  const startDate = fmt(period.from)
+  const endDate = fmt(period.to)
+  const prevR = useMemo(() => previousRange(period), [period])
+  const prevStart = fmt(prevR.from)
+  const prevEnd = fmt(prevR.to)
 
-  const monthlyQ = useMonthlySummary(year, month)
-  const prevMonthlyQ = useMonthlySummary(prev.year, prev.month)
-  const yearlyQ = useYearlySummary(year)
-  const prevYearlyQ = useYearlySummary(year - 1)
+  const rangeQ = useRangeSummary(startDate, endDate)
+  // 비교 탭에서만 이전 기간 호출 (다른 탭에선 dummy disabled query)
+  const prevRangeQ = useRangeSummary(tab === 'compare' ? prevStart : '', tab === 'compare' ? prevEnd : '')
   const categoriesQ = useExpenseCategories()
-
-  // Merchant summary over current month
-  const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-  const endDateObj = new Date(year, month, 0) // last day of month
-  const endDate = `${year}-${String(month).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
   const merchantQ = useMerchantSummary(startDate, endDate)
-  // 추이 탭 '월' 모드에서 일별 시리즈를 그리려면 해당 월의 raw 거래 목록이 필요.
+  // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
   const monthExpensesQ = useExpenses({ startDate, endDate })
-  const heatmapQ = useExpenseHeatmap(year, month)
+  const heatmapQ = useExpenseHeatmap(startDate, endDate)
+
+  const periodLbl = periodLabel(period)
+  const labels = labelsOf(period)
 
   const categoryBreakdown: CategoryBreakdown[] = useMemo(
-    () => monthlyQ.data?.categoryBreakdown ?? [],
-    [monthlyQ.data],
+    () => rangeQ.data?.categoryBreakdown ?? [],
+    [rangeQ.data],
   )
-  const totalExpense = monthlyQ.data?.totalExpense ?? 0
-  const totalIncome = monthlyQ.data?.totalIncome ?? 0
-
-  // 기간 선택(월/분기/년)에 해당하는 실제 월 번호 목록
-  const periodMonths = useMemo(() => {
-    if (period === '1m') return [month]
-    if (period === '3m') {
-      const q = Math.ceil(month / 3)
-      return [q * 3 - 2, q * 3 - 1, q * 3]
-    }
-    return Array.from({ length: 12 }, (_, i) => i + 1)
-  }, [period, month])
+  const totalExpense = rangeQ.data?.totalExpense ?? 0
+  const totalIncome = rangeQ.data?.totalIncome ?? 0
+  const monthlyBuckets = useMemo(
+    () => rangeQ.data?.monthlyBuckets ?? [],
+    [rangeQ.data],
+  )
 
   // 카테고리 메타(rowId → 아이콘/색/이름) 룩업
   const categoryById = useMemo(() => {
@@ -224,21 +272,11 @@ export const StatsPage = () => {
     return map
   }, [categoriesQ.data])
 
-  // 기간 범위의 leaf 카테고리 원본(필터·집계용)
-  const periodBreakdown = useMemo<CategoryBreakdown[]>(() => {
-    const items: CategoryBreakdown[] = []
-    const push = (list: CategoryBreakdown[]) => {
-      for (const c of list) {
-        if (c.expenseType !== 'EXPENSE') continue
-        items.push(c)
-      }
-    }
-    if (period === '1m') push(categoryBreakdown)
-    else for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
-      if (periodMonths.includes(m.month)) push(m.categoryBreakdown)
-    }
-    return items
-  }, [period, categoryBreakdown, yearlyQ.data, periodMonths])
+  // 지출(EXPENSE) 카테고리만 필터
+  const periodBreakdown = useMemo<CategoryBreakdown[]>(
+    () => categoryBreakdown.filter(c => c.expenseType === 'EXPENSE'),
+    [categoryBreakdown],
+  )
 
   type DonutRow = {
     rowId: number
@@ -304,23 +342,9 @@ export const StatsPage = () => {
   const isDrilled = activeParentId != null && drillBreakdown.length > 0
   const donutView = isDrilled ? drillBreakdown : donutBreakdown
 
-  // 기간 총 지출 (하이라이트 · 도넛 센터용)
-  const periodTotalExpense = useMemo(() => {
-    if (period === '1m') return totalExpense
-    let sum = 0
-    for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
-      if (periodMonths.includes(m.month)) sum += m.totalExpense
-    }
-    return sum
-  }, [period, totalExpense, yearlyQ.data, periodMonths])
-
-  const donutLoading = period === '1m' ? monthlyQ.isLoading : yearlyQ.isLoading
-
-  const periodLbl = period === '1m'
-    ? `${month}월`
-    : period === '3m'
-      ? `${year}년 ${Math.ceil(month / 3)}분기`
-      : `${year}년`
+  // 기간 총 지출
+  const periodTotalExpense = totalExpense
+  const donutLoading = rangeQ.isLoading
 
   const StatsTabs = (
     <Tabs
@@ -344,15 +368,25 @@ export const StatsPage = () => {
 
   const PeriodSeg = (
     <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-      <MonthPicker value={monthKey} onChange={setMonthKey} />
+      <RangePickerButton
+        value={{ from: period.from, to: period.to }}
+        onChange={(r) => setPeriod({ from: r.from, to: r.to, segMode: 'custom' })}
+      />
       <SegPicker
         options={[
-          { value: '1m', label: '월' },
-          { value: '3m', label: '분기' },
-          { value: '1y', label: '년' },
+          { value: 'm', label: '월' },
+          { value: 'q', label: '분기' },
+          { value: 'y', label: '년' },
+          { value: 'custom', label: '사용자 지정' },
         ]}
-        value={period}
-        onChange={setPeriod}
+        value={period.segMode}
+        onChange={(v) => {
+          if (v === 'm') setPeriod(monthRangeOf(new Date()))
+          else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
+          else if (v === 'y') setPeriod(yearRangeOf(new Date()))
+          // 'custom' 클릭 시: 현재 from/to 유지하고 segMode 만 전환 → 사용자가 캘린더로 직접 조정
+          else setPeriod((p) => ({ ...p, segMode: 'custom' }))
+        }}
       />
     </div>
   )
@@ -761,17 +795,23 @@ export const StatsPage = () => {
 
   const topMerchant = topMerchants[0]
   const categoryTop = donutBreakdown[0]
-  const daysInMonth = endDateObj.getDate()
-  const prevTotalExpense = prevMonthlyQ.data?.totalExpense ?? 0
+  // 기간 일수
+  const rangeDays =
+    Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
+
+  // 평균 계산 — 단일 월 모드는 일평균, 그 외는 월평균. custom 은 일평균.
+  const useDailyAvg = period.segMode === 'm' || period.segMode === 'custom'
+  const avgDivisor = useDailyAvg ? rangeDays : Math.max(1, monthlyBuckets.length)
+  const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
+  const avgLabel = labels.avg
+
+  // 이전 동등 기간 총지출 (Compare 탭 미사용 시 0 — query가 disabled)
+  const prevTotalExpense = prevRangeQ.data?.totalExpense ?? 0
   const dayPct = prevTotalExpense > 0
     ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
     : 0
-
-  const avgLabel = period === '1m' ? '하루 평균' : '월 평균'
-  const avgDivisor = period === '1m' ? daysInMonth : periodMonths.length
-  const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
-  const avgSub: React.ReactNode = period !== '1m'
-    ? <>{periodMonths.length}개월 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
+  const avgSub: React.ReactNode = period.segMode !== 'm'
+    ? <>{rangeDays}일 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
       ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
       : '전월 비교 불가'
@@ -821,56 +861,49 @@ export const StatsPage = () => {
   )
 
   // ---------- TREND TAB ----------
-  const monthlyAmounts = useMemo(
-    () => yearlyQ.data?.monthlyAmounts ?? [],
-    [yearlyQ.data],
-  )
-  // 기간 선택에 따라 필터링된 월들 (월별 정렬)
-  const trendMonths = useMemo(
-    () =>
-      monthlyAmounts
-        .filter(m => periodMonths.includes(m.month))
-        .slice()
-        .sort((a, b) => a.month - b.month),
-    [monthlyAmounts, periodMonths],
-  )
-  // '1m' 모드: 해당 월 1일~말일의 일별 수입/지출을 버킷에 누적.
-  // 다른 모드: 기존 월 단위 시리즈 유지.
+  // 단일 월(segMode === 'm') 또는 사용자 지정 기간이 1개월 이내면 일별 시리즈, 그 외엔 월별 시리즈
+  const useDailyTrend = period.segMode === 'm' || (period.segMode === 'custom' && monthlyBuckets.length <= 1)
   const trendChartData = useMemo(() => {
-    if (period === '1m') {
+    if (useDailyTrend) {
       const exps = monthExpensesQ.data ?? []
-      const days = new Date(year, month, 0).getDate()
-      const byDay = new Map<number, { income: number; expense: number }>()
-      for (let d = 1; d <= days; d++) byDay.set(d, { income: 0, expense: 0 })
+      const fromDay = startOfDay(period.from)
+      const toDay = startOfDay(period.to)
+      const days = Math.round((toDay.getTime() - fromDay.getTime()) / 86400000) + 1
+      const byDay = new Map<string, { income: number; expense: number; label: string }>()
+      for (let i = 0; i < days; i++) {
+        const d = new Date(fromDay); d.setDate(d.getDate() + i)
+        const key = fmt(d)
+        byDay.set(key, { income: 0, expense: 0, label: `${d.getMonth() + 1}/${d.getDate()}` })
+      }
       for (const e of exps) {
-        const day = Number(e.expenseDate.slice(8, 10))
-        const bucket = byDay.get(day)
+        const key = e.expenseDate.slice(0, 10)
+        const bucket = byDay.get(key)
         if (!bucket) continue
         if (e.expenseType === 'INCOME') bucket.income += e.amount
         else bucket.expense += e.amount
       }
-      return Array.from(byDay.entries()).map(([d, v]) => ({
-        month: `${String(d).padStart(2, '0')}일`,
+      return Array.from(byDay.values()).map(v => ({
+        month: v.label,
         income: v.income,
         expense: v.expense,
         savings: v.income - v.expense,
       }))
     }
-    return trendMonths.map(m => ({
-      month: `${String(m.month).padStart(2, '0')}월`,
-      income: m.totalIncome,
-      expense: m.totalExpense,
-      savings: m.totalIncome - m.totalExpense,
+    return monthlyBuckets.map(b => ({
+      month: `${b.year}.${String(b.month).padStart(2, '0')}`,
+      income: b.totalIncome,
+      expense: b.totalExpense,
+      savings: b.totalIncome - b.totalExpense,
     }))
-  }, [period, trendMonths, monthExpensesQ.data, year, month])
+  }, [useDailyTrend, monthlyBuckets, monthExpensesQ.data, period.from, period.to])
 
-  const sumIn = trendMonths.reduce((s, m) => s + m.totalIncome, 0)
-  const sumOut = trendMonths.reduce((s, m) => s + m.totalExpense, 0)
-  const n = Math.max(1, trendMonths.length)
+  const sumIn = monthlyBuckets.reduce((s, b) => s + b.totalIncome, 0)
+  const sumOut = monthlyBuckets.reduce((s, b) => s + b.totalExpense, 0)
+  const n = Math.max(1, monthlyBuckets.length)
   const avgIn = sumIn / n
   const avgOut = sumOut / n
   const avgSave = avgIn - avgOut
-  const isSingle = period === '1m'
+  const isSingle = period.segMode === 'm'
   const statLabelIn = isSingle ? '수입' : '평균 수입'
   const statLabelOut = isSingle ? '지출' : '평균 지출'
   const statLabelSave = isSingle ? '순저축' : '평균 저축'
@@ -896,7 +929,7 @@ export const StatsPage = () => {
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
         <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
       </CardHeader>
-      {yearlyQ.isLoading ? (
+      {rangeQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="추이 데이터가 없습니다" />
@@ -1011,10 +1044,10 @@ export const StatsPage = () => {
   const SavingsBars = (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{period === '1m' ? '일별 순저축' : '월별 순저축'}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{useDailyTrend ? '일별 순저축' : '월별 순저축'}</CardTitle>
         <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </CardHeader>
-      {yearlyQ.isLoading ? (
+      {rangeQ.isLoading ? (
         <EmptyBox text="불러오는 중…" />
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="월별 데이터가 없습니다" />
@@ -1064,9 +1097,7 @@ export const StatsPage = () => {
                   fill={
                     d.savings < 0
                       ? 'var(--fg-expense)'
-                      : d.month === `${month}월`
-                        ? 'var(--fg-income)'
-                        : 'var(--mossy-400)'
+                      : 'var(--mossy-400)'
                   }
                 />
               ))}
@@ -1078,30 +1109,6 @@ export const StatsPage = () => {
   )
 
   // ---------- COMPARE TAB ----------
-  // 현재 기간과 비교(이전 기간)의 년/월 범위 계산
-  const prevPeriod = useMemo<{ year: number; months: number[] }>(() => {
-    if (period === '1m') return { year: prev.year, months: [prev.month] }
-    if (period === '3m') {
-      const q = Math.ceil(month / 3)
-      if (q === 1) return { year: year - 1, months: [10, 11, 12] }
-      const pq = q - 1
-      return { year, months: [pq * 3 - 2, pq * 3 - 1, pq * 3] }
-    }
-    return { year: year - 1, months: Array.from({ length: 12 }, (_, i) => i + 1) }
-  }, [period, year, month, prev])
-
-  const prevPeriodYearly = prevPeriod.year === year ? yearlyQ.data : prevYearlyQ.data
-
-  // 이전 기간 총 지출
-  const prevPeriodTotal = useMemo(() => {
-    if (period === '1m') return prevMonthlyQ.data?.totalExpense ?? 0
-    let total = 0
-    for (const m of prevPeriodYearly?.monthlyAmounts ?? []) {
-      if (prevPeriod.months.includes(m.month)) total += m.totalExpense
-    }
-    return total
-  }, [period, prevMonthlyQ.data, prevPeriodYearly, prevPeriod])
-
   // 카테고리별 비교 (parent rowId로 그룹핑, 아이콘/색 동반)
   type CompareRow = {
     groupRowId: number
@@ -1136,42 +1143,25 @@ export const StatsPage = () => {
       }
     }
 
-    // 현재 기간
-    if (period === '1m') {
-      addBreakdown('now', monthlyQ.data?.categoryBreakdown ?? [])
-    } else {
-      for (const m of yearlyQ.data?.monthlyAmounts ?? []) {
-        if (periodMonths.includes(m.month)) addBreakdown('now', m.categoryBreakdown)
-      }
-    }
-
-    // 이전 기간
-    if (period === '1m') {
-      addBreakdown('prev', prevMonthlyQ.data?.categoryBreakdown ?? [])
-    } else {
-      for (const m of prevPeriodYearly?.monthlyAmounts ?? []) {
-        if (prevPeriod.months.includes(m.month)) addBreakdown('prev', m.categoryBreakdown)
-      }
-    }
+    addBreakdown('now', rangeQ.data?.categoryBreakdown ?? [])
+    addBreakdown('prev', prevRangeQ.data?.categoryBreakdown ?? [])
 
     return Array.from(byId.values())
       .sort((a, b) => (b.now - a.now) || (b.prev - a.prev))
       .slice(0, 10)
-  }, [period, monthlyQ.data, prevMonthlyQ.data, yearlyQ.data, prevPeriodYearly, periodMonths, prevPeriod, categoryById])
+  }, [rangeQ.data, prevRangeQ.data, categoryById])
 
   const totalNow = periodTotalExpense
-  const totalPrev = prevPeriodTotal
+  const totalPrev = prevRangeQ.data?.totalExpense ?? 0
   const momUp = totalNow >= totalPrev
   const maxCompareAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
 
-  const periodNow = period === '1m' ? '이번 달' : period === '3m' ? '이번 분기' : '이번 해'
-  const periodPrev = period === '1m' ? '지난 달' : period === '3m' ? '지난 분기' : '지난 해'
-  const momLabel = period === '1m' ? '전월 대비' : period === '3m' ? '전분기 대비' : '전년 대비'
-  const noPrevText = period === '1m' ? '전월 데이터 없음' : period === '3m' ? '전분기 데이터 없음' : '전년 데이터 없음'
+  const periodNow = labels.now
+  const periodPrev = labels.prev
+  const momLabel = labels.mom
+  const noPrevText = labels.noPrev
 
-  const compareLoading = period === '1m'
-    ? (monthlyQ.isLoading || prevMonthlyQ.isLoading)
-    : (yearlyQ.isLoading || (prevPeriod.year !== year && prevYearlyQ.isLoading))
+  const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading
 
   const CompareSummary = (
     <div
@@ -1409,6 +1399,128 @@ export const StatsPage = () => {
       </div>
       {StatsTabs}
       {Content}
+    </div>
+  )
+}
+
+// ───────────────────────────────────────────────────────────
+// RangePickerButton — 캘린더 아이콘 버튼 + popover (react-day-picker mode='range')
+// ───────────────────────────────────────────────────────────
+function RangePickerButton({
+  value,
+  onChange,
+  align = 'left',
+}: {
+  value: { from: Date; to: Date }
+  onChange: (range: { from: Date; to: Date }) => void
+  align?: 'left' | 'right'
+}) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(
+    () => ({ from: value.from, to: value.to }),
+  )
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    setDraft({ from: value.from, to: value.to })
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open, value.from, value.to])
+
+  const labelShort = (d: Date) =>
+    `${d.getFullYear() === new Date().getFullYear() ? '' : `${String(d.getFullYear()).slice(2)}.`}${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        title={`${fmt(value.from)} ~ ${fmt(value.to)}`}
+        style={{
+          background: 'transparent',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-tile)',
+          padding: '6px 10px',
+          fontSize: 'var(--fs-body-sm)',
+          fontWeight: 'var(--fw-semi)',
+          color: 'var(--fg-secondary)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        <CalendarIcon size={14} />
+        <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+          {labelShort(value.from)} ~ {labelShort(value.to)}
+        </span>
+      </button>
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            [align]: 0,
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-card)',
+            boxShadow: 'var(--shadow-lg)',
+            padding: 12,
+            zIndex: 'var(--z-sticky)',
+          } as React.CSSProperties}
+        >
+          <Calendar
+            mode="range"
+            numberOfMonths={2}
+            selected={{ from: draft.from, to: draft.to }}
+            onSelect={(range) => setDraft({ from: range?.from, to: range?.to })}
+            defaultMonth={draft.from ?? value.from}
+          />
+          <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-subtle)',
+                background: 'transparent',
+                fontSize: 'var(--fs-caption)',
+                fontWeight: 'var(--fw-semi)',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              취소
+            </button>
+            <button
+              disabled={!draft.from || !draft.to}
+              onClick={() => {
+                if (draft.from && draft.to) {
+                  onChange({ from: draft.from, to: draft.to })
+                  setOpen(false)
+                }
+              }}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-md)',
+                border: 0,
+                background: !draft.from || !draft.to ? 'var(--bg-muted)' : 'var(--bg-brand)',
+                color: !draft.from || !draft.to ? 'var(--fg-tertiary)' : 'var(--fg-on-brand)',
+                fontSize: 'var(--fs-caption)',
+                fontWeight: 'var(--fw-bold)',
+                cursor: !draft.from || !draft.to ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              적용
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

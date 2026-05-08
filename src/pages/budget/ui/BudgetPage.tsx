@@ -13,7 +13,7 @@ import {
   useBudgetCompliance,
   useExpenseBudgets,
   useExpenseCategories,
-  useMonthlySummary,
+  useRangeSummary,
 } from '@/features/expense'
 import { useUserPreferences } from '@/features/user'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
@@ -129,7 +129,10 @@ export const BudgetPage = () => {
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
 
   const budgetsQ = useExpenseBudgets({ year, month })
-  const summaryQ = useMonthlySummary(year, month)
+  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
+  const monthEndDay = new Date(year, month, 0).getDate()
+  const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`
+  const summaryQ = useRangeSummary(monthStart, monthEnd)
   const categoriesQ = useExpenseCategories()
   const complianceQ = useBudgetCompliance(6)
   const preferencesQ = useUserPreferences()

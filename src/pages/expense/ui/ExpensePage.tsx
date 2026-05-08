@@ -9,7 +9,7 @@ import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useExpenses,
-  useMonthlySummary,
+  useRangeSummary,
   useExpenseCategories,
 } from '@/features/expense'
 import { useAsset, useAssets } from '@/features/asset'
@@ -319,7 +319,11 @@ function useExpenseData(
   const serverType = filterValue ? undefined : chipType
 
   const expensesQ = useExpenses({ startDate, endDate, expenseType: serverType, assetId })
-  const monthlyQ = useMonthlySummary(year, m)
+  // 월 헤더용 합계 — 현재 monthKey 의 한 달 범위
+  const monthStart = `${year}-${String(m).padStart(2, '0')}-01`
+  const monthEndDay = new Date(year, m, 0).getDate()
+  const monthEnd = `${year}-${String(m).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`
+  const monthlyQ = useRangeSummary(monthStart, monthEnd)
 
   // 선택한 부모 카테고리의 자식 rowId까지 모두 허용 집합에 추가
   const allowedCatIds = useMemo(() => {

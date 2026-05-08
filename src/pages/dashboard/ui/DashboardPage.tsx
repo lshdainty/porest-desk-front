@@ -23,7 +23,7 @@ import { useAssetSummary } from '@/features/asset'
 import {
   useExpenses,
   useExpenseCategories,
-  useMonthlySummary,
+  useRangeSummary,
   useMonthlyTrend,
   useExpenseBudgets,
 } from '@/features/expense'
@@ -199,7 +199,7 @@ function HomeDesktop() {
 
   const dashboardQ = useDashboardSummary()
   const assetSummaryQ = useAssetSummary(periodY, periodM)
-  const monthlyQ = useMonthlySummary(periodY, periodM)
+  const monthlyQ = useRangeSummary(periodStart, periodEnd)
   const trendQ = useMonthlyTrend(6)
   const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd })
   const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
@@ -705,7 +705,11 @@ function HomeMobile() {
 
   const dashboardQ = useDashboardSummary()
   const assetSummaryQ = useAssetSummary(year, month)
-  const monthlyQ = useMonthlySummary(year, month)
+  const pad2m = (n: number) => String(n).padStart(2, '0')
+  const monthStartM = `${year}-${pad2m(month)}-01`
+  const monthEndDayM = new Date(year, month, 0).getDate()
+  const monthEndM = `${year}-${pad2m(month)}-${pad2m(monthEndDayM)}`
+  const monthlyQ = useRangeSummary(monthStartM, monthEndM)
   const recentQ = useExpenses()
 
   const summary = dashboardQ.data
