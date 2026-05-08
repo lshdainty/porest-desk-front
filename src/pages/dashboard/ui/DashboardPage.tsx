@@ -255,7 +255,6 @@ function HomeDesktop() {
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, 6)
     return items.map((c, i) => ({
       value: c.totalAmount,
       color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
@@ -293,7 +292,7 @@ function HomeDesktop() {
       }
     }
     const totalExpense = monthly?.totalExpense ?? 0
-    return budgets.slice(0, 4).map(b => {
+    return budgets.map(b => {
       // 전체 상한(categoryRowId === null) 은 이번 달 모든 EXPENSE 합계를
       // 사용금액으로 사용 — 카테고리 예산이 없는 지출도 포함.
       const spent = b.categoryRowId == null
@@ -525,7 +524,7 @@ function HomeDesktop() {
               <Donut segments={donutSegs} size={160} stroke={22}>
                 <div className="lbl">이번 달 지출</div>
                 <div className="val num">
-                  <MaskAmount mask="••••">{(donutTotal / 10000).toFixed(1)}만원</MaskAmount>
+                  <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
                 </div>
               </Donut>
               <div className="cat-legend">
@@ -810,7 +809,7 @@ function HomeMobile() {
     .filter(t => t.expenseType === 'EXPENSE')
     .reduce((s, t) => s + t.amount, 0)
 
-  // 도넛 — 부모 카테고리로 롤업 후 상위 4개
+  // 도넛 — 부모 카테고리로 롤업, 전체 표시
   const donutSegs = useMemo(() => {
     const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
       c => c.expenseType === 'EXPENSE',
@@ -818,7 +817,6 @@ function HomeMobile() {
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, 4)
     return items.map((c, i) => ({
       value: c.totalAmount,
       color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
@@ -827,7 +825,7 @@ function HomeMobile() {
   }, [monthlyQ.data])
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
-  // 예산 — 상위 3건
+  // 예산 — 설정한 전체 표시
   const budgetItems = useMemo(() => {
     const budgets = budgetsQ.data ?? []
     const cats = categoriesQ.data ?? []
@@ -843,7 +841,7 @@ function HomeMobile() {
       }
     }
     const totalEx = monthlyQ.data?.totalExpense ?? 0
-    return budgets.slice(0, 3).map(b => {
+    return budgets.map(b => {
       const spent = b.categoryRowId == null ? totalEx : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
       const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
@@ -1025,8 +1023,8 @@ function HomeMobile() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
               <div className="lbl" style={{ fontSize: 'var(--fs-micro)' }}>지출</div>
-              <div className="val num" style={{ fontSize: 'var(--fs-body)' }}>
-                <MaskAmount mask="••••">{(donutTotal / 10000).toFixed(0)}만</MaskAmount>
+              <div className="val num" style={{ fontSize: 'var(--fs-caption)' }}>
+                <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
               </div>
             </Donut>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1037,7 +1035,7 @@ function HomeMobile() {
                     {s.label}
                   </span>
                   <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-primary)', fontWeight: 'var(--fw-semi)' }}>
-                    <MaskAmount mask="••••">{(s.value / 10000).toFixed(0)}만</MaskAmount>
+                    <MaskAmount mask="••••">{KRW(s.value)}</MaskAmount>
                   </span>
                 </div>
               ))}
