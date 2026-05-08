@@ -207,7 +207,7 @@ export const BudgetPage = () => {
   const HeaderCard = (
     <Card
       variant="brand"
-      style={{ padding: mobile ? 18 : 24, marginBottom: mobile ? 12 : 0 }}
+      style={{ padding: mobile ? 18 : 24 }}
     >
       <div
         style={{
@@ -714,11 +714,13 @@ export const BudgetPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {PageControls}
         </div>
-        {HeaderCard}
-        {PaceCard}
-        {StatusTiles}
-        {ListCard}
-        {ComplianceCard}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {HeaderCard}
+          {PaceCard}
+          {StatusTiles}
+          {ListCard}
+          {ComplianceCard}
+        </div>
       </div>
     )
   }
