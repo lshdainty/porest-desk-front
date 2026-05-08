@@ -977,10 +977,22 @@ export const StatsPage = () => {
                 interval="preserveStartEnd"
                 minTickGap={mobile ? 16 : 24}
               />
+              {/* 좌축: 지출 — 보통 일별 변동 디테일 보기 위함 */}
               <YAxis
+                yAxisId="expense"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-expense)' }}
+                tickFormatter={fmtTick}
+                width={52}
+              />
+              {/* 우축: 수입 — 큰 값 (월급 등) 별도 스케일 */}
+              <YAxis
+                yAxisId="income"
+                orientation="right"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-income)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -996,6 +1008,7 @@ export const StatsPage = () => {
                 }
               />
               <Area
+                yAxisId="income"
                 type="monotone"
                 dataKey="income"
                 stroke="var(--color-income)"
@@ -1005,6 +1018,7 @@ export const StatsPage = () => {
                 activeDot={{ r: 5 }}
               />
               <Area
+                yAxisId="expense"
                 type="monotone"
                 dataKey="expense"
                 stroke="var(--color-expense)"
