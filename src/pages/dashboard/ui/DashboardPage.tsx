@@ -756,7 +756,7 @@ function HomeMobile() {
     else enablePdHideAmounts()
   }
   const { key: initialKey } = useCurrentMonthKey()
-  const [period, setPeriod] = useState(initialKey)
+  const [period] = useState(initialKey)
   const [year, month] = period.split('-').map(Number) as [number, number]
 
   const pad2m = (n: number) => String(n).padStart(2, '0')
@@ -961,9 +961,6 @@ function HomeMobile() {
       <Card style={{ padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{month}월 가계부</div>
-          <div style={{ marginLeft: 'auto' }}>
-            <MonthPicker value={period} onChange={setPeriod} />
-          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
