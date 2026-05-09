@@ -1,5 +1,4 @@
-import { isToday, startOfDay, endOfDay, format, isSameDay, parseISO } from 'date-fns'
-import { enUS, ko } from 'date-fns/locale'
+import { isToday, startOfDay, endOfDay, isSameDay, parseISO } from 'date-fns'
 import { useMemo, useCallback, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -174,28 +173,19 @@ const MonthDayCell = ({
         )}
       </div>
 
-      <div className={cn('flex flex-1 min-h-0 h-6 gap-1 px-2 lg:flex-col lg:gap-1 lg:px-0', !currentMonth && 'opacity-50')}>
+      <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>
         {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="lg:h-6.5">
+            <div key={eventKey} className="h-6.5">
               {event && (
-                <>
-                  {/* Mobile: color dot */}
-                  <div
-                    className="size-2 rounded-full lg:hidden"
-                    style={{ backgroundColor: event.color }}
-                  />
-                  {/* Desktop: event badge */}
-                  <MonthEventBadge
-                    className="hidden lg:flex"
-                    event={event}
-                    cellDate={startOfDay(date)}
-                    onEventClick={onEventClick}
-                  />
-                </>
+                <MonthEventBadge
+                  event={event}
+                  cellDate={startOfDay(date)}
+                  onEventClick={onEventClick}
+                />
               )}
             </div>
           )
@@ -216,9 +206,6 @@ const MonthEventBadge = ({
   className?: string
   onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
-  const { i18n } = useTranslation()
-  const locale = i18n.language.startsWith('ko') ? ko : enUS
-  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
   const itemStart = startOfDay(parseISO(event.startDate))
   const itemEnd = endOfDay(parseISO(event.endDate))
 
@@ -237,10 +224,9 @@ const MonthEventBadge = ({
   }
 
   const renderBadgeText = ['first', 'none'].includes(position)
-  const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
 
   const positionClasses = {
-    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
+    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0',
     middle: 'relative z-10 -ml-px mr-0 w-[calc(100%_+_2px)] rounded-none border-x-0',
     last: 'relative z-10 -ml-px rounded-l-none border-l-0',
     none: '',
@@ -251,7 +237,7 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-1 flex size-auto h-6.5 select-none items-center truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
@@ -265,30 +251,10 @@ const MonthEventBadge = ({
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
-      {position === 'last' && !event.isAllDay && (
-        <div className="ml-auto">
-          <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
-        </div>
-      )}
-
-      {position !== 'last' && position !== 'middle' && (
-        <>
-          <div className="flex items-center gap-1.5 truncate">
-            <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-              <circle cx="4" cy="4" r="4" fill={event.color} />
-            </svg>
-
-            {renderBadgeText && (
-              <p className="flex-1 truncate font-semibold">
-                {event.title}
-              </p>
-            )}
-          </div>
-
-          {renderBadgeText && !isMultiDay && !event.isAllDay && (
-            <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
-          )}
-        </>
+      {renderBadgeText && (
+        <p className="flex-1 truncate font-semibold">
+          {event.title}
+        </p>
       )}
     </div>
   )
