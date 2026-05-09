@@ -1,4 +1,5 @@
-import { isToday, startOfDay, endOfDay, isSameDay, parseISO } from 'date-fns'
+import { isToday, startOfDay, endOfDay, format, isSameDay, parseISO } from 'date-fns'
+import { enUS, ko } from 'date-fns/locale'
 import { useMemo, useCallback, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -206,6 +207,9 @@ const MonthEventBadge = ({
   className?: string
   onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
+  const { i18n } = useTranslation()
+  const locale = i18n.language.startsWith('ko') ? ko : enUS
+  const timeFormat = i18n.language.startsWith('ko') ? 'a h:mm' : 'h:mm a'
   const itemStart = startOfDay(parseISO(event.startDate))
   const itemEnd = endOfDay(parseISO(event.endDate))
 
@@ -224,9 +228,10 @@ const MonthEventBadge = ({
   }
 
   const renderBadgeText = ['first', 'none'].includes(position)
+  const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
 
   const positionClasses = {
-    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0',
+    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
     middle: 'relative z-10 -ml-px mr-0 w-[calc(100%_+_2px)] rounded-none border-x-0',
     last: 'relative z-10 -ml-px rounded-l-none border-l-0',
     none: '',
@@ -237,7 +242,7 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-1 flex size-auto h-6.5 select-none items-center truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-[length:var(--fs-micro)] lg:text-[length:var(--fs-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
@@ -251,10 +256,24 @@ const MonthEventBadge = ({
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
-      {renderBadgeText && (
-        <p className="flex-1 truncate font-semibold">
-          {event.title}
-        </p>
+      {position === 'last' && !event.isAllDay && (
+        <div className="ml-auto hidden lg:block">
+          <span>{format(new Date(event.startDate), timeFormat, { locale })}</span>
+        </div>
+      )}
+
+      {position !== 'last' && position !== 'middle' && (
+        <>
+          {renderBadgeText && (
+            <p className="flex-1 truncate font-semibold">
+              {event.title}
+            </p>
+          )}
+
+          {renderBadgeText && !isMultiDay && !event.isAllDay && (
+            <span className="hidden lg:inline">{format(new Date(event.startDate), timeFormat, { locale })}</span>
+          )}
+        </>
       )}
     </div>
   )
