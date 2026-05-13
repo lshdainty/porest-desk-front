@@ -24,7 +24,7 @@ interface HeroStatCardProps {
 }
 
 const toneStyles: Record<HeroStatTone, string> = {
-  default: 'bg-card',
+  default: 'bg-surface-default',
   brand:
     'bg-[var(--color-surface-hero)] bg-gradient-to-br from-[var(--color-surface-hero)] to-card',
   positive: 'bg-emerald-50 dark:bg-emerald-950/40',
@@ -32,14 +32,14 @@ const toneStyles: Record<HeroStatTone, string> = {
 }
 
 const toneValueStyles: Record<HeroStatTone, string> = {
-  default: 'text-foreground',
-  brand: 'text-foreground',
+  default: 'text-text-primary',
+  brand: 'text-text-primary',
   positive: 'text-emerald-700 dark:text-emerald-400',
   negative: 'text-red-700 dark:text-red-400',
 }
 
 const toneIconStyles: Record<HeroStatTone, string> = {
-  default: 'bg-muted text-muted-foreground',
+  default: 'bg-surface-input text-text-secondary',
   brand: 'bg-primary/10 text-primary',
   positive: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400',
   negative: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400',
@@ -82,7 +82,7 @@ export const HeroStatCard = ({
               <Icon size={14} />
             </div>
           )}
-          <span className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+          <span className="text-xs sm:text-sm font-medium text-text-secondary truncate">
             {label}
           </span>
         </div>
@@ -117,7 +117,7 @@ export const HeroStatCard = ({
               <span>{Math.abs(delta)}%</span>
             </span>
           )}
-          {footer && <div className="text-[11px] sm:text-xs text-muted-foreground">{footer}</div>}
+          {footer && <div className="text-[11px] sm:text-xs text-text-secondary">{footer}</div>}
         </div>
       )}
     </div>

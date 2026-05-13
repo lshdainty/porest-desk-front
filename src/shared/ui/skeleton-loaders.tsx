@@ -8,7 +8,7 @@ interface CardSkeletonProps {
 
 export const CardSkeleton = ({ className, lines = 3 }: CardSkeletonProps) => {
   return (
-    <div className={cn('rounded-lg border bg-card p-4 space-y-3', className)}>
+    <div className={cn('rounded-lg border bg-surface-default p-4 space-y-3', className)}>
       <Skeleton className="h-5 w-2/3" />
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
@@ -49,7 +49,7 @@ interface ChartSkeletonProps {
 
 export const ChartSkeleton = ({ className, bars = 7 }: ChartSkeletonProps) => {
   return (
-    <div className={cn('rounded-lg border bg-card p-4 space-y-4', className)}>
+    <div className={cn('rounded-lg border bg-surface-default p-4 space-y-4', className)}>
       <div className="flex items-center justify-between">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-4 w-20" />
@@ -75,9 +75,9 @@ interface TableSkeletonProps {
 
 export const TableSkeleton = ({ className, rows = 5, columns = 4 }: TableSkeletonProps) => {
   return (
-    <div className={cn('rounded-lg border bg-card overflow-hidden', className)}>
+    <div className={cn('rounded-lg border bg-surface-default overflow-hidden', className)}>
       {/* Header */}
-      <div className="flex gap-4 border-b bg-muted/50 px-4 py-3">
+      <div className="flex gap-4 border-b bg-surface-input/50 px-4 py-3">
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1" />
         ))}

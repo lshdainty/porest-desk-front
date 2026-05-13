@@ -8,9 +8,9 @@ import { cn } from "@/shared/lib/index"
  * Phase 2 마이그레이션: porest 토큰 + desk-front variants(6) 보존.
  *
  * variants:
- *   default   — bg-card + border + shadow-sm. 표준 카드.
- *   elevated  — bg-card + border + shadow-md. 강조 카드.
- *   outline   — bg-card + border + shadow-none. 본문 분리만.
+ *   default   — bg-surface-default + border + shadow-sm. 표준 카드.
+ *   elevated  — bg-surface-default + border + shadow-md. 강조 카드.
+ *   outline   — bg-surface-default + border + shadow-none. 본문 분리만.
  *   inset     — bg-[var(--bg-sunken)] + border-0. 페이지 내 영역 구획.
  *   brand     — bg-[var(--bg-brand-tint)] + border-[var(--border-brand-soft)] + shadow-sm.
  *               Cobalt 톤 강조.
@@ -24,16 +24,16 @@ import { cn } from "@/shared/lib/index"
  */
 
 const cardVariants = cva(
-  "rounded-[var(--radius-lg)] border text-card-foreground transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+  "rounded-[var(--radius-lg)] border text-text-primary transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
   {
     variants: {
       variant: {
         default:
-          "bg-card border-border shadow-[var(--shadow-sm)]",
+          "bg-surface-default border-border-default shadow-[var(--shadow-sm)]",
         elevated:
-          "bg-card border-border shadow-[var(--shadow-md)]",
+          "bg-surface-default border-border-default shadow-[var(--shadow-md)]",
         outline:
-          "bg-card border-border shadow-none",
+          "bg-surface-default border-border-default shadow-none",
         inset:
           "bg-[var(--bg-sunken)] border-0 shadow-none",
         brand:
@@ -86,7 +86,7 @@ const CardTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-base font-bold tracking-[-0.015em] leading-snug text-foreground",
+      "text-base font-bold tracking-[-0.015em] leading-snug text-text-primary",
       className,
     )}
     {...props}
@@ -122,7 +122,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center gap-2 mt-4 pt-3.5 border-t border-border",
+      "flex items-center gap-2 mt-4 pt-3.5 border-t border-border-default",
       className,
     )}
     {...props}

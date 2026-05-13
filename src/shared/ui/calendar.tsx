@@ -19,7 +19,7 @@ import { Button, buttonVariants } from "@/shared/ui/button"
  *   - day cell: rounded-full(원형 40×40, preview .cal-cell SoT, Toss 톤)
  *   - today: outline 2px primary(테두리만, fill 없음 — selected와 시각 분리,
  *     사용자가 오늘 보면서 다른 날 선택 가능)
- *   - selected: bg-primary fill + text-primary-foreground
+ *   - selected: bg-primary fill + text-text-on-accent
  *   - weekday header: text-text-tertiary + caption 크기 + font-semibold + uppercase
  *   - month caption: text-title-sm + text-text-primary + font-medium
  *
@@ -45,7 +45,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:--spacing(10)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-bg-page group/calendar p-3 [--cell-size:--spacing(10)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
@@ -90,7 +90,7 @@ function Calendar({
           defaultClassNames.dropdown_root,
         ),
         dropdown: cn(
-          "absolute bg-popover inset-0 opacity-0",
+          "absolute bg-surface-default inset-0 opacity-0",
           defaultClassNames.dropdown,
         ),
         caption_label: cn(
@@ -224,10 +224,10 @@ function CalendarDayButton({
       data-range-middle={modifiers.range_middle}
       className={cn(
         // single selection: bg-primary fill (preview .cal-cell--selected SoT)
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[selected-single=true]:rounded-full",
+        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-text-on-accent data-[selected-single=true]:rounded-full",
         // range start/end: bg-primary fill (원형)
-        "data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-start=true]:rounded-full",
-        "data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-end=true]:rounded-full",
+        "data-[range-start=true]:bg-primary data-[range-start=true]:text-text-on-accent data-[range-start=true]:rounded-full",
+        "data-[range-end=true]:bg-primary data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
         // range middle: primary 12% mix bg (사이 셀)
         "data-[range-middle=true]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-none",
         // focus ring

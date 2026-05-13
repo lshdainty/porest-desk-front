@@ -61,8 +61,8 @@ export const BudgetRing = ({
     <Wrapper
       onClick={onClick}
       className={cn(
-        'flex items-center gap-4 rounded-xl border bg-card p-4 transition-colors text-left w-full',
-        onClick && 'hover:bg-muted/40 active:scale-[0.99]',
+        'flex items-center gap-4 rounded-xl border bg-surface-default p-4 transition-colors text-left w-full',
+        onClick && 'hover:bg-surface-input/40 active:scale-[0.99]',
         className,
       )}
     >
@@ -81,7 +81,7 @@ export const BudgetRing = ({
             r={radius}
             fill="none"
             strokeWidth={strokeWidth}
-            className="stroke-muted"
+            className="stroke-surface-input"
           />
           {/* Progress */}
           <circle
@@ -101,7 +101,7 @@ export const BudgetRing = ({
             {Math.round(percentage)}%
           </span>
           {label && (
-            <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{label}</span>
+            <span className="text-[10px] sm:text-xs text-text-secondary mt-0.5">{label}</span>
           )}
         </div>
       </div>
@@ -109,8 +109,8 @@ export const BudgetRing = ({
       {/* Text */}
       <div className="min-w-0 flex-1 space-y-1">
         {spent && totalBudget && (
-          <p className="text-xs sm:text-sm text-muted-foreground tabular-nums">
-            <span className="font-semibold text-foreground">{spent}</span>
+          <p className="text-xs sm:text-sm text-text-secondary tabular-nums">
+            <span className="font-semibold text-text-primary">{spent}</span>
             <span className="mx-1">/</span>
             <span>{totalBudget}</span>
           </p>
@@ -121,14 +121,14 @@ export const BudgetRing = ({
               'text-xs sm:text-sm tabular-nums',
               isOverBudget
                 ? 'text-red-600 dark:text-red-400 font-semibold'
-                : 'text-muted-foreground',
+                : 'text-text-secondary',
             )}
           >
             {remaining}
           </p>
         )}
         {perDay && !isOverBudget && (
-          <p className="text-[11px] sm:text-xs text-muted-foreground tabular-nums">
+          <p className="text-[11px] sm:text-xs text-text-secondary tabular-nums">
             {perDay}
           </p>
         )}

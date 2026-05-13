@@ -55,7 +55,7 @@ const ToolbarButton = ({ onClick, isActive, children, title }: ToolbarButtonProp
       'rounded p-1.5 transition-colors',
       isActive
         ? 'bg-primary/10 text-primary'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        : 'text-text-secondary hover:bg-surface-input hover:text-text-primary'
     )}
   >
     {children}
@@ -63,7 +63,7 @@ const ToolbarButton = ({ onClick, isActive, children, title }: ToolbarButtonProp
 )
 
 const ToolbarSeparator = () => (
-  <div className="mx-0.5 h-5 w-px bg-border" />
+  <div className="mx-0.5 h-5 w-px bg-border-default" />
 )
 
 export const RichTextEditor = ({
@@ -255,7 +255,7 @@ export const RichTextEditor = ({
         className={cn(
           'prose prose-sm dark:prose-invert max-w-none',
           '[&_.tiptap]:min-h-[200px] [&_.tiptap]:px-4 [&_.tiptap]:py-3 [&_.tiptap]:outline-none',
-          '[&_.tiptap_p.is-editor-empty:first-child::before]:text-muted-foreground/50',
+          '[&_.tiptap_p.is-editor-empty:first-child::before]:text-text-secondary/50',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:float-left',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:pointer-events-none',
@@ -263,9 +263,9 @@ export const RichTextEditor = ({
           '[&_.tiptap_ul[data-type=taskList]]:list-none [&_.tiptap_ul[data-type=taskList]]:pl-0',
           '[&_.tiptap_ul[data-type=taskList]_li]:flex [&_.tiptap_ul[data-type=taskList]_li]:items-start [&_.tiptap_ul[data-type=taskList]_li]:gap-2',
           '[&_.tiptap_ul[data-type=taskList]_li_label]:mt-px',
-          '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-muted [&_.tiptap_pre]:p-3',
-          '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-muted [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
-          '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-muted-foreground',
+          '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
+          '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
+          '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
           '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
         )}
       />
@@ -308,9 +308,9 @@ export const RichTextViewer = ({ content, className }: RichTextViewerProps) => {
         '[&_.tiptap]:outline-none',
         '[&_.tiptap_ul[data-type=taskList]]:list-none [&_.tiptap_ul[data-type=taskList]]:pl-0',
         '[&_.tiptap_ul[data-type=taskList]_li]:flex [&_.tiptap_ul[data-type=taskList]_li]:items-start [&_.tiptap_ul[data-type=taskList]_li]:gap-2',
-        '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-muted [&_.tiptap_pre]:p-3',
-        '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-muted [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
-        '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-muted-foreground',
+        '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
+        '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
+        '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
         '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
         className,
       )}

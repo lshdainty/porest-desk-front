@@ -128,7 +128,7 @@ export function InputDatePicker({
           sideOffset={10}
           style={{
             background: 'var(--bg-surface)',
-            // Calendar 내부 bg-popover / bg-background / bg-input 클래스가 참조하는
+            // Calendar 내부 bg-surface-default / bg-bg-page / bg-border-default 클래스가 참조하는
             // CSS 변수를 흰색으로 강제 — 월/년 select dropdown 도 같이 적용됨.
             '--popover': 'var(--bg-surface)',
             '--background': 'var(--bg-surface)',

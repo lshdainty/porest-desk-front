@@ -26,9 +26,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-[var(--bg-sunken)] text-foreground",
+          "border-transparent bg-[var(--bg-sunken)] text-text-primary",
         secondary:
-          "border-transparent bg-[var(--bg-sunken)] text-foreground",
+          "border-transparent bg-[var(--bg-sunken)] text-text-primary",
         destructive:
           "border-transparent bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
         danger:
@@ -46,7 +46,7 @@ const badgeVariants = cva(
         warm:
           "border-transparent bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)]",
         outline:
-          "border-border-default bg-transparent text-foreground hover:bg-[var(--bg-hover-subtle)]",
+          "border-border-default bg-transparent text-text-primary hover:bg-[var(--bg-hover-subtle)]",
         "outline-info":
           "border-info text-info bg-transparent hover:bg-[color-mix(in_srgb,var(--color-info)_8%,transparent)]",
         "outline-success":

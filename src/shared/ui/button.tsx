@@ -13,9 +13,9 @@ import { Spinner } from "@/shared/ui/spinner"
  *   - gap-sm + transition-[box-shadow] + focus-visible:ring-2 ring-ring ring-offset-2
  *   - default: bg-primary + shadow-sm/md + brightness hover/active
  *   - destructive: bg-destructive + 동일 패턴
- *   - outline: border-input + hover:bg-accent
- *   - secondary: bg-secondary + hover:bg-muted
- *   - ghost: hover:bg-accent (Porest는 hover:bg-surface-input, desk-front token alias 후 동일)
+ *   - outline: border-border-default + hover:bg-surface-input
+ *   - secondary: bg-secondary + hover:bg-surface-input
+ *   - ghost: hover:bg-surface-input (Porest는 hover:bg-surface-input, desk-front token alias 후 동일)
  *
  * desk-front 호환 보존:
  *   - size: default(=md 톤, h-9)/xs(h-6)/sm(h-8)/md(h-10 신규)/lg(h-11)/icon(h-9)
@@ -35,19 +35,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
+          "bg-primary text-text-on-accent shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
+          "bg-destructive text-text-on-accent shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
         outline:
-          "border border-input bg-transparent text-foreground hover:bg-accent hover:border-[var(--border-strong)] active:scale-[0.98]",
+          "border border-border-default bg-transparent text-text-primary hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98]",
         secondary:
-          "bg-secondary text-secondary-foreground border border-input hover:bg-muted hover:border-[var(--border-strong)] active:scale-[0.98] active:brightness-95",
+          "bg-secondary text-text-primary border border-border-default hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98] active:brightness-95",
         ghost:
-          "bg-transparent text-foreground hover:bg-accent active:scale-[0.98]",
+          "bg-transparent text-text-primary hover:bg-surface-input active:scale-[0.98]",
         link:
           "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px] active:brightness-90",
         warm:
-          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-muted",
+          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-surface-input",
       },
       size: {
         default: "h-9 px-4 py-[9px] text-sm [&_svg]:size-4",

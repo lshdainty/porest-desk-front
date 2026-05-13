@@ -30,13 +30,13 @@ const toggleVariants = cva(
         default:
           "bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary",
         outline:
-          "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:border-border-strong",
+          "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:border-border-default-strong",
         // POREST .p-seg__btn — segmented control item. <ToggleGroup variant="segmented">와 같이.
         segmented: [
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1",
           "text-[13px] font-semibold leading-none text-text-secondary",
           "hover:bg-transparent hover:text-text-secondary",
-          "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:font-bold",
+          "data-[state=on]:bg-primary data-[state=on]:text-text-on-accent data-[state=on]:font-bold",
           "data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.15)]",
         ].join(" "),
       },
