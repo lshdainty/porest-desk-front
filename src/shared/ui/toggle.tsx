@@ -6,32 +6,48 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
+/*
+ * Porest Toggle — porest-design specs/components/toggle.md SoT 기반.
+ * Phase 2 마이그레이션: porest 토큰 + desk-front variants(default/outline/segmented) +
+ * sizes(default/sm/lg) 보존.
+ *
+ * variants:
+ *   default (borderless toolbar): bg-transparent + hover:bg-surface-input + on:bg-surface-input
+ *   outline (독립 toggle): border-default + on:border-strong
+ *   segmented (segmented control item): ToggleGroup variant="segmented"와 함께 사용
+ */
 const toggleVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 gap-2",
+  [
+    "inline-flex items-center justify-center gap-[var(--spacing-xs)] rounded-md font-medium",
+    "ring-offset-bg-page transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "bg-transparent",
+        default:
+          "bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary",
         outline:
-          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
-        // POREST .p-seg__btn — segmented control item.
-        // Use with <ToggleGroup variant="segmented"> for the sunken bar background.
+          "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:border-border-strong",
+        // POREST .p-seg__btn — segmented control item. <ToggleGroup variant="segmented">와 같이.
         segmented: [
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1",
-          "text-[13px] font-semibold leading-none text-muted-foreground",
-          "hover:bg-transparent hover:text-[var(--fg-secondary)]",
-          "data-[state=on]:bg-[var(--bg-brand)] data-[state=on]:text-[var(--fg-on-brand)] data-[state=on]:font-bold",
+          "text-[13px] font-semibold leading-none text-text-secondary",
+          "hover:bg-transparent hover:text-text-secondary",
+          "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:font-bold",
           "data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.15)]",
         ].join(" "),
       },
       size: {
-        default: "h-10 px-3 min-w-10",
-        sm: "h-9 px-2.5 min-w-9",
-        lg: "h-11 px-5 min-w-11",
+        default: "h-10 px-3 min-w-10 text-sm",
+        sm: "h-9 px-2.5 min-w-9 text-[13px]",
+        lg: "h-11 px-5 min-w-11 text-base",
       },
     },
     compoundVariants: [
-      // segmented 변형은 size.default 의 h-10 (40px) 을 무력화 — padding 으로 높이 결정
+      // segmented는 size.default의 h-10을 무력화 — padding으로 높이 결정
       { variant: "segmented", size: "default", class: "h-7 min-w-0 px-3" },
       { variant: "segmented", size: "sm", class: "h-7 min-w-0 px-3" },
       { variant: "segmented", size: "lg", class: "h-8 min-w-0 px-3" },
@@ -40,7 +56,7 @@ const toggleVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 )
 
 const Toggle = React.forwardRef<
