@@ -1,9 +1,9 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
 
 import { cn } from "@/shared/lib/index"
+import { Spinner } from "@/shared/ui/spinner"
 
 /*
  * Porest Button — porest-design SoT(specs/components/button.md) 기반.
@@ -106,7 +106,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         {...props}
       >
-        {loading && <Loader2 className="animate-spin" aria-hidden />}
+        {loading && <Spinner size="sm" aria-hidden />}
         {children}
       </button>
     )
