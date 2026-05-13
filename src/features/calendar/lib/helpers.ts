@@ -301,7 +301,7 @@ export function getMonthCellEvents(date: Date, events: IEvent[], eventPositions:
  */
 export function convertExpenseToIEvent(expense: Expense): IEvent {
   const isIncome = expense.expenseType === 'INCOME'
-  const color = isIncome ? '#5F6D3F' : '#C85561'
+  const color = isIncome ? '#0147ad' : '#c73838'
   const sign = isIncome ? '+' : '-'
   const formattedAmount = new Intl.NumberFormat('ko-KR').format(expense.amount)
   const categoryName = expense.categoryName || ''
@@ -343,7 +343,7 @@ export function convertHolidayToIEvent(holiday: Holiday): IEvent {
     endDate: `${holiday.holidayDate}T23:59:59`,
     title: holiday.holidayName,
     description: '',
-    color: '#C85561',
+    color: '#c73838',
     isAllDay: true,
     sourceType: 'holiday',
     calendarRowId: null,
@@ -371,7 +371,7 @@ export function convertCalendarEventToIEvent(calendarEvent: CalendarEvent): IEve
     endDate: calendarEvent.endDate,
     title: calendarEvent.title,
     description: calendarEvent.description ?? '',
-    color: calendarEvent.calendarColor || calendarEvent.color || '#5F6D3F',
+    color: calendarEvent.calendarColor || calendarEvent.color || '#0147ad',
     isAllDay: calendarEvent.isAllDay,
     sourceType: 'calendar',
     calendarRowId: calendarEvent.calendarRowId ?? null,

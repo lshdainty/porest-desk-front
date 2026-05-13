@@ -20,7 +20,7 @@ export const MerchantAnalysisChart = ({ merchants }: MerchantAnalysisChartProps)
   const chartConfig = {
     amount: {
       label: t('totalExpense'),
-      color: '#f59e0b',
+      color: 'var(--color-chart-orange)',
     },
   } satisfies ChartConfig
 

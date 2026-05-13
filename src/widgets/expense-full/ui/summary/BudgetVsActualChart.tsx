@@ -28,11 +28,11 @@ export const BudgetVsActualChart = ({
   const chartConfig = {
     budget: {
       label: t('budget.amount'),
-      color: '#3b82f6',
+      color: 'var(--color-primary)',
     },
     actual: {
       label: t('totalExpense'),
-      color: '#ef4444',
+      color: 'var(--color-error)',
     },
   } satisfies ChartConfig
 

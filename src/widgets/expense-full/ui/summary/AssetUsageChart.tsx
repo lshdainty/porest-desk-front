@@ -10,9 +10,12 @@ import {
 import { formatCurrency } from '@/shared/lib'
 import type { AssetExpenseSummary } from '@/entities/expense'
 
+// porest chart palette 10색 의미 기반(red/orange/yellow/green/blue/indigo/violet/pink/brown/gray)
 const COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
-  '#14b8a6', '#f43f5e', '#6366f1', '#84cc16', '#06b6d4',
+  'var(--color-chart-blue)', 'var(--color-chart-green)', 'var(--color-chart-orange)',
+  'var(--color-chart-violet)', 'var(--color-chart-pink)', 'var(--color-chart-indigo)',
+  'var(--color-chart-red)', 'var(--color-chart-yellow)', 'var(--color-chart-brown)',
+  'var(--color-chart-gray)',
 ]
 
 const RADIAN = Math.PI / 180

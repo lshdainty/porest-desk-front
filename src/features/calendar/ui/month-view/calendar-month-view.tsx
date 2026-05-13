@@ -32,7 +32,7 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
     const summary = map.get(dayKey) ?? { income: 0, expense: 0 }
     const amount = parseExpenseAmount(event.title)
 
-    if (event.color === '#5F6D3F') {
+    if (event.color === '#0147ad') {
       summary.income += amount
     } else {
       summary.expense += amount
