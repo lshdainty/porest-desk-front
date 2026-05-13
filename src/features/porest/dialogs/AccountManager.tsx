@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ChevronRight, Loader2, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
+import { ChevronRight, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 import {
   useAssets,
@@ -125,7 +126,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <div className="cat-list">
           {isLoading ? (
             <div className="cat-list__empty">
-              <Loader2 size={20} className="animate-spin" style={{ color: 'var(--fg-tertiary)' }} />
+              <Spinner size="md" />
               <div>불러오는 중…</div>
             </div>
           ) : (

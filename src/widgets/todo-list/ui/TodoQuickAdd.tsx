@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 
 interface TodoQuickAddProps {
@@ -70,7 +71,7 @@ export const TodoQuickAdd = ({ onAdd, isLoading }: TodoQuickAddProps) => {
         className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
         autoFocus
       />
-      {isLoading && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+      {isLoading && <Spinner size="sm" />}
     </div>
   )
 }

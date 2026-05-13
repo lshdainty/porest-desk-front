@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { useSubtasks } from '@/features/todo'
 import type { Todo } from '@/entities/todo'
 import { TodoItem } from './TodoItem'
@@ -16,7 +16,7 @@ export const SubtaskList = ({ parentId, onToggle, onEdit, onDelete }: SubtaskLis
   if (isLoading) {
     return (
       <div className="ml-6 flex items-center py-2">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <Spinner size="sm" />
       </div>
     )
   }

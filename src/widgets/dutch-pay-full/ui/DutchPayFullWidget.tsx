@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Plus,
-  Loader2,
   Users,
   Check,
   CheckCheck,
@@ -11,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -118,7 +118,7 @@ export const DutchPayFullWidget = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Spinner size="md" />
       </div>
     )
   }

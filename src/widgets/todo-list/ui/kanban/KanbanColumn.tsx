@@ -2,7 +2,8 @@ import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 import { Badge } from '@/shared/ui/badge'
 import type { Todo } from '@/entities/todo'
@@ -141,7 +142,7 @@ export const KanbanColumn = ({
                 className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
                 autoFocus
               />
-              {isQuickAddLoading && <Loader2 size={12} className="animate-spin text-muted-foreground" />}
+              {isQuickAddLoading && <Spinner size="sm" />}
             </div>
           ) : (
             <button

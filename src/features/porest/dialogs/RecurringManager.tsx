@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
   Bell,
-  Loader2,
   PauseCircle,
   Pause,
   Pencil,
@@ -12,6 +11,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
@@ -512,7 +512,7 @@ function RecAction({
       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
     >
       {loading
-        ? <Loader2 size={15} strokeWidth={2.2} className="animate-spin" />
+        ? <Spinner size="sm" />
         : <Icon size={15} strokeWidth={1.9} />}
     </button>
   )

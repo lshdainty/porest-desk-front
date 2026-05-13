@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Plus,
-  Loader2,
   ArrowLeft,
   Pin,
   Trash2,
@@ -14,6 +13,7 @@ import {
   AlertCircle,
   RotateCw,
 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { toast } from 'sonner'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
@@ -273,7 +273,7 @@ export const MemoEditorWidget = () => {
             {/* Memo list */}
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Spinner size="md" />
               </div>
             ) : (
               <MemoList
@@ -338,7 +338,7 @@ export const MemoEditorWidget = () => {
                   </>
                 )}
                 {autoSaveStatus === 'saving' && (
-                  <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                  <Spinner size="sm" />
                 )}
                 {autoSaveStatus === 'saved' && (
                   <Check size={14} className="text-green-600 dark:text-green-400" />
@@ -472,7 +472,7 @@ export const MemoEditorWidget = () => {
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Spinner size="md" />
             </div>
           ) : (
             <MemoList
@@ -514,7 +514,7 @@ export const MemoEditorWidget = () => {
               <div className="flex items-center gap-2">
                 {autoSaveStatus === 'saving' && (
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Loader2 size={12} className="animate-spin" />
+                    <Spinner size="sm" />
                     {t('autoSave.saving')}
                   </span>
                 )}

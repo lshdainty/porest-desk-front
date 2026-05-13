@@ -4,8 +4,9 @@ import { useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import {
-  Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
+  Plus, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -468,7 +469,7 @@ export const TodoListWidget = () => {
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Spinner size="md" />
           </div>
         ) : viewMode === 'kanban' ? (
           <KanbanBoard

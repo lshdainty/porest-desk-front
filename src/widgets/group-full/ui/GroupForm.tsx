@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -77,7 +77,7 @@ export const GroupForm = ({ initialData, onSubmit, onCancel, isSubmitting }: Gro
         <Label>{t('form.groupType')}</Label>
         {isLoadingTypes ? (
           <div className="flex items-center gap-2 py-2">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <Spinner size="sm" />
           </div>
         ) : (
           <Select
