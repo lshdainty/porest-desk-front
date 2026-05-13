@@ -1,6 +1,25 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* =============================================================================
+ * POREST Design System tokens — Phase 0 도입 (chore/design-tokens 브랜치)
+ *
+ * `porest-design` 산출물 두 파일을 옆에 두기만 함. 기존 Mossy/Bark/Mist 토큰은
+ * 그대로 보존(아래 :root 블록)되며, Porest 토큰(`--color-primary`, `--color-bg-page`,
+ * `--color-text-*`, `--spacing-*`, `--text-*` 등)이 추가로 살아 있음.
+ *
+ * Phase 1 — 기존 semantic 토큰(`--bg-canvas`, `--fg-primary` 등)을 Porest 토큰으로
+ * alias하여 Mossy 색→Cobalt 색 일괄 전환.
+ * Phase 2~ — 기존 컴포넌트가 Porest 토큰을 직접 참조하도록 점진 마이그레이션.
+ *
+ * 충돌 토큰 노트(현재 후승=기존 Mossy 값 유지):
+ *   --radius-sm (Porest 4 / Mossy 6) — 기존 6 유지
+ *   --shadow-sm/md/lg/xl (Mossy green tinted vs Porest neutral) — 기존 유지
+ *   --font-sans (둘 다 Pretendard, 호환)
+ * ========================================================================== */
+@import "./shared/styles/porest-tokens.css";
+@import "./shared/styles/porest-shadcn-bridge.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================

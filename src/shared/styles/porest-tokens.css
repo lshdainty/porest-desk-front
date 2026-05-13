@@ -1,0 +1,191 @@
+/* Generated from DESIGN.desk.md by scripts/build-tailwind-v4.mjs — do not edit. */
+/* Tailwind v4 @theme CSS (CSS-first config). */
+
+@theme {
+  /* Font family — Korean-first Pretendard, Inter fallback */
+  --font-sans: "Pretendard", "Inter", system-ui, sans-serif;
+  --default-font-family: var(--font-sans);
+
+  /* Colors */
+  --color-primary: #0147ad;
+  --color-primary-light: #5fa0e5;
+  --color-bg-page: #f5f6fa;
+  --color-bg-page-dark: #1a1f2e;
+  --color-surface-default: #ffffff;
+  --color-surface-default-dark: #242938;
+  --color-surface-input: #f0f2f7;
+  --color-surface-input-dark: #2d3346;
+  --color-text-primary: #1a1f2e;
+  --color-text-primary-dark: #f5f6fa;
+  --color-text-secondary: #4e5968;
+  --color-text-secondary-dark: #b0b8c4;
+  --color-text-tertiary: #62697a;
+  --color-text-tertiary-dark: #9da3b0;
+  --color-text-disabled: #828995;
+  --color-text-disabled-dark: #7a8294;
+  --color-text-on-accent: #ffffff;
+  --color-border-default: #e5e8ef;
+  --color-border-default-dark: #353b4d;
+  --color-border-strong: #7d8593;
+  --color-border-strong-dark: #8b95a8;
+  --color-border-focus: #0147ad;
+  --color-border-focus-light: #5fa0e5;
+  --color-success: #16803f;
+  --color-success-light: #4ade80;
+  --color-error: #dc2626;
+  --color-error-light: #f87171;
+  --color-warning: #c84d0e;
+  --color-warning-light: #fb923c;
+  --color-info: #1d6fcb;
+  --color-info-light: #60a5fa;
+  --color-chart-red: #c73838;
+  --color-chart-orange: #b36418;
+  --color-chart-yellow: #8c7400;
+  --color-chart-green: #2d8060;
+  --color-chart-blue: #2c70bf;
+  --color-chart-indigo: #5e60c8;
+  --color-chart-violet: #8b4dba;
+  --color-chart-pink: #b83b7a;
+  --color-chart-brown: #9a6536;
+  --color-chart-gray: #6b7484;
+  --color-chart-red-light: #eca0a0;
+  --color-chart-orange-light: #e8b266;
+  --color-chart-yellow-light: #d4b83a;
+  --color-chart-green-light: #6bcb86;
+  --color-chart-blue-light: #7bbbed;
+  --color-chart-indigo-light: #abb0f0;
+  --color-chart-violet-light: #d2a8ec;
+  --color-chart-pink-light: #eca0bc;
+  --color-chart-brown-light: #dcb088;
+  --color-chart-gray-light: #b5bbc5;
+
+  /* Typography (font-size + line-height + font-weight + letter-spacing modifiers) */
+  --text-display-xl: 56px;
+  --text-display-xl--line-height: 1.05;
+  --text-display-xl--font-weight: 700;
+  --text-display-xl--letter-spacing: -1.12px;
+  --text-display-lg: 40px;
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.4px;
+  --text-display-md: 32px;
+  --text-display-md--line-height: 1.2;
+  --text-display-md--font-weight: 700;
+  --text-display-md--letter-spacing: -0.32px;
+  --text-display-sm: 24px;
+  --text-display-sm--line-height: 1.3;
+  --text-display-sm--font-weight: 700;
+  --text-title-lg: 20px;
+  --text-title-lg--line-height: 1.4;
+  --text-title-lg--font-weight: 700;
+  --text-title-md: 18px;
+  --text-title-md--line-height: 1.4;
+  --text-title-md--font-weight: 600;
+  --text-title-sm: 16px;
+  --text-title-sm--line-height: 1.4;
+  --text-title-sm--font-weight: 500;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.6;
+  --text-body-lg--font-weight: 400;
+  --text-body-md: 15px;
+  --text-body-md--line-height: 1.6;
+  --text-body-md--font-weight: 400;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 1.5;
+  --text-body-sm--font-weight: 400;
+  --text-label-md: 14px;
+  --text-label-md--line-height: 1.4;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 13px;
+  --text-label-sm--line-height: 1.4;
+  --text-label-sm--font-weight: 400;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+  --text-caption--font-weight: 400;
+  --text-badge: 11px;
+  --text-badge--line-height: 1.2;
+  --text-badge--font-weight: 600;
+  --text-overline: 10px;
+  --text-overline--line-height: 1.3;
+  --text-overline--font-weight: 700;
+  --text-overline--letter-spacing: 0.8px;
+
+  /* Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+
+  /* Shadow (from prose-token table — DESIGN*.md '## Elevation & Depth') */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 18, 28, 0.05);
+  --shadow-md: 0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
+  --shadow-lg: 0 8px 24px -4px rgba(15, 18, 28, 0.10), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
+  --shadow-xl: 0 24px 48px -8px rgba(15, 18, 28, 0.16), 0 8px 16px -4px rgba(15, 18, 28, 0.08);
+  --shadow-sm-dark: 0 1px 2px 0 rgba(0, 0, 0, 0.30), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --shadow-md-dark: 0 2px 8px -1px rgba(0, 0, 0, 0.40), 0 1px 3px -1px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  --shadow-lg-dark: 0 8px 24px -4px rgba(0, 0, 0, 0.50), 0 2px 6px -2px rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  --shadow-xl-dark: 0 24px 48px -8px rgba(0, 0, 0, 0.60), 0 8px 16px -4px rgba(0, 0, 0, 0.30), inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+
+  /* Motion (from prose-token table — DESIGN*.md '## Motion') */
+  --motion-duration-fast: 150ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 300ms;
+  --motion-duration-slower: 500ms;
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-duration-loop: 1500ms;
+  --motion-ease-linear: linear;
+
+  /* Overlay dim (from prose-token table — alpha 채널 rgba) */
+  --overlay-dim-light: rgba(0, 0, 0, 0.50);
+  --overlay-dim-dark: rgba(0, 0, 0, 0.65);
+
+  /* Breakpoints (from prose-token table — Apple Store reference) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 736px;
+  --breakpoint-lg: 834px;
+  --breakpoint-xl: 1069px;
+  --breakpoint-2xl: 1441px;
+
+  /* Touch targets (from prose-token table — WCAG 2.5.5 AAA) */
+  --touch-min: 44px;
+  --touch-pill-w: 100px;
+  --touch-circular: 44px;
+  --touch-nav-h: 32px;
+  --touch-nav-w: 80px;
+
+  /* Z-index (from prose-token table — layering stacking order) */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-drawer: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+}
+
+/* Keyframes (from v74 Animation library — DESIGN.md '## Motion → Animation library') */
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fade-out { from { opacity: 1 } to { opacity: 0 } }
+@keyframes slide-in-up { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes slide-in-down { from { transform: translateY(-8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes slide-in-left { from { transform: translateX(-8px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+@keyframes slide-in-right { from { transform: translateX(8px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+@keyframes scale-in { from { transform: scale(0.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes scale-out { from { transform: scale(1); opacity: 1 } to { transform: scale(0.96); opacity: 0 } }
+@keyframes bounce-in { 0% { transform: scale(0.3); opacity: 0 } 50% { transform: scale(1.05) } 70% { transform: scale(0.9) } 100% { transform: scale(1); opacity: 1 } }
+@keyframes shake { 10%, 90% { transform: translateX(-1px) } 20%, 80% { transform: translateX(2px) } 30%, 50%, 70% { transform: translateX(-4px) } 40%, 60% { transform: translateX(4px) } }
+@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
+@keyframes shimmer { from { transform: translateX(-100%) } to { transform: translateX(100%) } }
+@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0 } }
