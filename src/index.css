@@ -398,7 +398,10 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
+  /* --color-primary: tokens.desk.css @theme {} 안에 `--color-primary: #0147ad` 직접
+   * 정의됨. 여기서 `var(--primary)`로 재정의하면 chain이 `--primary → --bg-brand →
+   * --color-primary` 자기 참조 cycle → bg-primary utility 무효 → 배경 transparent +
+   * 흰 글씨 깨짐. 이 라인 의도적 제거. (Phase 2 fix) */
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
