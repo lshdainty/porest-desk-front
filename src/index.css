@@ -84,77 +84,77 @@
   --sprout-500: oklch(0.735 0.105 128);
   --sprout-700: oklch(0.540 0.095 125);
 
-  /* Semantic — light */
-  --bg-canvas:        var(--mist-100);
-  --bg-surface:       var(--mist-0);
-  --bg-surface-raised: var(--mist-0);
-  --bg-sunken:        var(--mist-200);
-  --bg-muted:         var(--mist-100);
-  --bg-section-warm:  var(--bark-100);
-  --bg-inverse:       var(--mossy-900);
-  --bg-brand:         var(--mossy-500);
-  --bg-brand-hover:   var(--mossy-600);
-  --bg-brand-press:   var(--mossy-700);
-  --bg-brand-subtle:  var(--mossy-50);
-  --bg-brand-muted:   var(--mossy-100);
-  --fg-primary:       var(--mist-950);
-  --fg-secondary:     var(--mist-700);
-  --fg-tertiary:      var(--mist-600);
-  --fg-disabled:      var(--mist-400);
-  --fg-placeholder:   var(--mist-500);
-  --fg-on-brand:      var(--mist-0);
-  --fg-on-warm:       var(--bark-900);
-  --fg-brand:         var(--mossy-700);
-  --fg-brand-strong:  var(--mossy-800);
-  --fg-link:          var(--mossy-700);
-  --fg-link-hover:    var(--mossy-800);
-  --border-subtle:    var(--mist-200);
-  --border-default:   var(--mist-300);
-  --border-strong:    var(--mist-400);
-  --border-focus:     var(--mossy-500);
-  --border-brand:     var(--mossy-500);
-  --border-warm:      var(--bark-300);
-  --status-success:         var(--mossy-600);
-  --status-success-subtle:  var(--mossy-50);
-  --status-success-fg:      var(--mossy-800);
-  --status-warning:         var(--sunlit-500);
-  --status-warning-subtle:  var(--sunlit-100);
-  --status-warning-fg:      var(--sunlit-700);
-  --status-danger:          var(--berry-500);
-  --status-danger-subtle:   var(--berry-100);
-  --status-danger-fg:       var(--berry-700);
-  --status-info:            var(--sky-500);
-  --status-info-subtle:     var(--sky-100);
-  --status-info-fg:         var(--sky-700);
+  /* Semantic — light (Phase 1: Porest 토큰 alias)
+   * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Porest로 alias.
+   * 기존 컴포넌트는 변수명 그대로 사용 — 색만 Cobalt 톤으로 전환. */
+  --bg-canvas:        var(--color-bg-page);
+  --bg-surface:       var(--color-surface-default);
+  --bg-surface-raised: var(--color-surface-default);
+  --bg-sunken:        var(--color-surface-input);
+  --bg-muted:         var(--color-surface-input);
+  --bg-section-warm:  var(--color-surface-input);
+  --bg-inverse:       var(--color-text-primary);
+  --bg-brand:         var(--color-primary);
+  --bg-brand-hover:   var(--color-primary);
+  --bg-brand-press:   var(--color-primary);
+  --bg-brand-subtle:  color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --bg-brand-muted:   color-mix(in srgb, var(--color-primary) 14%, transparent);
+  --fg-primary:       var(--color-text-primary);
+  --fg-secondary:     var(--color-text-secondary);
+  --fg-tertiary:      var(--color-text-tertiary);
+  --fg-disabled:      var(--color-text-disabled);
+  --fg-placeholder:   var(--color-text-tertiary);
+  --fg-on-brand:      var(--color-text-on-accent);
+  --fg-on-warm:       var(--color-text-primary);
+  --fg-brand:         var(--color-primary);
+  --fg-brand-strong:  var(--color-primary);
+  --fg-link:          var(--color-primary);
+  --fg-link-hover:    var(--color-primary);
+  --border-subtle:    var(--color-border-default);
+  --border-default:   var(--color-border-default);
+  --border-strong:    var(--color-border-strong);
+  --border-focus:     var(--color-border-focus);
+  --border-brand:     var(--color-primary);
+  --border-warm:      var(--color-border-default);
+  --status-success:         var(--color-success);
+  --status-success-subtle:  color-mix(in srgb, var(--color-success) 12%, transparent);
+  --status-success-fg:      var(--color-success);
+  --status-warning:         var(--color-warning);
+  --status-warning-subtle:  color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --status-warning-fg:      var(--color-warning);
+  --status-danger:          var(--color-error);
+  --status-danger-subtle:   color-mix(in srgb, var(--color-error) 12%, transparent);
+  --status-danger-fg:       var(--color-error);
+  --status-info:            var(--color-info);
+  --status-info-subtle:     color-mix(in srgb, var(--color-info) 12%, transparent);
+  --status-info-fg:         var(--color-info);
 
-  /* Interaction tints — dark-mode aware. Components MUST use these,
-     never raw --mist-* / --mossy-* / --bark-* primitives, otherwise
-     hover states stay light when the theme flips. */
-  --bg-hover-subtle:      var(--mist-100);
-  --bg-hover-strong:      var(--mist-200);
-  --bg-row-hover:         var(--mist-50);
-  --bg-table-head:        var(--mist-100);
-  --bg-disabled:          var(--mist-100);
-  --bg-track:             var(--mist-300);
+  /* Interaction tints */
+  --bg-hover-subtle:      var(--color-surface-input);
+  --bg-hover-strong:      var(--color-surface-input);
+  --bg-row-hover:         var(--color-surface-input);
+  --bg-table-head:        var(--color-bg-page);
+  --bg-disabled:          var(--color-surface-input);
+  --bg-track:             var(--color-border-default);
 
   /* Brand-tinted interaction surfaces */
-  --bg-brand-tint:        var(--mossy-50);
-  --bg-brand-tint-strong: var(--mossy-100);
-  --border-brand-soft:    var(--mossy-200);
-  --border-brand-mid:     var(--mossy-300);
+  --bg-brand-tint:        color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  --border-brand-soft:    var(--color-primary-light);
+  --border-brand-mid:     var(--color-primary);
 
-  /* Warm (Bark) tinted surfaces */
-  --bg-warm-tint:         var(--bark-100);
-  --bg-warm-tint-strong:  var(--bark-200);
-  --bg-warm-press:        var(--bark-300);
-  --fg-on-warm-strong:    var(--bark-900);
+  /* Warm (Bark) tinted surfaces — Porest엔 warm 톤 없음, surface-input으로 통합 */
+  --bg-warm-tint:         var(--color-surface-input);
+  --bg-warm-tint-strong:  var(--color-surface-input);
+  --bg-warm-press:        var(--color-border-default);
+  --fg-on-warm-strong:    var(--color-text-primary);
 
   /* Status interaction colors */
-  --status-success-border: var(--mossy-300);
-  --status-warning-border: var(--sunlit-500);
-  --status-danger-border:  var(--berry-500);
-  --status-danger-press:   var(--berry-700);
-  --status-info-border:    var(--sky-500);
+  --status-success-border: var(--color-success);
+  --status-warning-border: var(--color-warning);
+  --status-danger-border:  var(--color-error);
+  --status-danger-press:   var(--color-error);
+  --status-info-border:    var(--color-info);
 
   /* On-color text for solid status fills */
   --fg-on-danger:  #fff;
@@ -215,7 +215,7 @@
   /* Z-index */
   --z-base: 1; --z-sticky: 100; --z-dropdown: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;
 
-  /* ====== shadcn variable mapping → Mossy semantic ====== */
+  /* ====== shadcn variable mapping → Porest semantic (Phase 1) ====== */
   --background:           var(--bg-canvas);
   --foreground:           var(--fg-primary);
   --card:                 var(--bg-surface);
@@ -224,109 +224,126 @@
   --popover-foreground:   var(--fg-primary);
   --primary:              var(--bg-brand);
   --primary-foreground:   var(--fg-on-brand);
-  --secondary:            var(--mist-100);
+  --secondary:            var(--color-surface-input);
   --secondary-foreground: var(--fg-primary);
-  --muted:                var(--mist-100);
+  --muted:                var(--color-surface-input);
   --muted-foreground:     var(--fg-tertiary);
-  --accent:               var(--mossy-50);
+  --accent:               color-mix(in srgb, var(--color-primary) 8%, transparent);
   --accent-foreground:    var(--fg-brand-strong);
   --destructive:          var(--status-danger);
   --destructive-foreground: #fff;
   --border:               var(--border-subtle);
   --input:                var(--border-default);
   --ring:                 var(--border-focus);
-  --chart-1: var(--mossy-500);
-  --chart-2: var(--berry-500);
-  --chart-3: var(--sky-500);
-  --chart-4: var(--sunlit-500);
-  --chart-5: var(--berry-500);
+  /* chart palette — Porest 10색 의미 기반(blue→red→orange→green→violet 등) */
+  --chart-1: var(--color-primary);
+  --chart-2: var(--color-chart-red);
+  --chart-3: var(--color-chart-orange);
+  --chart-4: var(--color-chart-green);
+  --chart-5: var(--color-chart-violet);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
-  --sidebar-primary:        var(--mossy-500);
+  --sidebar-primary:        var(--color-primary);
   --sidebar-primary-foreground: var(--fg-on-brand);
-  --sidebar-accent:         var(--mossy-50);
+  --sidebar-accent:         color-mix(in srgb, var(--color-primary) 8%, transparent);
   --sidebar-accent-foreground: var(--fg-brand-strong);
   --sidebar-border:         var(--border-subtle);
   --sidebar-ring:           var(--border-focus);
-  --surface-hero:           var(--mossy-50);
+  --surface-hero:           color-mix(in srgb, var(--color-primary) 8%, transparent);
   --radius: var(--radius-lg);
 }
 
-/* Dark mode — Mossy Bark on near-black canvas */
+/* Dark mode — Phase 1: Porest *-dark 토큰 활성화 + semantic alias.
+ * Porest는 dark variant를 별도 토큰(*-dark suffix)으로 정의 — 이 블록에서
+ * base 토큰을 *-dark로 alias해 다크모드에서 자동 적용. semantic alias는
+ * light와 동일 (Porest 토큰이 *-dark로 바뀌었으니 자동 dark 색 적용). */
 .dark, :root.dark, [data-theme='dark'] {
-  --bg-canvas:        var(--mossy-950);
-  --bg-surface:       oklch(0.205 0.022 110);
-  --bg-surface-raised: oklch(0.240 0.025 110);
-  --bg-sunken:        oklch(0.150 0.018 110);
-  --bg-muted:         oklch(0.210 0.020 110);
-  --bg-section-warm:  oklch(0.230 0.028 65);
-  --bg-inverse:       var(--mist-100);
-  --bg-brand:         var(--mossy-400);
-  --bg-brand-hover:   var(--mossy-300);
-  --bg-brand-press:   var(--mossy-200);
-  --bg-brand-subtle:  oklch(0.280 0.045 110 / 0.5);
-  --bg-brand-muted:   oklch(0.235 0.035 110);
-  --fg-primary:       var(--mist-100);
-  --fg-secondary:     var(--mist-400);
-  --fg-tertiary:      var(--mist-500);
-  --fg-disabled:      var(--mist-700);
-  --fg-placeholder:   var(--mist-600);
-  --fg-on-brand:      var(--mossy-950);
-  --fg-on-warm:       var(--bark-100);
-  --fg-brand:         var(--mossy-300);
-  --fg-brand-strong:  var(--mossy-200);
-  --fg-link:          var(--mossy-300);
-  --fg-link-hover:    var(--mossy-200);
-  --border-subtle:    oklch(1 0 0 / 0.07);
-  --border-default:   oklch(1 0 0 / 0.12);
-  --border-strong:    oklch(1 0 0 / 0.20);
-  --border-focus:     var(--mossy-400);
-  --border-brand:     var(--mossy-400);
-  --border-warm:      oklch(1 0 0 / 0.10);
-  --status-success:         var(--mossy-400);
-  --status-success-subtle:  oklch(0.280 0.045 110 / 0.4);
-  --status-success-fg:      var(--mossy-200);
-  --status-warning-subtle:  oklch(0.320 0.060 82 / 0.35);
-  --status-warning-fg:      var(--sunlit-300);
-  --status-danger-subtle:   oklch(0.300 0.055 25 / 0.35);
-  --status-danger-fg:       var(--berry-300);
-  --status-info-subtle:     oklch(0.290 0.050 230 / 0.35);
-  --status-info-fg:         var(--sky-300);
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 10px rgba(0,0,0,0.45);
-  --shadow-lg: 0 16px 32px rgba(0,0,0,0.55);
-  --shadow-xl: 0 32px 64px rgba(0,0,0,0.65);
-  --shadow-brand: 0 6px 16px -4px oklch(0.66 0.06 110 / 0.5);
-  --shadow-focus: 0 0 0 3px oklch(0.66 0.06 110 / 0.35);
+  /* Porest *-dark 토큰 활성화 */
+  --color-bg-page:        var(--color-bg-page-dark);
+  --color-surface-default: var(--color-surface-default-dark);
+  --color-surface-input:  var(--color-surface-input-dark);
+  --color-text-primary:   var(--color-text-primary-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
+  --color-text-tertiary:  var(--color-text-tertiary-dark);
+  --color-text-disabled:  var(--color-text-disabled-dark);
+  --color-border-default: var(--color-border-default-dark);
+  --color-border-strong:  var(--color-border-strong-dark);
+  --shadow-sm:            var(--shadow-sm-dark);
+  --shadow-md:            var(--shadow-md-dark);
+  --shadow-lg:            var(--shadow-lg-dark);
+  --shadow-xl:            var(--shadow-xl-dark);
 
-  /* Interaction tints — dark variants */
-  --bg-hover-subtle:      oklch(1 0 0 / 0.04);
-  --bg-hover-strong:      oklch(1 0 0 / 0.08);
-  --bg-row-hover:         oklch(1 0 0 / 0.03);
-  --bg-table-head:        oklch(1 0 0 / 0.04);
-  --bg-disabled:          oklch(1 0 0 / 0.05);
-  --bg-track:             oklch(1 0 0 / 0.14);
+  /* Semantic alias — Porest 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
+  --bg-canvas:        var(--color-bg-page);
+  --bg-surface:       var(--color-surface-default);
+  --bg-surface-raised: var(--color-surface-default);
+  --bg-sunken:        var(--color-surface-input);
+  --bg-muted:         var(--color-surface-input);
+  --bg-section-warm:  var(--color-surface-input);
+  --bg-inverse:       var(--color-text-primary);
+  --bg-brand:         var(--color-primary);
+  --bg-brand-hover:   var(--color-primary);
+  --bg-brand-press:   var(--color-primary);
+  --bg-brand-subtle:  color-mix(in srgb, var(--color-primary) 12%, transparent);
+  --bg-brand-muted:   color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --fg-primary:       var(--color-text-primary);
+  --fg-secondary:     var(--color-text-secondary);
+  --fg-tertiary:      var(--color-text-tertiary);
+  --fg-disabled:      var(--color-text-disabled);
+  --fg-placeholder:   var(--color-text-tertiary);
+  --fg-on-brand:      var(--color-text-on-accent);
+  --fg-on-warm:       var(--color-text-primary);
+  --fg-brand:         var(--color-primary-light);
+  --fg-brand-strong:  var(--color-primary-light);
+  --fg-link:          var(--color-primary-light);
+  --fg-link-hover:    var(--color-primary-light);
+  --border-subtle:    var(--color-border-default);
+  --border-default:   var(--color-border-default);
+  --border-strong:    var(--color-border-strong);
+  --border-focus:     var(--color-border-focus-light);
+  --border-brand:     var(--color-primary-light);
+  --border-warm:      var(--color-border-default);
+  --status-success:         var(--color-success);
+  --status-success-subtle:  color-mix(in srgb, var(--color-success) 18%, transparent);
+  --status-success-fg:      var(--color-success-light);
+  --status-warning:         var(--color-warning);
+  --status-warning-subtle:  color-mix(in srgb, var(--color-warning) 18%, transparent);
+  --status-warning-fg:      var(--color-warning-light);
+  --status-danger:          var(--color-error);
+  --status-danger-subtle:   color-mix(in srgb, var(--color-error) 18%, transparent);
+  --status-danger-fg:       var(--color-error-light);
+  --status-info:            var(--color-info);
+  --status-info-subtle:     color-mix(in srgb, var(--color-info) 18%, transparent);
+  --status-info-fg:         var(--color-info-light);
 
-  --bg-brand-tint:        oklch(0.280 0.045 110 / 0.30);
-  --bg-brand-tint-strong: oklch(0.280 0.045 110 / 0.50);
-  --border-brand-soft:    oklch(0.45 0.05 110 / 0.4);
-  --border-brand-mid:     oklch(0.55 0.06 110 / 0.5);
+  /* Interaction tints */
+  --bg-hover-subtle:      var(--color-surface-input);
+  --bg-hover-strong:      var(--color-surface-input);
+  --bg-row-hover:         var(--color-surface-input);
+  --bg-table-head:        var(--color-bg-page);
+  --bg-disabled:          var(--color-surface-input);
+  --bg-track:             var(--color-border-default);
 
-  --bg-warm-tint:         oklch(0.260 0.030 65 / 0.55);
-  --bg-warm-tint-strong:  oklch(0.300 0.035 60 / 0.65);
-  --bg-warm-press:        oklch(0.350 0.038 55 / 0.75);
-  --fg-on-warm-strong:    var(--bark-100);
+  --bg-brand-tint:        color-mix(in srgb, var(--color-primary) 12%, transparent);
+  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --border-brand-soft:    color-mix(in srgb, var(--color-primary) 35%, transparent);
+  --border-brand-mid:     var(--color-primary-light);
 
-  --status-success-border: var(--mossy-400);
-  --status-warning-border: var(--sunlit-500);
-  --status-danger-border:  var(--berry-500);
-  --status-danger-press:   var(--berry-300);
-  --status-info-border:    var(--sky-500);
+  --bg-warm-tint:         var(--color-surface-input);
+  --bg-warm-tint-strong:  var(--color-surface-input);
+  --bg-warm-press:        var(--color-border-default);
+  --fg-on-warm-strong:    var(--color-text-primary);
+
+  --status-success-border: var(--color-success);
+  --status-warning-border: var(--color-warning);
+  --status-danger-border:  var(--color-error);
+  --status-danger-press:   var(--color-error-light);
+  --status-info-border:    var(--color-info);
 
   --fg-on-danger:  #fff;
-  --fg-on-success: var(--mossy-950);
+  --fg-on-success: #fff;
 
+  /* shadcn mapping */
   --background:           var(--bg-canvas);
   --foreground:           var(--fg-primary);
   --card:                 var(--bg-surface);
@@ -335,9 +352,9 @@
   --popover-foreground:   var(--fg-primary);
   --primary:              var(--bg-brand);
   --primary-foreground:   var(--fg-on-brand);
-  --secondary:            var(--bg-surface-raised);
+  --secondary:            var(--color-surface-input);
   --secondary-foreground: var(--fg-primary);
-  --muted:                var(--bg-muted);
+  --muted:                var(--color-surface-input);
   --muted-foreground:     var(--fg-tertiary);
   --accent:               var(--bg-brand-subtle);
   --accent-foreground:    var(--fg-brand);
@@ -346,14 +363,14 @@
   --border:               var(--border-subtle);
   --input:                var(--border-default);
   --ring:                 var(--border-focus);
-  --chart-1: var(--mossy-400);
-  --chart-2: var(--berry-500);
-  --chart-3: var(--sky-500);
-  --chart-4: var(--sunlit-500);
-  --chart-5: var(--berry-500);
+  --chart-1: var(--color-primary-light);
+  --chart-2: var(--color-chart-red-light);
+  --chart-3: var(--color-chart-orange-light);
+  --chart-4: var(--color-chart-green-light);
+  --chart-5: var(--color-chart-violet-light);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
-  --sidebar-primary:        var(--mossy-400);
+  --sidebar-primary:        var(--color-primary-light);
   --sidebar-primary-foreground: var(--fg-on-brand);
   --sidebar-accent:         var(--bg-brand-subtle);
   --sidebar-accent-foreground: var(--fg-brand);
