@@ -266,7 +266,7 @@ export const RichTextEditor = ({
           '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
           '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
           '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
-          '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
+          '[&_.tiptap_mark]:bg-[color-mix(in_srgb,var(--color-chart-yellow)_30%,transparent)] [&_.tiptap_mark]:dark:bg-[color-mix(in_srgb,var(--color-chart-yellow-light)_30%,transparent)]',
         )}
       />
     </div>
@@ -311,7 +311,7 @@ export const RichTextViewer = ({ content, className }: RichTextViewerProps) => {
         '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
         '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
         '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
-        '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
+        '[&_.tiptap_mark]:bg-[color-mix(in_srgb,var(--color-chart-yellow)_30%,transparent)] [&_.tiptap_mark]:dark:bg-[color-mix(in_srgb,var(--color-chart-yellow-light)_30%,transparent)]',
         className,
       )}
     />

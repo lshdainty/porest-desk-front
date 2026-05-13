@@ -20,18 +20,18 @@ interface BudgetRingProps {
   onClick?: () => void
 }
 
-/** Pick stroke color by threshold — mirrors the gradient logic previously in ExpenseFullWidget. */
+/** Pick stroke color by threshold — porest status 토큰 정합. */
 function getRingStroke(percentage: number): string {
-  if (percentage > 100) return 'stroke-red-500'
-  if (percentage > 90) return 'stroke-orange-500'
-  if (percentage > 70) return 'stroke-yellow-500'
+  if (percentage > 100) return 'stroke-error'
+  if (percentage > 90) return 'stroke-warning'
+  if (percentage > 70) return 'stroke-[var(--color-chart-yellow)]'
   return 'stroke-primary'
 }
 
 function getTextTone(percentage: number): string {
-  if (percentage > 100) return 'text-red-600 dark:text-red-400'
-  if (percentage > 90) return 'text-orange-600 dark:text-orange-400'
-  if (percentage > 70) return 'text-yellow-600 dark:text-yellow-400'
+  if (percentage > 100) return 'text-error'
+  if (percentage > 90) return 'text-warning'
+  if (percentage > 70) return 'text-[var(--color-chart-yellow)]'
   return 'text-primary'
 }
 
@@ -120,7 +120,7 @@ export const BudgetRing = ({
             className={cn(
               'text-xs sm:text-sm tabular-nums',
               isOverBudget
-                ? 'text-red-600 dark:text-red-400 font-semibold'
+                ? 'text-error font-semibold'
                 : 'text-text-secondary',
             )}
           >

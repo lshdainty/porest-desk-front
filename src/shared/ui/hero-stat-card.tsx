@@ -23,26 +23,27 @@ interface HeroStatCardProps {
   className?: string
 }
 
+// porest status 토큰 정합 — success/error 색이 light/dark 자동 swap.
 const toneStyles: Record<HeroStatTone, string> = {
   default: 'bg-surface-default',
   brand:
-    'bg-[var(--color-surface-hero)] bg-gradient-to-br from-[var(--color-surface-hero)] to-card',
-  positive: 'bg-emerald-50 dark:bg-emerald-950/40',
-  negative: 'bg-red-50 dark:bg-red-950/40',
+    'bg-[var(--color-surface-hero)] bg-gradient-to-br from-[var(--color-surface-hero)] to-surface-default',
+  positive: 'bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)]',
+  negative: 'bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)]',
 }
 
 const toneValueStyles: Record<HeroStatTone, string> = {
   default: 'text-text-primary',
   brand: 'text-text-primary',
-  positive: 'text-emerald-700 dark:text-emerald-400',
-  negative: 'text-red-700 dark:text-red-400',
+  positive: 'text-success',
+  negative: 'text-error',
 }
 
 const toneIconStyles: Record<HeroStatTone, string> = {
   default: 'bg-surface-input text-text-secondary',
-  brand: 'bg-primary/10 text-primary',
-  positive: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400',
-  negative: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400',
+  brand: 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary',
+  positive: 'bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-success',
+  negative: 'bg-[color-mix(in_srgb,var(--color-error)_16%,transparent)] text-error',
 }
 
 export const HeroStatCard = ({
@@ -109,8 +110,8 @@ export const HeroStatCard = ({
               className={cn(
                 'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-medium',
                 deltaIsGood
-                  ? 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
-                  : 'bg-red-100/80 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                  ? 'bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success'
+                  : 'bg-[color-mix(in_srgb,var(--color-error)_14%,transparent)] text-error',
               )}
             >
               <DeltaIcon size={12} />
