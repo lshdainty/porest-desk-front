@@ -2,26 +2,31 @@ import * as React from "react"
 
 import { cn } from "@/shared/lib/index"
 
-// POREST Design System — .p-textarea spec (mirrors .p-input)
+/*
+ * Porest Textarea — porest-design specs/components/textarea.md SoT 기반.
+ *
+ * - min-height 80px — 3줄 이상 본문 입력
+ * - body-md typography (15/400/1.6) 한국어 본문 가독성
+ * - bg-surface-input(input 정합) + border-default + text-primary
+ * - focus: border-focus + ring-2 ring-ring/30, aria-invalid: error 톤
+ * - resize: y(데스크 본문 편의 — 사용자가 늘려 적기 가능). 고정 필요 시 className="resize-none"
+ */
+
 const Textarea = React.forwardRef<
   HTMLTextAreaElement,
   React.ComponentProps<"textarea">
 >(({ className, ...props }, ref) => {
   return (
     <textarea
-      className={cn(
-        "flex min-h-[80px] w-full resize-y px-3 py-2 leading-[1.55]",
-        "rounded-[var(--radius-md)] border border-input",
-        "bg-card text-sm text-foreground",
-        "placeholder:text-[var(--fg-placeholder)]",
-        "transition-[border-color,box-shadow] duration-[140ms]",
-        "hover:enabled:border-[var(--border-strong)]",
-        "focus-visible:outline-none focus-visible:border-ring focus-visible:shadow-[var(--shadow-focus)]",
-        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[var(--bg-sunken)]",
-        "aria-invalid:border-destructive aria-invalid:focus-visible:shadow-[0_0_0_3px_oklch(0.605_0.135_25_/_0.2)]",
-        className
-      )}
       ref={ref}
+      className={cn(
+        "flex min-h-20 w-full rounded-sm border border-border-default bg-surface-input px-[var(--spacing-md)] py-[var(--spacing-sm)] font-sans text-body-md text-text-primary placeholder:text-text-tertiary resize-y",
+        "transition-[color,box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
+        "aria-invalid:border-error aria-invalid:ring-2 aria-invalid:ring-error/30",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
       {...props}
     />
   )
