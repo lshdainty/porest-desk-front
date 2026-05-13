@@ -5,6 +5,21 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/shared/lib"
 
+/*
+ * Porest Drawer — porest-design specs/components/drawer.md SoT 기반.
+ * Phase 2 마이그레이션: porest overlay/shadow/handle 토큰 + desk-front 구조 보존.
+ *
+ * 호환 보존:
+ *   - vaul shouldScaleBackground=false (desk-front 기본값) — 배경 스케일링 안 함
+ *   - DrawerHeader/Body/Footer 3-슬롯 구조
+ *   - DrawerTitle 17px/700, DrawerDescription text-xs
+ *
+ * Porest 시각:
+ *   - overlay: var(--overlay-dim-light) light / var(--overlay-dim-dark) dark
+ *   - content: bg-[var(--bg-surface)] + rounded-t-[radius-xl] + shadow-xl inline
+ *   - handle: 40×4 + bg-surface-input + rounded-full
+ */
+
 const Drawer = ({
   shouldScaleBackground = false,
   ...props
@@ -24,8 +39,8 @@ const DrawerOverlay = React.forwardRef<
   <DrawerPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[100] bg-[oklch(0.15_0.01_180/0.45)]",
-      className
+      "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+      className,
     )}
     {...props}
   />
@@ -35,19 +50,20 @@ DrawerOverlay.displayName = "DrawerOverlay"
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, style, ...props }, ref) => (
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[20px] bg-[var(--bg-surface)] outline-none",
-        className
+        "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-xl)] bg-[var(--bg-surface)] outline-none",
+        className,
       )}
+      style={{ boxShadow: "var(--shadow-xl)", ...style }}
       {...props}
     >
-      {/* sheet handle — vaul 이 swipe 감지하는 영역 */}
-      <div className="mx-auto mt-1.5 mb-2 h-1 w-10 shrink-0 rounded-full bg-[var(--pd-divider-strong)]" />
+      {/* handle — preview `.drw-handle` SoT (40×4 + surface-input + rounded-full) */}
+      <div className="mx-auto mt-1.5 mb-2 h-1 w-10 shrink-0 rounded-full bg-surface-input" />
       {children}
     </DrawerPrimitive.Content>
   </DrawerPortal>
@@ -61,7 +77,7 @@ const DrawerHeader = ({
   <div
     className={cn(
       "flex items-center gap-3 px-5 pb-4 pt-2",
-      className
+      className,
     )}
     {...props}
   />
@@ -85,7 +101,7 @@ const DrawerFooter = ({
   <div
     className={cn(
       "mt-auto flex items-center justify-end gap-2 px-5 py-3",
-      className
+      className,
     )}
     {...props}
   />
@@ -100,7 +116,7 @@ const DrawerTitle = React.forwardRef<
     ref={ref}
     className={cn(
       "text-[17px] font-bold tracking-[-0.01em] text-[var(--fg-primary)]",
-      className
+      className,
     )}
     {...props}
   />
