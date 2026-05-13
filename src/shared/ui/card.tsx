@@ -3,10 +3,28 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
-// POREST Design System — .p-card spec
-// padding은 호출자가 지정 (인라인 또는 CardContent/CardHeader 사용).
+/*
+ * Porest Card — porest-design specs/components/card.md SoT 기반.
+ * Phase 2 마이그레이션: porest 토큰 + desk-front variants(6) 보존.
+ *
+ * variants:
+ *   default   — bg-card + border + shadow-sm. 표준 카드.
+ *   elevated  — bg-card + border + shadow-md. 강조 카드.
+ *   outline   — bg-card + border + shadow-none. 본문 분리만.
+ *   inset     — bg-[var(--bg-sunken)] + border-0. 페이지 내 영역 구획.
+ *   brand     — bg-[var(--bg-brand-tint)] + border-[var(--border-brand-soft)] + shadow-sm.
+ *               Cobalt 톤 강조.
+ *   warm      — bg-[var(--bg-warm-tint)] + border-[var(--bg-warm-tint-strong)] + shadow-sm.
+ *               (Phase 1 alias로 warm → surface-input 정합 자동)
+ *
+ * composition: Card > CardHeader > CardTitle / CardDescription
+ *                    > CardContent
+ *                    > CardFooter
+ * padding은 호출자가 지정 — 인라인 또는 CardContent/CardHeader className에서.
+ */
+
 const cardVariants = cva(
-  "rounded-[var(--radius-lg)] border text-card-foreground transition-[background-color,border-color,box-shadow] duration-[140ms]",
+  "rounded-[var(--radius-lg)] border text-card-foreground transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
   {
     variants: {
       variant: {
@@ -27,7 +45,7 @@ const cardVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 )
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> &
@@ -40,12 +58,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       className={cn(cardVariants({ variant }), className)}
       {...props}
     />
-  )
+  ),
 )
 Card.displayName = "Card"
 
 // sec-head 시각: flex items-center gap-2 mb-3.
-// 부수 메타 정보는 자식 span/div에서 marginLeft:auto 또는 ml-auto 로 우측 밀어내는 패턴.
+// 부수 메타 정보는 자식 span/div에서 marginLeft:auto 또는 ml-auto 로 우측 밀어내기.
 // data-slot은 .all 같은 자손 셀렉터(porest.css)가 카드 헤더 안에서도 매칭되게 함.
 const CardHeader = React.forwardRef<
   HTMLDivElement,
@@ -69,7 +87,7 @@ const CardTitle = React.forwardRef<
     ref={ref}
     className={cn(
       "text-base font-bold tracking-[-0.015em] leading-snug text-foreground",
-      className
+      className,
     )}
     {...props}
   />
@@ -105,7 +123,7 @@ const CardFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "flex items-center gap-2 mt-4 pt-3.5 border-t border-border",
-      className
+      className,
     )}
     {...props}
   />
