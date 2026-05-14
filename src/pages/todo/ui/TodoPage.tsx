@@ -7,8 +7,9 @@ import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
+// 세 priority 모두 *-subtle bg + *-fg text 패턴으로 통일 (라이트/다크 자동 swap).
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; fg: string; label: string }> = {
-  HIGH: { bg: 'oklch(0.95 0.03 15)', fg: 'var(--fg-expense)', label: '중요' },
+  HIGH: { bg: 'var(--status-danger-subtle)', fg: 'var(--status-danger-fg)', label: '중요' },
   MEDIUM: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)', label: '보통' },
   LOW: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)', label: '여유' },
 }
