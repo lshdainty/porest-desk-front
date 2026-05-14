@@ -21,6 +21,7 @@ import { getPaletteByColor } from './CategoryEditDialog'
 import { SplitTxDialog } from './SplitTxDialog'
 import { RecurringFromTxDialog } from './RecurringFromTxDialog'
 import { DutchPayFromTxDialog } from './DutchPayFromTxDialog'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 const toDayKey = (iso?: string | null): string => (iso ? iso.slice(0, 10) : '')
 const toTimeKey = (iso?: string | null): string | null => {
@@ -47,6 +48,13 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   const splitsQ = useExpenseSplits(expense.rowId)
   const recurringsQ = useRecurringTransactions()
   const dutchPaysQ = useDutchPays()
+
+  const isLoading =
+    categoriesQ.isLoading ||
+    assetsQ.isLoading ||
+    splitsQ.isLoading ||
+    recurringsQ.isLoading ||
+    dutchPaysQ.isLoading
 
   const linkedRecurring = (recurringsQ.data ?? []).filter(
     r => r.sourceExpenseRowId === expense.rowId,
@@ -167,6 +175,10 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         footer={Footer}
         mobile={mobile}
       >
+        {isLoading ? (
+          <TxDetailSkeleton />
+        ) : (
+        <>
         {/* Hero */}
         <div
           style={{
@@ -365,6 +377,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             </div>
           </div>
         )}
+        </>
+        )}
       </ModalShell>
 
       {confirmDelete && (
@@ -388,6 +402,82 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
       {openSub === 'dutch' && (
         <DutchPayFromTxDialog expense={expense} onClose={() => setOpenSub(null)} mobile={mobile} />
       )}
+    </>
+  )
+}
+
+/** TxDetail skeleton — hero(아이콘+가맹점+금액+날짜) + 필드 5행 + quick actions 3개. */
+function TxDetailSkeleton() {
+  return (
+    <>
+      {/* Hero */}
+      <div
+        style={{
+          background: 'var(--pd-surface-inset)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: 22,
+          marginBottom: 18,
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ display: 'inline-flex', marginBottom: 12 }}>
+          <SkeletonBase className="h-10 w-10 rounded-lg" />
+        </div>
+        <SkeletonBase className="h-4 w-32 mx-auto mb-2" />
+        <SkeletonBase className="h-10 w-48 mx-auto" />
+        <SkeletonBase className="h-3 w-28 mx-auto mt-2" />
+      </div>
+
+      {/* Field rows */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+        }}
+      >
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '14px 16px',
+              gap: 12,
+              borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+            }}
+          >
+            <SkeletonBase className="h-4 w-16" />
+            <SkeletonBase className="h-4 w-24 ml-auto" />
+          </div>
+        ))}
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 16 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+              padding: '16px 4px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            <SkeletonBase className="h-5 w-5 rounded-md" />
+            <SkeletonBase className="h-3 w-14" />
+          </div>
+        ))}
+      </div>
     </>
   )
 }

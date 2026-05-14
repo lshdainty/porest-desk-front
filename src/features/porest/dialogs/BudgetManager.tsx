@@ -17,7 +17,8 @@ import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 const currentMonthKey = () => {
   const n = new Date()
@@ -232,7 +233,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           </div>
         )}
 
-        <Card variant="brand" style={{ padding: 20 }}>
+        {loading ? (
+          <BudgetManagerSkeleton mobile={mobile} />
+        ) : (
+        <>
+        <Card className="bg-[var(--bg-brand-tint)]">
+          <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
               <div
@@ -349,6 +355,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               전체 상한을 올리거나 카테고리 한도를 줄여주세요.
             </div>
           )}
+          </CardContent>
         </Card>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
@@ -369,11 +376,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </div>
 
         <div className="cat-list">
-          {loading ? (
-            <div className="cat-list__empty">
-              <span>불러오는 중…</span>
-            </div>
-          ) : categoryBudgets.length === 0 ? (
+          {categoryBudgets.length === 0 ? (
             <div className="cat-list__empty">
               <span>설정된 카테고리 예산이 없어요</span>
             </div>
@@ -453,6 +456,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             })
           )}
         </div>
+        </>
+        )}
 
         {mobile && (
           <button
@@ -523,6 +528,73 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           onConfirm={copyFromLastMonth}
         />
       )}
+    </>
+  )
+}
+
+/** BudgetManager skeleton — 월 총 예산 카드(brand-tint) + 카테고리별 예산 row 리스트. */
+function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <>
+      <Card className="bg-[var(--bg-brand-tint)]">
+        <CardContent>
+          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div>
+              <SkeletonBase className="h-3 w-20 mb-2" />
+              <SkeletonBase className="h-10 w-48" />
+            </div>
+            <SkeletonBase className="h-8 w-16 rounded-md ml-auto" />
+          </div>
+          <SkeletonBase className="h-2.5 w-full rounded-full mt-3.5" />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 12,
+              marginTop: 14,
+              paddingTop: 14,
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i}>
+                <SkeletonBase className="h-3 w-12 mb-1.5" />
+                <SkeletonBase className="h-5 w-20" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
+        <SkeletonBase className="h-4 w-36" />
+      </div>
+
+      <div className="cat-list">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className={MANAGE_ROW.className}
+            style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}
+          >
+            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                <SkeletonBase className="h-4 w-24" />
+                <SkeletonBase className="h-4 w-28 ml-auto" />
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+              <SkeletonBase className="h-3 w-32 mt-2" />
+            </div>
+            {!mobile && (
+              <div className="flex gap-1">
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </>
   )
 }

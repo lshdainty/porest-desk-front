@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
-import { Spinner } from '@/shared/ui/spinner'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 import {
   useAssets,
@@ -125,10 +125,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
         <div className="cat-list">
           {isLoading ? (
-            <div className="cat-list__empty">
-              <Spinner size="md" />
-              <div>불러오는 중…</div>
-            </div>
+            <AccountManagerSkeleton mobile={mobile} />
           ) : (
             <>
               {filtered.map(asset => {
@@ -288,6 +285,34 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           onConfirm={() => handleDelete(confirmDelete)}
         />
       )}
+    </>
+  )
+}
+
+/** AccountManager skeleton — asset row 리스트(icon + name + meta + 금액 + actions). */
+function AccountManagerSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className={MANAGE_ROW.className}>
+          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+          <div style={MANAGE_ROW.textStyle}>
+            <SkeletonBase className="h-4 w-32 mb-1.5" />
+            <SkeletonBase className="h-3 w-20" />
+          </div>
+          <div style={{ textAlign: 'right', marginRight: mobile ? 8 : 12 }}>
+            <SkeletonBase className="h-4 w-24 ml-auto" />
+          </div>
+          {!mobile ? (
+            <div className="flex gap-1">
+              <SkeletonBase className="h-7 w-14 rounded-md" />
+              <SkeletonBase className="h-7 w-7 rounded-md" />
+            </div>
+          ) : (
+            <SkeletonBase className="h-5 w-5 rounded-md" />
+          )}
+        </div>
+      ))}
     </>
   )
 }

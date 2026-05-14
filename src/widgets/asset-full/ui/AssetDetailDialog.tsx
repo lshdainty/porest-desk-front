@@ -21,6 +21,7 @@ import {
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { renderIcon } from '@/shared/lib'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 function fmtAxisNum(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
@@ -121,7 +122,7 @@ export function AssetDetailDialog({
 
   const absBalance = Math.abs(asset.balance)
 
-  const { data: relatedAll } = useSearchExpenses({ assetId: asset.rowId })
+  const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = (relatedAll ?? []).slice(0, 12)
 
   const title = isCard ? '카드 상세' : isInv ? '투자 상세' : '계좌 상세'
@@ -255,13 +256,7 @@ export function AssetDetailDialog({
           </div>
         </div>
         {trendLoading ? (
-          <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
-          }}>
-            불러오는 중…
-          </div>
+          <SkeletonBase className="h-[160px] w-full rounded-md" />
         ) : chartData.length === 0 ? (
           <div style={{
             height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
@@ -348,7 +343,20 @@ export function AssetDetailDialog({
             padding: '4px 14px',
           }}
         >
-          {relatedTx.length === 0 ? (
+          {relatedLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0' }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                    <SkeletonBase className="h-3 w-1/3" />
+                  </div>
+                  <SkeletonBase className="h-4 w-20 shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : relatedTx.length === 0 ? (
             <div
               style={{
                 padding: '24px 0',

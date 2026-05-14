@@ -8,6 +8,7 @@ import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } f
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import { PresetEditDialog } from './PresetEditDialog'
 import { Card } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type SortKey = 'used' | 'recent' | 'name'
 
@@ -15,6 +16,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   const templatesQ = useExpenseTemplates()
   const categoriesQ = useExpenseCategories()
   const deleteMut = useDeleteExpenseTemplate()
+
+  const isLoading = templatesQ.isLoading || categoriesQ.isLoading
 
   const items: ExpenseTemplate[] = useMemo(() => templatesQ.data ?? [], [templatesQ.data])
   const categories = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
@@ -90,9 +93,20 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-        <PMStat label="저장된 프리셋" value={String(items.length)} />
-        <PMStat label="누적 사용" value={`${totalUses}회`} />
-        <PMStat label="지출 / 수입" value={`${expenseCount} / ${incomeCount}`} />
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
+              <SkeletonBase className="h-3 w-16 mb-1.5" />
+              <SkeletonBase className="h-6 w-12" />
+            </div>
+          ))
+        ) : (
+          <>
+            <PMStat label="저장된 프리셋" value={String(items.length)} />
+            <PMStat label="누적 사용" value={`${totalUses}회`} />
+            <PMStat label="지출 / 수입" value={`${expenseCount} / ${incomeCount}`} />
+          </>
+        )}
       </div>
 
       {/* Toolbar */}
@@ -152,11 +166,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       </div>
 
       {/* List */}
-      <Card style={{ padding: 0, overflow: 'hidden' }}>
-        {templatesQ.isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-            불러오는 중…
-          </div>
+      <Card style={{ overflow: 'hidden' }}>
+        {isLoading ? (
+          <PresetManagerSkeleton mobile={mobile} />
         ) : sorted.length === 0 ? (
           <div style={{ padding: 60, textAlign: 'center' }}>
             <div
@@ -342,6 +354,40 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         />
       )}
     </div>
+  )
+}
+
+/** PresetManager skeleton — 프리셋 row 리스트(icon + name/meta + amount + actions). */
+function PresetManagerSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: mobile ? '12px 14px' : '14px 16px',
+            borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
+          }}
+        >
+          <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SkeletonBase className="h-4 w-32 mb-1.5" />
+            <SkeletonBase className="h-3 w-2/3" />
+          </div>
+          <div style={{ flexShrink: 0, textAlign: 'right', minWidth: mobile ? undefined : 80 }}>
+            <SkeletonBase className="h-4 w-20 ml-auto mb-1" />
+            <SkeletonBase className="h-3 w-12 ml-auto" />
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            <SkeletonBase className="h-8 w-8 rounded-md" />
+            <SkeletonBase className="h-8 w-8 rounded-md" />
+          </div>
+        </div>
+      ))}
+    </>
   )
 }
 

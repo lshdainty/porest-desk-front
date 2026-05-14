@@ -30,6 +30,7 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
   '기타': '기타',
 }
 import { useCardCatalogs } from '@/features/card-catalog'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
 import type {
   Asset,
@@ -464,7 +465,17 @@ export function AssetEditDialog({
                   style={{ maxHeight: 260, overflowY: 'auto' }}
                 >
                   {catalogQ.isLoading ? (
-                    <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">불러오는 중…</div>
+                    <div className="flex flex-col">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3 px-3 py-2.5" style={{ borderBottom: i < 4 ? '1px solid var(--border-subtle)' : 'none' }}>
+                          <SkeletonBase className="h-7 w-11 rounded-sm shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <SkeletonBase className="h-3.5 w-2/3 mb-1.5" />
+                            <SkeletonBase className="h-3 w-1/2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : catalogItems.length === 0 ? (
                     <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">검색 결과가 없어요</div>
                   ) : (

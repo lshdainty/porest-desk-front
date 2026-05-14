@@ -33,7 +33,7 @@ import { useAssets, useCreateTransfer } from '@/features/asset'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 
 const PAYMENT_METHODS: { v: string; l: string }[] = [
   { v: 'CASH', l: '현금' },
@@ -857,31 +857,33 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           onClick={() => !submitting && setConfirmDelete(false)}
         >
           <Card
-            style={{ width: 360, padding: 20 }}
+            style={{ width: 360 }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
-            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
-              선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setConfirmDelete(false)}
-                disabled={submitting}
-              >
-                취소
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={doDelete}
-                loading={submitting}
-              >
-                삭제
-              </Button>
-            </div>
+            <CardContent>
+              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
+              <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
+                선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={submitting}
+                >
+                  취소
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={doDelete}
+                  loading={submitting}
+                >
+                  삭제
+                </Button>
+              </div>
+            </CardContent>
           </Card>
         </div>
       )}

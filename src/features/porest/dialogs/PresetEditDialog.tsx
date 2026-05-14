@@ -17,6 +17,7 @@ import {
   useUpdateExpenseTemplate,
 } from '@/features/expense'
 import { useAssets } from '@/features/asset'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
 import type { ExpenseType } from '@/entities/expense'
 
@@ -181,25 +182,33 @@ export function PresetEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>카테고리</FieldLabel>
-        <CategoryGrid>
-          {topCategories.map(c => {
-            const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
-            const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
-            return (
-              <CategoryTile
-                key={c.rowId}
-                name={c.categoryName}
-                color={c.color ?? undefined}
-                icon={c.icon}
-                active={selectedParentId === c.rowId}
-                onClick={() => {
-                  const firstChild = childrenByParent.get(c.rowId)?.[0]
-                  setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
-                }}
-              />
-            )
-          })}
-        </CategoryGrid>
+        {categoriesQ.isLoading ? (
+          <CategoryGrid>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <SkeletonBase key={i} className="h-16 w-full rounded-md" />
+            ))}
+          </CategoryGrid>
+        ) : (
+          <CategoryGrid>
+            {topCategories.map(c => {
+              const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
+              const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
+              return (
+                <CategoryTile
+                  key={c.rowId}
+                  name={c.categoryName}
+                  color={c.color ?? undefined}
+                  icon={c.icon}
+                  active={selectedParentId === c.rowId}
+                  onClick={() => {
+                    const firstChild = childrenByParent.get(c.rowId)?.[0]
+                    setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
+                  }}
+                />
+              )
+            })}
+          </CategoryGrid>
+        )}
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
@@ -233,22 +242,26 @@ export function PresetEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>계좌·카드</FieldLabel>
-        <Select
-          value={assetRowId != null ? String(assetRowId) : '__none__'}
-          onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="선택 안 함" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">선택 안 함</SelectItem>
-            {assets.map(a => (
-              <SelectItem key={a.rowId} value={String(a.rowId)}>
-                {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {assetsQ.isLoading ? (
+          <SkeletonBase className="h-9 w-full rounded-md" />
+        ) : (
+          <Select
+            value={assetRowId != null ? String(assetRowId) : '__none__'}
+            onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="선택 안 함" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">선택 안 함</SelectItem>
+              {assets.map(a => (
+                <SelectItem key={a.rowId} value={String(a.rowId)}>
+                  {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </Field>
 
       <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>

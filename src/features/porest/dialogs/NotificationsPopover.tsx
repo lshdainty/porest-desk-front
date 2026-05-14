@@ -6,6 +6,7 @@ import {
   ListChecks,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
 import type { Notification, NotificationType } from '@/entities/notification'
 
@@ -127,8 +128,21 @@ export function NotificationsPopover({
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
           {isLoading && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              불러오는 중…
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="notif-row"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <SkeletonBase className="h-8 w-8 rounded-md notif-row__icon" />
+                  <div className="notif-row__text">
+                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                    <SkeletonBase className="h-3 w-full" />
+                  </div>
+                  <SkeletonBase className="h-3 w-10 shrink-0" />
+                </div>
+              ))}
             </div>
           )}
           {!isLoading && items.length === 0 && (

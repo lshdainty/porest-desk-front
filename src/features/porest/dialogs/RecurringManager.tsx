@@ -24,7 +24,8 @@ import { useExpenseCategories } from '@/features/expense'
 import type { RecurringTransaction } from '@/entities/recurring-transaction'
 import { getPaletteByColor } from './CategoryEditDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
@@ -33,6 +34,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   const categoriesQ = useExpenseCategories()
   const toggleMut = useToggleRecurringTransaction()
   const deleteMut = useDeleteRecurringTransaction()
+
+  const isLoading = recurringsQ.isLoading || categoriesQ.isLoading
 
   const items = recurringsQ.data ?? []
   const categories = categoriesQ.data ?? []
@@ -119,21 +122,28 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
     { k: 'paused', label: '일시정지', count: counts.paused },
   ]
 
+  if (isLoading) {
+    return <RecurringManagerSkeleton mobile={mobile} />
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Summary stats */}
-      <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
-          <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
-          <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
-          <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
-          <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
-        </div>
+      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <CardContent>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
+            <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
+            <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
+            <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
+            <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
+          </div>
+        </CardContent>
       </Card>
 
       {/* Next 7 days */}
       {stats.next7.length > 0 && (
-        <Card style={{ padding: mobile ? 16 : 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+          <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
             <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
@@ -205,11 +215,12 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               )
             })}
           </div>
+          </CardContent>
         </Card>
       )}
 
       {/* Filter chips + list */}
-      <Card style={{ padding: 0, overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
           {FILTERS.map(f => {
@@ -421,6 +432,98 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           {toast}
         </div>
       )}
+    </div>
+  )
+}
+
+/** RecurringManager skeleton — summary 4 stat 카드 + 다가오는 7일 + 전체 목록. */
+function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Summary stats */}
+      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <CardContent>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <SkeletonBase className="h-3 w-16" />
+                <SkeletonBase className="h-6 w-24" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Next 7 days */}
+      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <CardContent>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <SkeletonBase className="h-4 w-24" />
+            <SkeletonBase className="h-3 w-16" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 12px',
+                  borderRadius: 'var(--radius-tile)',
+                  background: 'var(--pd-surface-inset)',
+                }}
+              >
+                <SkeletonBase className="h-6 w-11 rounded-md shrink-0" />
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/2" />
+                </div>
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filter chips + list */}
+      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
+          <SkeletonBase className="h-4 w-20 mr-auto" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
+                alignItems: 'center',
+                gap: mobile ? 12 : 16,
+                padding: mobile ? '14px 16px' : '14px 20px',
+                borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md" />
+              <div style={{ minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-32 mb-1.5" />
+                <SkeletonBase className="h-3 w-2/3" />
+              </div>
+              {!mobile && <SkeletonBase className="h-4 w-24 ml-auto" />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {mobile && <SkeletonBase className="h-4 w-20 mr-1" />}
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   )
 }
