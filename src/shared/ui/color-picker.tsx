@@ -64,7 +64,7 @@ export const ColorPicker = ({ value, onChange, className }: ColorPickerProps) =>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-md border bg-surface-default p-3 shadow-md">
+        <div className="absolute right-0 top-full z-[200] mt-1 w-56 rounded-md border bg-surface-default p-3 shadow-md">
           <div className="space-y-3">
             {/* Preset colors */}
             <div className="grid grid-cols-8 gap-1.5">

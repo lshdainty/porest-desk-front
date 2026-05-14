@@ -31,7 +31,7 @@ const AlertDialogOverlay = React.forwardRef<
   <AlertDialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+      "fixed inset-0 z-[300] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
@@ -43,7 +43,7 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
 const alertDialogContentVariants = cva(
   [
-    "fixed left-[50%] top-[50%] z-50 grid w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
+    "fixed left-[50%] top-[50%] z-[301] grid w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
     "flex-col bg-[var(--bg-surface)] gap-[var(--spacing-md)] duration-200",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
