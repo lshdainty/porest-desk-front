@@ -17,6 +17,7 @@ import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
+import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useDashboardSummary, type DashboardSummary } from '@/features/dashboard'
@@ -1485,12 +1486,14 @@ function UpcomingMobileCard({
             <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               다가오는 일정
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onCalendar}
-              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+              className="ml-auto size-6 text-text-tertiary"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
           {events.map(ev => (
             <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
@@ -1513,12 +1516,14 @@ function UpcomingMobileCard({
             <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               최근 할 일
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onTodos}
-              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+              className="ml-auto size-6 text-text-tertiary"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
           {todos.map(td => {
             const done = td.status === 'COMPLETED'

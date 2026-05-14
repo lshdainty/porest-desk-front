@@ -108,18 +108,22 @@ const SortableFolderItem = ({
           }}
           className="flex-1 rounded border bg-background px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary"
         />
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => onRenameSubmit(folder.rowId)}
-          className="rounded p-1 text-primary hover:bg-primary/10"
+          className="size-7 text-primary hover:bg-primary/10"
         >
           <Check size={14} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onCancelEdit}
-          className="rounded p-1 text-muted-foreground hover:bg-muted"
+          className="size-7 text-muted-foreground"
         >
           <X size={14} />
-        </button>
+        </Button>
       </div>
     )
   }
@@ -183,18 +187,22 @@ const SortableFolderItem = ({
         <span className="truncate">{folder.folderName}</span>
       </button>
       <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => onStartEdit(folder.rowId, folder.folderName)}
-          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="size-6 text-muted-foreground hover:text-foreground"
         >
           <Pencil size={12} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => onStartDelete(folder.rowId)}
-          className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          className="size-6 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2 size={12} />
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -329,13 +337,15 @@ export const MemoFolderTree = ({
         <span className="text-xs font-semibold uppercase text-muted-foreground">
           {t('folder.title')}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setIsCreating(true)}
-          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="size-7 text-muted-foreground hover:text-foreground"
           title={t('folder.create')}
         >
           <Plus size={14} />
-        </button>
+        </Button>
       </div>
 
       {/* All Memos */}
@@ -412,21 +422,25 @@ export const MemoFolderTree = ({
             placeholder={t('folder.namePlaceholder')}
             className="flex-1 rounded border bg-background px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary"
           />
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleCreateSubmit}
-            className="rounded p-1 text-primary hover:bg-primary/10"
+            className="size-7 text-primary hover:bg-primary/10"
           >
             <Check size={14} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => {
               setIsCreating(false)
               setNewFolderName('')
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-muted"
+            className="size-7 text-muted-foreground"
           >
             <X size={14} />
-          </button>
+          </Button>
         </div>
       )}
     </div>
