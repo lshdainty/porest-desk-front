@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Filter, X } from 'lucide-react'
-import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import type { TodoStatus, TodoPriority } from '@/entities/todo'
 import type { TodoProject } from '@/entities/todo-project'
 
@@ -70,71 +70,61 @@ export const TodoFilters = ({
             {/* Status */}
             <div>
               <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('filter.status')}</p>
-              <div className="flex flex-wrap gap-1">
+              <ToggleGroup
+                type="single"
+                size="sm"
+                value={statusFilter}
+                onValueChange={(v) => v && onStatusChange(v as TodoStatus | 'ALL')}
+                className="justify-start flex-wrap gap-1"
+              >
                 {statusOptions.map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => onStatusChange(status)}
-                    className={cn(
-                      'rounded-md px-2 py-1 text-xs font-medium transition-colors',
-                      statusFilter === status
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    )}
-                  >
+                  <ToggleGroupItem key={status} value={status} className="text-xs">
                     {t(`status.${status}`)}
-                  </button>
+                  </ToggleGroupItem>
                 ))}
-              </div>
+              </ToggleGroup>
             </div>
 
             {/* Priority */}
             <div>
               <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('filter.priority')}</p>
-              <div className="flex flex-wrap gap-1">
+              <ToggleGroup
+                type="single"
+                size="sm"
+                value={priorityFilter}
+                onValueChange={(v) => v && onPriorityChange(v as TodoPriority | 'ALL')}
+                className="justify-start flex-wrap gap-1"
+              >
                 {priorityOptions.map((priority) => (
-                  <button
-                    key={priority}
-                    onClick={() => onPriorityChange(priority)}
-                    className={cn(
-                      'rounded-md px-2 py-1 text-xs font-medium transition-colors',
-                      priorityFilter === priority
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    )}
-                  >
+                  <ToggleGroupItem key={priority} value={priority} className="text-xs">
                     {t(`priority.${priority}`)}
-                  </button>
+                  </ToggleGroupItem>
                 ))}
-              </div>
+              </ToggleGroup>
             </div>
 
             {/* Project */}
             {projects.length > 0 && (
               <div>
                 <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('filter.project')}</p>
-                <div className="flex flex-wrap gap-1">
-                  <button
-                    onClick={() => onProjectChange(null)}
-                    className={cn(
-                      'rounded-md px-2 py-1 text-xs font-medium transition-colors',
-                      projectFilter === null
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    )}
-                  >
+                <ToggleGroup
+                  type="single"
+                  size="sm"
+                  value={projectFilter === null ? '__ALL__' : String(projectFilter)}
+                  onValueChange={(v) => {
+                    if (!v) return
+                    onProjectChange(v === '__ALL__' ? null : Number(v))
+                  }}
+                  className="justify-start flex-wrap gap-1"
+                >
+                  <ToggleGroupItem value="__ALL__" className="text-xs">
                     {t('allProjects')}
-                  </button>
+                  </ToggleGroupItem>
                   {projects.map((project) => (
-                    <button
+                    <ToggleGroupItem
                       key={project.rowId}
-                      onClick={() => onProjectChange(project.rowId)}
-                      className={cn(
-                        'rounded-md px-2 py-1 text-xs font-medium transition-colors',
-                        projectFilter === project.rowId
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      )}
+                      value={String(project.rowId)}
+                      className="text-xs"
                       style={
                         projectFilter === project.rowId && project.color
                           ? { backgroundColor: project.color }
@@ -142,21 +132,23 @@ export const TodoFilters = ({
                       }
                     >
                       {project.projectName}
-                    </button>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
             )}
 
             {/* Reset */}
             {activeFilterCount > 0 && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleReset}
-                className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed py-1.5 text-xs text-muted-foreground hover:bg-muted transition-colors"
+                className="w-full gap-1 border-dashed text-xs text-muted-foreground"
               >
                 <X size={12} />
                 {t('filter.reset')}
-              </button>
+              </Button>
             )}
           </div>
         </PopoverContent>
