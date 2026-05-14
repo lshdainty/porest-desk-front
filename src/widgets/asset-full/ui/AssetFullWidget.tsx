@@ -24,6 +24,7 @@ import {
 import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
 import { useIsMobile } from '@/shared/hooks'
 import { Spinner } from '@/shared/ui/spinner'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import { AssetList } from './AssetList'
 import { AssetForm } from './AssetForm'
 import { AssetSummaryCard } from './AssetSummaryCard'
@@ -140,7 +141,7 @@ export const AssetFullWidget = () => {
       </div>
 
       {/* 스크롤: 리스트 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {activeTab === 'assets' && (
           isLoading ? (
             <div className="flex justify-center py-8">
@@ -159,7 +160,7 @@ export const AssetFullWidget = () => {
         {activeTab === 'transfers' && (
           <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
         )}
-      </div>
+      </ScrollArea>
 
       {detailAsset && (
         <AssetDetailDialog

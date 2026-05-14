@@ -18,6 +18,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Spinner } from '@/shared/ui/spinner'
 import { Badge } from '@/shared/ui/badge'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -349,7 +350,7 @@ export const GroupFullWidget = () => {
       </div>
 
       {/* 스크롤: 그룹 카드 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {groups.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">
             <Users className="mx-auto mb-3 h-12 w-12 opacity-30" />
@@ -419,7 +420,7 @@ export const GroupFullWidget = () => {
             ))}
           </div>
         )}
-      </div>
+      </ScrollArea>
 
       {/* Create Dialog */}
       {showCreateDialog && (

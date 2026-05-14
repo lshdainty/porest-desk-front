@@ -11,6 +11,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { Spinner } from '@/shared/ui/spinner'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
@@ -159,7 +160,7 @@ export const DutchPayFullWidget = () => {
       </div>
 
       {/* 스크롤: 리스트 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {filteredDutchPays.length === 0 ? (
         <div className="py-12 text-center">
           <Users className="mx-auto mb-2 h-10 w-10 text-muted-foreground/40" />
@@ -306,7 +307,7 @@ export const DutchPayFullWidget = () => {
         </div>
       )}
 
-      </div>
+      </ScrollArea>
 
       {/* Mobile FAB */}
       {isMobile && (

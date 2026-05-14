@@ -7,6 +7,7 @@ import {
   Plus, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
 } from 'lucide-react'
 import { Spinner } from '@/shared/ui/spinner'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -466,7 +467,7 @@ export const TodoListWidget = () => {
       </div>
 
       {/* 스크롤: 리스트 또는 칸반 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner size="md" />
@@ -550,7 +551,7 @@ export const TodoListWidget = () => {
           </DndContext>
         )}
 
-      </div>
+      </ScrollArea>
 
       {isMobile && (
         <button
