@@ -4,6 +4,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
@@ -1022,10 +1023,10 @@ function SavePresetDialog({
           cursor: 'pointer',
         }}
       >
-        <input
-          type="checkbox"
+        <Checkbox
           checked={lockAmount}
-          onChange={e => setLockAmount(e.target.checked)}
+          onCheckedChange={(c) => setLockAmount(c === true)}
+          onClick={(e) => e.stopPropagation()}
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>

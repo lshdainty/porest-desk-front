@@ -3,6 +3,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import {
   Select,
@@ -266,11 +267,10 @@ export function PresetEditDialog({
 
       <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
+          <Checkbox
+            size="sm"
             checked={lockAmount}
-            onChange={e => setLockAmount(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: 'var(--fg-brand-strong)' }}
+            onCheckedChange={(c) => setLockAmount(c === true)}
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>고정 금액 사용</div>

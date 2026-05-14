@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { useTodos, useToggleTodoStatus } from '@/features/todo'
 import type { Todo, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -128,11 +129,10 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           opacity: isDone ? 0.55 : 1,
         }}
       >
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isDone}
-          onChange={() => toggleStatus.mutate(t.rowId)}
-          style={{ width: 18, height: 18, accentColor: 'var(--bg-brand)' }}
+          onCheckedChange={() => toggleStatus.mutate(t.rowId)}
+          onClick={(e) => e.stopPropagation()}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div

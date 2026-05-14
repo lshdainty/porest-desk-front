@@ -4,6 +4,7 @@ import { TX } from '@/shared/lib/porest/data'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
@@ -146,11 +147,10 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   cursor: 'pointer',
                 }}
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={active}
-                  onChange={() => toggle(o.v)}
-                  style={{ width: 17, height: 17, accentColor: 'var(--bg-brand)' }}
+                  onCheckedChange={() => toggle(o.v)}
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <span
                   style={{
