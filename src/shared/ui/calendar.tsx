@@ -119,11 +119,20 @@ function Calendar({
           "relative w-full h-full p-0 text-center group/day aspect-square select-none",
           defaultClassNames.day,
         ),
-        // range 시각: porest spec(.cal-cell)에 맞춰 day cell이 모두 원형 유지.
-        // TD 래퍼에는 bg 부여 안 하고, 각 DayButton 이 개별 원형 fill/tint 처리.
-        range_start: cn(defaultClassNames.range_start),
-        range_middle: cn(defaultClassNames.range_middle),
-        range_end: cn(defaultClassNames.range_end),
+        // range 시각: porest-design spec 정합. 시작/끝은 셀의 좌/우 절반만 middle 톤 그라데이션 →
+        // 그 위에 button 의 원형 primary fill. middle 은 셀 전체 옅은 톤 사각형 fill.
+        range_start: cn(
+          "rounded-none bg-[linear-gradient(to_right,transparent_50%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_50%)]",
+          defaultClassNames.range_start,
+        ),
+        range_middle: cn(
+          "rounded-none bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]",
+          defaultClassNames.range_middle,
+        ),
+        range_end: cn(
+          "rounded-none bg-[linear-gradient(to_left,transparent_50%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_50%)]",
+          defaultClassNames.range_end,
+        ),
         today: cn(
           "outline outline-2 outline-primary outline-offset-[-2px] font-semibold rounded-full data-[selected=true]:outline-0 data-[selected=true]:rounded-none",
           defaultClassNames.today,
@@ -216,20 +225,20 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
+        // base shape: rounded-full(원형 cell) — Porest preview .cal-cell SoT — 일반 day cell 의 hover/default 모양
+        "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full",
+        "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50",
+        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]",
+        "dark:hover:text-text-primary",
+        "[&>span]:text-xs [&>span]:opacity-70",
+        // data variants 는 base 보다 후순 — cascade 에서 후순이 우선되어 base rounded-full 을 정확히 override.
         // single selection: bg-primary fill (preview .cal-cell--selected SoT)
         "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-text-on-accent data-[selected-single=true]:rounded-full",
-        // range start/end: bg-primary fill (원형)
+        // range start/end: 셀 가운데 강한 primary 원 (셀 bg 는 td level 에서 좌/우 절반 그라데이션)
         "data-[range-start=true]:bg-primary data-[range-start=true]:text-text-on-accent data-[range-start=true]:rounded-full",
         "data-[range-end=true]:bg-primary data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
-        // range middle: primary 12% mix bg, 원형 유지 (preview .cal-cell--scheduled 톤)
-        "data-[range-middle=true]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-full",
-        // focus ring
-        "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50",
-        "dark:hover:text-text-primary",
-        // base shape: rounded-full(원형 cell) — Porest preview .cal-cell SoT
-        "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full",
-        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]",
-        "[&>span]:text-xs [&>span]:opacity-70",
+        // range middle: button transparent + 사각형. 시각은 td level 의 cell bg(color-mix primary 12%) 가 담당.
+        "data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-none",
         defaultClassNames.day,
         className,
       )}
