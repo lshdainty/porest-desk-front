@@ -112,6 +112,7 @@ export const NoteEditorDialog = ({ todo, open, onClose, projects, tags }: NoteEd
           size="icon"
           className="h-8 w-8"
           onClick={handleTogglePin}
+          loading={togglePin.isPending}
           title={todo.isPinned ? t('note.unpin') : t('note.pin')}
         >
           <Pin size={16} className={cn(todo.isPinned && 'text-primary')} />
