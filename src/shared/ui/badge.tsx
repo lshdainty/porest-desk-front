@@ -17,7 +17,7 @@ import { cn } from "@/shared/lib/index"
 
 const badgeVariants = cva(
   [
-    "inline-flex items-center gap-1 rounded-full",
+    "inline-flex items-center gap-1 rounded-full border",
     "px-[var(--spacing-sm)] py-0.5 text-xs font-semibold leading-[1.4] tracking-normal",
     "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -70,7 +70,7 @@ export interface BadgeProps
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
     <div
-      className={cn("border", badgeVariants({ variant }), className)}
+      className={cn(badgeVariants({ variant }), className)}
       {...props}
     />
   )
