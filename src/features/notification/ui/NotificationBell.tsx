@@ -60,9 +60,12 @@ export const NotificationBell = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-md p-1.5 hover:bg-muted transition-colors"
+        aria-label={t('title')}
+        className="relative h-8 w-8 rounded-md hover:bg-muted"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -70,7 +73,7 @@ export const NotificationBell = () => {
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-      </button>
+      </Button>
 
       {isOpen && (
         <div className="absolute right-0 top-full z-[200] mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
