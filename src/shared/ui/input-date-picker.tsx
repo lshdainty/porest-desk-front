@@ -98,7 +98,6 @@ export function InputDatePicker({
         value={value instanceof Date ? formatDate(value) : (value || "")}
         placeholder={placeholder}
         className="pr-10"
-        style={{ background: 'var(--bg-surface)' }}
         disabled={disabled}
         onChange={handleInputChange}
         onKeyDown={(e) => {

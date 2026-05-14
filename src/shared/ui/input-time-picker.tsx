@@ -81,7 +81,6 @@ export function InputTimePicker({
         value={value || ""}
         placeholder={placeholder}
         className="pr-10 num"
-        style={{ background: 'var(--bg-surface)' }}
         disabled={disabled}
         onChange={(e) => onValueChange?.(e.target.value)}
         onKeyDown={(e) => {
