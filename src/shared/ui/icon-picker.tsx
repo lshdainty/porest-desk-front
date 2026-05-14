@@ -5,6 +5,7 @@ import { Search } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { Input } from '@/shared/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 
 const MAX_VISIBLE = 100
 
@@ -96,7 +97,7 @@ export const IconPicker = ({ value, onChange, className }: IconPickerProps) => {
         <div className="h-px bg-border-default mb-2" />
 
         {/* 아이콘 그리드 */}
-        <div className="max-h-60 overflow-y-auto">
+        <ScrollArea className="max-h-60">
           {filtered.length > 0 ? (
             <div className="grid grid-cols-8 gap-1">
               {filtered.map((name) => (
@@ -119,7 +120,7 @@ export const IconPicker = ({ value, onChange, className }: IconPickerProps) => {
               검색 결과가 없습니다
             </p>
           )}
-        </div>
+        </ScrollArea>
 
         {/* 결과 카운트 */}
         <p className="mt-2 text-[10px] text-text-secondary text-center">

@@ -19,6 +19,7 @@ import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
 import { RichTextEditor } from '@/shared/ui/rich-text-editor'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/shared/ui/sheet'
@@ -439,7 +440,8 @@ export const MemoEditorWidget = () => {
     <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-lg border">
       {/* Left panel: Folders */}
       {!focusMode && (
-        <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/20 p-3">
+        <ScrollArea className="w-56 shrink-0 border-r bg-muted/20">
+          <div className="p-3">
           <MemoFolderTree
             folders={folders || []}
             selectedFolderId={selectedFolderId}
@@ -451,12 +453,13 @@ export const MemoEditorWidget = () => {
             pinnedMemos={memos?.filter((m) => m.isPinned) || []}
             onSelectMemo={handleSelectMemo}
           />
-        </div>
+          </div>
+        </ScrollArea>
       )}
 
       {/* Middle panel: Memo list */}
       {!focusMode && (
-      <div className="w-72 shrink-0 overflow-y-auto border-r">
+      <ScrollArea className="w-72 shrink-0 border-r">
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-2">
             <div className="flex-1">
@@ -487,7 +490,7 @@ export const MemoEditorWidget = () => {
             />
           )}
         </div>
-      </div>
+      </ScrollArea>
       )}
 
       {/* Right panel: Editor */}

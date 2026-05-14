@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {
   useNotifications,
@@ -89,7 +90,7 @@ export const NotificationBell = () => {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <ScrollArea className="max-h-80">
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 {t('empty')}
@@ -142,7 +143,7 @@ export const NotificationBell = () => {
                 </div>
               ))
             )}
-          </div>
+          </ScrollArea>
         </div>
       )}
     </div>
