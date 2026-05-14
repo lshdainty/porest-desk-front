@@ -1520,7 +1520,15 @@ export const StatsPage = () => {
       }}
     >
       <Card>
-        <CardContent className="flex flex-col justify-center text-center">
+        <CardContent
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+          }}
+        >
           <div
             className="num"
             style={{
@@ -1540,7 +1548,15 @@ export const StatsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="flex flex-col justify-center text-center">
+        <CardContent
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+          }}
+        >
           <div
             className="num"
             style={{
@@ -1560,7 +1576,15 @@ export const StatsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="flex flex-col justify-center text-center">
+        <CardContent
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+          }}
+        >
           <div
             className="num"
             style={{
