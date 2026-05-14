@@ -33,6 +33,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 import type { Memo, MemoFolder } from '@/entities/memo'
 
 interface MemoFolderTreeProps {
@@ -130,18 +131,22 @@ const SortableFolderItem = ({
           {t('folderDeleteConfirm.message')}
         </p>
         <div className="mt-2 flex gap-1">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onCancelDelete}
-            className="flex-1 rounded border px-2 py-1 text-xs hover:bg-muted"
+            className="flex-1"
           >
             {t('deleteConfirm.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={() => onDeleteConfirm(folder.rowId)}
-            className="flex-1 rounded bg-destructive px-2 py-1 text-xs text-destructive-foreground hover:bg-destructive/90"
+            className="flex-1"
           >
             {t('deleteConfirm.confirm')}
-          </button>
+          </Button>
         </div>
       </div>
     )

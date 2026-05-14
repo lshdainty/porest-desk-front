@@ -223,10 +223,10 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
         </div>
 
         {mobile && (
-          <button className="cat-add-fab" onClick={() => setEditing({ kind: 'new' })}>
+          <Button size="lg" className="cat-add-fab" onClick={() => setEditing({ kind: 'new' })}>
             <Plus size={20} strokeWidth={2.4} />
             <span>카테고리 추가</span>
-          </button>
+          </Button>
         )}
       </ManagerShell>
 

@@ -226,13 +226,14 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         </div>
 
         {mobile && (
-          <button
+          <Button
+            size="lg"
             className="cat-add-fab"
             onClick={() => setEditing({ mode: 'create', group: tab })}
           >
             <Plus size={20} strokeWidth={2.4} />
             <span>{groupLabel(tab)} 추가</span>
-          </button>
+          </Button>
         )}
       </ManagerShell>
 

@@ -460,14 +460,15 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         )}
 
         {mobile && (
-          <button
+          <Button
+            size="lg"
             className="cat-add-fab"
             onClick={() => setEditing('new')}
             disabled={loading}
           >
             <Plus size={20} strokeWidth={2.4} />
             <span>카테고리 예산 추가</span>
-          </button>
+          </Button>
         )}
       </ManagerShell>
 
