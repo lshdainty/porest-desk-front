@@ -7,14 +7,15 @@ import { HeroStatCard } from '@/shared/ui/hero-stat-card'
 import type { AssetSummary, Asset, AssetType } from '@/entities/asset'
 import { formatCurrency } from '@/shared/lib'
 
+// porest chart palette 매핑 — 자산 타입별 파이차트 색
 const ASSET_TYPE_COLORS: Record<AssetType, string> = {
-  BANK_ACCOUNT: '#3B82F6',
-  CREDIT_CARD: '#EF4444',
-  CASH: '#22C55E',
-  SAVINGS: '#10B981',
-  LOAN: '#F97316',
-  INVESTMENT: '#8B5CF6',
-  CHECK_CARD: '#6366F1',
+  BANK_ACCOUNT: 'var(--color-chart-blue)',
+  CREDIT_CARD: 'var(--color-chart-red)',
+  CASH: 'var(--color-chart-green)',
+  SAVINGS: 'var(--color-chart-yellow)',
+  LOAN: 'var(--color-chart-orange)',
+  INVESTMENT: 'var(--color-chart-violet)',
+  CHECK_CARD: 'var(--color-chart-indigo)',
 }
 
 interface AssetSummaryCardProps {
@@ -38,7 +39,7 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
       .map((item) => ({
         name: item.assetType,
         value: Math.abs(item.totalBalance),
-        fill: ASSET_TYPE_COLORS[item.assetType] || '#6B7280',
+        fill: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)',
       }))
   }, [summary.byType])
 
@@ -47,7 +48,7 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
     summary.byType.forEach((item) => {
       config[item.assetType] = {
         label: item.assetType,
-        color: ASSET_TYPE_COLORS[item.assetType] || '#6B7280',
+        color: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)',
       }
     })
     return config
@@ -113,7 +114,7 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
                   <div key={item.assetType} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
                     <div
                       className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: ASSET_TYPE_COLORS[item.assetType] || '#6B7280' }}
+                      style={{ backgroundColor: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)' }}
                     />
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground truncate">

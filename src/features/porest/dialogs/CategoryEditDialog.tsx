@@ -27,23 +27,21 @@ export interface CategoryItem {
 }
 
 // CAT_PALETTE: 팔레트 피커에서 사용자가 고르는 기준 색 정의.
-// color 는 아이콘 색(진한 톤), bg 는 color 를 알파로 섞어 바탕 tint 를 생성.
+// porest chart palette 10색과 동일 — 차트 색상과 일관성 유지.
+// color 는 아이콘 색, bg 는 color 를 알파로 섞어 바탕 tint 를 생성.
 // color-mix() 로 라이트/다크 모두 자연 적응 — 라이트에선 파스텔, 다크에선 어둔 tint.
-// (color-mix 는 Chrome 111+/Safari 16.4+/Firefox 113+ 에서 지원)
 // eslint-disable-next-line react-refresh/only-export-components
 export const CAT_PALETTE: { color: string; bg: string }[] = [
-  { color: 'oklch(0.55 0.12 55)',   bg: 'color-mix(in oklch, oklch(0.55 0.12 55) 18%, transparent)' },
-  { color: 'oklch(0.50 0.08 50)',   bg: 'color-mix(in oklch, oklch(0.50 0.08 50) 18%, transparent)' },
-  { color: 'oklch(0.50 0.1 230)',   bg: 'color-mix(in oklch, oklch(0.50 0.1 230) 18%, transparent)' },
-  { color: 'oklch(0.50 0.12 340)',  bg: 'color-mix(in oklch, oklch(0.50 0.12 340) 18%, transparent)' },
-  { color: 'oklch(0.50 0.1 140)',   bg: 'color-mix(in oklch, oklch(0.50 0.1 140) 18%, transparent)' },
-  { color: 'oklch(0.55 0.13 25)',   bg: 'color-mix(in oklch, oklch(0.55 0.13 25) 18%, transparent)' },
-  { color: 'oklch(0.50 0.12 290)',  bg: 'color-mix(in oklch, oklch(0.50 0.12 290) 18%, transparent)' },
-  { color: 'oklch(0.48 0.012 195)', bg: 'color-mix(in oklch, oklch(0.48 0.012 195) 18%, transparent)' },
-  { color: 'oklch(0.52 0.1 215)',   bg: 'color-mix(in oklch, oklch(0.52 0.1 215) 18%, transparent)' },
-  { color: 'var(--bark-700)',       bg: 'color-mix(in oklch, var(--bark-700) 18%, transparent)' },
-  { color: 'var(--fg-brand-strong)',      bg: 'color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)' },
-  { color: 'oklch(0.50 0.14 15)',   bg: 'color-mix(in oklch, oklch(0.50 0.14 15) 18%, transparent)' },
+  { color: 'var(--color-chart-blue)',   bg: 'color-mix(in oklch, var(--color-chart-blue) 18%, transparent)' },
+  { color: 'var(--color-chart-green)',  bg: 'color-mix(in oklch, var(--color-chart-green) 18%, transparent)' },
+  { color: 'var(--color-chart-orange)', bg: 'color-mix(in oklch, var(--color-chart-orange) 18%, transparent)' },
+  { color: 'var(--color-chart-violet)', bg: 'color-mix(in oklch, var(--color-chart-violet) 18%, transparent)' },
+  { color: 'var(--color-chart-pink)',   bg: 'color-mix(in oklch, var(--color-chart-pink) 18%, transparent)' },
+  { color: 'var(--color-chart-indigo)', bg: 'color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)' },
+  { color: 'var(--color-chart-red)',    bg: 'color-mix(in oklch, var(--color-chart-red) 18%, transparent)' },
+  { color: 'var(--color-chart-yellow)', bg: 'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)' },
+  { color: 'var(--color-chart-brown)',  bg: 'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)' },
+  { color: 'var(--color-chart-gray)',   bg: 'color-mix(in oklch, var(--color-chart-gray) 18%, transparent)' },
 ]
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -312,7 +310,7 @@ export function CategoryEditDialog({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
+            gridTemplateColumns: 'repeat(5, 1fr)',
             gap: 8,
           }}
         >

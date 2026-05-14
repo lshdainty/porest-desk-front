@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react'
  *
  * - 외곽: 4px 가로 패딩 + -4px 마진으로 카드 안쪽 폭에 맞춤.
  * - hover: --pd-hover-bg (Tailwind hover arbitrary value).
- * - amt: 양수(income) 시 mossy-700, 음수(지출) 시 berry-700.
+ * - amt: 양수(income) 시 fg-income(porest semantic), 음수(지출) 시 fg-expense.
  */
 
 const TX_ROW_CLS =
@@ -46,7 +46,7 @@ const txRowAmtStyle = (income: boolean): CSSProperties => ({
   fontWeight: 700,
   fontVariantNumeric: 'tabular-nums',
   letterSpacing: '-0.01em',
-  color: income ? 'var(--mossy-700)' : 'var(--berry-700)',
+  color: income ? 'var(--fg-income)' : 'var(--fg-expense)',
   textAlign: 'right',
   flexShrink: 0,
 })
