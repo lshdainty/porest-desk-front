@@ -150,7 +150,16 @@ const AlertDialogAction = React.forwardRef<
     aria-busy={loading || undefined}
     {...props}
   >
-    {loading && <Spinner size="sm" aria-hidden />}
+    {loading && (
+      <Spinner
+        size="sm"
+        aria-hidden
+        style={{
+          borderColor: 'color-mix(in srgb, currentColor 30%, transparent)',
+          borderTopColor: 'currentColor',
+        }}
+      />
+    )}
     {children}
   </AlertDialogPrimitive.Action>
 ))

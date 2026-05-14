@@ -20,7 +20,9 @@ import { Spinner } from "@/shared/ui/spinner"
  * desk-front 호환 보존:
  *   - size: default(=md 톤, h-9)/xs(h-6)/sm(h-8)/md(h-10 신규)/lg(h-11)/icon(h-9)
  *   - variant: warm 보존 (사용 1건, --bg-section-warm semantic alias 사용)
- *   - loading prop (Loader2 spinner) — asChild와 함께 쓰지 말 것 (Slot 단일 child 제약)
+ *   - loading prop — porest Spinner(size=sm) 노출. currentColor 상속으로
+ *     filled(default/destructive)에선 white, outline/ghost에선 primary 자동 적응.
+ *     asChild와 함께 쓰지 말 것 (Slot 단일 child 제약).
  */
 const buttonVariants = cva(
   [
@@ -106,7 +108,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         {...props}
       >
-        {loading && <Spinner size="sm" aria-hidden />}
+        {loading && (
+          <Spinner
+            size="sm"
+            aria-hidden
+            // 버튼 내부 spinner는 버튼 텍스트 색(currentColor) 상속해 모든 variant 일관 시각.
+            // default/destructive(filled bg-primary/bg-error)에선 white spinner, outline/ghost(흰 bg)에선 primary spinner.
+            style={{
+              borderColor: 'color-mix(in srgb, currentColor 30%, transparent)',
+              borderTopColor: 'currentColor',
+            }}
+          />
+        )}
         {children}
       </button>
     )
