@@ -405,7 +405,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       >
         {[0, 1, 2].map(i => (
           <Card key={i}>
-            <CardContent className="flex flex-col items-center justify-center text-center">
+            <CardContent className="flex flex-col justify-center text-center">
               <SkeletonBase className={mobile ? 'h-7 w-32 mb-2' : 'h-9 w-40 mb-2'} />
               <SkeletonBase className="h-3 w-20" />
             </CardContent>
@@ -1520,7 +1520,7 @@ export const StatsPage = () => {
       }}
     >
       <Card>
-        <CardContent className="flex flex-col items-center justify-center text-center">
+        <CardContent className="flex flex-col justify-center text-center">
           <div
             className="num"
             style={{
@@ -1540,7 +1540,7 @@ export const StatsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="flex flex-col items-center justify-center text-center">
+        <CardContent className="flex flex-col justify-center text-center">
           <div
             className="num"
             style={{
@@ -1560,7 +1560,7 @@ export const StatsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="flex flex-col items-center justify-center text-center">
+        <CardContent className="flex flex-col justify-center text-center">
           <div
             className="num"
             style={{
