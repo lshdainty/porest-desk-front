@@ -135,9 +135,11 @@ export const MemoEditorWidget = () => {
           }
         },
         onError: () => {
+          // autoSave 의 경우 retry action 이 필요해 전역 핸들러로 충분치 않음 — 유지하되 dedupe id 추가
           if (isAutoSave) {
             setAutoSaveStatus('error')
             toast.error(t('autoSave.error'), {
+              id: 'memo-autosave-error',
               action: {
                 label: t('autoSave.retry'),
                 onClick: () => handleSave(true),

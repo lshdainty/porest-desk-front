@@ -63,12 +63,10 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
       },
       {
         onSuccess: () => {
-          toast.success(t('passwordChangeSuccess'))
+          toast.success(t('passwordChangeSuccess'), { id: 'password-change-success' })
           onOpenChange(false)
         },
-        onError: (error) => {
-          toast.error(error.message || t('passwordChangeError'))
-        },
+        // onError: 전역 axios 인터셉터(base.ts)가 server message를 toast.error로 노출 — 중복 방지로 로컬 onError 제거
       }
     )
   }

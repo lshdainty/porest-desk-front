@@ -92,7 +92,7 @@ export const GroupFullWidget = () => {
     createGroup.mutate(data, {
       onSuccess: () => {
         setShowCreateDialog(false)
-        toast.success(t('createSuccess'))
+        toast.success(t('createSuccess'), { id: 'group-create-success' })
       },
     })
   }
@@ -104,7 +104,7 @@ export const GroupFullWidget = () => {
       {
         onSuccess: () => {
           setEditingGroup(null)
-          toast.success(t('updateSuccess'))
+          toast.success(t('updateSuccess'), { id: 'group-update-success' })
         },
       }
     )
@@ -116,7 +116,7 @@ export const GroupFullWidget = () => {
       onSuccess: () => {
         setDeleteTargetId(null)
         if (selectedGroupId === deleteTargetId) setSelectedGroupId(null)
-        toast.success(t('deleteSuccess'))
+        toast.success(t('deleteSuccess'), { id: 'group-delete-success' })
       },
     })
   }
@@ -127,18 +127,16 @@ export const GroupFullWidget = () => {
       onSuccess: () => {
         setShowJoinDialog(false)
         setInviteCode('')
-        toast.success(t('joinSuccess'))
+        toast.success(t('joinSuccess'), { id: 'group-join-success' })
       },
-      onError: () => {
-        toast.error(t('joinError'))
-      },
+      // onError: 전역 axios 인터셉터(base.ts)가 server message를 toast.error로 노출 — 중복 방지로 로컬 onError 제거
     })
   }
 
   const handleRegenerateCode = (groupId: number) => {
     regenerateInviteCode.mutate(groupId, {
       onSuccess: () => {
-        toast.success(t('inviteCodeRegenerated'))
+        toast.success(t('inviteCodeRegenerated'), { id: 'group-invite-regen-success' })
       },
     })
   }
@@ -146,7 +144,7 @@ export const GroupFullWidget = () => {
   const handleCopyInviteCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code)
-      toast.success(t('inviteCodeCopied'))
+      toast.success(t('inviteCodeCopied'), { id: 'group-invite-copy-success' })
     } catch {
       // fallback for non-secure contexts
       const textarea = document.createElement('textarea')
@@ -157,7 +155,7 @@ export const GroupFullWidget = () => {
       textarea.select()
       document.execCommand('copy')
       document.body.removeChild(textarea)
-      toast.success(t('inviteCodeCopied'))
+      toast.success(t('inviteCodeCopied'), { id: 'group-invite-copy-success' })
     }
   }
 
@@ -166,7 +164,7 @@ export const GroupFullWidget = () => {
       { groupId, memberId },
       {
         onSuccess: () => {
-          toast.success(t('memberRemoved'))
+          toast.success(t('memberRemoved'), { id: 'group-member-remove-success' })
         },
       }
     )
@@ -177,7 +175,7 @@ export const GroupFullWidget = () => {
       { groupId, memberId, role },
       {
         onSuccess: () => {
-          toast.success(t('roleChanged'))
+          toast.success(t('roleChanged'), { id: 'group-role-change-success' })
         },
       }
     )
