@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
@@ -36,14 +37,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
 
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<TodoFormValues>({
+  const form = useForm<TodoFormValues>({
     defaultValues: {
       title: '',
       content: '',
@@ -56,6 +50,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
       type: 'TASK',
     },
   })
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
 
   const selectedPriority = watch('priority')
   const projectRowId = watch('projectRowId')
@@ -128,6 +123,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
 
   return (
     <ModalShell title={title} onClose={onClose} mobile={isMobile} size="sm" footer={Footer}>
+        <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
@@ -249,6 +245,7 @@ export const TodoForm = ({ todo, projects, tags, parentId, onSubmit, onClose, is
           )}
 
         </form>
+        </Form>
     </ModalShell>
   )
 }

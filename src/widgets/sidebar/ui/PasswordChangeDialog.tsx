@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { useIsMobile } from '@/shared/hooks'
@@ -101,9 +102,10 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
       size="sm"
       footer={Footer}
     >
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <p className="text-sm text-muted-foreground mb-4">{t('passwordChangeDescription')}</p>
-        <div className="grid gap-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <p className="text-sm text-muted-foreground mb-4">{t('passwordChangeDescription')}</p>
+          <div className="grid gap-4">
           <div className="grid gap-1.5">
             <Label htmlFor="currentPassword" className="flex items-center gap-1.5">
               <Lock className="h-4 w-4 text-muted-foreground" />
@@ -159,7 +161,8 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
             )}
           </div>
         </div>
-      </form>
+        </form>
+      </Form>
     </ModalShell>
   )
 }

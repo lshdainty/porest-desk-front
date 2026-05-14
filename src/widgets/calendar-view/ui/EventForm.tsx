@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { MapPin, Repeat, Bell, Tag, ChevronDown, Check, Users } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
@@ -89,14 +90,7 @@ export const EventForm = ({
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
   const [showGroupDropdown, setShowGroupDropdown] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<CalendarEventFormValues>({
+  const form = useForm<CalendarEventFormValues>({
     defaultValues: {
       title: '',
       description: '',
@@ -113,6 +107,7 @@ export const EventForm = ({
       groupRowId: undefined,
     },
   })
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
 
   const selectedColor = watch('color')
   const isAllDay = watch('isAllDay')
@@ -236,6 +231,7 @@ export const EventForm = ({
       size="sm"
       footer={Footer}
     >
+        <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
@@ -574,6 +570,7 @@ export const EventForm = ({
           </div>
 
         </form>
+        </Form>
     </ModalShell>
   )
 }
