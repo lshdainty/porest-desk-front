@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Receipt } from 'lucide-react'
 import { useGroupExpenses } from '@/features/group'
 import { formatCurrency } from '@/shared/lib'
+import { Spinner } from '@/shared/ui/spinner'
 
 interface GroupExpenseTabProps {
   groupId: number
@@ -16,7 +17,7 @@ export const GroupExpenseTab = ({ groupId }: GroupExpenseTabProps) => {
   if (isLoading) {
     return (
       <div className="flex h-40 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Spinner />
       </div>
     )
   }

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Spinner } from '@/shared/ui/spinner'
 import { Badge } from '@/shared/ui/badge'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -185,7 +186,7 @@ export const GroupFullWidget = () => {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center p-4">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Spinner />
       </div>
     )
   }

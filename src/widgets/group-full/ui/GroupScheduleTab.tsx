@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalendarDays } from 'lucide-react'
 import { useGroupEvents } from '@/features/group'
+import { Spinner } from '@/shared/ui/spinner'
 
 interface GroupScheduleTabProps {
   groupId: number
@@ -26,7 +27,7 @@ export const GroupScheduleTab = ({ groupId }: GroupScheduleTabProps) => {
   if (isLoading) {
     return (
       <div className="flex h-40 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Spinner />
       </div>
     )
   }

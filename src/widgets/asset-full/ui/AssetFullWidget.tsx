@@ -23,6 +23,7 @@ import {
 } from '@/features/asset'
 import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
 import { useIsMobile } from '@/shared/hooks'
+import { Spinner } from '@/shared/ui/spinner'
 import { AssetList } from './AssetList'
 import { AssetForm } from './AssetForm'
 import { AssetSummaryCard } from './AssetSummaryCard'
@@ -143,7 +144,7 @@ export const AssetFullWidget = () => {
         {activeTab === 'assets' && (
           isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <Spinner />
             </div>
           ) : (
             <AssetList

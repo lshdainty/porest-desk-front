@@ -7,7 +7,8 @@ import { cn } from "@/shared/lib/index"
  * Porest Spinner — porest-design specs/components/spinner.md SoT 기반.
  *
  * - circular indeterminate. 360deg 회전, arc 270deg(3/4 conic).
- * - 색: border-surface-input 트랙 + border-t-primary (라이트) / 다크는 cascade 자동 swap.
+ * - 색: border-border-default 트랙 + border-t-primary (라이트) / 다크는 cascade 자동 swap.
+ *   track border-default 사용으로 page bg 위 ring outline visible (1.4:1+ 대비).
  * - sizes: sm 16/2 · md 24/2 · lg 32/3 · xl 48/4.
  * - animation: motion-duration-loop(1500ms) motion-ease-linear infinite.
  * - prefers-reduced-motion 시 motion-safe 가드로 회전 멈춤.
@@ -20,7 +21,7 @@ import { cn } from "@/shared/lib/index"
  */
 
 const spinnerVariants = cva(
-  "inline-block rounded-full border-surface-input border-t-primary motion-safe:animate-[spin_var(--motion-duration-loop)_var(--motion-ease-linear)_infinite]",
+  "inline-block rounded-full border-border-default border-t-primary motion-safe:animate-[spin_var(--motion-duration-loop)_var(--motion-ease-linear)_infinite]",
   {
     variants: {
       size: {
