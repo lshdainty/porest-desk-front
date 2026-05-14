@@ -23,7 +23,7 @@ import {
   PresetManager,
   RecurringManager,
 } from '@/features/porest/dialogs'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type SectionId =
@@ -273,13 +273,12 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
   return (
     <Card
       style={{
-        padding: 40,
-        textAlign: 'center',
         background: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
         borderRadius: 'var(--radius-card)',
       }}
     >
+      <CardContent style={{ padding: 40, paddingTop: 40, textAlign: 'center' }}>
       <div
         style={{
           width: 48,
@@ -308,6 +307,7 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
       >
         다음 단계에서 구현
       </div>
+      </CardContent>
     </Card>
   )
 }
