@@ -116,21 +116,14 @@ function Calendar({
           defaultClassNames.week_number,
         ),
         day: cn(
-          "relative w-full h-full p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-full [&:last-child[data-selected=true]_button]:rounded-r-full group/day aspect-square select-none",
+          "relative w-full h-full p-0 text-center group/day aspect-square select-none",
           defaultClassNames.day,
         ),
-        range_start: cn(
-          "rounded-l-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]",
-          defaultClassNames.range_start,
-        ),
-        range_middle: cn(
-          "rounded-none bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]",
-          defaultClassNames.range_middle,
-        ),
-        range_end: cn(
-          "rounded-r-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]",
-          defaultClassNames.range_end,
-        ),
+        // range 시각: porest spec(.cal-cell)에 맞춰 day cell이 모두 원형 유지.
+        // TD 래퍼에는 bg 부여 안 하고, 각 DayButton 이 개별 원형 fill/tint 처리.
+        range_start: cn(defaultClassNames.range_start),
+        range_middle: cn(defaultClassNames.range_middle),
+        range_end: cn(defaultClassNames.range_end),
         today: cn(
           "outline outline-2 outline-primary outline-offset-[-2px] font-semibold rounded-full data-[selected=true]:outline-0 data-[selected=true]:rounded-none",
           defaultClassNames.today,
@@ -228,8 +221,8 @@ function CalendarDayButton({
         // range start/end: bg-primary fill (원형)
         "data-[range-start=true]:bg-primary data-[range-start=true]:text-text-on-accent data-[range-start=true]:rounded-full",
         "data-[range-end=true]:bg-primary data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
-        // range middle: primary 12% mix bg (사이 셀)
-        "data-[range-middle=true]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-none",
+        // range middle: primary 12% mix bg, 원형 유지 (preview .cal-cell--scheduled 톤)
+        "data-[range-middle=true]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-full",
         // focus ring
         "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50",
         "dark:hover:text-text-primary",
