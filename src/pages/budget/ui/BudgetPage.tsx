@@ -742,8 +742,14 @@ export const BudgetPage = () => {
         </CardHeader>
         <CardContent>
         {complianceQ.isLoading ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            불러오는 중…
+          <div style={{ height: 180, display: 'flex', alignItems: 'end', justifyContent: 'space-around', padding: '24px 8px 8px', gap: 12 }}>
+            {[60, 80, 45, 70, 90, 55].map((h, i) => (
+              <SkeletonBase
+                key={i}
+                className="rounded-t flex-1"
+                style={{ height: `${h}%` }}
+              />
+            ))}
           </div>
         ) : data.length === 0 ? (
           <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
@@ -807,8 +813,23 @@ export const BudgetPage = () => {
       </CardHeader>
       <CardContent>
       {isLoading ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/5 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/2" />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-16 ml-auto" />
+                </div>
+              </div>
+              <SkeletonBase className="h-2 w-full rounded-full" />
+            </div>
+          ))}
         </div>
       ) : categoryBudgets.length === 0 ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>

@@ -210,17 +210,17 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   const LoadingState = (
-    <Card>
-      <CardContent
-        style={{
-          textAlign: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
-        }}
-      >
-        불러오는 중…
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: 12,
+      }}
+    >
+      {[0, 1, 2, 3, 4, 5].map(i => (
+        <MemoCardSkeleton key={i} />
+      ))}
+    </div>
   )
 
   const EmptyState = (

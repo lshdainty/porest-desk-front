@@ -364,18 +364,10 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   const LoadingState = (
-    <Card>
-      <CardContent
-        style={{
-          padding: 40,
-          textAlign: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
-        }}
-      >
-        불러오는 중…
-      </CardContent>
-    </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 16 }}>
+      <ActiveDutchPayCardSkeleton mobile={mobile} participants={3} />
+      <CompletedDutchPayCardSkeleton rows={2} />
+    </div>
   )
 
   const Body = dutchPaysQ.isLoading

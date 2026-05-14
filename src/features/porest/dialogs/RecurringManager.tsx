@@ -251,9 +251,29 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
           {recurringsQ.isLoading && (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              불러오는 중…
-            </div>
+            <>
+              {[0, 1, 2, 3].map(i => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
+                    alignItems: 'center',
+                    gap: mobile ? 12 : 16,
+                    padding: mobile ? '14px 16px' : '14px 20px',
+                    borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
+                  }}
+                >
+                  <SkeletonBase className="h-8 w-8 rounded-md" />
+                  <div style={{ minWidth: 0 }}>
+                    <SkeletonBase className="h-4 w-2/5 mb-1.5" />
+                    <SkeletonBase className="h-3 w-3/4" />
+                  </div>
+                  {!mobile && <SkeletonBase className="h-4 w-20 ml-auto" />}
+                  <SkeletonBase className="h-6 w-6 rounded-md" />
+                </div>
+              ))}
+            </>
           )}
           {!recurringsQ.isLoading && filtered.length === 0 && (
             <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>

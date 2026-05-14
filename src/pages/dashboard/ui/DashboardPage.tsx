@@ -663,9 +663,11 @@ function HomeDesktop() {
           </div>
           {barData.length > 0 ? (
             <IncomeExpenseBarChart data={barData} height={280} />
+          ) : trendQ.isLoading ? (
+            <SkeletonBase className="h-[280px] w-full rounded-lg" />
           ) : (
             <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              {trendQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
+              데이터가 없습니다
             </div>
           )}
           <div style={{
@@ -749,9 +751,24 @@ function HomeDesktop() {
           </CardHeader>
           <CardContent>
           {donutSegs.length === 0 ? (
-            <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없습니다'}
-            </div>
+            monthlyQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+                <SkeletonBase className="h-[160px] w-[160px] rounded-full" />
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                      <SkeletonBase className="h-3 flex-1" />
+                      <SkeletonBase className="h-3 w-12 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+                카테고리 데이터가 없습니다
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Donut segments={donutSegs} size={160} stroke={22}>
@@ -786,9 +803,24 @@ function HomeDesktop() {
           </CardHeader>
           <CardContent>
           {budgetItems.length === 0 ? (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-              {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
-            </div>
+            budgetsQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                      <SkeletonBase className="h-4 w-20" />
+                      <SkeletonBase className="h-4 w-24 ml-auto" />
+                    </div>
+                    <SkeletonBase className="h-1.5 w-full rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+                등록된 예산이 없어요
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {budgetItems.map(b => {
@@ -840,9 +872,24 @@ function HomeDesktop() {
           </CardHeader>
           <CardContent>
           {upcomingPayments.length === 0 ? (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-              {recurringQ.isLoading ? '불러오는 중…' : '예정된 결제가 없어요'}
-            </div>
+            recurringQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <SkeletonBase className="h-[38px] w-[38px] rounded-md shrink-0" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                      <SkeletonBase className="h-3 w-1/3" />
+                    </div>
+                    <SkeletonBase className="h-4 w-16 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+                예정된 결제가 없어요
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {upcomingPayments.map(p => (
@@ -1258,9 +1305,24 @@ function HomeMobile() {
         </CardHeader>
         <CardContent>
         {donutSegs.length === 0 ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없어요'}
-          </div>
+          monthlyQ.isLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <SkeletonBase className="h-[120px] w-[120px] rounded-full shrink-0" />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
+                    <SkeletonBase className="h-3 flex-1" />
+                    <SkeletonBase className="h-3 w-10 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              카테고리 데이터가 없어요
+            </div>
+          )
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
@@ -1296,9 +1358,24 @@ function HomeMobile() {
         </CardHeader>
         <CardContent>
         {budgetItems.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
-          </div>
+          budgetsQ.isLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
+                    <SkeletonBase className="h-4 w-20 flex-1" />
+                    <SkeletonBase className="h-3 w-24 shrink-0" />
+                  </div>
+                  <SkeletonBase className="h-1.5 w-full rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              등록된 예산이 없어요
+            </div>
+          )
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {budgetItems.map(b => {

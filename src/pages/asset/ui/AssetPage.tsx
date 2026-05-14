@@ -104,18 +104,10 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
 
   if (trendQ.isLoading) {
     return (
-      <div
-        style={{
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
-        }}
-      >
-        불러오는 중…
-      </div>
+      <SkeletonBase
+        className="w-full rounded-lg"
+        style={{ height }}
+      />
     )
   }
   if (data.length === 0) {
@@ -444,8 +436,26 @@ function UpcomingBillsCard() {
       </CardHeader>
       <CardContent>
       {recurringQ.isLoading ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-          불러오는 중…
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/2" />
+              </div>
+              <SkeletonBase className="h-4 w-16 shrink-0" />
+            </div>
+          ))}
         </div>
       ) : items.length === 0 ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
@@ -626,13 +636,23 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
       </CardHeader>
       <CardContent>
       {isLoading ? (
-        <div
-          style={{
-            padding: '16px 0', textAlign: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)',
-          }}
-        >
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <SkeletonBase className="h-4 w-12 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-20 ml-auto" />
+                </div>
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
         </div>
       ) : isEmpty ? (
         <div style={{ padding: '20px 0', textAlign: 'center' }}>

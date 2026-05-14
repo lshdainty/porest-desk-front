@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { CardPerformanceBar, useCardPerformance } from '@/features/card-performance'
 
 interface Props {
@@ -31,7 +32,14 @@ export function CardPerformanceSection({ assetRowId }: Props) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">불러오는 중…</div>
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <SkeletonBase className="h-4 w-2/3" />
+              <SkeletonBase className="h-4 w-12" />
+            </div>
+            <SkeletonBase className="h-2 w-full rounded-full" />
+            <SkeletonBase className="h-3 w-1/2" />
+          </div>
         ) : performance ? (
           <CardPerformanceBar performance={performance} />
         ) : (

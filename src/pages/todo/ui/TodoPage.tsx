@@ -249,8 +249,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const Body = (
     <>
       {todosQ.isLoading ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <TodoSectionSkeleton rows={3} />
+          <TodoSectionSkeleton rows={2} />
         </div>
       ) : todos.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>

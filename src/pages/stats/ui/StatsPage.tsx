@@ -713,7 +713,28 @@ export const StatsPage = () => {
       </CardHeader>
       <CardContent>
       {donutLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: mobile ? 'column' : 'row',
+            gap: mobile ? 20 : 32,
+            alignItems: 'center',
+          }}
+        >
+          <SkeletonBase
+            className={mobile ? 'h-[180px] w-[180px] rounded-full shrink-0' : 'h-[200px] w-[200px] rounded-full shrink-0'}
+          />
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                <SkeletonBase className="h-3 flex-1" />
+                <SkeletonBase className="h-3 w-10 shrink-0" />
+                <SkeletonBase className="h-3 w-16 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : donutView.length === 0 ? (
         <EmptyBox text="카테고리 데이터가 없습니다" />
       ) : (
@@ -798,7 +819,20 @@ export const StatsPage = () => {
       </CardHeader>
       <CardContent>
       {merchantQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <SkeletonBase className="h-4 w-6 shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                  <SkeletonBase className="h-4 w-1/3" />
+                  <SkeletonBase className="h-3 w-10 ml-auto" />
+                </div>
+                <SkeletonBase className="h-1 w-full rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : topMerchants.length === 0 ? (
         <EmptyBox text="가맹점 데이터가 없습니다" />
       ) : (
@@ -1213,7 +1247,16 @@ export const StatsPage = () => {
       </CardHeader>
       <CardContent>
       {rangeQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <>
+          <SkeletonBase
+            className="w-full rounded-lg"
+            style={{ height: mobile ? 200 : 260 }}
+          />
+          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+            <SkeletonBase className="h-3 w-12" />
+            <SkeletonBase className="h-3 w-12" />
+          </div>
+        </>
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="추이 데이터가 없습니다" />
       ) : (
@@ -1349,7 +1392,10 @@ export const StatsPage = () => {
       </CardHeader>
       <CardContent>
       {rangeQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <SkeletonBase
+          className="w-full rounded-lg"
+          style={{ height: mobile ? 180 : 220 }}
+        />
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="월별 데이터가 없습니다" />
       ) : (
@@ -1577,7 +1623,22 @@ export const StatsPage = () => {
       </CardHeader>
       <CardContent>
       {compareLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-4 flex-1" />
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+                <SkeletonBase className="h-3 w-12 shrink-0" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
+                <SkeletonBase className="h-2.5 w-full rounded-full" />
+                <SkeletonBase className="h-1.5 w-2/3 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : compareRows.length === 0 ? (
         <EmptyBox text="비교할 데이터가 없습니다" />
       ) : (

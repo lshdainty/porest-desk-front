@@ -3,6 +3,7 @@ import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useExpenseCategories } from '@/features/expense'
 import {
   useCardBenefitMappings,
@@ -29,7 +30,33 @@ export function CardBenefitMappingEditor() {
     : mappings
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">불러오는 중…</div>
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <SkeletonBase className="h-9 w-full max-w-xs rounded-md" />
+          <SkeletonBase className="h-3 w-16" />
+        </div>
+        <div className="divide-y rounded-md border">
+          <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 bg-muted/50 px-4 py-2">
+            <SkeletonBase className="h-3 w-20" />
+            <SkeletonBase className="h-3 w-32" />
+            <SkeletonBase className="h-3 w-10" />
+            <SkeletonBase className="h-3 w-12" />
+          </div>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-3 px-4 py-2.5"
+            >
+              <SkeletonBase className="h-4 w-3/4" />
+              <SkeletonBase className="h-8 w-full rounded-md" />
+              <SkeletonBase className="h-5 w-12 rounded-full" />
+              <SkeletonBase className="h-8 w-16 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
