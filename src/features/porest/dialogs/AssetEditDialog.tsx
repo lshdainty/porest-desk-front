@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Switch } from '@/shared/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
@@ -401,29 +402,19 @@ export function AssetEditDialog({
             <>
               <div>
                 <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
-                <div className="grid grid-cols-2 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]">
-                  {(['CREDIT', 'CHECK'] as CardType[]).map(t => {
-                    const active = t === cardType
-                    return (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => {
-                          setCardType(t)
-                          if (isNew) setSelectedCard(null)
-                        }}
-                        className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                        style={
-                          active
-                            ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                            : { background: 'transparent', color: 'var(--fg-secondary)' }
-                        }
-                      >
-                        {t === 'CREDIT' ? '신용카드' : '체크카드'}
-                      </button>
-                    )
-                  })}
-                </div>
+                <ToggleGroup
+                  type="single"
+                  variant="segmented"
+                  value={cardType}
+                  onValueChange={(v) => {
+                    if (!v) return
+                    setCardType(v as CardType)
+                    if (isNew) setSelectedCard(null)
+                  }}
+                >
+                  <ToggleGroupItem value="CREDIT">신용카드</ToggleGroupItem>
+                  <ToggleGroupItem value="CHECK">체크카드</ToggleGroupItem>
+                </ToggleGroup>
               </div>
 
               <div>
@@ -672,26 +663,18 @@ export function AssetEditDialog({
           {editingGroup === 'account' && (
             <div>
               <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
-              <div className="grid grid-cols-5 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]">
-                {ACCOUNT_SUBS.map(s => {
-                  const active = s === accountSub
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setAccountSub(s)}
-                      className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                      style={
-                        active
-                          ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                          : { background: 'transparent', color: 'var(--fg-secondary)' }
-                      }
-                    >
-                      {s}
-                    </button>
-                  )
-                })}
-              </div>
+              <ToggleGroup
+                type="single"
+                variant="segmented"
+                value={accountSub}
+                onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
+              >
+                {ACCOUNT_SUBS.map((s) => (
+                  <ToggleGroupItem key={s} value={s}>
+                    {s}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </div>
           )}
 
