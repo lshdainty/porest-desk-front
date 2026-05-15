@@ -539,34 +539,27 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
       {/* 빠른 추가 chips */}
       {quickAddSuggestions.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+        <div className="mb-4 flex flex-wrap gap-1.5">
           {quickAddSuggestions.map((m, i) => {
             const palette = PARTICIPANT_PALETTE[i % PARTICIPANT_PALETTE.length]!
             return (
-              <button
+              <Button
                 key={m.userRowId}
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => addFromSibling(m.userRowId, m.userName)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '5px 10px 5px 8px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
-                  color: 'var(--fg-primary)',
-                }}
                 title={m.userEmail}
+                className="rounded-full gap-1.5 text-caption font-semibold"
               >
-                <span aria-hidden style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: palette.color }} />
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ background: palette.color }}
+                />
                 {m.userName}
-                <Plus size={12} color="var(--fg-tertiary)" />
-              </button>
+                <Plus size={12} className="text-text-tertiary" />
+              </Button>
             )
           })}
         </div>
