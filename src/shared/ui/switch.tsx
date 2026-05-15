@@ -23,7 +23,7 @@ const Switch = React.forwardRef<
       "transition-[background-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:cursor-not-allowed disabled:opacity-50",
-      "data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-default-strong",
+      "data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-strong",
       className,
     )}
     {...props}
