@@ -43,30 +43,18 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             예산 사용률이 이 값을 넘으면 <strong>경고</strong> 상태로 표시되고 알림을 받습니다.
             100%는 <strong>초과</strong>로 별도 알림이 발생합니다.
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ marginBottom: 8 }}>
             {isLoading ? (
-              <>
-                <SkeletonBase className="h-1.5 flex-1 rounded-full" />
-                <SkeletonBase className="h-5 w-11" />
-              </>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
             ) : (
-              <>
-                <Slider
-                  min={50}
-                  max={100}
-                  step={5}
-                  value={[warnThreshold]}
-                  onValueChange={([v]) => updateMut.mutate({ budgetAlertThreshold: v })}
-                  disabled={preferencesQ.isLoading || updateMut.isPending}
-                  className="flex-1"
-                />
-                <span
-                  className="num"
-                  style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', minWidth: 44, textAlign: 'right' }}
-                >
-                  {warnThreshold}%
-                </span>
-              </>
+              <Slider
+                min={50}
+                max={100}
+                step={5}
+                value={[warnThreshold]}
+                onValueChange={([v]) => updateMut.mutate({ budgetAlertThreshold: v })}
+                disabled={preferencesQ.isLoading || updateMut.isPending}
+              />
             )}
           </div>
           <div
