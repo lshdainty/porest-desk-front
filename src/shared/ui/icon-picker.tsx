@@ -12,9 +12,10 @@ interface IconPickerProps {
   value: string
   onChange: (iconName: string) => void
   className?: string
+  icons?: readonly string[]
 }
 
-export const IconPicker = ({ value, onChange, className }: IconPickerProps) => {
+export const IconPicker = ({ value, onChange, className, icons }: IconPickerProps) => {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
@@ -23,24 +24,27 @@ export const IconPicker = ({ value, onChange, className }: IconPickerProps) => {
   useEffect(() => {
     if (open) {
       setTimeout(() => searchRef.current?.focus(), 0)
-    } else {
-      setSearch('')
     }
   }, [open])
 
+  const handleOpenChange = useCallback((next: boolean) => {
+    setOpen(next)
+    if (!next) setSearch('')
+  }, [])
+
+  const source = useMemo<readonly string[]>(() => icons ?? (iconNames as readonly string[]), [icons])
+
   const filtered = useMemo(() => {
     const query = search.toLowerCase().trim()
-    if (!query) return iconNames.slice(0, MAX_VISIBLE)
-    return iconNames
-      .filter((name) => name.includes(query))
-      .slice(0, MAX_VISIBLE)
-  }, [search])
+    if (!query) return source.slice(0, MAX_VISIBLE)
+    return source.filter(name => name.includes(query)).slice(0, MAX_VISIBLE)
+  }, [search, source])
 
   const totalMatched = useMemo(() => {
     const query = search.toLowerCase().trim()
-    if (!query) return iconNames.length
-    return iconNames.filter((name) => name.includes(query)).length
-  }, [search])
+    if (!query) return source.length
+    return source.filter(name => name.includes(query)).length
+  }, [search, source])
 
   const handleSelect = useCallback(
     (iconName: string) => {
@@ -51,7 +55,7 @@ export const IconPicker = ({ value, onChange, className }: IconPickerProps) => {
   )
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
