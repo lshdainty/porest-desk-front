@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Check, Monitor, Moon, Sun } from 'lucide-react'
+import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
@@ -84,15 +85,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <section>
         <SectionLabel>테마</SectionLabel>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: 10,
-          }}
-        >
+        <TileGroup columns={mobile ? 1 : 3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
           {THEME_OPTIONS.map(opt => {
-            const active = theme === opt.k
             const swatchBg =
               opt.k === 'dark'
                 ? 'oklch(0.205 0.022 110)'
@@ -101,77 +95,30 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                 : 'linear-gradient(135deg, #fff 50%, oklch(0.205 0.022 110) 50%)'
             const swatchColor = opt.k === 'dark' ? '#fff' : 'var(--fg-primary)'
             return (
-              <button
+              <TileItem
                 key={opt.k}
-                type="button"
-                onClick={() => setTheme(opt.k)}
-                style={{
-                  padding: '16px 14px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: active
-                    ? '1.5px solid var(--mossy-500, var(--fg-brand-strong))'
-                    : '1px solid var(--border-subtle)',
-                  background: active
-                    ? 'color-mix(in oklch, var(--fg-brand-strong) 8%, transparent)'
-                    : 'var(--bg-surface)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  transition: 'all 0.15s',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <span
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 'var(--radius-tile)',
-                    background: swatchBg,
-                    border: '1px solid var(--border-subtle)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: swatchColor,
-                    flexShrink: 0,
-                  }}
-                >
-                  <opt.Icon size={18} strokeWidth={1.9} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
+                value={opt.k}
+                label={opt.label}
+                description={opt.desc}
+                swatch={
                   <span
                     style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-body)',
-                      fontWeight: 'var(--fw-semi)',
-                      color: 'var(--fg-primary)',
+                      width: '100%',
+                      height: '100%',
+                      background: swatchBg,
+                      color: swatchColor,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    {opt.label}
+                    <opt.Icon size={18} strokeWidth={1.9} />
                   </span>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-caption)',
-                      color: 'var(--fg-tertiary)',
-                      marginTop: 2,
-                    }}
-                  >
-                    {opt.desc}
-                  </span>
-                </span>
-                {active && (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    style={{ color: 'var(--mossy-600, var(--fg-brand-strong))' }}
-                  />
-                )}
-              </button>
+                }
+              />
             )
           })}
-        </div>
+        </TileGroup>
       </section>
 
       <section>
