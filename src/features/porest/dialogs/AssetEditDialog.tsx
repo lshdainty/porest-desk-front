@@ -4,6 +4,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
 import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
 import {
@@ -425,117 +426,87 @@ export function AssetEditDialog({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-[13px] font-medium">카드 상품</Label>
-                  <div className="flex items-center gap-3">
-                    <label
-                      className="inline-flex items-center cursor-pointer select-none"
-                      style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
-                      title="단종된 카드 상품도 검색 결과에 포함합니다"
-                    >
-                      <Switch
-                        checked={includeDiscontinued}
-                        onCheckedChange={setIncludeDiscontinued}
-                      />
-                      단종 포함
-                    </label>
-                    {catalogQ.data?.meta?.totalElements != null && (
-                      <span className="text-[11px] text-[var(--fg-tertiary)]">
-                        총 {catalogQ.data.meta.totalElements}건
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="relative mb-2">
-                  <Search
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-                  />
-                  <Input
-                    value={cardKeyword}
-                    onChange={e => setCardKeyword(e.target.value)}
-                    placeholder="카드명 또는 발급사 검색"
-                    className="pl-9"
-                  />
-                </div>
-                <div
-                  className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]"
-                  style={{ maxHeight: 260, overflowY: 'auto' }}
-                >
-                  {catalogQ.isLoading ? (
-                    <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">불러오는 중…</div>
-                  ) : catalogItems.length === 0 ? (
-                    <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">검색 결과가 없어요</div>
+              <SearchableList
+                label="카드 상품"
+                totalCount={catalogQ.data?.meta?.totalElements}
+                searchValue={cardKeyword}
+                onSearchChange={setCardKeyword}
+                placeholder="카드명 또는 발급사 검색"
+                isLoading={catalogQ.isLoading}
+                loadingSkeleton={
+                  <div className="py-6 text-center text-[12px] text-text-tertiary">불러오는 중…</div>
+                }
+                headerExtras={
+                  <label
+                    className="inline-flex items-center cursor-pointer select-none gap-1.5 text-caption text-text-tertiary"
+                    title="단종된 카드 상품도 검색 결과에 포함합니다"
+                  >
+                    <Switch
+                      checked={includeDiscontinued}
+                      onCheckedChange={setIncludeDiscontinued}
+                    />
+                    단종 포함
+                  </label>
+                }
+              >
+                {catalogItems.map(c => {
+                  const active = selectedCard?.rowId === c.rowId
+                  const discontinued = c.isDiscontinued === 'Y'
+                  const thumbnail = c.imgUrl ? (
+                    <img
+                      src={c.imgUrl}
+                      alt=""
+                      className="rounded object-cover"
+                      style={{ width: 44, height: 28 }}
+                    />
                   ) : (
-                    catalogItems.map(c => {
-                      const active = selectedCard?.rowId === c.rowId
-                      const discontinued = c.isDiscontinued === 'Y'
-                      return (
-                        <button
-                          key={c.rowId}
-                          type="button"
-                          onClick={() => setSelectedCard(c)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
-                          style={{
-                            background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                            opacity: discontinued && !active ? 0.7 : 1,
-                          }}
-                        >
-                          {c.imgUrl ? (
-                            <img
-                              src={c.imgUrl}
-                              alt=""
-                              className="rounded object-cover flex-shrink-0"
-                              style={{ width: 44, height: 28 }}
-                            />
-                          ) : (
+                    <span
+                      className="rounded flex items-center justify-center text-white text-xs font-bold"
+                      style={{
+                        width: 44,
+                        height: 28,
+                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                      }}
+                    >
+                      {(c.company?.name ?? c.cardName).slice(0, 1)}
+                    </span>
+                  )
+                  return (
+                    <SearchableListItem
+                      key={c.rowId}
+                      active={active}
+                      dim={discontinued}
+                      onClick={() => setSelectedCard(c)}
+                      thumbnail={thumbnail}
+                      title={
+                        <>
+                          <span className="truncate">{c.cardName}</span>
+                          {discontinued && (
                             <span
-                              className="rounded flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+                              className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
                               style={{
-                                width: 44,
-                                height: 28,
-                                background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                                background: 'var(--bg-disabled)',
+                                color: 'var(--fg-tertiary)',
+                                letterSpacing: 'var(--tracking-wide)',
                               }}
                             >
-                              {(c.company?.name ?? c.cardName).slice(0, 1)}
+                              단종
                             </span>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className="truncate text-[13px] flex items-center gap-1.5"
-                              style={{
-                                color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                                fontWeight: active ? 600 : 500,
-                              }}
-                            >
-                              <span className="truncate">{c.cardName}</span>
-                              {discontinued && (
-                                <span
-                                  className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
-                                  style={{
-                                    background: 'var(--bg-disabled)',
-                                    color: 'var(--fg-tertiary)',
-                                    letterSpacing: 'var(--tracking-wide)',
-                                  }}
-                                >
-                                  단종
-                                </span>
-                              )}
-                            </div>
-                            <div className="truncate text-[11.5px] text-[var(--fg-tertiary)] mt-0.5">
-                              {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
-                              {c.annualFee.amount > 0 && (
-                                <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
+                        </>
+                      }
+                      subtitle={
+                        <>
+                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
+                          {c.annualFee.amount > 0 && (
+                            <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
+                          )}
+                        </>
+                      }
+                    />
+                  )
+                })}
+              </SearchableList>
             </>
           ) : (
             <div>
