@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Repeat, Bell, Tag, ChevronDown, Check, Users } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, Check, Users } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
-import type { UserCalendar } from '@/entities/user-calendar'
 import { useUserCalendars } from '@/features/user-calendar'
 import { useGroups } from '@/features/group'
 import { format } from 'date-fns'
+
+const NO_GROUP_VALUE = '__none__'
+const NO_LABEL_VALUE = '__none__'
 
 interface EventFormProps {
   event?: CalendarEvent | null
@@ -86,9 +95,6 @@ export const EventForm = ({
 
   const [recurrence, setRecurrence] = useState<RecurrenceOption>('none')
   const [selectedReminders, setSelectedReminders] = useState<number[]>([])
-  const [showLabelDropdown, setShowLabelDropdown] = useState(false)
-  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
-  const [showGroupDropdown, setShowGroupDropdown] = useState(false)
 
   const form = useForm<CalendarEventFormValues>({
     defaultValues: {
@@ -114,10 +120,6 @@ export const EventForm = ({
   const selectedLabelRowId = watch('labelRowId')
   const selectedCalendarRowId = watch('calendarRowId')
   const selectedGroupRowId = watch('groupRowId')
-
-  const selectedLabel = labels.find(l => l.rowId === selectedLabelRowId)
-  const selectedCalendar = userCalendars.find(c => c.rowId === selectedCalendarRowId)
-  const selectedGroup = groups.find(g => g.rowId === selectedGroupRowId)
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -172,12 +174,6 @@ export const EventForm = ({
       setSelectedReminders([])
     }
   }, [event, reset, defaultDate, defaultEndDate, defaultCalendar])
-
-  const handleCalendarSelect = (cal: UserCalendar) => {
-    setValue('calendarRowId', cal.rowId)
-    setValue('color', cal.color)
-    setShowCalendarDropdown(false)
-  }
 
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option)
@@ -255,176 +251,111 @@ export const EventForm = ({
             />
           </div>
 
-          {/* Calendar selector dropdown */}
+          {/* Calendar selector */}
           {userCalendars.length > 0 && (
             <div className="space-y-1.5">
               <Label>{t('form.calendar')}</Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedCalendar ? (
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: selectedCalendar.color }}
-                      />
-                      {selectedCalendar.calendarName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showCalendarDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    {userCalendars.map(cal => (
-                      <button
-                        key={cal.rowId}
-                        type="button"
-                        onClick={() => handleCalendarSelect(cal)}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+              <Select
+                value={selectedCalendarRowId ? String(selectedCalendarRowId) : undefined}
+                onValueChange={(v) => {
+                  const cal = userCalendars.find((c) => String(c.rowId) === v)
+                  if (cal) {
+                    setValue('calendarRowId', cal.rowId, { shouldDirty: true })
+                    setValue('color', cal.color, { shouldDirty: true })
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {userCalendars.map((cal) => (
+                    <SelectItem key={cal.rowId} value={String(cal.rowId)}>
+                      <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
                           style={{ backgroundColor: cal.color }}
                         />
                         {cal.calendarName}
-                        {selectedCalendarRowId === cal.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {/* Group selector dropdown */}
+          {/* Group selector */}
           {groups.length > 0 && (
             <div className="space-y-1.5">
               <Label>
                 <Users size={14} className="inline mr-1" />
                 {t('selectGroup')}
               </Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowGroupDropdown(!showGroupDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedGroup ? (
-                    <span className="flex items-center gap-2">
-                      <Users size={14} className="text-primary" />
-                      {selectedGroup.groupName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">{t('personal')}</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showGroupDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue('groupRowId', undefined)
-                        setShowGroupDropdown(false)
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                    >
-                      {t('personal')}
-                      {!selectedGroupRowId && <Check size={14} className="ml-auto text-primary" />}
-                    </button>
-                    {groups.map(group => (
-                      <button
-                        key={group.rowId}
-                        type="button"
-                        onClick={() => {
-                          setValue('groupRowId', group.rowId)
-                          setShowGroupDropdown(false)
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+              <Select
+                value={selectedGroupRowId ? String(selectedGroupRowId) : NO_GROUP_VALUE}
+                onValueChange={(v) =>
+                  setValue('groupRowId', v === NO_GROUP_VALUE ? undefined : Number(v), {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_GROUP_VALUE}>{t('personal')}</SelectItem>
+                  {groups.map((group) => (
+                    <SelectItem key={group.rowId} value={String(group.rowId)}>
+                      <span className="flex items-center gap-2">
                         <Users size={14} className="text-muted-foreground" />
                         {group.groupName}
-                        {selectedGroupRowId === group.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {/* Label selector - KEEP custom dropdown */}
+          {/* Label selector */}
           {labels.length > 0 && (
             <div className="space-y-1.5">
               <Label>
                 <Tag size={14} className="inline mr-1" />
                 {t('form.label')}
               </Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowLabelDropdown(!showLabelDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedLabel ? (
+              <Select
+                value={selectedLabelRowId ? String(selectedLabelRowId) : NO_LABEL_VALUE}
+                onValueChange={(v) =>
+                  setValue('labelRowId', v === NO_LABEL_VALUE ? undefined : Number(v), {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_LABEL_VALUE}>
                     <span className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: selectedLabel.color }}
-                      />
-                      {selectedLabel.labelName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">{t('noLabels')}</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showLabelDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue('labelRowId', undefined)
-                        setShowLabelDropdown(false)
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                    >
                       <span className="h-3 w-3 rounded-full bg-muted-foreground/30" />
                       {t('noLabels')}
-                      {!selectedLabelRowId && <Check size={14} className="ml-auto text-primary" />}
-                    </button>
-                    {labels.map(label => (
-                      <button
-                        key={label.rowId}
-                        type="button"
-                        onClick={() => {
-                          setValue('labelRowId', label.rowId)
-                          setShowLabelDropdown(false)
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+                    </span>
+                  </SelectItem>
+                  {labels.map((label) => (
+                    <SelectItem key={label.rowId} value={String(label.rowId)}>
+                      <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
                           style={{ backgroundColor: label.color }}
                         />
                         {label.labelName}
-                        {selectedLabelRowId === label.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
