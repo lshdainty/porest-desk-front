@@ -780,7 +780,7 @@ export const StatsPage = () => {
                     margin: clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
                   }}
-                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--pd-hover-bg)' } : undefined}
+                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
                 >
@@ -872,7 +872,7 @@ export const StatsPage = () => {
                 <div
                   style={{
                     height: 4,
-                    background: 'var(--pd-surface-inset)',
+                    background: 'var(--bg-sunken)',
                     borderRadius: 'var(--radius-pill)',
                     overflow: 'hidden',
                   }}
@@ -964,7 +964,7 @@ export const StatsPage = () => {
               key={i}
               style={{
                 height: 28,
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 borderRadius: 'var(--radius-md)',
                 opacity: 0.6 + (i % 2) * 0.2,
               }}
@@ -978,7 +978,7 @@ export const StatsPage = () => {
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
             fontSize: 'var(--fs-body-sm)',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             borderRadius: 'var(--radius-lg)',
           }}
         >

@@ -306,7 +306,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                 className="num"
                 style={{
                   padding: '4px 10px',
-                  background: 'var(--pd-surface-inset)',
+                  background: 'var(--bg-sunken)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
                   fontSize: 'var(--fs-caption)',
@@ -419,7 +419,7 @@ function ToggleRow({
           width: 32,
           height: 32,
           borderRadius: 'var(--radius-md)',
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
           alignItems: 'center',

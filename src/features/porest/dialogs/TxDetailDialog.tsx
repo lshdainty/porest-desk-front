@@ -413,7 +413,7 @@ function TxDetailSkeleton() {
       {/* Hero */}
       <div
         style={{
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-xl)',
           padding: 22,

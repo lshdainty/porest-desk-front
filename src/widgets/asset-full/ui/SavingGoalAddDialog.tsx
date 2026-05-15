@@ -280,7 +280,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         <div
           style={{
             height: 6,
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
           }}

@@ -169,7 +169,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                         fontWeight: 'var(--fw-semi)',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
-                        background: tag.color ? `${tag.color}22` : 'var(--pd-surface-inset)',
+                        background: tag.color ? `${tag.color}22` : 'var(--bg-sunken)',
                         color: tag.color ?? 'var(--fg-secondary)',
                       }}
                     >

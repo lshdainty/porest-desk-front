@@ -249,7 +249,7 @@ export function AssetDetailDialog({
           <SkeletonBase className="h-[160px] w-full rounded-md" />
         ) : chartData.length === 0 ? (
           <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
+            height: 160, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
           }}>

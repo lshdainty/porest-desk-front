@@ -13,7 +13,7 @@ const TX_ROW_CLS =
   'pl-1 pr-1 -ml-1 -mr-1 ' +
   'py-[var(--row-py,12px)] ' +
   'transition-[background] duration-[var(--dur-fast)] ' +
-  'hover:bg-[var(--pd-hover-bg)]'
+  'hover:bg-[var(--bg-muted)]'
 
 const TX_ROW_TITLE_STYLE: CSSProperties = {
   fontSize: 14,
@@ -38,7 +38,7 @@ const TX_ROW_SEP_STYLE: CSSProperties = {
   width: 2,
   height: 2,
   borderRadius: 999,
-  background: 'var(--pd-dot)',
+  background: 'var(--border-strong)',
 }
 
 const txRowAmtStyle = (income: boolean): CSSProperties => ({

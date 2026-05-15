@@ -119,7 +119,7 @@ export function BudgetEditDialog({
           alignItems: 'center',
           gap: 12,
           padding: 14,
-          background: 'var(--pd-surface-subtle)',
+          background: 'var(--bg-muted)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
@@ -162,7 +162,7 @@ export function BudgetEditDialog({
             <div
               style={{
                 padding: 12,
-                background: 'var(--pd-surface-subtle)',
+                background: 'var(--bg-muted)',
                 borderRadius: 'var(--radius-tile)',
                 fontSize: 'var(--fs-caption)',
                 color: 'var(--fg-secondary)',

@@ -324,7 +324,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 2,
           padding: 3,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
@@ -531,7 +531,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <div
               style={{
                 padding: '8px 10px',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 border: '1px dashed var(--border-default)',
                 borderRadius: 'var(--radius-md)',
                 fontSize: 'var(--fs-caption)',
@@ -963,7 +963,7 @@ function SavePresetDialog({
       <div
         style={{
           padding: 14,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 18,
           display: 'flex',
@@ -1018,7 +1018,7 @@ function SavePresetDialog({
           alignItems: 'flex-start',
           gap: 10,
           padding: 12,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           cursor: 'pointer',
         }}

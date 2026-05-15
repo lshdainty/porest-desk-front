@@ -581,7 +581,7 @@ export function AssetEditDialog({
                                           borderColor: 'transparent',
                                         }
                                       : {
-                                          background: 'var(--pd-surface-subtle)',
+                                          background: 'var(--bg-muted)',
                                           color: 'var(--fg-secondary)',
                                           borderColor: 'transparent',
                                         }
@@ -628,7 +628,7 @@ export function AssetEditDialog({
                                         borderColor: 'transparent',
                                       }
                                     : {
-                                        background: 'var(--pd-surface-subtle)',
+                                        background: 'var(--bg-muted)',
                                         color: 'var(--fg-secondary)',
                                         borderColor: 'transparent',
                                       }

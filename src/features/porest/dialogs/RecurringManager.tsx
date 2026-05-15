@@ -167,7 +167,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     gap: 12,
                     padding: '10px 12px',
                     borderRadius: 'var(--radius-tile)',
-                    background: isToday ? 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' : 'var(--pd-surface-inset)',
+                    background: isToday ? 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' : 'var(--bg-sunken)',
                     border: isToday ? '1px solid color-mix(in oklch, var(--fg-expense) 25%, transparent)' : '1px solid transparent',
                   }}
                 >
@@ -324,7 +324,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           fontWeight: 'var(--fw-bold)',
                           padding: '2px 6px',
                           borderRadius: 'var(--radius-xs)',
-                          background: 'var(--pd-surface-inset)',
+                          background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
                         }}
                       >
@@ -482,7 +482,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
                   gap: 12,
                   padding: '10px 12px',
                   borderRadius: 'var(--radius-tile)',
-                  background: 'var(--pd-surface-inset)',
+                  background: 'var(--bg-sunken)',
                 }}
               >
                 <SkeletonBase className="h-6 w-11 rounded-md shrink-0" />
@@ -621,7 +621,7 @@ function RecAction({
         if (isDisabled) return
         e.currentTarget.style.background = tone === 'danger'
           ? 'color-mix(in oklch, var(--fg-expense) 10%, transparent)'
-          : 'var(--pd-surface-inset)'
+          : 'var(--bg-sunken)'
       }}
       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
     >

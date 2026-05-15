@@ -104,7 +104,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 style={{
                   width: 68,
                   height: 44,
-                  background: companyColor?.bg ?? 'var(--pd-surface-inset)',
+                  background: companyColor?.bg ?? 'var(--bg-sunken)',
                   color: companyColor?.fg ?? 'var(--fg-primary)',
                 }}
               >
@@ -230,7 +230,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                           style={{
                             width: 44,
                             height: 28,
-                            background: getBrandColor(c.company?.name)?.bg ?? 'var(--pd-divider-strong)',
+                            background: getBrandColor(c.company?.name)?.bg ?? 'var(--border-strong)',
                           }}
                         >
                           {(c.company?.name ?? c.cardName).slice(0, 1)}

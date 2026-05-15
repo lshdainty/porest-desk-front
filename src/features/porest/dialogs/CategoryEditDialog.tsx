@@ -193,7 +193,7 @@ export function CategoryEditDialog({
           alignItems: 'center',
           gap: 12,
           padding: 14,
-          background: 'var(--pd-surface-subtle)',
+          background: 'var(--bg-muted)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}

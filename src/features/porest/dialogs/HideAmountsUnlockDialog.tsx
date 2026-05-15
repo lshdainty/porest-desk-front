@@ -65,7 +65,7 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
           </DialogTitle>
           <DialogClose
             aria-label="닫기"
-            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-secondary)] hover:bg-[var(--pd-hover-bg)] hover:text-[var(--fg-primary)]"
+            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-secondary)] hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)]"
           >
             ✕
           </DialogClose>

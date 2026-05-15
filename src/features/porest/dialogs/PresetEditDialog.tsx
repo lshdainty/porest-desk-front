@@ -239,7 +239,7 @@ export function PresetEditDialog({
         )}
       </Field>
 
-      <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
+      <div style={{ padding: 12, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
           <Checkbox
             size="sm"

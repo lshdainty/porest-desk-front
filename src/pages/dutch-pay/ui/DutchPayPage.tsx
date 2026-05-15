@@ -323,7 +323,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
               width: 32,
               height: 32,
               borderRadius: 'var(--radius-tile)',
-              background: 'var(--pd-surface-subtle)',
+              background: 'var(--bg-muted)',
               color: 'var(--fg-secondary)',
               display: 'inline-flex',
               alignItems: 'center',

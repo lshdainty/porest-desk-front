@@ -23,7 +23,7 @@ function iconFor(type: NotificationType): {
     case 'EVENT_REMINDER':
       return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
     default:
-      return { Icon: Bell, bg: 'var(--pd-surface-inset)', fg: 'var(--fg-secondary)' }
+      return { Icon: Bell, bg: 'var(--bg-sunken)', fg: 'var(--fg-secondary)' }
   }
 }
 
@@ -179,7 +179,7 @@ export function NotificationsPopover({
           style={{
             padding: '10px 14px',
             borderTop: '1px solid var(--border-subtle)',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
           }}
         >
           <Button

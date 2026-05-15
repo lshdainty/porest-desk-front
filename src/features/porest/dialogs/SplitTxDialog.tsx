@@ -280,7 +280,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 width: 24,
                 height: 24,
                 borderRadius: 'var(--radius-pill)',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 color: 'var(--fg-secondary)',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -381,7 +381,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             height: 10,
             borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             border: '1px solid var(--border-subtle)',
           }}
         >

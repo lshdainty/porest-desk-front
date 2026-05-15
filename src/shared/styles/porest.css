@@ -5,24 +5,6 @@
 
 .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; letter-spacing: var(--tracking-snug); }
 
-/* =============================================================================
- * POREST component semantic tokens
- * index.css 의 --bg-muted / --bg-sunken / --border-strong 이 라이트/다크
- * 양쪽으로 정의돼 있으므로 여기선 단순 alias 만 제공한다.
- * 컴포넌트는 --mist-* / --bark-* primitive 를 직접 쓰지 말고 반드시 아래
- * --pd-* 변수를 사용할 것. 색상 튜닝은 이 블록만 수정하면 전파됨.
- * primitive 직접 참조 = 다크모드에서 flip 안 돼 텍스트·배경 충돌 유발.
- * ========================================================================== */
-:root {
-  /* 배경 계열 */
-  --pd-hover-bg:       var(--bg-muted);    /* row / icon button / close 버튼 hover */
-  --pd-surface-inset:  var(--bg-sunken);   /* seg·tab track, budget-bar, modal foot */
-  --pd-surface-subtle: var(--bg-muted);    /* 검색 input, 태그 pill 정적 배경 */
-  /* 선/핸들 */
-  --pd-divider-strong: var(--border-strong); /* sheet handle, scrollbar thumb */
-  --pd-dot:            var(--border-strong); /* tx-row 구분 점 */
-}
-
 /* Density */
 :root { --row-py: 12px; --card-pad: 20px; }
 :root[data-density="compact"] { --row-py: 10px; --card-pad: 16px; }
@@ -82,7 +64,7 @@
   margin-left: 4px;
   flex-shrink: 0;
 }
-.side__collapse:hover { background: var(--pd-hover-bg); color: var(--fg-primary); }
+.side__collapse:hover { background: var(--bg-muted); color: var(--fg-primary); }
 .side__scroll { flex: 1; overflow-y: auto; padding: 14px 10px 20px; }
 .side__glabel {
   font-size: var(--fs-micro);
@@ -110,7 +92,7 @@
   transition: background var(--dur-fast), color var(--dur-fast);
 }
 .side__item svg { color: var(--fg-tertiary); flex-shrink: 0; }
-.side__item:hover { background: var(--pd-hover-bg); color: var(--fg-primary); }
+.side__item:hover { background: var(--bg-muted); color: var(--fg-primary); }
 .side__item:hover svg { color: var(--fg-primary); }
 .side__item.active {
   background: var(--bg-brand-subtle);
@@ -129,7 +111,7 @@
   border-radius: var(--radius-md);
   cursor: pointer;
 }
-.side__user:hover { background: var(--pd-hover-bg); }
+.side__user:hover { background: var(--bg-muted); }
 .side__user .info { flex: 1; min-width: 0; }
 .side__user .name { font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--fg-primary); }
 .side__user .sub  { font-size: var(--fs-caption); color: var(--fg-tertiary); }
@@ -195,7 +177,7 @@
   width: 100%;
   padding: 7px 12px 7px 34px;
   font-size: var(--fs-body-sm);
-  background: var(--pd-surface-subtle);
+  background: var(--bg-muted);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: var(--fg-primary);
@@ -228,7 +210,7 @@
   position: relative;
   transition: background var(--dur-fast), color var(--dur-fast);
 }
-.top__icon-btn:hover { background: var(--pd-hover-bg); color: var(--fg-primary); }
+.top__icon-btn:hover { background: var(--bg-muted); color: var(--fg-primary); }
 .top__icon-btn .dot {
   position: absolute;
   top: 7px; right: 7px;
@@ -241,8 +223,8 @@
 .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .scroll::-webkit-scrollbar { width: 12px; }
 .scroll::-webkit-scrollbar-track { background: transparent; }
-.scroll::-webkit-scrollbar-thumb { background: var(--pd-divider-strong); border-radius: var(--radius-pill); border: 3px solid var(--bg-canvas); }
-.scroll::-webkit-scrollbar-thumb:hover { background: var(--pd-divider-strong); }
+.scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--radius-pill); border: 3px solid var(--bg-canvas); }
+.scroll::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
 /* =============================================================================
  * Mobile chrome
@@ -279,7 +261,7 @@
   cursor: pointer;
   position: relative;
 }
-.m-header .ico-btn:hover { background: var(--pd-hover-bg); }
+.m-header .ico-btn:hover { background: var(--bg-muted); }
 .m-header .ico-btn .dot {
   position: absolute;
   top: 8px; right: 8px;
@@ -425,7 +407,7 @@
 .budget-bar {
   position: relative;
   height: 8px;
-  background: var(--pd-surface-inset);
+  background: var(--bg-sunken);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -449,7 +431,7 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  background: var(--pd-surface-inset);
+  background: var(--bg-sunken);
   border-radius: var(--radius-md);
 }
 .seg button {
@@ -490,7 +472,7 @@
   color: var(--fg-on-brand);
   border-color: var(--bg-brand);
 }
-.chip:hover:not(.active) { background: var(--pd-surface-inset); }
+.chip:hover:not(.active) { background: var(--bg-sunken); }
 
 /* Dashboard grid */
 .dash-grid {
@@ -565,7 +547,7 @@
   cursor: pointer;
   border-left: 3px solid transparent;
 }
-.notif-row:hover { background: var(--pd-hover-bg); }
+.notif-row:hover { background: var(--bg-muted); }
 .notif-row.unread { border-left-color: var(--border-brand); background: color-mix(in oklch, var(--bg-brand-subtle) 100%, transparent); }
 .notif-row.unread:hover { background: color-mix(in oklch, var(--bg-brand-muted) 100%, transparent); }
 .notif-row__icon {

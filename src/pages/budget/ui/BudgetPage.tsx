@@ -560,7 +560,7 @@ export const BudgetPage = () => {
         style={{
           position: 'relative',
           height: 12,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-pill)',
           overflow: 'hidden',
           marginBottom: 10,
@@ -784,7 +784,7 @@ export const BudgetPage = () => {
                         ? 'var(--fg-expense)'
                         : d.active
                           ? 'var(--bg-brand)'
-                          : 'var(--pd-divider-strong)'
+                          : 'var(--border-strong)'
                     }
                   />
                 ))}

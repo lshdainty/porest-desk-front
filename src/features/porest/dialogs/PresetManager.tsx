@@ -96,7 +96,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
+            <div key={i} style={{ padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
               <SkeletonBase className="h-3 w-16 mb-1.5" />
               <SkeletonBase className="h-6 w-12" />
             </div>
@@ -161,7 +161,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 width: 48,
                 height: 48,
                 borderRadius: 'var(--radius-lg)',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 12,
@@ -200,7 +200,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     borderRadius: 'var(--radius-tile)',
                     background: cat
                       ? `color-mix(in oklch, ${cat.color ?? 'var(--bg-brand)'} 18%, transparent)`
-                      : 'var(--pd-surface-inset)',
+                      : 'var(--bg-sunken)',
                     color: cat?.color ?? 'var(--fg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
@@ -245,7 +245,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           fontSize: 'var(--fs-micro)',
                           fontWeight: 'var(--fw-semi)',
                           padding: '1px 5px',
-                          background: 'var(--pd-surface-inset)',
+                          background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
                           borderRadius: 'var(--radius-2xs)',
                         }}
@@ -377,7 +377,7 @@ function PresetManagerSkeleton({ mobile }: { mobile: boolean }) {
 
 function PMStat({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
+    <div style={{ padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
       <div
         style={{
           fontSize: 'var(--fs-micro)',

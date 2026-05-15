@@ -445,7 +445,7 @@ export function Donut({
         <PieChart width={size} height={size}>
           {!hasValue && (
             <Pie
-              data={[{ value: 1, fill: 'var(--pd-surface-inset)' }]}
+              data={[{ value: 1, fill: 'var(--bg-sunken)' }]}
               dataKey="value"
               innerRadius={innerRadius}
               outerRadius={outerRadius}
