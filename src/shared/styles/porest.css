@@ -185,26 +185,6 @@
   color: var(--fg-tertiary);
 }
 .top__actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-.top__icon-btn {
-  width: 34px; height: 34px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: 0;
-  background: transparent;
-  color: var(--fg-secondary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  position: relative;
-  transition: background var(--dur-fast), color var(--dur-fast);
-}
-.top__icon-btn:hover { background: var(--bg-muted); color: var(--fg-primary); }
-.top__icon-btn .dot {
-  position: absolute;
-  top: 7px; right: 7px;
-  width: 7px; height: 7px;
-  border-radius: var(--radius-pill);
-  background: var(--fg-expense);
-  border: 2px solid var(--bg-surface);
-}
 
 .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .scroll::-webkit-scrollbar { width: 12px; }
@@ -237,24 +217,6 @@
   flex-shrink: 0;
 }
 .m-header h1 { font-size: var(--fs-h2); font-weight: var(--fw-bold); letter-spacing: var(--tracking-tight); flex: 1; }
-.m-header .ico-btn {
-  width: 36px; height: 36px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: transparent;
-  border: 0;
-  color: var(--fg-primary);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  position: relative;
-}
-.m-header .ico-btn:hover { background: var(--bg-muted); }
-.m-header .ico-btn .dot {
-  position: absolute;
-  top: 8px; right: 8px;
-  width: 6px; height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--fg-expense);
-}
 .m-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .m-scroll::-webkit-scrollbar { width: 0; }
 .m-tabbar {
@@ -637,20 +599,6 @@
   cursor: pointer;
   align-self: flex-start;
   font-family: inherit;
-}
-
-/* ---------- Topbar bell unread dot ---------- */
-.top__icon-btn { position: relative; }
-.top__icon-btn .dot {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: var(--radius-pill);
-  background: var(--berry-500, oklch(0.65 0.2 25));
-  border: 2px solid var(--bg-surface);
-  box-sizing: content-box;
 }
 
 /* Note: 모바일 알림은 vaul Drawer (MobileHeader > MobileNotificationSheet) 로

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, Moon, Search, Sun } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { useTheme } from '@/shared/ui/theme-provider'
 import {
   disablePdHideAmounts,
@@ -53,37 +54,47 @@ export function MobileHeader() {
     <>
       <div className="m-header">
         <h1>{title(location.pathname)}</h1>
-        <button
-          className="ico-btn"
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
           title={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
           onClick={toggleTheme}
         >
           {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-        <button
-          className="ico-btn"
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label={hidden ? '금액 표시' : '금액 가리기'}
           title={hidden ? '금액 표시' : '금액 가리기'}
           onClick={handleHideToggle}
         >
           {hidden ? <EyeOff size={20} /> : <Eye size={20} />}
-        </button>
-        <button
-          className="ico-btn"
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="알림"
           onClick={() => navigate('/desk/notifications')}
+          className="relative"
         >
           <Bell size={20} />
-          {unreadCount > 0 && <span className="dot" />}
-        </button>
-        <button
-          className="ico-btn"
+          {unreadCount > 0 && (
+            <span
+              aria-hidden
+              className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-[var(--fg-expense)]"
+            />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="검색"
           onClick={() => navigate('/desk/search')}
         >
           <Search size={20} />
-        </button>
+        </Button>
       </div>
       <HideAmountsUnlockDialog
         open={unlockOpen}
