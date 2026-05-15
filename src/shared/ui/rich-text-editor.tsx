@@ -27,6 +27,7 @@ import {
   Redo,
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
+import { Toggle } from '@/shared/ui/toggle'
 import { useEffect, useRef } from 'react'
 
 const lowlight = createLowlight(common)
@@ -47,19 +48,19 @@ interface ToolbarButtonProps {
 }
 
 const ToolbarButton = ({ onClick, isActive, children, title }: ToolbarButtonProps) => (
-  <button
-    type="button"
-    onClick={onClick}
+  <Toggle
+    pressed={isActive}
+    onPressedChange={() => onClick()}
     title={title}
     className={cn(
-      'rounded p-1.5 transition-colors',
+      'h-auto min-w-0 p-1.5 rounded gap-0',
       isActive
-        ? 'bg-primary/10 text-primary'
+        ? 'bg-primary/10 text-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary'
         : 'text-text-secondary hover:bg-surface-input hover:text-text-primary'
     )}
   >
     {children}
-  </button>
+  </Toggle>
 )
 
 const ToolbarSeparator = () => (
