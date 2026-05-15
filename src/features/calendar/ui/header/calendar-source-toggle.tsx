@@ -102,13 +102,15 @@ const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onS
         </span>
       </button>
       {onSettings && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
           onClick={onSettings}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          aria-label={t('manage')}
         >
           <Settings size={14} />
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -136,14 +138,15 @@ const CalendarSourceToggle = () => {
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t('title')}
               </span>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                 onClick={() => setManagementOpen(true)}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                title={t('manage')}
+                aria-label={t('manage')}
               >
                 <Settings size={14} />
-              </button>
+              </Button>
             </div>
             <div className="space-y-0.5">
               {userCalendars.map((calendar) => (
@@ -153,14 +156,15 @@ const CalendarSourceToggle = () => {
                 <p className="px-2 py-1.5 text-xs text-muted-foreground">-</p>
               )}
             </div>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-1 w-full justify-start gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               onClick={() => setManagementOpen(true)}
-              className="mt-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             >
               <Plus size={14} />
               {t('add')}
-            </button>
+            </Button>
           </div>
 
           <Separator />
