@@ -72,6 +72,26 @@ const rruleToRecurrence = (rrule: string | null | undefined): RecurrenceOption =
 
 const reminderOptions = [5, 15, 30, 60, 1440] // minutes
 
+// 시작 datetime 변경 시 종료가 시작 이전/같으면 자동 보정 (Google 캘린더 패턴).
+// allDay=true: YYYY-MM-DD 사전식 비교, 종료 = max(종료, 시작).
+// allDay=false: ISO 비교, 종료 = 시작 + 1h.
+const ensureEndAfterStart = (
+  newStart: string,
+  currentEnd: string,
+  allDay: boolean,
+): string => {
+  if (allDay) return newStart > currentEnd ? newStart : currentEnd
+  if (new Date(newStart) < new Date(currentEnd)) return currentEnd
+  const d = new Date(newStart)
+  d.setHours(d.getHours() + 1)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+}
+
 export const EventForm = ({
   event,
   selectedDate,
@@ -405,13 +425,19 @@ export const EventForm = ({
             </Label>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* allDay=true 는 시작/종료 같은 row, false 는 row stack — date input width 확보 */}
+          <div className={isAllDay ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
             <div className="space-y-1.5">
               <Label>{t('form.startDate')}</Label>
               {isAllDay ? (
                 <InputDatePicker
                   value={watch('startDate')}
-                  onValueChange={(d) => setValue('startDate', d, { shouldDirty: true })}
+                  onValueChange={(d) => {
+                    setValue('startDate', d, { shouldDirty: true })
+                    const adjusted = ensureEndAfterStart(d, watch('endDate'), true)
+                    if (adjusted !== watch('endDate'))
+                      setValue('endDate', adjusted, { shouldDirty: true })
+                  }}
                 />
               ) : (
                 <div className="grid grid-cols-[1fr_116px] gap-2">
@@ -419,14 +445,22 @@ export const EventForm = ({
                     value={watch('startDate').substring(0, 10)}
                     onValueChange={(d) => {
                       const time = watch('startDate').substring(11, 16) || '09:00'
-                      setValue('startDate', `${d}T${time}`, { shouldDirty: true })
+                      const newStart = `${d}T${time}`
+                      setValue('startDate', newStart, { shouldDirty: true })
+                      const adjusted = ensureEndAfterStart(newStart, watch('endDate'), false)
+                      if (adjusted !== watch('endDate'))
+                        setValue('endDate', adjusted, { shouldDirty: true })
                     }}
                   />
                   <InputTimePicker
                     value={watch('startDate').substring(11, 16)}
                     onValueChange={(t) => {
                       const date = watch('startDate').substring(0, 10)
-                      setValue('startDate', `${date}T${t}`, { shouldDirty: true })
+                      const newStart = `${date}T${t}`
+                      setValue('startDate', newStart, { shouldDirty: true })
+                      const adjusted = ensureEndAfterStart(newStart, watch('endDate'), false)
+                      if (adjusted !== watch('endDate'))
+                        setValue('endDate', adjusted, { shouldDirty: true })
                     }}
                     minuteStep={5}
                   />
