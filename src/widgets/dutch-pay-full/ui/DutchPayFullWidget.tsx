@@ -15,6 +15,7 @@ import { ScrollArea } from '@/shared/ui/scroll-area'
 import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,20 +130,19 @@ export const DutchPayFullWidget = () => {
       {/* 고정: 필터 탭 + 추가 버튼 */}
       <div className="shrink-0">
         <div className="flex items-center gap-2">
-          {(['all', 'active', 'settled'] as const).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                filter === f
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              )}
-            >
-              {t(`filter.${f}`)}
-            </button>
-          ))}
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={filter}
+            onValueChange={(v) => v && setFilter(v as 'all' | 'active' | 'settled')}
+            className="justify-start"
+          >
+            {(['all', 'active', 'settled'] as const).map(f => (
+              <ToggleGroupItem key={f} value={f}>
+                {t(`filter.${f}`)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
           <span className="ml-auto text-xs text-muted-foreground">
             {filteredDutchPays.length}{t('count')}
           </span>

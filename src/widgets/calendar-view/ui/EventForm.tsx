@@ -15,6 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
+import { Switch } from '@/shared/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
@@ -178,14 +182,6 @@ export const EventForm = ({
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option)
     setValue('rrule', recurrenceToRrule[option])
-  }
-
-  const toggleReminder = (minutes: number) => {
-    const updated = selectedReminders.includes(minutes)
-      ? selectedReminders.filter(m => m !== minutes)
-      : [...selectedReminders, minutes]
-    setSelectedReminders(updated)
-    setValue('reminderMinutes', updated)
   }
 
   const getReminderLabel = (minutes: number): string => {
@@ -378,18 +374,17 @@ export const EventForm = ({
             </div>
           </div>
 
-          {/* All-day toggle - KEEP custom */}
+          {/* All-day switch */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const newIsAllDay = !isAllDay
-                setValue('isAllDay', newIsAllDay)
+            <Switch
+              checked={isAllDay}
+              onCheckedChange={(checked) => {
+                setValue('isAllDay', checked, { shouldDirty: true })
 
                 const currentStart = watch('startDate')
                 const currentEnd = watch('endDate')
 
-                if (newIsAllDay) {
+                if (checked) {
                   // datetime-local → date: strip time
                   setValue('startDate', currentStart.substring(0, 10))
                   setValue('endDate', currentEnd.substring(0, 10))
@@ -403,35 +398,67 @@ export const EventForm = ({
                   }
                 }
               }}
-              className={cn(
-                'relative h-5 w-9 rounded-full transition-colors',
-                isAllDay ? 'bg-primary' : 'bg-muted'
-              )}
-            >
-              <span
-                className={cn(
-                  'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform shadow-sm',
-                  isAllDay && 'translate-x-4'
-                )}
-              />
-            </button>
-            <Label className="font-normal">{t('form.allDay')}</Label>
+              id="event-all-day"
+            />
+            <Label htmlFor="event-all-day" className="font-normal cursor-pointer">
+              {t('form.allDay')}
+            </Label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t('form.startDate')}</Label>
-              <Input
-                {...register('startDate', { required: true })}
-                type={isAllDay ? 'date' : 'datetime-local'}
-              />
+              {isAllDay ? (
+                <InputDatePicker
+                  value={watch('startDate')}
+                  onValueChange={(d) => setValue('startDate', d, { shouldDirty: true })}
+                />
+              ) : (
+                <div className="grid grid-cols-[1fr_116px] gap-2">
+                  <InputDatePicker
+                    value={watch('startDate').substring(0, 10)}
+                    onValueChange={(d) => {
+                      const time = watch('startDate').substring(11, 16) || '09:00'
+                      setValue('startDate', `${d}T${time}`, { shouldDirty: true })
+                    }}
+                  />
+                  <InputTimePicker
+                    value={watch('startDate').substring(11, 16)}
+                    onValueChange={(t) => {
+                      const date = watch('startDate').substring(0, 10)
+                      setValue('startDate', `${date}T${t}`, { shouldDirty: true })
+                    }}
+                    minuteStep={5}
+                  />
+                </div>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>{t('form.endDate')}</Label>
-              <Input
-                {...register('endDate', { required: true })}
-                type={isAllDay ? 'date' : 'datetime-local'}
-              />
+              {isAllDay ? (
+                <InputDatePicker
+                  value={watch('endDate')}
+                  onValueChange={(d) => setValue('endDate', d, { shouldDirty: true })}
+                />
+              ) : (
+                <div className="grid grid-cols-[1fr_116px] gap-2">
+                  <InputDatePicker
+                    value={watch('endDate').substring(0, 10)}
+                    onValueChange={(d) => {
+                      const time = watch('endDate').substring(11, 16) || '10:00'
+                      setValue('endDate', `${d}T${time}`, { shouldDirty: true })
+                    }}
+                  />
+                  <InputTimePicker
+                    value={watch('endDate').substring(11, 16)}
+                    onValueChange={(t) => {
+                      const date = watch('endDate').substring(0, 10)
+                      setValue('endDate', `${date}T${t}`, { shouldDirty: true })
+                    }}
+                    minuteStep={5}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -447,57 +474,53 @@ export const EventForm = ({
             />
           </div>
 
-          {/* Recurrence pills - KEEP custom */}
+          {/* Recurrence — single select */}
           <div className="space-y-1.5">
             <Label>
               <Repeat size={14} className="inline mr-1" />
               {t('form.recurrence')}
             </Label>
-            <div className="flex flex-wrap gap-1.5">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={recurrence}
+              onValueChange={(v) => v && handleRecurrenceChange(v as RecurrenceOption)}
+              className="justify-start flex-wrap"
+            >
               {(['none', 'daily', 'weekly', 'monthly', 'yearly'] as RecurrenceOption[]).map(option => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => handleRecurrenceChange(option)}
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                    recurrence === option
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
+                <ToggleGroupItem key={option} value={option}>
                   {t(`recurrence.${option}`)}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
-          {/* Reminder pills - KEEP custom */}
+          {/* Reminder — multi select */}
           <div className="space-y-1.5">
             <Label>
               <Bell size={14} className="inline mr-1" />
               {t('form.reminder')}
             </Label>
-            <div className="flex flex-wrap gap-1.5">
+            <ToggleGroup
+              type="multiple"
+              size="sm"
+              value={selectedReminders.map(String)}
+              onValueChange={(v) => {
+                const next = v.map(Number).sort((a, b) => a - b)
+                setSelectedReminders(next)
+                setValue('reminderMinutes', next, { shouldDirty: true })
+              }}
+              className="justify-start flex-wrap"
+            >
               {reminderOptions.map(minutes => (
-                <button
-                  key={minutes}
-                  type="button"
-                  onClick={() => toggleReminder(minutes)}
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                    selectedReminders.includes(minutes)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
+                <ToggleGroupItem key={minutes} value={String(minutes)}>
                   {selectedReminders.includes(minutes) && (
                     <Check size={12} className="inline mr-1" />
                   )}
                   {getReminderLabel(minutes)}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
         </form>
