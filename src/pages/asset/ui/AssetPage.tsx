@@ -19,7 +19,8 @@ import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUn
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Button } from '@/shared/ui/button'
-import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
 import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
@@ -103,18 +104,10 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
 
   if (trendQ.isLoading) {
     return (
-      <div
-        style={{
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
-        }}
-      >
-        불러오는 중…
-      </div>
+      <SkeletonBase
+        className="w-full rounded-lg"
+        style={{ height }}
+      />
     )
   }
   if (data.length === 0) {
@@ -184,11 +177,12 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 type AssetGroupKey = 'cash' | 'invest' | 'card' | 'loan'
 
+// porest chart palette 정합 — AssetSummaryCard ASSET_TYPE_COLORS와 일관
 const GROUP_META: Record<AssetGroupKey, { label: string; color: string }> = {
-  cash: { label: '현금·예금', color: 'var(--sky-500)' },
+  cash: { label: '현금·예금', color: 'var(--color-chart-blue)' },
   invest: { label: '투자', color: 'var(--bg-brand)' },
   card: { label: '카드', color: 'var(--fg-expense)' },
-  loan: { label: '대출', color: 'var(--sunlit-700)' },
+  loan: { label: '대출', color: 'var(--color-chart-brown)' },
 }
 
 function AssetCompositionCard({
@@ -273,27 +267,18 @@ function AssetCompositionCard({
   const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일 기준`
 
   return (
-    <Card style={{ padding: 22 }}>
-      <CardHeader style={{ marginBottom: 16 }}>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
             <>
-              <button
-                type="button"
+              <Button
+                variant="link"
                 onClick={() => setActive(null)}
-                style={{
-                  background: 'transparent',
-                  border: 0,
-                  color: 'var(--fg-secondary)',
-                  cursor: 'pointer',
-                  fontSize: 'var(--fs-body-lg)',
-                  fontWeight: 'var(--fw-medium)',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                }}
+                className="h-auto p-0 text-body-lg font-medium text-text-secondary hover:text-text-primary no-underline hover:no-underline"
               >
                 자산 구성
-              </button>
+              </Button>
               <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>›</span>
               <span>{GROUP_META[active].label}</span>
             </>
@@ -301,10 +286,11 @@ function AssetCompositionCard({
             '자산 구성'
           )}
         </CardTitle>
-        <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
           {dateLabel}
         </span>
       </CardHeader>
+      <CardContent>
       {segments.length === 0 ? (
         <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
           {active ? '등록된 항목이 없어요' : '자산 데이터가 없어요'}
@@ -339,7 +325,7 @@ function AssetCompositionCard({
                     margin: row.clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
                   }}
-                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--pd-hover-bg)' } : undefined}
+                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
                 >
@@ -363,7 +349,7 @@ function AssetCompositionCard({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                       style={{
-                        flex: 1, height: 6, background: 'var(--pd-surface-inset)',
+                        flex: 1, height: 6, background: 'var(--bg-sunken)',
                         borderRadius: 'var(--radius-pill)', overflow: 'hidden',
                       }}
                     >
@@ -390,6 +376,7 @@ function AssetCompositionCard({
           </div>
         </div>
       )}
+      </CardContent>
     </Card>
   )
 }
@@ -423,24 +410,39 @@ function UpcomingBillsCard() {
   }
 
   return (
-    <Card style={{ padding: 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
-        <button
-          type="button"
+        <Button
+          variant="link"
           onClick={() => goToSettings()}
-          style={{
-            marginLeft: 'auto', background: 'transparent', border: 0, cursor: 'pointer',
-            color: 'var(--fg-secondary)', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)',
-            display: 'inline-flex', alignItems: 'center', gap: 2,
-          }}
+          className="h-auto gap-0.5 p-0 text-body-sm font-semibold text-text-secondary hover:text-text-primary no-underline hover:no-underline"
         >
           전체 보기 <ChevronRight size={12} />
-        </button>
+        </Button>
       </CardHeader>
+      <CardContent>
       {recurringQ.isLoading ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-          불러오는 중…
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/2" />
+              </div>
+              <SkeletonBase className="h-4 w-16 shrink-0" />
+            </div>
+          ))}
         </div>
       ) : items.length === 0 ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
@@ -504,6 +506,7 @@ function UpcomingBillsCard() {
           })}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 }
@@ -580,7 +583,7 @@ function SavingGoalItem({
       </div>
       <div
         style={{
-          height: 6, background: 'var(--pd-surface-inset)',
+          height: 6, background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-pill)', overflow: 'hidden',
         }}
       >
@@ -606,27 +609,37 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   const isEmpty = !isLoading && goals.length === 0
 
   return (
-    <Card style={{ padding: 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>저축 목표</CardTitle>
         <Button
           variant="ghost"
           size="sm"
-          style={{ marginLeft: 'auto' }}
           type="button"
           onClick={() => setDialogState({ mode: 'add' })}
         >
           <Plus size={13} /> 목표 추가
         </Button>
       </CardHeader>
+      <CardContent>
       {isLoading ? (
-        <div
-          style={{
-            padding: '16px 0', textAlign: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)',
-          }}
-        >
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <SkeletonBase className="h-4 w-12 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-20 ml-auto" />
+                </div>
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
         </div>
       ) : isEmpty ? (
         <div style={{ padding: '20px 0', textAlign: 'center' }}>
@@ -657,6 +670,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
           ))}
         </div>
       )}
+      </CardContent>
 
       {dialogState && (
         <SavingGoalAddDialog
@@ -680,23 +694,220 @@ function hashHue(text: string): number {
   return Math.abs(h) % 360
 }
 
-function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
+/**
+ * AssetPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
+ * 자식 컴포넌트가 동일 쿼리를 호출해도 TanStack Query 캐시 히트라 추가 fetch 없음 —
+ * 페이지 진입 시 "모든 데이터가 준비될 때까지" 하나의 로딩 게이트로 표현하기 위함.
+ */
+function useAssetPageData() {
+  const assetsQ = useAssets()
+  const summaryQ = useAssetSummary()
+  const trendQ = useNetWorthTrend(12)
+  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 })
+  const goalsQ = useSavingGoals()
+  return {
+    isLoading:
+      assetsQ.isLoading || summaryQ.isLoading || trendQ.isLoading
+      || recurringQ.isLoading || goalsQ.isLoading,
+  }
+}
+
+/** 자산 페이지 구조와 1:1 매칭되는 skeleton. */
+function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <AssetSummarySkeleton mobile />
+        <AssetCompositionSkeleton />
+        <TypeGroupSkeleton rows={3} />
+        <TypeGroupSkeleton rows={2} />
+      </div>
+    )
+  }
   return (
-    <div
-      style={{
-        height,
-        borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.2s infinite',
-        ...style,
-      }}
-    />
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h1>자산</h1>
+          <div className="sub">모든 계좌·카드·투자를 한 곳에서</div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <AssetSummarySkeleton mobile={false} />
+          <AssetCompositionSkeleton />
+          <UpcomingBillsSkeleton />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <TypeGroupSkeleton rows={3} />
+          <TypeGroupSkeleton rows={2} />
+          <SavingGoalsSkeleton />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <Card>
+      <CardContent>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <SkeletonBase className="h-3 w-16" />
+        </div>
+        <SkeletonBase className={mobile ? 'h-8 w-40 mb-2' : 'h-10 w-56 mb-2'} />
+        <SkeletonBase className="h-4 w-32 mb-4" />
+        <SkeletonBase className={mobile ? 'h-[140px] w-full' : 'h-[180px] w-full'} />
+        <div
+          style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
+            paddingTop: mobile ? 14 : 20, marginTop: mobile ? 14 : 20,
+            borderTop: '1px solid var(--border-subtle)',
+          }}
+        >
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <SkeletonBase className="h-3 w-12 mb-2" />
+              <SkeletonBase className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function AssetCompositionSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-20" />
+        <SkeletonBase className="h-3 w-20" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <SkeletonBase className="h-[180px] w-[180px] rounded-full shrink-0" />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
+            {[0, 1, 2, 3].map(i => (
+              <div key={i}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <SkeletonBase className="h-2.5 w-2.5 shrink-0" />
+                  <SkeletonBase className="h-4 w-20" />
+                  <SkeletonBase className="h-4 w-16 ml-auto" />
+                </div>
+                <SkeletonBase className="h-1.5 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function UpcomingBillsSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-40" />
+        <SkeletonBase className="h-4 w-16" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/2" />
+              </div>
+              <SkeletonBase className="h-4 w-12 shrink-0" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TypeGroupSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-20" />
+        <SkeletonBase className="h-4 w-16 ml-auto" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {Array.from({ length: rows }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '16px 18px',
+              }}
+            >
+              <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/3" />
+              </div>
+              <SkeletonBase className="h-5 w-24 shrink-0" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function SavingGoalsSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-20" />
+        <SkeletonBase className="h-7 w-20" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[0, 1].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <SkeletonBase className="h-4 w-10 mb-1" />
+                  <SkeletonBase className="h-3 w-16" />
+                </div>
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
 export const AssetPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { isLoading } = useAssetPageData()
+  if (isLoading) return <AssetPageSkeleton mobile={mobile} />
   return mobile ? <AssetMobile /> : <AssetDesktop />
 }
 
@@ -820,7 +1031,6 @@ function TypeGroup({
   assets,
   total,
   totalColor,
-  mobile,
   onAdd,
   onOpenDetail,
   negativeTotal = false,
@@ -835,8 +1045,8 @@ function TypeGroup({
   negativeTotal?: boolean
 }) {
   return (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{title}</CardTitle>
         <span
           className="num"
@@ -856,6 +1066,7 @@ function TypeGroup({
           <Plus size={13} />추가
         </Button>
       </CardHeader>
+      <CardContent>
       {assets.length === 0 ? (
         <div
           style={{
@@ -879,6 +1090,7 @@ function TypeGroup({
           ))}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 }
@@ -911,7 +1123,8 @@ function SummaryCard({
   }
 
   return (
-    <Card style={{ padding: mobile ? 18 : 28, marginBottom: mobile ? 16 : 20 }}>
+    <Card style={{ marginBottom: mobile ? 16 : 20 }}>
+      <CardContent>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 순자산</span>
         <button
@@ -1011,6 +1224,7 @@ function SummaryCard({
           </div>
         </div>
       </div>
+      </CardContent>
       <HideAmountsUnlockDialog
         open={unlockOpen}
         onOpenChange={setUnlockOpen}
@@ -1111,29 +1325,23 @@ function AssetDesktop() {
         </div>
       </div>
 
-      {g.isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20 }}>
-          <Skeleton height={240} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <Skeleton height={160} />
-            <Skeleton height={160} />
-          </div>
-        </div>
-      ) : isEmpty ? (
-        <Card style={{ padding: '64px 20px', textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 'var(--fs-body)',
-              color: 'var(--fg-tertiary)',
-              fontWeight: 'var(--fw-medium)',
-              marginBottom: 12,
-            }}
-          >
-            아직 등록된 자산이 없어요
-          </div>
-          <Button size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> 첫 자산 추가하기
-          </Button>
+      {isEmpty ? (
+        <Card>
+          <CardContent style={{ padding: '64px 20px', textAlign: 'center' }}>
+            <div
+              style={{
+                fontSize: 'var(--fs-body)',
+                color: 'var(--fg-tertiary)',
+                fontWeight: 'var(--fw-medium)',
+                marginBottom: 12,
+              }}
+            >
+              아직 등록된 자산이 없어요
+            </div>
+            <Button size="sm" onClick={() => setAddOpen(true)}>
+              <Plus size={14} /> 첫 자산 추가하기
+            </Button>
+          </CardContent>
         </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, alignItems: 'start' }}>
@@ -1259,33 +1467,25 @@ function AssetMobile() {
     g.investments.length === 0 &&
     g.loans.length === 0
 
-  if (g.isLoading) {
-    return (
-      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <Skeleton height={180} />
-        <Skeleton height={140} />
-        <Skeleton height={140} />
-      </div>
-    )
-  }
-
   if (isEmpty) {
     return (
       <div style={{ padding: '4px 20px 24px' }}>
-        <Card style={{ padding: '48px 20px', textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 'var(--fs-body)',
-              color: 'var(--fg-tertiary)',
-              fontWeight: 'var(--fw-medium)',
-              marginBottom: 12,
-            }}
-          >
-            아직 등록된 자산이 없어요
-          </div>
-          <Button size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> 첫 자산 추가하기
-          </Button>
+        <Card>
+          <CardContent style={{ padding: '48px 20px', textAlign: 'center' }}>
+            <div
+              style={{
+                fontSize: 'var(--fs-body)',
+                color: 'var(--fg-tertiary)',
+                fontWeight: 'var(--fw-medium)',
+                marginBottom: 12,
+              }}
+            >
+              아직 등록된 자산이 없어요
+            </div>
+            <Button size="sm" onClick={() => setAddOpen(true)}>
+              <Plus size={14} /> 첫 자산 추가하기
+            </Button>
+          </CardContent>
         </Card>
         <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       </div>

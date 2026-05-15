@@ -18,6 +18,7 @@ import {
 } from '@/features/expense-split'
 import { useExpenseCategories } from '@/features/expense'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { Expense } from '@/entities/expense'
 import type { ExpenseSplitFormValue } from '@/entities/expense-split'
 
@@ -44,6 +45,8 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
   const categoriesQ = useExpenseCategories()
   const replaceMut = useReplaceExpenseSplits()
   const deleteAllMut = useDeleteAllExpenseSplits()
+
+  const isLoading = splitsQ.isLoading || categoriesQ.isLoading
 
   const sameTypeCategories = useMemo(
     () => (categoriesQ.data ?? []).filter(c => c.expenseType === expense.expenseType),
@@ -208,6 +211,14 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
     </>
   )
 
+  if (isLoading) {
+    return (
+      <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+        <SplitTxSkeleton />
+      </ModalShell>
+    )
+  }
+
   return (
     <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
@@ -269,7 +280,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 width: 24,
                 height: 24,
                 borderRadius: 'var(--radius-pill)',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 color: 'var(--fg-secondary)',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -335,26 +346,17 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
               </span>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => removeRow(r.uid)}
               disabled={submitting || safeRows.length <= 1}
               aria-label="항목 삭제"
-              style={{
-                width: 28,
-                height: 28,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-                border: 0,
-                borderRadius: 'var(--radius-pill)',
-                color: 'var(--fg-tertiary)',
-                cursor: 'pointer',
-              }}
+              className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         ))}
       </div>
@@ -379,7 +381,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             height: 10,
             borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             border: '1px solid var(--border-subtle)',
           }}
         >
@@ -416,5 +418,70 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
         </div>
       </div>
     </ModalShell>
+  )
+}
+
+/** SplitTx skeleton — 원거래 카드 + 분할 row + 비율 바. */
+function SplitTxSkeleton() {
+  return (
+    <>
+      <SkeletonBase className="h-4 w-2/3 mb-3.5" />
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '12px 14px',
+          marginBottom: 14,
+        }}
+      >
+        <div>
+          <SkeletonBase className="h-3 w-10 mb-1.5" />
+          <SkeletonBase className="h-4 w-24" />
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <SkeletonBase className="h-3 w-10 ml-auto mb-1.5" />
+          <SkeletonBase className="h-6 w-24" />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'auto 1.4fr 1fr 1.1fr auto',
+              gap: 8,
+              alignItems: 'center',
+              padding: '8px 10px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            <SkeletonBase className="h-6 w-6 rounded-full" />
+            <SkeletonBase className="h-9 w-full" />
+            <SkeletonBase className="h-9 w-full" />
+            <SkeletonBase className="h-9 w-full" />
+            <SkeletonBase className="h-7 w-7 rounded-full" />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'space-between' }}>
+        <SkeletonBase className="h-9 w-24" />
+        <SkeletonBase className="h-9 w-24" />
+      </div>
+
+      <div style={{ marginTop: 4 }}>
+        <SkeletonBase className="h-3 w-16 mb-2" />
+        <SkeletonBase className="h-2.5 w-full rounded-full" />
+      </div>
+    </>
   )
 }

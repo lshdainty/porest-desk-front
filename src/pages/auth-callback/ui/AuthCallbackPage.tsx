@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
+import { Spinner } from '@/shared/ui/spinner'
 
 export const AuthCallbackPage = () => {
   const navigate = useNavigate()
@@ -31,8 +32,9 @@ export const AuthCallbackPage = () => {
   }, [exchangeToken, navigate])
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <p>Authenticating...</p>
+    <div className="flex h-screen flex-col items-center justify-center gap-3">
+      <Spinner size="lg" />
+      <p className="text-sm text-muted-foreground">인증 중…</p>
     </div>
   )
 }

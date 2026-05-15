@@ -8,6 +8,16 @@ import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
+import {
   useContributeSavingGoal,
   useCreateSavingGoal,
   useDeleteSavingGoal,
@@ -75,6 +85,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const [icon, setIcon] = useState<IconName>(((goal?.icon as IconName) || 'piggy-bank') as IconName)
   const [color, setColor] = useState<string>(goal?.color ?? GOAL_COLORS[0]!)
   const [err, setErr] = useState<string>('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const createMut = useCreateSavingGoal()
   const updateMut = useUpdateSavingGoal()
@@ -160,8 +171,17 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
   const handleDelete = () => {
     if (!goal) return
-    if (!window.confirm(`'${goal.title}' 목표를 삭제할까요?`)) return
-    deleteMut.mutate(goal.rowId, { onSuccess: () => onClose() })
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!goal) return
+    deleteMut.mutate(goal.rowId, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false)
+        onClose()
+      },
+    })
   }
 
   const Footer = (
@@ -260,7 +280,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         <div
           style={{
             height: 6,
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             borderRadius: 'var(--radius-pill)',
             overflow: 'hidden',
           }}
@@ -449,6 +469,32 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           <AlertCircle size={13} /> {err}
         </div>
       )}
+
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => {
+          if (!open) setShowDeleteConfirm(false)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>저축 목표 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              {goal ? `'${goal.title}' 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.` : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              loading={deleteMut.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ModalShell>
   )
 }

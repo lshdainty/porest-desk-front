@@ -7,7 +7,8 @@ import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import {
   useBudgetCompliance,
@@ -122,6 +123,185 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
   )
 }
 
+/** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
+function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
+  const HeaderCardSkeleton = (
+    <Card className="bg-[var(--bg-brand-tint)]">
+      <CardContent>
+        <SkeletonBase className="h-3 w-24 mb-2" />
+        <SkeletonBase className="h-3 w-3/4 mb-3" />
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+          <SkeletonBase className={mobile ? 'h-7 w-32' : 'h-9 w-40'} />
+          <SkeletonBase className="h-4 w-28" />
+        </div>
+        <SkeletonBase className="h-2.5 w-full rounded-full" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          <SkeletonBase className="h-3 w-16" />
+          <SkeletonBase className="h-3 w-24" />
+        </div>
+        <div
+          style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
+            paddingTop: 14, marginTop: 14,
+            borderTop: '1px solid var(--border-subtle)',
+          }}
+        >
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <SkeletonBase className="h-3 w-16 mb-2" />
+              <SkeletonBase className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const PaceCardSkeleton = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-24" />
+        <SkeletonBase className="h-6 w-16 rounded-full" />
+      </CardHeader>
+      <CardContent>
+        <SkeletonBase className="h-3 w-full rounded-full mb-3" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <SkeletonBase className="h-3 w-16" />
+          <SkeletonBase className="h-3 w-24" />
+        </div>
+        <div
+          style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+            paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
+          }}
+        >
+          {[0, 1].map(i => (
+            <div key={i}>
+              <SkeletonBase className="h-3 w-20 mb-2" />
+              <SkeletonBase className="h-6 w-28" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const StatusTilesSkeleton = (
+    <Card>
+      <CardHeader>
+        <SkeletonBase className="h-5 w-20" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[0, 1].map(i => (
+            <div
+              key={i}
+              style={{
+                padding: 14,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <SkeletonBase className="h-3 w-12 mb-2" />
+              <SkeletonBase className="h-7 w-20" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const ListCardSkeleton = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-28" />
+        <SkeletonBase className="h-3 w-16" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
+                </div>
+                <div style={{ textAlign: 'right', minWidth: 90 }}>
+                  <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-16 ml-auto" />
+                </div>
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const ComplianceCardSkeleton = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-44" />
+        <SkeletonBase className="h-3 w-24" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ height: 180, display: 'flex', alignItems: 'flex-end', gap: 12, paddingTop: 24 }}>
+          {[0.6, 0.8, 0.5, 0.9, 0.7, 1.0].map((h, i) => (
+            <SkeletonBase
+              key={i}
+              className="flex-1 rounded-t"
+              style={{ height: `${h * 80}%` }}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 16px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+          <SkeletonBase className="h-8 w-32" />
+          <SkeletonBase className="h-8 w-24" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {HeaderCardSkeleton}
+          {PaceCardSkeleton}
+          {StatusTilesSkeleton}
+          {ListCardSkeleton}
+          {ComplianceCardSkeleton}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h1>예산</h1>
+          <div className="sub">카테고리별 한도 관리</div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {HeaderCardSkeleton}
+          {PaceCardSkeleton}
+          {StatusTilesSkeleton}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {ListCardSkeleton}
+          {ComplianceCardSkeleton}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const BudgetPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const navigate = useNavigate()
@@ -136,6 +316,15 @@ export const BudgetPage = () => {
   const categoriesQ = useExpenseCategories()
   const complianceQ = useBudgetCompliance(6)
   const preferencesQ = useUserPreferences()
+
+  // 첫 진입 시 모든 데이터 도착 전까지 한 번만 skeleton — 이후 monthKey 변경은 부분 로딩.
+  const pageDataLoading =
+    budgetsQ.isLoading || summaryQ.isLoading || categoriesQ.isLoading
+    || complianceQ.isLoading || preferencesQ.isLoading
+  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+  // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
+  if (!pageDataLoading && !hasEverLoaded) setHasEverLoaded(true)
+  const shouldShowSkeleton = pageDataLoading && !hasEverLoaded
 
   const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
   const warnRatio = warnThreshold / 100
@@ -206,9 +395,9 @@ export const BudgetPage = () => {
   // ---- Cards ----
   const HeaderCard = (
     <Card
-      variant="brand"
-      style={{ padding: mobile ? 18 : 24 }}
+      className="bg-[var(--bg-brand-tint)]"
     >
+      <CardContent>
       <div
         style={{
           fontSize: 'var(--fs-caption)',
@@ -352,25 +541,26 @@ export const BudgetPage = () => {
           )}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 
   const PaceCard = (
-    <Card style={{ padding: 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>지출 페이스</CardTitle>
         <Badge
           variant={onTrack ? 'success' : 'warning'}
-          style={{ marginLeft: 'auto' }}
         >
           {onTrack ? '정상 속도' : '빠른 속도'}
         </Badge>
       </CardHeader>
+      <CardContent>
       <div
         style={{
           position: 'relative',
           height: 12,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-pill)',
           overflow: 'hidden',
           marginBottom: 10,
@@ -451,14 +641,16 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
+      </CardContent>
     </Card>
   )
 
   const StatusTiles = (
-    <Card style={{ padding: 22 }}>
+    <Card>
       <CardHeader>
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산 현황</CardTitle>
       </CardHeader>
+      <CardContent>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div
           style={{
@@ -525,6 +717,7 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
+      </CardContent>
     </Card>
   )
 
@@ -540,16 +733,23 @@ export const BudgetPage = () => {
       active: b.year === year && b.month === month,
     }))
     return (
-      <Card style={{ padding: 22 }}>
-        <CardHeader style={{ marginBottom: 16 }}>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>최근 6개월 예산 이행률</CardTitle>
-          <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+          <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
             한도 대비 지출 %
           </span>
         </CardHeader>
+        <CardContent>
         {complianceQ.isLoading ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            불러오는 중…
+          <div style={{ height: 180, display: 'flex', alignItems: 'end', justifyContent: 'space-around', padding: '24px 8px 8px', gap: 12 }}>
+            {[60, 80, 45, 70, 90, 55].map((h, i) => (
+              <SkeletonBase
+                key={i}
+                className="rounded-t flex-1"
+                style={{ height: `${h}%` }}
+              />
+            ))}
           </div>
         ) : data.length === 0 ? (
           <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
@@ -584,7 +784,7 @@ export const BudgetPage = () => {
                         ? 'var(--fg-expense)'
                         : d.active
                           ? 'var(--bg-brand)'
-                          : 'var(--pd-divider-strong)'
+                          : 'var(--border-strong)'
                     }
                   />
                 ))}
@@ -598,21 +798,38 @@ export const BudgetPage = () => {
             </BarChart>
           </ChartContainer>
         )}
+        </CardContent>
       </Card>
     )
   })()
 
   const ListCard = (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리별 예산</CardTitle>
-        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
           {categoryBudgets.length}개 설정됨
         </span>
       </CardHeader>
+      <CardContent>
       {isLoading ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/5 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/2" />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-16 ml-auto" />
+                </div>
+              </div>
+              <SkeletonBase className="h-2 w-full rounded-full" />
+            </div>
+          ))}
         </div>
       ) : categoryBudgets.length === 0 ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
@@ -692,6 +909,7 @@ export const BudgetPage = () => {
           })}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -707,6 +925,8 @@ export const BudgetPage = () => {
       </Button>
     </>
   )
+
+  if (shouldShowSkeleton) return <BudgetPageSkeleton mobile={mobile} />
 
   if (mobile) {
     return (

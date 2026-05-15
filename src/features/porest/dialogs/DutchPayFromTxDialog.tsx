@@ -17,16 +17,20 @@ import type {
   SplitMethod,
 } from '@/entities/dutch-pay'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
+// 더치페이 참가자별 시각 구분 — porest chart palette 10색
 const PARTICIPANT_PALETTE = [
-  { color: 'oklch(0.55 0.12 55)', bg: 'color-mix(in oklch, oklch(0.55 0.12 55) 18%, transparent)' },
-  { color: 'oklch(0.50 0.1 230)', bg: 'color-mix(in oklch, oklch(0.50 0.1 230) 18%, transparent)' },
-  { color: 'oklch(0.50 0.12 340)', bg: 'color-mix(in oklch, oklch(0.50 0.12 340) 18%, transparent)' },
-  { color: 'oklch(0.50 0.1 140)', bg: 'color-mix(in oklch, oklch(0.50 0.1 140) 18%, transparent)' },
-  { color: 'oklch(0.55 0.13 25)', bg: 'color-mix(in oklch, oklch(0.55 0.13 25) 18%, transparent)' },
-  { color: 'oklch(0.50 0.12 290)', bg: 'color-mix(in oklch, oklch(0.50 0.12 290) 18%, transparent)' },
-  { color: 'oklch(0.52 0.1 215)', bg: 'color-mix(in oklch, oklch(0.52 0.1 215) 18%, transparent)' },
-  { color: 'oklch(0.55 0.10 90)', bg: 'color-mix(in oklch, oklch(0.55 0.10 90) 18%, transparent)' },
+  { color: 'var(--color-chart-blue)',   bg: 'color-mix(in oklch, var(--color-chart-blue) 18%, transparent)' },
+  { color: 'var(--color-chart-green)',  bg: 'color-mix(in oklch, var(--color-chart-green) 18%, transparent)' },
+  { color: 'var(--color-chart-orange)', bg: 'color-mix(in oklch, var(--color-chart-orange) 18%, transparent)' },
+  { color: 'var(--color-chart-violet)', bg: 'color-mix(in oklch, var(--color-chart-violet) 18%, transparent)' },
+  { color: 'var(--color-chart-pink)',   bg: 'color-mix(in oklch, var(--color-chart-pink) 18%, transparent)' },
+  { color: 'var(--color-chart-indigo)', bg: 'color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)' },
+  { color: 'var(--color-chart-red)',    bg: 'color-mix(in oklch, var(--color-chart-red) 18%, transparent)' },
+  { color: 'var(--color-chart-yellow)', bg: 'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)' },
+  { color: 'var(--color-chart-brown)',  bg: 'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)' },
+  { color: 'var(--color-chart-gray)',   bg: 'color-mix(in oklch, var(--color-chart-gray) 18%, transparent)' },
 ]
 
 const ME_PALETTE = { color: 'var(--fg-income)', bg: 'color-mix(in oklch, var(--fg-income) 18%, transparent)' }
@@ -64,6 +68,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const siblingsQ = useSiblingGroupMembers()
   const categoriesQ = useExpenseCategories()
   const currentUserQ = useCurrentUser()
+
+  const isLoading = siblingsQ.isLoading || categoriesQ.isLoading || currentUserQ.isLoading
 
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
   const palette = getPaletteByColor(category?.color)
@@ -221,6 +227,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       </Button>
     </>
   )
+
+  if (isLoading) {
+    return (
+      <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+        <DutchPayFromTxSkeleton />
+      </ModalShell>
+    )
+  }
 
   return (
     <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
@@ -485,25 +499,16 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {!p.isMe ? (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => removeOther(p.uid)}
                   aria-label="참여자 삭제"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 0,
-                    borderRadius: 'var(--radius-pill)',
-                    color: 'var(--fg-tertiary)',
-                    cursor: 'pointer',
-                  }}
+                  className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
                 >
                   <X size={14} />
-                </button>
+                </Button>
               ) : (
                 <span style={{ width: 28, height: 28 }} />
               )}
@@ -534,34 +539,27 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
       {/* 빠른 추가 chips */}
       {quickAddSuggestions.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+        <div className="mb-4 flex flex-wrap gap-1.5">
           {quickAddSuggestions.map((m, i) => {
             const palette = PARTICIPANT_PALETTE[i % PARTICIPANT_PALETTE.length]!
             return (
-              <button
+              <Button
                 key={m.userRowId}
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => addFromSibling(m.userRowId, m.userName)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '5px 10px 5px 8px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
-                  color: 'var(--fg-primary)',
-                }}
                 title={m.userEmail}
+                className="rounded-full gap-1.5 text-caption font-semibold"
               >
-                <span aria-hidden style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: palette.color }} />
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ background: palette.color }}
+                />
                 {m.userName}
-                <Plus size={12} color="var(--fg-tertiary)" />
-              </button>
+                <Plus size={12} className="text-text-tertiary" />
+              </Button>
             )
           })}
         </div>
@@ -587,6 +585,72 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         </p>
       )}
     </ModalShell>
+  )
+}
+
+/** DutchPayFromTx skeleton — 원거래 카드 + 분배 방식 + 참여자 리스트 + 메시지. */
+function DutchPayFromTxSkeleton() {
+  return (
+    <>
+      <SkeletonBase className="h-4 w-2/3 mb-3.5" />
+
+      {/* Source card */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '12px 14px',
+          marginBottom: 18,
+        }}
+      >
+        <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <SkeletonBase className="h-4 w-32 mb-1.5" />
+          <SkeletonBase className="h-3 w-24" />
+        </div>
+        <SkeletonBase className="h-5 w-20" />
+      </div>
+
+      {/* 분배 방식 */}
+      <SkeletonBase className="h-3 w-16 mb-2" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonBase key={i} className="h-16 w-full rounded-md" />
+        ))}
+      </div>
+
+      {/* 나도 포함 */}
+      <SkeletonBase className="h-12 w-full rounded-md mb-4" />
+
+      {/* 참여자 */}
+      <SkeletonBase className="h-3 w-16 mb-2" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 14px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            <SkeletonBase className="h-8 w-8 rounded-full shrink-0" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SkeletonBase className="h-4 w-24" />
+            </div>
+            <SkeletonBase className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </>
   )
 }
 

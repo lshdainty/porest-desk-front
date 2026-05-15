@@ -15,7 +15,7 @@ const ROW_BASE_CLS =
   'px-4 py-3 ' +
   'border-b border-solid border-[var(--border-subtle)] ' +
   'last:border-b-0 ' +
-  'hover:bg-[var(--pd-hover-bg)]'
+  'hover:bg-[var(--bg-muted)]'
 
 export const MANAGE_ROW = {
   /** 행 컨테이너 className (기존 .cat-row + last/hover) */

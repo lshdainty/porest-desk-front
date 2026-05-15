@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react'
  *
  * - 외곽: 4px 가로 패딩 + -4px 마진으로 카드 안쪽 폭에 맞춤.
  * - hover: --pd-hover-bg (Tailwind hover arbitrary value).
- * - amt: 양수(income) 시 mossy-700, 음수(지출) 시 berry-700.
+ * - amt: 양수(income) 시 fg-income(porest semantic), 음수(지출) 시 fg-expense.
  */
 
 const TX_ROW_CLS =
@@ -13,7 +13,7 @@ const TX_ROW_CLS =
   'pl-1 pr-1 -ml-1 -mr-1 ' +
   'py-[var(--row-py,12px)] ' +
   'transition-[background] duration-[var(--dur-fast)] ' +
-  'hover:bg-[var(--pd-hover-bg)]'
+  'hover:bg-[var(--bg-muted)]'
 
 const TX_ROW_TITLE_STYLE: CSSProperties = {
   fontSize: 14,
@@ -38,7 +38,7 @@ const TX_ROW_SEP_STYLE: CSSProperties = {
   width: 2,
   height: 2,
   borderRadius: 999,
-  background: 'var(--pd-dot)',
+  background: 'var(--border-strong)',
 }
 
 const txRowAmtStyle = (income: boolean): CSSProperties => ({
@@ -46,7 +46,7 @@ const txRowAmtStyle = (income: boolean): CSSProperties => ({
   fontWeight: 700,
   fontVariantNumeric: 'tabular-nums',
   letterSpacing: '-0.01em',
-  color: income ? 'var(--mossy-700)' : 'var(--berry-700)',
+  color: income ? 'var(--fg-income)' : 'var(--fg-expense)',
   textAlign: 'right',
   flexShrink: 0,
 })

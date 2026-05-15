@@ -55,16 +55,16 @@ export const ColorPicker = ({ value, onChange, className }: ColorPickerProps) =>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background shadow-sm transition-colors hover:bg-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-bg-page shadow-sm transition-colors hover:bg-surface-input"
       >
         <div
-          className="h-6 w-6 rounded-sm border border-border/50"
+          className="h-6 w-6 rounded-sm border border-border-default/50"
           style={{ backgroundColor: value }}
         />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-md border bg-popover p-3 shadow-md">
+        <div className="absolute right-0 top-full z-[200] mt-1 w-56 rounded-md border bg-surface-default p-3 shadow-md">
           <div className="space-y-3">
             {/* Preset colors */}
             <div className="grid grid-cols-8 gap-1.5">
@@ -73,7 +73,7 @@ export const ColorPicker = ({ value, onChange, className }: ColorPickerProps) =>
                   key={color}
                   type="button"
                   className={cn(
-                    'h-5 w-5 rounded-sm border border-border/30 transition-all hover:scale-125 hover:border-foreground/50',
+                    'h-5 w-5 rounded-sm border border-border-default/30 transition-all hover:scale-125 hover:border-text-primary/50',
                     value.toUpperCase() === color.toUpperCase() &&
                       'ring-2 ring-primary ring-offset-1 ring-offset-background'
                   )}
@@ -84,12 +84,12 @@ export const ColorPicker = ({ value, onChange, className }: ColorPickerProps) =>
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-border" />
+            <div className="h-px bg-border-default" />
 
             {/* Custom hex input */}
             <div className="flex items-center gap-2">
               <div
-                className="h-8 w-8 shrink-0 rounded-sm border border-border/50"
+                className="h-8 w-8 shrink-0 rounded-sm border border-border-default/50"
                 style={{ backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(hexInput) ? hexInput : value }}
               />
               <Input

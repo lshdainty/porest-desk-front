@@ -6,6 +6,7 @@ import {
   ListChecks,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
 import type { Notification, NotificationType } from '@/entities/notification'
 
@@ -22,7 +23,7 @@ function iconFor(type: NotificationType): {
     case 'EVENT_REMINDER':
       return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
     default:
-      return { Icon: Bell, bg: 'var(--pd-surface-inset)', fg: 'var(--fg-secondary)' }
+      return { Icon: Bell, bg: 'var(--bg-sunken)', fg: 'var(--fg-secondary)' }
   }
 }
 
@@ -127,8 +128,21 @@ export function NotificationsPopover({
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
           {isLoading && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              불러오는 중…
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="notif-row"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <SkeletonBase className="h-8 w-8 rounded-md notif-row__icon" />
+                  <div className="notif-row__text">
+                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                    <SkeletonBase className="h-3 w-full" />
+                  </div>
+                  <SkeletonBase className="h-3 w-10 shrink-0" />
+                </div>
+              ))}
             </div>
           )}
           {!isLoading && items.length === 0 && (
@@ -165,33 +179,21 @@ export function NotificationsPopover({
           style={{
             padding: '10px 14px',
             borderTop: '1px solid var(--border-subtle)',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
           }}
         >
-          <button
-            className="hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              border: 0,
-              background: 'transparent',
-              color: 'var(--fg-secondary)',
-              fontSize: 'var(--fs-body-sm)',
-              fontWeight: 'var(--fw-semi)',
-              padding: 8,
-              borderRadius: 'var(--radius-md)',
-              cursor: 'pointer',
-            }}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               onClose()
               onGoSettings?.()
             }}
+            className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
           >
             알림 설정 <ChevronRight size={12} />
-          </button>
+          </Button>
         </div>
       </div>
     </>

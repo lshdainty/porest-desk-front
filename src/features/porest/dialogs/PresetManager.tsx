@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import { PresetEditDialog } from './PresetEditDialog'
 import { Card } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type SortKey = 'used' | 'recent' | 'name'
 
@@ -15,6 +17,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   const templatesQ = useExpenseTemplates()
   const categoriesQ = useExpenseCategories()
   const deleteMut = useDeleteExpenseTemplate()
+
+  const isLoading = templatesQ.isLoading || categoriesQ.isLoading
 
   const items: ExpenseTemplate[] = useMemo(() => templatesQ.data ?? [], [templatesQ.data])
   const categories = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
@@ -90,9 +94,20 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-        <PMStat label="저장된 프리셋" value={String(items.length)} />
-        <PMStat label="누적 사용" value={`${totalUses}회`} />
-        <PMStat label="지출 / 수입" value={`${expenseCount} / ${incomeCount}`} />
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
+              <SkeletonBase className="h-3 w-16 mb-1.5" />
+              <SkeletonBase className="h-6 w-12" />
+            </div>
+          ))
+        ) : (
+          <>
+            <PMStat label="저장된 프리셋" value={String(items.length)} />
+            <PMStat label="누적 사용" value={`${totalUses}회`} />
+            <PMStat label="지출 / 수입" value={`${expenseCount} / ${incomeCount}`} />
+          </>
+        )}
       </div>
 
       {/* Toolbar */}
@@ -105,14 +120,13 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           flexWrap: 'wrap',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            gap: 2,
-            padding: 2,
-            background: 'var(--pd-surface-inset)',
-            borderRadius: 'var(--radius-md)',
-          }}
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          size="sm"
+          value={sortBy}
+          onValueChange={(v) => v && setSortBy(v as SortKey)}
+          className="w-auto"
         >
           {(
             [
@@ -120,28 +134,12 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
               { k: 'recent', l: '최근 사용' },
               { k: 'name', l: '이름순' },
             ] as { k: SortKey; l: string }[]
-          ).map(o => (
-            <button
-              key={o.k}
-              type="button"
-              onClick={() => setSortBy(o.k)}
-              style={{
-                background: sortBy === o.k ? 'var(--bg-surface)' : 'transparent',
-                color: sortBy === o.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                border: 0,
-                padding: '6px 10px',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: sortBy === o.k ? 700 : 500,
-                borderRadius: 'var(--radius-sm)',
-                cursor: 'pointer',
-                boxShadow: sortBy === o.k ? 'var(--shadow-xs)' : 'none',
-                fontFamily: 'inherit',
-              }}
-            >
+          ).map((o) => (
+            <ToggleGroupItem key={o.k} value={o.k}>
               {o.l}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         <Button
           type="button"
           style={{ padding: '7px 12px', fontSize: 'var(--fs-body-sm)' }}
@@ -152,11 +150,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       </div>
 
       {/* List */}
-      <Card style={{ padding: 0, overflow: 'hidden' }}>
-        {templatesQ.isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-            불러오는 중…
-          </div>
+      <Card style={{ overflow: 'hidden' }}>
+        {isLoading ? (
+          <PresetManagerSkeleton mobile={mobile} />
         ) : sorted.length === 0 ? (
           <div style={{ padding: 60, textAlign: 'center' }}>
             <div
@@ -165,7 +161,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 width: 48,
                 height: 48,
                 borderRadius: 'var(--radius-lg)',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 12,
@@ -204,7 +200,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     borderRadius: 'var(--radius-tile)',
                     background: cat
                       ? `color-mix(in oklch, ${cat.color ?? 'var(--bg-brand)'} 18%, transparent)`
-                      : 'var(--pd-surface-inset)',
+                      : 'var(--bg-sunken)',
                     color: cat?.color ?? 'var(--fg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
@@ -249,7 +245,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           fontSize: 'var(--fs-micro)',
                           fontWeight: 'var(--fw-semi)',
                           padding: '1px 5px',
-                          background: 'var(--pd-surface-inset)',
+                          background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
                           borderRadius: 'var(--radius-2xs)',
                         }}
@@ -345,9 +341,43 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   )
 }
 
+/** PresetManager skeleton — 프리셋 row 리스트(icon + name/meta + amount + actions). */
+function PresetManagerSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: mobile ? '12px 14px' : '14px 16px',
+            borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
+          }}
+        >
+          <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SkeletonBase className="h-4 w-32 mb-1.5" />
+            <SkeletonBase className="h-3 w-2/3" />
+          </div>
+          <div style={{ flexShrink: 0, textAlign: 'right', minWidth: mobile ? undefined : 80 }}>
+            <SkeletonBase className="h-4 w-20 ml-auto mb-1" />
+            <SkeletonBase className="h-3 w-12 ml-auto" />
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            <SkeletonBase className="h-8 w-8 rounded-md" />
+            <SkeletonBase className="h-8 w-8 rounded-md" />
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
 function PMStat({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ padding: '10px 12px', background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-md)' }}>
+    <div style={{ padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
       <div
         style={{
           fontSize: 'var(--fs-micro)',

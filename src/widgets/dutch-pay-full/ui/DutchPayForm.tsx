@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
@@ -33,14 +34,7 @@ export const DutchPayForm = ({
 
   const defaultDate = format(new Date(), 'yyyy-MM-dd')
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<DutchPayFormValues>({
+  const form = useForm<DutchPayFormValues>({
     defaultValues: {
       title: '',
       description: '',
@@ -51,6 +45,7 @@ export const DutchPayForm = ({
       participants: [{ participantName: '', amount: 0 }],
     },
   })
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
 
   const splitMethod = watch('splitMethod')
   const totalAmount = watch('totalAmount')
@@ -150,6 +145,7 @@ export const DutchPayForm = ({
       size="sm"
       footer={Footer}
     >
+        <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           {/* Title */}
           <div className="space-y-1.5">
@@ -263,6 +259,7 @@ export const DutchPayForm = ({
           </div>
 
         </form>
+        </Form>
     </ModalShell>
   )
 }

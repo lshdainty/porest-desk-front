@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
+import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 
 interface TodoQuickAddProps {
@@ -38,16 +40,17 @@ export const TodoQuickAdd = ({ onAdd, isLoading }: TodoQuickAddProps) => {
 
   if (!isOpen) {
     return (
-      <button
+      <Button
+        variant="outline"
         onClick={() => {
           setIsOpen(true)
           setTimeout(() => inputRef.current?.focus(), 0)
         }}
-        className="flex w-full items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        className="w-full justify-start gap-2 px-3 py-2.5 text-muted-foreground hover:text-foreground"
       >
         <Plus size={16} />
         {t('addTodo')}
-      </button>
+      </Button>
     )
   }
 
@@ -70,7 +73,7 @@ export const TodoQuickAdd = ({ onAdd, isLoading }: TodoQuickAddProps) => {
         className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
         autoFocus
       />
-      {isLoading && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+      {isLoading && <Spinner size="sm" />}
     </div>
   )
 }

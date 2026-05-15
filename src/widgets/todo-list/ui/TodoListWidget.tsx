@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import {
-  Plus, Loader2, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
+  Plus, Settings2, Tags, List, LayoutGrid, CheckSquare, MoreHorizontal,
 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +25,6 @@ import {
 } from '@dnd-kit/core'
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable'
-import { cn } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
 import {
@@ -465,10 +466,10 @@ export const TodoListWidget = () => {
       </div>
 
       {/* 스크롤: 리스트 또는 칸반 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Spinner size="md" />
           </div>
         ) : viewMode === 'kanban' ? (
           <KanbanBoard
@@ -549,19 +550,16 @@ export const TodoListWidget = () => {
           </DndContext>
         )}
 
-      </div>
+      </ScrollArea>
 
       {isMobile && (
-        <button
+        <Button
           onClick={() => setShowForm(true)}
-          className={cn(
-            'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
-            'rounded-full bg-primary text-primary-foreground shadow-lg',
-            'hover:bg-primary/90 active:scale-95 transition-all'
-          )}
+          aria-label={t('newTodo')}
+          className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg [&_svg]:size-6"
         >
-          <Plus size={24} />
-        </button>
+          <Plus />
+        </Button>
       )}
 
       {showForm && (

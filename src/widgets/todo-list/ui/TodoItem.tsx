@@ -2,6 +2,7 @@ import { useState, forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, ChevronDown, ChevronUp, Pencil, Trash2, Plus, ListTodo, Pin, GripVertical } from 'lucide-react'
 import { cn, formatDate } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 import type { Todo } from '@/entities/todo'
 
 interface TodoItemProps {
@@ -173,55 +174,67 @@ export const TodoItem = forwardRef<HTMLDivElement, TodoItemProps>(({
         <div className="flex shrink-0 items-center gap-1">
           {/* Always-visible: expand content + pin */}
           {todo.content && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setExpanded(!expanded)}
-              className="rounded p-1 text-muted-foreground hover:bg-muted"
+              className="size-7 text-muted-foreground"
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
+            </Button>
           )}
           {!isSubtask && onTogglePin && todo.isPinned && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onTogglePin(todo.rowId)}
-              className="rounded p-1 text-[color:var(--color-accent-amber)] hover:bg-[var(--color-accent-amber)]/10 transition-colors"
+              className="size-7 text-[color:var(--color-accent-amber)] hover:bg-[var(--color-accent-amber)]/10"
               title={t('note.unpin')}
             >
               <Pin size={14} />
-            </button>
+            </Button>
           )}
 
           {/* Hover-only actions on desktop */}
           <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             {!isSubtask && onTogglePin && !todo.isPinned && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onTogglePin(todo.rowId)}
-                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="size-7 text-muted-foreground hover:text-foreground"
                 title={t('note.pin')}
               >
                 <Pin size={14} />
-              </button>
+              </Button>
             )}
             {!isSubtask && onAddSubtask && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onAddSubtask(todo.rowId)}
-                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="size-7 text-muted-foreground hover:text-foreground"
                 title={t('addSubtask')}
               >
                 <Plus size={14} />
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onEdit(todo)}
-              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="size-7 text-muted-foreground hover:text-foreground"
             >
               <Pencil size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onDelete(todo.rowId)}
-              className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             >
               <Trash2 size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

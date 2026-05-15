@@ -5,8 +5,21 @@ import { X } from "lucide-react"
 
 import { cn } from "@/shared/lib/index"
 
-// POREST Design System — .modal spec
-// 자체 X 버튼은 호출자가 명시적으로 그림 (DialogClose). 자동 X는 hideClose=false 시에만.
+/*
+ * Porest Dialog — porest-design specs/components/dialog.md SoT 기반.
+ * Phase 2 마이그레이션: porest overlay/shadow 토큰 + desk-front 구조 보존.
+ *
+ * 호환 보존:
+ *   - sizes: sm 420 / md 520 (default) / lg 720 (desk-front 사용처 정합)
+ *   - composition: DialogHeader > DialogTitle / DialogDescription / + DialogBody + DialogFooter
+ *   - hideClose prop — 호출자가 직접 close 그리는 패턴(기본 true)
+ *
+ * Porest 시각:
+ *   - overlay: var(--overlay-dim-light) light / var(--overlay-dim-dark) dark
+ *   - bg-[var(--bg-surface)]: Phase 1 alias로 자동 Cobalt 톤 surface-default
+ *   - shadow-[var(--shadow-xl)]: Tailwind arbitrary(분해 회피, dark token swap 안전)
+ *   - radius-xl + rounded
+ */
 
 const Dialog = DialogPrimitive.Root
 const DialogTrigger = DialogPrimitive.Trigger
@@ -20,11 +33,11 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[100] bg-[oklch(0.15_0.01_180/0.5)]",
+      "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
       "duration-200",
-      className
+      className,
     )}
     {...props}
   />
@@ -36,7 +49,7 @@ const dialogContentVariants = cva(
     "fixed left-1/2 top-1/2 z-[101] -translate-x-1/2 -translate-y-1/2",
     "max-h-[86vh] max-w-[calc(100%-40px)]",
     "flex flex-col overflow-hidden",
-    "bg-[var(--bg-surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]",
+    "bg-[var(--bg-surface)] rounded-[var(--radius-xl)]",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
     "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",
@@ -52,34 +65,35 @@ const dialogContentVariants = cva(
       },
     },
     defaultVariants: { size: "md" },
-  }
+  },
 )
 
 type DialogContentProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
 > &
   VariantProps<typeof dialogContentVariants> & {
-    /** true면 우상단 자동 X 버튼 표시 (cmdk 같은 호출자용). 기본은 false — 호출자가 직접 close 그림 */
+    /** true면 우상단 자동 X 버튼 표시. 기본 false — 호출자가 직접 close 그림. */
     hideClose?: boolean
   }
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, size, hideClose = true, children, ...props }, ref) => (
+>(({ className, size, hideClose = true, children, style, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(dialogContentVariants({ size }), className)}
+      style={{ boxShadow: "var(--shadow-xl)", ...style }}
       onOpenAutoFocus={(e) => e.preventDefault()}
       {...props}
     >
       {children}
       {!hideClose && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">닫기</span>
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
@@ -95,7 +109,7 @@ const DialogHeader = ({
   <div
     className={cn(
       "flex shrink-0 items-center gap-3 px-[22px] py-[18px]",
-      className
+      className,
     )}
     {...props}
   />
@@ -122,7 +136,7 @@ const DialogFooter = ({
   <div
     className={cn(
       "flex shrink-0 items-center justify-end gap-2 px-[22px] py-[14px]",
-      className
+      className,
     )}
     {...props}
   />
@@ -137,8 +151,8 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "flex-1 text-[17px] font-bold leading-snug tracking-tight text-foreground",
-      className
+      "flex-1 text-[17px] font-bold leading-snug tracking-tight text-text-primary",
+      className,
     )}
     {...props}
   />
@@ -151,7 +165,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-text-secondary", className)}
     {...props}
   />
 ))

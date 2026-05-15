@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {
   useNotifications,
@@ -59,9 +60,12 @@ export const NotificationBell = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-md p-1.5 hover:bg-muted transition-colors"
+        aria-label={t('title')}
+        className="relative h-8 w-8 rounded-md hover:bg-muted"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -69,10 +73,10 @@ export const NotificationBell = () => {
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-      </button>
+      </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
+        <div className="absolute right-0 top-full z-[200] mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold">{t('title')}</h3>
             {unreadCount > 0 && (
@@ -89,7 +93,7 @@ export const NotificationBell = () => {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <ScrollArea className="max-h-80">
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 {t('empty')}
@@ -142,7 +146,7 @@ export const NotificationBell = () => {
                 </div>
               ))
             )}
-          </div>
+          </ScrollArea>
         </div>
       )}
     </div>

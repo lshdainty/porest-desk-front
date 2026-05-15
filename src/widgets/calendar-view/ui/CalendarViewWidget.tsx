@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight, Plus, Loader2, Tag } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Tag } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { format } from 'date-fns'
 import { cn, getLocale } from '@/shared/lib'
 import { useIsMobile } from '@/shared/hooks'
@@ -193,7 +194,7 @@ export const CalendarViewWidget = () => {
       {/* Calendar view */}
       {eventsLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Spinner size="md" />
         </div>
       ) : viewMode === 'month' ? (
         <MonthView

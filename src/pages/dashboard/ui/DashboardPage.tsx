@@ -17,7 +17,9 @@ import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useDashboardSummary, type DashboardSummary } from '@/features/dashboard'
 import { useAssetSummary } from '@/features/asset'
 import {
@@ -142,34 +144,261 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
+// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용)
 const CATEGORY_PALETTE = [
-  'oklch(0.55 0.12 55)',
-  'oklch(0.50 0.12 340)',
-  'oklch(0.50 0.1 140)',
-  'oklch(0.50 0.12 290)',
-  'oklch(0.50 0.1 230)',
-  'oklch(0.55 0.13 25)',
-  'oklch(0.52 0.1 215)',
-  'oklch(0.50 0.08 50)',
+  'var(--color-chart-blue)',
+  'var(--color-chart-green)',
+  'var(--color-chart-orange)',
+  'var(--color-chart-violet)',
+  'var(--color-chart-pink)',
+  'var(--color-chart-indigo)',
+  'var(--color-chart-red)',
+  'var(--color-chart-yellow)',
+  'var(--color-chart-brown)',
+  'var(--color-chart-gray)',
 ]
 
 function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
   return (
     <div
-      style={{
-        height,
-        borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.2s infinite',
-        ...style,
-      }}
+      className="animate-pulse bg-surface-input rounded-lg"
+      style={{ height, ...style }}
     />
+  )
+}
+
+/**
+ * Dashboard 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
+ * desktop/mobile 공통 — 같은 쿼리들이 재호출되어도 캐시 hit.
+ */
+function useDashboardPageData(year: number, month: number, opts?: { includePrevMonth?: boolean }) {
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+  const monthStart = `${year}-${pad2(month)}-01`
+  const monthEnd = `${year}-${pad2(month)}-${pad2(new Date(year, month, 0).getDate())}`
+
+  const dashboardQ = useDashboardSummary()
+  const assetSummaryQ = useAssetSummary(year, month)
+  const monthlyQ = useRangeSummary(monthStart, monthEnd)
+  const trendQ = useMonthlyTrend(6)
+  const recentQ = useExpenses({ startDate: monthStart, endDate: monthEnd })
+  const budgetsQ = useExpenseBudgets({ year, month })
+  const categoriesQ = useExpenseCategories()
+  const recurringQ = useRecurringTransactions()
+
+  // mobile 전용 — 전월 비교용 range summary
+  const prevDate = new Date(year, month - 2, 1)
+  const prevY = prevDate.getFullYear()
+  const prevM = prevDate.getMonth() + 1
+  const prevStart = `${prevY}-${pad2(prevM)}-01`
+  const prevEnd = `${prevY}-${pad2(prevM)}-${pad2(new Date(prevY, prevM, 0).getDate())}`
+  const prevMonthlyQ = useRangeSummary(
+    opts?.includePrevMonth ? prevStart : '',
+    opts?.includePrevMonth ? prevEnd : '',
+  )
+
+  return {
+    isLoading:
+      dashboardQ.isLoading || assetSummaryQ.isLoading || monthlyQ.isLoading
+      || trendQ.isLoading || recentQ.isLoading || budgetsQ.isLoading
+      || categoriesQ.isLoading || recurringQ.isLoading
+      || (opts?.includePrevMonth ? prevMonthlyQ.isLoading : false),
+  }
+}
+
+/** Dashboard 페이지 구조에 맞춘 skeleton. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정). */
+function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <DashboardHeroSkeleton mobile />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-card)',
+                padding: '14px 8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md" />
+              <SkeletonBase className="h-3 w-10" />
+            </div>
+          ))}
+        </div>
+        <DashboardSummaryCardSkeleton mobile />
+        <DashboardCategoryCardSkeleton mobile />
+        <DashboardBudgetCardSkeleton />
+        <DashboardListCardSkeleton title rows={3} />
+      </div>
+    )
+  }
+  return (
+    <div className="dash-grid">
+      <div className="dash-grid__left">
+        <DashboardHeroSkeleton mobile={false} />
+        <DashboardSummaryCardSkeleton mobile={false} />
+        <DashboardListCardSkeleton title rows={3} />
+      </div>
+      <div className="dash-grid__right">
+        <DashboardCategoryCardSkeleton mobile={false} />
+        <DashboardBudgetCardSkeleton />
+        <DashboardListCardSkeleton title rows={3} />
+        <DashboardListCardSkeleton title rows={4} />
+        <DashboardListCardSkeleton title rows={3} />
+      </div>
+    </div>
+  )
+}
+
+function DashboardHeroSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <div className="balance-hero" style={mobile ? undefined : { padding: '28px 32px 24px' }}>
+      <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
+        <SkeletonBase className="h-3 w-24 bg-white/15" />
+      </div>
+      <div className="balance-hero__amount num">
+        <SkeletonBase className={mobile ? 'h-8 w-40 bg-white/15' : 'h-10 w-56 bg-white/15'} />
+      </div>
+      <div className="balance-hero__sub">
+        <SkeletonBase className="h-3 w-32 bg-white/15" />
+      </div>
+      <div className="balance-hero__split">
+        <div>
+          <SkeletonBase className="h-3 w-12 mb-1 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-white/15" />
+        </div>
+        <div>
+          <SkeletonBase className="h-3 w-12 mb-1 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-white/15" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DashboardSummaryCardSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-28" />
+        <SkeletonBase className="h-7 w-24" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <SkeletonBase className="h-3 w-10 mb-2" />
+              <SkeletonBase className="h-7 w-24" />
+            </div>
+          ))}
+        </div>
+        <SkeletonBase className={mobile ? 'h-[180px] w-full' : 'h-[280px] w-full'} />
+        <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+          <SkeletonBase className="h-3 w-3/4" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DashboardCategoryCardSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-20" />
+        <SkeletonBase className="h-4 w-12" />
+      </CardHeader>
+      <CardContent>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: mobile ? 'row' : 'column',
+            alignItems: 'center',
+            gap: mobile ? 16 : 20,
+          }}
+        >
+          <SkeletonBase
+            className={mobile ? 'h-[120px] w-[120px] rounded-full shrink-0' : 'h-[160px] w-[160px] rounded-full shrink-0'}
+          />
+          <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                <SkeletonBase className="h-3 flex-1" />
+                <SkeletonBase className="h-3 w-12 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DashboardBudgetCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <SkeletonBase className="h-5 w-12" />
+        <SkeletonBase className="h-4 w-16" />
+      </CardHeader>
+      <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-4 w-20" />
+                <SkeletonBase className="h-4 w-24 ml-auto" />
+              </div>
+              <SkeletonBase className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DashboardListCardSkeleton({ title, rows = 3 }: { title?: boolean; rows?: number }) {
+  return (
+    <Card>
+      {title && (
+        <CardHeader className="flex-row items-center justify-between">
+          <SkeletonBase className="h-5 w-24" />
+          <SkeletonBase className="h-4 w-16" />
+        </CardHeader>
+      )}
+      <CardContent>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {Array.from({ length: rows }).map((_, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/3" />
+              </div>
+              <SkeletonBase className="h-4 w-16 shrink-0" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
 export const DashboardPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { key } = useCurrentMonthKey()
+  const [year, month] = key.split('-').map(Number) as [number, number]
+  const { isLoading } = useDashboardPageData(year, month, { includePrevMonth: mobile })
+  if (isLoading) return <DashboardPageSkeleton mobile={mobile} />
   return mobile ? <HomeMobile /> : <HomeDesktop />
 }
 
@@ -398,11 +627,12 @@ function HomeDesktop() {
           </div>
         </div>
 
-        <Card style={{ padding: 24 }}>
-          <CardHeader style={{ marginBottom: 18 }}>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>{periodM}월 수입·지출</CardTitle>
             <MonthPicker value={period} onChange={setPeriod} />
           </CardHeader>
+          <CardContent>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>수입</div>
@@ -434,9 +664,11 @@ function HomeDesktop() {
           </div>
           {barData.length > 0 ? (
             <IncomeExpenseBarChart data={barData} height={280} />
+          ) : trendQ.isLoading ? (
+            <SkeletonBase className="h-[280px] w-full rounded-lg" />
           ) : (
             <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              {trendQ.isLoading ? '불러오는 중…' : '데이터가 없습니다'}
+              데이터가 없습니다
             </div>
           )}
           <div style={{
@@ -466,10 +698,11 @@ function HomeDesktop() {
               </>
             )}
           </div>
+          </CardContent>
         </Card>
 
-        <Card style={{ padding: 24 }}>
-          <CardHeader>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
               <CardTitle>오늘 쓴 돈</CardTitle>
               {todayTotal > 0 && (
@@ -479,10 +712,11 @@ function HomeDesktop() {
                 </span>
               )}
             </div>
-            <button className="all" onClick={() => navigate('/desk/expense')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/expense')}>
               전체 보기 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
+          <CardContent>
           <div>
             {recentQ.isLoading && <Skeleton height={60} />}
             {!recentQ.isLoading && todayTx.length === 0 && (
@@ -504,21 +738,38 @@ function HomeDesktop() {
               />
             ))}
           </div>
+          </CardContent>
         </Card>
       </div>
 
       <div className="dash-grid__right">
-        <Card style={{ padding: 22 }}>
-          <CardHeader>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>카테고리</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/stats')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/stats')}>
               자세히 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
+          <CardContent>
           {donutSegs.length === 0 ? (
-            <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-              {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없습니다'}
-            </div>
+            monthlyQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+                <SkeletonBase className="h-[160px] w-[160px] rounded-full" />
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                      <SkeletonBase className="h-3 flex-1" />
+                      <SkeletonBase className="h-3 w-12 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+                카테고리 데이터가 없습니다
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Donut segments={donutSegs} size={160} stroke={22}>
@@ -541,19 +792,36 @@ function HomeDesktop() {
               </div>
             </div>
           )}
+          </CardContent>
         </Card>
 
-        <Card style={{ padding: 22 }}>
-          <CardHeader>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>예산</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/budget')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/budget')}>
               예산 관리 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
+          <CardContent>
           {budgetItems.length === 0 ? (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-              {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
-            </div>
+            budgetsQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                      <SkeletonBase className="h-4 w-20" />
+                      <SkeletonBase className="h-4 w-24 ml-auto" />
+                    </div>
+                    <SkeletonBase className="h-1.5 w-full rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+                등록된 예산이 없어요
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {budgetItems.map(b => {
@@ -596,16 +864,33 @@ function HomeDesktop() {
               })}
             </div>
           )}
+          </CardContent>
         </Card>
 
-        <Card style={{ padding: 22 }}>
+        <Card>
           <CardHeader>
             <CardTitle>예정된 결제</CardTitle>
           </CardHeader>
+          <CardContent>
           {upcomingPayments.length === 0 ? (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-              {recurringQ.isLoading ? '불러오는 중…' : '예정된 결제가 없어요'}
-            </div>
+            recurringQ.isLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <SkeletonBase className="h-[38px] w-[38px] rounded-md shrink-0" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                      <SkeletonBase className="h-3 w-1/3" />
+                    </div>
+                    <SkeletonBase className="h-4 w-16 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+                예정된 결제가 없어요
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {upcomingPayments.map(p => (
@@ -613,7 +898,7 @@ function HomeDesktop() {
                   <span
                     style={{
                       width: 38, height: 38, borderRadius: 'var(--radius-tile)',
-                      background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
+                      background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
                       color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)', letterSpacing: 'var(--tracking-tight)',
@@ -642,15 +927,17 @@ function HomeDesktop() {
               ))}
             </div>
           )}
+          </CardContent>
         </Card>
 
-        <Card style={{ padding: 22 }}>
-          <CardHeader>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>할 일</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/todo')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/todo')}>
               관리 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
+          <CardContent>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {summary?.recentTodos?.slice(0, 4).map(td => (
               <div
@@ -692,15 +979,17 @@ function HomeDesktop() {
               </div>
             )}
           </div>
+          </CardContent>
         </Card>
 
-        <Card style={{ padding: 22 }}>
-          <CardHeader>
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>예정된 일정</CardTitle>
             <button className="all" onClick={() => navigate('/desk/calendar')}>
               캘린더 <ChevronRight size={14} />
             </button>
           </CardHeader>
+          <CardContent>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {summary?.upcomingEvents?.slice(0, 3).map(ev => (
               <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -709,7 +998,7 @@ function HomeDesktop() {
                     width: 38,
                     height: 38,
                     borderRadius: 'var(--radius-tile)',
-                    background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--pd-surface-inset)',
+                    background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
                     color: ev.daysUntil <= 3 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -736,6 +1025,7 @@ function HomeDesktop() {
               </div>
             )}
           </div>
+          </CardContent>
         </Card>
       </div>
       <HideAmountsUnlockDialog
@@ -958,7 +1248,8 @@ function HomeMobile() {
         })}
       </div>
 
-      <Card style={{ padding: 18 }}>
+      <Card>
+        <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{month}월 가계부</div>
         </div>
@@ -1003,19 +1294,36 @@ function HomeMobile() {
             </>
           )}
         </div>
+        </CardContent>
       </Card>
 
-      <Card style={{ padding: 18 }}>
-        <CardHeader>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리</CardTitle>
           <button className="all" onClick={() => navigate('/desk/stats')}>
             자세히 <ChevronRight size={14} />
           </button>
         </CardHeader>
+        <CardContent>
         {donutSegs.length === 0 ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            {monthlyQ.isLoading ? '불러오는 중…' : '카테고리 데이터가 없어요'}
-          </div>
+          monthlyQ.isLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <SkeletonBase className="h-[120px] w-[120px] rounded-full shrink-0" />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
+                    <SkeletonBase className="h-3 flex-1" />
+                    <SkeletonBase className="h-3 w-10 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              카테고리 데이터가 없어요
+            </div>
+          )
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
@@ -1039,19 +1347,36 @@ function HomeMobile() {
             </div>
           </div>
         )}
+        </CardContent>
       </Card>
 
-      <Card style={{ padding: 18 }}>
-        <CardHeader>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산</CardTitle>
           <button className="all" onClick={() => navigate('/desk/budget')}>
             전체 <ChevronRight size={14} />
           </button>
         </CardHeader>
+        <CardContent>
         {budgetItems.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
-            {budgetsQ.isLoading ? '불러오는 중…' : '등록된 예산이 없어요'}
-          </div>
+          budgetsQ.isLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
+                    <SkeletonBase className="h-4 w-20 flex-1" />
+                    <SkeletonBase className="h-3 w-24 shrink-0" />
+                  </div>
+                  <SkeletonBase className="h-1.5 w-full rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              등록된 예산이 없어요
+            </div>
+          )
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {budgetItems.map(b => {
@@ -1083,12 +1408,13 @@ function HomeMobile() {
             })}
           </div>
         )}
+        </CardContent>
       </Card>
 
       <UpcomingMobileCard summary={summary} onCalendar={() => navigate('/desk/calendar')} onTodos={() => navigate('/desk/todo')} />
 
-      <Card style={{ padding: 18 }}>
-        <CardHeader style={{ marginBottom: 6 }}>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
             <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>오늘 쓴 돈</CardTitle>
             {todayTotal > 0 && (
@@ -1100,6 +1426,7 @@ function HomeMobile() {
           </div>
           <button className="all" onClick={() => navigate('/desk/expense')}>전체</button>
         </CardHeader>
+        <CardContent>
         <div>
           {todayTx.map(t => (
             <ExpenseRow
@@ -1120,6 +1447,7 @@ function HomeMobile() {
             </div>
           )}
         </div>
+        </CardContent>
       </Card>
       <HideAmountsUnlockDialog
         open={unlockOpen}
@@ -1149,7 +1477,8 @@ function UpcomingMobileCard({
   if (events.length === 0 && todos.length === 0) return null
 
   return (
-    <Card style={{ padding: '18px 18px 14px' }}>
+    <Card>
+      <CardContent>
       {events.length > 0 && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
@@ -1157,12 +1486,14 @@ function UpcomingMobileCard({
             <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               다가오는 일정
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onCalendar}
-              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+              className="ml-auto size-6 text-text-tertiary"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
           {events.map(ev => (
             <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
@@ -1185,12 +1516,14 @@ function UpcomingMobileCard({
             <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               최근 할 일
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onTodos}
-              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg-tertiary)' }}
+              className="ml-auto size-6 text-text-tertiary"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
           {todos.map(td => {
             const done = td.status === 'COMPLETED'
@@ -1214,6 +1547,7 @@ function UpcomingMobileCard({
           })}
         </>
       )}
+      </CardContent>
     </Card>
   )
 }

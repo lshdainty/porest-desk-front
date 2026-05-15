@@ -5,6 +5,15 @@ import { type VariantProps } from "class-variance-authority"
 import { cn } from "@/shared/lib/index"
 import { toggleVariants } from "@/shared/ui/toggle"
 
+/*
+ * Porest ToggleGroup — porest-design specs/components/toggle-group.md SoT 기반.
+ * Phase 2 마이그레이션: porest 토큰 + desk-front segmented wrapper 보존.
+ *
+ * variant:
+ *   default — flex gap-1 (개별 toggle 시각이 자체 border/bg)
+ *   segmented — POREST .p-seg sunken bar wrapper (--bg-sunken + border + p-0.5)
+ */
+
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>
 >({
@@ -18,9 +27,10 @@ const ToggleGroup = React.forwardRef<
     VariantProps<typeof toggleVariants>
 >(({ className, variant, size, children, ...props }, ref) => {
   // POREST .p-seg — sunken bar for segmented control.
-  const wrapper = variant === "segmented"
-    ? "inline-flex w-full gap-[2px] rounded-[var(--radius-md)] border border-border bg-[var(--pd-surface-inset)] p-0.5"
-    : "flex items-center justify-center gap-1"
+  const wrapper =
+    variant === "segmented"
+      ? "inline-flex w-full gap-[2px] rounded-[var(--radius-md)] border border-border-default bg-[var(--bg-sunken)] p-0.5"
+      : "flex items-center justify-center gap-1"
   return (
     <ToggleGroupPrimitive.Root
       ref={ref}
@@ -51,7 +61,7 @@ const ToggleGroupItem = React.forwardRef<
           variant: context.variant || variant,
           size: context.size || size,
         }),
-        className
+        className,
       )}
       {...props}
     >

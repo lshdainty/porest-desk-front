@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
 import { useTheme } from '@/shared/ui/theme-provider'
@@ -72,7 +72,7 @@ const LoginForm = () => {
             onClick={handleSsoRedirect}
             disabled={isRedirecting}
           >
-            {isRedirecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isRedirecting && <Spinner size="sm" className="mr-2" />}
             {isRedirecting ? t('sso.redirecting') : t('sso.login')}
           </Button>
         </div>

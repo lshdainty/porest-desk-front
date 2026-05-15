@@ -1,14 +1,27 @@
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import { Loader2 } from "lucide-react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 import { buttonVariants } from "@/shared/ui/button"
+import { Spinner } from "@/shared/ui/spinner"
+
+/*
+ * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
+ * Phase 2 마이그레이션: 비가역 액션 확정용 modal. Dialog와 시각 동일.
+ *
+ * 호환 보존:
+ *   - sizes 추가(sm/md/lg) — desk-front 기존 max-w-lg는 default md(480)와 유사
+ *   - AlertDialogAction: buttonVariants() default(primary) 유지 + loading prop 보존
+ *     (사용처에서 destructive 필요 시 className 또는 variant override)
+ *   - Loader2 → porest Spinner 교체
+ *
+ * 동작 차이(Dialog 대비):
+ *   - overlay click 무시 / close button(X) 없음 / default focus = Cancel
+ */
 
 const AlertDialog = AlertDialogPrimitive.Root
-
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
-
 const AlertDialogPortal = AlertDialogPrimitive.Portal
 
 const AlertDialogOverlay = React.forwardRef<
@@ -16,28 +29,52 @@ const AlertDialogOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Overlay
+    ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
+      "fixed inset-0 z-[300] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out",
+      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className,
     )}
     {...props}
-    ref={ref}
   />
 ))
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
+const alertDialogContentVariants = cva(
+  [
+    "fixed left-[50%] top-[50%] z-[301] grid w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
+    "flex-col bg-[var(--bg-surface)] gap-[var(--spacing-md)] duration-200",
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+  ].join(" "),
+  {
+    variants: {
+      size: {
+        sm: "[--dialog-max-w:384px] p-[var(--spacing-xl)] rounded-lg",
+        md: "[--dialog-max-w:480px] p-[var(--spacing-2xl)] rounded-xl",
+        lg: "[--dialog-max-w:640px] p-[var(--spacing-2xl)] rounded-xl",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+)
+
+export interface AlertDialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>,
+    VariantProps<typeof alertDialogContentVariants> {}
+
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
+  AlertDialogContentProps
+>(({ className, size, style, ...props }, ref) => (
   <AlertDialogPortal>
     <AlertDialogOverlay />
     <AlertDialogPrimitive.Content
       ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      )}
+      className={cn(alertDialogContentVariants({ size }), className)}
+      style={{ boxShadow: "var(--shadow-xl)", ...style }}
       {...props}
     />
   </AlertDialogPortal>
@@ -50,8 +87,8 @@ const AlertDialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-2 text-center sm:text-left",
-      className
+      "flex flex-col gap-[var(--spacing-md)] text-left",
+      className,
     )}
     {...props}
   />
@@ -64,8 +101,8 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
+      "flex flex-col-reverse gap-[var(--spacing-sm)] sm:flex-row sm:justify-end mt-[var(--spacing-md)]",
+      className,
     )}
     {...props}
   />
@@ -78,7 +115,10 @@ const AlertDialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold", className)}
+    className={cn(
+      "text-display-sm font-bold leading-[var(--text-heading-lg--line-height)] text-text-primary tracking-[-0.01em]",
+      className,
+    )}
     {...props}
   />
 ))
@@ -90,16 +130,16 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-body-md leading-[1.6] text-text-secondary", className)}
     {...props}
   />
 ))
-AlertDialogDescription.displayName =
-  AlertDialogPrimitive.Description.displayName
+AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+    /** true면 좌측에 spinner 표시 + disabled 처리. */
     loading?: boolean
   }
 >(({ className, loading = false, disabled, children, ...props }, ref) => (
@@ -110,7 +150,16 @@ const AlertDialogAction = React.forwardRef<
     aria-busy={loading || undefined}
     {...props}
   >
-    {loading && <Loader2 className="animate-spin" aria-hidden />}
+    {loading && (
+      <Spinner
+        size="sm"
+        aria-hidden
+        style={{
+          borderColor: 'color-mix(in srgb, currentColor 30%, transparent)',
+          borderTopColor: 'currentColor',
+        }}
+      />
+    )}
     {children}
   </AlertDialogPrimitive.Action>
 ))
@@ -125,7 +174,7 @@ const AlertDialogCancel = React.forwardRef<
     className={cn(
       buttonVariants({ variant: "outline" }),
       "mt-2 sm:mt-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -144,4 +193,5 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  alertDialogContentVariants,
 }

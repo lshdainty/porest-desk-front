@@ -3,17 +3,107 @@ import { Plus } from 'lucide-react'
 import { useTodos, useToggleTodoStatus } from '@/features/todo'
 import type { Todo, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
+// 세 priority 모두 *-subtle bg + *-fg text 패턴으로 통일 (라이트/다크 자동 swap).
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; fg: string; label: string }> = {
-  HIGH: { bg: 'oklch(0.95 0.03 15)', fg: 'var(--fg-expense)', label: '중요' },
+  HIGH: { bg: 'var(--status-danger-subtle)', fg: 'var(--status-danger-fg)', label: '중요' },
   MEDIUM: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)', label: '보통' },
   LOW: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)', label: '여유' },
 }
 
+/** TodoPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
+function useTodoPageData() {
+  const todosQ = useTodos()
+  return {
+    isLoading: todosQ.isLoading,
+  }
+}
+
+/** Todo row skeleton — checkbox + title + meta + priority badge. */
+function TodoRowSkeleton() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 14px',
+        borderRadius: 'var(--radius-tile)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+      }}
+    >
+      <SkeletonBase className="h-[18px] w-[18px] rounded-sm shrink-0" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <SkeletonBase className="h-4 w-3/5 mb-1.5" />
+        <SkeletonBase className="h-3 w-1/3" />
+      </div>
+      <SkeletonBase className="h-5 w-12 rounded-full shrink-0" />
+    </div>
+  )
+}
+
+function TodoSectionSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <SkeletonBase className="h-3 w-20 mb-1" />
+      {Array.from({ length: rows }).map((_, i) => (
+        <TodoRowSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+/** Todo 페이지 구조 일치 skeleton — 헤더 + 추가 버튼 + 진행중/완료 섹션. */
+function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
+  const Body = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <TodoSectionSkeleton rows={3} />
+      <TodoSectionSkeleton rows={2} />
+    </div>
+  )
+
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 16px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+          <SkeletonBase className="h-7 w-16" />
+          <div style={{ marginLeft: 'auto' }}>
+            <SkeletonBase className="h-9 w-24 rounded-md" />
+          </div>
+        </div>
+        {Body}
+      </div>
+    )
+  }
+  return (
+    <div style={{ padding: 0 }}>
+      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+        <div>
+          <SkeletonBase className="h-8 w-20 mb-2" />
+          <SkeletonBase className="h-4 w-32" />
+        </div>
+        <div className="right">
+          <SkeletonBase className="h-9 w-28 rounded-md" />
+        </div>
+      </div>
+      <div style={{ padding: '0 28px 24px', maxWidth: 720 }}>{Body}</div>
+    </div>
+  )
+}
+
 export const TodoPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { isLoading } = useTodoPageData()
+  if (isLoading) return <TodoPageSkeleton mobile={mobile} />
+  return <TodoPageInner mobile={mobile} />
+}
+
+const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const todosQ = useTodos()
   const toggleStatus = useToggleTodoStatus()
 
@@ -39,11 +129,10 @@ export const TodoPage = () => {
           opacity: isDone ? 0.55 : 1,
         }}
       >
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isDone}
-          onChange={() => toggleStatus.mutate(t.rowId)}
-          style={{ width: 18, height: 18, accentColor: 'var(--bg-brand)' }}
+          onCheckedChange={() => toggleStatus.mutate(t.rowId)}
+          onClick={(e) => e.stopPropagation()}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
@@ -80,7 +169,7 @@ export const TodoPage = () => {
                         fontWeight: 'var(--fw-semi)',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
-                        background: tag.color ? `${tag.color}22` : 'var(--pd-surface-inset)',
+                        background: tag.color ? `${tag.color}22` : 'var(--bg-sunken)',
                         color: tag.color ?? 'var(--fg-secondary)',
                       }}
                     >
@@ -161,8 +250,9 @@ export const TodoPage = () => {
   const Body = (
     <>
       {todosQ.isLoading ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
-          불러오는 중…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <TodoSectionSkeleton rows={3} />
+          <TodoSectionSkeleton rows={2} />
         </div>
       ) : todos.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>

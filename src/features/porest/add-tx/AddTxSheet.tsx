@@ -4,6 +4,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
@@ -33,7 +34,7 @@ import { useAssets, useCreateTransfer } from '@/features/asset'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 
 const PAYMENT_METHODS: { v: string; l: string }[] = [
   { v: 'CASH', l: '현금' },
@@ -323,7 +324,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 2,
           padding: 3,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 20,
         }}
@@ -530,7 +531,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <div
               style={{
                 padding: '8px 10px',
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 border: '1px dashed var(--border-default)',
                 borderRadius: 'var(--radius-md)',
                 fontSize: 'var(--fs-caption)',
@@ -857,31 +858,33 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           onClick={() => !submitting && setConfirmDelete(false)}
         >
           <Card
-            style={{ width: 360, padding: 20 }}
+            style={{ width: 360 }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
-            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
-              선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setConfirmDelete(false)}
-                disabled={submitting}
-              >
-                취소
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={doDelete}
-                loading={submitting}
-              >
-                삭제
-              </Button>
-            </div>
+            <CardContent>
+              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
+              <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
+                선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={submitting}
+                >
+                  취소
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={doDelete}
+                  loading={submitting}
+                >
+                  삭제
+                </Button>
+              </div>
+            </CardContent>
           </Card>
         </div>
       )}
@@ -960,7 +963,7 @@ function SavePresetDialog({
       <div
         style={{
           padding: 14,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           marginBottom: 18,
           display: 'flex',
@@ -1015,15 +1018,15 @@ function SavePresetDialog({
           alignItems: 'flex-start',
           gap: 10,
           padding: 12,
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-tile)',
           cursor: 'pointer',
         }}
       >
-        <input
-          type="checkbox"
+        <Checkbox
           checked={lockAmount}
-          onChange={e => setLockAmount(e.target.checked)}
+          onCheckedChange={(c) => setLockAmount(c === true)}
+          onClick={(e) => e.stopPropagation()}
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>

@@ -68,7 +68,7 @@ export function TxTypeToggle({
               padding: 10,
               background: active
                 ? "var(--bg-brand-subtle)"
-                : "var(--pd-surface-inset)",
+                : "var(--bg-sunken)",
               border: active
                 ? "1px solid var(--border-brand)"
                 : "1px solid var(--border-subtle)",

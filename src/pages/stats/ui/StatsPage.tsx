@@ -6,7 +6,8 @@ import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-a
 import { SegPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Calendar } from '@/shared/ui/calendar'
 import {
@@ -92,18 +93,18 @@ const labelsOf = ({ segMode }: RangeState) =>
         ? { now: '이번 해', prev: '지난 해', mom: '전년 대비', noPrev: '전년 데이터 없음', avg: '월 평균' }
         : { now: '선택 기간', prev: '이전 기간', mom: '이전 기간 대비', noPrev: '이전 기간 데이터 없음', avg: '일 평균' }
 
+// porest chart palette 10색 — 카테고리 donut fallback
 const DONUT_COLORS = [
-  'oklch(0.55 0.12 55)',
-  'oklch(0.50 0.12 340)',
-  'oklch(0.50 0.1 140)',
-  'oklch(0.50 0.12 290)',
-  'oklch(0.48 0.012 195)',
-  'oklch(0.50 0.08 50)',
-  'oklch(0.52 0.1 215)',
-  'oklch(0.50 0.1 230)',
-  'oklch(0.55 0.13 25)',
-  'var(--bark-700)',
-  'var(--fg-income)',
+  'var(--color-chart-blue)',
+  'var(--color-chart-green)',
+  'var(--color-chart-orange)',
+  'var(--color-chart-violet)',
+  'var(--color-chart-pink)',
+  'var(--color-chart-indigo)',
+  'var(--color-chart-red)',
+  'var(--color-chart-yellow)',
+  'var(--color-chart-brown)',
+  'var(--color-chart-gray)',
 ]
 
 // 6-step heatmap palette (empty → deep mossy).
@@ -225,6 +226,242 @@ function PorestChartTooltip({
   )
 }
 
+/** Stats 페이지 구조에 맞춘 skeleton — 탭별로 다른 컨텐츠. */
+function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
+  const Tabs = (
+    <div
+      style={{
+        display: 'flex',
+        gap: 16,
+        marginBottom: mobile ? 14 : 20,
+        padding: mobile ? '12px 16px 0' : 0,
+        borderBottom: '1px solid var(--border-subtle)',
+      }}
+    >
+      {[0, 1, 2].map(i => (
+        <SkeletonBase
+          key={i}
+          className={mobile ? 'h-8 flex-1' : 'h-8 w-20'}
+        />
+      ))}
+    </div>
+  )
+
+  const CategorySkeleton = (
+    <>
+      <div
+        style={{
+          display: mobile ? 'flex' : 'grid',
+          flexDirection: 'column',
+          gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
+          gap: mobile ? 12 : 20,
+          marginBottom: 20,
+        }}
+      >
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <SkeletonBase className="h-5 w-32" />
+            <SkeletonBase className="h-8 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: mobile ? 'column' : 'row',
+                gap: mobile ? 20 : 32,
+                alignItems: 'center',
+              }}
+            >
+              <SkeletonBase
+                className={
+                  mobile
+                    ? 'h-[180px] w-[180px] rounded-full shrink-0'
+                    : 'h-[200px] w-[200px] rounded-full shrink-0'
+                }
+              />
+              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[0, 1, 2, 3, 4].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                    <SkeletonBase className="h-3 flex-1" />
+                    <SkeletonBase className="h-3 w-12 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card style={{ height: '100%' }}>
+          <CardHeader>
+            <SkeletonBase className="h-5 w-44" />
+          </CardHeader>
+          <CardContent>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[0, 1, 2, 3, 4].map(i => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <SkeletonBase className="h-6 w-6" />
+                  <div style={{ flex: 1 }}>
+                    <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                    <SkeletonBase className="h-1 w-full rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <Card>
+          <CardHeader>
+            <SkeletonBase className="h-5 w-40" />
+          </CardHeader>
+          <CardContent>
+            <SkeletonBase className="h-3 w-2/3 mb-3" />
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(8, 1fr)',
+                gap: mobile ? 6 : 8,
+              }}
+            >
+              {Array.from({ length: 56 }).map((_, i) => (
+                <SkeletonBase key={i} className="h-7 w-full rounded-sm" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 12,
+        }}
+      >
+        {[0, 1, 2].map(i => (
+          <Card key={i}>
+            <CardContent>
+              <SkeletonBase className="h-3 w-24 mb-3" />
+              <SkeletonBase className="h-5 w-32 mb-1.5" />
+              <SkeletonBase className="h-3 w-20" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </>
+  )
+
+  const TrendSkeleton = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <SkeletonBase className="h-5 w-44" />
+          <SkeletonBase className="h-8 w-40" />
+        </CardHeader>
+        <CardContent>
+          <SkeletonBase className={mobile ? 'h-[200px] w-full' : 'h-[260px] w-full'} />
+          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+            <SkeletonBase className="h-3 w-12" />
+            <SkeletonBase className="h-3 w-12" />
+          </div>
+        </CardContent>
+      </Card>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: 12,
+        }}
+      >
+        {[0, 1, 2, 3].map(i => (
+          <Card key={i}>
+            <CardContent>
+              <SkeletonBase className="h-3 w-16 mb-2" />
+              <SkeletonBase className={mobile ? 'h-5 w-24' : 'h-6 w-28'} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <SkeletonBase className="h-5 w-28" />
+          <SkeletonBase className="h-3 w-24" />
+        </CardHeader>
+        <CardContent>
+          <SkeletonBase className={mobile ? 'h-[180px] w-full' : 'h-[220px] w-full'} />
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const CompareSkeleton = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 12,
+        }}
+      >
+        {[0, 1, 2].map(i => (
+          <Card key={i}>
+            <CardContent className="flex flex-col justify-center text-center">
+              <SkeletonBase className={mobile ? 'h-7 w-32 mb-2' : 'h-9 w-40 mb-2'} />
+              <SkeletonBase className="h-3 w-20" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <SkeletonBase className="h-5 w-44" />
+          <SkeletonBase className="h-3 w-40" />
+        </CardHeader>
+        <CardContent>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                  <SkeletonBase className="h-4 flex-1" />
+                  <SkeletonBase className="h-4 w-20 shrink-0" />
+                </div>
+                <div style={{ paddingLeft: 42, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <SkeletonBase className="h-2.5 w-full rounded-full" />
+                  <SkeletonBase className="h-1.5 w-full rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const Content = tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
+
+  if (mobile) {
+    return (
+      <div style={{ paddingBottom: 24 }}>
+        <div style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
+        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
+      </div>
+    )
+  }
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h1>통계·분석</h1>
+          <div className="sub">카테고리·추이·인사이트</div>
+        </div>
+      </div>
+      {Tabs}
+      {Content}
+    </div>
+  )
+}
+
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const hidden = useHideAmounts()
@@ -250,6 +487,16 @@ export const StatsPage = () => {
   // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
   const monthExpensesQ = useExpenses({ startDate, endDate })
   const heatmapQ = useExpenseHeatmap(startDate, endDate)
+
+  // 첫 진입 시 모든 데이터가 도착할 때까지 한 번만 skeleton — 이후 기간/탭 변경은 부분 로딩 표시.
+  const initialLoading =
+    rangeQ.isLoading || categoriesQ.isLoading || merchantQ.isLoading
+    || monthExpensesQ.isLoading || heatmapQ.isLoading
+    || (tab === 'compare' && prevRangeQ.isLoading)
+  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+  // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
+  if (!initialLoading && !hasEverLoaded) setHasEverLoaded(true)
+  const shouldShowSkeleton = initialLoading && !hasEverLoaded
 
   const periodLbl = periodLabel(period)
   const labels = labelsOf(period)
@@ -434,8 +681,8 @@ export const StatsPage = () => {
     : `${centerPeriodLbl} 지출`
 
   const DonutCard = (
-    <Card style={{ padding: mobile ? 18 : 24 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {isDrilled ? (
             <>
@@ -462,10 +709,32 @@ export const StatsPage = () => {
             '카테고리별 지출'
           )}
         </CardTitle>
-        <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
+        <div>{PeriodSeg}</div>
       </CardHeader>
+      <CardContent>
       {donutLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: mobile ? 'column' : 'row',
+            gap: mobile ? 20 : 32,
+            alignItems: 'center',
+          }}
+        >
+          <SkeletonBase
+            className={mobile ? 'h-[180px] w-[180px] rounded-full shrink-0' : 'h-[200px] w-[200px] rounded-full shrink-0'}
+          />
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                <SkeletonBase className="h-3 flex-1" />
+                <SkeletonBase className="h-3 w-10 shrink-0" />
+                <SkeletonBase className="h-3 w-16 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : donutView.length === 0 ? (
         <EmptyBox text="카테고리 데이터가 없습니다" />
       ) : (
@@ -511,7 +780,7 @@ export const StatsPage = () => {
                     margin: clickable ? '0 -6px' : undefined,
                     transition: 'background var(--dur-fast) var(--ease-standard)',
                   }}
-                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--pd-hover-bg)' } : undefined}
+                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
                 >
@@ -529,6 +798,7 @@ export const StatsPage = () => {
           </div>
         </div>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -539,7 +809,6 @@ export const StatsPage = () => {
   const TopMerchantsCard = (
     <Card
       style={{
-        padding: mobile ? 18 : 22,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -548,8 +817,22 @@ export const StatsPage = () => {
       <CardHeader>
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>많이 쓴 가맹점 TOP 5</CardTitle>
       </CardHeader>
+      <CardContent>
       {merchantQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <SkeletonBase className="h-4 w-6 shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                  <SkeletonBase className="h-4 w-1/3" />
+                  <SkeletonBase className="h-3 w-10 ml-auto" />
+                </div>
+                <SkeletonBase className="h-1 w-full rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : topMerchants.length === 0 ? (
         <EmptyBox text="가맹점 데이터가 없습니다" />
       ) : (
@@ -589,7 +872,7 @@ export const StatsPage = () => {
                 <div
                   style={{
                     height: 4,
-                    background: 'var(--pd-surface-inset)',
+                    background: 'var(--bg-sunken)',
                     borderRadius: 'var(--radius-pill)',
                     overflow: 'hidden',
                   }}
@@ -608,6 +891,7 @@ export const StatsPage = () => {
           ))}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -659,10 +943,11 @@ export const StatsPage = () => {
   }
 
   const HeatmapCard = (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
-      <CardHeader style={{ marginBottom: 6 }}>
+    <Card>
+      <CardHeader>
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>요일·시간대 지출 패턴</CardTitle>
       </CardHeader>
+      <CardContent>
       <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
@@ -679,7 +964,7 @@ export const StatsPage = () => {
               key={i}
               style={{
                 height: 28,
-                background: 'var(--pd-surface-inset)',
+                background: 'var(--bg-sunken)',
                 borderRadius: 'var(--radius-md)',
                 opacity: 0.6 + (i % 2) * 0.2,
               }}
@@ -693,7 +978,7 @@ export const StatsPage = () => {
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
             fontSize: 'var(--fs-body-sm)',
-            background: 'var(--pd-surface-inset)',
+            background: 'var(--bg-sunken)',
             borderRadius: 'var(--radius-lg)',
           }}
         >
@@ -765,7 +1050,7 @@ export const StatsPage = () => {
                         color: pal.fg,
                         fontVariantNumeric: 'tabular-nums',
                         boxShadow: isPeak
-                          ? '0 0 0 2px var(--mossy-900), 0 0 0 4px oklch(0.385 0.05 110 / 0.25)'
+                          ? '0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)'
                           : 'none',
                         transition: 'background var(--dur-fast) var(--ease-standard)',
                       }}
@@ -799,7 +1084,7 @@ export const StatsPage = () => {
                     height: 10,
                     borderRadius: 'var(--radius-2xs)',
                     background: c.bg,
-                    border: '1px solid oklch(0.90 0.01 110)',
+                    border: '1px solid var(--border-subtle)',
                   }}
                 />
               ))}
@@ -812,6 +1097,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -869,14 +1155,16 @@ export const StatsPage = () => {
       }}
     >
       {highlights.map((h, i) => (
-        <Card key={i} style={{ padding: 18 }}>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 10 }}>
-            {h.lbl}
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{h.val}</div>
-            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
-          </div>
+        <Card key={i}>
+          <CardContent>
+            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 10 }}>
+              {h.lbl}
+            </div>
+            <div>
+              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{h.val}</div>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+            </div>
+          </CardContent>
         </Card>
       ))}
     </div>
@@ -952,13 +1240,23 @@ export const StatsPage = () => {
         : v.toLocaleString('ko-KR')
 
   const TrendBig = (
-    <Card style={{ padding: mobile ? 18 : 24 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
-        <div style={{ marginLeft: 'auto' }}>{PeriodSeg}</div>
+        <div>{PeriodSeg}</div>
       </CardHeader>
+      <CardContent>
       {rangeQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <>
+          <SkeletonBase
+            className="w-full rounded-lg"
+            style={{ height: mobile ? 200 : 260 }}
+          />
+          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+            <SkeletonBase className="h-3 w-12" />
+            <SkeletonBase className="h-3 w-12" />
+          </div>
+        </>
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="추이 데이터가 없습니다" />
       ) : (
@@ -1051,6 +1349,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -1068,29 +1367,35 @@ export const StatsPage = () => {
         { lbl: statLabelSave, val: <><MaskAmount>{KRW(Math.round(avgSave))}</MaskAmount><HideUnit>원</HideUnit></> },
         { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
-        <Card key={i} style={{ padding: 16 }}>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
-            {s.lbl}
-          </div>
-          <div
-            className="num"
-            style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
-          >
-            {s.val}
-          </div>
+        <Card key={i}>
+          <CardContent>
+            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+              {s.lbl}
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
+            >
+              {s.val}
+            </div>
+          </CardContent>
         </Card>
       ))}
     </div>
   )
 
   const SavingsBars = (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{useDailyTrend ? '일별 순저축' : '월별 순저축'}</CardTitle>
-        <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
+        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </CardHeader>
+      <CardContent>
       {rangeQ.isLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <SkeletonBase
+          className="w-full rounded-lg"
+          style={{ height: mobile ? 180 : 220 }}
+        />
       ) : trendChartData.length === 0 ? (
         <EmptyBox text="월별 데이터가 없습니다" />
       ) : (
@@ -1139,7 +1444,7 @@ export const StatsPage = () => {
                   fill={
                     d.savings < 0
                       ? 'var(--fg-expense)'
-                      : 'var(--mossy-400)'
+                      : 'var(--fg-income)'
                   }
                 />
               ))}
@@ -1147,6 +1452,7 @@ export const StatsPage = () => {
           </BarChart>
         </ChartContainer>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -1213,76 +1519,116 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
-          {periodNow} 지출
-        </div>
-        <div
-          className="num"
-          style={{ fontSize: mobile ? 18 : 22, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
-        >
-          <MaskAmount>{KRW(totalNow)}</MaskAmount>
-          <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2 }}>원</span></HideUnit>
-        </div>
-      </Card>
-      <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
-          {periodPrev} 지출
-        </div>
-        <div
-          className="num"
+      <Card>
+        <CardContent
           style={{
-            fontSize: mobile ? 18 : 22,
-            fontWeight: 'var(--fw-heavy)',
-            letterSpacing: 'var(--tracking-tight)',
-            color: 'var(--fg-secondary)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
           }}
         >
-          <MaskAmount>{KRW(totalPrev)}</MaskAmount>
-          <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2 }}>원</span></HideUnit>
-        </div>
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 28 : 36,
+              fontWeight: 'var(--fw-bold)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              color: 'var(--fg-primary)',
+            }}
+          >
+            <MaskAmount>{KRW(totalNow)}</MaskAmount>
+            <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2, fontWeight: 'var(--fw-medium)' }}>원</span></HideUnit>
+          </div>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
+            {periodNow} 지출
+          </div>
+        </CardContent>
       </Card>
-      <Card style={{ padding: 16 }}>
-        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
-          {momLabel}
-        </div>
-        <div
-          className="num"
+      <Card>
+        <CardContent
           style={{
-            fontSize: mobile ? 18 : 22,
-            fontWeight: 'var(--fw-heavy)',
-            letterSpacing: 'var(--tracking-tight)',
-            color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
           }}
         >
-          {totalPrev > 0 ? (
-            <>
-              {momUp ? '+' : '−'}
-              {Math.abs(((totalNow - totalPrev) / totalPrev) * 100).toFixed(1)}%
-            </>
-          ) : '—'}
-        </div>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-          {totalPrev > 0 ? (
-            <>
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 28 : 36,
+              fontWeight: 'var(--fw-bold)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              color: 'var(--fg-secondary)',
+            }}
+          >
+            <MaskAmount>{KRW(totalPrev)}</MaskAmount>
+            <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2, fontWeight: 'var(--fw-medium)' }}>원</span></HideUnit>
+          </div>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
+            {periodPrev} 지출
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 28 : 36,
+              fontWeight: 'var(--fw-bold)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
+            }}
+          >
+            {totalPrev > 0 ? (
+              <>
+                {momUp ? '+' : '−'}
+                {Math.abs(((totalNow - totalPrev) / totalPrev) * 100).toFixed(1)}%
+              </>
+            ) : '—'}
+          </div>
+          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
+            {momLabel}
+          </div>
+          {totalPrev > 0 && (
+            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               <MaskAmount>
                 {momUp ? '+' : '−'}{KRW(Math.abs(totalNow - totalPrev))}
               </MaskAmount>
               <HideUnit>원</HideUnit>
-            </>
-          ) : noPrevText}
-        </div>
+            </div>
+          )}
+          {totalPrev === 0 && (
+            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+              {noPrevText}
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   )
 
   const CompareCategory = (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
-      <CardHeader>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리별 {momLabel}</CardTitle>
         <div
           style={{
-            marginLeft: 'auto',
             display: 'flex',
             gap: 12,
             fontSize: 'var(--fs-micro)',
@@ -1299,8 +1645,24 @@ export const StatsPage = () => {
           </span>
         </div>
       </CardHeader>
+      <CardContent>
       {compareLoading ? (
-        <EmptyBox text="불러오는 중…" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-4 flex-1" />
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+                <SkeletonBase className="h-3 w-12 shrink-0" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
+                <SkeletonBase className="h-2.5 w-full rounded-full" />
+                <SkeletonBase className="h-1.5 w-2/3 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : compareRows.length === 0 ? (
         <EmptyBox text="비교할 데이터가 없습니다" />
       ) : (
@@ -1385,6 +1747,7 @@ export const StatsPage = () => {
           })}
         </div>
       )}
+      </CardContent>
     </Card>
   )
 
@@ -1421,6 +1784,8 @@ export const StatsPage = () => {
 
   // Suppress unused warning if totalIncome isn't used elsewhere
   void totalIncome
+
+  if (shouldShowSkeleton) return <StatsPageSkeleton mobile={mobile} tab={tab} />
 
   if (mobile) {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭)

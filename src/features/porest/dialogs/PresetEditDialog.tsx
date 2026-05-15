@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import {
   Select,
@@ -17,6 +19,7 @@ import {
   useUpdateExpenseTemplate,
 } from '@/features/expense'
 import { useAssets } from '@/features/asset'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
 import type { ExpenseType } from '@/entities/expense'
 
@@ -131,43 +134,16 @@ export function PresetEditDialog({
       footer={Footer}
     >
       {/* 타입 segment */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 2,
-          padding: 3,
-          background: 'var(--pd-surface-inset)',
-          borderRadius: 'var(--radius-tile)',
-          marginBottom: 16,
-        }}
+      <ToggleGroup
+        type="single"
+        variant="segmented"
+        value={type}
+        onValueChange={(v) => v && setType(v as 'EXPENSE' | 'INCOME')}
+        className="mb-4"
       >
-        {(['EXPENSE', 'INCOME'] as const).map(v => {
-          const active = type === v
-          const color = v === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)'
-          return (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setType(v)}
-              style={{
-                background: active ? 'var(--bg-surface)' : 'transparent',
-                color: active ? color : 'var(--fg-secondary)',
-                border: 0,
-                padding: '8px 0',
-                fontSize: 'var(--fs-body-sm)',
-                fontWeight: 'var(--fw-bold)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                boxShadow: active ? 'var(--shadow-xs)' : 'none',
-                fontFamily: 'inherit',
-              }}
-            >
-              {v === 'EXPENSE' ? '지출' : '수입'}
-            </button>
-          )
-        })}
-      </div>
+        <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
+        <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
+      </ToggleGroup>
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>프리셋 이름</FieldLabel>
@@ -181,25 +157,33 @@ export function PresetEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>카테고리</FieldLabel>
-        <CategoryGrid>
-          {topCategories.map(c => {
-            const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
-            const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
-            return (
-              <CategoryTile
-                key={c.rowId}
-                name={c.categoryName}
-                color={c.color ?? undefined}
-                icon={c.icon}
-                active={selectedParentId === c.rowId}
-                onClick={() => {
-                  const firstChild = childrenByParent.get(c.rowId)?.[0]
-                  setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
-                }}
-              />
-            )
-          })}
-        </CategoryGrid>
+        {categoriesQ.isLoading ? (
+          <CategoryGrid>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <SkeletonBase key={i} className="h-16 w-full rounded-md" />
+            ))}
+          </CategoryGrid>
+        ) : (
+          <CategoryGrid>
+            {topCategories.map(c => {
+              const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
+              const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
+              return (
+                <CategoryTile
+                  key={c.rowId}
+                  name={c.categoryName}
+                  color={c.color ?? undefined}
+                  icon={c.icon}
+                  active={selectedParentId === c.rowId}
+                  onClick={() => {
+                    const firstChild = childrenByParent.get(c.rowId)?.[0]
+                    setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
+                  }}
+                />
+              )
+            })}
+          </CategoryGrid>
+        )}
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
@@ -233,31 +217,34 @@ export function PresetEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>계좌·카드</FieldLabel>
-        <Select
-          value={assetRowId != null ? String(assetRowId) : '__none__'}
-          onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="선택 안 함" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">선택 안 함</SelectItem>
-            {assets.map(a => (
-              <SelectItem key={a.rowId} value={String(a.rowId)}>
-                {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {assetsQ.isLoading ? (
+          <SkeletonBase className="h-9 w-full rounded-md" />
+        ) : (
+          <Select
+            value={assetRowId != null ? String(assetRowId) : '__none__'}
+            onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="선택 안 함" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">선택 안 함</SelectItem>
+              {assets.map(a => (
+                <SelectItem key={a.rowId} value={String(a.rowId)}>
+                  {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </Field>
 
-      <div style={{ padding: 12, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
+      <div style={{ padding: 12, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)', marginBottom: 4 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
+          <Checkbox
+            size="sm"
             checked={lockAmount}
-            onChange={e => setLockAmount(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: 'var(--fg-brand-strong)' }}
+            onCheckedChange={(c) => setLockAmount(c === true)}
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>고정 금액 사용</div>

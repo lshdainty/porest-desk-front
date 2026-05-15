@@ -27,6 +27,7 @@ import {
   Redo,
 } from 'lucide-react'
 import { cn } from '@/shared/lib'
+import { Toggle } from '@/shared/ui/toggle'
 import { useEffect, useRef } from 'react'
 
 const lowlight = createLowlight(common)
@@ -47,23 +48,23 @@ interface ToolbarButtonProps {
 }
 
 const ToolbarButton = ({ onClick, isActive, children, title }: ToolbarButtonProps) => (
-  <button
-    type="button"
-    onClick={onClick}
+  <Toggle
+    pressed={isActive}
+    onPressedChange={() => onClick()}
     title={title}
     className={cn(
-      'rounded p-1.5 transition-colors',
+      'h-auto min-w-0 p-1.5 rounded gap-0',
       isActive
-        ? 'bg-primary/10 text-primary'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        ? 'bg-primary/10 text-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary'
+        : 'text-text-secondary hover:bg-surface-input hover:text-text-primary'
     )}
   >
     {children}
-  </button>
+  </Toggle>
 )
 
 const ToolbarSeparator = () => (
-  <div className="mx-0.5 h-5 w-px bg-border" />
+  <div className="mx-0.5 h-5 w-px bg-border-default" />
 )
 
 export const RichTextEditor = ({
@@ -255,7 +256,7 @@ export const RichTextEditor = ({
         className={cn(
           'prose prose-sm dark:prose-invert max-w-none',
           '[&_.tiptap]:min-h-[200px] [&_.tiptap]:px-4 [&_.tiptap]:py-3 [&_.tiptap]:outline-none',
-          '[&_.tiptap_p.is-editor-empty:first-child::before]:text-muted-foreground/50',
+          '[&_.tiptap_p.is-editor-empty:first-child::before]:text-text-secondary/50',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:float-left',
           '[&_.tiptap_p.is-editor-empty:first-child::before]:pointer-events-none',
@@ -263,10 +264,26 @@ export const RichTextEditor = ({
           '[&_.tiptap_ul[data-type=taskList]]:list-none [&_.tiptap_ul[data-type=taskList]]:pl-0',
           '[&_.tiptap_ul[data-type=taskList]_li]:flex [&_.tiptap_ul[data-type=taskList]_li]:items-start [&_.tiptap_ul[data-type=taskList]_li]:gap-2',
           '[&_.tiptap_ul[data-type=taskList]_li_label]:mt-px',
-          '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-muted [&_.tiptap_pre]:p-3',
-          '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-muted [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
-          '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-muted-foreground',
-          '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
+          // Tiptap task-list 의 native input → porest-design Checkbox spec 톤 (appearance:none + spec 토큰)
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:appearance-none',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:size-[18px]',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:shrink-0',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:rounded-sm',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:border',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:border-border-strong',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:bg-surface-default',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:cursor-pointer',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input]:transition-colors',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input:hover]:bg-surface-input',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-primary',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:border-primary',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-no-repeat',
+          '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-center',
+          "[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-[url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22white%22%20stroke-width=%223%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22><polyline%20points=%2220%206%209%2017%204%2012%22/></svg>')]",
+          '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
+          '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
+          '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
+          '[&_.tiptap_mark]:bg-[color-mix(in_srgb,var(--color-chart-yellow)_30%,transparent)] [&_.tiptap_mark]:dark:bg-[color-mix(in_srgb,var(--color-chart-yellow-light)_30%,transparent)]',
         )}
       />
     </div>
@@ -308,10 +325,23 @@ export const RichTextViewer = ({ content, className }: RichTextViewerProps) => {
         '[&_.tiptap]:outline-none',
         '[&_.tiptap_ul[data-type=taskList]]:list-none [&_.tiptap_ul[data-type=taskList]]:pl-0',
         '[&_.tiptap_ul[data-type=taskList]_li]:flex [&_.tiptap_ul[data-type=taskList]_li]:items-start [&_.tiptap_ul[data-type=taskList]_li]:gap-2',
-        '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-muted [&_.tiptap_pre]:p-3',
-        '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-muted [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
-        '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-muted-foreground',
-        '[&_.tiptap_mark]:bg-yellow-200 [&_.tiptap_mark]:dark:bg-yellow-800/50',
+        // Tiptap task-list 의 native input → porest-design Checkbox spec 톤
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:appearance-none',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:size-[18px]',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:shrink-0',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:rounded-sm',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:border',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:border-border-strong',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input]:bg-surface-default',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-primary',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:border-primary',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-no-repeat',
+        '[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-center',
+        "[&_.tiptap_ul[data-type=taskList]_li_label_input:checked]:bg-[url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22white%22%20stroke-width=%223%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22><polyline%20points=%2220%206%209%2017%204%2012%22/></svg>')]",
+        '[&_.tiptap_pre]:rounded-md [&_.tiptap_pre]:bg-surface-input [&_.tiptap_pre]:p-3',
+        '[&_.tiptap_code]:rounded [&_.tiptap_code]:bg-surface-input [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:text-xs',
+        '[&_.tiptap_blockquote]:border-l-2 [&_.tiptap_blockquote]:border-primary/30 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:text-text-secondary',
+        '[&_.tiptap_mark]:bg-[color-mix(in_srgb,var(--color-chart-yellow)_30%,transparent)] [&_.tiptap_mark]:dark:bg-[color-mix(in_srgb,var(--color-chart-yellow-light)_30%,transparent)]',
         className,
       )}
     />

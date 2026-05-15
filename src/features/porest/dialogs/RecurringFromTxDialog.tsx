@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
@@ -177,31 +178,19 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       {/* 요일 (매주) */}
       {frequency === 'WEEKLY' && (
         <Section title="요일">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
-            {DOW_LABEL.map((label, i) => {
-              const active = dayOfWeek === i
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setDayOfWeek(i)}
-                  style={{
-                    padding: '10px 0',
-                    background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                    border: `1px solid ${active ? 'var(--border-brand)' : 'var(--border-subtle)'}`,
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                    fontWeight: active ? 700 : 500,
-                    borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--fs-body-sm)',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={String(dayOfWeek)}
+            onValueChange={(v) => v && setDayOfWeek(Number(v))}
+            className="grid w-full grid-cols-7 gap-1.5"
+          >
+            {DOW_LABEL.map((label, i) => (
+              <ToggleGroupItem key={i} value={String(i)} className="rounded-full">
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </Section>
       )}
 
@@ -317,7 +306,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                 className="num"
                 style={{
                   padding: '4px 10px',
-                  background: 'var(--pd-surface-inset)',
+                  background: 'var(--bg-sunken)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
                   fontSize: 'var(--fs-caption)',
@@ -430,7 +419,7 @@ function ToggleRow({
           width: 32,
           height: 32,
           borderRadius: 'var(--radius-md)',
-          background: 'var(--pd-surface-inset)',
+          background: 'var(--bg-sunken)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
           alignItems: 'center',
@@ -444,38 +433,11 @@ function ToggleRow({
         <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
         <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={value}
-        onClick={() => onChange(!value)}
-        style={{
-          width: 38,
-          height: 22,
-          borderRadius: 'var(--radius-pill)',
-          border: 0,
-          background: value ? 'var(--bg-brand)' : 'var(--border-default)',
-          position: 'relative',
-          cursor: 'pointer',
-          padding: 0,
-          transition: 'background 0.15s',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: value ? 18 : 2,
-            width: 18,
-            height: 18,
-            borderRadius: 'var(--radius-pill)',
-            background: 'var(--bg-surface)',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'left 0.15s',
-          }}
-        />
-      </button>
+      <Switch
+        checked={value}
+        onCheckedChange={onChange}
+        className="shrink-0"
+      />
     </div>
   )
 }

@@ -1,29 +1,42 @@
 import * as React from "react"
-import * as SwitchPrimitives from "@radix-ui/react-switch"
+import * as SwitchPrimitive from "@radix-ui/react-switch"
 
 import { cn } from "@/shared/lib/index"
 
+/*
+ * Porest Switch — porest-design specs/components/switch.md SoT 기반.
+ *
+ * - 44×24 track (WCAG 2.5.5 AAA 44px 터치 권장) + 20×20 thumb
+ * - off: border-strong / on: primary
+ * - thumb bg는 text-on-accent(#fff 고정) — surface-default 토큰은 dark swap 시 어두워져 thumb 안 보임.
+ * - 다크모드: cascade 자동 swap (primary는 다크모드에 동일, border-strong은 *-dark 적용).
+ */
+
 const Switch = React.forwardRef<
-  React.ElementRef<typeof SwitchPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
 >(({ className, ...props }, ref) => (
-  // POREST .p-switch spec: 36x20 track, 16x16 thumb, brand-hover checked color
-  <SwitchPrimitives.Root
+  <SwitchPrimitive.Root
+    ref={ref}
     className={cn(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-0 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)] disabled:cursor-not-allowed disabled:opacity-50",
-      "data-[state=checked]:bg-[var(--bg-brand-hover)] data-[state=unchecked]:bg-[var(--bg-track)]",
-      className
+      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
+      "transition-[background-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-strong",
+      className,
     )}
     {...props}
-    ref={ref}
   >
-    <SwitchPrimitives.Thumb
+    <SwitchPrimitive.Thumb
       className={cn(
-        "pointer-events-none block h-4 w-4 translate-x-0.5 rounded-full bg-white shadow-[var(--shadow-xs)] ring-0 transition-transform data-[state=checked]:translate-x-[18px]"
+        "pointer-events-none block h-5 w-5 rounded-full bg-text-on-accent shadow-md ring-0",
+        "transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
       )}
     />
-  </SwitchPrimitives.Root>
+  </SwitchPrimitive.Root>
 ))
-Switch.displayName = SwitchPrimitives.Root.displayName
+Switch.displayName = SwitchPrimitive.Root.displayName
 
 export { Switch }

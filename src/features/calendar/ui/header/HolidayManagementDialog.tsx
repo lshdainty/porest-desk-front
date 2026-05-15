@@ -15,6 +15,7 @@ import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
 import { Badge } from '@/shared/ui/badge'
+import { Checkbox } from '@/shared/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -233,24 +234,13 @@ export const HolidayManagementDialog = ({
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={formRecurring}
-                onClick={() => setFormRecurring(!formRecurring)}
-                className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-primary transition-colors data-[state=checked]:bg-primary"
-                data-state={formRecurring ? 'checked' : 'unchecked'}
-                style={{
-                  backgroundColor: formRecurring ? 'var(--primary)' : 'transparent',
-                }}
-              >
-                {formRecurring && (
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-primary-foreground">
-                    <path d="M8.5 2.5L3.5 7.5L1.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-              <Label className="cursor-pointer" onClick={() => setFormRecurring(!formRecurring)}>
+              <Checkbox
+                id="holiday-recurring"
+                size="sm"
+                checked={formRecurring}
+                onCheckedChange={(c) => setFormRecurring(c === true)}
+              />
+              <Label htmlFor="holiday-recurring" className="cursor-pointer">
                 {t('holiday.recurring')}
               </Label>
             </div>

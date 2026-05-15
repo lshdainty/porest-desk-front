@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { CreditCard, Pencil, Trash2 } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import { cn, formatCurrency, renderIcon } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 
 interface AssetListProps {
   assets: Asset[]
@@ -97,26 +98,32 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
               </div>
               <div className="flex shrink-0 gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 {asset.cardCatalog && (
-                  <button
-                    className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                     title="카드 상세"
                     onClick={(e) => { e.stopPropagation(); navigate(`/desk/card/${asset.rowId}`) }}
                   >
                     <CreditCard size={14} />
-                  </button>
+                  </Button>
                 )}
-                <button
-                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                   onClick={(e) => { e.stopPropagation(); onEdit(asset) }}
                 >
                   <Pencil size={14} />
-                </button>
-                <button
-                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   onClick={(e) => { e.stopPropagation(); onDelete(asset.rowId) }}
                 >
                   <Trash2 size={14} />
-                </button>
+                </Button>
               </div>
             </div>
             {weight > 0 && (

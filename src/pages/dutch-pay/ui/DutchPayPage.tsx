@@ -8,7 +8,8 @@ import {
   useSettleAll,
 } from '@/features/dutch-pay'
 import type { DutchPay, DutchPayParticipant } from '@/entities/dutch-pay'
-import { Card, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -25,8 +26,136 @@ const nameInitial = (name: string) => (name && name.length > 0 ? name[0]! : '?')
 
 const colorFor = (idx: number) => PARTICIPANT_COLORS[idx % PARTICIPANT_COLORS.length]!
 
+/** DutchPayPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
+function useDutchPayPageData() {
+  const dutchPaysQ = useDutchPays()
+  return {
+    isLoading: dutchPaysQ.isLoading,
+  }
+}
+
+/** 진행 중 정산 카드 skeleton — 타이틀+총금액+1인당+참여자 rows. */
+function ActiveDutchPayCardSkeleton({ mobile, participants = 3 }: { mobile: boolean; participants?: number }) {
+  return (
+    <Card
+      style={{
+        background: 'var(--bg-section-warm)',
+        border: '1px solid var(--border-warm)',
+      }}
+    >
+      <CardContent>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <SkeletonBase className="h-3 w-20" />
+          <SkeletonBase className="h-7 w-28 ml-auto rounded-md" />
+        </div>
+        <SkeletonBase className={mobile ? 'h-6 w-48 mb-2' : 'h-7 w-56 mb-2'} />
+        <SkeletonBase className="h-4 w-40 mb-4" />
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <SkeletonBase className="h-3 w-10" />
+          <SkeletonBase className={mobile ? 'h-7 w-36' : 'h-8 w-40'} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
+          <SkeletonBase className="h-3 w-8" />
+          <SkeletonBase className="h-5 w-24" />
+        </div>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-warm)' }}>
+          <SkeletonBase className="h-3 w-14 mb-3" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Array.from({ length: participants }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <SkeletonBase className="h-9 w-9 rounded-full shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-1/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/2" />
+                </div>
+                <SkeletonBase className="h-7 w-20 rounded-md shrink-0" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/** 완료된 정산 카드 skeleton — 헤더 + 완료된 정산 rows. */
+function CompletedDutchPayCardSkeleton({ rows = 2 }: { rows?: number }) {
+  return (
+    <Card>
+      <CardHeader>
+        <SkeletonBase className="h-5 w-24" />
+      </CardHeader>
+      <CardContent>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '10px 0',
+              borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
+            }}
+          >
+            <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SkeletonBase className="h-4 w-2/5 mb-1" />
+              <SkeletonBase className="h-3 w-1/3" />
+            </div>
+            <SkeletonBase className="h-4 w-20 shrink-0" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+/** DutchPay 페이지 구조 일치 skeleton — 헤더 + 진행중 정산 카드 + 완료된 정산 카드. */
+function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
+  const Body = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 16 }}>
+      <ActiveDutchPayCardSkeleton mobile={mobile} participants={3} />
+      <CompletedDutchPayCardSkeleton rows={2} />
+    </div>
+  )
+
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 16px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+          <SkeletonBase className="h-7 w-20" />
+          <div style={{ marginLeft: 'auto' }}>
+            <SkeletonBase className="h-9 w-28 rounded-md" />
+          </div>
+        </div>
+        {Body}
+      </div>
+    )
+  }
+  return (
+    <div style={{ padding: 0 }}>
+      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+        <div>
+          <SkeletonBase className="h-8 w-24 mb-2" />
+          <SkeletonBase className="h-4 w-40" />
+        </div>
+        <div className="right">
+          <SkeletonBase className="h-9 w-28 rounded-md" />
+        </div>
+      </div>
+      <div style={{ padding: '0 28px 24px', maxWidth: 720 }}>{Body}</div>
+    </div>
+  )
+}
+
 export const DutchPayPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { isLoading } = useDutchPayPageData()
+  if (isLoading) return <DutchPayPageSkeleton mobile={mobile} />
+  return <DutchPayPageInner mobile={mobile} />
+}
+
+const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   const dutchPaysQ = useDutchPays()
   const markPaid = useMarkParticipantPaid()
   const settleAll = useSettleAll()
@@ -62,13 +191,12 @@ export const DutchPayPage = () => {
     return (
       <Card
         key={d.rowId}
-        variant="warm"
         style={{
-          padding: mobile ? 18 : 24,
           background: 'var(--bg-section-warm)',
           border: '1px solid var(--border-warm)',
         }}
       >
+        <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
           <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-on-warm)', fontWeight: 'var(--fw-semi)' }}>진행 중 정산</div>
           <Button
@@ -106,6 +234,7 @@ export const DutchPayPage = () => {
             {d.participants.map((p, i) => renderParticipantRow(d.rowId, p, i))}
           </div>
         </div>
+        </CardContent>
       </Card>
     )
   }
@@ -173,10 +302,11 @@ export const DutchPayPage = () => {
   ) : null
 
   const CompletedSection = completed.length > 0 ? (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    <Card>
       <CardHeader>
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>완료된 정산</CardTitle>
       </CardHeader>
+      <CardContent>
       {completed.map((d, i) => (
         <div
           key={d.rowId}
@@ -193,7 +323,7 @@ export const DutchPayPage = () => {
               width: 32,
               height: 32,
               borderRadius: 'var(--radius-tile)',
-              background: 'var(--pd-surface-subtle)',
+              background: 'var(--bg-muted)',
               color: 'var(--fg-secondary)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -214,33 +344,30 @@ export const DutchPayPage = () => {
           </div>
         </div>
       ))}
+      </CardContent>
     </Card>
   ) : null
 
   const EmptyState = (
-    <Card
-      style={{
-        padding: 40,
-        textAlign: 'center',
-        color: 'var(--fg-tertiary)',
-        fontSize: 'var(--fs-body-sm)',
-      }}
-    >
-      아직 정산 내역이 없어요
+    <Card>
+      <CardContent
+        style={{
+          padding: 40,
+          textAlign: 'center',
+          color: 'var(--fg-tertiary)',
+          fontSize: 'var(--fs-body-sm)',
+        }}
+      >
+        아직 정산 내역이 없어요
+      </CardContent>
     </Card>
   )
 
   const LoadingState = (
-    <Card
-      style={{
-        padding: 40,
-        textAlign: 'center',
-        color: 'var(--fg-tertiary)',
-        fontSize: 'var(--fs-body-sm)',
-      }}
-    >
-      불러오는 중…
-    </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 16 }}>
+      <ActiveDutchPayCardSkeleton mobile={mobile} participants={3} />
+      <CompletedDutchPayCardSkeleton rows={2} />
+    </div>
   )
 
   const Body = dutchPaysQ.isLoading

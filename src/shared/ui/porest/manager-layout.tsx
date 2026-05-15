@@ -148,7 +148,7 @@ export function ManagerTabs<T extends string>({
     <div
       style={{
         display: 'inline-flex',
-        background: 'var(--pd-surface-inset)',
+        background: 'var(--bg-sunken)',
         padding: 4,
         borderRadius: 'var(--radius-tile)',
         gap: 2,

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { ProtectedRoute } from './ProtectedRoute'
+import { Spinner } from '@/shared/ui/spinner'
 
 const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => ({ default: m.AppLayout })))
 const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -24,7 +25,7 @@ const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbac
 
 const Loading = () => (
   <div className="flex h-screen items-center justify-center">
-    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    <Spinner size="lg" />
   </div>
 )
 

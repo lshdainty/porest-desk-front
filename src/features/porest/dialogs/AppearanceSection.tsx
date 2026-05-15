@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Check, Monitor, Moon, Sun } from 'lucide-react'
+import { Monitor, Moon, Sun } from 'lucide-react'
+import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
+import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
 type DensityKey = 'compact' | 'comfortable' | 'spacious'
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
@@ -83,15 +86,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <section>
         <SectionLabel>테마</SectionLabel>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: 10,
-          }}
-        >
+        <TileGroup columns={mobile ? 1 : 3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
           {THEME_OPTIONS.map(opt => {
-            const active = theme === opt.k
             const swatchBg =
               opt.k === 'dark'
                 ? 'oklch(0.205 0.022 110)'
@@ -100,203 +96,62 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
                 : 'linear-gradient(135deg, #fff 50%, oklch(0.205 0.022 110) 50%)'
             const swatchColor = opt.k === 'dark' ? '#fff' : 'var(--fg-primary)'
             return (
-              <button
+              <TileItem
                 key={opt.k}
-                type="button"
-                onClick={() => setTheme(opt.k)}
-                style={{
-                  padding: '16px 14px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: active
-                    ? '1.5px solid var(--mossy-500, var(--fg-brand-strong))'
-                    : '1px solid var(--border-subtle)',
-                  background: active
-                    ? 'color-mix(in oklch, var(--fg-brand-strong) 8%, transparent)'
-                    : 'var(--bg-surface)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  transition: 'all 0.15s',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <span
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 'var(--radius-tile)',
-                    background: swatchBg,
-                    border: '1px solid var(--border-subtle)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: swatchColor,
-                    flexShrink: 0,
-                  }}
-                >
-                  <opt.Icon size={18} strokeWidth={1.9} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
+                value={opt.k}
+                label={opt.label}
+                description={opt.desc}
+                swatch={
                   <span
                     style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-body)',
-                      fontWeight: 'var(--fw-semi)',
-                      color: 'var(--fg-primary)',
+                      width: '100%',
+                      height: '100%',
+                      background: swatchBg,
+                      color: swatchColor,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    {opt.label}
+                    <opt.Icon size={18} strokeWidth={1.9} />
                   </span>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-caption)',
-                      color: 'var(--fg-tertiary)',
-                      marginTop: 2,
-                    }}
-                  >
-                    {opt.desc}
-                  </span>
-                </span>
-                {active && (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    style={{ color: 'var(--mossy-600, var(--fg-brand-strong))' }}
-                  />
-                )}
-              </button>
+                }
+              />
             )
           })}
-        </div>
+        </TileGroup>
       </section>
 
       <section>
         <SectionLabel>밀도</SectionLabel>
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            padding: 4,
-            background: 'var(--bg-canvas)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-tile)',
-          }}
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          size="sm"
+          value={density}
+          onValueChange={(v) => v && setDensity(v as DensityKey)}
         >
-          {DENSITY_OPTIONS.map(opt => {
-            const active = density === opt.k
-            return (
-              <button
-                key={opt.k}
-                type="button"
-                onClick={() => setDensity(opt.k)}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background: active ? 'var(--bg-surface)' : 'transparent',
-                  border: 'none',
-                  boxShadow: active ? 'var(--shadow-xs)' : 'none',
-                  color: active ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                  fontSize: 'var(--fs-body-sm)',
-                  fontWeight: active ? 600 : 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
+          {DENSITY_OPTIONS.map((opt) => (
+            <ToggleGroupItem key={opt.k} value={opt.k}>
+              {opt.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </section>
 
       <section>
         <SectionLabel>기본 통화</SectionLabel>
-        <div
-          style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
-          }}
-        >
-          {CURRENCY_OPTIONS.map((c, i, arr) => {
-            const active = currency === c.k
-            return (
-              <button
-                key={c.k}
-                type="button"
-                onClick={() => setCurrency(c.k)}
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom:
-                    i < arr.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <span
-                  className="num"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-canvas)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 'var(--fs-body-lg)',
-                    fontWeight: 'var(--fw-bold)',
-                    color: 'var(--fg-primary)',
-                    flexShrink: 0,
-                  }}
-                >
-                  {c.symbol}
-                </span>
-                <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-body)',
-                      fontWeight: 'var(--fw-semi)',
-                      color: 'var(--fg-primary)',
-                    }}
-                  >
-                    {c.label}
-                  </span>
-                  <span
-                    className="num"
-                    style={{
-                      display: 'block',
-                      fontSize: 'var(--fs-caption)',
-                      color: 'var(--fg-tertiary)',
-                      marginTop: 1,
-                    }}
-                  >
-                    {c.k}
-                  </span>
-                </span>
-                {active && (
-                  <Check
-                    size={16}
-                    strokeWidth={2.2}
-                    style={{ color: 'var(--mossy-600, var(--fg-brand-strong))' }}
-                  />
-                )}
-              </button>
-            )
-          })}
-        </div>
+        <RadioList value={currency} onValueChange={v => setCurrency(v as CurrencyKey)}>
+          {CURRENCY_OPTIONS.map(c => (
+            <RadioListItem
+              key={c.k}
+              value={c.k}
+              pill={<span className="num">{c.symbol}</span>}
+              label={c.label}
+              subLabel={<span className="num">{c.k}</span>}
+            />
+          ))}
+        </RadioList>
       </section>
     </div>
   )

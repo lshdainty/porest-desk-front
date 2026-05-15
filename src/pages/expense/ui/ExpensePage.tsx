@@ -4,7 +4,8 @@ import { ChevronLeft, ChevronRight, Download, Filter, Plus, SlidersHorizontal, X
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
@@ -26,21 +27,6 @@ const CHIPS: { id: Filter; label: string }[] = [
   { id: 'expense', label: '지출' },
   { id: 'income', label: '수입' },
 ]
-
-function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
-  return (
-    <div
-      style={{
-        height,
-        borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(90deg, var(--bg-muted), var(--bg-sunken), var(--bg-muted))',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.2s infinite',
-        ...style,
-      }}
-    />
-  )
-}
 
 function notifyComing(): void {
   console.log('[expense] 개발 중입니다')
@@ -84,8 +70,143 @@ function groupExpensesByDay(expenses: Expense[]): [string, Expense[]][] {
   })
 }
 
+/** Expense 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
+function useExpensePageData(month: string) {
+  const { startDate, endDate } = monthRange(month)
+  const expensesQ = useExpenses({ startDate, endDate })
+  const summaryQ = useRangeSummary(startDate, endDate)
+  const categoriesQ = useExpenseCategories()
+  const assetsQ = useAssets()
+  return {
+    isLoading:
+      expensesQ.isLoading || summaryQ.isLoading
+      || categoriesQ.isLoading || assetsQ.isLoading,
+  }
+}
+
+function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-card)',
+        padding: mobile ? 16 : 20,
+        marginBottom: mobile ? 12 : 16,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+        <SkeletonBase className="h-5 w-24" />
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 4 }}>
+          <SkeletonBase className="h-7 w-7 rounded-md" />
+          <SkeletonBase className="h-7 w-7 rounded-md" />
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i}>
+            <SkeletonBase className="h-3 w-10 mb-2" />
+            <SkeletonBase className={mobile ? 'h-5 w-24' : 'h-6 w-28'} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ExpenseChipsSkeleton() {
+  return (
+    <div style={{ display: 'flex', gap: 6, marginBottom: 8, paddingBottom: 4 }}>
+      {[0, 1, 2].map(i => (
+        <SkeletonBase key={i} className="h-7 w-12 rounded-full" />
+      ))}
+    </div>
+  )
+}
+
+function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
+  return (
+    <div>
+      {/* 날짜 헤더 — 카드 밖 평문 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 4px' }}>
+        <SkeletonBase className="h-4 w-12" />
+        <SkeletonBase className="h-4 w-6" />
+        <SkeletonBase className="h-3 w-16 ml-auto" />
+        <SkeletonBase className="h-3 w-16" />
+      </div>
+      <Card style={{ overflow: 'hidden' }}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+              <SkeletonBase className="h-3 w-1/3" />
+            </div>
+            <SkeletonBase className="h-4 w-20 shrink-0" />
+          </div>
+        ))}
+      </Card>
+    </div>
+  )
+}
+
+/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩 + 날짜 그룹별 거래 리스트. */
+function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
+  if (mobile) {
+    return (
+      <div style={{ padding: '4px 16px 24px' }}>
+        <ExpenseSummarySkeleton mobile />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+          <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
+          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <ExpenseDayGroupSkeleton rows={3} />
+          <ExpenseDayGroupSkeleton rows={2} />
+          <ExpenseDayGroupSkeleton rows={2} />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h1>가계부</h1>
+          <div className="sub">모든 거래 내역</div>
+        </div>
+      </div>
+      <ExpenseSummarySkeleton mobile={false} />
+      <ExpenseChipsSkeleton />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <ExpenseDayGroupSkeleton rows={3} />
+        <ExpenseDayGroupSkeleton rows={2} />
+        <ExpenseDayGroupSkeleton rows={2} />
+      </div>
+    </div>
+  )
+}
+
 export const ExpensePage = () => {
   const { onAddTx, mobile } = useOutletContext<OutletCtx>()
+  const [searchParams] = useSearchParams()
+  const initialMonth = searchParams.get('month') || currentMonthKey()
+  const { isLoading } = useExpensePageData(initialMonth)
+  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+  // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
+  if (!isLoading && !hasEverLoaded) setHasEverLoaded(true)
+  if (isLoading && !hasEverLoaded) return <ExpensePageSkeleton mobile={mobile} />
   return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />
 }
 
@@ -200,22 +321,21 @@ function ExpenseList({
 
   if (isLoading) {
     return (
-      <Card
-        style={{ padding: mobile ? '12px 14px' : '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}
-      >
-        <Skeleton height={56} />
-        <Skeleton height={56} />
-        <Skeleton height={56} />
-      </Card>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <ExpenseDayGroupSkeleton rows={3} />
+        <ExpenseDayGroupSkeleton rows={2} />
+      </div>
     )
   }
 
   if (grouped.length === 0) {
     return (
-      <Card style={{ padding: '48px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
-          내역이 없어요
-        </div>
+      <Card>
+        <CardContent style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+            내역이 없어요
+          </div>
+        </CardContent>
       </Card>
     )
   }
@@ -235,7 +355,7 @@ function ExpenseList({
             {/* 날짜 헤더 — 카드 밖 평문 */}
             <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
             {/* 거래 카드 — divider 로 구분 */}
-            <Card style={{ padding: 0, overflow: 'hidden' }}>
+            <Card style={{ overflow: 'hidden' }}>
               {items.map((e, i) => {
                 const isFocus = focusTxId === e.rowId
                 return (
@@ -583,66 +703,31 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <Chips filter={filter} onChange={setFilter} />
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => setFilterOpen(true)}
-          style={{
-            position: 'relative',
-            width: 36,
-            height: 36,
-            borderRadius: 'var(--radius-tile)',
-            border: '1px solid var(--border-subtle)',
-            background: 'transparent',
-            color: 'var(--fg-secondary)',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
           aria-label="필터"
+          className="relative shrink-0 rounded-[var(--radius-tile)]"
         >
           <SlidersHorizontal size={18} />
           {activeCount > 0 && (
             <span
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -4,
-                minWidth: 16,
-                height: 16,
-                padding: '0 4px',
-                borderRadius: 'var(--radius-pill)',
-                background: 'var(--bg-brand-hover)',
-                color: 'var(--fg-on-brand)',
-                fontSize: 'var(--fs-micro)',
-                fontWeight: 'var(--fw-bold)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              aria-hidden
+              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--fs-micro)] font-bold text-[var(--fg-on-brand)]"
             >
               {activeCount}
             </span>
           )}
-        </button>
-        <button
+        </Button>
+        <Button
+          size="icon"
           onClick={onAddTx}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 'var(--radius-tile)',
-            border: 0,
-            background: 'var(--bg-brand)',
-            color: 'var(--fg-on-brand)',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
+          aria-label="거래 추가"
+          className="shrink-0 rounded-[var(--radius-tile)]"
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
       <EditableList
         expenses={expenses}
@@ -691,24 +776,14 @@ function MonthArrowButton({
     onChange(`${y}-${String(m).padStart(2, '0')}`)
   }
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       aria-label={dir === 'prev' ? '이전 달' : '다음 달'}
       onClick={handle}
-      style={{
-        width: 28,
-        height: 28,
-        border: 'none',
-        background: 'transparent',
-        color: 'var(--fg-secondary)',
-        cursor: 'pointer',
-        padding: 0,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="h-7 w-7 text-text-secondary"
     >
       {dir === 'prev' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-    </button>
+    </Button>
   )
 }

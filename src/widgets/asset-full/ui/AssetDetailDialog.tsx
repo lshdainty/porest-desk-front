@@ -8,6 +8,7 @@ import { useAssetBalanceTrend } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW } from '@/shared/lib/porest/format'
@@ -21,6 +22,7 @@ import {
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { renderIcon } from '@/shared/lib'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 function fmtAxisNum(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
@@ -121,7 +123,7 @@ export function AssetDetailDialog({
 
   const absBalance = Math.abs(asset.balance)
 
-  const { data: relatedAll } = useSearchExpenses({ assetId: asset.rowId })
+  const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = (relatedAll ?? []).slice(0, 12)
 
   const title = isCard ? '카드 상세' : isInv ? '투자 상세' : '계좌 상세'
@@ -230,41 +232,24 @@ export function AssetDetailDialog({
           <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
-          <div className="seg" style={{ marginLeft: 'auto' }}>
-            <button
-              className={period === '3m' ? 'active' : ''}
-              onClick={() => setPeriod('3m')}
-              type="button"
-            >
-              3개월
-            </button>
-            <button
-              className={period === '6m' ? 'active' : ''}
-              onClick={() => setPeriod('6m')}
-              type="button"
-            >
-              6개월
-            </button>
-            <button
-              className={period === '1y' ? 'active' : ''}
-              onClick={() => setPeriod('1y')}
-              type="button"
-            >
-              1년
-            </button>
-          </div>
+          <ToggleGroup
+            type="single"
+            variant="segmented"
+            size="sm"
+            value={period}
+            onValueChange={(v) => v && setPeriod(v as '3m' | '6m' | '1y')}
+            className="ml-auto w-auto"
+          >
+            <ToggleGroupItem value="3m">3개월</ToggleGroupItem>
+            <ToggleGroupItem value="6m">6개월</ToggleGroupItem>
+            <ToggleGroupItem value="1y">1년</ToggleGroupItem>
+          </ToggleGroup>
         </div>
         {trendLoading ? (
-          <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
-          }}>
-            불러오는 중…
-          </div>
+          <SkeletonBase className="h-[160px] w-full rounded-md" />
         ) : chartData.length === 0 ? (
           <div style={{
-            height: 160, background: 'var(--pd-surface-inset)', borderRadius: 'var(--radius-tile)',
+            height: 160, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
           }}>
@@ -348,7 +333,20 @@ export function AssetDetailDialog({
             padding: '4px 14px',
           }}
         >
-          {relatedTx.length === 0 ? (
+          {relatedLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0' }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                    <SkeletonBase className="h-3 w-1/3" />
+                  </div>
+                  <SkeletonBase className="h-4 w-20 shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : relatedTx.length === 0 ? (
             <div
               style={{
                 padding: '24px 0',

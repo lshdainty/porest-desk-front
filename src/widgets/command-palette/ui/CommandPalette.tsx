@@ -72,15 +72,13 @@ export const CommandPalette = () => {
       { title: search.trim(), priority: 'MEDIUM' },
       {
         onSuccess: () => {
-          toast.success(tt('createTodo'))
+          toast.success(tt('createTodo'), { id: 'todo-quick-create-success' })
           setOpen(false)
         },
-        onError: () => {
-          toast.error(tc('error'))
-        },
+        // onError: 전역 axios 인터셉터(base.ts)가 server message를 toast.error로 노출 — 중복 방지로 로컬 onError 제거
       }
     )
-  }, [search, createTodo, tt, tc])
+  }, [search, createTodo, tt])
 
   const pages = [
     { label: t('dashboard'), url: '/desk', icon: LayoutDashboard },

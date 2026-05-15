@@ -23,6 +23,9 @@ import {
 } from '@/features/asset'
 import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
 import { useIsMobile } from '@/shared/hooks'
+import { Button } from '@/shared/ui/button'
+import { Spinner } from '@/shared/ui/spinner'
+import { ScrollArea } from '@/shared/ui/scroll-area'
 import { AssetList } from './AssetList'
 import { AssetForm } from './AssetForm'
 import { AssetSummaryCard } from './AssetSummaryCard'
@@ -118,32 +121,36 @@ export const AssetFullWidget = () => {
             {t('transfers')}
           </button>
           {activeTab === 'assets' && (
-            <button
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={() => { setEditingAsset(null); setShowForm(true) }}
-              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="ml-auto gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <Plus size={12} />
               {t('addAsset')}
-            </button>
+            </Button>
           )}
           {activeTab === 'transfers' && (
-            <button
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={() => setShowTransferForm(true)}
-              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="ml-auto gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <Plus size={12} />
               {t('addTransfer')}
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* 스크롤: 리스트 */}
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="mt-4 min-h-0 flex-1">
         {activeTab === 'assets' && (
           isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <Spinner />
             </div>
           ) : (
             <AssetList
@@ -158,7 +165,7 @@ export const AssetFullWidget = () => {
         {activeTab === 'transfers' && (
           <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
         )}
-      </div>
+      </ScrollArea>
 
       {detailAsset && (
         <AssetDetailDialog

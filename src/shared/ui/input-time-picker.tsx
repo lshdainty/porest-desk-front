@@ -81,7 +81,6 @@ export function InputTimePicker({
         value={value || ""}
         placeholder={placeholder}
         className="pr-10 num"
-        style={{ background: 'var(--bg-surface)' }}
         disabled={disabled}
         onChange={(e) => onValueChange?.(e.target.value)}
         onKeyDown={(e) => {
@@ -118,7 +117,7 @@ export function InputTimePicker({
               active={currentHour}
               onSelect={setHour}
             />
-            <div className="self-center text-sm text-muted-foreground">:</div>
+            <div className="self-center text-sm text-text-secondary">:</div>
             <TimeColumn
               ref={minuteListRef}
               label="분"
@@ -143,12 +142,12 @@ interface TimeColumnProps {
 const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
   ({ label, items, active, onSelect }, ref) => (
     <div className="flex w-14 flex-col items-stretch">
-      <div className="pb-1 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="pb-1 text-center text-[10px] font-medium uppercase tracking-wide text-text-secondary">
         {label}
       </div>
       <div
         ref={ref}
-        className="h-52 overflow-y-auto rounded-md border bg-card p-1"
+        className="h-52 overflow-y-auto rounded-md border bg-surface-default p-1"
       >
         {items.map((it) => {
           const isActive = it === active
@@ -161,8 +160,8 @@ const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
               className={cn(
                 "block w-full rounded px-2 py-1 text-sm tabular-nums transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-primary text-text-on-accent"
+                  : "text-text-primary hover:bg-surface-input hover:text-text-primary"
               )}
             >
               {it}

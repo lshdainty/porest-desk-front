@@ -1,20 +1,34 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Repeat, Bell, Tag, ChevronDown, Check, Users } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, Check, Users } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import { Switch } from '@/shared/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
-import type { UserCalendar } from '@/entities/user-calendar'
 import { useUserCalendars } from '@/features/user-calendar'
 import { useGroups } from '@/features/group'
 import { format } from 'date-fns'
+
+const NO_GROUP_VALUE = '__none__'
+const NO_LABEL_VALUE = '__none__'
 
 interface EventFormProps {
   event?: CalendarEvent | null
@@ -58,6 +72,26 @@ const rruleToRecurrence = (rrule: string | null | undefined): RecurrenceOption =
 
 const reminderOptions = [5, 15, 30, 60, 1440] // minutes
 
+// 시작 datetime 변경 시 종료가 시작 이전/같으면 자동 보정 (Google 캘린더 패턴).
+// allDay=true: YYYY-MM-DD 사전식 비교, 종료 = max(종료, 시작).
+// allDay=false: ISO 비교, 종료 = 시작 + 1h.
+const ensureEndAfterStart = (
+  newStart: string,
+  currentEnd: string,
+  allDay: boolean,
+): string => {
+  if (allDay) return newStart > currentEnd ? newStart : currentEnd
+  if (new Date(newStart) < new Date(currentEnd)) return currentEnd
+  const d = new Date(newStart)
+  d.setHours(d.getHours() + 1)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+}
+
 export const EventForm = ({
   event,
   selectedDate,
@@ -85,18 +119,8 @@ export const EventForm = ({
 
   const [recurrence, setRecurrence] = useState<RecurrenceOption>('none')
   const [selectedReminders, setSelectedReminders] = useState<number[]>([])
-  const [showLabelDropdown, setShowLabelDropdown] = useState(false)
-  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
-  const [showGroupDropdown, setShowGroupDropdown] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<CalendarEventFormValues>({
+  const form = useForm<CalendarEventFormValues>({
     defaultValues: {
       title: '',
       description: '',
@@ -113,16 +137,13 @@ export const EventForm = ({
       groupRowId: undefined,
     },
   })
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
 
   const selectedColor = watch('color')
   const isAllDay = watch('isAllDay')
   const selectedLabelRowId = watch('labelRowId')
   const selectedCalendarRowId = watch('calendarRowId')
   const selectedGroupRowId = watch('groupRowId')
-
-  const selectedLabel = labels.find(l => l.rowId === selectedLabelRowId)
-  const selectedCalendar = userCalendars.find(c => c.rowId === selectedCalendarRowId)
-  const selectedGroup = groups.find(g => g.rowId === selectedGroupRowId)
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -178,23 +199,9 @@ export const EventForm = ({
     }
   }, [event, reset, defaultDate, defaultEndDate, defaultCalendar])
 
-  const handleCalendarSelect = (cal: UserCalendar) => {
-    setValue('calendarRowId', cal.rowId)
-    setValue('color', cal.color)
-    setShowCalendarDropdown(false)
-  }
-
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option)
     setValue('rrule', recurrenceToRrule[option])
-  }
-
-  const toggleReminder = (minutes: number) => {
-    const updated = selectedReminders.includes(minutes)
-      ? selectedReminders.filter(m => m !== minutes)
-      : [...selectedReminders, minutes]
-    setSelectedReminders(updated)
-    setValue('reminderMinutes', updated)
   }
 
   const getReminderLabel = (minutes: number): string => {
@@ -236,6 +243,7 @@ export const EventForm = ({
       size="sm"
       footer={Footer}
     >
+        <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t('form.title')}</Label>
@@ -259,176 +267,111 @@ export const EventForm = ({
             />
           </div>
 
-          {/* Calendar selector dropdown */}
+          {/* Calendar selector */}
           {userCalendars.length > 0 && (
             <div className="space-y-1.5">
               <Label>{t('form.calendar')}</Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedCalendar ? (
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: selectedCalendar.color }}
-                      />
-                      {selectedCalendar.calendarName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showCalendarDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    {userCalendars.map(cal => (
-                      <button
-                        key={cal.rowId}
-                        type="button"
-                        onClick={() => handleCalendarSelect(cal)}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+              <Select
+                value={selectedCalendarRowId ? String(selectedCalendarRowId) : undefined}
+                onValueChange={(v) => {
+                  const cal = userCalendars.find((c) => String(c.rowId) === v)
+                  if (cal) {
+                    setValue('calendarRowId', cal.rowId, { shouldDirty: true })
+                    setValue('color', cal.color, { shouldDirty: true })
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {userCalendars.map((cal) => (
+                    <SelectItem key={cal.rowId} value={String(cal.rowId)}>
+                      <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
                           style={{ backgroundColor: cal.color }}
                         />
                         {cal.calendarName}
-                        {selectedCalendarRowId === cal.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {/* Group selector dropdown */}
+          {/* Group selector */}
           {groups.length > 0 && (
             <div className="space-y-1.5">
               <Label>
                 <Users size={14} className="inline mr-1" />
                 {t('selectGroup')}
               </Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowGroupDropdown(!showGroupDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedGroup ? (
-                    <span className="flex items-center gap-2">
-                      <Users size={14} className="text-primary" />
-                      {selectedGroup.groupName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">{t('personal')}</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showGroupDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue('groupRowId', undefined)
-                        setShowGroupDropdown(false)
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                    >
-                      {t('personal')}
-                      {!selectedGroupRowId && <Check size={14} className="ml-auto text-primary" />}
-                    </button>
-                    {groups.map(group => (
-                      <button
-                        key={group.rowId}
-                        type="button"
-                        onClick={() => {
-                          setValue('groupRowId', group.rowId)
-                          setShowGroupDropdown(false)
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+              <Select
+                value={selectedGroupRowId ? String(selectedGroupRowId) : NO_GROUP_VALUE}
+                onValueChange={(v) =>
+                  setValue('groupRowId', v === NO_GROUP_VALUE ? undefined : Number(v), {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_GROUP_VALUE}>{t('personal')}</SelectItem>
+                  {groups.map((group) => (
+                    <SelectItem key={group.rowId} value={String(group.rowId)}>
+                      <span className="flex items-center gap-2">
                         <Users size={14} className="text-muted-foreground" />
                         {group.groupName}
-                        {selectedGroupRowId === group.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {/* Label selector - KEEP custom dropdown */}
+          {/* Label selector */}
           {labels.length > 0 && (
             <div className="space-y-1.5">
               <Label>
                 <Tag size={14} className="inline mr-1" />
                 {t('form.label')}
               </Label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowLabelDropdown(!showLabelDropdown)}
-                  className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  {selectedLabel ? (
+              <Select
+                value={selectedLabelRowId ? String(selectedLabelRowId) : NO_LABEL_VALUE}
+                onValueChange={(v) =>
+                  setValue('labelRowId', v === NO_LABEL_VALUE ? undefined : Number(v), {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_LABEL_VALUE}>
                     <span className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: selectedLabel.color }}
-                      />
-                      {selectedLabel.labelName}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">{t('noLabels')}</span>
-                  )}
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-                {showLabelDropdown && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue('labelRowId', undefined)
-                        setShowLabelDropdown(false)
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                    >
                       <span className="h-3 w-3 rounded-full bg-muted-foreground/30" />
                       {t('noLabels')}
-                      {!selectedLabelRowId && <Check size={14} className="ml-auto text-primary" />}
-                    </button>
-                    {labels.map(label => (
-                      <button
-                        key={label.rowId}
-                        type="button"
-                        onClick={() => {
-                          setValue('labelRowId', label.rowId)
-                          setShowLabelDropdown(false)
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                      >
+                    </span>
+                  </SelectItem>
+                  {labels.map((label) => (
+                    <SelectItem key={label.rowId} value={String(label.rowId)}>
+                      <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
                           style={{ backgroundColor: label.color }}
                         />
                         {label.labelName}
-                        {selectedLabelRowId === label.rowId && (
-                          <Check size={14} className="ml-auto text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -451,18 +394,17 @@ export const EventForm = ({
             </div>
           </div>
 
-          {/* All-day toggle - KEEP custom */}
+          {/* All-day switch */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const newIsAllDay = !isAllDay
-                setValue('isAllDay', newIsAllDay)
+            <Switch
+              checked={isAllDay}
+              onCheckedChange={(checked) => {
+                setValue('isAllDay', checked, { shouldDirty: true })
 
                 const currentStart = watch('startDate')
                 const currentEnd = watch('endDate')
 
-                if (newIsAllDay) {
+                if (checked) {
                   // datetime-local → date: strip time
                   setValue('startDate', currentStart.substring(0, 10))
                   setValue('endDate', currentEnd.substring(0, 10))
@@ -476,35 +418,81 @@ export const EventForm = ({
                   }
                 }
               }}
-              className={cn(
-                'relative h-5 w-9 rounded-full transition-colors',
-                isAllDay ? 'bg-primary' : 'bg-muted'
-              )}
-            >
-              <span
-                className={cn(
-                  'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform shadow-sm',
-                  isAllDay && 'translate-x-4'
-                )}
-              />
-            </button>
-            <Label className="font-normal">{t('form.allDay')}</Label>
+              id="event-all-day"
+            />
+            <Label htmlFor="event-all-day" className="font-normal cursor-pointer">
+              {t('form.allDay')}
+            </Label>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* allDay=true 는 시작/종료 같은 row, false 는 row stack — date input width 확보 */}
+          <div className={isAllDay ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
             <div className="space-y-1.5">
               <Label>{t('form.startDate')}</Label>
-              <Input
-                {...register('startDate', { required: true })}
-                type={isAllDay ? 'date' : 'datetime-local'}
-              />
+              {isAllDay ? (
+                <InputDatePicker
+                  value={watch('startDate')}
+                  onValueChange={(d) => {
+                    setValue('startDate', d, { shouldDirty: true })
+                    const adjusted = ensureEndAfterStart(d, watch('endDate'), true)
+                    if (adjusted !== watch('endDate'))
+                      setValue('endDate', adjusted, { shouldDirty: true })
+                  }}
+                />
+              ) : (
+                <div className="grid grid-cols-[1fr_116px] gap-2">
+                  <InputDatePicker
+                    value={watch('startDate').substring(0, 10)}
+                    onValueChange={(d) => {
+                      const time = watch('startDate').substring(11, 16) || '09:00'
+                      const newStart = `${d}T${time}`
+                      setValue('startDate', newStart, { shouldDirty: true })
+                      const adjusted = ensureEndAfterStart(newStart, watch('endDate'), false)
+                      if (adjusted !== watch('endDate'))
+                        setValue('endDate', adjusted, { shouldDirty: true })
+                    }}
+                  />
+                  <InputTimePicker
+                    value={watch('startDate').substring(11, 16)}
+                    onValueChange={(t) => {
+                      const date = watch('startDate').substring(0, 10)
+                      const newStart = `${date}T${t}`
+                      setValue('startDate', newStart, { shouldDirty: true })
+                      const adjusted = ensureEndAfterStart(newStart, watch('endDate'), false)
+                      if (adjusted !== watch('endDate'))
+                        setValue('endDate', adjusted, { shouldDirty: true })
+                    }}
+                    minuteStep={5}
+                  />
+                </div>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>{t('form.endDate')}</Label>
-              <Input
-                {...register('endDate', { required: true })}
-                type={isAllDay ? 'date' : 'datetime-local'}
-              />
+              {isAllDay ? (
+                <InputDatePicker
+                  value={watch('endDate')}
+                  onValueChange={(d) => setValue('endDate', d, { shouldDirty: true })}
+                />
+              ) : (
+                <div className="grid grid-cols-[1fr_116px] gap-2">
+                  <InputDatePicker
+                    value={watch('endDate').substring(0, 10)}
+                    onValueChange={(d) => {
+                      const time = watch('endDate').substring(11, 16) || '10:00'
+                      setValue('endDate', `${d}T${time}`, { shouldDirty: true })
+                    }}
+                  />
+                  <InputTimePicker
+                    value={watch('endDate').substring(11, 16)}
+                    onValueChange={(t) => {
+                      const date = watch('endDate').substring(0, 10)
+                      setValue('endDate', `${date}T${t}`, { shouldDirty: true })
+                    }}
+                    minuteStep={5}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -520,60 +508,57 @@ export const EventForm = ({
             />
           </div>
 
-          {/* Recurrence pills - KEEP custom */}
+          {/* Recurrence — single select */}
           <div className="space-y-1.5">
             <Label>
               <Repeat size={14} className="inline mr-1" />
               {t('form.recurrence')}
             </Label>
-            <div className="flex flex-wrap gap-1.5">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={recurrence}
+              onValueChange={(v) => v && handleRecurrenceChange(v as RecurrenceOption)}
+              className="justify-start flex-wrap"
+            >
               {(['none', 'daily', 'weekly', 'monthly', 'yearly'] as RecurrenceOption[]).map(option => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => handleRecurrenceChange(option)}
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                    recurrence === option
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
+                <ToggleGroupItem key={option} value={option}>
                   {t(`recurrence.${option}`)}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
-          {/* Reminder pills - KEEP custom */}
+          {/* Reminder — multi select */}
           <div className="space-y-1.5">
             <Label>
               <Bell size={14} className="inline mr-1" />
               {t('form.reminder')}
             </Label>
-            <div className="flex flex-wrap gap-1.5">
+            <ToggleGroup
+              type="multiple"
+              size="sm"
+              value={selectedReminders.map(String)}
+              onValueChange={(v) => {
+                const next = v.map(Number).sort((a, b) => a - b)
+                setSelectedReminders(next)
+                setValue('reminderMinutes', next, { shouldDirty: true })
+              }}
+              className="justify-start flex-wrap"
+            >
               {reminderOptions.map(minutes => (
-                <button
-                  key={minutes}
-                  type="button"
-                  onClick={() => toggleReminder(minutes)}
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                    selectedReminders.includes(minutes)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
+                <ToggleGroupItem key={minutes} value={String(minutes)}>
                   {selectedReminders.includes(minutes) && (
                     <Check size={12} className="inline mr-1" />
                   )}
                   {getReminderLabel(minutes)}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
         </form>
+        </Form>
     </ModalShell>
   )
 }

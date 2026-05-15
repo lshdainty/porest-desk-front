@@ -46,7 +46,7 @@ export const CalendarManagementDialog = ({
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<UserCalendar | null>(null)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState('#5F6D3F')
+  const [formColor, setFormColor] = useState('#0147ad')
   const [deleteTarget, setDeleteTarget] = useState<UserCalendar | null>(null)
 
   const allCalendars = calendars ?? []
@@ -54,7 +54,7 @@ export const CalendarManagementDialog = ({
   const openCreateForm = useCallback(() => {
     setEditing(null)
     setFormName('')
-    setFormColor('#5F6D3F')
+    setFormColor('#0147ad')
     setShowForm(true)
   }, [])
 

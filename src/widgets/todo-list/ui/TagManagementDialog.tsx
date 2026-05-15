@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -144,7 +145,7 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
             <div className="space-y-2">
               {isLoading ? (
                 <div className="flex justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <Spinner size="sm" />
                 </div>
               ) : tags.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">

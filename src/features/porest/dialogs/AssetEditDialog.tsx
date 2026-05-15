@@ -4,7 +4,9 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
 import { Switch } from '@/shared/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
@@ -30,6 +32,7 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
   '기타': '기타',
 }
 import { useCardCatalogs } from '@/features/card-catalog'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
 import type {
   Asset,
@@ -400,142 +403,116 @@ export function AssetEditDialog({
             <>
               <div>
                 <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
-                <div className="grid grid-cols-2 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]">
-                  {(['CREDIT', 'CHECK'] as CardType[]).map(t => {
-                    const active = t === cardType
-                    return (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => {
-                          setCardType(t)
-                          if (isNew) setSelectedCard(null)
-                        }}
-                        className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                        style={
-                          active
-                            ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                            : { background: 'transparent', color: 'var(--fg-secondary)' }
-                        }
-                      >
-                        {t === 'CREDIT' ? '신용카드' : '체크카드'}
-                      </button>
-                    )
-                  })}
-                </div>
+                <ToggleGroup
+                  type="single"
+                  variant="segmented"
+                  value={cardType}
+                  onValueChange={(v) => {
+                    if (!v) return
+                    setCardType(v as CardType)
+                    if (isNew) setSelectedCard(null)
+                  }}
+                >
+                  <ToggleGroupItem value="CREDIT">신용카드</ToggleGroupItem>
+                  <ToggleGroupItem value="CHECK">체크카드</ToggleGroupItem>
+                </ToggleGroup>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-[13px] font-medium">카드 상품</Label>
-                  <div className="flex items-center gap-3">
-                    <label
-                      className="inline-flex items-center cursor-pointer select-none"
-                      style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
-                      title="단종된 카드 상품도 검색 결과에 포함합니다"
-                    >
-                      <Switch
-                        checked={includeDiscontinued}
-                        onCheckedChange={setIncludeDiscontinued}
-                      />
-                      단종 포함
-                    </label>
-                    {catalogQ.data?.meta?.totalElements != null && (
-                      <span className="text-[11px] text-[var(--fg-tertiary)]">
-                        총 {catalogQ.data.meta.totalElements}건
-                      </span>
-                    )}
+              <SearchableList
+                label="카드 상품"
+                totalCount={catalogQ.data?.meta?.totalElements}
+                searchValue={cardKeyword}
+                onSearchChange={setCardKeyword}
+                placeholder="카드명 또는 발급사 검색"
+                isLoading={catalogQ.isLoading}
+                loadingSkeleton={
+                  <div className="flex flex-col">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 px-3 py-2.5"
+                        style={{ borderBottom: i < 4 ? '1px solid var(--border-subtle)' : 'none' }}
+                      >
+                        <SkeletonBase className="h-7 w-11 rounded-sm shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <SkeletonBase className="h-3.5 w-2/3 mb-1.5" />
+                          <SkeletonBase className="h-3 w-1/2" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div className="relative mb-2">
-                  <Search
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-                  />
-                  <Input
-                    value={cardKeyword}
-                    onChange={e => setCardKeyword(e.target.value)}
-                    placeholder="카드명 또는 발급사 검색"
-                    className="pl-9"
-                  />
-                </div>
-                <div
-                  className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]"
-                  style={{ maxHeight: 260, overflowY: 'auto' }}
-                >
-                  {catalogQ.isLoading ? (
-                    <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">불러오는 중…</div>
-                  ) : catalogItems.length === 0 ? (
-                    <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">검색 결과가 없어요</div>
+                }
+                headerExtras={
+                  <label
+                    className="inline-flex items-center cursor-pointer select-none gap-1.5 text-caption text-text-tertiary"
+                    title="단종된 카드 상품도 검색 결과에 포함합니다"
+                  >
+                    <Switch
+                      checked={includeDiscontinued}
+                      onCheckedChange={setIncludeDiscontinued}
+                    />
+                    단종 포함
+                  </label>
+                }
+              >
+                {catalogItems.map(c => {
+                  const active = selectedCard?.rowId === c.rowId
+                  const discontinued = c.isDiscontinued === 'Y'
+                  const thumbnail = c.imgUrl ? (
+                    <img
+                      src={c.imgUrl}
+                      alt=""
+                      className="rounded object-cover"
+                      style={{ width: 44, height: 28 }}
+                    />
                   ) : (
-                    catalogItems.map(c => {
-                      const active = selectedCard?.rowId === c.rowId
-                      const discontinued = c.isDiscontinued === 'Y'
-                      return (
-                        <button
-                          key={c.rowId}
-                          type="button"
-                          onClick={() => setSelectedCard(c)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
-                          style={{
-                            background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                            opacity: discontinued && !active ? 0.7 : 1,
-                          }}
-                        >
-                          {c.imgUrl ? (
-                            <img
-                              src={c.imgUrl}
-                              alt=""
-                              className="rounded object-cover flex-shrink-0"
-                              style={{ width: 44, height: 28 }}
-                            />
-                          ) : (
+                    <span
+                      className="rounded flex items-center justify-center text-white text-xs font-bold"
+                      style={{
+                        width: 44,
+                        height: 28,
+                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                      }}
+                    >
+                      {(c.company?.name ?? c.cardName).slice(0, 1)}
+                    </span>
+                  )
+                  return (
+                    <SearchableListItem
+                      key={c.rowId}
+                      active={active}
+                      dim={discontinued}
+                      onClick={() => setSelectedCard(c)}
+                      thumbnail={thumbnail}
+                      title={
+                        <>
+                          <span className="truncate">{c.cardName}</span>
+                          {discontinued && (
                             <span
-                              className="rounded flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+                              className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
                               style={{
-                                width: 44,
-                                height: 28,
-                                background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                                background: 'var(--bg-disabled)',
+                                color: 'var(--fg-tertiary)',
+                                letterSpacing: 'var(--tracking-wide)',
                               }}
                             >
-                              {(c.company?.name ?? c.cardName).slice(0, 1)}
+                              단종
                             </span>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className="truncate text-[13px] flex items-center gap-1.5"
-                              style={{
-                                color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                                fontWeight: active ? 600 : 500,
-                              }}
-                            >
-                              <span className="truncate">{c.cardName}</span>
-                              {discontinued && (
-                                <span
-                                  className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
-                                  style={{
-                                    background: 'var(--bg-disabled)',
-                                    color: 'var(--fg-tertiary)',
-                                    letterSpacing: 'var(--tracking-wide)',
-                                  }}
-                                >
-                                  단종
-                                </span>
-                              )}
-                            </div>
-                            <div className="truncate text-[11.5px] text-[var(--fg-tertiary)] mt-0.5">
-                              {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
-                              {c.annualFee.amount > 0 && (
-                                <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
+                        </>
+                      }
+                      subtitle={
+                        <>
+                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
+                          {c.annualFee.amount > 0 && (
+                            <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
+                          )}
+                        </>
+                      }
+                    />
+                  )
+                })}
+              </SearchableList>
             </>
           ) : (
             <div>
@@ -577,20 +554,72 @@ export function AssetEditDialog({
                       검색 결과가 없어요
                     </div>
                   ) : (
-                    investFilteredByCategory.map(([cat, list]) => (
+                    <ToggleGroup
+                      type="single"
+                      value={brand}
+                      onValueChange={(v) => v && setBrand(v)}
+                      className="block w-full"
+                    >
+                      {investFilteredByCategory.map(([cat, list]) => (
+                        <div key={cat}>
+                          <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
+                            {CATEGORY_LABEL[cat]}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                            {list.map(e => {
+                              const active = e.name === brand
+                              return (
+                                <ToggleGroupItem
+                                  key={e.name}
+                                  value={e.name}
+                                  className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
+                                  style={
+                                    active
+                                      ? {
+                                          background: e.color.bg,
+                                          color: e.color.fg ?? '#fff',
+                                          borderColor: 'transparent',
+                                        }
+                                      : {
+                                          background: 'var(--bg-muted)',
+                                          color: 'var(--fg-secondary)',
+                                          borderColor: 'transparent',
+                                        }
+                                  }
+                                >
+                                  {e.name}
+                                </ToggleGroupItem>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </ToggleGroup>
+                  )
+                ) : bankFilteredByCategory.length === 0 ? (
+                  <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
+                    검색 결과가 없어요
+                  </div>
+                ) : (
+                  <ToggleGroup
+                    type="single"
+                    value={brand}
+                    onValueChange={(v) => v && setBrand(v)}
+                    className="block w-full"
+                  >
+                    {bankFilteredByCategory.map(([cat, list]) => (
                       <div key={cat}>
                         <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                          {CATEGORY_LABEL[cat]}
+                          {cat}
                         </div>
                         <div className="flex flex-wrap gap-1.5 px-3 pb-2">
                           {list.map(e => {
                             const active = e.name === brand
                             return (
-                              <button
+                              <ToggleGroupItem
                                 key={e.name}
-                                type="button"
-                                onClick={() => setBrand(e.name)}
-                                className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
+                                value={e.name}
+                                className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
                                 style={
                                   active
                                     ? {
@@ -599,60 +628,20 @@ export function AssetEditDialog({
                                         borderColor: 'transparent',
                                       }
                                     : {
-                                        background: 'var(--pd-surface-subtle)',
+                                        background: 'var(--bg-muted)',
                                         color: 'var(--fg-secondary)',
                                         borderColor: 'transparent',
                                       }
                                 }
                               >
                                 {e.name}
-                              </button>
+                              </ToggleGroupItem>
                             )
                           })}
                         </div>
                       </div>
-                    ))
-                  )
-                ) : bankFilteredByCategory.length === 0 ? (
-                  <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                    검색 결과가 없어요
-                  </div>
-                ) : (
-                  bankFilteredByCategory.map(([cat, list]) => (
-                    <div key={cat}>
-                      <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                        {cat}
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                        {list.map(e => {
-                          const active = e.name === brand
-                          return (
-                            <button
-                              key={e.name}
-                              type="button"
-                              onClick={() => setBrand(e.name)}
-                              className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
-                              style={
-                                active
-                                  ? {
-                                      background: e.color.bg,
-                                      color: e.color.fg ?? '#fff',
-                                      borderColor: 'transparent',
-                                    }
-                                  : {
-                                      background: 'var(--pd-surface-subtle)',
-                                      color: 'var(--fg-secondary)',
-                                      borderColor: 'transparent',
-                                    }
-                              }
-                            >
-                              {e.name}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </ToggleGroup>
                 )}
               </div>
             </div>
@@ -661,26 +650,18 @@ export function AssetEditDialog({
           {editingGroup === 'account' && (
             <div>
               <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
-              <div className="grid grid-cols-5 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]">
-                {ACCOUNT_SUBS.map(s => {
-                  const active = s === accountSub
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setAccountSub(s)}
-                      className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                      style={
-                        active
-                          ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                          : { background: 'transparent', color: 'var(--fg-secondary)' }
-                      }
-                    >
-                      {s}
-                    </button>
-                  )
-                })}
-              </div>
+              <ToggleGroup
+                type="single"
+                variant="segmented"
+                value={accountSub}
+                onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
+              >
+                {ACCOUNT_SUBS.map((s) => (
+                  <ToggleGroupItem key={s} value={s}>
+                    {s}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </div>
           )}
 

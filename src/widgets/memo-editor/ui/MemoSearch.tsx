@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Search, X } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib'
 
 interface MemoSearchProps {
@@ -27,12 +28,15 @@ export const MemoSearch = ({ value, onChange }: MemoSearchProps) => {
         )}
       />
       {value && (
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={() => onChange('')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground hover:bg-muted"
+          aria-label="검색 지우기"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full p-0"
         >
           <X size={14} />
-        </button>
+        </Button>
       )}
     </div>
   )

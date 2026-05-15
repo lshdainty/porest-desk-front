@@ -98,7 +98,6 @@ export function InputDatePicker({
         value={value instanceof Date ? formatDate(value) : (value || "")}
         placeholder={placeholder}
         className="pr-10"
-        style={{ background: 'var(--bg-surface)' }}
         disabled={disabled}
         onChange={handleInputChange}
         onKeyDown={(e) => {
@@ -126,14 +125,6 @@ export function InputDatePicker({
           align="end"
           alignOffset={-8}
           sideOffset={10}
-          style={{
-            background: 'var(--bg-surface)',
-            // Calendar 내부 bg-popover / bg-background / bg-input 클래스가 참조하는
-            // CSS 변수를 흰색으로 강제 — 월/년 select dropdown 도 같이 적용됨.
-            '--popover': 'var(--bg-surface)',
-            '--background': 'var(--bg-surface)',
-            '--input': 'var(--bg-surface)',
-          } as React.CSSProperties}
         >
           <Calendar
             mode="single"
@@ -144,13 +135,6 @@ export function InputDatePicker({
             onSelect={handleDateSelect}
             startMonth={startMonth}
             endMonth={endMonth}
-            classNames={{
-              // 월/년 dropdown 을 SelectTrigger 와 동일한 스타일로 (border + shadow + 패딩)
-              dropdown_root:
-                "relative flex items-center gap-1 rounded-md border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-xs px-2 h-8 text-sm font-medium has-focus:border-[var(--border-brand)] has-focus:ring-2 has-focus:ring-[var(--border-brand)]/30",
-              caption_label:
-                "flex items-center gap-1 select-none [&>svg]:text-[var(--fg-tertiary)] [&>svg]:size-3.5",
-            }}
           />
         </PopoverContent>
       </Popover>

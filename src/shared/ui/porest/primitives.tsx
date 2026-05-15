@@ -200,6 +200,21 @@ export function MonthPicker({
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  // viewport 가장자리 자동 감지 — trigger 위치 기준 dropdown 260px 가 화면 밖 잘리면 align 자동 flip.
+  const computeAlign = (): 'right' | 'left' => {
+    if (!triggerRef.current || typeof window === 'undefined') return align
+    const rect = triggerRef.current.getBoundingClientRect()
+    const DROPDOWN_W = 260
+    const MARGIN = 8
+    const overflowRight = rect.left + DROPDOWN_W > window.innerWidth - MARGIN
+    const overflowLeft = rect.right - DROPDOWN_W < MARGIN
+    if (align === 'right' && overflowLeft) return 'left'
+    if (align === 'left' && overflowRight) return 'right'
+    return align
+  }
+  const [computedAlign, setComputedAlign] = useState<'right' | 'left'>(align)
+  // open 시점에 한번만 측정 — setState in effect 경고 회피 위해 click handler 에서 직접 설정.
   useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => {
@@ -228,7 +243,11 @@ export function MonthPicker({
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
       <button
-        onClick={() => setOpen(v => !v)}
+        ref={triggerRef}
+        onClick={() => {
+          if (!open) setComputedAlign(computeAlign())
+          setOpen(v => !v)
+        }}
         className="month-picker__trigger"
         style={{
           background: 'transparent',
@@ -252,7 +271,7 @@ export function MonthPicker({
           style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
-            [align]: 0,
+            [computedAlign]: 0,
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-card)',

@@ -243,31 +243,19 @@ export function FilterDialog({
               </span>
             )}
           </FieldLabel>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {assets.map(a => {
-              const active = assetIds.includes(a.rowId)
-              return (
-                <button
-                  key={a.rowId}
-                  type="button"
-                  onClick={() => setAssetIds(toggleIn(assetIds, a.rowId))}
-                  style={{
-                    padding: '8px 12px',
-                    background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                    border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--fs-caption)',
-                    fontWeight: 'var(--fw-semi)',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  {a.assetName}
-                </button>
-              )
-            })}
-          </div>
+          <ToggleGroup
+            type="multiple"
+            size="sm"
+            value={assetIds.map(String)}
+            onValueChange={(v) => setAssetIds(v.map(Number))}
+            className="flex-wrap justify-start"
+          >
+            {assets.map((a) => (
+              <ToggleGroupItem key={a.rowId} value={String(a.rowId)} className="rounded-full">
+                {a.assetName}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </Field>
       )}
 
