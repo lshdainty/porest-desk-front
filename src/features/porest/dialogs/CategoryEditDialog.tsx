@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Check, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import {
@@ -309,41 +310,17 @@ export function CategoryEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>색상</FieldLabel>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 8,
-          }}
-        >
-          {CAT_PALETTE.map((p, i) => {
-            const active = paletteIdx === i
-            return (
-              <button
-                type="button"
-                key={i}
-                className="hover:scale-105"
-                onClick={() => setPaletteIdx(i)}
-                style={{
-                  aspectRatio: '1',
-                  border: '2px solid',
-                  borderColor: active ? 'currentColor' : 'transparent',
-                  borderRadius: 'var(--radius-tile)',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: p.bg,
-                  color: p.color,
-                  transition: 'transform var(--dur-fast)',
-                }}
-                aria-label={`색상 ${i + 1}`}
-              >
-                {active && <Check size={14} strokeWidth={2.6} />}
-              </button>
-            )
-          })}
-        </div>
+        <ColorSwatchGroup
+          columns={6}
+          value={String(paletteIdx)}
+          onValueChange={v => setPaletteIdx(Number(v))}
+          options={CAT_PALETTE.map((p, i) => ({
+            value: String(i),
+            bg: p.bg,
+            fg: p.color,
+            label: `색상 ${i + 1}`,
+          }))}
+        />
       </Field>
 
       <Field style={{ marginBottom: 4 }}>
