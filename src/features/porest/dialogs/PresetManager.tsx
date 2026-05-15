@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
@@ -119,14 +120,13 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           flexWrap: 'wrap',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            gap: 2,
-            padding: 2,
-            background: 'var(--pd-surface-inset)',
-            borderRadius: 'var(--radius-md)',
-          }}
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          size="sm"
+          value={sortBy}
+          onValueChange={(v) => v && setSortBy(v as SortKey)}
+          className="w-auto"
         >
           {(
             [
@@ -134,28 +134,12 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
               { k: 'recent', l: '최근 사용' },
               { k: 'name', l: '이름순' },
             ] as { k: SortKey; l: string }[]
-          ).map(o => (
-            <button
-              key={o.k}
-              type="button"
-              onClick={() => setSortBy(o.k)}
-              style={{
-                background: sortBy === o.k ? 'var(--bg-surface)' : 'transparent',
-                color: sortBy === o.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                border: 0,
-                padding: '6px 10px',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: sortBy === o.k ? 700 : 500,
-                borderRadius: 'var(--radius-sm)',
-                cursor: 'pointer',
-                boxShadow: sortBy === o.k ? 'var(--shadow-xs)' : 'none',
-                fontFamily: 'inherit',
-              }}
-            >
+          ).map((o) => (
+            <ToggleGroupItem key={o.k} value={o.k}>
               {o.l}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         <Button
           type="button"
           style={{ padding: '7px 12px', fontSize: 'var(--fs-body-sm)' }}

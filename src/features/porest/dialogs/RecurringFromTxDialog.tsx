@@ -178,31 +178,19 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       {/* 요일 (매주) */}
       {frequency === 'WEEKLY' && (
         <Section title="요일">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
-            {DOW_LABEL.map((label, i) => {
-              const active = dayOfWeek === i
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setDayOfWeek(i)}
-                  style={{
-                    padding: '10px 0',
-                    background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                    border: `1px solid ${active ? 'var(--border-brand)' : 'var(--border-subtle)'}`,
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                    fontWeight: active ? 700 : 500,
-                    borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--fs-body-sm)',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={String(dayOfWeek)}
+            onValueChange={(v) => v && setDayOfWeek(Number(v))}
+            className="grid w-full grid-cols-7 gap-1.5"
+          >
+            {DOW_LABEL.map((label, i) => (
+              <ToggleGroupItem key={i} value={String(i)} className="rounded-full">
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </Section>
       )}
 

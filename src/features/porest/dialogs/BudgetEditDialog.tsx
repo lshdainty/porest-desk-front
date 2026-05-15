@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -198,31 +199,19 @@ export function BudgetEditDialog({
           inputMode="numeric"
         />
       </Field>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-        {PRESETS.map(p => {
-          const active = parseInt(limit) === p
-          return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setLimit(String(p))}
-              style={{
-                padding: '6px 12px',
-                background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
-                color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: 'var(--fw-semi)',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {(p / 10_000).toFixed(0)}만원
-            </button>
-          )
-        })}
-      </div>
+      <ToggleGroup
+        type="single"
+        size="sm"
+        value={PRESETS.includes(parseInt(limit)) ? limit : ''}
+        onValueChange={(v) => v && setLimit(v)}
+        className="mb-2.5 flex-wrap justify-start"
+      >
+        {PRESETS.map((p) => (
+          <ToggleGroupItem key={p} value={String(p)} className="rounded-full">
+            {(p / 10_000).toFixed(0)}만원
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </ModalShell>
   )
 }
@@ -272,31 +261,19 @@ export function MonthlyBudgetDialog({
           autoFocus
         />
       </Field>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {presets.map(p => {
-          const active = parseInt(v) === p
-          return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setV(String(p))}
-              style={{
-                padding: '6px 12px',
-                background: active ? 'var(--bg-brand-subtle)' : 'var(--pd-surface-inset)',
-                color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-                border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--fs-caption)',
-                fontWeight: 'var(--fw-semi)',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {(p / 10_000).toFixed(0)}만원
-            </button>
-          )
-        })}
-      </div>
+      <ToggleGroup
+        type="single"
+        size="sm"
+        value={presets.includes(parseInt(v)) ? v : ''}
+        onValueChange={(val) => val && setV(val)}
+        className="flex-wrap justify-start"
+      >
+        {presets.map((p) => (
+          <ToggleGroupItem key={p} value={String(p)} className="rounded-full">
+            {(p / 10_000).toFixed(0)}만원
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </ModalShell>
   )
 }

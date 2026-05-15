@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, Monitor, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/shared/ui/theme-provider'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
 type DensityKey = 'compact' | 'comfortable' | 'spacious'
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
@@ -175,43 +176,19 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
       <section>
         <SectionLabel>밀도</SectionLabel>
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            padding: 4,
-            background: 'var(--bg-canvas)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-tile)',
-          }}
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          size="sm"
+          value={density}
+          onValueChange={(v) => v && setDensity(v as DensityKey)}
         >
-          {DENSITY_OPTIONS.map(opt => {
-            const active = density === opt.k
-            return (
-              <button
-                key={opt.k}
-                type="button"
-                onClick={() => setDensity(opt.k)}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background: active ? 'var(--bg-surface)' : 'transparent',
-                  border: 'none',
-                  boxShadow: active ? 'var(--shadow-xs)' : 'none',
-                  color: active ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                  fontSize: 'var(--fs-body-sm)',
-                  fontWeight: active ? 600 : 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
+          {DENSITY_OPTIONS.map((opt) => (
+            <ToggleGroupItem key={opt.k} value={opt.k}>
+              {opt.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </section>
 
       <section>

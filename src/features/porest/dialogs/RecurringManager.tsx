@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Spinner } from '@/shared/ui/spinner'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import {
@@ -223,30 +224,20 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
-          {FILTERS.map(f => {
-            const active = filter === f.k
-            return (
-              <button
-                key={f.k}
-                onClick={() => setFilter(f.k)}
-                className="num"
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-pill)',
-                  border: '1px solid ' + (active ? 'transparent' : 'var(--border-subtle)'),
-                  background: active ? 'var(--bg-brand)' : 'var(--bg-surface)',
-                  color: active ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={filter}
+            onValueChange={(v) => v && setFilter(v as typeof filter)}
+            className="flex-wrap justify-start"
+          >
+            {FILTERS.map((f) => (
+              <ToggleGroupItem key={f.k} value={f.k} className="rounded-full num">
                 {f.label}
                 <span style={{ opacity: 0.7, marginLeft: 3 }}>{f.count}</span>
-              </button>
-            )
-          })}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
