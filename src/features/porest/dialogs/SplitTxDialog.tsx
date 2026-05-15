@@ -346,26 +346,17 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
               </span>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => removeRow(r.uid)}
               disabled={submitting || safeRows.length <= 1}
               aria-label="항목 삭제"
-              style={{
-                width: 28,
-                height: 28,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-                border: 0,
-                borderRadius: 'var(--radius-pill)',
-                color: 'var(--fg-tertiary)',
-                cursor: 'pointer',
-              }}
+              className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         ))}
       </div>

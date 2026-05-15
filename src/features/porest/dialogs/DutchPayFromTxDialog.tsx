@@ -499,25 +499,16 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {!p.isMe ? (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => removeOther(p.uid)}
                   aria-label="참여자 삭제"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 0,
-                    borderRadius: 'var(--radius-pill)',
-                    color: 'var(--fg-tertiary)',
-                    cursor: 'pointer',
-                  }}
+                  className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
                 >
                   <X size={14} />
-                </button>
+                </Button>
               ) : (
                 <span style={{ width: 28, height: 28 }} />
               )}

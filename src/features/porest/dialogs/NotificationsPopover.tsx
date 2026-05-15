@@ -182,30 +182,18 @@ export function NotificationsPopover({
             background: 'var(--pd-surface-inset)',
           }}
         >
-          <button
-            className="hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
-            style={{
-              width: '100%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              border: 0,
-              background: 'transparent',
-              color: 'var(--fg-secondary)',
-              fontSize: 'var(--fs-body-sm)',
-              fontWeight: 'var(--fw-semi)',
-              padding: 8,
-              borderRadius: 'var(--radius-md)',
-              cursor: 'pointer',
-            }}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               onClose()
               onGoSettings?.()
             }}
+            className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
           >
             알림 설정 <ChevronRight size={12} />
-          </button>
+          </Button>
         </div>
       </div>
     </>

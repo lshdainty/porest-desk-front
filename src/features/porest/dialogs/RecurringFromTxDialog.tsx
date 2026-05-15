@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
@@ -444,38 +445,11 @@ function ToggleRow({
         <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
         <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={value}
-        onClick={() => onChange(!value)}
-        style={{
-          width: 38,
-          height: 22,
-          borderRadius: 'var(--radius-pill)',
-          border: 0,
-          background: value ? 'var(--bg-brand)' : 'var(--border-default)',
-          position: 'relative',
-          cursor: 'pointer',
-          padding: 0,
-          transition: 'background 0.15s',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: value ? 18 : 2,
-            width: 18,
-            height: 18,
-            borderRadius: 'var(--radius-pill)',
-            background: 'var(--bg-surface)',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'left 0.15s',
-          }}
-        />
-      </button>
+      <Switch
+        checked={value}
+        onCheckedChange={onChange}
+        className="shrink-0"
+      />
     </div>
   )
 }
