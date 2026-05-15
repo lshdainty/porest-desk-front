@@ -2,6 +2,7 @@ import { useUpdateUserPreferences, useUserPreferences } from '@/features/user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { Slider } from '@/shared/ui/slider'
 
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const preferencesQ = useUserPreferences()
@@ -50,18 +51,14 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               </>
             ) : (
               <>
-                <input
-                  type="range"
+                <Slider
                   min={50}
                   max={100}
                   step={5}
-                  value={warnThreshold}
-                  onChange={(e) => {
-                    const v = Number(e.target.value)
-                    updateMut.mutate({ budgetAlertThreshold: v })
-                  }}
+                  value={[warnThreshold]}
+                  onValueChange={([v]) => updateMut.mutate({ budgetAlertThreshold: v })}
                   disabled={preferencesQ.isLoading || updateMut.isPending}
-                  style={{ flex: 1, accentColor: 'var(--bg-brand)' }}
+                  className="flex-1"
                 />
                 <span
                   className="num"
