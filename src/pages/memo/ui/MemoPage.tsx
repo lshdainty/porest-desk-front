@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom'
 import { NotebookPen, Pin, Plus } from 'lucide-react'
 import { useMemos } from '@/features/memo'
 import type { Memo } from '@/entities/memo'
+import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
@@ -121,23 +122,9 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   })
 
   const AddBtn = (
-    <button
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        background: 'var(--bg-brand)',
-        color: 'var(--fg-on-brand)',
-        border: 0,
-        borderRadius: 'var(--radius-tile)',
-        padding: '8px 14px',
-        fontSize: 'var(--fs-body-sm)',
-        fontWeight: 'var(--fw-bold)',
-        cursor: 'pointer',
-      }}
-    >
+    <Button size="sm">
       <Plus size={14} /> 메모 추가
-    </button>
+    </Button>
   )
 
   const MemoCard = (m: Memo, i: number) => {

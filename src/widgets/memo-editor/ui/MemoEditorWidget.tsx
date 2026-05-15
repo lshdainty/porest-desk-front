@@ -290,16 +290,13 @@ export const MemoEditorWidget = () => {
             )}
 
             {/* FAB for new memo */}
-            <button
+            <Button
               onClick={handleCreateMemo}
-              className={cn(
-                'fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center',
-                'rounded-full bg-primary text-primary-foreground shadow-lg',
-                'hover:bg-primary/90 active:scale-95 transition-all'
-              )}
+              aria-label={t('newMemo')}
+              className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg [&_svg]:size-6"
             >
-              <Plus size={24} />
-            </button>
+              <Plus />
+            </Button>
           </div>
         ) : (
           /* Mobile editor view */
@@ -347,10 +344,16 @@ export const MemoEditorWidget = () => {
                   <Check size={14} className="text-green-600 dark:text-green-400" />
                 )}
                 {autoSaveStatus === 'error' && (
-                  <button onClick={handleRetry} className="flex items-center gap-0.5">
-                    <AlertCircle size={14} className="text-destructive" />
-                    <RotateCw size={12} className="text-destructive" />
-                  </button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleRetry}
+                    aria-label={t('autoSave.retry')}
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                  >
+                    <AlertCircle size={14} />
+                    <RotateCw size={12} />
+                  </Button>
                 )}
                 <Button
                   size="sm"
@@ -533,13 +536,15 @@ export const MemoEditorWidget = () => {
                   <span className="flex items-center gap-1 text-xs text-destructive">
                     <AlertCircle size={12} />
                     {t('autoSave.error')}
-                    <button
+                    <Button
+                      variant="link"
+                      size="xs"
                       onClick={handleRetry}
-                      className="ml-1 inline-flex items-center gap-0.5 underline hover:no-underline"
+                      className="ml-1 h-auto p-0 text-destructive [&_svg]:size-2.5"
                     >
-                      <RotateCw size={10} />
+                      <RotateCw />
                       {t('autoSave.retry')}
-                    </button>
+                    </Button>
                   </span>
                 )}
                 <Button

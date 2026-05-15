@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Pin, Trash2, FileText } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { cn, formatDate } from '@/shared/lib'
 import type { Memo } from '@/entities/memo'
 
@@ -91,30 +92,31 @@ export const MemoList = ({
               </span>
             </div>
             <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
-              <button
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation()
                   onTogglePin(memo.rowId)
                 }}
-                className={cn(
-                  'rounded p-1 transition-colors',
-                  memo.isPinned
-                    ? 'text-primary hover:bg-primary/10'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
                 title={memo.isPinned ? t('unpin') : t('pin')}
+                aria-label={memo.isPinned ? t('unpin') : t('pin')}
+                className={cn('h-7 w-7 p-0', memo.isPinned && 'text-primary hover:bg-primary/10')}
               >
                 <Pin size={14} />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation()
                   onDelete(memo.rowId)
                 }}
-                className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                aria-label={t('delete')}
+                className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 size={14} />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
