@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -133,43 +134,16 @@ export function PresetEditDialog({
       footer={Footer}
     >
       {/* 타입 segment */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 2,
-          padding: 3,
-          background: 'var(--pd-surface-inset)',
-          borderRadius: 'var(--radius-tile)',
-          marginBottom: 16,
-        }}
+      <ToggleGroup
+        type="single"
+        variant="segmented"
+        value={type}
+        onValueChange={(v) => v && setType(v as 'EXPENSE' | 'INCOME')}
+        className="mb-4"
       >
-        {(['EXPENSE', 'INCOME'] as const).map(v => {
-          const active = type === v
-          const color = v === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)'
-          return (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setType(v)}
-              style={{
-                background: active ? 'var(--bg-surface)' : 'transparent',
-                color: active ? color : 'var(--fg-secondary)',
-                border: 0,
-                padding: '8px 0',
-                fontSize: 'var(--fs-body-sm)',
-                fontWeight: 'var(--fw-bold)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                boxShadow: active ? 'var(--shadow-xs)' : 'none',
-                fontFamily: 'inherit',
-              }}
-            >
-              {v === 'EXPENSE' ? '지출' : '수입'}
-            </button>
-          )
-        })}
-      </div>
+        <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
+        <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
+      </ToggleGroup>
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>프리셋 이름</FieldLabel>

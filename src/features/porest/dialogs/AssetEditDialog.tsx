@@ -579,20 +579,72 @@ export function AssetEditDialog({
                       검색 결과가 없어요
                     </div>
                   ) : (
-                    investFilteredByCategory.map(([cat, list]) => (
+                    <ToggleGroup
+                      type="single"
+                      value={brand}
+                      onValueChange={(v) => v && setBrand(v)}
+                      className="block w-full"
+                    >
+                      {investFilteredByCategory.map(([cat, list]) => (
+                        <div key={cat}>
+                          <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
+                            {CATEGORY_LABEL[cat]}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                            {list.map(e => {
+                              const active = e.name === brand
+                              return (
+                                <ToggleGroupItem
+                                  key={e.name}
+                                  value={e.name}
+                                  className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
+                                  style={
+                                    active
+                                      ? {
+                                          background: e.color.bg,
+                                          color: e.color.fg ?? '#fff',
+                                          borderColor: 'transparent',
+                                        }
+                                      : {
+                                          background: 'var(--pd-surface-subtle)',
+                                          color: 'var(--fg-secondary)',
+                                          borderColor: 'transparent',
+                                        }
+                                  }
+                                >
+                                  {e.name}
+                                </ToggleGroupItem>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </ToggleGroup>
+                  )
+                ) : bankFilteredByCategory.length === 0 ? (
+                  <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
+                    검색 결과가 없어요
+                  </div>
+                ) : (
+                  <ToggleGroup
+                    type="single"
+                    value={brand}
+                    onValueChange={(v) => v && setBrand(v)}
+                    className="block w-full"
+                  >
+                    {bankFilteredByCategory.map(([cat, list]) => (
                       <div key={cat}>
                         <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                          {CATEGORY_LABEL[cat]}
+                          {cat}
                         </div>
                         <div className="flex flex-wrap gap-1.5 px-3 pb-2">
                           {list.map(e => {
                             const active = e.name === brand
                             return (
-                              <button
+                              <ToggleGroupItem
                                 key={e.name}
-                                type="button"
-                                onClick={() => setBrand(e.name)}
-                                className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
+                                value={e.name}
+                                className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
                                 style={
                                   active
                                     ? {
@@ -608,53 +660,13 @@ export function AssetEditDialog({
                                 }
                               >
                                 {e.name}
-                              </button>
+                              </ToggleGroupItem>
                             )
                           })}
                         </div>
                       </div>
-                    ))
-                  )
-                ) : bankFilteredByCategory.length === 0 ? (
-                  <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                    검색 결과가 없어요
-                  </div>
-                ) : (
-                  bankFilteredByCategory.map(([cat, list]) => (
-                    <div key={cat}>
-                      <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                        {cat}
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                        {list.map(e => {
-                          const active = e.name === brand
-                          return (
-                            <button
-                              key={e.name}
-                              type="button"
-                              onClick={() => setBrand(e.name)}
-                              className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
-                              style={
-                                active
-                                  ? {
-                                      background: e.color.bg,
-                                      color: e.color.fg ?? '#fff',
-                                      borderColor: 'transparent',
-                                    }
-                                  : {
-                                      background: 'var(--pd-surface-subtle)',
-                                      color: 'var(--fg-secondary)',
-                                      borderColor: 'transparent',
-                                    }
-                              }
-                            >
-                              {e.name}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </ToggleGroup>
                 )}
               </div>
             </div>
