@@ -5,14 +5,13 @@ import { cn } from "@/shared/lib/index"
 
 /*
  * Porest Badge — porest-design specs/components/badge.md SoT 기반.
- * Phase 2 마이그레이션: porest 시각 토큰(text-badge 11/600 + pill + ring focus) +
- * desk-front 호환 variant(brand/solid/danger/warm) 보존.
  *
- * Variants 매트릭스:
- *   solid:    default(secondary 톤, sunken) / secondary(sunken) / destructive(error soft) / danger(=destructive) / solid(brand)
- *   soft:     brand / success / warning / info — semantic + subtle
+ * 3 styles × neutral·semantic 매트릭스 (12 variants):
+ *   solid:    default(primary) / secondary(surface-input) / destructive(error)
+ *   soft:     info / success / warning / error  — color-mix 16% bg
  *   outline:  outline(neutral) / outline-info / outline-success / outline-warning / outline-error
- *   warm:     bark warm (1건 사용)
+ *
+ * 강조 강도: solid > soft > outline. 의미 분기는 색으로, style은 카테고리 안에서 통일.
  */
 
 const badgeVariants = cva(
@@ -25,28 +24,25 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        // solid
         default:
-          "border-transparent bg-[var(--bg-sunken)] text-text-primary",
+          "border-transparent bg-primary text-text-on-accent hover:brightness-105",
         secondary:
-          "border-transparent bg-[var(--bg-sunken)] text-text-primary",
+          "border-transparent bg-surface-input text-text-primary hover:bg-border-default",
         destructive:
-          "border-transparent bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
-        danger:
-          "border-transparent bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)]",
-        brand:
-          "border-transparent bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
-        solid:
-          "border-transparent bg-[var(--bg-brand)] text-[var(--fg-on-brand)]",
-        success:
-          "border-transparent bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]",
-        warning:
-          "border-transparent bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]",
+          "border-transparent bg-error text-text-on-accent hover:brightness-105",
+        // soft (semantic, color-mix 16% bg)
         info:
-          "border-transparent bg-[var(--status-info-subtle)] text-[var(--status-info-fg)]",
-        warm:
-          "border-transparent bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)]",
+          "border-transparent bg-[color-mix(in_srgb,var(--color-info)_16%,transparent)] text-info hover:bg-[color-mix(in_srgb,var(--color-info)_24%,transparent)]",
+        success:
+          "border-transparent bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-success hover:bg-[color-mix(in_srgb,var(--color-success)_24%,transparent)]",
+        warning:
+          "border-transparent bg-[color-mix(in_srgb,var(--color-warning)_16%,transparent)] text-warning hover:bg-[color-mix(in_srgb,var(--color-warning)_24%,transparent)]",
+        error:
+          "border-transparent bg-[color-mix(in_srgb,var(--color-error)_16%,transparent)] text-error hover:bg-[color-mix(in_srgb,var(--color-error)_24%,transparent)]",
+        // outline (neutral + semantic)
         outline:
-          "border-border-default bg-transparent text-text-primary hover:bg-[var(--bg-hover-subtle)]",
+          "border-border-default bg-transparent text-text-primary hover:bg-surface-input",
         "outline-info":
           "border-info text-info bg-transparent hover:bg-[color-mix(in_srgb,var(--color-info)_8%,transparent)]",
         "outline-success":
