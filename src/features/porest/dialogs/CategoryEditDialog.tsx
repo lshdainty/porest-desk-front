@@ -4,6 +4,7 @@ import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { IconPicker } from '@/shared/ui/icon-picker'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import {
@@ -325,44 +326,7 @@ export function CategoryEditDialog({
 
       <Field style={{ marginBottom: 4 }}>
         <FieldLabel>아이콘</FieldLabel>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(8, 1fr)',
-            gap: 6,
-            maxHeight: 180,
-            overflowY: 'auto',
-            padding: 2,
-          }}
-        >
-          {ICON_CHOICES.map(ic => {
-            const active = icon === ic
-            return (
-              <button
-                type="button"
-                key={ic}
-                className="hover:bg-[var(--pd-hover-bg)] hover:text-[var(--fg-primary)]"
-                onClick={() => setIcon(ic)}
-                style={{
-                  aspectRatio: '1',
-                  border: active
-                    ? `1.5px solid ${palette.color}`
-                    : '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  background: active ? palette.bg : 'var(--bg-surface)',
-                  color: active ? palette.color : 'var(--fg-secondary)',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-label={ic}
-              >
-                <Icon name={ic} size={16} strokeWidth={1.9} />
-              </button>
-            )
-          })}
-        </div>
+        <IconPicker icons={ICON_CHOICES} value={icon} onChange={setIcon} />
       </Field>
     </ModalShell>
   )
