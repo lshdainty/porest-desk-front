@@ -703,66 +703,31 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <Chips filter={filter} onChange={setFilter} />
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => setFilterOpen(true)}
-          style={{
-            position: 'relative',
-            width: 36,
-            height: 36,
-            borderRadius: 'var(--radius-tile)',
-            border: '1px solid var(--border-subtle)',
-            background: 'transparent',
-            color: 'var(--fg-secondary)',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
           aria-label="필터"
+          className="relative shrink-0 rounded-[var(--radius-tile)]"
         >
           <SlidersHorizontal size={18} />
           {activeCount > 0 && (
             <span
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -4,
-                minWidth: 16,
-                height: 16,
-                padding: '0 4px',
-                borderRadius: 'var(--radius-pill)',
-                background: 'var(--bg-brand-hover)',
-                color: 'var(--fg-on-brand)',
-                fontSize: 'var(--fs-micro)',
-                fontWeight: 'var(--fw-bold)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              aria-hidden
+              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--fs-micro)] font-bold text-[var(--fg-on-brand)]"
             >
               {activeCount}
             </span>
           )}
-        </button>
-        <button
+        </Button>
+        <Button
+          size="icon"
           onClick={onAddTx}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 'var(--radius-tile)',
-            border: 0,
-            background: 'var(--bg-brand)',
-            color: 'var(--fg-on-brand)',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
+          aria-label="거래 추가"
+          className="shrink-0 rounded-[var(--radius-tile)]"
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
       <EditableList
         expenses={expenses}
@@ -811,24 +776,14 @@ function MonthArrowButton({
     onChange(`${y}-${String(m).padStart(2, '0')}`)
   }
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       aria-label={dir === 'prev' ? '이전 달' : '다음 달'}
       onClick={handle}
-      style={{
-        width: 28,
-        height: 28,
-        border: 'none',
-        background: 'transparent',
-        color: 'var(--fg-secondary)',
-        cursor: 'pointer',
-        padding: 0,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="h-7 w-7 text-text-secondary"
     >
       {dir === 'prev' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-    </button>
+    </Button>
   )
 }

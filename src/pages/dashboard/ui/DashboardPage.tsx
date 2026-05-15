@@ -712,9 +712,9 @@ function HomeDesktop() {
                 </span>
               )}
             </div>
-            <button className="all" onClick={() => navigate('/desk/expense')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/expense')}>
               전체 보기 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
           <CardContent>
           <div>
@@ -746,9 +746,9 @@ function HomeDesktop() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>카테고리</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/stats')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/stats')}>
               자세히 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
           <CardContent>
           {donutSegs.length === 0 ? (
@@ -798,9 +798,9 @@ function HomeDesktop() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>예산</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/budget')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/budget')}>
               예산 관리 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
           <CardContent>
           {budgetItems.length === 0 ? (
@@ -933,9 +933,9 @@ function HomeDesktop() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>할 일</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/todo')}>
+            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/todo')}>
               관리 <ChevronRight size={14} />
-            </button>
+            </Button>
           </CardHeader>
           <CardContent>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

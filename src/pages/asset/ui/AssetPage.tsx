@@ -272,22 +272,13 @@ function AssetCompositionCard({
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
             <>
-              <button
-                type="button"
+              <Button
+                variant="link"
                 onClick={() => setActive(null)}
-                style={{
-                  background: 'transparent',
-                  border: 0,
-                  color: 'var(--fg-secondary)',
-                  cursor: 'pointer',
-                  fontSize: 'var(--fs-body-lg)',
-                  fontWeight: 'var(--fw-medium)',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                }}
+                className="h-auto p-0 text-body-lg font-medium text-text-secondary hover:text-text-primary no-underline hover:no-underline"
               >
                 자산 구성
-              </button>
+              </Button>
               <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>›</span>
               <span>{GROUP_META[active].label}</span>
             </>
@@ -422,17 +413,13 @@ function UpcomingBillsCard() {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
-        <button
-          type="button"
+        <Button
+          variant="link"
           onClick={() => goToSettings()}
-          style={{
-            background: 'transparent', border: 0, cursor: 'pointer',
-            color: 'var(--fg-secondary)', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)',
-            display: 'inline-flex', alignItems: 'center', gap: 2,
-          }}
+          className="h-auto gap-0.5 p-0 text-body-sm font-semibold text-text-secondary hover:text-text-primary no-underline hover:no-underline"
         >
           전체 보기 <ChevronRight size={12} />
-        </button>
+        </Button>
       </CardHeader>
       <CardContent>
       {recurringQ.isLoading ? (
