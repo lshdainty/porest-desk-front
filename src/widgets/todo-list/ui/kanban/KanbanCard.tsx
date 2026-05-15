@@ -3,6 +3,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Pencil, Trash2 } from 'lucide-react'
 import { isBefore, startOfDay, parseISO } from 'date-fns'
 import { cn, formatDate } from '@/shared/lib'
+import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import type { Todo } from '@/entities/todo'
@@ -71,26 +72,32 @@ export const KanbanCard = ({ todo, onEdit, onDelete }: KanbanCardProps) => {
         </Badge>
 
         <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
+          <Button
+            variant="ghost"
+            size="xs"
             data-action="edit"
             onClick={(e) => {
               e.stopPropagation()
               onEdit(todo)
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label="편집"
+            className="h-6 w-6 p-0"
           >
             <Pencil size={12} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
             data-action="delete"
             onClick={(e) => {
               e.stopPropagation()
               onDelete(todo)
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            aria-label="삭제"
+            className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 size={12} />
-          </button>
+          </Button>
         </div>
       </div>
 

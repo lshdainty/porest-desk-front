@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 import { Spinner } from '@/shared/ui/spinner'
 import { cn } from '@/shared/lib'
 import { Badge } from '@/shared/ui/badge'
@@ -145,16 +146,18 @@ export const KanbanColumn = ({
               {isQuickAddLoading && <Spinner size="sm" />}
             </div>
           ) : (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setIsAdding(true)
                 setTimeout(() => inputRef.current?.focus(), 0)
               }}
-              className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="w-full justify-start gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <Plus size={14} />
               {t('kanban.addTodo')}
-            </button>
+            </Button>
           )}
         </div>
       )}
