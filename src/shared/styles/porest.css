@@ -10,20 +10,6 @@
 :root[data-density="compact"] { --row-py: 10px; --card-pad: 16px; }
 :root[data-density="cozy"] { --row-py: 14px; --card-pad: 20px; }
 
-/* Accent toggle */
-:root[data-accent="bark"] {
-  --bg-brand: var(--bark-600);
-  --bg-brand-hover: var(--bark-700);
-  --bg-brand-press: var(--bark-800);
-  --bg-brand-subtle: var(--bark-50);
-  --bg-brand-muted: var(--bark-100);
-  --fg-brand: var(--bark-700);
-  --fg-brand-strong: var(--bark-800);
-  --fg-link: var(--bark-700);
-  --border-brand: var(--bark-600);
-  --border-focus: var(--bark-600);
-}
-
 /* =============================================================================
  * Layout chrome
  * ========================================================================== */
