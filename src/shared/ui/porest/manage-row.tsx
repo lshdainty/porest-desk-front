@@ -43,7 +43,7 @@ export const MANAGE_ROW = {
   } as CSSProperties,
   /** 보조 메타 style (기존 .cat-row__meta) */
   metaStyle: {
-    fontSize: 'var(--fs-caption)',
+    fontSize: 'var(--text-caption)',
     color: 'var(--fg-tertiary)',
     display: 'flex',
     alignItems: 'center',

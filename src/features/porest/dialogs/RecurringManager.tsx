@@ -146,8 +146,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
+            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {stats.next7.map(it => {
@@ -176,7 +176,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       minWidth: 44,
                       textAlign: 'center',
-                      fontSize: 'var(--fs-micro)',
+                      fontSize: 'var(--text-badge)',
                       fontWeight: 'var(--fw-bold)',
                       padding: '4px 8px',
                       borderRadius: 'var(--radius-sm)',
@@ -202,14 +202,14 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 16)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {displayTitle(it)}
                     </div>
-                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                       {it.assetName ?? '계좌 없음'} · {recurringSummary(it)}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
+                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
                     {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       {/* Filter chips + list */}
       <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
-          <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
+          <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
           <ToggleGroup
             type="single"
             size="sm"
@@ -267,7 +267,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             </>
           )}
           {!recurringsQ.isLoading && filtered.length === 0 && (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
               해당하는 반복 거래가 없어요
             </div>
           )}
@@ -307,7 +307,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                     <span
                       style={{
-                        fontSize: 'var(--fs-body)',
+                        fontSize: 'var(--text-body-sm)',
                         fontWeight: 'var(--fw-semi)',
                         color: 'var(--fg-primary)',
                         whiteSpace: 'nowrap',
@@ -320,7 +320,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     {!isActive && (
                       <span
                         style={{
-                          fontSize: 'var(--fs-micro)',
+                          fontSize: 'var(--text-badge)',
                           fontWeight: 'var(--fw-bold)',
                           padding: '2px 6px',
                           borderRadius: 'var(--radius-xs)',
@@ -342,7 +342,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                     {recurringSummary(it)} · {it.assetName ?? '계좌 없음'} · 다음 {it.nextExecutionDate.slice(5).replace('-', '/')}
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   <div
                     className="num"
                     style={{
-                      fontSize: 'var(--fs-body)',
+                      fontSize: 'var(--text-body-sm)',
                       fontWeight: 'var(--fw-bold)',
                       color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
                       textAlign: 'right',
@@ -365,7 +365,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     <span
                       className="num"
                       style={{
-                        fontSize: 'var(--fs-body-sm)',
+                        fontSize: 'var(--text-label-sm)',
                         fontWeight: 'var(--fw-bold)',
                         color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
                         marginRight: 4,
@@ -434,7 +434,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             background: 'var(--fg-primary)',
             color: 'var(--bg-surface)',
             borderRadius: 'var(--radius-pill)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
             fontWeight: 'var(--fw-semi)',
             boxShadow: 'var(--shadow-lg)',
             zIndex: 'var(--z-sticky)',
@@ -562,7 +562,7 @@ function RecStat({
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 'var(--fs-caption)',
+          fontSize: 'var(--text-caption)',
           fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
@@ -572,7 +572,7 @@ function RecStat({
         <Icon size={12} strokeWidth={2} />
         {label}
       </div>
-      <div className="num" style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color, lineHeight: 'var(--lh-tight)' }}>
+      <div className="num" style={{ fontSize: 'var(--text-title-lg)', fontWeight: 'var(--fw-bold)', color, lineHeight: 'var(--lh-tight)' }}>
         {value}
       </div>
     </div>

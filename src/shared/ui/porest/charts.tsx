@@ -195,13 +195,13 @@ export function LineChart({
                 borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 pointerEvents: 'none',
                 minWidth: 120,
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
                 {labels[hover.i]}
               </div>
               {series.map((s, si) => (
@@ -218,12 +218,12 @@ export function LineChart({
                       display: 'inline-block',
                     }}
                   />
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>{s.label}</span>
+                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{s.label}</span>
                   <span
                     className="num"
                     style={{
                       marginLeft: 'auto',
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       fontWeight: 'var(--fw-bold)',
                       color: 'var(--fg-primary)',
                     }}
@@ -356,26 +356,26 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 pointerEvents: 'none',
                 minWidth: 130,
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>수입</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>지출</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.expense)}원
                 </span>
               </div>
@@ -389,12 +389,12 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   borderTop: '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>저축</span>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>저축</span>
                 <span
                   className="num"
                   style={{
                     marginLeft: 'auto',
-                    fontSize: 'var(--fs-caption)',
+                    fontSize: 'var(--text-caption)',
                     fontWeight: 'var(--fw-bold)',
                     color: d.income - d.expense >= 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
                   }}

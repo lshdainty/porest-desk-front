@@ -74,7 +74,7 @@ export function TxTypeToggle({
                 : "1px solid var(--border-subtle)",
               borderRadius: "var(--radius-tile)",
               fontWeight: 'var(--fw-bold)',
-              fontSize: 'var(--fs-body-sm)',
+              fontSize: 'var(--text-label-sm)',
               cursor: disabled ? "not-allowed" : "pointer",
               opacity: disabled ? 0.6 : 1,
               color: active ? fg : "var(--fg-tertiary)",

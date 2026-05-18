@@ -32,7 +32,7 @@ export function DateGroupHeader({
         alignItems: "center",
         gap: 8,
         padding: "0 4px 8px",
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
       }}
     >
       <span style={{ fontWeight: 'var(--fw-bold)', color: "var(--fg-primary)" }}>

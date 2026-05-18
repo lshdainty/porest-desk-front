@@ -23,7 +23,7 @@ export const MANAGER_LAYOUT = {
     color: 'var(--fg-primary)',
   } as CSSProperties,
   subStyle: {
-    fontSize: 'var(--fs-body-sm)',
+    fontSize: 'var(--text-label-sm)',
     color: 'var(--fg-tertiary)',
     margin: 0,
     maxWidth: '52ch',
@@ -120,7 +120,7 @@ const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
 }
 
 const TAB_CNT_BASE_STYLE: CSSProperties = {
-  fontSize: 'var(--fs-micro)',
+  fontSize: 'var(--text-badge)',
   color: 'var(--fg-tertiary)',
   background: 'var(--bg-surface)',
   padding: '2px 7px',

@@ -238,7 +238,7 @@ function Summary({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-tight)' }}>
+        <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-tight)' }}>
           {y}년 {Number(m)}월
         </div>
         <div style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -248,7 +248,7 @@ function Summary({
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>수입</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>수입</div>
           <div
             className="num"
             style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand)' }}
@@ -257,13 +257,13 @@ function Summary({
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>지출</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>지출</div>
           <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)' }}>
             {isLoading ? '—' : <MaskAmount>−{KRW(monthOut)}</MaskAmount>}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>합계</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>합계</div>
           <div
             className="num"
             style={{
@@ -332,7 +332,7 @@ function ExpenseList({
     return (
       <Card>
         <CardContent style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+          <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
             내역이 없어요
           </div>
         </CardContent>
@@ -515,7 +515,7 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
         color: 'var(--fg-brand-strong)',
         border: '1px solid var(--border-brand)',
         borderRadius: 'var(--radius-pill)',
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
         fontWeight: 'var(--fw-semi)',
         marginBottom: 12,
       }}
@@ -714,7 +714,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           {activeCount > 0 && (
             <span
               aria-hidden
-              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--fs-micro)] font-bold text-[var(--fg-on-brand)]"
+              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
             >
               {activeCount}
             </span>

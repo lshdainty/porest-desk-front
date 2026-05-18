@@ -42,8 +42,8 @@ export const MorePage = () => {
   return (
     <div style={{ padding: '4px 0 24px' }}>
       <div style={{ padding: '0 16px 12px' }}>
-        <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>더보기</h2>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>
+        <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>더보기</h2>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>
       </div>
       <div
         style={{
@@ -93,7 +93,7 @@ export const MorePage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 4,
-                    fontSize: 'var(--fs-body)',
+                    fontSize: 'var(--text-body-sm)',
                     fontWeight: 'var(--fw-bold)',
                     color: 'var(--fg-primary)',
                     letterSpacing: 'var(--tracking-snug)',
@@ -102,7 +102,7 @@ export const MorePage = () => {
                   {item.label}
                   <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', marginLeft: 'auto' }} />
                 </div>
-                <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 4, lineHeight: 'var(--lh-snug)' }}>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4, lineHeight: 'var(--lh-snug)' }}>
                   {item.desc}
                 </div>
               </div>

@@ -63,7 +63,7 @@ export function CategoryTile({
       </span>
       <span
         style={{
-          fontSize: 'var(--fs-micro)',
+          fontSize: 'var(--text-badge)',
           fontWeight: active ? 700 : 500,
           color: active ? "var(--fg-brand-strong)" : "var(--fg-secondary)",
           overflow: "hidden",

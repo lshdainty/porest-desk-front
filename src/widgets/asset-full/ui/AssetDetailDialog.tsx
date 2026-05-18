@@ -50,18 +50,18 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
         {label}
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
           <MaskAmount>{KRW(val)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
@@ -179,17 +179,17 @@ export function AssetDetailDialog({
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 'var(--fw-bold)',
-              fontSize: 'var(--fs-h4)',
+              fontSize: 'var(--text-title-md)',
               flexShrink: 0,
             }}
           >
             {renderIcon(asset.icon, asset.assetName.charAt(0), 22)}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
               {asset.assetName}
             </div>
-            <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               {[asset.institution, assetTypeLabel(asset.assetType), asset.memo]
                 .filter(Boolean)
                 .join(' · ')}
@@ -198,7 +198,7 @@ export function AssetDetailDialog({
         </div>
         <div
           style={{
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
             fontWeight: 'var(--fw-semi)',
             letterSpacing: 'var(--tracking-wide)',
@@ -210,7 +210,7 @@ export function AssetDetailDialog({
         <div
           className="num"
           style={{
-            fontSize: 'var(--fs-h1)',
+            fontSize: 'var(--text-display-md)',
             fontWeight: 'var(--fw-heavy)',
             letterSpacing: 'var(--tracking-tight)',
             color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
@@ -221,7 +221,7 @@ export function AssetDetailDialog({
             {KRW(absBalance)}
           </MaskAmount>
           <HideUnit>
-            <span style={{ fontSize: 'var(--fs-body-lg)', marginLeft: 2 }}>원</span>
+            <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
           </HideUnit>
         </div>
       </div>
@@ -229,7 +229,7 @@ export function AssetDetailDialog({
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
           <ToggleGroup
@@ -251,7 +251,7 @@ export function AssetDetailDialog({
           <div style={{
             height: 160, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
+            color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)',
           }}>
             표시할 데이터가 없어요
           </div>
@@ -269,7 +269,7 @@ export function AssetDetailDialog({
                 dataKey="label"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 tickMargin={6}
                 interval="preserveStartEnd"
                 minTickGap={18}
@@ -278,7 +278,7 @@ export function AssetDetailDialog({
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={fmtAxisNum}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 width={44}
               />
               <ChartTooltip
@@ -302,7 +302,7 @@ export function AssetDetailDialog({
       {/* Recent tx */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
             최근 거래{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
           </h4>
           <button
@@ -314,7 +314,7 @@ export function AssetDetailDialog({
               border: 0,
               color: 'var(--fg-secondary)',
               cursor: 'pointer',
-              fontSize: 'var(--fs-body-sm)',
+              fontSize: 'var(--text-label-sm)',
               fontWeight: 'var(--fw-semi)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -352,7 +352,7 @@ export function AssetDetailDialog({
                 padding: '24px 0',
                 textAlign: 'center',
                 color: 'var(--fg-tertiary)',
-                fontSize: 'var(--fs-body-sm)',
+                fontSize: 'var(--text-label-sm)',
               }}
             >
               연결된 거래 내역이 없어요.

@@ -80,7 +80,7 @@ export function PorestSidebar() {
                 className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg text-white"
                 style={{ background: 'linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong))' }}
               >
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>P</span>
+                <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>P</span>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold" style={{ color: 'var(--fg-brand-strong)', letterSpacing: 'var(--tracking-tight)' }}>
@@ -106,12 +106,12 @@ export function PorestSidebar() {
             <SidebarMenuButton size="lg">
               <span
                 className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                style={{ background: 'var(--bg-brand-muted)', color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', fontSize: 'var(--fs-caption)' }}
+                style={{ background: 'var(--bg-brand-muted)', color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', fontSize: 'var(--text-caption)' }}
               >
                 {userInitial}
               </span>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold" style={{ fontSize: 'var(--fs-body)' }}>{userName || '사용자'}</span>
+                <span className="truncate font-semibold" style={{ fontSize: 'var(--text-body-sm)' }}>{userName || '사용자'}</span>
                 <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
                   {userEmail || '—'}
                 </span>

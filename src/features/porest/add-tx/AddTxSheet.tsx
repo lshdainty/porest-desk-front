@@ -351,7 +351,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 color: active ? o.c : 'var(--fg-secondary)',
                 border: 0,
                 padding: '8px 0',
-                fontSize: 'var(--fs-body)',
+                fontSize: 'var(--text-body-sm)',
                 fontWeight: 'var(--fw-bold)',
                 borderRadius: 'var(--radius-md)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
@@ -381,7 +381,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               <Bookmark size={13} style={{ color: 'var(--fg-tertiary)' }} />
               <span
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-tertiary)',
                   fontWeight: 'var(--fw-semi)',
                   letterSpacing: 'var(--tracking-wide)',
@@ -393,7 +393,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               {activePresetId != null && (
                 <span
                   style={{
-                    fontSize: 'var(--fs-micro)',
+                    fontSize: 'var(--text-badge)',
                     color: 'var(--fg-brand-strong)',
                     fontWeight: 'var(--fw-bold)',
                     padding: '2px 6px',
@@ -413,7 +413,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 background: 'transparent',
                 border: 0,
                 padding: 0,
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: amountNumber > 0 && categoryRowId ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: amountNumber > 0 && categoryRowId ? 'pointer' : 'not-allowed',
@@ -461,7 +461,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-pill)',
                       cursor: 'pointer',
-                      fontSize: 'var(--fs-body-sm)',
+                      fontSize: 'var(--text-label-sm)',
                       fontWeight: active ? 700 : 600,
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                       whiteSpace: 'nowrap',
@@ -492,7 +492,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       <span
                         className="num"
                         style={{
-                          fontSize: 'var(--fs-micro)',
+                          fontSize: 'var(--text-badge)',
                           color: active ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
                           fontWeight: 'var(--fw-semi)',
                         }}
@@ -516,7 +516,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     background: 'transparent',
                     border: '1px dashed var(--border-default)',
                     borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--fs-caption)',
+                    fontSize: 'var(--text-caption)',
                     fontWeight: 'var(--fw-semi)',
                     color: 'var(--fg-tertiary)',
                     whiteSpace: 'nowrap',
@@ -534,7 +534,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 background: 'var(--bg-sunken)',
                 border: '1px dashed var(--border-default)',
                 borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: 'var(--fg-tertiary)',
               }}
             >
@@ -558,7 +558,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               <Info size={13} style={{ color: 'var(--fg-brand-strong)' }} />
               <span
                 style={{
-                  fontSize: 'var(--fs-caption)',
+                  fontSize: 'var(--text-caption)',
                   color: 'var(--fg-brand-strong)',
                   fontWeight: 'var(--fw-semi)',
                   flex: 1,
@@ -573,7 +573,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   background: 'transparent',
                   border: 0,
                   padding: 0,
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-brand-strong)',
                   fontWeight: 'var(--fw-bold)',
                   cursor: 'pointer',
@@ -598,7 +598,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           placeholder="0"
           inputMode="numeric"
           style={{
-            fontSize: 'var(--fs-h4)',
+            fontSize: 'var(--text-title-md)',
             fontWeight: 'var(--fw-bold)',
             color: amountColor,
             background: 'var(--bg-surface)',
@@ -613,7 +613,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <div style={{ marginBottom: 20 }}>
               <div
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-tertiary)',
                   fontWeight: 'var(--fw-semi)',
                   letterSpacing: 'var(--tracking-wide)',
@@ -738,7 +738,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               </SelectContent>
             </Select>
             {paymentMethod && filteredAssets.length === 0 && (
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
                 해당 결제 수단에 연결된 자산이 없어요.
               </div>
             )}
@@ -862,8 +862,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             onClick={e => e.stopPropagation()}
           >
             <CardContent>
-              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
-              <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
+              <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
+              <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
                 선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -974,7 +974,7 @@ function SavePresetDialog({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--fs-body)',
+              fontSize: 'var(--text-body-sm)',
               fontWeight: 'var(--fw-bold)',
               color: 'var(--fg-primary)',
               overflow: 'hidden',
@@ -984,7 +984,7 @@ function SavePresetDialog({
           >
             {seed.merchant || '내역 없음'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {seed.categoryName ?? '카테고리 미선택'}
             {seed.assetName ? ` · ${seed.assetName}` : ''}
           </div>
@@ -992,7 +992,7 @@ function SavePresetDialog({
         <div
           className="num"
           style={{
-            fontSize: 'var(--fs-body-lg)',
+            fontSize: 'var(--text-body-lg)',
             fontWeight: 'var(--fw-heavy)',
             color: seed.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
@@ -1030,8 +1030,8 @@ function SavePresetDialog({
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: 'var(--lh-snug)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: 'var(--lh-snug)' }}>
             {lockAmount
               ? `${KRW(seed.amount)}원이 항상 채워집니다.`
               : '체크 해제 시 금액은 비워두고 매번 직접 입력합니다.'}
@@ -1040,7 +1040,7 @@ function SavePresetDialog({
       </label>
 
       {seed.categoryRowId == null && (
-        <div style={{ marginTop: 10, fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)' }}>
+        <div style={{ marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-expense)' }}>
           저장하려면 먼저 카테고리를 선택해주세요.
         </div>
       )}

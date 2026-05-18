@@ -207,7 +207,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   const Footer = (
     <>
-      <span style={{ marginRight: 'auto', fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>
+      <span style={{ marginRight: 'auto', fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
         1인당{' '}
         <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-heavy)' }}>
           {KRW(perPersonAmount)}원
@@ -238,7 +238,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   return (
     <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
         이 거래를 기준으로 더치페이 정산을 만듭니다. 참여자에게 송금 요청을 보내고, 정산 진행 상황을 추적할 수 있어요.
       </p>
 
@@ -270,8 +270,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>{defaultTitle}</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)' }}>{defaultTitle}</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {expenseDateTime || expenseDay}
           </div>
         </div>
@@ -311,14 +311,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                     alignItems: 'center',
                     gap: 6,
                     fontWeight: 'var(--fw-bold)',
-                    fontSize: 'var(--fs-body-sm)',
+                    fontSize: 'var(--text-label-sm)',
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                   }}
                 >
                   <Icon size={14} />
                   {m.title}
                 </span>
-                <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>{m.sub}</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{m.sub}</span>
               </button>
             )
           })}
@@ -361,14 +361,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>나도 포함해서 분배</span>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
+        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)' }}>나도 포함해서 분배</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
       </div>
 
       {/* 참여자 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)' }}>참여자</span>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+        <span style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)' }}>참여자</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
           ({participants.length}명)
         </span>
       </div>
@@ -403,7 +403,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 'var(--fw-bold)',
-                  fontSize: 'var(--fs-body-sm)',
+                  fontSize: 'var(--text-label-sm)',
                   flexShrink: 0,
                 }}
               >
@@ -411,11 +411,11 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               </span>
 
               <span style={{ flex: 1, minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontWeight: 'var(--fw-semi)', fontSize: 'var(--fs-body)' }}>{p.name}</span>
+                <span style={{ fontWeight: 'var(--fw-semi)', fontSize: 'var(--text-body-sm)' }}>{p.name}</span>
                 {p.isMe && (
                   <span
                     style={{
-                      fontSize: 'var(--fs-micro)',
+                      fontSize: 'var(--text-badge)',
                       fontWeight: 'var(--fw-bold)',
                       padding: '2px 7px',
                       borderRadius: 'var(--radius-pill)',
@@ -444,7 +444,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       right: 10,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       color: 'var(--fg-tertiary)',
                       pointerEvents: 'none',
                     }}
@@ -455,7 +455,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'CUSTOM' && p.isMe && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)' }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--text-body-sm)' }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -476,7 +476,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       right: 10,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       color: 'var(--fg-tertiary)',
                       pointerEvents: 'none',
                     }}
@@ -487,13 +487,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'RATIO' && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)', minWidth: 80, textAlign: 'right' }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--text-body-sm)', minWidth: 80, textAlign: 'right' }}>
                   {KRW(amt)}원
                 </span>
               )}
 
               {splitMethod === 'EQUAL' && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)' }}>
+                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--text-body-sm)' }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -578,7 +578,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       </Section>
 
       {!matched && (
-        <p style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
+        <p style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
           {remainder > 0
             ? `합계가 총액보다 ${KRW(remainder)}원 부족합니다.`
             : `합계가 총액보다 ${KRW(-remainder)}원 초과합니다.`}
@@ -665,7 +665,7 @@ function Section({
 }) {
   return (
     <div style={{ marginBottom: 16, marginTop: tightTop ? 4 : 0 }}>
-      <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}

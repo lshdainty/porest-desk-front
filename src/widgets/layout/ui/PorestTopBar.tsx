@@ -63,7 +63,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
       <Separator orientation="vertical" className="mx-1 h-5" />
       <div>
         <div className="top__title">{title}</div>
-        {sub && <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{sub}</div>}
+        {sub && <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{sub}</div>}
       </div>
       <div className="top__search">
         <Search size={15} />

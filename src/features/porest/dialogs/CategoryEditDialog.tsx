@@ -189,7 +189,7 @@ export function CategoryEditDialog({
           >
             {labelTrim || '새 카테고리'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {kind === 'EXPENSE' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
           </div>
         </div>
@@ -233,7 +233,7 @@ export function CategoryEditDialog({
         {parentDisabled && (
           <div
             style={{
-              fontSize: 'var(--fs-micro)',
+              fontSize: 'var(--text-badge)',
               color: 'var(--fg-tertiary)',
               marginTop: 4,
               textAlign: 'right',
@@ -259,7 +259,7 @@ export function CategoryEditDialog({
         />
         <div
           style={{
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
             marginTop: 4,
             textAlign: 'right',

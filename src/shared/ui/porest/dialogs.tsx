@@ -132,7 +132,7 @@ export function ConfirmDialog({
         <DialogBody>
           <p
             style={{
-              fontSize: 'var(--fs-body)',
+              fontSize: 'var(--text-body-sm)',
               color: 'var(--fg-secondary)',
               lineHeight: 'var(--lh-loose)',
               margin: 0,

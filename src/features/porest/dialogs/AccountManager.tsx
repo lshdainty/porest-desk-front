@@ -115,7 +115,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               { value: 'invest', label: '투자', count: counts.invest },
             ]}
           />
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             총{' '}
             <span className="num" style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
               {KRW(totalInTab)}원
@@ -147,7 +147,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         ...MANAGE_ROW.iconStyle,
                         background: accentColor,
                         color: 'var(--fg-on-brand)',
-                        fontSize: 'var(--fs-body-sm)',
+                        fontSize: 'var(--text-label-sm)',
                       }}
                     >
                       {asset.icon ? renderIcon(asset.icon, iconChar, 14) : iconChar}
@@ -168,7 +168,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       <div
                         className="num"
                         style={{
-                          fontSize: 'var(--fs-body)',
+                          fontSize: 'var(--text-body-sm)',
                           fontWeight: 'var(--fw-bold)',
                           letterSpacing: 'var(--tracking-snug)',
                           color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
@@ -178,7 +178,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         {KRW(amt)}원
                       </div>
                       {asset.isIncludedInTotal === 'N' && (
-                        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
                           총액 제외
                         </div>
                       )}

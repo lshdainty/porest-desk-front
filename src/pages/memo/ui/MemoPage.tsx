@@ -147,7 +147,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             )}
             <span
               style={{
-                fontSize: 'var(--fs-micro)',
+                fontSize: 'var(--text-badge)',
                 fontWeight: 'var(--fw-bold)',
                 color: 'var(--fg-secondary)',
                 textTransform: 'uppercase',
@@ -156,17 +156,17 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             >
               {m.isPinned ? '고정' : '메모'}
             </span>
-            <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
+            <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
               {formatDate(m.createAt)}
             </span>
           </div>
-          <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)', color: 'var(--fg-primary)' }}>
+          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)', color: 'var(--fg-primary)' }}>
             {m.title}
           </div>
           {m.content && (
             <div
               style={{
-                fontSize: 'var(--fs-body-sm)',
+                fontSize: 'var(--text-label-sm)',
                 color: 'var(--fg-secondary)',
                 lineHeight: 'var(--lh-normal)',
                 display: '-webkit-box',
@@ -216,7 +216,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         style={{
           textAlign: 'center',
           color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
         }}
       >
         아직 메모가 없어요
@@ -234,7 +234,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>메모</h2>
+          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>메모</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

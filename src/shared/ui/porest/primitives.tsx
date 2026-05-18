@@ -254,7 +254,7 @@ export function MonthPicker({
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-tile)',
           padding: '6px 12px',
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
           fontWeight: 'var(--fw-semi)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
@@ -295,7 +295,7 @@ export function MonthPicker({
             >
               <ChevronLeft size={16} />
             </button>
-            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
               {viewY}년
             </div>
             <button
@@ -329,7 +329,7 @@ export function MonthPicker({
                     border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
                     background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
                     color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                    fontSize: 'var(--fs-body-sm)',
+                    fontSize: 'var(--text-label-sm)',
                     fontWeight: isSel ? 700 : 500,
                     cursor: isFuture ? 'not-allowed' : 'pointer',
                     opacity: isFuture ? 0.4 : 1,
@@ -361,7 +361,7 @@ export function MonthPicker({
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -387,7 +387,7 @@ export function MonthPicker({
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 fontWeight: 'var(--fw-semi)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',

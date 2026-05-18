@@ -243,7 +243,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             <div>
               <div
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-brand-strong)',
                   fontWeight: 'var(--fw-bold)',
                   letterSpacing: 'var(--tracking-wide)',
@@ -254,12 +254,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 {month}월 총 예산
               </div>
               {monthlyBudget ? (
-                <div className="num" style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>
+                <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>
                   {KRW(monthlyLimit)}
-                  <span style={{ fontSize: 'var(--fs-body-lg)', marginLeft: 3 }}>원</span>
+                  <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
                 </div>
               ) : (
-                <div style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)' }}>
+                <div style={{ fontSize: 'var(--text-body-lg)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)' }}>
                   설정되지 않음
                 </div>
               )}
@@ -303,29 +303,29 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             }}
           >
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 사용
               </div>
-              <div className="num" style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}>
+              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)' }}>
                 {KRW(totalSpent)}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당됨
               </div>
-              <div className="num" style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}>
+              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)' }}>
                 {KRW(totalAssigned)}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
                 할당 가능
               </div>
               <div
                 className="num"
                 style={{
-                  fontSize: 'var(--fs-body-lg)',
+                  fontSize: 'var(--text-body-lg)',
                   fontWeight: 'var(--fw-bold)',
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
@@ -343,7 +343,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
                 borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
                 alignItems: 'center',
@@ -359,7 +359,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </Card>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)' }}>
             카테고리별 예산 · {categoryBudgets.length}개
           </div>
           {mobile && (
@@ -403,12 +403,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{label}</div>
+                      <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)' }}>{label}</div>
                       <div
                         className="num"
                         style={{
                           marginLeft: 'auto',
-                          fontSize: 'var(--fs-body-sm)',
+                          fontSize: 'var(--text-label-sm)',
                           fontWeight: 'var(--fw-bold)',
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
@@ -426,7 +426,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                         style={{ width: `${Math.min(100, p)}%` }}
                       />
                     </div>
-                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
+                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
                       {state === 'over'
                         ? `${KRW(spent - limitAmt)}원 초과`
                         : `남은 예산 ${KRW(Math.max(0, limitAmt - spent))}원`}

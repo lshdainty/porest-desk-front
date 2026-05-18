@@ -22,11 +22,11 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산 알림 임계값</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산 알림 임계값</CardTitle>
           {isLoading ? (
             <SkeletonBase className="h-3 w-20" />
           ) : (
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
               현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
             </span>
           )}
@@ -34,7 +34,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         <CardContent>
           <div
             style={{
-              fontSize: 'var(--fs-caption)',
+              fontSize: 'var(--text-caption)',
               color: 'var(--fg-secondary)',
               marginBottom: 12,
               lineHeight: 'var(--lh-normal)',
@@ -61,7 +61,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              fontSize: 'var(--fs-micro)',
+              fontSize: 'var(--text-badge)',
               color: 'var(--fg-tertiary)',
               padding: '0 2px',
             }}
@@ -74,7 +74,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             <span>100</span>
           </div>
           {updateMut.isError && (
-            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
               저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
             </div>
           )}

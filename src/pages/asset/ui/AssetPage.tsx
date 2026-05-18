@@ -71,17 +71,17 @@ function NetWorthTooltip({
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>순자산</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>순자산</span>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}
         >
           <MaskAmount>{KRW(v)}</MaskAmount>
           <HideUnit>원</HideUnit>
@@ -119,7 +119,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
         }}
       >
         추이 데이터가 없어요
@@ -145,14 +145,14 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           dataKey="monthLabel"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           tickMargin={8}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
           tickFormatter={fmtAxisNum}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={52}
         />
         <ChartTooltip
@@ -269,7 +269,7 @@ function AssetCompositionCard({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
             <>
               <Button
@@ -286,20 +286,20 @@ function AssetCompositionCard({
             '자산 구성'
           )}
         </CardTitle>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
           {dateLabel}
         </span>
       </CardHeader>
       <CardContent>
       {segments.length === 0 ? (
-        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
           {active ? '등록된 항목이 없어요' : '자산 데이터가 없어요'}
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Donut size={180} stroke={24} segments={segments}>
             <div className="lbl">{centerLbl}</div>
-            <div className="val num" style={{ fontSize: 'var(--fs-body-lg)' }}>
+            <div className="val num" style={{ fontSize: 'var(--text-body-lg)' }}>
               <MaskAmount mask="••••">{totalLabel}</MaskAmount>
             </div>
           </Donut>
@@ -333,7 +333,7 @@ function AssetCompositionCard({
                     <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
                     <span
                       style={{
-                        fontSize: 'var(--fs-body-sm)',
+                        fontSize: 'var(--text-label-sm)',
                         fontWeight: 'var(--fw-semi)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -342,7 +342,7 @@ function AssetCompositionCard({
                     >
                       {row.label}
                     </span>
-                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
+                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)' }}>
                       <MaskAmount mask="••••">{KRW(row.amt)}</MaskAmount>
                     </span>
                   </div>
@@ -363,7 +363,7 @@ function AssetCompositionCard({
                     <span
                       className="num"
                       style={{
-                        fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)',
+                        fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)',
                         minWidth: 40, textAlign: 'right',
                       }}
                     >
@@ -412,7 +412,7 @@ function UpcomingBillsCard() {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
         <Button
           variant="link"
           onClick={() => goToSettings()}
@@ -445,7 +445,7 @@ function UpcomingBillsCard() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
           예정된 결제가 없어요
         </div>
       ) : (
@@ -482,7 +482,7 @@ function UpcomingBillsCard() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)',
+                      fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}
                   >
@@ -490,7 +490,7 @@ function UpcomingBillsCard() {
                   </div>
                   <div
                     style={{
-                      fontSize: 'var(--fs-caption)', marginTop: 1,
+                      fontSize: 'var(--text-caption)', marginTop: 1,
                       color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
                       fontWeight: urgent ? 600 : 400,
                     }}
@@ -498,7 +498,7 @@ function UpcomingBillsCard() {
                     {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
                   </div>
                 </div>
-                <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+                <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
                   <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
                 </div>
               </button>
@@ -549,7 +549,7 @@ function SavingGoalItem({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)',
+              fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}
           >
@@ -561,7 +561,7 @@ function SavingGoalItem({
                   padding: '1px 6px',
                   background: 'var(--bg-brand-subtle)',
                   color: 'var(--fg-brand-strong)',
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   fontWeight: 'var(--fw-semi)',
                   borderRadius: 'var(--radius-sm)',
                 }}
@@ -570,13 +570,13 @@ function SavingGoalItem({
               </span>
             )}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
             {formatDeadline(goal.deadlineDate)}
           </div>
         </div>
         <div className="num" style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>{pct.toFixed(0)}%</div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)' }}>{pct.toFixed(0)}%</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
             {KRW(goal.currentAmount)} / {(goal.targetAmount / 10_000).toFixed(0)}만
           </div>
         </div>
@@ -611,7 +611,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>저축 목표</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>저축 목표</CardTitle>
         <Button
           variant="ghost"
           size="sm"
@@ -645,7 +645,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '20px 0', textAlign: 'center' }}>
           <div
             style={{
-              fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)',
+              fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)',
               fontWeight: 'var(--fw-medium)', marginBottom: 10,
             }}
           >
@@ -926,7 +926,7 @@ function AssetLogo({ asset }: { asset: Asset }) {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 'var(--fs-body)',
+        fontSize: 'var(--text-body-sm)',
         fontWeight: 'var(--fw-heavy)',
         letterSpacing: 'var(--tracking-tight)',
         flexShrink: 0,
@@ -977,14 +977,14 @@ function AssetCard({
     >
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>
           {asset.assetName}
           {asset.institution && (
             <span
               style={{
                 fontWeight: 'var(--fw-medium)',
                 color: 'var(--fg-tertiary)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 marginLeft: 6,
               }}
             >
@@ -995,7 +995,7 @@ function AssetCard({
         {asset.memo && (
           <div
             style={{
-              fontSize: 'var(--fs-caption)',
+              fontSize: 'var(--text-caption)',
               color: 'var(--fg-tertiary)',
               marginTop: 1,
               fontVariantNumeric: 'tabular-nums',
@@ -1008,7 +1008,7 @@ function AssetCard({
       <div
         className="num"
         style={{
-          fontSize: 'var(--fs-body-lg)',
+          fontSize: 'var(--text-body-lg)',
           fontWeight: 'var(--fw-bold)',
           fontVariantNumeric: 'tabular-nums',
           letterSpacing: 'var(--tracking-tight)',
@@ -1047,10 +1047,10 @@ function TypeGroup({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{title}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{title}</CardTitle>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: totalColor }}
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', color: totalColor }}
         >
           <MaskAmount>
             {negativeTotal ? `−${KRW(total)}` : KRW(total)}
@@ -1073,7 +1073,7 @@ function TypeGroup({
             padding: '24px 0',
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
           }}
         >
           등록된 항목이 없어요
@@ -1126,7 +1126,7 @@ function SummaryCard({
     <Card style={{ marginBottom: mobile ? 16 : 20 }}>
       <CardContent>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 순자산</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 순자산</span>
         <button
           onClick={handleHideToggle}
           style={{
@@ -1162,7 +1162,7 @@ function SummaryCard({
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
           color: 'var(--fg-secondary)',
           marginBottom: mobile ? 14 : 18,
         }}
@@ -1203,19 +1203,19 @@ function SummaryCard({
         }}
       >
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>계좌·예금</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>계좌·예금</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)' }}>
             <MaskAmount>{KRW(accountsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>투자</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>투자</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)' }}>
             <MaskAmount>{KRW(investmentsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>카드값</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>카드값</div>
           <div
             className="num"
             style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)' }}
@@ -1330,7 +1330,7 @@ function AssetDesktop() {
           <CardContent style={{ padding: '64px 20px', textAlign: 'center' }}>
             <div
               style={{
-                fontSize: 'var(--fs-body)',
+                fontSize: 'var(--text-body-sm)',
                 color: 'var(--fg-tertiary)',
                 fontWeight: 'var(--fw-medium)',
                 marginBottom: 12,
@@ -1474,7 +1474,7 @@ function AssetMobile() {
           <CardContent style={{ padding: '48px 20px', textAlign: 'center' }}>
             <div
               style={{
-                fontSize: 'var(--fs-body)',
+                fontSize: 'var(--text-body-sm)',
                 color: 'var(--fg-tertiary)',
                 fontWeight: 'var(--fw-medium)',
                 marginBottom: 12,

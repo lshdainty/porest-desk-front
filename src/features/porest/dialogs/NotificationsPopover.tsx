@@ -103,12 +103,12 @@ export function NotificationsPopover({
               알림
             </div>
             {unreadCount > 0 ? (
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                 읽지 않은 알림 <b style={{ color: 'var(--fg-brand-strong)' }}>{unreadCount}</b>개
               </div>
             ) : (
               !isLoading && items.length === 0 && (
-                <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                   새 알림이 없어요
                 </div>
               )
@@ -146,7 +146,7 @@ export function NotificationsPopover({
             </div>
           )}
           {!isLoading && items.length === 0 && (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
               아직 알림이 없어요
             </div>
           )}

@@ -137,7 +137,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--fs-body)',
+              fontSize: 'var(--text-body-sm)',
               fontWeight: 'var(--fw-semi)',
               textDecoration: isDone ? 'line-through' : 'none',
               color: 'var(--fg-primary)',
@@ -147,7 +147,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           </div>
           <div
             style={{
-              fontSize: 'var(--fs-caption)',
+              fontSize: 'var(--text-caption)',
               color: 'var(--fg-tertiary)',
               marginTop: 2,
               display: 'flex',
@@ -165,7 +165,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                     <span
                       key={tag.rowId}
                       style={{
-                        fontSize: 'var(--fs-micro)',
+                        fontSize: 'var(--text-badge)',
                         fontWeight: 'var(--fw-semi)',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
@@ -183,7 +183,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
         <span
           style={{
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             fontWeight: 'var(--fw-bold)',
             padding: '3px 9px',
             borderRadius: 'var(--radius-pill)',
@@ -210,7 +210,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         border: 0,
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
         fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
@@ -222,7 +222,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const SectionHead = (label: string, count: number) => (
     <div
       style={{
-        fontSize: 'var(--fs-micro)',
+        fontSize: 'var(--text-badge)',
         color: 'var(--fg-tertiary)',
         fontWeight: 'var(--fw-semi)',
         letterSpacing: 'var(--tracking-wide)',
@@ -240,7 +240,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         padding: '16px 0',
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
       }}
     >
       {msg}
@@ -255,7 +255,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           <TodoSectionSkeleton rows={2} />
         </div>
       ) : todos.length === 0 ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
           할 일이 없어요
         </div>
       ) : (
@@ -277,7 +277,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>할 일</h2>
+          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>할 일</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

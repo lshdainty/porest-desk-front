@@ -175,7 +175,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         border: 0,
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
         fontWeight: 'var(--fw-bold)',
         cursor: 'pointer',
       }}
@@ -198,7 +198,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       >
         <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-on-warm)', fontWeight: 'var(--fw-semi)' }}>진행 중 정산</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-on-warm)', fontWeight: 'var(--fw-semi)' }}>진행 중 정산</div>
           <Button
             variant="secondary"
             size="sm"
@@ -212,24 +212,24 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         <div style={{ fontSize: mobile ? 18 : 22, fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-tight)', marginBottom: 6 }}>
           {d.title}
         </div>
-        <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', marginBottom: 18 }}>
+        <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', marginBottom: 18 }}>
           {d.dutchPayDate} · {d.participants.length}명 · {paidCount}/{d.participants.length} 정산 완료
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 금액</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 금액</div>
           <div className="num" style={{ fontSize: mobile ? 22 : 26, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>
             {KRW(d.totalAmount)}원
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>1인당</div>
-          <div className="num" style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>1인당</div>
+          <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)' }}>
             {KRW(perPerson)}원
           </div>
         </div>
 
         <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-warm)' }}>
-          <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-secondary)', marginBottom: 10 }}>참여자</div>
+          <div style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-secondary)', marginBottom: 10 }}>참여자</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {d.participants.map((p, i) => renderParticipantRow(d.rowId, p, i))}
           </div>
@@ -263,8 +263,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           {nameInitial(p.participantName)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{p.participantName}</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)' }}>{p.participantName}</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             분담 {KRW(p.amount)}원{p.paidAt ? ` · ${p.paidAt.slice(0, 10)}` : ''}
           </div>
         </div>
@@ -280,7 +280,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         ) : (
           <span
             style={{
-              fontSize: 'var(--fs-micro)',
+              fontSize: 'var(--text-badge)',
               fontWeight: 'var(--fw-bold)',
               padding: '3px 9px',
               borderRadius: 'var(--radius-pill)',
@@ -304,7 +304,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   const CompletedSection = completed.length > 0 ? (
     <Card>
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>완료된 정산</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>완료된 정산</CardTitle>
       </CardHeader>
       <CardContent>
       {completed.map((d, i) => (
@@ -334,12 +334,12 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
             <Check size={16} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{d.title}</div>
-            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+            <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)' }}>{d.title}</div>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
               {d.dutchPayDate} · {d.participants.length}명
             </div>
           </div>
-          <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
+          <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)' }}>
             {KRW(d.totalAmount)}원
           </div>
         </div>
@@ -355,7 +355,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           padding: 40,
           textAlign: 'center',
           color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
         }}
       >
         아직 정산 내역이 없어요
@@ -385,7 +385,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>더치페이</h2>
+          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>더치페이</h2>
           <div style={{ marginLeft: 'auto' }}>{CreateBtn}</div>
         </div>
         {Body}
