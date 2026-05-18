@@ -46,7 +46,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--dur-fast) var(--ease-standard);
+  transition: all var(--motion-duration-fast) var(--motion-ease-out);
   margin-left: 4px;
   flex-shrink: 0;
 }
@@ -75,7 +75,7 @@
   width: 100%;
   text-align: left;
   position: relative;
-  transition: background var(--dur-fast), color var(--dur-fast);
+  transition: background var(--motion-duration-fast), color var(--motion-duration-fast);
 }
 .side__item svg { color: var(--fg-tertiary); flex-shrink: 0; }
 .side__item:hover { background: var(--bg-muted); color: var(--fg-primary); }
@@ -145,7 +145,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px var(--space-3);
+  padding: 12px var(--spacing-md);
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   flex-shrink: 0;
@@ -167,7 +167,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: var(--fg-primary);
-  transition: all var(--dur-fast);
+  transition: all var(--motion-duration-fast);
   font-family: inherit;
 }
 .top__search input:focus {
@@ -243,7 +243,7 @@
   color: var(--fg-tertiary);
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: color var(--dur-fast);
+  transition: color var(--motion-duration-fast);
   position: relative;
 }
 /* > svg: 직접 자식만 매칭 — FAB 의 <span><svg/></span> 는 영향 없음 */
@@ -363,7 +363,7 @@
   height: 100%;
   background: var(--bg-brand);
   border-radius: inherit;
-  transition: width var(--dur-slow) var(--ease-decel);
+  transition: width var(--motion-duration-slow) var(--ease-decel);
 }
 .budget-bar__fill.warn { background: var(--sunlit-500); }
 .budget-bar__fill.over { background: var(--fg-expense); }
@@ -457,7 +457,7 @@
 /* Category legend */
 .cat-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .cat-legend__row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; font-size: var(--fs-body-sm); }
-.cat-legend__sw { width: 10px; height: 10px; border-radius: var(--radius-2xs); }
+.cat-legend__sw { width: 10px; height: 10px; border-radius: var(--radius-xs); }
 .cat-legend__name { font-weight: var(--fw-medium); }
 .cat-legend__pct { font-size: var(--fs-caption); color: var(--fg-tertiary); font-variant-numeric: tabular-nums; }
 .cat-legend__amt { font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-snug); }

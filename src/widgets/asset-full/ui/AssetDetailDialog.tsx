@@ -59,7 +59,7 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--color-balance)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
           <MaskAmount>{KRW(val)}</MaskAmount>

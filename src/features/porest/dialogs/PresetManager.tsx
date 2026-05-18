@@ -233,7 +233,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
                           color: 'var(--fg-income)',
-                          borderRadius: 'var(--radius-2xs)',
+                          borderRadius: 'var(--radius-xs)',
                         }}
                       >
                         수입
@@ -247,7 +247,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           padding: '1px 5px',
                           background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
-                          borderRadius: 'var(--radius-2xs)',
+                          borderRadius: 'var(--radius-xs)',
                         }}
                       >
                         금액 비움

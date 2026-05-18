@@ -168,21 +168,16 @@
   --bg-income-subtle:  var(--bg-brand-subtle);
   --bg-transfer-subtle: var(--status-info-subtle);
 
-  /* Radii — prototype spec */
-  --radius-2xs:  2px;   /* chart marker / legend swatch */
-  /* radius scale 은 porest-tokens.css(porest-design spec 정합) 가 정의.
-   * 여기서는 spec note 의 alias 와 desk-front 전용 custom token 만 추가. */
+  /* Radii — desk-front custom aliases (radius scale 은 porest-tokens.css SoT).
+   * 옛 --radius-2xs(2px) 는 --radius-xs SoT 와 동일 값이라 마이그됨. */
   --radius-tile: var(--radius-lg);  /* spec: color-swatch/tile = radius-lg(12px) alias */
   --radius-card: 14px;              /* desk-front custom: tx-row card, dashboard card (spec 외) */
   --radius-pill: 9999px;            /* spec radius-full 별명 */
 
-  /* Spacing */
-  --space-0:  0;
-  --space-1:  4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
-  --space-5:  20px; --space-6: 24px; --space-7: 28px; --space-8: 32px;
-  --space-10: 40px; --space-12: 48px; --space-16: 64px; --space-20: 80px;
+  /* Spacing — porest-tokens.css `--spacing-xs/sm/md/lg/xl/2xl/3xl` (SoT) 사용.
+   * 옛 --space-N 시리즈는 마이그 후 제거됨. */
 
-  /* Shadow (tinted Mossy green-black) */
+  /* Shadow (tinted Mossy green-black — legacy, follow-up cleanup) */
   --shadow-xs: 0 1px 2px rgba(28, 36, 20, 0.05);
   --shadow-sm: 0 1px 2px rgba(28, 36, 20, 0.06), 0 1px 3px rgba(28, 36, 20, 0.04);
   --shadow-md: 0 4px 8px -2px rgba(28, 36, 20, 0.08), 0 2px 4px -2px rgba(28, 36, 20, 0.05);
@@ -202,11 +197,10 @@
   --fw-regular: 400; --fw-medium: 500; --fw-semi: 600; --fw-bold: 700; --fw-heavy: 800;
   --tracking-tight: -0.022em; --tracking-snug: -0.012em; --tracking-normal: 0; --tracking-wide: 0.04em;
 
-  /* Motion */
-  --dur-instant: 80ms; --dur-fast: 140ms; --dur-base: 200ms; --dur-slow: 320ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);
-  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);
+  /* Motion — porest-tokens.css `--motion-duration-*` / `--motion-ease-out` (SoT) 사용.
+   * 옛 --dur-* / --ease-standard 는 마이그됨. spring/decel 은 SoT 미정의 desk-front custom 보존. */
+  --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);   /* SoT 미정의 — overshoot spring */
+  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);          /* SoT 미정의 — progress bar width 애니메이션 */
 
   /* Z-index */
   --z-base: 1; --z-sticky: 100; --z-dropdown: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;

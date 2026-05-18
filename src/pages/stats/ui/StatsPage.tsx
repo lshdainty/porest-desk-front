@@ -203,7 +203,7 @@ function PorestChartTooltip({
               style={{
                 width: 10,
                 height: 10,
-                borderRadius: 'var(--radius-2xs)',
+                borderRadius: 'var(--radius-xs)',
                 background: row.color,
                 flexShrink: 0,
               }}
@@ -786,7 +786,7 @@ export const StatsPage = () => {
                     borderRadius: 'var(--radius-md)',
                     padding: clickable ? '4px 6px' : undefined,
                     margin: clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                   }}
                   onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
@@ -1060,7 +1060,7 @@ export const StatsPage = () => {
                         boxShadow: isPeak
                           ? '0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)'
                           : 'none',
-                        transition: 'background var(--dur-fast) var(--ease-standard)',
+                        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                       }}
                     >
                       <MaskAmount mask={value > 0 ? '••' : '—'}>{shortAmount(value)}</MaskAmount>
@@ -1090,7 +1090,7 @@ export const StatsPage = () => {
                   style={{
                     width: 18,
                     height: 10,
-                    borderRadius: 'var(--radius-2xs)',
+                    borderRadius: 'var(--radius-xs)',
                     background: c.bg,
                     border: '1px solid var(--border-subtle)',
                   }}
@@ -1349,10 +1349,10 @@ export const StatsPage = () => {
           </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} /> 지출
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> 지출
             </span>
           </div>
         </>
@@ -1644,11 +1644,11 @@ export const StatsPage = () => {
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--bg-brand)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--bg-brand)' }} />
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand-mid)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand-mid)' }} />
             {periodPrev}
           </span>
         </div>

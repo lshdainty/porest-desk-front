@@ -85,7 +85,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span
           style={{
-            width: 8, height: 8, borderRadius: 'var(--radius-2xs)',
+            width: 8, height: 8, borderRadius: 'var(--radius-xs)',
             background: over ? 'var(--fg-expense)' : 'var(--bg-brand)',
           }}
         />
@@ -585,7 +585,7 @@ export const BudgetPage = () => {
             width: 2,
             height: 18,
             background: 'var(--fg-primary)',
-            borderRadius: 'var(--radius-2xs)',
+            borderRadius: 'var(--radius-xs)',
           }}
         />
       </div>

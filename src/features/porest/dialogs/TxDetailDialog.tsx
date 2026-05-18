@@ -260,7 +260,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                   style={{
                     width: 10,
                     height: 10,
-                    borderRadius: 'var(--radius-2xs)',
+                    borderRadius: 'var(--radius-xs)',
                     background: palette.color,
                   }}
                 />

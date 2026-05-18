@@ -123,7 +123,7 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
                 formatter={(value, name, item) => (
                   <>
                     <div
-                      className="h-2.5 w-2.5 shrink-0 rounded-[var(--radius-2xs)]"
+                      className="h-2.5 w-2.5 shrink-0 rounded-[var(--radius-xs)]"
                       style={{
                         backgroundColor: (item as unknown as Record<string, unknown>)?.payload
                           ? ((item as unknown as Record<string, unknown>).payload as Record<string, string>).fill
@@ -149,7 +149,7 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
         {displayData.map((entry, index) => (
           <div key={entry.name} className="flex items-center gap-1.5">
             <div
-              className="h-2.5 w-2.5 shrink-0 rounded-[var(--radius-2xs)]"
+              className="h-2.5 w-2.5 shrink-0 rounded-[var(--radius-xs)]"
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
             <span className="text-xs text-muted-foreground">{entry.name}</span>

@@ -77,7 +77,7 @@ function NetWorthTooltip({
     >
       <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
         <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>순자산</span>
         <span
           className="num"
@@ -323,14 +323,14 @@ function AssetCompositionCard({
                     borderRadius: 'var(--radius-md)',
                     padding: row.clickable ? '4px 6px' : undefined,
                     margin: row.clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                   }}
                   onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: row.color, flexShrink: 0 }} />
+                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
                     <span
                       style={{
                         fontSize: 'var(--fs-body-sm)',
@@ -957,7 +957,7 @@ function AssetCard({
       className={[
         'flex items-center gap-[14px] cursor-pointer',
         'border border-solid',
-        'transition-all duration-[var(--dur-fast)]',
+        'transition-all duration-[var(--motion-duration-fast)]',
         'hover:-translate-y-px hover:shadow-[var(--shadow-sm)]',
         'hover:border-[var(--border-default)]',
       ].join(' ')}

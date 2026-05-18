@@ -213,7 +213,7 @@ export function LineChart({
                     style={{
                       width: 8,
                       height: 8,
-                      borderRadius: 'var(--radius-2xs)',
+                      borderRadius: 'var(--radius-xs)',
                       background: colors[si] || colors[0],
                       display: 'inline-block',
                     }}
@@ -366,14 +366,14 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
                 <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>수입</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
                 <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>지출</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
                   {KRW(d.expense)}원
