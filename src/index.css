@@ -406,10 +406,10 @@
   --font-weight-semibold: var(--fw-semi);
   --font-weight-bold: var(--fw-bold);
   --font-weight-extrabold: var(--fw-heavy);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
+  /* radius-* 토큰은 porest-tokens.css `@theme { ... }`에서 직접 정의됨.
+   * 여기서 self-reference(`--radius-lg: var(--radius-lg)`) 두면 Tailwind v4가
+   * `:root { --radius-lg: var(--radius-lg) }` cascade-killing self-reference를
+   * emit해서 모든 `rounded-*` / `rounded-[var(--radius-*)]` 무효화됨. 제거. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
