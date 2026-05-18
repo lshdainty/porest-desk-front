@@ -141,7 +141,7 @@ const MonthDayCell = ({
               isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
             )}
             style={{
-              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined),
+              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined),
             }}
           >
             {day}
@@ -374,7 +374,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined }}
+                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined }}
               >
                 {day}
               </span>

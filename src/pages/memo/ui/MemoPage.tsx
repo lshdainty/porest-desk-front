@@ -13,8 +13,8 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 // 다크모드에서 라이트 톤이 유지돼 카드가 튀어 보였음.
 const CARD_COLORS = [
   'color-mix(in oklch, var(--border-brand) 18%, transparent)',   // 모시 그린
-  'color-mix(in oklch, var(--sunlit-500) 18%, transparent)',  // 햇살 옐로
-  'color-mix(in oklch, var(--bark-500) 18%, transparent)',    // 바크 브라운
+  'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)',  // 햇살 옐로
+  'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)',    // 바크 브라운
   'color-mix(in oklch, oklch(0.55 0.15 290) 18%, transparent)', // 라벤더
   'var(--bg-muted)',                                          // 뉴트럴
 ]

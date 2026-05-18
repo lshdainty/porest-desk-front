@@ -23,67 +23,18 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================
- * POREST Design System — Foundation Tokens (Mossy Bark)
- * "조용하고 따뜻한 방향 — 숲에서 자라는 나무 줄기같은"
+ * POREST Design System — Foundation Tokens (SoT: porest-tokens.css `@theme {}`)
+ *
+ * 옛 Mossy/Bark/Mist palette + sunlit/berry/sky/sprout status palette 는
+ * SoT 정합으로 마이그됨:
+ *   Mossy → --color-chart-green (수입/proto user 색)
+ *   Bark → --color-chart-brown (저축/카드 fallback/proto)
+ *   Mist 200/700 → --color-chart-gray + --color-text-tertiary (chart axis)
+ *   Sunlit → --color-warning(-light) (경고/긴급) 또는 --color-chart-yellow (proto)
+ *   Sky → --color-info (calendar 토요일) 또는 --color-chart-blue (proto)
+ *   Berry / Sprout → 0 사용처 dead code, 제거됨
  * ========================================================================== */
 :root {
-  /* Mossy Bark (primary) */
-  --mossy-50:  oklch(0.972 0.014 110);
-  --mossy-100: oklch(0.942 0.024 110);
-  --mossy-200: oklch(0.880 0.038 110);
-  --mossy-300: oklch(0.790 0.052 110);
-  --mossy-400: oklch(0.660 0.060 110);
-  --mossy-500: oklch(0.520 0.060 110);
-  --mossy-600: oklch(0.455 0.058 110);
-  --mossy-700: oklch(0.385 0.050 110);
-  --mossy-800: oklch(0.310 0.042 110);
-  --mossy-900: oklch(0.235 0.032 110);
-  --mossy-950: oklch(0.165 0.024 110);
-
-  /* Bark (warm) */
-  --bark-50:  oklch(0.978 0.010 75);
-  --bark-100: oklch(0.948 0.020 72);
-  --bark-200: oklch(0.895 0.032 70);
-  --bark-300: oklch(0.820 0.042 68);
-  --bark-400: oklch(0.680 0.048 62);
-  --bark-500: oklch(0.540 0.048 55);
-  --bark-600: oklch(0.440 0.045 50);
-  --bark-700: oklch(0.355 0.038 45);
-  --bark-800: oklch(0.275 0.028 42);
-  --bark-900: oklch(0.200 0.020 40);
-
-  /* Mist (cool neutral) */
-  --mist-0:   #FFFFFF;
-  --mist-50:  oklch(0.988 0.003 170);
-  --mist-100: oklch(0.974 0.005 170);
-  --mist-200: oklch(0.945 0.007 170);
-  --mist-300: oklch(0.905 0.008 170);
-  --mist-400: oklch(0.830 0.010 175);
-  --mist-500: oklch(0.680 0.012 180);
-  --mist-600: oklch(0.530 0.012 185);
-  --mist-700: oklch(0.400 0.012 190);
-  --mist-800: oklch(0.280 0.012 195);
-  --mist-900: oklch(0.180 0.010 200);
-  --mist-950: oklch(0.115 0.008 200);
-
-  /* Status */
-  --sunlit-100: oklch(0.968 0.030 85);
-  --sunlit-300: oklch(0.875 0.080 85);
-  --sunlit-500: oklch(0.745 0.115 82);
-  --sunlit-700: oklch(0.560 0.105 78);
-  --berry-100:  oklch(0.955 0.025 25);
-  --berry-300:  oklch(0.820 0.075 25);
-  --berry-500:  oklch(0.605 0.135 25);
-  --berry-700:  oklch(0.470 0.115 24);
-  --sky-100:    oklch(0.965 0.020 230);
-  --sky-300:    oklch(0.870 0.055 230);
-  --sky-500:    oklch(0.680 0.090 230);
-  --sky-700:    oklch(0.520 0.085 232);
-  --sprout-100: oklch(0.960 0.030 135);
-  --sprout-300: oklch(0.870 0.070 130);
-  --sprout-500: oklch(0.735 0.105 128);
-  --sprout-700: oklch(0.540 0.095 125);
-
   /* Semantic — light (Phase 1: Porest 토큰 alias)
    * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Porest로 alias.
    * 기존 컴포넌트는 변수명 그대로 사용 — 색만 Cobalt 톤으로 전환. */

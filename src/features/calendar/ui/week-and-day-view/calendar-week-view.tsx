@@ -266,7 +266,7 @@ const CalendarWeekView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 const dayOfWeek = day.getDay()
                 const isSunday = dayOfWeek === 0
                 const isSaturday = dayOfWeek === 6
-                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined
+                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined
 
                 return (
                   <div key={index} className="py-2 text-center text-xs font-medium">

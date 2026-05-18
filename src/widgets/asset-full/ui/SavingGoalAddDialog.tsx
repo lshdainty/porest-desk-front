@@ -39,7 +39,7 @@ const GOAL_ICONS: { k: IconName; label: string }[] = [
 ]
 
 const GOAL_COLORS = [
-  'var(--sky-500)',
+  'var(--color-chart-blue)',
   'var(--bg-brand)',
   'var(--fg-expense)',
   'var(--clay-500)',

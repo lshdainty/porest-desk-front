@@ -17,10 +17,10 @@ export const CATEGORIES: Record<CategoryKey, CategoryDef> = {
   living:    { label: '생활·가공', icon: 'home',         color: 'oklch(0.50 0.1 140)',  bg: 'oklch(0.96 0.025 135)' },
   medical:   { label: '의료·건강', icon: 'heart-pulse',  color: 'oklch(0.55 0.13 25)',  bg: 'oklch(0.96 0.03 25)' },
   leisure:   { label: '문화·여가', icon: 'ticket',       color: 'oklch(0.50 0.12 290)', bg: 'oklch(0.96 0.035 290)' },
-  bill:      { label: '공과·통신', icon: 'receipt-text', color: 'oklch(0.48 0.012 195)',bg: 'var(--mist-200)' },
+  bill:      { label: '공과·통신', icon: 'receipt-text', color: 'oklch(0.48 0.012 195)',bg: 'color-mix(in srgb, var(--color-chart-gray) 18%, transparent)' },
   edu:       { label: '교육',      icon: 'book-open',    color: 'oklch(0.52 0.1 215)',  bg: 'oklch(0.96 0.03 210)' },
-  saving:    { label: '저축·투자', icon: 'piggy-bank',   color: 'var(--bark-700)',      bg: 'var(--bark-100)' },
-  income:    { label: '수입',      icon: 'arrow-down-to-line', color: 'var(--mossy-800)', bg: 'var(--mossy-100)' },
+  saving:    { label: '저축·투자', icon: 'piggy-bank',   color: 'var(--color-chart-brown)',      bg: 'color-mix(in srgb, var(--color-chart-brown) 18%, transparent)' },
+  income:    { label: '수입',      icon: 'arrow-down-to-line', color: 'var(--color-chart-green)', bg: 'color-mix(in srgb, var(--color-chart-green) 18%, transparent)' },
 }
 
 export interface Account {
@@ -154,10 +154,10 @@ export const DUTCH_PAY = {
   place: '이촌돈까스 강남점',
   date: '2026-04-19',
   participants: [
-    { name: '김민서', paid: 128_000, share: 32_000, status: 'owner',   color: 'var(--mossy-500)' },
-    { name: '이지훈', paid: 0,       share: 32_000, status: 'paid',    color: 'var(--bark-500)' },
-    { name: '박수빈', paid: 0,       share: 32_000, status: 'pending', color: 'var(--sky-500)' },
-    { name: '정유나', paid: 0,       share: 32_000, status: 'pending', color: 'var(--sunlit-500)' },
+    { name: '김민서', paid: 128_000, share: 32_000, status: 'owner',   color: 'var(--color-chart-green)' },
+    { name: '이지훈', paid: 0,       share: 32_000, status: 'paid',    color: 'var(--color-chart-brown)' },
+    { name: '박수빈', paid: 0,       share: 32_000, status: 'pending', color: 'var(--color-chart-blue)' },
+    { name: '정유나', paid: 0,       share: 32_000, status: 'pending', color: 'var(--color-chart-yellow)' },
   ],
 }
 

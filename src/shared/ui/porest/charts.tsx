@@ -122,7 +122,7 @@ export function LineChart({
                 x={padL - 6}
                 y={y + 3}
                 fontSize="10"
-                fill="var(--mist-500)"
+                fill="var(--color-text-tertiary)"
                 textAnchor="end"
                 fontFamily="var(--font-sans)"
               >
@@ -137,7 +137,7 @@ export function LineChart({
             x={padL + i * step}
             y={h - padB + 16}
             fontSize="10"
-            fill="var(--mist-500)"
+            fill="var(--color-text-tertiary)"
             textAnchor="middle"
             fontFamily="var(--font-sans)"
           >
@@ -298,7 +298,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 strokeWidth="1"
                 strokeDasharray={i === 0 ? '0' : '3 3'}
               />
-              <text x={padL - 6} y={y + 3} fontSize="10" fill="var(--mist-500)" textAnchor="end">
+              <text x={padL - 6} y={y + 3} fontSize="10" fill="var(--color-text-tertiary)" textAnchor="end">
                 {v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : ''}
               </text>
             </g>
@@ -332,7 +332,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 fill="var(--fg-expense)"
                 opacity={isHover ? 1 : 0.92}
               />
-              <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--mist-500)" textAnchor="middle">
+              <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--color-text-tertiary)" textAnchor="middle">
                 {d.label}
               </text>
             </g>

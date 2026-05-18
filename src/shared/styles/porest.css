@@ -365,7 +365,7 @@
   border-radius: inherit;
   transition: width var(--motion-duration-slow) var(--ease-decel);
 }
-.budget-bar__fill.warn { background: var(--sunlit-500); }
+.budget-bar__fill.warn { background: var(--color-warning-light); }
 .budget-bar__fill.over { background: var(--fg-expense); }
 
 .mini-sparkline { width: 100%; height: 40px; display: block; }

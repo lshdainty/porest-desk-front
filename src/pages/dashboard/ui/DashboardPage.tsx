@@ -909,7 +909,7 @@ function HomeDesktop() {
                     style={{
                       width: 38, height: 38, borderRadius: 'var(--radius-tile)',
                       background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                      color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
+                      color: p.d <= 7 ? 'var(--color-warning)' : 'var(--fg-secondary)',
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)', letterSpacing: 'var(--tracking-tight)',
                       flexShrink: 0,
@@ -969,7 +969,7 @@ function HomeDesktop() {
                     borderRadius: 'var(--radius-pill)',
                     background:
                       td.priority === 'HIGH' ? 'var(--fg-expense)'
-                      : td.priority === 'MEDIUM' ? 'var(--sunlit-500)'
+                      : td.priority === 'MEDIUM' ? 'var(--color-warning-light)'
                       : 'var(--bg-brand)',
                   }}
                 />
@@ -1009,7 +1009,7 @@ function HomeDesktop() {
                     height: 38,
                     borderRadius: 'var(--radius-tile)',
                     background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                    color: ev.daysUntil <= 3 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
+                    color: ev.daysUntil <= 3 ? 'var(--color-warning)' : 'var(--fg-secondary)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',

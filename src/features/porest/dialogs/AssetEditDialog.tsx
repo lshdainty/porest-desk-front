@@ -471,7 +471,7 @@ export function AssetEditDialog({
                       style={{
                         width: 44,
                         height: 28,
-                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--color-chart-brown)',
                       }}
                     >
                       {(c.company?.name ?? c.cardName).slice(0, 1)}

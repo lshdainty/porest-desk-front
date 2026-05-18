@@ -48,9 +48,9 @@ const CAT_ICO_PALETTE: Record<string, { bg: string; color: string }> = {
   living:    { bg: 'oklch(0.96 0.025 135)', color: 'oklch(0.48 0.1 140)' },
   medical:   { bg: 'oklch(0.96 0.03 25)',   color: 'oklch(0.52 0.13 25)' },
   leisure:   { bg: 'oklch(0.96 0.035 290)', color: 'oklch(0.48 0.12 290)' },
-  bill:      { bg: 'var(--mist-200)',       color: 'var(--mist-700)' },
+  bill:      { bg: 'color-mix(in srgb, var(--color-chart-gray) 18%, transparent)',       color: 'var(--color-chart-gray)' },
   edu:       { bg: 'oklch(0.96 0.03 210)',  color: 'oklch(0.5 0.1 215)' },
-  saving:    { bg: 'var(--bg-warm-tint)',       color: 'var(--bark-700)' },
+  saving:    { bg: 'var(--bg-warm-tint)',       color: 'var(--color-chart-brown)' },
 }
 
 const CAT_ICO_DIMS = {

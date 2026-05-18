@@ -15,9 +15,9 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 const PARTICIPANT_COLORS = [
   'var(--border-brand)',
-  'var(--bark-500)',
-  'var(--sky-500)',
-  'var(--sunlit-500)',
+  'var(--color-chart-brown)',
+  'var(--color-chart-blue)',
+  'var(--color-chart-yellow)',
   'var(--fg-expense)',
   'var(--fg-income)',
 ]
