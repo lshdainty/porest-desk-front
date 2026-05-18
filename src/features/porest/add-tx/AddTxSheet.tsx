@@ -601,7 +601,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             fontSize: 'var(--text-title-md)',
             fontWeight: '700',
             color: amountColor,
-            background: 'var(--bg-surface)',
           }}
         />
       </Field>
