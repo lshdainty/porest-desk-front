@@ -6,6 +6,7 @@ import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
@@ -317,54 +318,38 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       footer={Footer}
       mobile={mobile}
     >
-      {/* 타입 segment */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 2,
-          padding: 3,
-          background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-tile)',
-          marginBottom: 20,
+      {/* 타입 segment — spec toggle-group.md variant="segmented" (single) */}
+      <ToggleGroup
+        type="single"
+        variant="segmented"
+        value={type}
+        onValueChange={(v) => {
+          if (!v) return
+          const lockedTo = isEdit ? expense?.expenseType ?? type : null
+          if (lockedTo != null && v !== lockedTo) return
+          setType(v as TxType)
+          clearPresetMark()
         }}
+        className="mb-[var(--spacing-md)]"
       >
         {([
-          { v: 'EXPENSE', l: '지출', c: 'var(--fg-expense)' },
-          { v: 'INCOME', l: '수입', c: 'var(--fg-income)' },
-          { v: 'TRANSFER', l: '이체', c: 'var(--fg-transfer)' },
-        ] as { v: TxType; l: string; c: string }[]).map(o => {
-          const active = type === o.v
-          const disabled = isEdit && o.v !== (expense?.expenseType ?? type) // edit 모드는 타입 변경 막음
+          { v: 'EXPENSE', l: '지출' },
+          { v: 'INCOME', l: '수입' },
+          { v: 'TRANSFER', l: '이체' },
+        ] as { v: TxType; l: string }[]).map(o => {
+          const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
           return (
-            <button
+            <ToggleGroupItem
               key={o.v}
-              type="button"
-              onClick={() => {
-                if (disabled) return
-                setType(o.v)
-                clearPresetMark()
-              }}
+              value={o.v}
               disabled={disabled}
-              style={{
-                background: active ? 'var(--bg-surface)' : 'transparent',
-                color: active ? o.c : 'var(--fg-secondary)',
-                border: 0,
-                padding: '8px 0',
-                fontSize: 'var(--text-body-sm)',
-                fontWeight: '700',
-                borderRadius: 'var(--radius-md)',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                opacity: disabled ? 0.4 : 1,
-                fontFamily: 'inherit',
-                boxShadow: active ? 'var(--shadow-sm)' : 'none',
-              }}
+              aria-label={o.l}
             >
               {o.l}
-            </button>
+            </ToggleGroupItem>
           )
         })}
-      </div>
+      </ToggleGroup>
 
       {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
       {!isEdit && type !== 'TRANSFER' && (
@@ -609,7 +594,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         <>
           {/* 카테고리 */}
           {topCategories.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 'var(--spacing-md)' }}>
               <div
                 style={{
                   fontSize: 'var(--text-badge)',
@@ -617,7 +602,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   fontWeight: '600',
                   letterSpacing: '0.04em',
                   textTransform: 'uppercase',
-                  marginBottom: 10,
+                  marginBottom: 'var(--spacing-sm)',
                 }}
               >
                 카테고리
