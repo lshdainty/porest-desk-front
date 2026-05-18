@@ -144,18 +144,19 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
-// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용)
+// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
+// `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
-  'var(--color-chart-blue)',
-  'var(--color-chart-green)',
-  'var(--color-chart-orange)',
-  'var(--color-chart-violet)',
-  'var(--color-chart-pink)',
-  'var(--color-chart-indigo)',
-  'var(--color-chart-red)',
-  'var(--color-chart-yellow)',
-  'var(--color-chart-brown)',
-  'var(--color-chart-gray)',
+  'var(--color-cat-blue)',
+  'var(--color-cat-green)',
+  'var(--color-cat-orange)',
+  'var(--color-cat-violet)',
+  'var(--color-cat-pink)',
+  'var(--color-cat-indigo)',
+  'var(--color-cat-red)',
+  'var(--color-cat-yellow)',
+  'var(--color-cat-brown)',
+  'var(--color-cat-gray)',
 ]
 
 function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
@@ -481,15 +482,24 @@ function HomeDesktop() {
     const expenseOnly = (monthly?.categoryBreakdown ?? []).filter(
       c => c.expenseType === 'EXPENSE',
     )
+    const cats = categoriesQ.data ?? []
+    const catColorMap = new Map<number, string | null | undefined>()
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-    return items.map((c, i) => ({
-      value: c.totalAmount,
-      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
-      label: c.categoryName,
-    }))
-  }, [monthly])
+    return items.map((c, i) => {
+      const raw = catColorMap.get(c.categoryRowId)
+      const color = raw
+        ? getPaletteByColor(raw).color
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+      return {
+        value: c.totalAmount,
+        color,
+        label: c.categoryName,
+      }
+    })
+  }, [monthly, categoriesQ.data])
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
   const barData = useMemo(() => {
@@ -1104,15 +1114,24 @@ function HomeMobile() {
     const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
       c => c.expenseType === 'EXPENSE',
     )
+    const cats = categoriesQ.data ?? []
+    const catColorMap = new Map<number, string | null | undefined>()
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-    return items.map((c, i) => ({
-      value: c.totalAmount,
-      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
-      label: c.categoryName,
-    }))
-  }, [monthlyQ.data])
+    return items.map((c, i) => {
+      const raw = catColorMap.get(c.categoryRowId)
+      const color = raw
+        ? getPaletteByColor(raw).color
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+      return {
+        value: c.totalAmount,
+        color,
+        label: c.categoryName,
+      }
+    })
+  }, [monthlyQ.data, categoriesQ.data])
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
   // 예산 — 설정한 전체 표시
@@ -1218,8 +1237,9 @@ function HomeMobile() {
               onClick={() => navigate(q.path)}
               style={{
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
+                border: 'none',
                 borderRadius: 'var(--radius-card)',
+                boxShadow: 'var(--shadow-sm)',
                 padding: '14px 8px',
                 display: 'flex',
                 flexDirection: 'column',

@@ -170,15 +170,11 @@
 
   /* Radii — prototype spec */
   --radius-2xs:  2px;   /* chart marker / legend swatch */
-  --radius-xs:   4px;
-  --radius-sm:   6px;
-  --radius-md:   8px;
-  --radius-tile: 10px;  /* category tile, pill button bg */
-  --radius-lg:   12px;
-  --radius-card: 14px;  /* tx-row card, dashboard card */
-  --radius-xl:   16px;
-  --radius-2xl:  20px;
-  --radius-pill: 999px;
+  /* radius scale 은 porest-tokens.css(porest-design spec 정합) 가 정의.
+   * 여기서는 spec note 의 alias 와 desk-front 전용 custom token 만 추가. */
+  --radius-tile: var(--radius-lg);  /* spec: color-swatch/tile = radius-lg(12px) alias */
+  --radius-card: 14px;              /* desk-front custom: tx-row card, dashboard card (spec 외) */
+  --radius-pill: 9999px;            /* spec radius-full 별명 */
 
   /* Spacing */
   --space-0:  0;
@@ -241,6 +237,17 @@
   --chart-3: var(--color-chart-orange);
   --chart-4: var(--color-chart-green);
   --chart-5: var(--color-chart-violet);
+  /* 카테고리 색 alias — DB 가 chart palette base hex 만 저장. 다크모드에서 light variant 로 자동 swap. */
+  --color-cat-red:    var(--color-chart-red);
+  --color-cat-orange: var(--color-chart-orange);
+  --color-cat-yellow: var(--color-chart-yellow);
+  --color-cat-green:  var(--color-chart-green);
+  --color-cat-blue:   var(--color-chart-blue);
+  --color-cat-indigo: var(--color-chart-indigo);
+  --color-cat-violet: var(--color-chart-violet);
+  --color-cat-pink:   var(--color-chart-pink);
+  --color-cat-brown:  var(--color-chart-brown);
+  --color-cat-gray:   var(--color-chart-gray);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
   --sidebar-primary:        var(--color-primary);
@@ -368,6 +375,17 @@
   --chart-3: var(--color-chart-orange-light);
   --chart-4: var(--color-chart-green-light);
   --chart-5: var(--color-chart-violet-light);
+  /* 카테고리 색 alias — light variant 로 swap */
+  --color-cat-red:    var(--color-chart-red-light);
+  --color-cat-orange: var(--color-chart-orange-light);
+  --color-cat-yellow: var(--color-chart-yellow-light);
+  --color-cat-green:  var(--color-chart-green-light);
+  --color-cat-blue:   var(--color-chart-blue-light);
+  --color-cat-indigo: var(--color-chart-indigo-light);
+  --color-cat-violet: var(--color-chart-violet-light);
+  --color-cat-pink:   var(--color-chart-pink-light);
+  --color-cat-brown:  var(--color-chart-brown-light);
+  --color-cat-gray:   var(--color-chart-gray-light);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
   --sidebar-primary:        var(--color-primary-light);

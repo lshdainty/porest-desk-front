@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Calendar } from '@/shared/ui/calendar'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import {
   useRangeSummary,
   useMerchantSummary,
@@ -93,18 +94,19 @@ const labelsOf = ({ segMode }: RangeState) =>
         ? { now: '이번 해', prev: '지난 해', mom: '전년 대비', noPrev: '전년 데이터 없음', avg: '월 평균' }
         : { now: '선택 기간', prev: '이전 기간', mom: '이전 기간 대비', noPrev: '이전 기간 데이터 없음', avg: '일 평균' }
 
-// porest chart palette 10색 — 카테고리 donut fallback
+// porest chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
+// `--color-cat-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
-  'var(--color-chart-blue)',
-  'var(--color-chart-green)',
-  'var(--color-chart-orange)',
-  'var(--color-chart-violet)',
-  'var(--color-chart-pink)',
-  'var(--color-chart-indigo)',
-  'var(--color-chart-red)',
-  'var(--color-chart-yellow)',
-  'var(--color-chart-brown)',
-  'var(--color-chart-gray)',
+  'var(--color-cat-blue)',
+  'var(--color-cat-green)',
+  'var(--color-cat-orange)',
+  'var(--color-cat-violet)',
+  'var(--color-cat-pink)',
+  'var(--color-cat-indigo)',
+  'var(--color-cat-red)',
+  'var(--color-cat-yellow)',
+  'var(--color-cat-brown)',
+  'var(--color-cat-gray)',
 ]
 
 // 6-step heatmap palette (empty → deep mossy).
@@ -142,6 +144,12 @@ const HEAT_COLS: { label: string; dow: number }[] = [
 ]
 
 const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
+
+// 카테고리 자체 색 1순위 + 인덱스 fallback. 앱 `_donutColor` 정합.
+const segmentColor = (idx: number, rawColor: string | null | undefined) => {
+  if (rawColor && rawColor.trim() !== '') return getPaletteByColor(rawColor).color
+  return colorFor(idx)
+}
 
 type TrendTooltipPayload = {
   dataKey?: string | number
@@ -747,7 +755,7 @@ export const StatsPage = () => {
           }}
         >
           <Donut
-            segments={donutView.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
+            segments={donutView.map((s, i) => ({ value: s.amount, color: segmentColor(i, s.color) }))}
             size={mobile ? 180 : 200}
             stroke={28}
           >
@@ -784,7 +792,7 @@ export const StatsPage = () => {
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
                 >
-                  <span className="cat-legend__sw" style={{ background: colorFor(i) }} />
+                  <span className="cat-legend__sw" style={{ background: segmentColor(i, s.color) }} />
                   <span className="cat-legend__name">{s.name}</span>
                   <span className="cat-legend__pct num">
                     {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%

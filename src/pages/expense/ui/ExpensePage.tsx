@@ -708,7 +708,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           size="icon"
           onClick={() => setFilterOpen(true)}
           aria-label="필터"
-          className="relative shrink-0 rounded-[var(--radius-tile)]"
+          className="relative shrink-0"
         >
           <SlidersHorizontal size={18} />
           {activeCount > 0 && (
@@ -724,7 +724,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           size="icon"
           onClick={onAddTx}
           aria-label="거래 추가"
-          className="shrink-0 rounded-[var(--radius-tile)]"
+          className="shrink-0"
         >
           <Plus size={18} />
         </Button>

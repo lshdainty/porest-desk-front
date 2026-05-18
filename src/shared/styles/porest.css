@@ -300,7 +300,7 @@
   font-size: var(--fs-body-sm);
   opacity: 0.78;
 }
-.balance-hero__sub .chg { display: inline-flex; align-items: center; gap: 2px; opacity: 1; }
+.balance-hero__sub .chg { display: inline-flex; align-items: center; gap: 2px; opacity: 1; font-weight: var(--fw-semi); }
 .balance-hero__sub .chg.up { color: color-mix(in srgb, var(--color-success) 60%, white); }
 .balance-hero__sub .chg.down { color: color-mix(in srgb, var(--color-error) 60%, white); }
 .balance-hero__split {
