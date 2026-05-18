@@ -37,7 +37,7 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: 'var(--shadow-brand)',
+                  boxShadow: 'var(--shadow-md)',
                   marginTop: -6,
                 }}
               >

@@ -175,11 +175,12 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
               style={MANAGER_LAYOUT.searchInputStyle}
               onFocus={e => {
                 e.currentTarget.style.borderColor = 'var(--border-focus)'
-                e.currentTarget.style.boxShadow = 'var(--shadow-focus)'
+                e.currentTarget.style.outline = '2px solid var(--border-focus)'
+                e.currentTarget.style.outlineOffset = '-1px'
               }}
               onBlur={e => {
                 e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                e.currentTarget.style.boxShadow = ''
+                e.currentTarget.style.outline = 'none'
               }}
             />
           </div>

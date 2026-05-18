@@ -128,14 +128,12 @@
   /* Spacing — porest-tokens.css `--spacing-xs/sm/md/lg/xl/2xl/3xl` (SoT) 사용.
    * 옛 --space-N 시리즈는 마이그 후 제거됨. */
 
-  /* Shadow (tinted Mossy green-black — legacy, follow-up cleanup) */
-  --shadow-xs: 0 1px 2px rgba(28, 36, 20, 0.05);
+  /* Shadow — sm/md/lg/xl 는 Mossy green-tinted legacy 잔존 (follow-up: porest-tokens.css SoT cool-neutral 정합 필요).
+   * --shadow-xs (→ shadow-sm), --shadow-brand (→ shadow-md), --shadow-focus (→ :focus-visible outline) 는 마이그 후 제거됨. */
   --shadow-sm: 0 1px 2px rgba(28, 36, 20, 0.06), 0 1px 3px rgba(28, 36, 20, 0.04);
   --shadow-md: 0 4px 8px -2px rgba(28, 36, 20, 0.08), 0 2px 4px -2px rgba(28, 36, 20, 0.05);
   --shadow-lg: 0 12px 24px -6px rgba(28, 36, 20, 0.12), 0 4px 8px -4px rgba(28, 36, 20, 0.06);
   --shadow-xl: 0 24px 48px -12px rgba(28, 36, 20, 0.18);
-  --shadow-brand: 0 6px 16px -4px oklch(0.52 0.06 110 / 0.35);
-  --shadow-focus: 0 0 0 3px oklch(0.52 0.06 110 / 0.2);
 
   /* Typography */
   --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,

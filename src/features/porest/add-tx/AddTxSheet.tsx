@@ -357,7 +357,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.4 : 1,
                 fontFamily: 'inherit',
-                boxShadow: active ? 'var(--shadow-xs)' : 'none',
+                boxShadow: active ? 'var(--shadow-sm)' : 'none',
               }}
             >
               {o.l}
