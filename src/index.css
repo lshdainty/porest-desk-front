@@ -151,8 +151,9 @@
   --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);   /* SoT 미정의 — overshoot spring */
   --ease-decel:    cubic-bezier(0, 0, 0.2, 1);          /* SoT 미정의 — progress bar width 애니메이션 */
 
-  /* Z-index */
-  --z-base: 1; --z-sticky: 100; --z-dropdown: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;
+  /* Z-index — porest-tokens.css `--z-*` SoT 사용 (base 0 / dropdown 1000 / sticky 1100 / drawer 1200 / modal 1300 / toast 1400).
+   * 옛 legacy scale (1/100/200/300/400/500) 은 cascade 우선 override 였음 — 제거 후 SoT 자동 적용.
+   * --z-overlay 는 SoT 미정의 (0 사용처라 단순 제거). Tailwind 기본 z-N (z-50 등) 은 별개 scale 보존. */
 
   /* ====== shadcn variable mapping → Porest semantic (Phase 1) ====== */
   --background:           var(--bg-canvas);
