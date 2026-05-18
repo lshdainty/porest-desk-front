@@ -247,7 +247,7 @@ export function PresetEditDialog({
             onCheckedChange={(c) => setLockAmount(c === true)}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>고정 금액 사용</div>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>고정 금액 사용</div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               꺼두면 불러올 때 금액이 비어있어요. 매번 다른 금액일 때 편해요.
             </div>
@@ -265,7 +265,7 @@ export function PresetEditDialog({
                 value={amount}
                 onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="0"
-                style={{ paddingRight: 36, textAlign: 'right', fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)' }}
+                style={{ paddingRight: 36, textAlign: 'right', fontSize: 'var(--text-body-lg)', fontWeight: '700' }}
                 inputMode="numeric"
               />
               <span
@@ -276,7 +276,7 @@ export function PresetEditDialog({
                   transform: 'translateY(-50%)',
                   fontSize: 'var(--text-label-sm)',
                   color: 'var(--fg-tertiary)',
-                  fontWeight: 'var(--fw-bold)',
+                  fontWeight: '700',
                   pointerEvents: 'none',
                 }}
               >

@@ -96,7 +96,7 @@ export function NotificationsPopover({
             <div
               style={{
                 font: '700 15px/1.3 var(--font-sans)',
-                letterSpacing: 'var(--tracking-snug)',
+                letterSpacing: '-0.012em',
                 color: 'var(--fg-primary)',
               }}
             >

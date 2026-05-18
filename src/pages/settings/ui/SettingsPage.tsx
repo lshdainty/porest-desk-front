@@ -107,7 +107,7 @@ export const SettingsPage = () => {
         <div style={{ padding: '4px 0 24px' }}>
           <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Settings size={18} style={{ color: 'var(--fg-secondary)' }} />
-            <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>설정</h2>
+            <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>설정</h2>
           </div>
           <div
             style={{
@@ -156,7 +156,7 @@ export const SettingsPage = () => {
                     <IconComp size={18} strokeWidth={1.9} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>{s.label}</div>
+                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{s.label}</div>
                     <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{s.desc}</div>
                   </div>
                   <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)' }} />
@@ -193,7 +193,7 @@ export const SettingsPage = () => {
           >
             <ChevronLeft size={22} />
           </button>
-          <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+          <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: '700', letterSpacing: '-0.012em' }}>
             {activeSection?.label}
           </h2>
         </div>
@@ -294,14 +294,14 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
       >
         <IconComp size={22} strokeWidth={1.9} />
       </div>
-      <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 4 }}>{section.label}</div>
+      <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 4 }}>{section.label}</div>
       <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>{section.desc}</div>
       <div
         style={{
           fontSize: 'var(--text-badge)',
           color: 'var(--fg-tertiary)',
           marginTop: 14,
-          letterSpacing: 'var(--tracking-wide)',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
         }}
       >

@@ -184,7 +184,7 @@ export function CategoryEditDialog({
             style={{
               font: '700 15px/1.3 var(--font-sans)',
               color: 'var(--fg-primary)',
-              letterSpacing: 'var(--tracking-snug)',
+              letterSpacing: '-0.012em',
             }}
           >
             {labelTrim || '새 카테고리'}
@@ -211,7 +211,7 @@ export function CategoryEditDialog({
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>
           상위 카테고리
-          <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)', marginLeft: 4 }}>(선택)</span>
+          <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>(선택)</span>
         </FieldLabel>
         <Select
           value={parentRowId == null ? '__root__' : String(parentRowId)}

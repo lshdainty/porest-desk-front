@@ -37,7 +37,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               fontSize: 'var(--text-caption)',
               color: 'var(--fg-secondary)',
               marginBottom: 12,
-              lineHeight: 'var(--lh-normal)',
+              lineHeight: '1.5',
             }}
           >
             예산 사용률이 이 값을 넘으면 <strong>경고</strong> 상태로 표시되고 알림을 받습니다.

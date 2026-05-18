@@ -144,7 +144,7 @@ export function BudgetEditDialog({
             style={{
               font: '700 15px/1.3 var(--font-sans)',
               color: 'var(--fg-primary)',
-              letterSpacing: 'var(--tracking-snug)',
+              letterSpacing: '-0.012em',
             }}
           >
             {selectedCat?.categoryName ?? '카테고리 선택'}
@@ -254,7 +254,7 @@ export function MonthlyBudgetDialog({
         <FieldLabel>월 총 예산 (원)</FieldLabel>
         <Input
           className="num"
-          style={{ fontSize: 'var(--text-title-lg)', fontWeight: 'var(--fw-bold)' }}
+          style={{ fontSize: 'var(--text-title-lg)', fontWeight: '700' }}
           value={v}
           onChange={e => setV(e.target.value.replace(/[^0-9]/g, ''))}
           inputMode="numeric"

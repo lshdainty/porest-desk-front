@@ -146,17 +146,17 @@ export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: 
         alignItems: 'center',
         gap: 2,
         color,
-        fontWeight: 'var(--fw-semi)',
+        fontWeight: '600',
         fontVariantNumeric: 'tabular-nums',
         fontSize: small ? 11.5 : 12.5,
-        letterSpacing: 'var(--tracking-snug)',
+        letterSpacing: '-0.012em',
       }}
     >
       {up ? <TrendingUp size={small ? 12 : 14} strokeWidth={2.2} /> : <TrendingDown size={small ? 12 : 14} strokeWidth={2.2} />}
       {up ? '+' : ''}
       {pct.toFixed(1)}%
       {amt != null && (
-        <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 'var(--fw-medium)' }}>
+        <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
           ({up ? '+' : '−'}
           {KRW(amt, { abs: true })}원)
         </span>
@@ -178,8 +178,8 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontWeight: 'var(--fw-heavy)',
-        letterSpacing: 'var(--tracking-tight)',
+        fontWeight: '800',
+        letterSpacing: '-0.022em',
         color: 'var(--fg-on-brand)',
         flexShrink: 0,
       }}
@@ -255,7 +255,7 @@ export function MonthPicker({
           borderRadius: 'var(--radius-tile)',
           padding: '6px 12px',
           fontSize: 'var(--text-label-sm)',
-          fontWeight: 'var(--fw-semi)',
+          fontWeight: '600',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
           alignItems: 'center',
@@ -295,7 +295,7 @@ export function MonthPicker({
             >
               <ChevronLeft size={16} />
             </button>
-            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
               {viewY}년
             </div>
             <button
@@ -362,7 +362,7 @@ export function MonthPicker({
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 'var(--text-caption)',
-                fontWeight: 'var(--fw-semi)',
+                fontWeight: '600',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 color: 'var(--fg-primary)',
@@ -388,7 +388,7 @@ export function MonthPicker({
                 border: '1px solid var(--border-subtle)',
                 background: 'transparent',
                 fontSize: 'var(--text-caption)',
-                fontWeight: 'var(--fw-semi)',
+                fontWeight: '600',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 color: 'var(--fg-primary)',

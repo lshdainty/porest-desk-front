@@ -29,7 +29,7 @@ export const MANAGE_ROW = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    fontWeight: 'var(--fw-bold)',
+    fontWeight: '700',
     color: 'var(--fg-on-brand)',
   } as CSSProperties,
   /** 텍스트 영역 style (기존 .cat-row__text) */
@@ -38,7 +38,7 @@ export const MANAGE_ROW = {
   labelStyle: {
     font: '600 14px/1.3 var(--font-sans)',
     color: 'var(--fg-primary)',
-    letterSpacing: 'var(--tracking-snug)',
+    letterSpacing: '-0.012em',
     marginBottom: 2,
   } as CSSProperties,
   /** 보조 메타 style (기존 .cat-row__meta) */

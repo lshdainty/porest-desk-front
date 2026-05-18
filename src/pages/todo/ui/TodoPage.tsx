@@ -138,7 +138,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           <div
             style={{
               fontSize: 'var(--text-body-sm)',
-              fontWeight: 'var(--fw-semi)',
+              fontWeight: '600',
               textDecoration: isDone ? 'line-through' : 'none',
               color: 'var(--fg-primary)',
             }}
@@ -166,7 +166,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                       key={tag.rowId}
                       style={{
                         fontSize: 'var(--text-badge)',
-                        fontWeight: 'var(--fw-semi)',
+                        fontWeight: '600',
                         padding: '2px 7px',
                         borderRadius: 'var(--radius-pill)',
                         background: tag.color ? `${tag.color}22` : 'var(--bg-sunken)',
@@ -184,7 +184,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <span
           style={{
             fontSize: 'var(--text-badge)',
-            fontWeight: 'var(--fw-bold)',
+            fontWeight: '700',
             padding: '3px 9px',
             borderRadius: 'var(--radius-pill)',
             background: prio.bg,
@@ -211,7 +211,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         borderRadius: 'var(--radius-tile)',
         padding: '8px 14px',
         fontSize: 'var(--text-label-sm)',
-        fontWeight: 'var(--fw-bold)',
+        fontWeight: '700',
         cursor: 'pointer',
       }}
     >
@@ -224,8 +224,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       style={{
         fontSize: 'var(--text-badge)',
         color: 'var(--fg-tertiary)',
-        fontWeight: 'var(--fw-semi)',
-        letterSpacing: 'var(--tracking-wide)',
+        fontWeight: '600',
+        letterSpacing: '0.04em',
         textTransform: 'uppercase',
         marginBottom: 2,
       }}
@@ -277,7 +277,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>할 일</h2>
+          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>할 일</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

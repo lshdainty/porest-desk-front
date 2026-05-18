@@ -162,10 +162,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontSize: 'var(--text-label-sm)',
-        fontWeight: 'var(--fw-semi)',
+        fontWeight: '600',
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
-        letterSpacing: 'var(--tracking-wide)',
+        letterSpacing: '0.04em',
         marginBottom: 10,
       }}
     >

@@ -42,7 +42,7 @@ export const MorePage = () => {
   return (
     <div style={{ padding: '4px 0 24px' }}>
       <div style={{ padding: '0 16px 12px' }}>
-        <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>더보기</h2>
+        <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>더보기</h2>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>
       </div>
       <div
@@ -94,15 +94,15 @@ export const MorePage = () => {
                     alignItems: 'center',
                     gap: 4,
                     fontSize: 'var(--text-body-sm)',
-                    fontWeight: 'var(--fw-bold)',
+                    fontWeight: '700',
                     color: 'var(--fg-primary)',
-                    letterSpacing: 'var(--tracking-snug)',
+                    letterSpacing: '-0.012em',
                   }}
                 >
                   {item.label}
                   <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', marginLeft: 'auto' }} />
                 </div>
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4, lineHeight: 'var(--lh-snug)' }}>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4, lineHeight: '1.3' }}>
                   {item.desc}
                 </div>
               </div>

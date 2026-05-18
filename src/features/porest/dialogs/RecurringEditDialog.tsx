@@ -125,7 +125,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
 
   return (
     <ModalShell title="반복 설정" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
         이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
       </p>
 
@@ -156,12 +156,12 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {startDay} 시작
           </div>
         </div>
-        <div className="num" style={{ fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)' }}>
+        <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
           {isExpense ? '−' : '+'}
           {KRW(Math.abs(recurring.amount))}원
         </div>
@@ -296,7 +296,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>다음 예정일</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
@@ -309,7 +309,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
                   fontSize: 'var(--text-caption)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontWeight: '600',
                 }}
               >
                 {formatKoreanMonthDay(d)}
@@ -325,7 +325,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -377,7 +377,7 @@ function RadioCard({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
         {sub && (
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
             {sub}
@@ -429,7 +429,7 @@ function ToggleRow({
         <Icon size={16} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{title}</div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
       <Switch

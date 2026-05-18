@@ -73,7 +73,7 @@ export function TxTypeToggle({
                 ? "1px solid var(--border-brand)"
                 : "1px solid var(--border-subtle)",
               borderRadius: "var(--radius-tile)",
-              fontWeight: 'var(--fw-bold)',
+              fontWeight: '700',
               fontSize: 'var(--text-label-sm)',
               cursor: disabled ? "not-allowed" : "pointer",
               opacity: disabled ? 0.6 : 1,

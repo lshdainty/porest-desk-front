@@ -174,7 +174,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             color: 'var(--fg-brand)',
             borderRadius: 'var(--radius-pill)',
             fontSize: 'var(--text-caption)',
-            fontWeight: 'var(--fw-bold)',
+            fontWeight: '700',
           }}
         >
           <Check size={12} /> 합계 일치
@@ -191,7 +191,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
             color: 'var(--fg-expense)',
             borderRadius: 'var(--radius-pill)',
             fontSize: 'var(--text-caption)',
-            fontWeight: 'var(--fw-bold)',
+            fontWeight: '700',
           }}
         >
           {remainder > 0 ? `${KRW(remainder)}원 부족` : `${KRW(-remainder)}원 초과`}
@@ -221,7 +221,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
 
   return (
     <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
         하나의 결제를 카테고리·항목별로 나누어 기록합니다. 예: 마트에서 식품과 생활품을 함께 결제한 경우.
       </p>
 
@@ -240,7 +240,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
       >
         <div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>원 거래</div>
-          <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--text-body-sm)' }}>
+          <div style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
             {expense.merchant || expense.description || '거래'}
           </div>
         </div>
@@ -249,7 +249,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
           <div
             className="num"
             style={{
-              fontWeight: 'var(--fw-heavy)',
+              fontWeight: '800',
               fontSize: 'var(--text-title-md)',
               color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)',
             }}
@@ -285,7 +285,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 'var(--fw-bold)',
+                fontWeight: '700',
                 fontSize: 'var(--text-caption)',
               }}
             >
@@ -372,7 +372,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
 
       {/* 분할 비율 */}
       <div style={{ marginTop: 4 }}>
-        <div style={{ fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 6 }}>
           분할 비율
         </div>
         <div
@@ -410,7 +410,7 @@ export function SplitTxDialog({ expense, onClose, mobile }: Props) {
                 }}
               />
               <span style={{ color: 'var(--fg-secondary)' }}>{seg.name}</span>
-              <span className="num" style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
+              <span className="num" style={{ fontWeight: '700', color: 'var(--fg-primary)' }}>
                 {seg.pct}%
               </span>
             </span>

@@ -148,10 +148,10 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             <span
               style={{
                 fontSize: 'var(--text-badge)',
-                fontWeight: 'var(--fw-bold)',
+                fontWeight: '700',
                 color: 'var(--fg-secondary)',
                 textTransform: 'uppercase',
-                letterSpacing: 'var(--tracking-wide)',
+                letterSpacing: '0.04em',
               }}
             >
               {m.isPinned ? '고정' : '메모'}
@@ -160,7 +160,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
               {formatDate(m.createAt)}
             </span>
           </div>
-          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)', color: 'var(--fg-primary)' }}>
+          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', color: 'var(--fg-primary)' }}>
             {m.title}
           </div>
           {m.content && (
@@ -168,7 +168,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
               style={{
                 fontSize: 'var(--text-label-sm)',
                 color: 'var(--fg-secondary)',
-                lineHeight: 'var(--lh-normal)',
+                lineHeight: '1.5',
                 display: '-webkit-box',
                 WebkitLineClamp: 4,
                 WebkitBoxOrient: 'vertical',
@@ -234,7 +234,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <div style={{ padding: '4px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>메모</h2>
+          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>메모</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
         </div>
         {Body}

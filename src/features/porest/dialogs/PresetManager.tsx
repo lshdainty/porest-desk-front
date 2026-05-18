@@ -83,10 +83,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           <Bookmark size={16} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
             프리셋이란?
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-normal)' }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
             자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.
           </div>
         </div>
@@ -169,7 +169,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             >
               <Bookmark size={22} />
             </div>
-            <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', marginBottom: 4 }}>
               저장된 프리셋이 없어요
             </div>
             <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
@@ -216,7 +216,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     <div
                       style={{
                         fontSize: 'var(--text-body-sm)',
-                        fontWeight: 'var(--fw-bold)',
+                        fontWeight: '700',
                         color: 'var(--fg-primary)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -229,7 +229,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       <span
                         style={{
                           fontSize: 'var(--text-badge)',
-                          fontWeight: 'var(--fw-bold)',
+                          fontWeight: '700',
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
                           color: 'var(--fg-income)',
@@ -243,7 +243,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       <span
                         style={{
                           fontSize: 'var(--text-badge)',
-                          fontWeight: 'var(--fw-semi)',
+                          fontWeight: '600',
                           padding: '1px 5px',
                           background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
@@ -292,7 +292,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     className="num"
                     style={{
                       fontSize: mobile ? 12.5 : 14,
-                      fontWeight: 'var(--fw-bold)',
+                      fontWeight: '700',
                       color: p.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
                     }}
                   >
@@ -381,10 +381,10 @@ function PMStat({ label, value }: { label: string; value: string }) {
       <div
         style={{
           fontSize: 'var(--text-badge)',
-          fontWeight: 'var(--fw-semi)',
+          fontWeight: '600',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
+          letterSpacing: '0.04em',
           marginBottom: 4,
         }}
       >
@@ -392,7 +392,7 @@ function PMStat({ label, value }: { label: string; value: string }) {
       </div>
       <div
         className="num"
-        style={{ fontSize: 'var(--text-title-md)', fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)', letterSpacing: 'var(--tracking-tight)' }}
+        style={{ fontSize: 'var(--text-title-md)', fontWeight: '800', color: 'var(--fg-primary)', letterSpacing: '-0.022em' }}
       >
         {value}
       </div>

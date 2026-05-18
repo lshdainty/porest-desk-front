@@ -493,7 +493,7 @@ export function AssetEditDialog({
                               style={{
                                 background: 'var(--bg-disabled)',
                                 color: 'var(--fg-tertiary)',
-                                letterSpacing: 'var(--tracking-wide)',
+                                letterSpacing: '0.04em',
                               }}
                             >
                               단종

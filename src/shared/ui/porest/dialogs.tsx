@@ -134,7 +134,7 @@ export function ConfirmDialog({
             style={{
               fontSize: 'var(--text-body-sm)',
               color: 'var(--fg-secondary)',
-              lineHeight: 'var(--lh-loose)',
+              lineHeight: '1.7',
               margin: 0,
             }}
           >

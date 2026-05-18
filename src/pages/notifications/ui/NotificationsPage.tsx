@@ -58,7 +58,7 @@ export function NotificationsPage() {
             fontSize: 'var(--text-label-sm)',
           }}
         >
-          <b style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-bold)' }}>{unreadCount}</b>
+          <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }}>{unreadCount}</b>
           <span>개의 새 알림</span>
           <Button
             variant="ghost"

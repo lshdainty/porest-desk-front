@@ -201,7 +201,7 @@ export function LineChart({
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
                 {labels[hover.i]}
               </div>
               {series.map((s, si) => (
@@ -224,7 +224,7 @@ export function LineChart({
                     style={{
                       marginLeft: 'auto',
                       fontSize: 'var(--text-caption)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontWeight: '700',
                       color: 'var(--fg-primary)',
                     }}
                   >
@@ -362,20 +362,20 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
                 <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
                 <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {KRW(d.expense)}원
                 </span>
               </div>
@@ -395,7 +395,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   style={{
                     marginLeft: 'auto',
                     fontSize: 'var(--text-caption)',
-                    fontWeight: 'var(--fw-bold)',
+                    fontWeight: '700',
                     color: d.income - d.expense >= 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
                   }}
                 >

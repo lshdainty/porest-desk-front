@@ -18,7 +18,7 @@ export const MANAGER_LAYOUT = {
   } as CSSProperties,
   titleStyle: {
     font: '700 20px/1.3 var(--font-sans)',
-    letterSpacing: 'var(--tracking-tight)',
+    letterSpacing: '-0.022em',
     margin: '0 0 4px',
     color: 'var(--fg-primary)',
   } as CSSProperties,
@@ -27,7 +27,7 @@ export const MANAGER_LAYOUT = {
     color: 'var(--fg-tertiary)',
     margin: 0,
     maxWidth: '52ch',
-    lineHeight: 'var(--lh-normal)',
+    lineHeight: '1.5',
   } as CSSProperties,
   toolbarStyle: {
     display: 'flex',
@@ -115,7 +115,7 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
   background: 'var(--fg-income)',
   color: 'var(--fg-on-brand)',
-  fontWeight: 'var(--fw-bold)',
+  fontWeight: '700',
   boxShadow: 'var(--shadow-sm)',
 }
 
@@ -125,7 +125,7 @@ const TAB_CNT_BASE_STYLE: CSSProperties = {
   background: 'var(--bg-surface)',
   padding: '2px 7px',
   borderRadius: 'var(--radius-pill)',
-  fontWeight: 'var(--fw-bold)',
+  fontWeight: '700',
   minWidth: 20,
   textAlign: 'center',
 }

@@ -80,7 +80,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <span
                     style={{
-                      fontWeight: 'var(--fw-bold)',
+                      fontWeight: '700',
                       fontSize: 'var(--text-body-sm)',
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     }}
@@ -167,7 +167,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   <IconComp size={15} />
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 'var(--fw-semi)' }}>{o.l}</div>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{o.l}</div>
                   <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
                 </div>
               </label>

@@ -54,14 +54,14 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
         {label}
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 'var(--fw-bold)' }}>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(val)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
@@ -178,7 +178,7 @@ export function AssetDetailDialog({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 'var(--fw-bold)',
+              fontWeight: '700',
               fontSize: 'var(--text-title-md)',
               flexShrink: 0,
             }}
@@ -186,7 +186,7 @@ export function AssetDetailDialog({
             {renderIcon(asset.icon, asset.assetName.charAt(0), 22)}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>
               {asset.assetName}
             </div>
             <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
@@ -200,8 +200,8 @@ export function AssetDetailDialog({
           style={{
             fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
-            fontWeight: 'var(--fw-semi)',
-            letterSpacing: 'var(--tracking-wide)',
+            fontWeight: '600',
+            letterSpacing: '0.04em',
             marginBottom: 4,
           }}
         >
@@ -211,8 +211,8 @@ export function AssetDetailDialog({
           className="num"
           style={{
             fontSize: 'var(--text-display-md)',
-            fontWeight: 'var(--fw-heavy)',
-            letterSpacing: 'var(--tracking-tight)',
+            fontWeight: '800',
+            letterSpacing: '-0.022em',
             color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
@@ -229,7 +229,7 @@ export function AssetDetailDialog({
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
           <ToggleGroup
@@ -302,7 +302,7 @@ export function AssetDetailDialog({
       {/* Recent tx */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
             최근 거래{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
           </h4>
           <button
@@ -315,7 +315,7 @@ export function AssetDetailDialog({
               color: 'var(--fg-secondary)',
               cursor: 'pointer',
               fontSize: 'var(--text-label-sm)',
-              fontWeight: 'var(--fw-semi)',
+              fontWeight: '600',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 2,
