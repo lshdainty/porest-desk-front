@@ -18,13 +18,13 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col justify-center p-6 md:p-10">
+    <div className="bg-muted min-h-svh grid place-items-center p-6 md:p-10">
       {/* Mobile: Card 없이 viewport 가운데 form 만 — 디자인 정상 시각 */}
-      <div className="w-full max-w-sm md:hidden mx-auto">
+      <div className="w-full max-w-sm md:hidden">
         <LoginForm />
       </div>
       {/* Desktop (md+): Card + 2-column grid (이미지 + form) */}
-      <div className="hidden md:block w-full max-w-6xl mx-auto">
+      <div className="hidden md:block w-full max-w-6xl">
         <div className={cn('flex flex-col gap-6 h-[700px]')}>
           <Card className="overflow-hidden h-full" style={{ padding: 0 }}>
             <CardContent
