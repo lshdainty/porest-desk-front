@@ -19,21 +19,26 @@ export const LoginPage = () => {
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-6xl">
-        <div className={cn('flex flex-col gap-6 min-h-[560px] md:h-[700px]')}>
+      {/* Mobile: Card 없이 viewport 가운데 form 만 — 디자인 정상 시각 */}
+      <div className="w-full max-w-sm md:hidden">
+        <LoginForm />
+      </div>
+      {/* Desktop (md+): Card + 2-column grid (이미지 + form) */}
+      <div className="hidden md:block w-full max-w-6xl">
+        <div className={cn('flex flex-col gap-6 h-[700px]')}>
           <Card className="overflow-hidden h-full" style={{ padding: 0 }}>
             <CardContent
-              className="grid md:grid-cols-[2fr_1fr] h-full"
+              className="grid grid-cols-[2fr_1fr] h-full"
               style={{ padding: 0 }}
             >
-              <div className="bg-muted relative hidden md:block">
+              <div className="bg-muted relative">
                 <img
                   src={loginBG}
                   alt="Desk workspace"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
-              <div className="p-6 md:p-8 h-full flex justify-center">
+              <div className="p-8 h-full flex justify-center">
                 <div className="flex flex-col justify-center gap-6 w-full">
                   <LoginForm />
                 </div>
