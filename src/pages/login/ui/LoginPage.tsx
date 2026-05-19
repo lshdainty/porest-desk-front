@@ -62,7 +62,11 @@ const LoginForm = () => {
     <div className="w-full">
       <div className="flex flex-col justify-center gap-6">
         <div className="flex flex-col items-center text-center">
-          <img src={resolvedTheme === 'light' ? Logo : LogoDark} alt="POREST Desk" />
+          <img
+            src={resolvedTheme === 'light' ? Logo : LogoDark}
+            alt="POREST Desk"
+            className="max-w-full h-auto"
+          />
         </div>
         <div className="text-center">
           <p className="text-muted-foreground mb-6">
