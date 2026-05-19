@@ -36,7 +36,7 @@ const toggleVariants = cva(
         // spec toggle-group.md visual=solid 정합 — primary 채움 + 흰글씨 + bold + shadow.
         segmented: [
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1 whitespace-nowrap",
-          "text-[13px] font-semibold leading-none text-text-secondary",
+          "text-[length:var(--text-caption)] font-semibold leading-none text-text-secondary",
           "hover:bg-transparent hover:text-text-secondary",
           "data-[state=on]:bg-primary data-[state=on]:text-text-on-accent data-[state=on]:font-bold",
           "data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.15)]",
@@ -45,7 +45,7 @@ const toggleVariants = cva(
         // spec toggle-group.md visual=subtle 정합 — surface-input 채움 + 검정 + semi.
         "segmented-subtle": [
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1 whitespace-nowrap",
-          "text-[13px] font-semibold leading-none text-text-secondary",
+          "text-[length:var(--text-caption)] font-semibold leading-none text-text-secondary",
           "hover:bg-surface-input hover:text-text-primary",
           "data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:font-semibold",
         ].join(" "),
