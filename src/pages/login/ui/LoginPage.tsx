@@ -18,27 +18,19 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="bg-muted min-h-svh grid items-center p-6 md:p-10">
-      {/* Mobile: Card 없이 viewport 가운데 form 만 — 디자인 정상 시각 */}
-      <div className="w-full max-w-sm md:hidden mx-auto">
-        <LoginForm />
-      </div>
-      {/* Desktop (md+): Card + 2-column grid (이미지 + form) */}
-      <div className="hidden md:block w-full max-w-6xl mx-auto">
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-6xl">
         <div className={cn('flex flex-col gap-6 h-[700px]')}>
-          <Card className="overflow-hidden h-full" style={{ padding: 0 }}>
-            <CardContent
-              className="grid grid-cols-[2fr_1fr] h-full"
-              style={{ padding: 0 }}
-            >
-              <div className="bg-muted relative">
+          <Card className="overflow-hidden p-0 h-full">
+            <CardContent className="grid p-0 md:grid-cols-[2fr_1fr] h-full">
+              <div className="bg-muted relative hidden md:block">
                 <img
                   src={loginBG}
                   alt="Desk workspace"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
-              <div className="p-8 h-full flex justify-center">
+              <div className="p-6 md:p-8 h-full flex justify-center">
                 <div className="flex flex-col justify-center gap-6 w-full">
                   <LoginForm />
                 </div>
@@ -53,7 +45,7 @@ export const LoginPage = () => {
 
 const LoginForm = () => {
   const { t } = useTranslation('login')
-  const { resolvedTheme } = useTheme()
+  const { theme } = useTheme()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   const handleSsoRedirect = () => {
@@ -66,12 +58,8 @@ const LoginForm = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col justify-center gap-6">
-        <div className="flex flex-col items-center text-center w-full">
-          <img
-            src={resolvedTheme === 'light' ? Logo : LogoDark}
-            alt="POREST Desk"
-            className="h-20 w-auto"
-          />
+        <div className="flex flex-col items-center text-center">
+          <img src={theme === 'light' ? Logo : LogoDark} alt="POREST Desk" />
         </div>
         <div className="text-center">
           <p className="text-muted-foreground mb-6">
