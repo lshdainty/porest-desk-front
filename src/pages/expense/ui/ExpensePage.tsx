@@ -163,7 +163,7 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <ExpenseSummarySkeleton mobile />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
@@ -686,7 +686,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const activeCount = filterActiveCount(filterValue)
 
   return (
-    <div style={{ padding: '4px 16px 24px' }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       {activeCount > 0 && (
         <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />

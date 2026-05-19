@@ -104,7 +104,7 @@ export const SettingsPage = () => {
   if (mobile) {
     if (section === 'menu') {
       return (
-        <div style={{ padding: '4px 0 24px' }}>
+        <div style={{ padding: 'var(--spacing-xl) 20px' }}>
           <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Settings size={18} style={{ color: 'var(--fg-secondary)' }} />
             <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>설정</h2>

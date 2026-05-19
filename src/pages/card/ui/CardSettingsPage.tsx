@@ -3,7 +3,7 @@ import { CardBenefitMappingEditor } from '@/features/card-benefit-mapping'
 
 export const CardSettingsPage = () => {
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="px-5 py-6 md:p-6 space-y-4">
       <div>
         <h1 className="text-2xl font-semibold">카드 혜택 설정</h1>
         <p className="mt-1 text-sm text-muted-foreground">

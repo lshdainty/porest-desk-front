@@ -263,7 +263,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
@@ -930,7 +930,7 @@ export const BudgetPage = () => {
 
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {PageControls}
         </div>

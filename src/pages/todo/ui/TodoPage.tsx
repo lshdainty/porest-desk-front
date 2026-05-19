@@ -69,7 +69,7 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
 
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <SkeletonBase className="h-7 w-16" />
           <div style={{ marginLeft: 'auto' }}>
@@ -275,7 +275,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>할 일</h2>
           <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>

@@ -40,7 +40,7 @@ export const MorePage = () => {
   useOutletContext<OutletCtx>()
 
   return (
-    <div style={{ padding: '4px 0 24px' }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
       <div style={{ padding: '0 16px 12px' }}>
         <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>더보기</h2>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>

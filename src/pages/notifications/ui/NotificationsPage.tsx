@@ -46,7 +46,7 @@ export function NotificationsPage() {
   }
 
   return (
-    <div className="m-scroll" style={{ paddingBottom: 24 }}>
+    <div className="m-scroll" style={{ padding: 'var(--spacing-xl) 20px' }}>
       {unreadCount > 0 && (
         <div
           style={{

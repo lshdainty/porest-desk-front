@@ -17,7 +17,7 @@ export const CardDetailPage = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4 p-4 md:p-6">
+    <div className="mx-auto w-full max-w-3xl space-y-4 px-5 py-6 md:p-6">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1">
         <ArrowLeft className="h-4 w-4" />
         뒤로
