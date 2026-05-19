@@ -716,7 +716,7 @@ function useAssetPageData() {
 function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <AssetSummarySkeleton mobile />
         <AssetCompositionSkeleton />
         <TypeGroupSkeleton rows={3} />
@@ -1469,7 +1469,7 @@ function AssetMobile() {
 
   if (isEmpty) {
     return (
-      <div style={{ padding: '4px 20px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <Card>
           <CardContent style={{ padding: '48px 20px', textAlign: 'center' }}>
             <div
@@ -1493,7 +1493,7 @@ function AssetMobile() {
   }
 
   return (
-    <div style={{ padding: '4px 20px 24px' }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
       <SummaryCard
         mobile
         netWorth={g.netWorth}

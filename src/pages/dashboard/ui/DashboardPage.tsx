@@ -210,7 +210,7 @@ function useDashboardPageData(year: number, month: number, opts?: { includePrevM
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <DashboardHeroSkeleton mobile />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {[0, 1, 2, 3].map(i => (
@@ -1176,7 +1176,7 @@ function HomeMobile() {
   ]
 
   return (
-    <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
           <Wallet size={13} /> 순자산
