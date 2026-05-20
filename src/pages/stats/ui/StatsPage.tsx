@@ -242,7 +242,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         display: 'flex',
         gap: 16,
         marginBottom: mobile ? 14 : 20,
-        padding: mobile ? '12px 16px 0' : 0,
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
@@ -450,9 +449,9 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
   if (mobile) {
     return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
-        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+        <div style={{ background: 'var(--bg-surface)', marginBottom: 16 }}>{Tabs}</div>
+        {Content}
       </div>
     )
   }
@@ -1798,11 +1797,11 @@ export const StatsPage = () => {
   if (mobile) {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭)
     return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ background: 'var(--bg-surface)' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+        <div style={{ background: 'var(--bg-surface)', marginBottom: 16 }}>
           {StatsTabs}
         </div>
-        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
+        {Content}
       </div>
     )
   }
