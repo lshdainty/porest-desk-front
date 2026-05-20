@@ -19,6 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import {
@@ -663,6 +671,7 @@ export const StatsPage = () => {
       />
       {pickerOpen && (
         <RangePickerSheet
+          mobile={mobile}
           initial={{ from: period.from, to: period.to }}
           onCancel={() => setPickerOpen(false)}
           onConfirm={(r) => {
@@ -1914,10 +1923,12 @@ const fromISODate = (s: string | undefined): Date | undefined => {
 }
 
 function RangePickerSheet({
+  mobile,
   initial,
   onCancel,
   onConfirm,
 }: {
+  mobile: boolean
   initial: { from: Date; to: Date }
   onCancel: () => void
   onConfirm: (range: { from: Date; to: Date }) => void
@@ -1934,65 +1945,89 @@ function RangePickerSheet({
     setTo(today)
   }
 
+  // 공통 form content (chips + date inputs) — mobile/desktop 동일 markup.
+  const formBody = (
+    <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>
+        {QUICK_RANGES.map((q) => (
+          <button
+            key={q.days}
+            type="button"
+            onClick={() => applyQuick(q.days)}
+            style={{
+              padding: 'var(--spacing-xs) var(--spacing-md)',
+              borderRadius: 'var(--radius-pill)',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface)',
+              fontSize: 'var(--text-caption)',
+              fontWeight: '500',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: 'var(--fg-secondary)',
+            }}
+          >
+            {q.label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+        <div style={{ flex: 1 }}>
+          <InputDatePicker
+            value={toISODate(from)}
+            onValueChange={(v) => {
+              const d = fromISODate(v)
+              if (d) setFrom(d)
+            }}
+          />
+        </div>
+        <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
+        <div style={{ flex: 1 }}>
+          <InputDatePicker
+            value={toISODate(to)}
+            onValueChange={(v) => {
+              const d = fromISODate(v)
+              if (d) setTo(d)
+            }}
+          />
+        </div>
+      </div>
+    </>
+  )
+
+  const cancelBtn = <Button variant="ghost" onClick={onCancel}>취소</Button>
+  const applyBtn = (
+    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to })}>적용</Button>
+  )
+
+  // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
+  if (mobile) {
+    return (
+      <Drawer open onOpenChange={(o) => { if (!o) onCancel() }}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>기간 선택</DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody>{formBody}</DrawerBody>
+          <DrawerFooter>
+            {cancelBtn}
+            {applyBtn}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
+  // 데스크탑/태블릿: Dialog (modal).
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onCancel() }}>
       <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>기간 선택</DialogTitle>
         </DialogHeader>
-        <DialogBody>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>
-            {QUICK_RANGES.map((q) => (
-              <button
-                key={q.days}
-                type="button"
-                onClick={() => applyQuick(q.days)}
-                style={{
-                  padding: 'var(--spacing-xs) var(--spacing-md)',
-                  borderRadius: 'var(--radius-pill)',
-                  border: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-surface)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  color: 'var(--fg-secondary)',
-                }}
-              >
-                {q.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
-            <div style={{ flex: 1 }}>
-              <InputDatePicker
-                value={toISODate(from)}
-                onValueChange={(v) => {
-                  const d = fromISODate(v)
-                  if (d) setFrom(d)
-                }}
-              />
-            </div>
-            <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
-            <div style={{ flex: 1 }}>
-              <InputDatePicker
-                value={toISODate(to)}
-                onValueChange={(v) => {
-                  const d = fromISODate(v)
-                  if (d) setTo(d)
-                }}
-              />
-            </div>
-          </div>
-        </DialogBody>
+        <DialogBody>{formBody}</DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={onCancel}>취소</Button>
-          <Button
-            disabled={!canApply}
-            onClick={() => canApply && onConfirm({ from, to })}
-          >
-            적용
-          </Button>
+          {cancelBtn}
+          {applyBtn}
         </DialogFooter>
       </DialogContent>
     </Dialog>
