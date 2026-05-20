@@ -366,11 +366,25 @@ function MonthCalendar({
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const weeks = Array.from({ length: 6 })
+  // 사진 2 레이아웃 — 카드 wrap 없음 + bg-surface 배경 + 셀 border grid.
   return (
-    <Card variant="bordered" style={{ marginBottom: 12 }}>
-      <CardContent style={{ padding: '12px 8px' }}>
-      {/* 요일 헤더 — 일=fg-expense(빨강), 토=fg-brand(파랑) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+    <div
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        marginBottom: 12,
+      }}
+    >
+      {/* 요일 헤더 — 일=fg-expense(빨강), 토=fg-brand(파랑) + bottom border */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
         {['일', '월', '화', '수', '목', '금', '토'].map((wd, i) => (
           <div
             key={wd}
@@ -418,10 +432,12 @@ function MonthCalendar({
                 onClick={items.length > 0 ? () => onTapDate(date, items) : undefined}
                 disabled={items.length === 0}
                 style={{
-                  minHeight: 64,
+                  minHeight: 72,
                   padding: '6px 4px',
                   background: 'transparent',
                   border: 0,
+                  borderRight: dow === 6 ? 'none' : '1px solid var(--border-subtle)',
+                  borderBottom: w === 5 ? 'none' : '1px solid var(--border-subtle)',
                   cursor: items.length > 0 ? 'pointer' : 'default',
                   display: 'flex',
                   flexDirection: 'column',
@@ -481,8 +497,7 @@ function MonthCalendar({
           })}
         </div>
       ))}
-      </CardContent>
-    </Card>
+    </div>
   )
 }
 
