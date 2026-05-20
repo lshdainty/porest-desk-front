@@ -116,26 +116,6 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
   )
 }
 
-export function SegPicker<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: { value: T; label: string }[]
-  value: T
-  onChange: (v: T) => void
-}) {
-  return (
-    <div className="seg">
-      {options.map(o => (
-        <button key={o.value} className={value === o.value ? 'active' : ''} onClick={() => onChange(o.value)}>
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: boolean }) {
   const up = pct > 0
   const color = up ? 'var(--fg-income)' : 'var(--fg-expense)'

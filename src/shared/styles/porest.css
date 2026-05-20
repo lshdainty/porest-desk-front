@@ -375,31 +375,6 @@
  *   → AssetCard / AssetLogo / BankLogo 컴포넌트 inline + Tailwind hover 로 이동.
  *     (.liability 분기는 className 사용처가 없어 negativeAmount prop 으로 대체.) */
 
-.seg {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--bg-sunken);
-  border-radius: var(--radius-md);
-}
-.seg button {
-  background: transparent;
-  border: 0;
-  padding: 6px 14px;
-  font-size: var(--text-label-sm);
-  font-weight: 600;
-  color: var(--fg-secondary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  letter-spacing: -0.012em;
-  font-family: inherit;
-}
-.seg button.active {
-  background: var(--bg-surface);
-  color: var(--fg-primary);
-  box-shadow: var(--shadow-sm);
-}
-
 .chip {
   display: inline-flex;
   align-items: center;

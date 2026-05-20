@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
-import { SegPicker } from '@/shared/ui/porest/primitives'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -648,17 +648,15 @@ export const StatsPage = () => {
 
   // segment 라벨: 'custom' 활성 여부와 무관하게 항상 '직접'.
   // 기간 정보는 아래 별도 카드(SelectedRangeCard)에 표시.
+  // spec ToggleGroup type=single + variant=segmented-subtle (회색 음영) 정합.
   const PeriodSeg = (
     <div style={{ display: 'inline-block' }}>
-      <SegPicker
-        options={[
-          { value: 'm', label: '월' },
-          { value: 'q', label: '분기' },
-          { value: 'y', label: '년' },
-          { value: 'custom', label: '직접' },
-        ]}
+      <ToggleGroup
+        type="single"
+        variant="segmented-subtle"
         value={period.segMode}
-        onChange={(v) => {
+        onValueChange={(v) => {
+          if (!v) return // radix: 같은 item 재클릭 시 빈 문자열 → 무시
           if (v === 'm') setPeriod(monthRangeOf(new Date()))
           else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
           else if (v === 'y') setPeriod(yearRangeOf(new Date()))
@@ -668,7 +666,12 @@ export const StatsPage = () => {
             setPeriod({ ...period, segMode: 'custom' })
           }
         }}
-      />
+      >
+        <ToggleGroupItem value="m">월</ToggleGroupItem>
+        <ToggleGroupItem value="q">분기</ToggleGroupItem>
+        <ToggleGroupItem value="y">년</ToggleGroupItem>
+        <ToggleGroupItem value="custom">직접</ToggleGroupItem>
+      </ToggleGroup>
       {pickerOpen && (
         <RangePickerSheet
           mobile={mobile}
