@@ -5,24 +5,16 @@ import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog'
-import {
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/shared/ui/drawer'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+// 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
+// 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
+// expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
+import { CalendarProvider } from '@/features/calendar/model/calendar-context'
+import { CalendarMonthView } from '@/features/calendar/ui/month-view/calendar-month-view'
+import { convertExpenseToIEvent } from '@/features/calendar/lib/helpers'
 import {
   useExpenses,
   useRangeSummary,
@@ -297,13 +289,28 @@ function Summary({
 
 type ViewMode = 'calendar' | 'list'
 
-/** 캘린더 셀 금액 글자 수 따라 fontSize 축소 — 한 줄에 들어가게.
- *  step 분기 — mobile/desktop 둘 다 셀 폭 좁아 동일 분기 (~40~50px). */
-function _cellFontSize(len: number): number {
-  if (len <= 6) return 11   // '-49,000'
-  if (len <= 8) return 10   // '-283,700'
-  if (len <= 10) return 9   // '-1,290,000'
-  return 8                  // '+3,500,000' 등
+/** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
+ *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
+ *  CalendarMonthView 가 expense event (color #0147ad/#c73838) 자동 분기 →
+ *  셀에 +수입 / −지출 합계 표시. 자체 grid/border/border-radius 도 캘린더
+ *  컴포넌트 내장. */
+function ExpenseCalendar({
+  month,
+  expenses,
+}: {
+  month: string
+  expenses: Expense[]
+}) {
+  const events = useMemo(() => expenses.map(convertExpenseToIEvent), [expenses])
+  const initialDate = useMemo(() => {
+    const [ys, ms] = month.split('-')
+    return new Date(Number(ys), Number(ms) - 1, 1)
+  }, [month])
+  return (
+    <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+      <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
+    </CalendarProvider>
+  )
 }
 
 function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
@@ -328,261 +335,6 @@ function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: Vi
   )
 }
 
-/** 7×6 캘린더 grid — 날짜 + 그 날의 income/expense 합계 표시.
- *  셀 클릭 시 [onTapDate] 으로 그 날 거래 list 전달. App _CalendarGrid 미러. */
-function MonthCalendar({
-  month,
-  expenses,
-  onTapDate,
-}: {
-  month: string
-  expenses: Expense[]
-  onTapDate: (date: Date, items: Expense[]) => void
-}) {
-  const [ys, ms] = month.split('-')
-  const year = Number(ys)
-  const monthNum = Number(ms)
-  const firstDay = new Date(year, monthNum - 1, 1)
-  const firstWeekday = firstDay.getDay() // 0 = Sunday
-  const gridStart = new Date(firstDay)
-  gridStart.setDate(firstDay.getDate() - firstWeekday)
-  const today = new Date()
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-
-  // 거래를 날짜별 group
-  const byDay = useMemo(() => {
-    const map = new Map<string, Expense[]>()
-    for (const e of expenses) {
-      const d = (e.expenseDate ?? '').slice(0, 10)
-      if (!d) continue
-      const arr = map.get(d) ?? []
-      arr.push(e)
-      map.set(d, arr)
-    }
-    return map
-  }, [expenses])
-  const key = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-  const weeks = Array.from({ length: 6 })
-  // 사진 2 레이아웃 — 카드 wrap 없음 + bg-surface 배경 + 셀 border grid.
-  return (
-    <div
-      style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden',
-        marginBottom: 12,
-      }}
-    >
-      {/* 요일 헤더 — 일=fg-expense(빨강), 토=fg-brand(파랑) + bottom border */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(7, 1fr)',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
-      >
-        {['일', '월', '화', '수', '목', '금', '토'].map((wd, i) => (
-          <div
-            key={wd}
-            style={{
-              padding: 'var(--spacing-sm) 0',
-              textAlign: 'center',
-              fontSize: 'var(--text-caption)',
-              fontWeight: '500',
-              color: i === 0
-                ? 'var(--fg-expense)'
-                : i === 6
-                  ? 'var(--fg-brand)'
-                  : 'var(--fg-secondary)',
-            }}
-          >
-            {wd}
-          </div>
-        ))}
-      </div>
-      {/* 6 주 × 7 요일 */}
-      {weeks.map((_, w) => (
-        <div key={w} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-          {Array.from({ length: 7 }).map((_, d) => {
-            const date = new Date(gridStart)
-            date.setDate(gridStart.getDate() + w * 7 + d)
-            const inMonth = date.getMonth() === monthNum - 1
-            const todayCell = isSameDay(date, today)
-            const items = byDay.get(key(date)) ?? []
-            const income = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + e.amount, 0)
-            const expense = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + e.amount, 0)
-            const dow = date.getDay()
-            const dayColor = !inMonth
-              ? 'color-mix(in srgb, var(--fg-tertiary) 50%, transparent)'
-              : todayCell
-                ? 'var(--fg-on-brand)'
-                : dow === 0
-                  ? 'var(--fg-expense)' // 일요일 빨강
-                  : dow === 6
-                    ? 'var(--fg-brand)' // 토요일 파랑
-                    : 'var(--fg-primary)'
-            return (
-              <button
-                key={d}
-                type="button"
-                onClick={items.length > 0 ? () => onTapDate(date, items) : undefined}
-                disabled={items.length === 0}
-                style={{
-                  minHeight: 72,
-                  padding: '6px 4px',
-                  background: 'transparent',
-                  border: 0,
-                  borderRight: dow === 6 ? 'none' : '1px solid var(--border-subtle)',
-                  borderBottom: w === 5 ? 'none' : '1px solid var(--border-subtle)',
-                  cursor: items.length > 0 ? 'pointer' : 'default',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 2,
-                  fontFamily: 'inherit',
-                }}
-              >
-                <span
-                  style={{
-                    width: 24,
-                    height: 24,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    background: todayCell ? 'var(--bg-brand)' : 'transparent',
-                    color: dayColor,
-                    fontSize: 'var(--text-caption)',
-                    fontWeight: todayCell ? '700' : '600',
-                  }}
-                >
-                  {date.getDate()}
-                </span>
-                {/* 한 줄 강제 (nowrap) — 글자 수 따라 fontSize 동적 축소.
-                    `−` + `999,999,999` = max 12 chars 까지 한 줄 들어가게 step 분기. */}
-                {expense > 0 && (
-                  <span
-                    className="num"
-                    style={{
-                      fontSize: _cellFontSize(`−${KRW(expense)}`.length),
-                      lineHeight: 1.15,
-                      color: 'var(--fg-expense)',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <MaskAmount>−{KRW(expense)}</MaskAmount>
-                  </span>
-                )}
-                {income > 0 && (
-                  <span
-                    className="num"
-                    style={{
-                      fontSize: _cellFontSize(`+${KRW(income)}`.length),
-                      lineHeight: 1.15,
-                      color: 'var(--fg-income)',
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <MaskAmount>+{KRW(income)}</MaskAmount>
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** 캘린더 셀 클릭 → 그 날 거래 list 시트.
- *  mobile=true → Drawer (bottom sheet). desktop → Dialog. App _DayDetailBody 미러. */
-function DayDetailSheet({
-  mobile,
-  date,
-  items,
-  onClose,
-}: {
-  mobile: boolean
-  date: Date
-  items: Expense[]
-  // categories prop 제거 — ExpenseRow 가 expense 만 받아 자체 카테고리 lookup.
-  onClose: () => void
-}) {
-  const KOR_WD = ['일', '월', '화', '수', '목', '금', '토']
-  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${KOR_WD[date.getDay()]}요일`
-  const income = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + e.amount, 0)
-  const expense = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + e.amount, 0)
-
-  const body = (
-    <>
-      {/* 합계 카드 — bordered + 건수 + 수입/지출 */}
-      <Card variant="bordered" style={{ marginBottom: 16 }}>
-        <CardContent>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', fontWeight: '600' }}>
-              {items.length}건
-            </span>
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 16 }}>
-              {income > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입</div>
-                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-income)', fontWeight: '700' }}>
-                    <MaskAmount>+{KRW(income)}</MaskAmount>원
-                  </div>
-                </div>
-              )}
-              {expense > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>지출</div>
-                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-                    <MaskAmount>−{KRW(expense)}</MaskAmount>원
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      {/* 거래 list */}
-      {items.map(e => (
-        <ExpenseRow
-          key={e.rowId}
-          expense={e}
-        />
-      ))}
-    </>
-  )
-
-  if (mobile) {
-    return (
-      <Drawer open onOpenChange={(o) => { if (!o) onClose() }}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{title}</DrawerTitle>
-          </DrawerHeader>
-          <DrawerBody>{body}</DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    )
-  }
-  return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <DialogBody>{body}</DialogBody>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
   return (
@@ -904,7 +656,6 @@ function ExpenseDesktop() {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
-  const [dayDetail, setDayDetail] = useState<{ date: Date; items: Expense[] } | null>(null)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -950,21 +701,7 @@ function ExpenseDesktop() {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        <>
-          <MonthCalendar
-            month={month}
-            expenses={expenses}
-            onTapDate={(date, items) => setDayDetail({ date, items })}
-          />
-          {dayDetail && (
-            <DayDetailSheet
-              mobile={false}
-              date={dayDetail.date}
-              items={dayDetail.items}
-              onClose={() => setDayDetail(null)}
-            />
-          )}
-        </>
+        <ExpenseCalendar month={month} expenses={expenses} />
       ) : (
         <>
           <Chips filter={filter} onChange={setFilter} />
@@ -1000,7 +737,6 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
-  const [dayDetail, setDayDetail] = useState<{ date: Date; items: Expense[] } | null>(null)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -1032,21 +768,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        <>
-          <MonthCalendar
-            month={month}
-            expenses={expenses}
-            onTapDate={(date, items) => setDayDetail({ date, items })}
-          />
-          {dayDetail && (
-            <DayDetailSheet
-              mobile
-              date={dayDetail.date}
-              items={dayDetail.items}
-              onClose={() => setDayDetail(null)}
-            />
-          )}
-        </>
+        <ExpenseCalendar month={month} expenses={expenses} />
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
