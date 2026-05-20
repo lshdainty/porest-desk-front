@@ -297,6 +297,15 @@ function Summary({
 
 type ViewMode = 'calendar' | 'list'
 
+/** 캘린더 셀 금액 글자 수 따라 fontSize 축소 — 한 줄에 들어가게.
+ *  step 분기 — mobile/desktop 둘 다 셀 폭 좁아 동일 분기 (~40~50px). */
+function _cellFontSize(len: number): number {
+  if (len <= 6) return 11   // '-49,000'
+  if (len <= 8) return 10   // '-283,700'
+  if (len <= 10) return 9   // '-1,290,000'
+  return 8                  // '+3,500,000' 등
+}
+
 function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
   // spec ToggleGroup type=single + variant=segmented-subtle (회색 음영).
   return (
@@ -437,13 +446,33 @@ function MonthCalendar({
                 >
                   {date.getDate()}
                 </span>
+                {/* 한 줄 강제 (nowrap) — 글자 수 따라 fontSize 동적 축소.
+                    `−` + `999,999,999` = max 12 chars 까지 한 줄 들어가게 step 분기. */}
                 {expense > 0 && (
-                  <span className="num" style={{ fontSize: 11, color: 'var(--fg-expense)', fontWeight: '600' }}>
+                  <span
+                    className="num"
+                    style={{
+                      fontSize: _cellFontSize(`−${KRW(expense)}`.length),
+                      lineHeight: 1.15,
+                      color: 'var(--fg-expense)',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     <MaskAmount>−{KRW(expense)}</MaskAmount>
                   </span>
                 )}
                 {income > 0 && (
-                  <span className="num" style={{ fontSize: 11, color: 'var(--fg-income)', fontWeight: '600' }}>
+                  <span
+                    className="num"
+                    style={{
+                      fontSize: _cellFontSize(`+${KRW(income)}`.length),
+                      lineHeight: 1.15,
+                      color: 'var(--fg-income)',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     <MaskAmount>+{KRW(income)}</MaskAmount>
                   </span>
                 )}
