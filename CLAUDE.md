@@ -49,6 +49,11 @@
 
 - **`shared/ui/` 외부에 raw HTML/JSX로 컴포넌트 복제 금지** — `<button>` / `<input>` / `<select>` 직접 사용 금지. 반드시 `shared/ui/<name>` 통과.
 
+- **신규 화면 작성 시 shared 컴포넌트의 시각을 자체 `<div>` + inline `style` 로 모방 금지** — Card/Chip/Button/Input/Tabs 등의 시각 (bg + border + radius + shadow 조합) 이 필요하면 **반드시 `<Card>` / `<Chip>` / `<Button>` / `<Input>` / `<Tabs>` 등 shared 컴포넌트 사용**. 자체 `<button>/<div>` + inline style 로 비슷한 시각을 직조하면 spec 변경 시 누락 발생 + SoT 단일성 깨짐.
+  - 예 ❌: `<button style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)' }}>` — Card(bordered) 모방
+  - 예 ✓: `<Card variant="bordered" onClick={...}>` 또는 `<Card>` + 안의 `<Button>` — SoT 사용
+  - shared 컴포넌트에 필요한 variant/prop 이 부족하면 spec 변경 + shared 컴포넌트 확장 (HOW 절차 1→2→3).
+
 ## 작업 흐름 (요약)
 
 ```
