@@ -430,9 +430,10 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       >
         {[0, 1, 2].map(i => (
           <Card key={i}>
-            <CardContent className="flex flex-col justify-center text-center">
-              <SkeletonBase className={mobile ? 'h-7 w-32 mb-2' : 'h-9 w-40 mb-2'} />
-              <SkeletonBase className="h-3 w-20" />
+            <CardContent>
+              {/* 라벨 위 / 금액 아래 — App _CompareCard 미러 정합 */}
+              <SkeletonBase className="h-3 w-20 mb-2" />
+              <SkeletonBase className={mobile ? 'h-7 w-32' : 'h-9 w-40'} />
             </CardContent>
           </Card>
         ))}
@@ -1614,80 +1615,62 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
+      {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold). */}
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {periodNow} 지출
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
+              fontSize: 'var(--text-title-md)',
               fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
+              lineHeight: 1.2,
               color: 'var(--fg-primary)',
             }}
           >
             <MaskAmount>{KRW(totalNow)}</MaskAmount>
-            <HideUnit><span style={{ fontSize: 'var(--text-body-sm)', marginLeft: 2, fontWeight: '500' }}>원</span></HideUnit>
-          </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: '500' }}>
-            {periodNow} 지출
+            <HideUnit>원</HideUnit>
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {periodPrev} 지출
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
+              fontSize: 'var(--text-title-md)',
               fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
+              lineHeight: 1.2,
               color: 'var(--fg-secondary)',
             }}
           >
             <MaskAmount>{KRW(totalPrev)}</MaskAmount>
-            <HideUnit><span style={{ fontSize: 'var(--text-body-sm)', marginLeft: 2, fontWeight: '500' }}>원</span></HideUnit>
-          </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: '500' }}>
-            {periodPrev} 지출
+            <HideUnit>원</HideUnit>
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {momLabel}
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
+              fontSize: 'var(--text-title-md)',
               fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
-              color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
+              lineHeight: 1.2,
+              color: totalPrev > 0
+                ? (momUp ? 'var(--fg-expense)' : 'var(--fg-income)')
+                : 'var(--fg-primary)',
             }}
           >
             {totalPrev > 0 ? (
@@ -1697,11 +1680,8 @@ export const StatsPage = () => {
               </>
             ) : '—'}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: '500' }}>
-            {momLabel}
-          </div>
           {totalPrev > 0 && (
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
               <MaskAmount>
                 {momUp ? '+' : '−'}{KRW(Math.abs(totalNow - totalPrev))}
               </MaskAmount>
@@ -1709,7 +1689,7 @@ export const StatsPage = () => {
             </div>
           )}
           {totalPrev === 0 && (
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
               {noPrevText}
             </div>
           )}
