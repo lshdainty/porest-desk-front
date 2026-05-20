@@ -301,7 +301,17 @@ function ExpenseCalendar({
   month: string
   expenses: Expense[]
 }) {
-  const events = useMemo(() => expenses.map(convertExpenseToIEvent), [expenses])
+  // convertExpenseToIEvent 결과 사용 + startDate/endDate 를 date-only (`YYYY-MM-DD`)
+  // 로 slice. backend 가 ' '-separated datetime 반환할 경우 parseISO 가 ISO 8601
+  // strict 라 실패 → cell dayKey mismatch → expenseSummary undefined → 셀에 금액
+  // 안 보이는 문제 fix.
+  const events = useMemo(() => {
+    return expenses.map(e => {
+      const ev = convertExpenseToIEvent(e)
+      const dateOnly = (e.expenseDate ?? '').slice(0, 10)
+      return { ...ev, startDate: dateOnly, endDate: dateOnly }
+    })
+  }, [expenses])
   const initialDate = useMemo(() => {
     const [ys, ms] = month.split('-')
     return new Date(Number(ys), Number(ms) - 1, 1)
