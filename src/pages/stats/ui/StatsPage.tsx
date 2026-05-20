@@ -241,7 +241,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       style={{
         display: 'flex',
         gap: 16,
-        marginBottom: mobile ? 14 : 20,
+        marginBottom: mobile ? 0 : 20,
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
@@ -606,7 +606,7 @@ export const StatsPage = () => {
     <Tabs
       value={tab}
       onValueChange={(v) => setTab(v as TabKey)}
-      style={{ marginBottom: mobile ? 14 : 20 }}
+      style={{ marginBottom: mobile ? 0 : 20 }}
     >
       {/* 모바일에선 탭이 전체 폭을 균등 분할 — 플러터 앱과 매칭 */}
       <TabsList variant="underline" className={mobile ? 'w-full' : undefined}>
