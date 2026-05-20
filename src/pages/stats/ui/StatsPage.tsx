@@ -1165,12 +1165,12 @@ export const StatsPage = () => {
       {highlights.map((h, i) => (
         <Card key={i}>
           <CardContent>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
               {h.lbl}
             </div>
             <div>
-              <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{h.val}</div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+              <div style={{ fontSize: 'var(--text-title-md)', fontWeight: '700' }}>{h.val}</div>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>{h.sub}</div>
             </div>
           </CardContent>
         </Card>
