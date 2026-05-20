@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
@@ -9,7 +9,17 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { Calendar } from '@/shared/ui/calendar'
+import { CalendarClock, Pencil } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import {
   useRangeSummary,
@@ -628,34 +638,31 @@ export const StatsPage = () => {
     </Tabs>
   )
 
-  // '사용자 지정' 활성 시 라벨에 실제 기간 표시. 다른 모드면 '사용자 지정' 그대로.
-  const customLabel =
-    period.segMode === 'custom'
-      ? (period.from.getFullYear() === period.to.getFullYear()
-          ? `${period.from.getMonth() + 1}/${period.from.getDate()} ~ ${period.to.getMonth() + 1}/${period.to.getDate()}`
-          : `${fmt(period.from)} ~ ${fmt(period.to)}`)
-      : '사용자 지정'
-
+  // segment 라벨: 'custom' 활성 여부와 무관하게 항상 '직접'.
+  // 기간 정보는 아래 별도 카드(SelectedRangeCard)에 표시.
   const PeriodSeg = (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ display: 'inline-block' }}>
       <SegPicker
         options={[
           { value: 'm', label: '월' },
           { value: 'q', label: '분기' },
           { value: 'y', label: '년' },
-          { value: 'custom', label: customLabel },
+          { value: 'custom', label: '직접' },
         ]}
         value={period.segMode}
         onChange={(v) => {
           if (v === 'm') setPeriod(monthRangeOf(new Date()))
           else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
           else if (v === 'y') setPeriod(yearRangeOf(new Date()))
-          // 'custom' 클릭: 피커 오픈만 — 확정 시점에 segMode 변경
-          else setPickerOpen(true)
+          else if (v === 'custom') {
+            // 처음 '직접' 활성 시 — 기존 range 유지, 아직 picker 자동 오픈 안 함.
+            // 사용자가 '변경' 버튼 클릭 시 picker 오픈.
+            setPeriod({ ...period, segMode: 'custom' })
+          }
         }}
       />
       {pickerOpen && (
-        <RangePickerPopover
+        <RangePickerSheet
           initial={{ from: period.from, to: period.to }}
           onCancel={() => setPickerOpen(false)}
           onConfirm={(r) => {
@@ -666,6 +673,58 @@ export const StatsPage = () => {
       )}
     </div>
   )
+
+  // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
+  // - 좌측: calendar icon
+  // - 중앙: 선택 기간 라벨 (YYYY.MM.DD ~ YYYY.MM.DD) + (N일)
+  // - 우측: 변경 버튼 (펜슬 아이콘)
+  const rangeDays =
+    Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
+  const SelectedRangeCard = period.segMode === 'custom' ? (
+    <button
+      type="button"
+      onClick={() => setPickerOpen(true)}
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: 'var(--spacing-md) var(--spacing-lg)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        textAlign: 'left',
+      }}
+    >
+      <CalendarClock size={16} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
+          선택 기간
+        </div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
+          {fmt(period.from)} ~ {fmt(period.to)}
+          <span style={{ marginLeft: 6, color: 'var(--fg-tertiary)', fontWeight: '400' }}>
+            ({rangeDays}일)
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          color: 'var(--fg-secondary)',
+          fontSize: 'var(--text-caption)',
+          fontWeight: '600',
+        }}
+      >
+        <Pencil size={14} />
+        변경
+      </div>
+    </button>
+  ) : null
 
   // ---------- LOADING / EMPTY HELPERS ----------
   const EmptyBox = ({ text }: { text: string }) => (
@@ -720,6 +779,11 @@ export const StatsPage = () => {
         </CardTitle>
         <div>{PeriodSeg}</div>
       </CardHeader>
+      {period.segMode === 'custom' && (
+        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-md)' }}>
+          {SelectedRangeCard}
+        </div>
+      )}
       <CardContent>
       {donutLoading ? (
         <div
@@ -1254,6 +1318,11 @@ export const StatsPage = () => {
         <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
         <div>{PeriodSeg}</div>
       </CardHeader>
+      {period.segMode === 'custom' && (
+        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-md)' }}>
+          {SelectedRangeCard}
+        </div>
+      )}
       <CardContent>
       {rangeQ.isLoading ? (
         <>
@@ -1824,10 +1893,29 @@ export const StatsPage = () => {
 }
 
 // ───────────────────────────────────────────────────────────
-// RangePickerPopover — 트리거 없는 popover (parent 가 open 제어).
-// react-day-picker mode='range' + 적용/취소 버튼.
+// RangePickerSheet — 직접 기간 선택 모달.
+// - quick chip: 최근 7일/30일/3개월/6개월/1년 (클릭 시 from/to 자동 set)
+// - 시작 / 종료 InputDatePicker (수동 조정 가능)
+// - 적용 버튼: 확정 후 confirm
 // ───────────────────────────────────────────────────────────
-function RangePickerPopover({
+const QUICK_RANGES: { label: string; days: number }[] = [
+  { label: '최근 7일', days: 7 },
+  { label: '최근 30일', days: 30 },
+  { label: '최근 3개월', days: 90 },
+  { label: '최근 6개월', days: 180 },
+  { label: '최근 1년', days: 365 },
+]
+
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const fromISODate = (s: string | undefined): Date | undefined => {
+  if (!s) return undefined
+  const [y, m, d] = s.split('-').map(Number)
+  if (!y || !m || !d) return undefined
+  return new Date(y, m - 1, d)
+}
+
+function RangePickerSheet({
   initial,
   onCancel,
   onConfirm,
@@ -1836,81 +1924,79 @@ function RangePickerPopover({
   onCancel: () => void
   onConfirm: (range: { from: Date; to: Date }) => void
 }) {
-  const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(
-    () => ({ from: initial.from, to: initial.to }),
-  )
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onCancel()
-    }
-    // mouseup 으로 등록 — 트리거 click 의 mouseup 과 충돌하지 않도록 microtask 후 등록
-    const id = window.setTimeout(() => document.addEventListener('mousedown', onDoc), 0)
-    return () => {
-      window.clearTimeout(id)
-      document.removeEventListener('mousedown', onDoc)
-    }
-  }, [onCancel])
+  const [from, setFrom] = useState<Date>(initial.from)
+  const [to, setTo] = useState<Date>(initial.to)
+  const canApply = from.getTime() <= to.getTime()
+
+  const applyQuick = (days: number) => {
+    const today = new Date()
+    const start = new Date(today)
+    start.setDate(today.getDate() - days + 1)
+    setFrom(start)
+    setTo(today)
+  }
 
   return (
-    <div
-      ref={ref}
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 6px)',
-        right: 0,
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-card)',
-        boxShadow: 'var(--shadow-lg)',
-        padding: 12,
-        zIndex: 'var(--z-sticky)',
-      } as React.CSSProperties}
-    >
-      <Calendar
-        mode="range"
-        numberOfMonths={2}
-        selected={{ from: draft.from, to: draft.to }}
-        onSelect={(range) => setDraft({ from: range?.from, to: range?.to })}
-        defaultMonth={draft.from ?? initial.from}
-      />
-      <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
-        <button
-          onClick={onCancel}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
-            background: 'transparent',
-            fontSize: 'var(--text-caption)',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            color: 'var(--fg-secondary)',
-          }}
-        >
-          취소
-        </button>
-        <button
-          disabled={!draft.from || !draft.to}
-          onClick={() => {
-            if (draft.from && draft.to) onConfirm({ from: draft.from, to: draft.to })
-          }}
-          style={{
-            padding: '6px 14px',
-            borderRadius: 'var(--radius-md)',
-            border: 0,
-            background: !draft.from || !draft.to ? 'var(--bg-muted)' : 'var(--bg-brand)',
-            color: !draft.from || !draft.to ? 'var(--fg-tertiary)' : 'var(--fg-on-brand)',
-            fontSize: 'var(--text-caption)',
-            fontWeight: '700',
-            cursor: !draft.from || !draft.to ? 'not-allowed' : 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          적용
-        </button>
-      </div>
-    </div>
+    <Dialog open onOpenChange={(o) => { if (!o) onCancel() }}>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogTitle>기간 선택</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>
+            {QUICK_RANGES.map((q) => (
+              <button
+                key={q.days}
+                type="button"
+                onClick={() => applyQuick(q.days)}
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-md)',
+                  borderRadius: 'var(--radius-pill)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-surface)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  color: 'var(--fg-secondary)',
+                }}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <InputDatePicker
+                value={toISODate(from)}
+                onValueChange={(v) => {
+                  const d = fromISODate(v)
+                  if (d) setFrom(d)
+                }}
+              />
+            </div>
+            <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
+            <div style={{ flex: 1 }}>
+              <InputDatePicker
+                value={toISODate(to)}
+                onValueChange={(v) => {
+                  const d = fromISODate(v)
+                  if (d) setTo(d)
+                }}
+              />
+            </div>
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onCancel}>취소</Button>
+          <Button
+            disabled={!canApply}
+            onClick={() => canApply && onConfirm({ from, to })}
+          >
+            적용
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
