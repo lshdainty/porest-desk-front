@@ -448,10 +448,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const Content = tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
 
   if (mobile) {
+    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 sticky).
+    // Content 만 page-edge padding(좌우 20, 상하 24) 적용.
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ background: 'var(--bg-surface)', marginBottom: 16 }}>{Tabs}</div>
-        {Content}
+      <div>
+        <div style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
+        <div style={{ padding: 'var(--spacing-xl) 20px' }}>{Content}</div>
       </div>
     )
   }
@@ -1795,13 +1797,14 @@ export const StatsPage = () => {
   if (shouldShowSkeleton) return <StatsPageSkeleton mobile={mobile} tab={tab} />
 
   if (mobile) {
-    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭)
+    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 sticky).
+    // Content 만 page-edge padding(좌우 20, 상하 24) 적용.
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ background: 'var(--bg-surface)', marginBottom: 16 }}>
+      <div>
+        <div style={{ background: 'var(--bg-surface)' }}>
           {StatsTabs}
         </div>
-        {Content}
+        <div style={{ padding: 'var(--spacing-xl) 20px' }}>{Content}</div>
       </div>
     )
   }
