@@ -320,20 +320,26 @@ function ExpenseCalendar({
   // 가 부모 height 받아야 셀이 그려지고 금액 표시됨. 명시적 height 필요.
   // 6 주 × ~80px + header ~40px = ~520px (App minHeight 72 셀 × 6 = 432 와 정합).
   return (
-    <div
-      style={{
-        height: 520,
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden',
-        marginBottom: 12,
-      }}
-    >
-      <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-        <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
-      </CalendarProvider>
-    </div>
+    <>
+      {/* 임시 디버깅 — 매칭 안 되는 원인 진단용. 결과 확인 후 제거. */}
+      <div style={{ padding: 6, fontSize: 11, color: 'var(--fg-expense)', background: 'var(--bg-surface)', border: '1px dashed var(--border-default)', marginBottom: 8, borderRadius: 4, fontFamily: 'monospace' }}>
+        DEBUG: month={month} | events={events.length} | first={events[0] ? `sd=${events[0].startDate} src=${events[0].sourceType} color=${events[0].color} title="${events[0].title}"` : '(empty)'}
+      </div>
+      <div
+        style={{
+          height: 520,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          marginBottom: 12,
+        }}
+      >
+        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+          <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
+        </CalendarProvider>
+      </div>
+    </>
   )
 }
 
