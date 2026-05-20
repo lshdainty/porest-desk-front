@@ -41,7 +41,7 @@ const CardHeader = React.forwardRef<
     ref={ref}
     data-slot="card-header"
     className={cn(
-      "flex flex-col gap-[var(--spacing-xs)] p-[var(--spacing-xl)]",
+      "flex flex-col gap-[var(--spacing-xs)] p-[var(--spacing-lg)] md:p-[var(--spacing-xl)]",
       className,
     )}
     {...props}
@@ -84,7 +84,7 @@ const CardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
+      "p-[var(--spacing-lg)] md:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
       className,
     )}
     {...props}
@@ -100,7 +100,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
+      "flex items-center p-[var(--spacing-lg)] md:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
       className,
     )}
     {...props}
