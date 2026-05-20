@@ -1,25 +1,31 @@
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
 import { PorestSidebar } from './PorestSidebar'
 import { PorestTopBar } from './PorestTopBar'
 import { MobileHeader } from './MobileHeader'
 import { MobileTabBar } from './MobileTabBar'
+import { MoneyTabBar } from './MoneyTabBar'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
+
+// money group 4 페이지 — 진입 시 MoneyTabBar 표시 (← / 가계부 / 자산 / 통계 / 예산).
+const MONEY_PATHS = ['/desk/expense', '/desk/asset', '/desk/stats', '/desk/budget']
 
 export const AppLayout = () => {
   const size = useDeviceSize()
   const [addOpen, setAddOpen] = useState(false)
+  const location = useLocation()
 
   if (size === 'mobile') {
+    const isMoney = MONEY_PATHS.some(p => location.pathname.startsWith(p))
     return (
       <div className="m-app" data-screen-label="Mobile">
         <MobileHeader />
         <div className="m-scroll">
           <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
         </div>
-        <MobileTabBar onAdd={() => setAddOpen(true)} />
+        {isMoney ? <MoneyTabBar /> : <MobileTabBar onAdd={() => setAddOpen(true)} />}
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
       </div>
     )
