@@ -1,33 +1,52 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
 
 /*
  * Porest Card — porest-design specs/components/card.md SoT 기반.
- * 단일 spec — variant 없음, border 없음, shadow-only elevation.
+ * v5: variant 도입 — shadow (default) / bordered.
  *
- * - Card: rounded-lg + bg-surface-default + inline boxShadow(var(--shadow-sm)).
+ * - Card: rounded-lg + bg-surface-default + (shadow variant) inline boxShadow.
  *   inline boxShadow는 Tailwind v4 utility 내부 분해(--tw-shadow-*) 문제로
  *   다크모드 토큰 override 우회되는 이슈 fix (spec migration note).
  *   Card 자체는 padding 없음 — sub-component가 padding 보유 (shadcn 정석 패턴).
- * - CardHeader: flex flex-col gap-xs p-xl. title + description 세로 stack.
- *   horizontal 헤더가 필요하면 callers 에서 className="flex-row items-center justify-between" override.
- * - CardContent: p-xl, 단 CardHeader/CardFooter 다음에 올 땐 pt-0 (헤더와 자연 연결).
- *   first-child면 단독 standalone 카드(site.html `.review-summary` 톤)로 full padding.
- * - CardFooter: flex items-center p-xl pt-0. 액션 영역 — 보통 content/header 다음.
+ * - variant=shadow (default): border 없음 + shadow-sm. 일반 정보 카드 (preview .review-* SoT).
+ * - variant=bordered (v5): 1px border-subtle + shadow 없음. dense info / inline summary
+ *   (선택 기간 hint, chart 내 sub-card). App PCard.bordered 와 정합.
+ * - CardHeader: flex flex-col gap-xs p-lg md:p-xl.
+ * - CardContent: p-lg md:p-xl, CardHeader/CardFooter 다음에 올 땐 pt-0.
+ * - CardFooter: flex items-center p-lg md:p-xl pt-0.
  */
+
+const cardVariants = cva(
+  "rounded-[var(--radius-lg)] bg-surface-default text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+  {
+    variants: {
+      variant: {
+        shadow: "",
+        bordered: "border border-border-subtle",
+      },
+    },
+    defaultVariants: {
+      variant: "shadow",
+    },
+  },
+)
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, style, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardVariants>
+>(({ className, style, variant, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "rounded-[var(--radius-lg)] bg-surface-default text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-      className,
-    )}
-    style={{ boxShadow: "var(--shadow-sm)", ...style }}
+    className={cn(cardVariants({ variant }), className)}
+    style={{
+      // shadow variant 만 inline boxShadow 적용 (Tailwind v4 다크 모드 override 우회).
+      // bordered variant 는 border-only 라 shadow 없음.
+      boxShadow: variant === "bordered" ? undefined : "var(--shadow-sm)",
+      ...style,
+    }}
     {...props}
   />
 ))

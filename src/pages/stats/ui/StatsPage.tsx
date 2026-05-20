@@ -681,49 +681,47 @@ export const StatsPage = () => {
   const selectedRangeDays =
     Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
   const SelectedRangeCard = period.segMode === 'custom' ? (
-    <button
-      type="button"
+    <Card
+      variant="bordered"
+      role="button"
+      tabIndex={0}
       onClick={() => setPickerOpen(true)}
-      style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: 'var(--spacing-md) var(--spacing-lg)',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        textAlign: 'left',
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          setPickerOpen(true)
+        }
       }}
+      className="w-full cursor-pointer"
     >
-      <CalendarClock size={16} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
-          선택 기간
+      <CardContent className="!py-[var(--spacing-md)] flex items-center gap-3">
+        <CalendarClock size={16} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
+            선택 기간
+          </div>
+          <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
+            {fmt(period.from)} ~ {fmt(period.to)}
+            <span style={{ marginLeft: 6, color: 'var(--fg-tertiary)', fontWeight: '400' }}>
+              ({selectedRangeDays}일)
+            </span>
+          </div>
         </div>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
-          {fmt(period.from)} ~ {fmt(period.to)}
-          <span style={{ marginLeft: 6, color: 'var(--fg-tertiary)', fontWeight: '400' }}>
-            ({selectedRangeDays}일)
-          </span>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            color: 'var(--fg-secondary)',
+            fontSize: 'var(--text-caption)',
+            fontWeight: '600',
+          }}
+        >
+          <Pencil size={14} />
+          변경
         </div>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          color: 'var(--fg-secondary)',
-          fontSize: 'var(--text-caption)',
-          fontWeight: '600',
-        }}
-      >
-        <Pencil size={14} />
-        변경
-      </div>
-    </button>
+      </CardContent>
+    </Card>
   ) : null
 
   // ---------- LOADING / EMPTY HELPERS ----------
