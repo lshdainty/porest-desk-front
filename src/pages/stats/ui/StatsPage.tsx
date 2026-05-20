@@ -1312,12 +1312,19 @@ export const StatsPage = () => {
     savings: { label: '순저축', color: 'var(--bg-brand)' },
   }
 
-  const fmtTick = (v: number) =>
-    v >= 100_000_000
-      ? `${(v / 100_000_000).toFixed(1)}억`
-      : v >= 10_000
-        ? `${Math.round(v / 10_000).toLocaleString('ko-KR')}만`
-        : v.toLocaleString('ko-KR')
+  // 음수 처리 — Math.abs() 로 단위 분기 + 부호 prefix. 기존 v 직접 비교는
+  // -710,000 같은 음수가 v < 10_000 분기로 빠져 풀 콤마 (`,000,000`) 출력 →
+  // YAxis width 52 안에 안 들어가 잘리던 버그 fix. App _fmtTick 와 동일 패턴.
+  const fmtTick = (v: number) => {
+    const abs = Math.abs(v)
+    const body =
+      abs >= 100_000_000
+        ? `${(abs / 100_000_000).toFixed(1)}억`
+        : abs >= 10_000
+          ? `${Math.round(abs / 10_000).toLocaleString('ko-KR')}만`
+          : abs.toLocaleString('ko-KR')
+    return v < 0 ? `−${body}` : body
+  }
 
   const TrendBig = (
     <Card>
