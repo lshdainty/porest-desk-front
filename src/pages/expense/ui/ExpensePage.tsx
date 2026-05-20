@@ -1,11 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
@@ -277,6 +292,243 @@ function Summary({
         </div>
       </div>
     </div>
+  )
+}
+
+type ViewMode = 'calendar' | 'list'
+
+function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
+  // spec ToggleGroup type=single + variant=segmented-subtle (회색 음영).
+  return (
+    <ToggleGroup
+      type="single"
+      variant="segmented-subtle"
+      value={value}
+      onValueChange={(v) => { if (v) onChange(v as ViewMode) }}
+      className="!w-auto"
+    >
+      <ToggleGroupItem value="calendar" aria-label="달력 보기">
+        <Calendar size={14} />
+        <span style={{ marginLeft: 4 }}>달력</span>
+      </ToggleGroupItem>
+      <ToggleGroupItem value="list" aria-label="목록 보기">
+        <List size={14} />
+        <span style={{ marginLeft: 4 }}>목록</span>
+      </ToggleGroupItem>
+    </ToggleGroup>
+  )
+}
+
+/** 7×6 캘린더 grid — 날짜 + 그 날의 income/expense 합계 표시.
+ *  셀 클릭 시 [onTapDate] 으로 그 날 거래 list 전달. App _CalendarGrid 미러. */
+function MonthCalendar({
+  month,
+  expenses,
+  onTapDate,
+}: {
+  month: string
+  expenses: Expense[]
+  onTapDate: (date: Date, items: Expense[]) => void
+}) {
+  const [ys, ms] = month.split('-')
+  const year = Number(ys)
+  const monthNum = Number(ms)
+  const firstDay = new Date(year, monthNum - 1, 1)
+  const firstWeekday = firstDay.getDay() // 0 = Sunday
+  const gridStart = new Date(firstDay)
+  gridStart.setDate(firstDay.getDate() - firstWeekday)
+  const today = new Date()
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+
+  // 거래를 날짜별 group
+  const byDay = useMemo(() => {
+    const map = new Map<string, Expense[]>()
+    for (const e of expenses) {
+      const d = (e.expenseDate ?? '').slice(0, 10)
+      if (!d) continue
+      const arr = map.get(d) ?? []
+      arr.push(e)
+      map.set(d, arr)
+    }
+    return map
+  }, [expenses])
+  const key = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  const weeks = Array.from({ length: 6 })
+  return (
+    <div style={{ marginBottom: 12 }}>
+      {/* 요일 헤더 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {['일', '월', '화', '수', '목', '금', '토'].map((wd, i) => (
+          <div
+            key={wd}
+            style={{
+              padding: 'var(--spacing-sm) 0',
+              textAlign: 'center',
+              fontSize: 'var(--text-caption)',
+              fontWeight: '500',
+              color: i === 6 ? 'var(--fg-brand)' : 'var(--fg-secondary)',
+            }}
+          >
+            {wd}
+          </div>
+        ))}
+      </div>
+      {/* 6 주 × 7 요일 */}
+      {weeks.map((_, w) => (
+        <div key={w} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+          {Array.from({ length: 7 }).map((_, d) => {
+            const date = new Date(gridStart)
+            date.setDate(gridStart.getDate() + w * 7 + d)
+            const inMonth = date.getMonth() === monthNum - 1
+            const todayCell = isSameDay(date, today)
+            const items = byDay.get(key(date)) ?? []
+            const income = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + e.amount, 0)
+            const expense = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + e.amount, 0)
+            const dow = date.getDay()
+            const dayColor = !inMonth
+              ? 'color-mix(in srgb, var(--fg-tertiary) 50%, transparent)'
+              : todayCell
+                ? 'var(--fg-on-brand)'
+                : dow === 6
+                  ? 'var(--fg-brand)'
+                  : 'var(--fg-primary)'
+            return (
+              <button
+                key={d}
+                type="button"
+                onClick={items.length > 0 ? () => onTapDate(date, items) : undefined}
+                disabled={items.length === 0}
+                style={{
+                  minHeight: 64,
+                  padding: '6px 4px',
+                  background: 'transparent',
+                  border: 0,
+                  cursor: items.length > 0 ? 'pointer' : 'default',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  fontFamily: 'inherit',
+                }}
+              >
+                <span
+                  style={{
+                    width: 24,
+                    height: 24,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    background: todayCell ? 'var(--bg-brand)' : 'transparent',
+                    color: dayColor,
+                    fontSize: 'var(--text-caption)',
+                    fontWeight: todayCell ? '700' : '600',
+                  }}
+                >
+                  {date.getDate()}
+                </span>
+                {expense > 0 && (
+                  <span className="num" style={{ fontSize: 11, color: 'var(--fg-expense)', fontWeight: '600' }}>
+                    <MaskAmount>−{KRW(expense)}</MaskAmount>
+                  </span>
+                )}
+                {income > 0 && (
+                  <span className="num" style={{ fontSize: 11, color: 'var(--fg-income)', fontWeight: '600' }}>
+                    <MaskAmount>+{KRW(income)}</MaskAmount>
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** 캘린더 셀 클릭 → 그 날 거래 list 시트.
+ *  mobile=true → Drawer (bottom sheet). desktop → Dialog. App _DayDetailBody 미러. */
+function DayDetailSheet({
+  mobile,
+  date,
+  items,
+  onClose,
+}: {
+  mobile: boolean
+  date: Date
+  items: Expense[]
+  // categories prop 제거 — ExpenseRow 가 expense 만 받아 자체 카테고리 lookup.
+  onClose: () => void
+}) {
+  const KOR_WD = ['일', '월', '화', '수', '목', '금', '토']
+  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${KOR_WD[date.getDay()]}요일`
+  const income = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + e.amount, 0)
+  const expense = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + e.amount, 0)
+
+  const body = (
+    <>
+      {/* 합계 카드 — bordered + 건수 + 수입/지출 */}
+      <Card variant="bordered" style={{ marginBottom: 16 }}>
+        <CardContent>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', fontWeight: '600' }}>
+              {items.length}건
+            </span>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 16 }}>
+              {income > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입</div>
+                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-income)', fontWeight: '700' }}>
+                    <MaskAmount>+{KRW(income)}</MaskAmount>원
+                  </div>
+                </div>
+              )}
+              {expense > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>지출</div>
+                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
+                    <MaskAmount>−{KRW(expense)}</MaskAmount>원
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      {/* 거래 list */}
+      {items.map(e => (
+        <ExpenseRow
+          key={e.rowId}
+          expense={e}
+        />
+      ))}
+    </>
+  )
+
+  if (mobile) {
+    return (
+      <Drawer open onOpenChange={(o) => { if (!o) onClose() }}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{title}</DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody>{body}</DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent size="md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>{body}</DialogBody>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -599,6 +851,8 @@ function ExpenseDesktop() {
   const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar')
+  const [dayDetail, setDayDetail] = useState<{ date: Date; items: Expense[] } | null>(null)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -640,13 +894,36 @@ function ExpenseDesktop() {
         monthOut={monthOut}
         isLoading={isLoadingSummary}
       />
-      <Chips filter={filter} onChange={setFilter} />
-      <EditableList
-        expenses={expenses}
-        isLoading={isLoadingList}
-        mobile={false}
-        focusTxId={focusTxId}
-      />
+      <div style={{ marginBottom: 12 }}>
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      </div>
+      {viewMode === 'calendar' ? (
+        <>
+          <MonthCalendar
+            month={month}
+            expenses={expenses}
+            onTapDate={(date, items) => setDayDetail({ date, items })}
+          />
+          {dayDetail && (
+            <DayDetailSheet
+              mobile={false}
+              date={dayDetail.date}
+              items={dayDetail.items}
+              onClose={() => setDayDetail(null)}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Chips filter={filter} onChange={setFilter} />
+          <EditableList
+            expenses={expenses}
+            isLoading={isLoadingList}
+            mobile={false}
+            focusTxId={focusTxId}
+          />
+        </>
+      )}
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
@@ -670,6 +947,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar')
+  const [dayDetail, setDayDetail] = useState<{ date: Date; items: Expense[] } | null>(null)
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -697,42 +976,65 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         monthOut={monthOut}
         isLoading={isLoadingSummary}
       />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <Chips filter={filter} onChange={setFilter} />
-        </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setFilterOpen(true)}
-          aria-label="필터"
-          className="relative shrink-0"
-        >
-          <SlidersHorizontal size={18} />
-          {activeCount > 0 && (
-            <span
-              aria-hidden
-              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
-            >
-              {activeCount}
-            </span>
-          )}
-        </Button>
-        <Button
-          size="icon"
-          onClick={onAddTx}
-          aria-label="거래 추가"
-          className="shrink-0"
-        >
-          <Plus size={18} />
-        </Button>
+      <div style={{ marginBottom: 12 }}>
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
-      <EditableList
-        expenses={expenses}
-        isLoading={isLoadingList}
-        mobile
-        focusTxId={focusTxId}
-      />
+      {viewMode === 'calendar' ? (
+        <>
+          <MonthCalendar
+            month={month}
+            expenses={expenses}
+            onTapDate={(date, items) => setDayDetail({ date, items })}
+          />
+          {dayDetail && (
+            <DayDetailSheet
+              mobile
+              date={dayDetail.date}
+              items={dayDetail.items}
+              onClose={() => setDayDetail(null)}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <Chips filter={filter} onChange={setFilter} />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setFilterOpen(true)}
+              aria-label="필터"
+              className="relative shrink-0"
+            >
+              <SlidersHorizontal size={18} />
+              {activeCount > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
+                >
+                  {activeCount}
+                </span>
+              )}
+            </Button>
+            <Button
+              size="icon"
+              onClick={onAddTx}
+              aria-label="거래 추가"
+              className="shrink-0"
+            >
+              <Plus size={18} />
+            </Button>
+          </div>
+          <EditableList
+            expenses={expenses}
+            isLoading={isLoadingList}
+            mobile
+            focusTxId={focusTxId}
+          />
+        </>
+      )}
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
