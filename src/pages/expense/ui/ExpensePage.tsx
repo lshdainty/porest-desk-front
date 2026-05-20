@@ -358,8 +358,9 @@ function MonthCalendar({
 
   const weeks = Array.from({ length: 6 })
   return (
-    <div style={{ marginBottom: 12 }}>
-      {/* 요일 헤더 */}
+    <Card variant="bordered" style={{ marginBottom: 12 }}>
+      <CardContent style={{ padding: '12px 8px' }}>
+      {/* 요일 헤더 — 일=fg-expense(빨강), 토=fg-brand(파랑) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
         {['일', '월', '화', '수', '목', '금', '토'].map((wd, i) => (
           <div
@@ -369,7 +370,11 @@ function MonthCalendar({
               textAlign: 'center',
               fontSize: 'var(--text-caption)',
               fontWeight: '500',
-              color: i === 6 ? 'var(--fg-brand)' : 'var(--fg-secondary)',
+              color: i === 0
+                ? 'var(--fg-expense)'
+                : i === 6
+                  ? 'var(--fg-brand)'
+                  : 'var(--fg-secondary)',
             }}
           >
             {wd}
@@ -392,9 +397,11 @@ function MonthCalendar({
               ? 'color-mix(in srgb, var(--fg-tertiary) 50%, transparent)'
               : todayCell
                 ? 'var(--fg-on-brand)'
-                : dow === 6
-                  ? 'var(--fg-brand)'
-                  : 'var(--fg-primary)'
+                : dow === 0
+                  ? 'var(--fg-expense)' // 일요일 빨강
+                  : dow === 6
+                    ? 'var(--fg-brand)' // 토요일 파랑
+                    : 'var(--fg-primary)'
             return (
               <button
                 key={d}
@@ -445,7 +452,8 @@ function MonthCalendar({
           })}
         </div>
       ))}
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
