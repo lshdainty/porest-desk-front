@@ -306,10 +306,24 @@ function ExpenseCalendar({
     const [ys, ms] = month.split('-')
     return new Date(Number(ys), Number(ms) - 1, 1)
   }, [month])
+  // CalendarMonthView 의 외곽 `flex flex-col h-full` + `flex-1` + `auto-rows-fr h-full`
+  // 가 부모 height 받아야 셀이 그려지고 금액 표시됨. 명시적 height 필요.
+  // 6 주 × ~80px + header ~40px = ~520px (App minHeight 72 셀 × 6 = 432 와 정합).
   return (
-    <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-      <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
-    </CalendarProvider>
+    <div
+      style={{
+        height: 520,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        marginBottom: 12,
+      }}
+    >
+      <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+        <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
+      </CalendarProvider>
+    </div>
   )
 }
 
