@@ -237,14 +237,12 @@ function Summary({
         marginBottom: mobile ? 12 : 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
         <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.022em' }}>
           {y}년 {Number(m)}월
         </div>
-        <div style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
-          <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
-        </div>
+        <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div>
