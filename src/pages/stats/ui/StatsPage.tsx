@@ -678,7 +678,7 @@ export const StatsPage = () => {
   // - 좌측: calendar icon
   // - 중앙: 선택 기간 라벨 (YYYY.MM.DD ~ YYYY.MM.DD) + (N일)
   // - 우측: 변경 버튼 (펜슬 아이콘)
-  const rangeDays =
+  const selectedRangeDays =
     Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
   const SelectedRangeCard = period.segMode === 'custom' ? (
     <button
@@ -706,7 +706,7 @@ export const StatsPage = () => {
         <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
           {fmt(period.from)} ~ {fmt(period.to)}
           <span style={{ marginLeft: 6, color: 'var(--fg-tertiary)', fontWeight: '400' }}>
-            ({rangeDays}일)
+            ({selectedRangeDays}일)
           </span>
         </div>
       </div>
