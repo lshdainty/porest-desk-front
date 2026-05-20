@@ -28,10 +28,12 @@ const toggleVariants = cva(
   {
     variants: {
       variant: {
+        // spec toggle-group.md visual=subtle on state — surface-input 채움 + text-primary + 600.
+        // 기존엔 font-semibold 누락 → multiple toolbar (Bold/Italic/Underline) active 강조 약했음.
         default:
-          "bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary",
+          "bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:font-semibold",
         outline:
-          "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:border-border-default-strong",
+          "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:font-semibold data-[state=on]:border-border-default-strong",
         // POREST .p-seg__btn (solid) — segmented item, active 강조 톤.
         // spec toggle-group.md visual=solid 정합 — primary 채움 + 흰글씨 + bold + shadow.
         segmented: [
