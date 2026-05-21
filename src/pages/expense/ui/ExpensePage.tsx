@@ -327,12 +327,10 @@ function ExpenseCalendar({
   month,
   expenses,
   mobile,
-  onItemClick,
 }: {
   month: string
   expenses: Expense[]
   mobile: boolean
-  onItemClick?: (e: Expense) => void
 }) {
   const events = useMemo(() => {
     return expenses.map(e => {
@@ -347,6 +345,9 @@ function ExpenseCalendar({
     return new Date(Number(ys), Number(ms) - 1, 1)
   }, [month])
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
+  const [detail, setDetail] = useState<Expense | null>(null)
+  const [editing, setEditing] = useState<Expense | null>(null)
   const dayItems = useMemo(() => {
     if (!selectedDate) return [] as Expense[]
     const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
@@ -366,13 +367,28 @@ function ExpenseCalendar({
           />
         </CalendarProvider>
       </Card>
-      {selectedDate && (
+      {selectedDate && !detail && !editing && (
         <DayDetailDialog
           date={selectedDate}
           items={dayItems}
           mobile={mobile}
           onClose={() => setSelectedDate(null)}
-          onItemClick={(e) => { setSelectedDate(null); onItemClick?.(e) }}
+          onItemClick={(e) => setDetail(e)}
+        />
+      )}
+      {detail && !editing && (
+        <TxDetailDialog
+          expense={detail}
+          mobile={mobile}
+          onClose={() => setDetail(null)}
+          onEdit={(e) => { setDetail(null); setEditing(e) }}
+        />
+      )}
+      {editing && (
+        <AddTxSheet
+          expense={editing}
+          mobile={mobile}
+          onClose={() => setEditing(null)}
         />
       )}
     </>
