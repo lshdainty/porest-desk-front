@@ -380,7 +380,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-7 divide-x border-b flex-shrink-0">
+      <div className="grid grid-cols-7 border-b flex-shrink-0">
         {weekDays.map((day, index) => {
           const isSunday = index === 0
           const isSaturday = index === 6
