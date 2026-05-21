@@ -7,7 +7,7 @@ import {
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
   enablePdHideAmounts,
@@ -45,11 +45,6 @@ const netWorthChartConfig = {
   netWorth: { label: '순자산', color: 'var(--border-brand)' },
 } satisfies ChartConfig
 
-function fmtAxisNum(v: number) {
-  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
-  if (v >= 10_000) return `${Math.round(v / 10_000).toLocaleString('ko-KR')}만`
-  return v.toLocaleString('ko-KR')
-}
 
 type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } }
 function NetWorthTooltip({
@@ -151,7 +146,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={fmtAxisNum}
+          tickFormatter={formatChartAxis}
           tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={52}
         />

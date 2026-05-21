@@ -5,6 +5,22 @@ export const KRW = (n: number, { sign = false, abs = false }: { sign?: boolean; 
   return s
 }
 
+/**
+ * 차트 Y축 라벨 — 한국어 단위 축약 (억/만) + 100만 단위 round.
+ * 음수도 부호 prepend. 예: -517,500,000 → "-5,200만", 1,200,000,000 → "12.0억".
+ * App asset_detail_dialog.dart `_fmtAxisNum` 와 정합.
+ */
+export const formatChartAxis = (v: number): string => {
+  const sign = v < 0 ? '-' : ''
+  const n = Math.abs(v)
+  if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
+  if (n >= 10_000) {
+    const mil = Math.round(n / 1_000_000) * 100
+    return `${sign}${mil.toLocaleString('ko-KR')}만`
+  }
+  return `${sign}${n.toLocaleString('ko-KR')}`
+}
+
 export const formatDay = (dStr: string) => {
   const parts = dStr.split('-').map(Number)
   const y = parts[0] ?? 1970

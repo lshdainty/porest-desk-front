@@ -11,7 +11,7 @@ import { Button } from '@/shared/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import {
   disablePdHideAmounts,
@@ -24,11 +24,6 @@ import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUn
 import { renderIcon } from '@/shared/lib'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
-function fmtAxisNum(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1000) return `${(v / 1000).toFixed(0)}k`
-  return String(v)
-}
 
 type BalanceTooltipProps = {
   active?: boolean
@@ -277,7 +272,7 @@ export function AssetDetailDialog({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={fmtAxisNum}
+                tickFormatter={formatChartAxis}
                 tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 width={44}
               />

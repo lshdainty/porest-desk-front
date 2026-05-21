@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -1316,19 +1316,8 @@ export const StatsPage = () => {
     savings: { label: '순저축', color: 'var(--bg-brand)' },
   }
 
-  // 음수 처리 — Math.abs() 로 단위 분기 + 부호 prefix. 기존 v 직접 비교는
-  // -710,000 같은 음수가 v < 10_000 분기로 빠져 풀 콤마 (`,000,000`) 출력 →
-  // YAxis width 52 안에 안 들어가 잘리던 버그 fix. App _fmtTick 와 동일 패턴.
-  const fmtTick = (v: number) => {
-    const abs = Math.abs(v)
-    const body =
-      abs >= 100_000_000
-        ? `${(abs / 100_000_000).toFixed(1)}억`
-        : abs >= 10_000
-          ? `${Math.round(abs / 10_000).toLocaleString('ko-KR')}만`
-          : abs.toLocaleString('ko-KR')
-    return v < 0 ? `−${body}` : body
-  }
+  // shared formatChartAxis — 음수 분기 + 100만 단위 round (예: -5,200만).
+  const fmtTick = formatChartAxis
 
   const TrendBig = (
     <Card>

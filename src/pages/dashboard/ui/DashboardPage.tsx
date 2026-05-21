@@ -4,7 +4,7 @@ import {
   CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
   enablePdHideAmounts,
@@ -39,11 +39,6 @@ const barChartConfig = {
   expense: { label: '지출', color: 'var(--fg-expense)' },
 } satisfies ChartConfig
 
-function fmtAxisNum(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1000)      return `${(v / 1000).toFixed(0)}k`
-  return String(v)
-}
 
 type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<string, unknown> }
 type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
@@ -130,7 +125,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={fmtAxisNum}
+          tickFormatter={formatChartAxis}
           tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={48}
         />
