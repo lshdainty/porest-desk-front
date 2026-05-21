@@ -934,16 +934,18 @@ function AssetLogo({ asset }: { asset: Asset }) {
   )
 }
 
-// AssetCard: 기존 .acc-card / __meta / __name / __num / __amt CSS spec 보존.
-// hover: border-color, translate, shadow 효과는 Tailwind hover + arbitrary value 로 매핑.
+// AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,
+// item 사이 border-top 구분선 (TypeGroup 에서 처리). hover 는 background tint 만.
 function AssetCard({
   asset,
   negativeAmount = false,
   onOpenDetail,
+  showTopBorder = false,
 }: {
   asset: Asset
   negativeAmount?: boolean
   onOpenDetail: (asset: Asset) => void
+  showTopBorder?: boolean
 }) {
   return (
     <div
@@ -951,16 +953,12 @@ function AssetCard({
       tabIndex={0}
       className={[
         'flex items-center gap-[14px] cursor-pointer',
-        'border border-solid',
-        'transition-all duration-[var(--motion-duration-fast)]',
-        'hover:-translate-y-px hover:shadow-[var(--shadow-sm)]',
-        'hover:border-[var(--border-default)]',
+        'transition-colors duration-[var(--motion-duration-fast)]',
+        'hover:bg-[var(--bg-muted)]',
       ].join(' ')}
       style={{
-        background: 'var(--bg-surface)',
-        borderColor: 'var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '16px 18px',
+        padding: '14px 4px',
+        borderTop: showTopBorder ? '1px solid var(--border-subtle)' : 'none',
       }}
       onClick={() => onOpenDetail(asset)}
       onKeyDown={(e) => {
@@ -1074,13 +1072,14 @@ function TypeGroup({
           등록된 항목이 없어요
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {assets.map(a => (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {assets.map((a, i) => (
             <AssetCard
               key={a.rowId}
               asset={a}
               negativeAmount={negativeTotal}
               onOpenDetail={onOpenDetail}
+              showTopBorder={i > 0}
             />
           ))}
         </div>
