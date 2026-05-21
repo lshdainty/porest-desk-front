@@ -746,7 +746,7 @@ function ExpenseDesktop() {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        <ExpenseCalendar month={month} expenses={expenses} />
+        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} />
       ) : (
         <>
           <Chips filter={filter} onChange={setFilter} />
@@ -813,7 +813,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        <ExpenseCalendar month={month} expenses={expenses} />
+        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} />
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
