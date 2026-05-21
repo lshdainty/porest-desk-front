@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp } from 'lucide-react'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -324,57 +324,51 @@ export function MonthPicker({
           <div
             style={{
               display: 'flex',
-              gap: 6,
+              alignItems: 'center',
               marginTop: 10,
               paddingTop: 10,
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
+            {/* 디자이너 정합 — 좌측 "오늘로" (today) + spacer + 우측 "닫기" (cancel) ghost button */}
             <button
               onClick={() => {
                 onChange(`${curY}-${String(curM).padStart(2, '0')}`)
                 setOpen(false)
               }}
               style={{
-                flex: 1,
-                padding: 8,
+                padding: '6px 10px',
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
+                border: 0,
                 background: 'transparent',
                 fontSize: 'var(--text-caption)',
                 fontWeight: '600',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                color: 'var(--fg-primary)',
+                color: 'var(--fg-brand-strong)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
               }}
             >
-              이번 달
+              <LocateFixed size={12} /> 오늘로
             </button>
+            <div style={{ flex: 1 }} />
             <button
-              onClick={() => {
-                let ly = curY
-                let lm = curM - 1
-                if (lm < 1) {
-                  lm = 12
-                  ly -= 1
-                }
-                onChange(`${ly}-${String(lm).padStart(2, '0')}`)
-                setOpen(false)
-              }}
+              onClick={() => setOpen(false)}
               style={{
-                flex: 1,
-                padding: 8,
+                padding: '6px 10px',
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
+                border: 0,
                 background: 'transparent',
                 fontSize: 'var(--text-caption)',
                 fontWeight: '600',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                color: 'var(--fg-primary)',
+                color: 'var(--fg-secondary)',
               }}
             >
-              지난 달
+              닫기
             </button>
           </div>
         </div>
