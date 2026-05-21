@@ -166,7 +166,41 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
   )
 }
 
-/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩 + 날짜 그룹별 거래 리스트. */
+/** Calendar grid skeleton — viewMode='calendar' (default) 의 외곽 카드 모양 + 7-col 요일
+ *  헤더 + 6주 cell grid. mobile = h-[420px] / lg = h-[calc(100vh-320px)] (ExpenseCalendar 정합). */
+function ExpenseCalendarSkeleton() {
+  return (
+    <Card
+      className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
+      style={{ overflow: 'hidden', marginBottom: 12 }}
+    >
+      <div className="flex flex-col h-full">
+        {/* 요일 헤더 (일~토) */}
+        <div className="grid grid-cols-7 border-b border-[var(--border-subtle)] px-1 py-2">
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="flex justify-center">
+              <SkeletonBase className="h-3 w-4" />
+            </div>
+          ))}
+        </div>
+        {/* 6주 × 7일 cell grid */}
+        <div className="grid grid-cols-7 grid-rows-6 flex-1">
+          {Array.from({ length: 42 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-start gap-1 p-1 lg:p-2 lg:border-l lg:border-t border-[var(--border-subtle)]"
+            >
+              <SkeletonBase className="h-4 w-4 rounded-full" />
+              <SkeletonBase className="h-2 w-8 mt-auto" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩/뷰토글 + Calendar grid (default mode). */
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
@@ -174,14 +208,11 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         <ExpenseSummarySkeleton mobile />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+          {/* ViewModeToggle (segmented 2 buttons) */}
+          <SkeletonBase className="h-9 w-[88px] rounded-md shrink-0" />
           <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <ExpenseDayGroupSkeleton rows={3} />
-          <ExpenseDayGroupSkeleton rows={2} />
-          <ExpenseDayGroupSkeleton rows={2} />
-        </div>
+        <ExpenseCalendarSkeleton />
       </div>
     )
   }
@@ -195,12 +226,12 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
-      <ExpenseChipsSkeleton />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <ExpenseDayGroupSkeleton rows={3} />
-        <ExpenseDayGroupSkeleton rows={2} />
-        <ExpenseDayGroupSkeleton rows={2} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
+        <SkeletonBase className="h-9 w-[88px] rounded-md shrink-0" />
+        <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
       </div>
+      <ExpenseCalendarSkeleton />
     </div>
   )
 }
