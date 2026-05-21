@@ -6,7 +6,6 @@ import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -463,24 +462,18 @@ function DayDetailDialog({
 }
 
 function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
-  // spec ToggleGroup type=single + variant=segmented-subtle (회색 음영).
+  // 단일 toggle button — 현재 mode 의 반대를 보여줌 (calendar 모드면 "목록" 버튼).
+  const isCalendar = value === 'calendar'
   return (
-    <ToggleGroup
-      type="single"
-      variant="segmented-subtle"
-      value={value}
-      onValueChange={(v) => { if (v) onChange(v as ViewMode) }}
-      className="!w-auto"
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={() => onChange(isCalendar ? 'list' : 'calendar')}
+      aria-label={isCalendar ? '목록 보기' : '달력 보기'}
     >
-      <ToggleGroupItem value="calendar" aria-label="달력 보기">
-        <Calendar size={14} />
-        <span style={{ marginLeft: 4 }}>달력</span>
-      </ToggleGroupItem>
-      <ToggleGroupItem value="list" aria-label="목록 보기">
-        <List size={14} />
-        <span style={{ marginLeft: 4 }}>목록</span>
-      </ToggleGroupItem>
-    </ToggleGroup>
+      {isCalendar ? <List size={14} /> : <Calendar size={14} />}
+      <span style={{ marginLeft: 4 }}>{isCalendar ? '목록' : '달력'}</span>
+    </Button>
   )
 }
 
