@@ -123,8 +123,9 @@ const MonthDayCell = ({
   return (
     <div
       className={cn(
-        'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
-        isSunday && 'border-l-0',
+        // 모바일 (< 1024px) 에선 셀 사이 grid line 제거 (사용자 요청). lg 이상만 표시.
+        'flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
+        isSunday && 'lg:border-l-0',
         isSelected && 'bg-blue-100/50 dark:bg-blue-900/20 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]'
       )}
       onMouseDown={handleMouseDown}
