@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, Pencil } from 'lucide-react'
+import { CalendarClock, ChevronDown, Pencil } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -676,10 +676,10 @@ export const StatsPage = () => {
       {pickerOpen && (
         <RangePickerSheet
           mobile={mobile}
-          initial={{ from: period.from, to: period.to }}
+          initial={period}
           onCancel={() => setPickerOpen(false)}
           onConfirm={(r) => {
-            setPeriod({ from: r.from, to: r.to, segMode: 'custom' })
+            setPeriod(r)
             setPickerOpen(false)
           }}
         />
@@ -788,13 +788,37 @@ export const StatsPage = () => {
             '카테고리별 지출'
           )}
         </CardTitle>
-        <div>{PeriodSeg}</div>
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: 'var(--spacing-xs) var(--spacing-md)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--bg-surface)',
+            fontSize: 'var(--text-body-sm)',
+            fontWeight: '500',
+            color: 'var(--fg-primary)',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
+          <span>{periodLabel(period)}</span>
+          <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+        </button>
+        {pickerOpen && (
+          <RangePickerSheet
+            mobile={mobile}
+            initial={period}
+            onCancel={() => setPickerOpen(false)}
+            onConfirm={(p) => { setPeriod(p); setPickerOpen(false) }}
+          />
+        )}
       </CardHeader>
-      {period.segMode === 'custom' && (
-        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-md)' }}>
-          {SelectedRangeCard}
-        </div>
-      )}
       <CardContent>
       {donutLoading ? (
         <div
@@ -1908,13 +1932,24 @@ function RangePickerSheet({
   onConfirm,
 }: {
   mobile: boolean
-  initial: { from: Date; to: Date }
+  initial: RangeState
   onCancel: () => void
-  onConfirm: (range: { from: Date; to: Date }) => void
+  onConfirm: (range: RangeState) => void
 }) {
+  const [segMode, setSegMode] = useState<SegMode>(initial.segMode)
   const [from, setFrom] = useState<Date>(initial.from)
   const [to, setTo] = useState<Date>(initial.to)
   const canApply = from.getTime() <= to.getTime()
+
+  // segMode 변경 시 — 월/분기/년 의 from/to 자동 계산 (이번 month/quarter/year)
+  // custom 은 기존 from/to 유지.
+  const setSeg = (v: SegMode) => {
+    setSegMode(v)
+    const now = new Date()
+    if (v === 'm') { const r = monthRangeOf(now); setFrom(r.from); setTo(r.to) }
+    else if (v === 'q') { const r = quarterRangeOf(now); setFrom(r.from); setTo(r.to) }
+    else if (v === 'y') { const r = yearRangeOf(now); setFrom(r.from); setTo(r.to) }
+  }
 
   const applyQuick = (days: number) => {
     const today = new Date()
@@ -1922,40 +1957,34 @@ function RangePickerSheet({
     start.setDate(today.getDate() - days + 1)
     setFrom(start)
     setTo(today)
+    setSegMode('custom')
   }
 
-  // 공통 form content (chips + date inputs) — mobile/desktop 동일 markup.
+  // 가계부 FilterDialog 패턴 정합 — 상단 ToggleGroup (월/분기/년/직접) + 항상 date range
+  // + custom 시만 quick chips (최근 N일/N개월) 표시.
   const formBody = (
     <>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>
-        {QUICK_RANGES.map((q) => (
-          <button
-            key={q.days}
-            type="button"
-            onClick={() => applyQuick(q.days)}
-            style={{
-              padding: 'var(--spacing-xs) var(--spacing-md)',
-              borderRadius: 'var(--radius-pill)',
-              border: '1px solid var(--border-subtle)',
-              background: 'var(--bg-surface)',
-              fontSize: 'var(--text-caption)',
-              fontWeight: '500',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              color: 'var(--fg-secondary)',
-            }}
-          >
-            {q.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+        <ToggleGroup
+          type="single"
+          variant="segmented-subtle"
+          value={segMode}
+          onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
+          className="w-full"
+        >
+          <ToggleGroupItem value="m" className="flex-1">월</ToggleGroupItem>
+          <ToggleGroupItem value="q" className="flex-1">분기</ToggleGroupItem>
+          <ToggleGroupItem value="y" className="flex-1">년</ToggleGroupItem>
+          <ToggleGroupItem value="custom" className="flex-1">직접</ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', marginBottom: segMode === 'custom' ? 'var(--spacing-lg)' : 0 }}>
         <div style={{ flex: 1 }}>
           <InputDatePicker
             value={toISODate(from)}
             onValueChange={(v) => {
               const d = fromISODate(v)
-              if (d) setFrom(d)
+              if (d) { setFrom(d); setSegMode('custom') }
             }}
           />
         </div>
@@ -1965,17 +1994,41 @@ function RangePickerSheet({
             value={toISODate(to)}
             onValueChange={(v) => {
               const d = fromISODate(v)
-              if (d) setTo(d)
+              if (d) { setTo(d); setSegMode('custom') }
             }}
           />
         </div>
       </div>
+      {segMode === 'custom' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+          {QUICK_RANGES.map((q) => (
+            <button
+              key={q.days}
+              type="button"
+              onClick={() => applyQuick(q.days)}
+              style={{
+                padding: 'var(--spacing-xs) var(--spacing-md)',
+                borderRadius: 'var(--radius-pill)',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-surface)',
+                fontSize: 'var(--text-caption)',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              {q.label}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   )
 
   const cancelBtn = <Button variant="ghost" onClick={onCancel}>취소</Button>
   const applyBtn = (
-    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to })}>적용</Button>
+    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to, segMode })}>적용</Button>
   )
 
   // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
