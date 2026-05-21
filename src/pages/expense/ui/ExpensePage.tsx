@@ -9,6 +9,7 @@ import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
@@ -319,21 +320,20 @@ type ViewMode = 'calendar' | 'list'
 
 /** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
  *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
- *  CalendarMonthView 가 expense event (color #0147ad/#c73838) 자동 분기 →
- *  셀에 +수입 / −지출 합계 표시. 자체 grid/border/border-radius 도 캘린더
- *  컴포넌트 내장. */
+ *  CalendarMonthView 의 onDayClick prop 으로 셀 클릭 시 그날 거래 내역
+ *  DayDetailDialog (mobile drawer / desktop dialog) 표시. drag-select 의
+ *  quickAdd dialog 는 onDayClick 있으면 자동 양보. */
 function ExpenseCalendar({
   month,
   expenses,
+  mobile,
+  onItemClick,
 }: {
   month: string
   expenses: Expense[]
+  mobile: boolean
+  onItemClick?: (e: Expense) => void
 }) {
-  // convertExpenseToIEvent 결과 + startDate/endDate 를 `YYYY-MM-DDT00:00:00` ISO
-  // 로 명시. date-fns v3+ 의 parseISO 는 date-only string 을 UTC midnight 으로
-  // 처리 (cell.date 의 local midnight 과 toISOString 결과 다름 → dayKey mismatch).
-  // 명시적 `T00:00:00` 포함 시 local midnight 으로 처리되어 cell.date 와 정확히
-  // 매칭 → expenseSummary 가 셀에 표시됨.
   const events = useMemo(() => {
     return expenses.map(e => {
       const ev = convertExpenseToIEvent(e)
@@ -346,15 +346,115 @@ function ExpenseCalendar({
     const [ys, ms] = month.split('-')
     return new Date(Number(ys), Number(ms) - 1, 1)
   }, [month])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const dayItems = useMemo(() => {
+    if (!selectedDate) return [] as Expense[]
+    const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+    return expenses.filter(e => (e.expenseDate ?? '').slice(0, 10) === ymd)
+  }, [selectedDate, expenses])
   return (
-    <Card
-      className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
-      style={{ overflow: 'hidden', marginBottom: 12 }}
-    >
-      <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-        <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
-      </CalendarProvider>
-    </Card>
+    <>
+      <Card
+        className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
+        style={{ overflow: 'hidden', marginBottom: 12 }}
+      >
+        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+          <CalendarMonthView
+            singleDayEvents={events}
+            multiDayEvents={[]}
+            onDayClick={(date) => setSelectedDate(date)}
+          />
+        </CalendarProvider>
+      </Card>
+      {selectedDate && (
+        <DayDetailDialog
+          date={selectedDate}
+          items={dayItems}
+          mobile={mobile}
+          onClose={() => setSelectedDate(null)}
+          onItemClick={(e) => { setSelectedDate(null); onItemClick?.(e) }}
+        />
+      )}
+    </>
+  )
+}
+
+/** 그날 거래 내역 dialog — App _DayDetailBody 정합. ModalShell 의 mobile=drawer /
+ *  desktop=dialog 분기 활용. summary card (지출/수입/건수) + ExpenseRow 리스트. */
+function DayDetailDialog({
+  date,
+  items,
+  mobile,
+  onClose,
+  onItemClick,
+}: {
+  date: Date
+  items: Expense[]
+  mobile: boolean
+  onClose: () => void
+  onItemClick?: (e: Expense) => void
+}) {
+  const dows = ['일', '월', '화', '수', '목', '금', '토']
+  const dow = dows[date.getDay()] ?? ''
+  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dow}요일`
+  const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
+  const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
+  return (
+    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm">
+      {/* 합계 카드 — 건수 + 우측 지출/수입 */}
+      <Card variant="bordered" style={{ marginBottom: 12 }}>
+        <CardContent className="!py-[var(--spacing-md)] flex items-center gap-3">
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
+              {items.length}건
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+            {expenseSum > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>지출</span>
+                <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-expense)' }}>
+                  −{KRW(expenseSum)}원
+                </span>
+              </div>
+            )}
+            {incomeSum > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입</span>
+                <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-brand)' }}>
+                  +{KRW(incomeSum)}원
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      {/* 거래 row 들 */}
+      {items.length === 0 ? (
+        <div style={{
+          padding: '24px 0',
+          textAlign: 'center',
+          color: 'var(--fg-tertiary)',
+          fontSize: 'var(--text-label-sm)',
+        }}>
+          이 날의 거래가 없어요
+        </div>
+      ) : (
+        <Card style={{ overflow: 'hidden' }}>
+          {items.map((e, i) => (
+            <div
+              key={e.rowId}
+              style={{
+                borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+                padding: '0 14px',
+              }}
+            >
+              <ExpenseRow expense={e} onClick={onItemClick} />
+            </div>
+          ))}
+        </Card>
+      )}
+    </ModalShell>
   )
 }
 
@@ -746,7 +846,7 @@ function ExpenseDesktop() {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} />
+        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />
       ) : (
         <>
           <Chips filter={filter} onChange={setFilter} />
@@ -813,7 +913,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
-        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} />
+        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>

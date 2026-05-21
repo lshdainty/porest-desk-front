@@ -44,7 +44,12 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
   return map
 }
 
-interface IProps {
+interface IPropsExt {
+  /** 셀 클릭 콜백 — 지정 시 drag-select 우선순위 양보 (가계부 캘린더의 DayDetail 트리거). */
+  onDayClick?: (date: Date) => void
+}
+
+interface IProps extends IPropsExt {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
   onEventClick?: (event: IEvent, el: HTMLElement) => void
@@ -63,6 +68,7 @@ const MonthDayCell = ({
   holidayDateSet,
   maxVisibleEvents,
   onEventClick,
+  onDayClick,
 }: {
   cell: ICalendarCell
   events: IEvent[]
@@ -71,6 +77,7 @@ const MonthDayCell = ({
   holidayDateSet: Set<string>
   maxVisibleEvents: number
   onEventClick?: (event: IEvent, el: HTMLElement) => void
+  onDayClick?: (date: Date) => void
 }) => {
   const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
@@ -107,8 +114,14 @@ const MonthDayCell = ({
       return
     }
 
+    // onDayClick prop 있으면 drag-select 우선순위 양보 — 단순 셀 클릭 처리만.
+    if (onDayClick) {
+      onDayClick(date)
+      return
+    }
+
     startSelection(date)
-  }, [date, startSelection])
+  }, [date, startSelection, onDayClick])
 
   const handleMouseEnter = useCallback(() => {
     updateSelection(date)
@@ -313,7 +326,7 @@ const MonthEventBadge = ({
   )
 }
 
-const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
+const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick }: IProps) => {
   const { i18n } = useTranslation()
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
@@ -437,6 +450,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 holidayDateSet={holidayDateSet}
                 maxVisibleEvents={maxVisibleEvents}
                 onEventClick={onEventClick}
+                onDayClick={onDayClick}
               />
             )
           })}
@@ -446,10 +460,15 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
   )
 }
 
-const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
+const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick }: IProps) => {
   return (
     <DragSelectProvider>
-      <MonthViewContent singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={onEventClick} />
+      <MonthViewContent
+        singleDayEvents={singleDayEvents}
+        multiDayEvents={multiDayEvents}
+        onEventClick={onEventClick}
+        onDayClick={onDayClick}
+      />
     </DragSelectProvider>
   )
 }
