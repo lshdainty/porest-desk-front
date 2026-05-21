@@ -10,6 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { Separator } from '@/shared/ui/separator'
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
@@ -402,26 +403,24 @@ function DayDetailDialog({
   return (
     <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm">
       {/* 합계 카드 — 건수 + 우측 지출/수입 */}
-      <Card variant="bordered" style={{ marginBottom: 12 }}>
-        <CardContent className="!py-[var(--spacing-md)] flex items-center gap-3">
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
-              {items.length}건
-            </div>
+      <Card variant="bordered" className="mb-[var(--spacing-md)]">
+        <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">
+          <div className="flex-1 text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
+            {items.length}건
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+          <div className="flex flex-col items-end gap-[var(--spacing-xs)]">
             {expenseSum > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>지출</span>
-                <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-expense)' }}>
+              <div className="flex items-center gap-[var(--spacing-xs)]">
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
+                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
                   −{KRW(expenseSum)}원
                 </span>
               </div>
             )}
             {incomeSum > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입</span>
-                <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-brand)' }}>
+              <div className="flex items-center gap-[var(--spacing-xs)]">
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">수입</span>
+                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
                   +{KRW(incomeSum)}원
                 </span>
               </div>
@@ -431,25 +430,15 @@ function DayDetailDialog({
       </Card>
       {/* 거래 row 들 */}
       {items.length === 0 ? (
-        <div style={{
-          padding: '24px 0',
-          textAlign: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--text-label-sm)',
-        }}>
+        <div className="py-[var(--spacing-xl)] text-center text-[length:var(--text-label-sm)] text-[var(--fg-tertiary)]">
           이 날의 거래가 없어요
         </div>
       ) : (
-        <Card style={{ overflow: 'hidden' }}>
+        <Card className="overflow-hidden">
           {items.map((e, i) => (
-            <div
-              key={e.rowId}
-              style={{
-                borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-                padding: '0 14px',
-              }}
-            >
-              <ExpenseRow expense={e} onClick={onItemClick} />
+            <div key={e.rowId} className="px-[var(--spacing-md)]">
+              {i > 0 && <Separator />}
+              <ExpenseRow expense={e} onClick={(ex) => onItemClick?.(ex)} />
             </div>
           ))}
         </Card>
