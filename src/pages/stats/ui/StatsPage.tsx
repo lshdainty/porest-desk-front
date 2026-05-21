@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, ChevronDown, Pencil } from 'lucide-react'
+import { CalendarClock, ChevronDown } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -647,32 +647,38 @@ export const StatsPage = () => {
     </Tabs>
   )
 
-  // segment 라벨: 'custom' 활성 여부와 무관하게 항상 '직접'.
-  // 기간 정보는 아래 별도 카드(SelectedRangeCard)에 표시.
-  // spec ToggleGroup type=single + variant=segmented-subtle (회색 음영) 정합.
+  // 가계부 FilterDialog 패턴 정합 — 작은 trigger button (Calendar icon + periodLabel +
+  // chevron). 클릭 시 RangePickerSheet 열림 — 안에서 ToggleGroup(월/분기/년/직접) + range
+  // 모두 선택. SelectedRangeCard 외부 표시 제거 (trigger label 에 통합).
   const PeriodSeg = (
-    <div style={{ display: 'inline-block' }}>
-      <ToggleGroup
-        type="single"
-        variant="segmented-subtle"
-        value={period.segMode}
-        onValueChange={(v) => {
-          if (!v) return // radix: 같은 item 재클릭 시 빈 문자열 → 무시
-          if (v === 'm') setPeriod(monthRangeOf(new Date()))
-          else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
-          else if (v === 'y') setPeriod(yearRangeOf(new Date()))
-          else if (v === 'custom') {
-            // 처음 '직접' 활성 시 — 기존 range 유지, 아직 picker 자동 오픈 안 함.
-            // 사용자가 '변경' 버튼 클릭 시 picker 오픈.
-            setPeriod({ ...period, segMode: 'custom' })
-          }
+    <>
+      <button
+        type="button"
+        onClick={() => setPickerOpen(true)}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: 'var(--spacing-xs) var(--spacing-md)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-surface)',
+          fontSize: 'var(--text-body-sm)',
+          fontWeight: '500',
+          color: 'var(--fg-primary)',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
         }}
       >
-        <ToggleGroupItem value="m">월</ToggleGroupItem>
-        <ToggleGroupItem value="q">분기</ToggleGroupItem>
-        <ToggleGroupItem value="y">년</ToggleGroupItem>
-        <ToggleGroupItem value="custom">직접</ToggleGroupItem>
-      </ToggleGroup>
+        <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
+        {/* custom + 다른 year 시 'YYYY-MM-DD ~ YYYY-MM-DD' 너무 길어 wrap. ~ 다음에서 명시 break. */}
+        <span style={{ whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.3 }}>
+          {period.segMode === 'custom' && period.from.getFullYear() !== period.to.getFullYear()
+            ? `${fmt(period.from)} ~\n${fmt(period.to)}`
+            : periodLabel(period)}
+        </span>
+        <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+      </button>
       {pickerOpen && (
         <RangePickerSheet
           mobile={mobile}
@@ -684,59 +690,10 @@ export const StatsPage = () => {
           }}
         />
       )}
-    </div>
+    </>
   )
 
   // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
-  // - 좌측: calendar icon
-  // - 중앙: 선택 기간 라벨 (YYYY.MM.DD ~ YYYY.MM.DD) + (N일)
-  // - 우측: 변경 버튼 (펜슬 아이콘)
-  const selectedRangeDays =
-    Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
-  const SelectedRangeCard = period.segMode === 'custom' ? (
-    <Card
-      variant="bordered"
-      role="button"
-      tabIndex={0}
-      onClick={() => setPickerOpen(true)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          setPickerOpen(true)
-        }
-      }}
-      className="w-full cursor-pointer"
-    >
-      <CardContent className="!py-[var(--spacing-md)] flex items-center gap-3">
-        <CalendarClock size={16} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>
-            선택 기간
-          </div>
-          <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
-            {fmt(period.from)} ~ {fmt(period.to)}
-            <span style={{ marginLeft: 6, color: 'var(--fg-tertiary)', fontWeight: '400' }}>
-              ({selectedRangeDays}일)
-            </span>
-          </div>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            color: 'var(--fg-secondary)',
-            fontSize: 'var(--text-caption)',
-            fontWeight: '600',
-          }}
-        >
-          <Pencil size={14} />
-          변경
-        </div>
-      </CardContent>
-    </Card>
-  ) : null
-
   // ---------- LOADING / EMPTY HELPERS ----------
   const EmptyBox = ({ text }: { text: string }) => (
     <div
@@ -788,41 +745,7 @@ export const StatsPage = () => {
             '카테고리별 지출'
           )}
         </CardTitle>
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: 'var(--spacing-xs) var(--spacing-md)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--bg-surface)',
-            fontSize: 'var(--text-body-sm)',
-            fontWeight: '500',
-            color: 'var(--fg-primary)',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
-          {/* custom + 다른 year 시 'YYYY-MM-DD ~ YYYY-MM-DD' 너무 길어 wrap. ~ 다음에서 명시 break. */}
-          <span style={{ whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.3 }}>
-            {period.segMode === 'custom' && period.from.getFullYear() !== period.to.getFullYear()
-              ? `${fmt(period.from)} ~\n${fmt(period.to)}`
-              : periodLabel(period)}
-          </span>
-          <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
-        </button>
-        {pickerOpen && (
-          <RangePickerSheet
-            mobile={mobile}
-            initial={period}
-            onCancel={() => setPickerOpen(false)}
-            onConfirm={(p) => { setPeriod(p); setPickerOpen(false) }}
-          />
-        )}
+        {PeriodSeg}
       </CardHeader>
       <CardContent>
       {donutLoading ? (
@@ -1352,13 +1275,8 @@ export const StatsPage = () => {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
-        <div>{PeriodSeg}</div>
+        {PeriodSeg}
       </CardHeader>
-      {period.segMode === 'custom' && (
-        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-md)' }}>
-          {SelectedRangeCard}
-        </div>
-      )}
       <CardContent>
       {rangeQ.isLoading ? (
         <>
