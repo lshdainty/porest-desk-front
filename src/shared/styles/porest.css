@@ -250,7 +250,8 @@
 .m-tab > svg { color: var(--fg-tertiary); }
 .m-tab.active { color: var(--fg-brand-strong); font-weight: 600; }
 .m-tab.active > svg { color: var(--fg-brand-strong); }
-/* back 버튼 — 라벨 없어 비어 보이는 현상 fix. 클로드 정합 spec. */
+/* back 버튼 — 라벨 없어 비어 보이는 현상 fix. 클로드 시각 정합 (mid-gray icon).
+ * 클로드 토큰 이름은 var(--fg-primary) 지만 값이 우리와 달라 시각 정합 위해 fg-secondary 사용. */
 .m-tab__back-pill {
   display: inline-flex;
   align-items: center;
@@ -259,7 +260,7 @@
   height: 36px;
   border-radius: var(--radius-pill);
   background: var(--bg-sunken);
-  color: var(--fg-primary);
+  color: var(--fg-secondary);
   transition: background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
