@@ -1972,7 +1972,7 @@ function RangePickerSheet({
       <div style={{ marginBottom: 'var(--spacing-lg)' }}>
         <ToggleGroup
           type="single"
-          variant="segmented-subtle"
+          variant="segmented"
           value={segMode}
           onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
           className="w-full"
