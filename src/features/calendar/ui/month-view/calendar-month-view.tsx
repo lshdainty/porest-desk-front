@@ -147,17 +147,8 @@ const MonthDayCell = ({
             {day}
           </button>
 
-          {/* 수입/지출 합계 - 날짜 옆 인라인 (이벤트 배지 정렬에 영향 없음) */}
-          {hasExpense && (
-            <div className={cn('hidden lg:flex items-center gap-1.5 text-[10px] font-medium min-w-0 truncate', !currentMonth && 'opacity-50')}>
-              {expenseSummary.income > 0 && (
-                <span className="truncate" style={{ color: 'var(--fg-income)' }}>+{formatNumber(expenseSummary.income)}</span>
-              )}
-              {expenseSummary.expense > 0 && (
-                <span className="truncate" style={{ color: 'var(--fg-expense)' }}>-{formatNumber(expenseSummary.expense)}</span>
-              )}
-            </div>
-          )}
+          {/* 수입/지출 합계는 날짜 옆이 아닌 셀 본문에 큰 글씨로 표시
+              (좁은 모바일 셀에서 truncate 되지 않게 — 아래 본문 영역으로 옮김) */}
         </div>
 
         {cellEvents.length > maxVisibleEvents && (
@@ -175,6 +166,21 @@ const MonthDayCell = ({
       </div>
 
       <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>
+        {/* 셀 본문 상단에 수입/지출 합계 큰 글씨 (날짜 아래) */}
+        {hasExpense && (
+          <div className="flex flex-col items-center gap-0.5 px-1 leading-tight font-semibold">
+            {expenseSummary.expense > 0 && (
+              <span className="num whitespace-nowrap" style={{ color: 'var(--fg-expense)', fontSize: 11 }}>
+                −{formatNumber(expenseSummary.expense)}
+              </span>
+            )}
+            {expenseSummary.income > 0 && (
+              <span className="num whitespace-nowrap" style={{ color: 'var(--fg-income)', fontSize: 11 }}>
+                +{formatNumber(expenseSummary.income)}
+              </span>
+            )}
+          </div>
+        )}
         {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
