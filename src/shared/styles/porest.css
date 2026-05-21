@@ -228,6 +228,19 @@
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   flex-shrink: 0;
+  position: relative;
+}
+/* 클로드 인풋 영역 톤 — 탭바 border 위 spacing-lg(16px) 영역에 컨텐츠 → bg-surface
+ * 그라데이션 fade overlay. border 1px 은 그대로 유지 (캡쳐 정합). */
+.m-tabbar::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--spacing-lg) * -1);
+  left: 0;
+  right: 0;
+  height: var(--spacing-lg);
+  background: linear-gradient(to top, var(--bg-surface), transparent);
+  pointer-events: none;
 }
 .m-tab {
   display: flex;
@@ -250,6 +263,18 @@
 .m-tab > svg { color: var(--fg-tertiary); }
 .m-tab.active { color: var(--fg-brand-strong); font-weight: 600; }
 .m-tab.active > svg { color: var(--fg-brand-strong); }
+/* back 버튼 — 라벨 없어 비어 보이는 현상 fix. icon 만 surface-input pill 로 채움.
+ * size = spacing-2xl(32px), radius = radius-pill, color = fg-secondary. */
+.m-tab__back-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface-input);
+  color: var(--fg-secondary);
+}
 
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card

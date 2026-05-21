@@ -29,7 +29,9 @@ export function MoneyTabBar() {
   return (
     <nav className="m-tabbar">
       <button className="m-tab" onClick={onBack} aria-label="뒤로">
-        <ArrowLeft size={22} strokeWidth={1.9} />
+        <span className="m-tab__back-pill">
+          <ArrowLeft size={22} strokeWidth={1.9} />
+        </span>
       </button>
       {TABS.map(t => {
         const IconComp = t.icon
