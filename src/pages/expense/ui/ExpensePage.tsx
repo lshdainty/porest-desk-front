@@ -423,20 +423,21 @@ function DayDetailDialog({
           <div className="flex-1 text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
             {items.length}건
           </div>
-          <div className="flex flex-col items-end gap-[var(--spacing-sm)]">
-            {expenseSum > 0 && (
-              <div className="flex flex-col items-end">
-                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
-                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  −{KRW(expenseSum)}원
-                </span>
-              </div>
-            )}
+          {/* 수입+지출 같이 있을 때 두 column horizontal (모바일 정합). 단독은 1 column. */}
+          <div className="flex items-end gap-[var(--spacing-lg)]">
             {incomeSum > 0 && (
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">수입</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
                   +{KRW(incomeSum)}원
+                </span>
+              </div>
+            )}
+            {expenseSum > 0 && (
+              <div className="flex flex-col items-end">
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
+                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
+                  −{KRW(expenseSum)}원
                 </span>
               </div>
             )}
