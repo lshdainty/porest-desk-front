@@ -137,7 +137,8 @@ const MonthDayCell = ({
           <button
             onClick={handleClick}
             className={cn(
-              'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
+              // viewport 별 사이즈 — 모바일 size-6/text-xs, lg+ size-9/text-base.
+              'flex size-6 lg:size-9 items-center justify-center rounded-full text-xs lg:text-base font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
               !currentMonth && 'opacity-20',
               isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
             )}
@@ -172,19 +173,33 @@ const MonthDayCell = ({
             step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합).
             flex-shrink-0 — 아래 event slot 들이 expense 자르지 않게. */}
         {hasExpense && (
-          <div className="flex flex-col items-center gap-0.5 px-0.5 leading-none font-semibold overflow-hidden flex-shrink-0">
+          <div className="flex flex-col items-start gap-0.5 px-1 lg:px-2 leading-none font-semibold overflow-hidden flex-shrink-0">
+            {/* 모바일: 글자 수별 step text-[NNpx] (11/10/9/8). lg+: text-base (16px) 고정.
+                inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
             {expenseSummary.expense > 0 && (() => {
               const text = `−${formatNumber(expenseSummary.expense)}`
-              const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
+              const mobileFs =
+                text.length <= 6 ? 'text-[11px]' :
+                text.length <= 8 ? 'text-[10px]' :
+                text.length <= 10 ? 'text-[9px]' : 'text-[8px]'
               return (
-                <span className="num" style={{ color: 'var(--fg-expense)', fontSize: fs, whiteSpace: 'nowrap', lineHeight: 1.2 }}>{text}</span>
+                <span
+                  className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
+                  style={{ color: 'var(--fg-expense)' }}
+                >{text}</span>
               )
             })()}
             {expenseSummary.income > 0 && (() => {
               const text = `+${formatNumber(expenseSummary.income)}`
-              const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
+              const mobileFs =
+                text.length <= 6 ? 'text-[11px]' :
+                text.length <= 8 ? 'text-[10px]' :
+                text.length <= 10 ? 'text-[9px]' : 'text-[8px]'
               return (
-                <span className="num" style={{ color: 'var(--fg-income)', fontSize: fs, whiteSpace: 'nowrap', lineHeight: 1.2 }}>{text}</span>
+                <span
+                  className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
+                  style={{ color: 'var(--fg-income)' }}
+                >{text}</span>
               )
             })()}
           </div>
