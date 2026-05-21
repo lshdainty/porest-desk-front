@@ -819,6 +819,7 @@ function ExpenseDesktop() {
           <div className="sub">모든 거래 내역</div>
         </div>
         <div className="right">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
           <Button variant="secondary" size="sm" onClick={() => setFilterOpen(true)}>
             <Filter size={13} /> 필터{activeCount > 0 && ` · ${activeCount}`}
           </Button>
@@ -839,9 +840,6 @@ function ExpenseDesktop() {
         monthOut={monthOut}
         isLoading={isLoadingSummary}
       />
-      <div style={{ marginBottom: 12 }}>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} />
-      </div>
       {viewMode === 'calendar' ? (
         isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />
       ) : (
@@ -906,7 +904,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         monthOut={monthOut}
         isLoading={isLoadingSummary}
       />
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'calendar' ? (
