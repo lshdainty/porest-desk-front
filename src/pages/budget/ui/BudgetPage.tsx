@@ -926,7 +926,7 @@ export const BudgetPage = () => {
       <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
         <ChevronLeft size={16} />
       </Button>
-      <MonthPicker value={monthKey} onChange={setMonthKey} />
+      <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
       <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
         <ChevronRight size={16} />
       </Button>
@@ -934,6 +934,7 @@ export const BudgetPage = () => {
         size="sm"
         type="button"
         onClick={goToSettings}
+        style={{ marginLeft: 'auto' }}
       >
         <Settings size={14} /> 예산 설정
       </Button>

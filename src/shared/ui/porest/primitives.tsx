@@ -173,10 +173,13 @@ export function MonthPicker({
   value,
   onChange,
   align = 'right',
+  variant = 'outline',
 }: {
   value: string
   onChange: (v: string) => void
   align?: 'right' | 'left'
+  /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만. */
+  variant?: 'outline' | 'borderless'
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -231,20 +234,22 @@ export function MonthPicker({
         className="month-picker__trigger"
         style={{
           background: 'transparent',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-tile)',
-          padding: '6px 12px',
-          fontSize: 'var(--text-label-sm)',
-          fontWeight: '600',
-          color: 'var(--fg-secondary)',
+          border: variant === 'borderless' ? 0 : '1px solid var(--border-subtle)',
+          borderRadius: variant === 'borderless' ? 0 : 'var(--radius-tile)',
+          padding: variant === 'borderless' ? '4px 6px' : '6px 12px',
+          fontSize: variant === 'borderless' ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
+          fontWeight: variant === 'borderless' ? '700' : '600',
+          color: variant === 'borderless' ? 'var(--fg-primary)' : 'var(--fg-secondary)',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 6,
+          gap: 4,
           cursor: 'pointer',
           fontFamily: 'inherit',
         }}
       >
-        <Calendar size={13} /> {label} <ChevronDown size={12} />
+        {variant !== 'borderless' && <Calendar size={13} />}
+        {label}
+        <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
       </button>
       {open && (
         <div
