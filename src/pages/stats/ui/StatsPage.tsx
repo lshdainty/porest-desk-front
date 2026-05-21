@@ -1274,7 +1274,7 @@ export const StatsPage = () => {
   const TrendBig = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>수입·지출 추이</CardTitle>
         {PeriodSeg}
       </CardHeader>
       <CardContent>
