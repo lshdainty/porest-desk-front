@@ -381,7 +381,9 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-7 flex-shrink-0">
+      {/* 모바일: border-b 로 요일/날짜 구분 (셀 border-t 가 없음).
+          lg+ : border-b 제거 — 셀 border-t 와 중복되어 두꺼워지는 시각 방지. */}
+      <div className="grid grid-cols-7 border-b lg:border-b-0 flex-shrink-0">
         {weekDays.map((day, index) => {
           const isSunday = index === 0
           const isSaturday = index === 6
