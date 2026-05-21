@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -913,9 +913,23 @@ export const BudgetPage = () => {
     </Card>
   )
 
+  const adjustMonth = (delta: number) => {
+    const [y, m] = monthKey.split('-').map(Number) as [number, number]
+    let ny = y
+    let nm = m + delta
+    if (nm < 1) { ny -= 1; nm = 12 }
+    if (nm > 12) { ny += 1; nm = 1 }
+    setMonthKey(`${ny}-${String(nm).padStart(2, '0')}`)
+  }
   const PageControls = (
     <>
+      <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
+        <ChevronLeft size={16} />
+      </Button>
       <MonthPicker value={monthKey} onChange={setMonthKey} />
+      <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
+        <ChevronRight size={16} />
+      </Button>
       <Button
         size="sm"
         type="button"
