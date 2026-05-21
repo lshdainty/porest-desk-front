@@ -807,7 +807,12 @@ export const StatsPage = () => {
           }}
         >
           <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
-          <span>{periodLabel(period)}</span>
+          {/* custom + 다른 year 시 'YYYY-MM-DD ~ YYYY-MM-DD' 너무 길어 wrap. ~ 다음에서 명시 break. */}
+          <span style={{ whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.3 }}>
+            {period.segMode === 'custom' && period.from.getFullYear() !== period.to.getFullYear()
+              ? `${fmt(period.from)} ~\n${fmt(period.to)}`
+              : periodLabel(period)}
+          </span>
           <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
         </button>
         {pickerOpen && (
