@@ -166,19 +166,25 @@ const MonthDayCell = ({
       </div>
 
       <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>
-        {/* 셀 본문 상단에 수입/지출 합계 큰 글씨 (날짜 아래) */}
+        {/* 셀 본문 상단에 수입/지출 합계 — 글자 수 따라 fontSize 동적 축소.
+            셀 폭이 좁아 +3,500,000 같은 긴 숫자가 옆 셀 침범하던 버그 fix.
+            step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합). */}
         {hasExpense && (
-          <div className="flex flex-col items-center gap-0.5 px-1 leading-tight font-semibold">
-            {expenseSummary.expense > 0 && (
-              <span className="num whitespace-nowrap" style={{ color: 'var(--fg-expense)', fontSize: 11 }}>
-                −{formatNumber(expenseSummary.expense)}
-              </span>
-            )}
-            {expenseSummary.income > 0 && (
-              <span className="num whitespace-nowrap" style={{ color: 'var(--fg-income)', fontSize: 11 }}>
-                +{formatNumber(expenseSummary.income)}
-              </span>
-            )}
+          <div className="flex flex-col items-center gap-0.5 px-0.5 leading-tight font-semibold overflow-hidden">
+            {expenseSummary.expense > 0 && (() => {
+              const text = `−${formatNumber(expenseSummary.expense)}`
+              const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
+              return (
+                <span className="num" style={{ color: 'var(--fg-expense)', fontSize: fs, whiteSpace: 'nowrap' }}>{text}</span>
+              )
+            })()}
+            {expenseSummary.income > 0 && (() => {
+              const text = `+${formatNumber(expenseSummary.income)}`
+              const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
+              return (
+                <span className="num" style={{ color: 'var(--fg-income)', fontSize: fs, whiteSpace: 'nowrap' }}>{text}</span>
+              )
+            })()}
           </div>
         )}
         {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
