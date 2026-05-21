@@ -319,7 +319,11 @@ function ExpenseCalendar({
     return new Date(Number(ys), Number(ms) - 1, 1)
   }, [month])
   return (
-    <Card variant="bordered" className="max-w-[430px] lg:max-w-none" style={{ height: 420, overflow: 'hidden', marginBottom: 12 }}>
+    <Card
+      variant="bordered"
+      className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
+      style={{ overflow: 'hidden', marginBottom: 12 }}
+    >
       <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
         <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
       </CalendarProvider>
