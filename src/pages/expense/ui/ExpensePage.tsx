@@ -14,7 +14,8 @@ import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
 import { CalendarProvider } from '@/features/calendar/model/calendar-context'
 import { CalendarMonthView } from '@/features/calendar/ui/month-view/calendar-month-view'
-import { convertExpenseToIEvent } from '@/features/calendar/lib/helpers'
+import { convertExpenseToIEvent, getCalendarCells } from '@/features/calendar/lib/helpers'
+import { parseISO, startOfDay } from 'date-fns'
 import {
   useExpenses,
   useRangeSummary,
@@ -318,24 +319,58 @@ function ExpenseCalendar({
     const [ys, ms] = month.split('-')
     return new Date(Number(ys), Number(ms) - 1, 1)
   }, [month])
-  // CalendarMonthView 의 외곽 `flex flex-col h-full` + `flex-1` + `auto-rows-fr h-full`
-  // 가 부모 height 받아야 셀이 그려지고 금액 표시됨. 명시적 height 필요.
-  // 6 주 × ~80px + header ~40px = ~520px (App minHeight 72 셀 × 6 = 432 와 정합).
+
+  // ── 디버깅: dayKey 매칭 확인 ────────────────────────────────
+  const cells = getCalendarCells(initialDate)
+  const cellDayKeys = cells.map(c => startOfDay(c.date).toISOString())
+  const eventDayKeys = events.map(e => {
+    try { return startOfDay(parseISO(e.startDate)).toISOString() }
+    catch { return 'INVALID' }
+  })
+  const matchedCount = eventDayKeys.filter(k => cellDayKeys.includes(k)).length
+
+  // console 로 dump — 사용자 dev tools 에서 보고
+  // eslint-disable-next-line no-console
+  console.log('[ExpenseCalendar] DEBUG', {
+    month,
+    'events.length': events.length,
+    'first event': events[0],
+    'first event startDate': events[0]?.startDate,
+    'first event dayKey (computed)': eventDayKeys[0],
+    'cells.length': cells.length,
+    'first cell date': cells[0]?.date,
+    'first cell dayKey (computed)': cellDayKeys[0],
+    'matched event/cell dayKey count': matchedCount,
+    'all event dayKeys (sample 5)': eventDayKeys.slice(0, 5),
+    'all cell dayKeys (sample 5)': cellDayKeys.slice(0, 5),
+  })
+
   return (
-    <div
-      style={{
-        height: 520,
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden',
-        marginBottom: 12,
-      }}
-    >
-      <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-        <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
-      </CalendarProvider>
-    </div>
+    <>
+      {/* 임시 UI 디버그 — 화면 캡쳐 줄 수 있게 */}
+      <div style={{ padding: 8, fontSize: 10, lineHeight: 1.4, color: '#c73838', background: '#fff5f5', border: '1px dashed #c73838', marginBottom: 8, borderRadius: 4, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+        <div>events: {events.length} | cells: {cells.length} | matched: {matchedCount}</div>
+        <div>1st event sd: {events[0]?.startDate ?? '-'}</div>
+        <div>1st event dayKey: {eventDayKeys[0] ?? '-'}</div>
+        <div>1st cell dayKey: {cellDayKeys[0] ?? '-'}</div>
+        <div>cell keys: {cellDayKeys.slice(0, 3).join(' | ')}</div>
+        <div>event keys: {eventDayKeys.slice(0, 3).join(' | ')}</div>
+      </div>
+      <div
+        style={{
+          height: 520,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          marginBottom: 12,
+        }}
+      >
+        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+          <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
+        </CalendarProvider>
+      </div>
+    </>
   )
 }
 
