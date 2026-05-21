@@ -301,15 +301,17 @@ function ExpenseCalendar({
   month: string
   expenses: Expense[]
 }) {
-  // convertExpenseToIEvent 결과 사용 + startDate/endDate 를 date-only (`YYYY-MM-DD`)
-  // 로 slice. backend 가 ' '-separated datetime 반환할 경우 parseISO 가 ISO 8601
-  // strict 라 실패 → cell dayKey mismatch → expenseSummary undefined → 셀에 금액
-  // 안 보이는 문제 fix.
+  // convertExpenseToIEvent 결과 + startDate/endDate 를 `YYYY-MM-DDT00:00:00` ISO
+  // 로 명시. date-fns v3+ 의 parseISO 는 date-only string 을 UTC midnight 으로
+  // 처리 (cell.date 의 local midnight 과 toISOString 결과 다름 → dayKey mismatch).
+  // 명시적 `T00:00:00` 포함 시 local midnight 으로 처리되어 cell.date 와 정확히
+  // 매칭 → expenseSummary 가 셀에 표시됨.
   const events = useMemo(() => {
     return expenses.map(e => {
       const ev = convertExpenseToIEvent(e)
       const dateOnly = (e.expenseDate ?? '').slice(0, 10)
-      return { ...ev, startDate: dateOnly, endDate: dateOnly }
+      const localISO = `${dateOnly}T00:00:00`
+      return { ...ev, startDate: localISO, endDate: localISO }
     })
   }, [expenses])
   const initialDate = useMemo(() => {
@@ -320,26 +322,20 @@ function ExpenseCalendar({
   // 가 부모 height 받아야 셀이 그려지고 금액 표시됨. 명시적 height 필요.
   // 6 주 × ~80px + header ~40px = ~520px (App minHeight 72 셀 × 6 = 432 와 정합).
   return (
-    <>
-      {/* 임시 디버깅 — 매칭 안 되는 원인 진단용. 결과 확인 후 제거. */}
-      <div style={{ padding: 6, fontSize: 11, color: 'var(--fg-expense)', background: 'var(--bg-surface)', border: '1px dashed var(--border-default)', marginBottom: 8, borderRadius: 4, fontFamily: 'monospace' }}>
-        DEBUG: month={month} | events={events.length} | first={events[0] ? `sd=${events[0].startDate} src=${events[0].sourceType} color=${events[0].color} title="${events[0].title}"` : '(empty)'}
-      </div>
-      <div
-        style={{
-          height: 520,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
-          marginBottom: 12,
-        }}
-      >
-        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-          <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
-        </CalendarProvider>
-      </div>
-    </>
+    <div
+      style={{
+        height: 520,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        marginBottom: 12,
+      }}
+    >
+      <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+        <CalendarMonthView singleDayEvents={events} multiDayEvents={[]} />
+      </CalendarProvider>
+    </div>
   )
 }
 
