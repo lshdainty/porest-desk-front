@@ -177,10 +177,12 @@ const MonthDayCell = ({
                 inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
             {expenseSummary.expense > 0 && (() => {
               const text = `−${formatNumber(expenseSummary.expense)}`
+              // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :
                 text.length <= 8 ? 'text-[10px]' :
-                text.length <= 10 ? 'text-[9px]' : 'text-[8px]'
+                text.length <= 9 ? 'text-[9px]' :
+                text.length <= 10 ? 'text-[8px]' : 'text-[7px]'
               return (
                 <span
                   className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
@@ -190,10 +192,12 @@ const MonthDayCell = ({
             })()}
             {expenseSummary.income > 0 && (() => {
               const text = `+${formatNumber(expenseSummary.income)}`
+              // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :
                 text.length <= 8 ? 'text-[10px]' :
-                text.length <= 10 ? 'text-[9px]' : 'text-[8px]'
+                text.length <= 9 ? 'text-[9px]' :
+                text.length <= 10 ? 'text-[8px]' : 'text-[7px]'
               return (
                 <span
                   className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
