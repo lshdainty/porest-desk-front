@@ -235,11 +235,8 @@ function Summary({
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
   return (
-    <div
+    <Card
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-card)',
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
       }}
@@ -283,7 +280,7 @@ function Summary({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -320,7 +317,6 @@ function ExpenseCalendar({
   }, [month])
   return (
     <Card
-      variant="bordered"
       className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
       style={{ overflow: 'hidden', marginBottom: 12 }}
     >
