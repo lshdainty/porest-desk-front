@@ -168,26 +168,29 @@ const MonthDayCell = ({
       <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>
         {/* 셀 본문 상단에 수입/지출 합계 — 글자 수 따라 fontSize 동적 축소.
             셀 폭이 좁아 +3,500,000 같은 긴 숫자가 옆 셀 침범하던 버그 fix.
-            step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합). */}
+            step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합).
+            flex-shrink-0 — 아래 event slot 들이 expense 자르지 않게. */}
         {hasExpense && (
-          <div className="flex flex-col items-center gap-0.5 px-0.5 leading-tight font-semibold overflow-hidden">
+          <div className="flex flex-col items-center gap-0.5 px-0.5 leading-none font-semibold overflow-hidden flex-shrink-0">
             {expenseSummary.expense > 0 && (() => {
               const text = `−${formatNumber(expenseSummary.expense)}`
               const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
               return (
-                <span className="num" style={{ color: 'var(--fg-expense)', fontSize: fs, whiteSpace: 'nowrap' }}>{text}</span>
+                <span className="num" style={{ color: 'var(--fg-expense)', fontSize: fs, whiteSpace: 'nowrap', lineHeight: 1.2 }}>{text}</span>
               )
             })()}
             {expenseSummary.income > 0 && (() => {
               const text = `+${formatNumber(expenseSummary.income)}`
               const fs = text.length <= 6 ? 11 : text.length <= 8 ? 10 : text.length <= 10 ? 9 : 8
               return (
-                <span className="num" style={{ color: 'var(--fg-income)', fontSize: fs, whiteSpace: 'nowrap' }}>{text}</span>
+                <span className="num" style={{ color: 'var(--fg-income)', fontSize: fs, whiteSpace: 'nowrap', lineHeight: 1.2 }}>{text}</span>
               )
             })()}
           </div>
         )}
-        {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
+        {/* expense-only 셀 (regular event 없음) 일 때 빈 event slot 들 그리지 않음
+            — 빈 slot 이 expense summary 자리 침범 + truncate 방지. */}
+        {cellEvents.length > 0 && Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
