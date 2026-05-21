@@ -137,8 +137,7 @@ const MonthDayCell = ({
           <button
             onClick={handleClick}
             className={cn(
-              // viewport 별 사이즈 — 모바일 size-6/text-xs, lg+ size-9/text-base.
-              'flex size-6 lg:size-9 items-center justify-center rounded-full text-xs lg:text-base font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
+              'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
               !currentMonth && 'opacity-20',
               isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
             )}
