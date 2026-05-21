@@ -28,9 +28,9 @@ export function MoneyTabBar() {
 
   return (
     <nav className="m-tabbar">
-      <button className="m-tab" onClick={onBack} aria-label="뒤로">
+      <button className="m-tab m-tab--back" onClick={onBack} aria-label="뒤로">
         <span className="m-tab__back-pill">
-          <ArrowLeft size={22} strokeWidth={1.9} />
+          <ArrowLeft size={18} strokeWidth={2.2} />
         </span>
       </button>
       {TABS.map(t => {
