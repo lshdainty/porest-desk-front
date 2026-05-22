@@ -255,6 +255,7 @@ function Summary({
   monthIn,
   monthOut,
   isLoading,
+  headerRight,
 }: {
   month: string
   onMonthChange: (m: string) => void
@@ -262,6 +263,8 @@ function Summary({
   monthIn: number
   monthOut: number
   isLoading: boolean
+  /** month header row 우측 슬롯 (예: ViewModeToggle). 클로드 디자인 정합. */
+  headerRight?: React.ReactNode
 }) {
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
@@ -278,6 +281,7 @@ function Summary({
           {y}년 {Number(m)}월
         </div>
         <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
+        {headerRight && <div style={{ marginLeft: 'auto' }}>{headerRight}</div>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div>
@@ -819,7 +823,6 @@ function ExpenseDesktop() {
           <div className="sub">모든 거래 내역</div>
         </div>
         <div className="right">
-          <ViewModeToggle value={viewMode} onChange={setViewMode} />
           <Button variant="secondary" size="sm" onClick={() => setFilterOpen(true)}>
             <Filter size={13} /> 필터{activeCount > 0 && ` · ${activeCount}`}
           </Button>
@@ -839,6 +842,7 @@ function ExpenseDesktop() {
         monthIn={monthIn}
         monthOut={monthOut}
         isLoading={isLoadingSummary}
+        headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
       {viewMode === 'calendar' ? (
         isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />
@@ -903,10 +907,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         monthIn={monthIn}
         monthOut={monthOut}
         isLoading={isLoadingSummary}
+        headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} />
-      </div>
       {viewMode === 'calendar' ? (
         isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />
       ) : (
