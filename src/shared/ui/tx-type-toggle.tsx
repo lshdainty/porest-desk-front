@@ -72,7 +72,7 @@ export function TxTypeToggle({
               border: active
                 ? "1px solid var(--border-brand)"
                 : "1px solid var(--border-subtle)",
-              borderRadius: "var(--radius-tile)",
+              borderRadius: "var(--radius-sm)",
               fontWeight: '700',
               fontSize: 'var(--text-label-sm)',
               cursor: disabled ? "not-allowed" : "pointer",
