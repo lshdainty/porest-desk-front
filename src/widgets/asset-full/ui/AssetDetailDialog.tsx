@@ -229,7 +229,7 @@ export function AssetDetailDialog({
           </h4>
           <ToggleGroup
             type="single"
-            variant="segmented"
+            variant="segmented-subtle"
             size="sm"
             value={period}
             onValueChange={(v) => v && setPeriod(v as '3m' | '6m' | '1y')}
