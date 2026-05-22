@@ -45,7 +45,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-text-primary border border-border-default hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98] active:brightness-95",
         ghost:
-          "bg-transparent text-text-primary hover:bg-surface-input active:scale-[0.98]",
+          "bg-transparent text-primary hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
         link:
           "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px] active:brightness-90",
         warm:
