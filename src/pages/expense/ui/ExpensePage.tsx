@@ -167,11 +167,11 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
 }
 
 /** Calendar grid skeleton — viewMode='calendar' (default) 의 외곽 카드 모양 + 7-col 요일
- *  헤더 + 6주 cell grid. mobile = h-[420px] / lg = h-[calc(100vh-320px)] (ExpenseCalendar 정합). */
+ *  헤더 + 6주 cell grid. ExpenseCalendar 와 동일한 viewport stretch 패턴. */
 function ExpenseCalendarSkeleton() {
   return (
     <Card
-      className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
+      className="max-w-[430px] lg:max-w-none h-[calc(100dvh-340px)] min-h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
       style={{ overflow: 'hidden', marginBottom: 12 }}
     >
       <div className="flex flex-col h-full">
@@ -359,7 +359,7 @@ function ExpenseCalendar({
   return (
     <>
       <Card
-        className="max-w-[430px] lg:max-w-none h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
+        className="max-w-[430px] lg:max-w-none h-[calc(100dvh-340px)] min-h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
         style={{ overflow: 'hidden', marginBottom: 12 }}
       >
         <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
