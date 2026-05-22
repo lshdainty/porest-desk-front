@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp } from 'lucide-react'
+import { useDeviceSize } from '@/shared/lib/porest/responsive'
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -184,6 +186,9 @@ export function MonthPicker({
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const size = useDeviceSize()
+  const isMobile = size === 'mobile'
+
   // viewport 가장자리 자동 감지 — trigger 위치 기준 dropdown 260px 가 화면 밖 잘리면 align 자동 flip.
   const computeAlign = (): 'right' | 'left' => {
     if (!triggerRef.current || typeof window === 'undefined') return align
@@ -197,15 +202,15 @@ export function MonthPicker({
     return align
   }
   const [computedAlign, setComputedAlign] = useState<'right' | 'left'>(align)
-  // open 시점에 한번만 측정 — setState in effect 경고 회피 위해 click handler 에서 직접 설정.
+
   useEffect(() => {
-    if (!open) return
+    if (!open || isMobile) return
     const onDoc = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
-  }, [open])
+  }, [open, isMobile])
 
   const parts = value.split('-').map(Number)
   const y = parts[0] ?? new Date().getFullYear()
@@ -223,34 +228,129 @@ export function MonthPicker({
     setOpen(false)
   }
 
+  const trigger = (
+    <button
+      ref={triggerRef}
+      onClick={() => {
+        if (!open && !isMobile) setComputedAlign(computeAlign())
+        setOpen(v => !v)
+      }}
+      className="month-picker__trigger"
+      style={{
+        background: 'transparent',
+        border: variant === 'borderless' ? 0 : '1px solid var(--border-subtle)',
+        borderRadius: variant === 'borderless' ? 0 : 'var(--radius-tile)',
+        padding: variant === 'borderless' ? '4px 6px' : '6px 12px',
+        fontSize: variant === 'borderless' ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
+        fontWeight: variant === 'borderless' ? '700' : '600',
+        color: variant === 'borderless' ? 'var(--fg-primary)' : 'var(--fg-secondary)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+      }}
+    >
+      {variant !== 'borderless' && <Calendar size={13} />}
+      {label}
+      <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+    </button>
+  )
+
+  const yearNav = (
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+      <button
+        onClick={() => setViewY(viewY - 1)}
+        style={{ background: 'transparent', border: 0, color: 'var(--fg-secondary)', padding: 4, cursor: 'pointer', display: 'inline-flex' }}
+      >
+        <ChevronLeft size={16} />
+      </button>
+      <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
+        {viewY}년
+      </div>
+      <button
+        onClick={() => setViewY(viewY + 1)}
+        disabled={viewY >= curY}
+        style={{ background: 'transparent', border: 0, color: viewY >= curY ? 'var(--fg-tertiary)' : 'var(--fg-secondary)', padding: 4, cursor: viewY >= curY ? 'not-allowed' : 'pointer', display: 'inline-flex', opacity: viewY >= curY ? 0.4 : 1 }}
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  )
+
+  const monthGrid = (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+      {Array.from({ length: 12 }, (_, i) => i + 1).map(mm => {
+        const isSel = viewY === y && mm === m
+        const isFuture = viewY > curY || (viewY === curY && mm > curM)
+        return (
+          <button
+            key={mm}
+            disabled={isFuture}
+            onClick={() => pick(mm)}
+            style={{
+              padding: '10px 0',
+              borderRadius: 'var(--radius-md)',
+              border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
+              background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
+              color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
+              fontSize: 'var(--text-label-sm)',
+              fontWeight: isSel ? 700 : 500,
+              cursor: isFuture ? 'not-allowed' : 'pointer',
+              opacity: isFuture ? 0.4 : 1,
+              fontFamily: 'inherit',
+            }}
+          >
+            {mm}월
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  const footerButtons = (
+    <>
+      <button
+        onClick={() => { onChange(`${curY}-${String(curM).padStart(2, '0')}`); setOpen(false) }}
+        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-brand-strong)', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+      >
+        <LocateFixed size={12} /> 오늘로
+      </button>
+      <div style={{ flex: 1 }} />
+      <button
+        onClick={() => setOpen(false)}
+        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-secondary)' }}
+      >
+        닫기
+      </button>
+    </>
+  )
+
+  if (isMobile) {
+    return (
+      <div style={{ display: 'inline-block' }}>
+        {trigger}
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>월 선택</DrawerTitle>
+            </DrawerHeader>
+            <DrawerBody style={{ padding: '0 20px 8px' }}>
+              {yearNav}
+              {monthGrid}
+            </DrawerBody>
+            <DrawerFooter style={{ justifyContent: 'flex-start' }}>
+              {footerButtons}
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    )
+  }
+
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button
-        ref={triggerRef}
-        onClick={() => {
-          if (!open) setComputedAlign(computeAlign())
-          setOpen(v => !v)
-        }}
-        className="month-picker__trigger"
-        style={{
-          background: 'transparent',
-          border: variant === 'borderless' ? 0 : '1px solid var(--border-subtle)',
-          borderRadius: variant === 'borderless' ? 0 : 'var(--radius-tile)',
-          padding: variant === 'borderless' ? '4px 6px' : '6px 12px',
-          fontSize: variant === 'borderless' ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
-          fontWeight: variant === 'borderless' ? '700' : '600',
-          color: variant === 'borderless' ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-        }}
-      >
-        {variant !== 'borderless' && <Calendar size={13} />}
-        {label}
-        <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
-      </button>
+      {trigger}
       {open && (
         <div
           style={{
@@ -266,115 +366,10 @@ export function MonthPicker({
             width: 260,
           } as React.CSSProperties}
         >
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-            <button
-              onClick={() => setViewY(viewY - 1)}
-              style={{
-                background: 'transparent',
-                border: 0,
-                color: 'var(--fg-secondary)',
-                padding: 4,
-                cursor: 'pointer',
-                display: 'inline-flex',
-              }}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
-              {viewY}년
-            </div>
-            <button
-              onClick={() => setViewY(viewY + 1)}
-              disabled={viewY >= curY}
-              style={{
-                background: 'transparent',
-                border: 0,
-                color: viewY >= curY ? 'var(--fg-tertiary)' : 'var(--fg-secondary)',
-                padding: 4,
-                cursor: viewY >= curY ? 'not-allowed' : 'pointer',
-                display: 'inline-flex',
-                opacity: viewY >= curY ? 0.4 : 1,
-              }}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-            {Array.from({ length: 12 }, (_, i) => i + 1).map(mm => {
-              const isSel = viewY === y && mm === m
-              const isFuture = viewY > curY || (viewY === curY && mm > curM)
-              return (
-                <button
-                  key={mm}
-                  disabled={isFuture}
-                  onClick={() => pick(mm)}
-                  style={{
-                    padding: '10px 0',
-                    borderRadius: 'var(--radius-md)',
-                    border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
-                    background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
-                    color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                    fontSize: 'var(--text-label-sm)',
-                    fontWeight: isSel ? 700 : 500,
-                    cursor: isFuture ? 'not-allowed' : 'pointer',
-                    opacity: isFuture ? 0.4 : 1,
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  {mm}월
-                </button>
-              )
-            })}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginTop: 10,
-              paddingTop: 10,
-              borderTop: '1px solid var(--border-subtle)',
-            }}
-          >
-            {/* 디자이너 정합 — 좌측 "오늘로" (today) + spacer + 우측 "닫기" (cancel) ghost button */}
-            <button
-              onClick={() => {
-                onChange(`${curY}-${String(curM).padStart(2, '0')}`)
-                setOpen(false)
-              }}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--radius-md)',
-                border: 0,
-                background: 'transparent',
-                fontSize: 'var(--text-caption)',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: 'var(--fg-brand-strong)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <LocateFixed size={12} /> 오늘로
-            </button>
-            <div style={{ flex: 1 }} />
-            <button
-              onClick={() => setOpen(false)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--radius-md)',
-                border: 0,
-                background: 'transparent',
-                fontSize: 'var(--text-caption)',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: 'var(--fg-secondary)',
-              }}
-            >
-              닫기
-            </button>
+          {yearNav}
+          {monthGrid}
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
+            {footerButtons}
           </div>
         </div>
       )}
