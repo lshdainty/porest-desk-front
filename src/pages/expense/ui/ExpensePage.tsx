@@ -167,12 +167,13 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
 }
 
 /** Calendar grid skeleton — viewMode='calendar' (default) 의 외곽 카드 모양 + 7-col 요일
- *  헤더 + 6주 cell grid. ExpenseCalendar 와 동일한 viewport stretch 패턴. */
+ *  헤더 + 6주 cell grid. 부모(flex-1) 가 viewport 의 남은 공간을 잡아주므로
+ *  h-full + min-h-0 으로 그 공간을 완전 채움. */
 function ExpenseCalendarSkeleton() {
   return (
     <Card
-      className="max-w-[430px] lg:max-w-none h-[calc(100dvh-340px)] min-h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
-      style={{ overflow: 'hidden', marginBottom: 12 }}
+      className="max-w-[430px] lg:max-w-none h-full min-h-0"
+      style={{ overflow: 'hidden' }}
     >
       <div className="flex flex-col h-full">
         {/* 요일 헤더 (일~토) */}
@@ -200,25 +201,25 @@ function ExpenseCalendarSkeleton() {
   )
 }
 
-/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩/뷰토글 + Calendar grid (default mode). */
+/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩/뷰토글 + Calendar grid (default mode).
+ *  ExpenseMobile/Desktop 와 동일한 viewport stretch 패턴(flex-col + min-h-full + Calendar flex-1). */
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+      <div
+        className="flex flex-col"
+        style={{ padding: 'var(--spacing-xl) 20px', minHeight: '100%' }}
+      >
         <ExpenseSummarySkeleton mobile />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
-          {/* ViewModeToggle (segmented 2 buttons) */}
-          <SkeletonBase className="h-9 w-[88px] rounded-md shrink-0" />
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+          <ExpenseCalendarSkeleton />
         </div>
-        <ExpenseCalendarSkeleton />
       </div>
     )
   }
 
   return (
-    <div className="page">
+    <div className="page flex flex-col min-h-full" style={{ paddingBottom: 24 }}>
       <div className="page__head">
         <div>
           <h1>가계부</h1>
@@ -226,12 +227,9 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-        <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
-        <SkeletonBase className="h-9 w-[88px] rounded-md shrink-0" />
-        <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+      <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+        <ExpenseCalendarSkeleton />
       </div>
-      <ExpenseCalendarSkeleton />
     </div>
   )
 }
@@ -359,8 +357,8 @@ function ExpenseCalendar({
   return (
     <>
       <Card
-        className="max-w-[430px] lg:max-w-none h-[calc(100dvh-340px)] min-h-[420px] lg:h-[calc(100vh-320px)] lg:min-h-[520px]"
-        style={{ overflow: 'hidden', marginBottom: 12 }}
+        className="max-w-[430px] lg:max-w-none h-full min-h-0"
+        style={{ overflow: 'hidden' }}
       >
         <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
           <CalendarMonthView
@@ -815,8 +813,15 @@ function ExpenseDesktop() {
 
   const activeCount = filterActiveCount(filterValue)
 
+  // calendar 모드는 viewport stretch (스크롤 없이 캘린더가 남은 공간 fit) — page
+  // wrapper 를 flex-col + min-h-full 로 + Calendar 영역만 flex-1. list 모드는
+  // 기존대로 자연 height (콘텐츠가 길면 부모 scroll).
+  const isCalendarMode = viewMode === 'calendar'
   return (
-    <div className="page">
+    <div
+      className={isCalendarMode ? 'page flex flex-col min-h-full' : 'page'}
+      style={isCalendarMode ? { paddingBottom: 24 } : undefined}
+    >
       <div className="page__head">
         <div>
           <h1>가계부</h1>
@@ -844,8 +849,10 @@ function ExpenseDesktop() {
         isLoading={isLoadingSummary}
         headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
-      {viewMode === 'calendar' ? (
-        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />
+      {isCalendarMode ? (
+        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+          {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />}
+        </div>
       ) : (
         <>
           <Chips filter={filter} onChange={setFilter} />
@@ -894,8 +901,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const activeCount = filterActiveCount(filterValue)
 
+  // calendar 모드는 viewport stretch (스크롤 없이) — wrapper flex-col + min-h-full
+  // + Calendar 영역만 flex-1. list 모드는 자연 height (m-scroll 부모가 스크롤).
+  const isCalendarMode = viewMode === 'calendar'
   return (
-    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+    <div
+      className={isCalendarMode ? 'flex flex-col' : undefined}
+      style={{ padding: 'var(--spacing-xl) 20px', minHeight: isCalendarMode ? '100%' : undefined }}
+    >
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       {activeCount > 0 && (
         <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
@@ -909,8 +922,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         isLoading={isLoadingSummary}
         headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
-      {viewMode === 'calendar' ? (
-        isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />
+      {isCalendarMode ? (
+        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+          {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />}
+        </div>
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
