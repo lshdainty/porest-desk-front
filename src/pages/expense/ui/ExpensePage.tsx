@@ -470,7 +470,7 @@ function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: Vi
   const isCalendar = value === 'calendar'
   return (
     <Button
-      variant="secondary"
+      variant="ghost"
       size="sm"
       onClick={() => onChange(isCalendar ? 'list' : 'calendar')}
       aria-label={isCalendar ? '목록 보기' : '달력 보기'}
