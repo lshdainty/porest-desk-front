@@ -201,14 +201,15 @@ function ExpenseCalendarSkeleton() {
   )
 }
 
-/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩/뷰토글 + Calendar grid (default mode).
- *  ExpenseMobile/Desktop 와 동일한 viewport stretch 패턴(flex-col + min-h-full + Calendar flex-1). */
+/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + Calendar grid (default mode).
+ *  ExpenseMobile/Desktop 와 동일한 viewport fit 패턴 — AppLayout scroll wrapper 가
+ *  flex-col 이므로 페이지 wrapper 는 flex-1 + min-h-0 으로 부모 전체 height 차지. */
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       <div
-        className="flex flex-col"
-        style={{ padding: 'var(--spacing-xl) 20px', minHeight: '100%' }}
+        className="flex flex-col flex-1 min-h-0"
+        style={{ padding: 'var(--spacing-xl) 20px' }}
       >
         <ExpenseSummarySkeleton mobile />
         <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
@@ -219,7 +220,7 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div className="page flex flex-col min-h-full" style={{ paddingBottom: 24 }}>
+    <div className="page flex flex-col flex-1 min-h-0" style={{ paddingBottom: 24 }}>
       <div className="page__head">
         <div>
           <h1>가계부</h1>
@@ -813,13 +814,14 @@ function ExpenseDesktop() {
 
   const activeCount = filterActiveCount(filterValue)
 
-  // calendar 모드는 viewport stretch (스크롤 없이 캘린더가 남은 공간 fit) — page
-  // wrapper 를 flex-col + min-h-full 로 + Calendar 영역만 flex-1. list 모드는
-  // 기존대로 자연 height (콘텐츠가 길면 부모 scroll).
+  // calendar 모드는 viewport fit (스크롤 없이 캘린더가 남은 공간 fill) — AppLayout 의
+  // scroll wrapper 가 flex-col 이므로 페이지를 flex-1 + min-h-0 으로 부모 전체 차지.
+  // 그 안에서 Calendar wrap 만 flex-1 로 Summary 아래 남은 공간 grow. list 모드는
+  // 기존대로 자연 height (콘텐츠가 길면 부모 scroll wrapper 가 scroll).
   const isCalendarMode = viewMode === 'calendar'
   return (
     <div
-      className={isCalendarMode ? 'page flex flex-col min-h-full' : 'page'}
+      className={isCalendarMode ? 'page flex flex-col flex-1 min-h-0' : 'page'}
       style={isCalendarMode ? { paddingBottom: 24 } : undefined}
     >
       <div className="page__head">
@@ -901,13 +903,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const activeCount = filterActiveCount(filterValue)
 
-  // calendar 모드는 viewport stretch (스크롤 없이) — wrapper flex-col + min-h-full
-  // + Calendar 영역만 flex-1. list 모드는 자연 height (m-scroll 부모가 스크롤).
+  // calendar 모드는 viewport fit (스크롤 없이) — AppLayout 의 .m-scroll 이 flex-col
+  // 이므로 페이지를 flex-1 + min-h-0 으로 그 안에서 부모 전체 차지. Calendar wrap 만
+  // flex-1 로 Summary 아래 남은 공간 grow. list 모드는 자연 height (.m-scroll scroll).
   const isCalendarMode = viewMode === 'calendar'
   return (
     <div
-      className={isCalendarMode ? 'flex flex-col' : undefined}
-      style={{ padding: 'var(--spacing-xl) 20px', minHeight: isCalendarMode ? '100%' : undefined }}
+      className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : undefined}
+      style={{ padding: 'var(--spacing-xl) 20px' }}
     >
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       {activeCount > 0 && (

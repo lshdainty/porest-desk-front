@@ -22,7 +22,9 @@ export const AppLayout = () => {
     return (
       <div className="m-app" data-screen-label="Mobile">
         <MobileHeader />
-        <div className="m-scroll">
+        {/* flex flex-col — 페이지가 flex-1 로 m-scroll 전체 height 를 차지하도록 (viewport
+            fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작 (변경 없음). */}
+        <div className="m-scroll flex flex-col">
           <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
         </div>
         {isMoney ? <MoneyTabBar /> : <MobileTabBar onAdd={() => setAddOpen(true)} />}
@@ -36,7 +38,9 @@ export const AppLayout = () => {
       <PorestSidebar />
       <SidebarInset className="h-svh overflow-hidden">
         <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
-        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        {/* flex flex-col — 페이지가 flex-1 로 scroll wrapper 전체 height 를 차지하도록
+            (viewport fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작. */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col">
           <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: false }} />
         </div>
       </SidebarInset>
