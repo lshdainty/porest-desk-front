@@ -102,6 +102,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <ManagerTabs<AssetGroup>
           value={tab}
           onChange={setTab}
+          fill={mobile}
           options={[
             { value: 'account', label: '계좌·예금', count: counts.account },
             { value: 'card', label: '카드', count: counts.card },
@@ -116,7 +117,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               {KRW(totalInTab)}원
             </span>
           </div>
-          <Button variant="accent" onClick={() => setEditing({ mode: 'create', group: tab })}>
+          <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
             <Plus size={14} strokeWidth={2.4} />
             {groupLabel(tab)} 추가
           </Button>

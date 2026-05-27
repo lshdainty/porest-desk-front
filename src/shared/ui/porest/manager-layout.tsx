@@ -139,16 +139,24 @@ export function ManagerTabs<T extends string>({
   value,
   options,
   onChange,
+  fill = false,
 }: {
   value: T
   options: { value: T; label: ReactNode; count?: number }[]
   onChange: (v: T) => void
+  /** true 면 가로 전체를 균등 분할 (앱 PToggleGroup expanded 톤). 모바일에서 사용. */
+  fill?: boolean
 }) {
   return (
     <div
       style={{
-        display: 'inline-flex',
-        gap: 4,
+        display: fill ? 'flex' : 'inline-flex',
+        width: fill ? '100%' : undefined,
+        background: 'var(--bg-sunken)',
+        padding: 4,
+        borderRadius: 'var(--radius-tile)',
+        gap: 2,
+        border: '1px solid var(--border-subtle)',
       }}
     >
       {options.map(o => {
@@ -159,7 +167,11 @@ export function ManagerTabs<T extends string>({
             type="button"
             onClick={() => onChange(o.value)}
             className={!active ? 'hover:!text-[var(--fg-secondary)]' : ''}
-            style={{ ...TAB_BTN_BASE_STYLE, ...(active ? TAB_BTN_ACTIVE_STYLE : null) }}
+            style={{
+              ...TAB_BTN_BASE_STYLE,
+              ...(fill ? { flex: 1, justifyContent: 'center' } : null),
+              ...(active ? TAB_BTN_ACTIVE_STYLE : null),
+            }}
           >
             {o.label}
             {o.count != null && (
