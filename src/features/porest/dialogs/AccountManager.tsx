@@ -13,18 +13,18 @@ import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
-import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
+import { ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { AssetEditDialog, type AssetGroup } from './AssetEditDialog'
 
 const GROUP_TYPES: Record<AssetGroup, AssetType[]> = {
-  account: ['BANK_ACCOUNT', 'SAVINGS', 'CASH'],
-  card: ['CREDIT_CARD', 'CHECK_CARD', 'LOAN'],
+  account: ['BANK_ACCOUNT', 'SAVINGS', 'CASH', 'LOAN'],
+  card: ['CREDIT_CARD', 'CHECK_CARD'],
   invest: ['INVESTMENT'],
 }
 
 const groupOfAsset = (a: Asset): AssetGroup => {
-  if (a.assetType === 'CREDIT_CARD' || a.assetType === 'CHECK_CARD' || a.assetType === 'LOAN') {
+  if (a.assetType === 'CREDIT_CARD' || a.assetType === 'CHECK_CARD') {
     return 'card'
   }
   if (a.assetType === 'INVESTMENT') return 'invest'
@@ -96,31 +96,30 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           <ManagerHead
             title="계좌·카드 관리"
             description="연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요."
-            actions={
-              <Button onClick={() => setEditing({ mode: 'create', group: tab })}>
-                <Plus size={14} strokeWidth={2.4} />
-                {groupLabel(tab)} 추가
-              </Button>
-            }
           />
         )}
 
-        <div style={MANAGER_LAYOUT.toolbarStyle}>
-          <ManagerTabs<AssetGroup>
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'account', label: '계좌·예금', count: counts.account },
-              { value: 'card', label: '카드', count: counts.card },
-              { value: 'invest', label: '투자', count: counts.invest },
-            ]}
-          />
+        <ManagerTabs<AssetGroup>
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: 'account', label: '계좌·예금', count: counts.account },
+            { value: 'card', label: '카드', count: counts.card },
+            { value: 'invest', label: '투자', count: counts.invest },
+          ]}
+        />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             총{' '}
             <span className="num" style={{ fontWeight: '700', color: 'var(--fg-primary)' }}>
               {KRW(totalInTab)}원
             </span>
           </div>
+          <Button variant="accent" onClick={() => setEditing({ mode: 'create', group: tab })}>
+            <Plus size={14} strokeWidth={2.4} />
+            {groupLabel(tab)} 추가
+          </Button>
         </div>
 
         <div className="cat-list">
@@ -226,16 +225,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           )}
         </div>
 
-        {mobile && (
-          <Button
-            size="lg"
-            className="cat-add-fab"
-            onClick={() => setEditing({ mode: 'create', group: tab })}
-          >
-            <Plus size={20} strokeWidth={2.4} />
-            <span>{groupLabel(tab)} 추가</span>
-          </Button>
-        )}
       </ManagerShell>
 
       {editing && (

@@ -148,11 +148,7 @@ export function ManagerTabs<T extends string>({
     <div
       style={{
         display: 'inline-flex',
-        background: 'var(--bg-sunken)',
-        padding: 4,
-        borderRadius: 'var(--radius-tile)',
-        gap: 2,
-        border: '1px solid var(--border-subtle)',
+        gap: 4,
       }}
     >
       {options.map(o => {
