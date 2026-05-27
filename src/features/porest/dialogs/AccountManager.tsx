@@ -187,14 +187,15 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       <div className={MANAGE_ROW.actionsClassName} onClick={e => e.stopPropagation()}>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          title="편집"
                           onClick={() => setEditing({ mode: 'edit', asset })}
                         >
-                          <Pencil size={13} />편집
+                          <Pencil size={13} />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           className={MANAGE_ROW.delClassName}
                           onClick={() => setConfirmDelete(asset)}
                         >

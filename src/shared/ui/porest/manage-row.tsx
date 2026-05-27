@@ -49,9 +49,8 @@ export const MANAGE_ROW = {
     alignItems: 'center',
     gap: 0,
   } as CSSProperties,
-  /** 액션 영역 className: 기본 opacity 0 → group-hover 시 1 */
-  actionsClassName:
-    'flex gap-1 opacity-0 transition-opacity duration-[var(--dur-fast,120ms)] group-hover:opacity-100',
+  /** 액션 영역 className: 아이콘 항상 표시 (hover-reveal 제거, 반복거래관리와 일관). */
+  actionsClassName: 'flex gap-1',
   /** 모바일용 chevron 버튼 style (기존 .cat-row__more) */
   moreStyle: {
     border: 0,
@@ -62,10 +61,10 @@ export const MANAGE_ROW = {
     display: 'inline-flex',
   } as CSSProperties,
   /**
-   * 삭제 버튼에 적용 (기존 .cat-row__del:hover { color: var(--fg-expense) }).
-   * Button 컴포넌트의 hover bg/text 를 그대로 두기 위해 hover:!text-* 만 적용.
+   * 삭제 버튼에 적용 — 항상 빨강(--fg-expense). 반복/프리셋 관리의 삭제 버튼과 색 통일.
+   * ghost variant 의 hover 는 bg 만 바꾸므로 text 는 항상 expense 로 고정.
    */
-  delClassName: 'hover:!text-[var(--fg-expense)]',
+  delClassName: '!text-[var(--fg-expense)]',
 } as const
 
 export function ManageRow({

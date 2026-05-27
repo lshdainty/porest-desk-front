@@ -413,26 +413,15 @@ function PMIconBtn({
 }) {
   const Comp = icon === 'pencil' ? Pencil : Trash2
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={onClick}
       title={title}
       aria-label={title}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: 'var(--radius-md)',
-        background: 'transparent',
-        border: 0,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: tone === 'danger' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
-        fontFamily: 'inherit',
-      }}
+      className={tone === 'danger' ? '!text-[var(--fg-expense)]' : undefined}
     >
-      <Comp size={15} strokeWidth={1.9} />
-    </button>
+      <Comp size={16} strokeWidth={1.9} />
+    </Button>
   )
 }

@@ -436,14 +436,14 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                     <div className={MANAGE_ROW.actionsClassName}>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => setEditing(b)}
                       >
                         <Pencil size={13} />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         className={MANAGE_ROW.delClassName}
                         onClick={() => setConfirmDelete(b)}
                       >

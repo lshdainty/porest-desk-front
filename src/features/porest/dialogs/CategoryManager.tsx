@@ -444,17 +444,16 @@ function SortableRow({
       {!mobile ? (
         <div className={MANAGE_ROW.actionsClassName}>
           {isParent && onAddChild && (
-            <Button variant="ghost" size="sm" onClick={onAddChild} title="하위 추가">
+            <Button variant="ghost" size="icon" onClick={onAddChild} title="하위 추가">
               <Plus size={13} />
-              하위
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={onEdit}>
-            <Pencil size={13} />편집
+          <Button variant="ghost" size="icon" onClick={onEdit} title="편집">
+            <Pencil size={13} />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             className={MANAGE_ROW.delClassName}
             onClick={onDelete}
           >
