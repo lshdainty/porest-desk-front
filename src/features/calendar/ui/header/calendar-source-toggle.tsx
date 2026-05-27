@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ListTodo, Flag, Plus, Settings } from 'lucide-react'
+import { Receipt, ListTodo, Flag, Plus, Settings, ChevronDown } from 'lucide-react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody } from '@/shared/ui/drawer'
 import { Button } from '@/shared/ui/button'
 import { Separator } from '@/shared/ui/separator'
 import { cn } from '@/shared/lib'
+import { useIsMobile } from '@/shared/hooks'
 
 import type { IBuiltinSource, TCalendarSourceType } from '@/features/calendar/model/types'
 import type { UserCalendar } from '@/entities/user-calendar'
@@ -116,76 +118,135 @@ const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onS
   )
 }
 
-const CalendarSourceToggle = () => {
+/** 캘린더 필터 내용 — Popover·Drawer 양쪽에서 재사용 */
+const CalendarSourceContent = ({
+  onManage,
+  onHolidayManage,
+}: {
+  onManage: () => void
+  onHolidayManage: () => void
+}) => {
   const { t } = useTranslation('calendar')
   const { builtinSources, userCalendars } = useCalendar()
-  const [managementOpen, setManagementOpen] = useState(false)
-  const [holidayManagementOpen, setHolidayManagementOpen] = useState(false)
 
   return (
     <>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <span className="size-2 rounded-full bg-primary" />
+      {/* Section 1: User Calendars */}
+      <div className="p-3 pb-2">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             {t('title')}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            onClick={onManage}
+            aria-label={t('manage')}
+          >
+            <Settings size={14} />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-0">
-          {/* Section 1: User Calendars */}
-          <div className="p-3 pb-2">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('title')}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                onClick={() => setManagementOpen(true)}
-                aria-label={t('manage')}
-              >
-                <Settings size={14} />
-              </Button>
-            </div>
-            <div className="space-y-0.5">
-              {userCalendars.map((calendar) => (
-                <UserCalendarItem key={calendar.rowId} calendar={calendar} />
-              ))}
-              {userCalendars.length === 0 && (
-                <p className="px-2 py-1.5 text-xs text-muted-foreground">-</p>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-1 w-full justify-start gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-              onClick={() => setManagementOpen(true)}
-            >
-              <Plus size={14} />
-              {t('add')}
+        </div>
+        <div className="space-y-0.5">
+          {userCalendars.map((calendar) => (
+            <UserCalendarItem key={calendar.rowId} calendar={calendar} />
+          ))}
+          {userCalendars.length === 0 && (
+            <p className="px-2 py-1.5 text-xs text-muted-foreground">-</p>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 w-full justify-start gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          onClick={onManage}
+        >
+          <Plus size={14} />
+          {t('add')}
+        </Button>
+      </div>
+
+      <Separator />
+
+      {/* Section 2: Builtin Sources */}
+      <div className="p-3 pt-2">
+        <span className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {t('otherSources')}
+        </span>
+        <div className="space-y-0.5">
+          {builtinSources.map((source) => (
+            <BuiltinSourceItem
+              key={source.id}
+              source={source}
+              onSettings={source.id === 'holiday' ? onHolidayManage : undefined}
+            />
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
+const CalendarSourceToggle = () => {
+  const { t } = useTranslation('calendar')
+  const { builtinSources, userCalendars } = useCalendar()
+  const isMobile = useIsMobile()
+  const [managementOpen, setManagementOpen] = useState(false)
+  const [holidayManagementOpen, setHolidayManagementOpen] = useState(false)
+
+  // 필터 칩 도트 — visible 캘린더 최대 3개 + builtin 소스 색상
+  const dotColors = [
+    ...userCalendars.filter(c => c.isVisible).map(c => c.color),
+    ...builtinSources.filter(s => s.enabled).map(s => s.color),
+  ].slice(0, 3)
+
+  const totalCount = userCalendars.filter(c => c.isVisible).length + builtinSources.filter(s => s.enabled).length
+
+  const triggerButton = (
+    <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5 rounded-full">
+      <span className="flex items-center gap-0.5">
+        {dotColors.map((color, i) => (
+          <span key={i} className="size-2 rounded-full" style={{ backgroundColor: color }} />
+        ))}
+      </span>
+      <span className="text-xs font-medium">{totalCount}개</span>
+      <ChevronDown size={12} className="text-muted-foreground" />
+    </Button>
+  )
+
+  return (
+    <>
+      {isMobile ? (
+        <Drawer>
+          <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{t('title')}</DrawerTitle>
+            </DrawerHeader>
+            <DrawerBody className="pb-6">
+              <CalendarSourceContent
+                onManage={() => setManagementOpen(true)}
+                onHolidayManage={() => setHolidayManagementOpen(true)}
+              />
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <span className="size-2 rounded-full bg-primary" />
+              {t('title')}
             </Button>
-          </div>
-
-          <Separator />
-
-          {/* Section 2: Builtin Sources */}
-          <div className="p-3 pt-2">
-            <span className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('otherSources')}
-            </span>
-            <div className="space-y-0.5">
-              {builtinSources.map((source) => (
-                <BuiltinSourceItem
-                  key={source.id}
-                  source={source}
-                  onSettings={source.id === 'holiday' ? () => setHolidayManagementOpen(true) : undefined}
-                />
-              ))}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-64 p-0">
+            <CalendarSourceContent
+              onManage={() => setManagementOpen(true)}
+              onHolidayManage={() => setHolidayManagementOpen(true)}
+            />
+          </PopoverContent>
+        </Popover>
+      )}
 
       <CalendarManagementDialog
         open={managementOpen}

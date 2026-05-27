@@ -34,15 +34,16 @@ const AgendaEventCard = ({
   const startDate = parseISO(event.startDate)
   const endDate = parseISO(event.endDate)
 
+  const badgeColor = event.labelColor ?? event.color
   return (
     <div
       role="button"
       tabIndex={0}
       className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       style={{
-        backgroundColor: `${event.color}15`,
-        borderColor: `${event.color}40`,
-        color: event.color,
+        backgroundColor: `${badgeColor}15`,
+        borderColor: `${badgeColor}40`,
+        color: badgeColor,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -50,7 +51,7 @@ const AgendaEventCard = ({
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-1.5">
           <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-            <circle cx="4" cy="4" r="4" fill={event.color} />
+            <circle cx="4" cy="4" r="4" fill={badgeColor} />
           </svg>
 
           <p className="font-medium">

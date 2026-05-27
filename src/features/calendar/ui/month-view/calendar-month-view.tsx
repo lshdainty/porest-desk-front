@@ -53,6 +53,8 @@ interface IProps extends IPropsExt {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
   onEventClick?: (event: IEvent, el: HTMLElement) => void
+  /** 모바일에서 요일 헤더 하단 border-b 표시 여부. 가계부는 true(기본), 캘린더는 false. */
+  mobileHeaderBorder?: boolean
 }
 
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -227,7 +229,7 @@ const MonthDayCell = ({
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="h-6.5">
+            <div key={eventKey} className="h-5.5 lg:h-6.5">
               {event && (
                 <MonthEventBadge
                   event={event}
@@ -276,6 +278,7 @@ const MonthEventBadge = ({
 
   const renderBadgeText = ['first', 'none'].includes(position)
   const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
+  const badgeColor = event.labelColor ?? event.color
 
   const positionClasses = {
     first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
@@ -289,16 +292,16 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 overflow-hidden whitespace-nowrap rounded-md border px-2 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-0.5 lg:mx-1 flex size-auto h-5.5 lg:h-6.5 select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border px-1 lg:px-2 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
       style={{
         background: position !== 'none'
-          ? `linear-gradient(${event.color}25, ${event.color}25), var(--background)`
-          : `${event.color}20`,
-        borderColor: `${event.color}50`,
-        color: event.color,
+          ? `linear-gradient(${badgeColor}25, ${badgeColor}25), var(--background)`
+          : `${badgeColor}20`,
+        borderColor: `${badgeColor}50`,
+        color: badgeColor,
       }}
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -326,7 +329,7 @@ const MonthEventBadge = ({
   )
 }
 
-const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick }: IProps) => {
+const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick, mobileHeaderBorder = true }: IProps) => {
   const { i18n } = useTranslation()
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
@@ -412,9 +415,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
 
   return (
     <div className="flex flex-col h-full">
-      {/* 모바일: border-b 로 요일/날짜 구분 (셀 border-t 가 없음).
-          lg+ : border-b 제거 — 셀 border-t 와 중복되어 두꺼워지는 시각 방지. */}
-      <div className="grid grid-cols-7 border-b lg:border-b-0 flex-shrink-0">
+      <div className={cn('grid grid-cols-7 flex-shrink-0', mobileHeaderBorder && 'border-b lg:border-b-0')}>
         {weekDays.map((day, index) => {
           const isSunday = index === 0
           const isSaturday = index === 6
@@ -460,7 +461,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
   )
 }
 
-const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick }: IProps) => {
+const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick, mobileHeaderBorder = true }: IProps) => {
   return (
     <DragSelectProvider>
       <MonthViewContent
@@ -468,6 +469,7 @@ const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick, onDa
         multiDayEvents={multiDayEvents}
         onEventClick={onEventClick}
         onDayClick={onDayClick}
+        mobileHeaderBorder={mobileHeaderBorder}
       />
     </DragSelectProvider>
   )

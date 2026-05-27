@@ -62,6 +62,7 @@ const DayViewMultiDayEventsRow = ({
           const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1
           const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1
 
+          const badgeColor = event.labelColor ?? event.color
           return (
             <div
               key={event.id}
@@ -69,15 +70,15 @@ const DayViewMultiDayEventsRow = ({
               tabIndex={0}
               className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               style={{
-                background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-                borderColor: `${event.color}40`,
-                color: event.color,
+                background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
+                borderColor: `${badgeColor}40`,
+                color: badgeColor,
               }}
               onClick={(e) => onEventClick?.(event, e.currentTarget)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
             >
               <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-                <circle cx="4" cy="4" r="4" fill={event.color} />
+                <circle cx="4" cy="4" r="4" fill={badgeColor} />
               </svg>
               <p className="truncate font-semibold">
                 {eventTotalDays > 1 && (
@@ -143,6 +144,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
   const heightInPixels = (durationInMinutes / 60) * 96 - 8
+  const badgeColor = event.labelColor ?? event.color
 
   return (
     <div
@@ -154,16 +156,16 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-        borderColor: `${event.color}40`,
-        color: event.color,
+        background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
+        borderColor: `${badgeColor}40`,
+        color: badgeColor,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
       <div className="flex items-center gap-1.5 truncate">
         <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-          <circle cx="4" cy="4" r="4" fill={event.color} />
+          <circle cx="4" cy="4" r="4" fill={badgeColor} />
         </svg>
         <p className="truncate font-semibold">{event.title}</p>
       </div>

@@ -8,17 +8,38 @@ import { MobileTabBar } from './MobileTabBar'
 import { MoneyTabBar } from './MoneyTabBar'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
+import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
+import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
+import { useEventLabels } from '@/features/event-label'
 
 // money group 4 페이지 — 진입 시 MoneyTabBar 표시 (← / 가계부 / 자산 / 통계 / 예산).
 const MONEY_PATHS = ['/desk/expense', '/desk/asset', '/desk/stats', '/desk/budget']
+const CALENDAR_PATH = '/desk/calendar'
+
+/** 캘린더 일정 생성 폼 — AppLayout에서 + 버튼 클릭 시 마운트. */
+const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => {
+  const { data: labels = [] } = useEventLabels()
+  const createEvent = useCreateEvent()
+  return (
+    <EventForm
+      labels={labels}
+      onSubmit={(data) => createEvent.mutate(data, { onSuccess: onClose })}
+      onClose={onClose}
+      isLoading={createEvent.isPending}
+    />
+  )
+}
 
 export const AppLayout = () => {
   const size = useDeviceSize()
   const [addOpen, setAddOpen] = useState(false)
+  const [calendarAddOpen, setCalendarAddOpen] = useState(false)
   const location = useLocation()
 
   if (size === 'mobile') {
     const isMoney = MONEY_PATHS.some(p => location.pathname.startsWith(p))
+    const isCalendar = location.pathname.startsWith(CALENDAR_PATH)
+    const handleAdd = isCalendar ? () => setCalendarAddOpen(true) : () => setAddOpen(true)
     return (
       <div className="m-app" data-screen-label="Mobile">
         <MobileHeader />
@@ -27,8 +48,9 @@ export const AppLayout = () => {
         <div className="m-scroll flex flex-col">
           <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
         </div>
-        {isMoney ? <MoneyTabBar /> : <MobileTabBar onAdd={() => setAddOpen(true)} />}
+        {isMoney ? <MoneyTabBar /> : <MobileTabBar onAdd={handleAdd} />}
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
+        {calendarAddOpen && <CalendarEventAddForm onClose={() => setCalendarAddOpen(false)} />}
       </div>
     )
   }

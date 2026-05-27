@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
+import { useIsMobile } from '@/shared/hooks'
 
 import { DndProviderWrapper } from '@/features/calendar/ui/dnd/dnd-provider'
 import { EventDetailPopover } from '@/features/calendar/ui/EventDetailPopover'
@@ -68,6 +69,7 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   const { t } = useTranslation('calendar')
   const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } = useCalendar()
+  const isMobile = useIsMobile()
   // Event detail popover state
   const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -196,30 +198,38 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
 
       <div className="flex-1 overflow-hidden">
         <DndProviderWrapper>
-          {view === 'day' && (
-            isLoading
-              ? <CalendarDayViewSkeleton />
-              : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'month' && (
+          {isMobile ? (
             isLoading
               ? <CalendarMonthViewSkeleton />
-              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'week' && (
-            isLoading
-              ? <CalendarWeekViewSkeleton />
-              : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'year' && (
-            isLoading
-              ? <CalendarYearViewSkeleton />
-              : <CalendarYearView allEvents={eventStartDates} />
-          )}
-          {view === 'agenda' && (
-            isLoading
-              ? <CalendarAgendaViewSkeleton />
-              : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} mobileHeaderBorder={false} />
+          ) : (
+            <>
+              {view === 'day' && (
+                isLoading
+                  ? <CalendarDayViewSkeleton />
+                  : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+              {view === 'month' && (
+                isLoading
+                  ? <CalendarMonthViewSkeleton />
+                  : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} mobileHeaderBorder={false} />
+              )}
+              {view === 'week' && (
+                isLoading
+                  ? <CalendarWeekViewSkeleton />
+                  : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+              {view === 'year' && (
+                isLoading
+                  ? <CalendarYearViewSkeleton />
+                  : <CalendarYearView allEvents={eventStartDates} />
+              )}
+              {view === 'agenda' && (
+                isLoading
+                  ? <CalendarAgendaViewSkeleton />
+                  : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+            </>
           )}
         </DndProviderWrapper>
       </div>
