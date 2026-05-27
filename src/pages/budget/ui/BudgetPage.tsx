@@ -394,9 +394,7 @@ export const BudgetPage = () => {
 
   // ---- Cards ----
   const HeaderCard = (
-    <Card
-      className="bg-[var(--bg-brand-tint)]"
-    >
+    <Card className="bg-[var(--bg-brand-tint)]">
       <CardContent>
       <div
         style={{
@@ -462,7 +460,7 @@ export const BudgetPage = () => {
               gap: 12,
               paddingTop: 14,
               marginTop: 14,
-              borderTop: '1px solid var(--border-subtle)',
+              borderTop: '1px solid color-mix(in srgb, var(--border-strong) 28%, var(--border-subtle))',
             }}
           >
             <div>
@@ -514,13 +512,15 @@ export const BudgetPage = () => {
                 fontSize: 'var(--text-caption)',
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 gap: 6,
               }}
             >
-              <AlertTriangle size={13} />
-              카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(categoryLimitSum - overallLimit)}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
-              전체 상한을 올리거나 카테고리 한도를 줄여주세요.
+              <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>
+                카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(categoryLimitSum - overallLimit)}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
+                전체 상한을 올리거나 카테고리 한도를 줄여주세요.
+              </span>
             </div>
           )}
         </>
@@ -651,10 +651,10 @@ export const BudgetPage = () => {
         <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산 현황</CardTitle>
       </CardHeader>
       <CardContent>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         <div
           style={{
-            padding: 14,
+            padding: 12,
             background: overList.length > 0 ? 'var(--status-danger-subtle)' : 'var(--bg-surface)',
             border: `1px solid ${overList.length > 0 ? 'color-mix(in oklch, var(--fg-expense) 30%, transparent)' : 'var(--border-subtle)'}`,
             borderRadius: 'var(--radius-lg)',
@@ -664,11 +664,11 @@ export const BudgetPage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 4,
               fontSize: 'var(--text-caption)',
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
               fontWeight: '600',
-              marginBottom: 6,
+              marginBottom: 4,
             }}
           >
             <AlertTriangle size={13} /> 초과
@@ -677,7 +677,7 @@ export const BudgetPage = () => {
             className="num"
             style={{
               fontSize: 'var(--text-display-sm)',
-              fontWeight: '800',
+              fontWeight: '700',
               letterSpacing: '-0.022em',
               color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-primary)',
             }}
@@ -690,7 +690,7 @@ export const BudgetPage = () => {
         </div>
         <div
           style={{
-            padding: 14,
+            padding: 12,
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-lg)',
@@ -700,16 +700,16 @@ export const BudgetPage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 4,
               fontSize: 'var(--text-caption)',
               color: 'var(--fg-income)',
               fontWeight: '600',
-              marginBottom: 6,
+              marginBottom: 4,
             }}
           >
             <CheckCircle2 size={13} /> 여유
           </div>
-          <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '800', letterSpacing: '-0.022em' }}>
+          <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', letterSpacing: '-0.022em' }}>
             {healthyList.length}
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
               카테고리
