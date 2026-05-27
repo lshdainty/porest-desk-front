@@ -1,115 +1,340 @@
+import { useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
+  Bookmark,
   CalendarDays,
   ChartPie,
   ChevronRight,
-  Home,
+  CreditCard,
+  Download,
   ListChecks,
   NotebookPen,
+  Palette,
   Receipt,
+  Repeat,
+  Search,
   Settings,
+  Tag,
   Target,
   UsersRound,
   Wallet,
+  Bell,
+  User,
 } from 'lucide-react'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 interface NavItem {
   label: string
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   path: string
   desc: string
 }
 
-const ITEMS: NavItem[] = [
-  { label: '홈', icon: Home, path: '/desk', desc: '순자산과 오늘 지출 요약' },
-  { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌·카드·투자' },
-  { label: '가계부', icon: Receipt, path: '/desk/expense', desc: '모든 거래 내역' },
-  { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리·추이·비교' },
-  { label: '예산', icon: Target, path: '/desk/budget', desc: '카테고리별 한도 관리' },
-  { label: '캘린더', icon: CalendarDays, path: '/desk/calendar', desc: '일별 수입·지출' },
-  { label: '할 일', icon: ListChecks, path: '/desk/todo', desc: '할 일과 작업 관리' },
-  { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay', desc: '함께 쓴 돈 정산' },
-  { label: '메모', icon: NotebookPen, path: '/desk/memo', desc: '간단 메모' },
-  { label: '설정', icon: Settings, path: '/desk/settings', desc: '카테고리·계정 등' },
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+const SHORTCUT_ITEMS: NavItem[] = [
+  { label: '가계부', icon: Receipt, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
+  { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌 · 카드 · 투자 · 부채' },
+  { label: '캘린더', icon: CalendarDays, path: '/desk/calendar', desc: '일정 · 반복 · 알림' },
+  { label: '통계', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
+]
+
+const GROUPS: NavGroup[] = [
+  {
+    label: '돈 관리',
+    items: [
+      { label: '가계부', icon: Receipt, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
+      { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌 · 카드 · 투자 · 부채' },
+      { label: '예산', icon: Target, path: '/desk/budget', desc: '월간 · 카테고리별' },
+      { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
+      { label: '반복 거래', icon: Repeat, path: '/desk/settings?section=recurring', desc: '구독 · 고정비' },
+      { label: '카드·계좌 관리', icon: CreditCard, path: '/desk/card-settings', desc: '연결 · 한도 · 만기' },
+    ],
+  },
+  {
+    label: '일상',
+    items: [
+      { label: '캘린더', icon: CalendarDays, path: '/desk/calendar', desc: '일정 · 반복 · 알림' },
+      { label: '할 일', icon: ListChecks, path: '/desk/todo', desc: '마감 · 우선순위 · 태그' },
+      { label: '메모', icon: NotebookPen, path: '/desk/memo', desc: '분류 · 고정 · 검색' },
+      { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay', desc: '정산 · 친구 · 송금 요청' },
+    ],
+  },
+  {
+    label: '개인화',
+    items: [
+      { label: '카테고리', icon: Tag, path: '/desk/settings?section=categories', desc: '지출 · 수입' },
+      { label: '프리셋', icon: Bookmark, path: '/desk/settings?section=presets', desc: '자주 쓰는 내역' },
+      { label: '표시 설정', icon: Palette, path: '/desk/settings?section=appearance', desc: '테마 · 밀도 · 통화' },
+    ],
+  },
+  {
+    label: '계정·시스템',
+    items: [
+      { label: '설정', icon: Settings, path: '/desk/settings', desc: '전체 설정 메뉴' },
+      { label: '알림', icon: Bell, path: '/desk/notifications', desc: '푸시 · 이메일 · 방해 금지' },
+      { label: '데이터 내보내기', icon: Download, path: '/desk/settings?section=data', desc: 'CSV · Excel · PDF · 자동 백업' },
+      { label: '계정', icon: User, path: '/desk/settings?section=account', desc: '프로필 · 보안 · 구독' },
+    ],
+  },
 ]
 
 export const MorePage = () => {
   const navigate = useNavigate()
   useOutletContext<OutletCtx>()
+  const [query, setQuery] = useState('')
+
+  const allItems: NavItem[] = GROUPS.flatMap(g => g.items)
+
+  const filteredItems = query.trim()
+    ? allItems.filter(item =>
+        item.label.toLowerCase().includes(query.toLowerCase()) ||
+        item.desc.toLowerCase().includes(query.toLowerCase()),
+      )
+    : null
+
+  const isSearching = query.trim().length > 0
 
   return (
-    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-      <div style={{ padding: '0 16px 12px' }}>
-        <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>더보기</h2>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>모든 메뉴를 한 곳에서</div>
+    <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
+      {/* 검색바 */}
+      <div className="relative mb-5">
+        <Search
+          size={16}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--fg-tertiary)',
+            pointerEvents: 'none',
+          }}
+        />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="메뉴 검색"
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '10px 12px 10px 36px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface)',
+            fontSize: 14,
+            color: 'var(--fg-primary)',
+            outline: 'none',
+            fontFamily: 'inherit',
+          }}
+        />
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 10,
-          padding: '0 12px',
-        }}
-      >
-        {ITEMS.map(item => {
-          const IconComp = item.icon
-          return (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: 10,
-                padding: '18px 14px',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-card)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                fontFamily: 'inherit',
-              }}
-            >
-              <span
+
+      {/* 바로가기 — 검색 비활성일 때만 */}
+      {!isSearching && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 8,
+            marginBottom: 24,
+          }}
+        >
+          {SHORTCUT_ITEMS.map(item => {
+            const IconComp = item.icon
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
                 style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'var(--bg-brand-subtle)',
-                  color: 'var(--fg-brand-strong)',
-                  display: 'inline-flex',
+                  display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  gap: 6,
+                  padding: '12px 8px',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: 'var(--shadow-sm)',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+                }}
+                onMouseLeave={e => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-surface)'
                 }}
               >
-                <IconComp size={19} strokeWidth={1.9} />
-              </span>
-              <div style={{ width: '100%' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontSize: 'var(--text-body-sm)',
-                    fontWeight: '700',
-                    color: 'var(--fg-primary)',
-                    letterSpacing: '-0.012em',
-                  }}
-                >
+                <IconComp size={20} strokeWidth={1.8} color="var(--fg-brand-strong)" />
+                <span style={{ fontSize: 12, color: 'var(--fg-secondary)', fontWeight: 500 }}>
                   {item.label}
-                  <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', marginLeft: 'auto' }} />
-                </div>
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4, lineHeight: '1.3' }}>
-                  {item.desc}
-                </div>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 검색 결과 */}
+      {isSearching && (
+        <div>
+          {filteredItems && filteredItems.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px 0',
+                fontSize: 14,
+                color: 'var(--fg-tertiary)',
+              }}
+            >
+              검색 결과가 없습니다
+            </div>
+          ) : (
+            <div
+              style={{
+                background: 'var(--bg-surface)',
+                boxShadow: 'var(--shadow-sm)',
+                borderRadius: 'var(--radius-card)',
+                overflow: 'hidden',
+              }}
+            >
+              {filteredItems?.map((item, idx) => {
+                const IconComp = item.icon
+                const isLast = idx === (filteredItems?.length ?? 0) - 1
+                return (
+                  <button
+                    key={`${item.path}-${idx}`}
+                    onClick={() => navigate(item.path)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      width: '100%',
+                      padding: '14px 16px',
+                      border: 0,
+                      borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                    }}
+                    onMouseEnter={e => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+                    }}
+                    onMouseLeave={e => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                    }}
+                  >
+                    <span style={{ flexShrink: 0, display: 'inline-flex' }}>
+                      <IconComp size={18} strokeWidth={1.8} color="var(--fg-secondary)" />
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: 'var(--fg-primary)',
+                        letterSpacing: '-0.01em',
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
+                      {item.desc}
+                    </span>
+                    <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 그룹 리스트 — 검색 비활성일 때만 */}
+      {!isSearching && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {GROUPS.map(group => (
+            <div key={group.label}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--fg-primary)',
+                  paddingBottom: 8,
+                  paddingLeft: 2,
+                }}
+              >
+                {group.label}
               </div>
-            </button>
-          )
-        })}
-      </div>
+              <div
+                style={{
+                  background: 'var(--bg-surface)',
+                  boxShadow: 'var(--shadow-sm)',
+                  borderRadius: 'var(--radius-card)',
+                  overflow: 'hidden',
+                }}
+              >
+                {group.items.map((item, idx) => {
+                  const IconComp = item.icon
+                  const isLast = idx === group.items.length - 1
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        width: '100%',
+                        padding: '14px 16px',
+                        border: 0,
+                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: 'inherit',
+                        transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => {
+                        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+                      }}
+                      onMouseLeave={e => {
+                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                      }}
+                    >
+                      <span style={{ flexShrink: 0, display: 'inline-flex' }}>
+                        <IconComp size={18} strokeWidth={1.8} color="var(--fg-secondary)" />
+                      </span>
+                      <span
+                        style={{
+                          flex: 1,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--fg-primary)',
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
+                        {item.desc}
+                      </span>
+                      <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

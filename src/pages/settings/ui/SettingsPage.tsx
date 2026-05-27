@@ -3,14 +3,20 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
   Bookmark,
+  CalendarDays,
+  CalendarRange,
   ChevronLeft,
   ChevronRight,
   Download,
+  Fingerprint,
+  Key,
+  LogOut,
+  Monitor,
   Palette,
   Repeat,
-  Settings,
   Tag,
   Target,
+  Trash2,
   User,
   Wallet,
 } from 'lucide-react'
@@ -24,6 +30,22 @@ import {
   RecurringManager,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
+import { useCurrentUser } from '@/features/user'
+import { useAuth } from '@/features/auth'
+import { Switch } from '@/shared/ui/switch'
+import { Button } from '@/shared/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/shared/ui/alert-dialog'
+import { PasswordChangeDialog } from '@/widgets/sidebar/ui/PasswordChangeDialog'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type SectionId =
@@ -32,6 +54,8 @@ type SectionId =
   | 'budget'
   | 'recurring'
   | 'presets'
+  | 'calendar-share'
+  | 'calendar-labels'
   | 'appearance'
   | 'notifications'
   | 'data'
@@ -40,7 +64,7 @@ type SectionId =
 interface SectionDef {
   id: SectionId
   label: string
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   desc: string
 }
 
@@ -50,6 +74,8 @@ const SECTIONS: SectionDef[] = [
   { id: 'budget', label: '예산 설정', icon: Target, desc: '월간 예산 및 카테고리별 한도' },
   { id: 'recurring', label: '반복 거래 관리', icon: Repeat, desc: '구독·고정 결제·정기 수입 일괄 관리' },
   { id: 'presets', label: '프리셋 관리', icon: Bookmark, desc: '자주 쓰는 내역을 한 번 탭으로 채우기' },
+  { id: 'calendar-share', label: '캘린더 관리·공유', icon: CalendarRange, desc: '다중 캘린더 생성과 멤버 공유 설정' },
+  { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
   { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·PDF로 거래 내역 백업' },
@@ -57,6 +83,35 @@ const SECTIONS: SectionDef[] = [
 ]
 
 const SECTION_IDS: SectionId[] = SECTIONS.map(s => s.id)
+
+// ─── 모바일 메뉴 그룹 정의 ─────────────────────────────────────
+interface GroupDef {
+  label: string
+  sectionIds: SectionId[]
+}
+
+const MENU_GROUPS: GroupDef[] = [
+  {
+    label: '데이터 관리',
+    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets'],
+  },
+  {
+    label: '공유',
+    sectionIds: ['calendar-share', 'calendar-labels'],
+  },
+  {
+    label: '앱 환경',
+    sectionIds: ['appearance', 'notifications'],
+  },
+  {
+    label: '데이터',
+    sectionIds: ['data'],
+  },
+  {
+    label: '계정',
+    sectionIds: ['account'],
+  },
+]
 
 export const SettingsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
@@ -97,79 +152,24 @@ export const SettingsPage = () => {
       case 'presets':       return <PresetManager mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
+      case 'account':       return <AccountSection />
       default:              return <PlaceholderSection section={activeSection} />
     }
   }
 
   if (mobile) {
     if (section === 'menu') {
-      return (
-        <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-          <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Settings size={18} style={{ color: 'var(--fg-secondary)' }} />
-            <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>설정</h2>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'var(--bg-surface)',
-              borderRadius: 'var(--radius-card)',
-              margin: '0 12px',
-              overflow: 'hidden',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            {SECTIONS.map(s => {
-              const IconComp = s.icon
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => changeSection(s.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '14px 16px',
-                    border: 0,
-                    background: 'transparent',
-                    borderBottom: '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    width: '100%',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 'var(--radius-tile)',
-                      background: 'var(--bg-brand-subtle)',
-                      color: 'var(--fg-brand-strong)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <IconComp size={18} strokeWidth={1.9} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{s.label}</div>
-                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{s.desc}</div>
-                  </div>
-                  <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)' }} />
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )
+      return <MobileMenuView changeSection={changeSection} />
     }
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        zIndex: 100,
+        background: 'var(--bg-canvas)',
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto',
+      }}>
         <div
           style={{
             display: 'flex',
@@ -177,7 +177,7 @@ export const SettingsPage = () => {
             gap: 8,
             padding: '12px 8px',
             background: 'var(--bg-surface)',
-            borderBottom: '1px solid var(--border-subtle)',
+            flexShrink: 0,
           }}
         >
           <button
@@ -189,6 +189,7 @@ export const SettingsPage = () => {
               display: 'inline-flex',
               cursor: 'pointer',
               color: 'var(--fg-primary)',
+              borderRadius: 'var(--radius-md)',
             }}
           >
             <ChevronLeft size={22} />
@@ -197,7 +198,7 @@ export const SettingsPage = () => {
             {activeSection?.label}
           </h2>
         </div>
-        <div style={{ padding: 16, flex: 1 }}>{renderBody(true)}</div>
+        <div style={{ padding: '20px 16px', flex: 1 }}>{renderBody(true)}</div>
       </div>
     )
   }
@@ -268,6 +269,499 @@ export const SettingsPage = () => {
   )
 }
 
+// ─── 모바일 메뉴 뷰 ────────────────────────────────────────────
+function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'menu') => void }) {
+  const { data: user } = useCurrentUser()
+
+  return (
+    <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
+      {/* 프로필 카드 */}
+      <button
+        onClick={() => changeSection('account')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          width: '100%',
+          padding: 16,
+          background: 'var(--bg-surface)',
+          boxShadow: 'var(--shadow-sm)',
+          borderRadius: 'var(--radius-card)',
+          border: 0,
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+          marginBottom: 16,
+        }}
+      >
+        <div
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            background: 'var(--bg-brand)',
+            color: 'var(--fg-on-brand)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            fontWeight: 700,
+            flexShrink: 0,
+          }}
+        >
+          {user?.userName ? user.userName.charAt(0) : '?'}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>
+            {user?.userName ?? '사용자'}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            내 정보 · 보안 · 연결된 계정
+          </div>
+        </div>
+        <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+      </button>
+
+      {/* 그룹 카드 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {MENU_GROUPS.map(group => {
+          const groupSections = group.sectionIds
+            .map(id => SECTIONS.find(s => s.id === id))
+            .filter((s): s is SectionDef => s !== undefined)
+
+          return (
+            <div key={group.label}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--fg-primary)',
+                  paddingBottom: 8,
+                  paddingLeft: 2,
+                }}
+              >
+                {group.label}
+              </div>
+              <div
+                style={{
+                  background: 'var(--bg-surface)',
+                  boxShadow: 'var(--shadow-sm)',
+                  borderRadius: 'var(--radius-card)',
+                  overflow: 'hidden',
+                }}
+              >
+                {groupSections.map((s, idx) => {
+                  const IconComp = s.icon
+                  const isLast = idx === groupSections.length - 1
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => changeSection(s.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        width: '100%',
+                        padding: '14px 16px',
+                        border: 0,
+                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: 'inherit',
+                      }}
+                      onMouseEnter={e => {
+                        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+                      }}
+                      onMouseLeave={e => {
+                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--bg-muted)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <IconComp size={16} strokeWidth={1.8} color="var(--fg-secondary)" />
+                      </div>
+                      <span
+                        style={{
+                          flex: 1,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--fg-primary)',
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {s.label}
+                      </span>
+                      <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Account Section ───────────────────────────────────────────
+function AccountSection() {
+  const { data: user } = useCurrentUser()
+  const { logout } = useAuth()
+  const [pwDialogOpen, setPwDialogOpen] = useState(false)
+
+  const nameInitial = user?.userName ? user.userName.charAt(0) : '?'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* 프로필 헤더 */}
+      <div
+        style={{
+          background: 'var(--bg-surface)',
+          boxShadow: 'var(--shadow-sm)',
+          borderRadius: 'var(--radius-card)',
+          padding: '28px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: 'var(--bg-brand)',
+            color: 'var(--fg-on-brand)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 24,
+            fontWeight: 700,
+            marginBottom: 4,
+          }}
+        >
+          {nameInitial}
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
+          {user?.userName ?? '사용자'}
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>
+          {user?.userEmail ?? ''}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <Button variant="ghost" size="sm">
+            ✎ 편집
+          </Button>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '2px 8px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--bg-brand-subtle)',
+              color: 'var(--fg-brand-strong)',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+            }}
+          >
+            Pro
+          </span>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          가입 2024년 11월
+        </div>
+      </div>
+
+      {/* 보안 */}
+      <AccountGroup label="보안">
+        <AccountRow
+          icon={<Key size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="비밀번호 변경"
+          desc="최근 변경 없음"
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          onClick={() => setPwDialogOpen(true)}
+        />
+        <AccountRow
+          icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="2단계 인증"
+          desc="사용 안 함"
+          right={<Switch checked={false} onCheckedChange={() => {}} />}
+        />
+        <AccountRow
+          icon={<Fingerprint size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="생체 인증"
+          desc="앱에서 설정 가능"
+          dimmed
+        />
+        <AccountRow
+          icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="로그인된 기기"
+          desc="현재 기기"
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+        />
+        <AccountRow
+          icon={<CalendarDays size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="로그인 기록"
+          desc="최근 30일"
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          isLast
+        />
+      </AccountGroup>
+
+      {/* 연결된 계정 */}
+      <AccountGroup label="연결된 계정">
+        <AccountRow
+          icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>G</span>}
+          label="Google"
+          desc="연결 안 됨"
+          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+        />
+        <AccountRow
+          icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>A</span>}
+          label="Apple ID"
+          desc="연결 안 됨"
+          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+        />
+        <AccountRow
+          icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>K</span>}
+          label="카카오"
+          desc="연결 안 됨"
+          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+        />
+        <AccountRow
+          icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>N</span>}
+          label="네이버"
+          desc="연결 안 됨"
+          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          isLast
+        />
+      </AccountGroup>
+
+      {/* 구독·결제 */}
+      <AccountGroup label="구독·결제">
+        <AccountRow
+          icon={<Bookmark size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="Porest Free"
+          desc="무료 플랜 사용 중"
+        />
+        <AccountRow
+          icon={<Target size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="플랜 업그레이드"
+          desc="Pro 9,900원/월"
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          isLast
+        />
+      </AccountGroup>
+
+      {/* 계정 관리 */}
+      <AccountGroup label="계정 관리">
+        <AccountRow
+          icon={<LogOut size={20} style={{ color: 'var(--fg-secondary)' }} />}
+          label="로그아웃"
+          desc="이 기기에서만"
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          onClick={logout}
+        />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <AccountRow
+              icon={<Trash2 size={20} style={{ color: 'var(--status-danger)' }} />}
+              label="회원 탈퇴"
+              desc="영구 삭제"
+              labelColor="var(--status-danger)"
+              isLast
+              asChild
+            />
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>정말 탈퇴하시겠습니까?</AlertDialogTitle>
+              <AlertDialogDescription>
+                회원 탈퇴 시 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                탈퇴하기
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </AccountGroup>
+
+      {/* 비밀번호 변경 다이얼로그 */}
+      <PasswordChangeDialog open={pwDialogOpen} onOpenChange={setPwDialogOpen} />
+    </div>
+  )
+}
+
+// ─── AccountGroup ──────────────────────────────────────────────
+function AccountGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: 'var(--fg-primary)',
+          paddingBottom: 8,
+          paddingLeft: 2,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          background: 'var(--bg-surface)',
+          boxShadow: 'var(--shadow-sm)',
+          borderRadius: 'var(--radius-card)',
+          overflow: 'hidden',
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// ─── AccountRow ────────────────────────────────────────────────
+interface AccountRowProps {
+  icon: React.ReactNode
+  label: string
+  desc?: string
+  right?: React.ReactNode
+  isLast?: boolean
+  onClick?: () => void
+  dimmed?: boolean
+  labelColor?: string
+  asChild?: boolean
+}
+
+function AccountRow({
+  icon,
+  label,
+  desc,
+  right,
+  isLast,
+  onClick,
+  dimmed,
+  labelColor,
+  asChild,
+}: AccountRowProps) {
+  const content = (
+    <>
+      <span
+        style={{
+          width: 24,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </span>
+      <span
+        style={{
+          flex: 1,
+          fontSize: 14,
+          fontWeight: 600,
+          color: labelColor ?? 'var(--fg-primary)',
+          letterSpacing: '-0.01em',
+        }}
+      >
+        {label}
+      </span>
+      {desc && (
+        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: right ? 8 : 0 }}>
+          {desc}
+        </span>
+      )}
+      {right}
+    </>
+  )
+
+  const sharedStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+    padding: '14px 16px',
+    borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+  }
+
+  if (asChild) {
+    return (
+      <button
+        style={{
+          ...sharedStyle,
+          border: 0,
+          borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+          background: 'transparent',
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+        }}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  if (onClick && !dimmed) {
+    return (
+      <button
+        onClick={onClick}
+        style={{
+          ...sharedStyle,
+          border: 0,
+          borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+          background: 'transparent',
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+        }}
+        onMouseEnter={e => {
+          ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+        }}
+        onMouseLeave={e => {
+          ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+        }}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        ...sharedStyle,
+        cursor: dimmed ? 'default' : 'default',
+        opacity: dimmed ? 0.55 : 1,
+      }}
+    >
+      {content}
+    </div>
+  )
+}
+
+// ─── PlaceholderSection ────────────────────────────────────────
 function PlaceholderSection({ section }: { section: SectionDef }) {
   const IconComp = section.icon
   return (
