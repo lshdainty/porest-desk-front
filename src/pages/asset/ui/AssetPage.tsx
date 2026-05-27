@@ -22,24 +22,13 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
-import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
+import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
-import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
-import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog'
-import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
-import { AssetEditDialog, type AssetGroup } from '@/features/porest/dialogs/AssetEditDialog'
-import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
+import type { Asset, AssetType } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
-
-/** assetType → AssetEditDialog 용 group 매핑 */
-function assetGroupOf(asset: Asset): AssetGroup {
-  if (asset.assetType === 'CREDIT_CARD' || asset.assetType === 'CHECK_CARD') return 'card'
-  if (asset.assetType === 'INVESTMENT') return 'invest'
-  return 'account'
-}
 
 const netWorthChartConfig = {
   netWorth: { label: '순자산', color: 'var(--border-brand)' },
@@ -1024,7 +1013,6 @@ function TypeGroup({
   assets,
   total,
   totalColor,
-  onAdd,
   onOpenDetail,
   negativeTotal = false,
 }: {
@@ -1033,7 +1021,6 @@ function TypeGroup({
   total: number
   totalColor?: string
   mobile: boolean
-  onAdd: () => void
   onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
 }) {
@@ -1050,14 +1037,6 @@ function TypeGroup({
           </MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          style={{ marginLeft: 8 }}
-          onClick={onAdd}
-        >
-          <Plus size={13} />추가
-        </Button>
       </CardHeader>
       <CardContent>
       {assets.length === 0 ? (
@@ -1273,15 +1252,11 @@ function useAssetGroups() {
 }
 
 function AssetDesktop() {
+  const navigate = useNavigate()
   const hidden = useHideAmounts()
   const g = useAssetGroups()
-  const [addOpen, setAddOpen] = useState(false)
-  const [investOpen, setInvestOpen] = useState(false)
-  const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [editAsset, setEditAsset] = useState<Asset | null>(null)
   const [unlockOpen, setUnlockOpen] = useState(false)
-  const updateMut = useUpdateAsset()
 
   const handleHideToggle = () => {
     if (hidden) setUnlockOpen(true)
@@ -1313,9 +1288,6 @@ function AssetDesktop() {
           >
             <RefreshCw size={13} /> 새로고침
           </Button>
-          <Button size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> 계좌 추가
-          </Button>
         </div>
       </div>
 
@@ -1332,9 +1304,9 @@ function AssetDesktop() {
             >
               아직 등록된 자산이 없어요
             </div>
-            <Button size="sm" onClick={() => setAddOpen(true)}>
-              <Plus size={14} /> 첫 자산 추가하기
-            </Button>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+              설정 → 카드·계좌 관리에서 추가할 수 있어요
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -1365,7 +1337,6 @@ function AssetDesktop() {
               assets={g.accounts}
               total={g.accountsTotal}
               mobile={false}
-              onAdd={() => setAddOpen(true)}
               onOpenDetail={setDetailAsset}
             />
             {g.investments.length > 0 && (
@@ -1374,7 +1345,6 @@ function AssetDesktop() {
                 assets={g.investments}
                 total={g.investmentsTotal}
                 mobile={false}
-                onAdd={() => setInvestOpen(true)}
                 onOpenDetail={setDetailAsset}
               />
             )}
@@ -1385,7 +1355,6 @@ function AssetDesktop() {
               totalColor="var(--fg-expense)"
               negativeTotal
               mobile={false}
-              onAdd={() => setCardOpen(true)}
               onOpenDetail={setDetailAsset}
             />
             {g.loans.length > 0 && (
@@ -1396,7 +1365,6 @@ function AssetDesktop() {
                 totalColor="var(--fg-expense)"
                 negativeTotal
                 mobile={false}
-                onAdd={() => setAddOpen(true)}
                 onOpenDetail={setDetailAsset}
               />
             )}
@@ -1404,37 +1372,15 @@ function AssetDesktop() {
           </div>
         </div>
       )}
-      <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
-      <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
-      <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
       {detailAsset && (
         <AssetDetailDialog
           asset={detailAsset}
           mobile={false}
           onClose={() => setDetailAsset(null)}
-          onEdit={asset => {
-            setEditAsset(asset)
+          onEdit={() => {
+            navigate('/desk/settings?section=accounts')
             setDetailAsset(null)
           }}
-        />
-      )}
-      {editAsset && (
-        <AssetEditDialog
-          item={editAsset}
-          group={assetGroupOf(editAsset)}
-          mobile={false}
-          onClose={() => setEditAsset(null)}
-          onCreate={(values: AssetFormValues) => {
-            /* edit 모드에서는 호출되지 않음 */
-            void values
-          }}
-          onUpdate={(values: AssetUpdateFormValues) => {
-            updateMut.mutate(
-              { id: editAsset.rowId, data: values },
-              { onSuccess: () => setEditAsset(null) },
-            )
-          }}
-          isSubmitting={updateMut.isPending}
         />
       )}
       <HideAmountsUnlockDialog
@@ -1447,13 +1393,9 @@ function AssetDesktop() {
 }
 
 function AssetMobile() {
+  const navigate = useNavigate()
   const g = useAssetGroups()
-  const [addOpen, setAddOpen] = useState(false)
-  const [investOpen, setInvestOpen] = useState(false)
-  const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [editAsset, setEditAsset] = useState<Asset | null>(null)
-  const updateMut = useUpdateAsset()
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1476,12 +1418,11 @@ function AssetMobile() {
             >
               아직 등록된 자산이 없어요
             </div>
-            <Button size="sm" onClick={() => setAddOpen(true)}>
-              <Plus size={14} /> 첫 자산 추가하기
-            </Button>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+              설정 → 카드·계좌 관리에서 추가할 수 있어요
+            </div>
           </CardContent>
         </Card>
-        <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       </div>
     )
   }
@@ -1504,7 +1445,6 @@ function AssetMobile() {
           assets={g.accounts}
           total={g.accountsTotal}
           mobile
-          onAdd={() => setAddOpen(true)}
           onOpenDetail={setDetailAsset}
         />
         {g.investments.length > 0 && (
@@ -1513,7 +1453,6 @@ function AssetMobile() {
             assets={g.investments}
             total={g.investmentsTotal}
             mobile
-            onAdd={() => setInvestOpen(true)}
             onOpenDetail={setDetailAsset}
           />
         )}
@@ -1524,7 +1463,6 @@ function AssetMobile() {
           totalColor="var(--fg-expense)"
           negativeTotal
           mobile
-          onAdd={() => setCardOpen(true)}
           onOpenDetail={setDetailAsset}
         />
         {g.loans.length > 0 && (
@@ -1535,41 +1473,19 @@ function AssetMobile() {
             totalColor="var(--fg-expense)"
             negativeTotal
             mobile
-            onAdd={() => setAddOpen(true)}
             onOpenDetail={setDetailAsset}
           />
         )}
       </div>
-      <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
-      <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
-      <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
       {detailAsset && (
         <AssetDetailDialog
           asset={detailAsset}
           mobile
           onClose={() => setDetailAsset(null)}
-          onEdit={asset => {
-            setEditAsset(asset)
+          onEdit={() => {
+            navigate('/desk/settings?section=accounts')
             setDetailAsset(null)
           }}
-        />
-      )}
-      {editAsset && (
-        <AssetEditDialog
-          item={editAsset}
-          group={assetGroupOf(editAsset)}
-          mobile
-          onClose={() => setEditAsset(null)}
-          onCreate={(values: AssetFormValues) => {
-            void values
-          }}
-          onUpdate={(values: AssetUpdateFormValues) => {
-            updateMut.mutate(
-              { id: editAsset.rowId, data: values },
-              { onSuccess: () => setEditAsset(null) },
-            )
-          }}
-          isSubmitting={updateMut.isPending}
         />
       )}
     </div>
