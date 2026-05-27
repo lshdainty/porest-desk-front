@@ -22,6 +22,8 @@ export interface RecurringTransaction {
   dayOfMonth: number | null
   startDate: string
   endDate: string | null
+  maxOccurrences: number | null
+  executedCount: number
   nextExecutionDate: string
   lastExecutedAt: string | null
   isActive: YNType
@@ -46,6 +48,7 @@ export interface RecurringTransactionFormValues {
   dayOfMonth?: number
   startDate: string
   endDate?: string
+  maxOccurrences?: number
   autoLog?: boolean
   notifyDayBefore?: boolean
 }

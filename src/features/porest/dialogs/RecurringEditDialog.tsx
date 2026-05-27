@@ -56,9 +56,9 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
     recurring.dayOfMonth ?? Math.min(31, baseDom),
   )
 
-  const initialEndMode: EndMode = recurring.endDate ? 'DATE' : 'NONE'
+  const initialEndMode: EndMode = recurring.maxOccurrences ? 'COUNT' : recurring.endDate ? 'DATE' : 'NONE'
   const [endMode, setEndMode] = useState<EndMode>(initialEndMode)
-  const [endCount, setEndCount] = useState<string>('12')
+  const [endCount, setEndCount] = useState<string>(recurring.maxOccurrences ? String(recurring.maxOccurrences) : '12')
   const [endDate, setEndDate] = useState<string>(
     recurring.endDate ?? addYears(startDay, 1),
   )
@@ -93,6 +93,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       dayOfMonth: frequency === 'MONTHLY' || frequency === 'YEARLY' ? dayOfMonth : undefined,
       startDate: startDay,
       endDate: endMode === 'DATE' ? endDate : undefined,
+      maxOccurrences: endMode === 'COUNT' ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
     }
