@@ -10,8 +10,6 @@ export type {
   CardCatalogDetail,
   CardCatalogSearchParams,
   CardPerformance,
-  CardBenefitCategoryMapping,
-  CardBenefitMappingUpsertValues,
   PageMeta,
   PageResponse,
 } from './model/types'
