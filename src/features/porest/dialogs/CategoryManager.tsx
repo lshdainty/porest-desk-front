@@ -173,23 +173,29 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                 </TabsList>
               </Tabs>
             </div>
-            <div style={MANAGER_LAYOUT.searchWrapStyle}>
-              <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="카테고리 검색"
-                style={{ ...MANAGER_LAYOUT.searchInputStyle, minWidth: 0, width: '100%' }}
-                onFocus={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-focus)'
-                  e.currentTarget.style.outline = '2px solid var(--border-focus)'
-                  e.currentTarget.style.outlineOffset = '-1px'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                  e.currentTarget.style.outline = 'none'
-                }}
-              />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
+                <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+                <input
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="카테고리 검색"
+                  style={{ ...MANAGER_LAYOUT.searchInputStyle, minWidth: 0, width: '100%' }}
+                  onFocus={e => {
+                    e.currentTarget.style.borderColor = 'var(--border-focus)'
+                    e.currentTarget.style.outline = '2px solid var(--border-focus)'
+                    e.currentTarget.style.outlineOffset = '-1px'
+                  }}
+                  onBlur={e => {
+                    e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                    e.currentTarget.style.outline = 'none'
+                  }}
+                />
+              </div>
+              <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
+                <Plus size={14} strokeWidth={2.4} />
+                카테고리 추가
+              </Button>
             </div>
           </>
         ) : (
