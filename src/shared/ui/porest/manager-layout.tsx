@@ -152,6 +152,8 @@ export function ManagerTabs<T extends string>({
       style={{
         display: fill ? 'flex' : 'inline-flex',
         width: fill ? '100%' : undefined,
+        // fill=false(데스크톱): 부모 flex stretch 방지 → sunken bar 가 탭 내용에 딱 맞음
+        alignSelf: fill ? undefined : 'flex-start',
         background: 'var(--bg-sunken)',
         padding: 4,
         borderRadius: 'var(--radius-tile)',
