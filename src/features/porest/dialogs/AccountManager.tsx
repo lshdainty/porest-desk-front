@@ -105,13 +105,13 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0' }}>
             <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
               <TabsList variant="underline" className="w-full">
-                <TabsTrigger variant="underline" value="account">
+                <TabsTrigger variant="underline" value="account" className="flex-1">
                   계좌·예금 {counts.account}
                 </TabsTrigger>
-                <TabsTrigger variant="underline" value="card">
+                <TabsTrigger variant="underline" value="card" className="flex-1">
                   카드 {counts.card}
                 </TabsTrigger>
-                <TabsTrigger variant="underline" value="invest">
+                <TabsTrigger variant="underline" value="invest" className="flex-1">
                   투자 {counts.invest}
                 </TabsTrigger>
               </TabsList>
