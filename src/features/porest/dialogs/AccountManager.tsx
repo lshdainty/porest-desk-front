@@ -123,7 +123,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           </Button>
         </div>
 
-        <div className="cat-list">
+        <div className="cat-list" style={{ marginTop: -12 }}>
           {isLoading ? (
             <AccountManagerSkeleton mobile={mobile} />
           ) : (
