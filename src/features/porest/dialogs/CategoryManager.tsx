@@ -152,7 +152,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             actions={
               <Button onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
-                카테고리 추가
+                추가
               </Button>
             }
           />
@@ -194,7 +194,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
               </div>
               <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
-                카테고리 추가
+                추가
               </Button>
             </div>
           </>
