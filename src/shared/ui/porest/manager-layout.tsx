@@ -50,7 +50,7 @@ export const MANAGER_LAYOUT = {
   searchInputStyle: {
     padding: '8px 12px 8px 30px',
     border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-tile)',
+    borderRadius: 'var(--radius-md)',
     font: '13px/1 var(--font-sans)',
     background: 'var(--bg-surface)',
     color: 'var(--fg-primary)',
