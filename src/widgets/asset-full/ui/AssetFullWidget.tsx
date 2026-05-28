@@ -24,7 +24,7 @@ import {
 import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
 import { useIsMobile } from '@/shared/hooks'
 import { Button } from '@/shared/ui/button'
-import { Spinner } from '@/shared/ui/spinner'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ScrollArea } from '@/shared/ui/scroll-area'
 import { AssetList } from './AssetList'
 import { AssetForm } from './AssetForm'
@@ -47,8 +47,8 @@ export const AssetFullWidget = () => {
   const isMobile = useIsMobile()
 
   const { data: assetsData, isLoading } = useAssets()
-  const { data: summary } = useAssetSummary()
-  const { data: transfersData } = useAssetTransfers()
+  const { data: summary, isLoading: isSummaryLoading } = useAssetSummary()
+  const { data: transfersData, isLoading: isTransfersLoading } = useAssetTransfers()
   const createAsset = useCreateAsset()
   const updateAsset = useUpdateAsset()
   const deleteAsset = useDeleteAsset()
@@ -105,7 +105,11 @@ export const AssetFullWidget = () => {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* 고정: 요약 + 탭바 + 추가 버튼 */}
       <div className="shrink-0 space-y-4">
-        {summary && <AssetSummaryCard summary={summary} assets={assets} />}
+        {isSummaryLoading ? (
+          <AssetSummaryCardSkeleton />
+        ) : (
+          summary && <AssetSummaryCard summary={summary} assets={assets} />
+        )}
 
         <div className="flex items-center gap-2 border-b">
           <button
@@ -149,9 +153,7 @@ export const AssetFullWidget = () => {
       <ScrollArea className="mt-4 min-h-0 flex-1">
         {activeTab === 'assets' && (
           isLoading ? (
-            <div className="flex justify-center py-8">
-              <Spinner />
-            </div>
+            <AssetRowsSkeleton />
           ) : (
             <AssetList
               assets={assets}
@@ -163,7 +165,11 @@ export const AssetFullWidget = () => {
         )}
 
         {activeTab === 'transfers' && (
-          <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
+          isTransfersLoading ? (
+            <AssetRowsSkeleton />
+          ) : (
+            <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
+          )
         )}
       </ScrollArea>
 
@@ -216,6 +222,53 @@ export const AssetFullWidget = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  )
+}
+
+/** AssetSummaryCard skeleton — Hero 카드 + 도넛+타입 breakdown grid 자리. */
+function AssetSummaryCardSkeleton() {
+  return (
+    <div className="space-y-4">
+      <SkeletonBase className="h-28 w-full rounded-2xl" />
+      <div className="rounded-xl border bg-card p-4">
+        <div className="flex flex-col items-center gap-4 md:flex-row">
+          <div className="flex w-full justify-center md:w-1/2">
+            <SkeletonBase className="aspect-square h-[140px] w-[140px] rounded-full" />
+          </div>
+          <div className="w-full md:w-1/2">
+            <div className="grid grid-cols-2 gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
+                  <SkeletonBase className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <SkeletonBase className="h-3 w-12" />
+                    <SkeletonBase className="h-4 w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** 자산/이체 리스트 행 skeleton — 아이콘 + 이름/메타 + 금액 행 × 5. */
+function AssetRowsSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 rounded-md border px-3 py-2.5">
+          <SkeletonBase className="h-9 w-9 shrink-0 rounded-md" />
+          <div className="flex-1 space-y-1.5">
+            <SkeletonBase className="h-4 w-32" />
+            <SkeletonBase className="h-3 w-20" />
+          </div>
+          <SkeletonBase className="h-4 w-24" />
+        </div>
+      ))}
     </div>
   )
 }
