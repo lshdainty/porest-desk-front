@@ -101,19 +101,22 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         )}
 
         {mobile ? (
-          <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
-            <TabsList variant="underline" className="w-full">
-              <TabsTrigger variant="underline" value="account">
-                계좌·예금 {counts.account}
-              </TabsTrigger>
-              <TabsTrigger variant="underline" value="card">
-                카드 {counts.card}
-              </TabsTrigger>
-              <TabsTrigger variant="underline" value="invest">
-                투자 {counts.invest}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          // header 바로 아래 full-width 흰띠 underline 탭 (SettingsPage 모바일 padding 20/16 상쇄)
+          <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0' }}>
+            <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
+              <TabsList variant="underline" className="w-full">
+                <TabsTrigger variant="underline" value="account">
+                  계좌·예금 {counts.account}
+                </TabsTrigger>
+                <TabsTrigger variant="underline" value="card">
+                  카드 {counts.card}
+                </TabsTrigger>
+                <TabsTrigger variant="underline" value="invest">
+                  투자 {counts.invest}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         ) : (
           <ManagerTabs<AssetGroup>
             value={tab}
