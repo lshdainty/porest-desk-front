@@ -52,7 +52,7 @@ const GROUPS: NavGroup[] = [
       { label: '예산', icon: Target, path: '/desk/budget', desc: '월간 · 카테고리별' },
       { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
       { label: '반복 거래', icon: Repeat, path: '/desk/settings?section=recurring', desc: '구독 · 고정비' },
-      { label: '카드·계좌 관리', icon: CreditCard, path: '/desk/card-settings', desc: '연결 · 한도 · 만기' },
+      { label: '계좌·카드 관리', icon: CreditCard, path: '/desk/settings?section=accounts', desc: '연결된 계좌 · 카드 관리' },
     ],
   },
   {
