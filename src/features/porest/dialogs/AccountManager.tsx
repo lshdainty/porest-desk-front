@@ -131,10 +131,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            총{' '}
-            <span className="num" style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--fg-primary)' }}>
-              {KRW(totalInTab)}원
-            </span>
+            총 {KRW(totalInTab)}원
           </div>
           <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
             <Plus size={14} strokeWidth={2.4} />
