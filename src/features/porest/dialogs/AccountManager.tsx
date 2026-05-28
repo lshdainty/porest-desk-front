@@ -12,6 +12,7 @@ import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
 import { ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
@@ -99,16 +100,31 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           />
         )}
 
-        <ManagerTabs<AssetGroup>
-          value={tab}
-          onChange={setTab}
-          fill={mobile}
-          options={[
-            { value: 'account', label: '계좌·예금', count: counts.account },
-            { value: 'card', label: '카드', count: counts.card },
-            { value: 'invest', label: '투자', count: counts.invest },
-          ]}
-        />
+        {mobile ? (
+          <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
+            <TabsList variant="underline" className="w-full">
+              <TabsTrigger variant="underline" value="account">
+                계좌·예금 {counts.account}
+              </TabsTrigger>
+              <TabsTrigger variant="underline" value="card">
+                카드 {counts.card}
+              </TabsTrigger>
+              <TabsTrigger variant="underline" value="invest">
+                투자 {counts.invest}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        ) : (
+          <ManagerTabs<AssetGroup>
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'account', label: '계좌·예금', count: counts.account },
+              { value: 'card', label: '카드', count: counts.card },
+              { value: 'invest', label: '투자', count: counts.invest },
+            ]}
+          />
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
