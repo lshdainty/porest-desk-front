@@ -156,13 +156,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       <div style={MANAGE_ROW.labelStyle}>{asset.assetName}</div>
                       <div style={MANAGE_ROW.metaStyle}>
                         {asset.institution || asset.assetType.replace('_', ' ').toLowerCase()}
-                        {asset.memo && (
-                          <>
-                            <span className="dot-sep" />
-                            {asset.memo}
-                          </>
-                        )}
                       </div>
+                      {asset.memo && <div style={MANAGE_ROW.metaStyle}>{asset.memo}</div>}
                     </div>
                     <div style={{ textAlign: 'right', marginRight: mobile ? 8 : 12 }}>
                       <div
