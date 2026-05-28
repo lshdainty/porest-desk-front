@@ -21,6 +21,7 @@ import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import {
@@ -157,34 +158,70 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           />
         )}
 
-        <div style={MANAGER_LAYOUT.toolbarStyle}>
-          <ManagerTabs<ExpenseType>
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'EXPENSE', label: '지출', count: counts.expense },
-              { value: 'INCOME', label: '수입', count: counts.income },
-            ]}
-          />
-          <div style={MANAGER_LAYOUT.searchWrapStyle}>
-            <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="카테고리 검색"
-              style={MANAGER_LAYOUT.searchInputStyle}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = 'var(--border-focus)'
-                e.currentTarget.style.outline = '2px solid var(--border-focus)'
-                e.currentTarget.style.outlineOffset = '-1px'
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                e.currentTarget.style.outline = 'none'
-              }}
+        {mobile ? (
+          <>
+            {/* header 바로 아래 full-width 흰띠 underline 탭 (SettingsPage 모바일 padding 20/16 상쇄) */}
+            <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0' }}>
+              <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
+                <TabsList variant="underline" className="w-full">
+                  <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">
+                    지출 {counts.expense}
+                  </TabsTrigger>
+                  <TabsTrigger variant="underline" value="INCOME" className="flex-1">
+                    수입 {counts.income}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            <div style={MANAGER_LAYOUT.searchWrapStyle}>
+              <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="카테고리 검색"
+                style={{ ...MANAGER_LAYOUT.searchInputStyle, minWidth: 0, width: '100%' }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = 'var(--border-focus)'
+                  e.currentTarget.style.outline = '2px solid var(--border-focus)'
+                  e.currentTarget.style.outlineOffset = '-1px'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                  e.currentTarget.style.outline = 'none'
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <div style={MANAGER_LAYOUT.toolbarStyle}>
+            <ManagerTabs<ExpenseType>
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'EXPENSE', label: '지출', count: counts.expense },
+                { value: 'INCOME', label: '수입', count: counts.income },
+              ]}
             />
+            <div style={MANAGER_LAYOUT.searchWrapStyle}>
+              <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="카테고리 검색"
+                style={MANAGER_LAYOUT.searchInputStyle}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = 'var(--border-focus)'
+                  e.currentTarget.style.outline = '2px solid var(--border-focus)'
+                  e.currentTarget.style.outlineOffset = '-1px'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'var(--border-subtle)'
+                  e.currentTarget.style.outline = 'none'
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="cat-list">
           {isLoading ? (
