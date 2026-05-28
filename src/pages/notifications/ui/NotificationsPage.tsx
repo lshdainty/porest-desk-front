@@ -1,6 +1,7 @@
 import { Calendar, CheckSquare, Info, Wallet, X } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import {
   useDeleteNotification,
   useMarkAllRead,
@@ -15,6 +16,25 @@ const TYPE_ICONS: Record<NotificationType, React.ReactNode> = {
   BUDGET_ALERT: <Wallet size={16} />,
   TODO_REMINDER: <CheckSquare size={16} />,
   SYSTEM: <Info size={16} />,
+}
+
+/** 알림 목록 skeleton — icon(32x32) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
+function NotificationsPageSkeleton() {
+  return (
+    <div className="m-scroll" style={{ padding: 'var(--spacing-xl) 20px' }}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="notif-row" style={{ pointerEvents: 'none' }}>
+          <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+          <div className="notif-row__text">
+            <SkeletonBase className={`h-3.5 mb-1.5 ${i % 3 === 0 ? 'w-36' : i % 3 === 1 ? 'w-28' : 'w-40'}`} />
+            <SkeletonBase className="h-3 w-48" />
+          </div>
+          <SkeletonBase className="h-3 w-8 shrink-0" />
+          <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function timeAgo(dateStr: string): string {
@@ -35,7 +55,7 @@ function timeAgo(dateStr: string): string {
  * 이전: MobileNotificationSheet (드로어) → 변경: 풀 페이지 라우트.
  */
 export function NotificationsPage() {
-  const { data: notifications = [] } = useNotifications()
+  const { data: notifications = [], isLoading } = useNotifications()
   const { data: unreadCount = 0 } = useUnreadCount()
   const markRead = useMarkRead()
   const markAllRead = useMarkAllRead()
@@ -44,6 +64,8 @@ export function NotificationsPage() {
   const handleClick = (n: Notification) => {
     if (!n.isRead) markRead.mutate(n.rowId)
   }
+
+  if (isLoading) return <NotificationsPageSkeleton />
 
   return (
     <div className="m-scroll" style={{ padding: 'var(--spacing-xl) 20px' }}>

@@ -307,25 +307,59 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
   )
 }
 
-/** CategoryManager skeleton — 카테고리 row 리스트(icon + name + meta + 메뉴). */
+/** CategoryManager skeleton — 트리 구조(부모+자식 들여쓰기) 1:1 미러. */
 function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
+  // 부모 행: grip + chevron + icon + name+meta + add/edit/delete (desktop) | chevron (mobile)
+  // 자식 행: paddingLeft:28 + grip + icon + name + edit/delete (desktop) | chevron (mobile)
+  const entries = [
+    { childCount: 2 },
+    { childCount: 1 },
+    { childCount: 0 },
+  ]
   return (
     <>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className={MANAGE_ROW.className}>
-          <SkeletonBase className="h-4 w-4 shrink-0" />
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-          <div style={MANAGE_ROW.textStyle}>
-            <SkeletonBase className="h-4 w-32 mb-1.5" />
-            <SkeletonBase className="h-3 w-16" />
-          </div>
-          {!mobile ? (
-            <div className="flex gap-1">
-              <SkeletonBase className="h-7 w-14 rounded-md" />
-              <SkeletonBase className="h-7 w-7 rounded-md" />
+      {entries.map((e, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={i}>
+          <div className={MANAGE_ROW.className}>
+            <SkeletonBase className="h-4 w-4 shrink-0" />
+            <SkeletonBase className="h-4 w-4 shrink-0" />
+            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <div style={MANAGE_ROW.textStyle}>
+              <SkeletonBase className="h-4 w-32 mb-1.5" />
+              <SkeletonBase className="h-3 w-16" />
             </div>
-          ) : (
-            <SkeletonBase className="h-5 w-5 rounded-md" />
+            {!mobile ? (
+              <div className="flex gap-1">
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+              </div>
+            ) : (
+              <SkeletonBase className="h-5 w-5 rounded-md" />
+            )}
+          </div>
+          {e.childCount > 0 && (
+            <div style={{ paddingLeft: 28 }}>
+              {Array.from({ length: e.childCount }).map((_, j) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={j} className={MANAGE_ROW.className}>
+                  <SkeletonBase className="h-4 w-4 shrink-0" />
+                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                  <div style={MANAGE_ROW.textStyle}>
+                    <SkeletonBase className="h-4 w-24" />
+                  </div>
+                  {!mobile ? (
+                    <div className="flex gap-1">
+                      <SkeletonBase className="h-7 w-7 rounded-md" />
+                      <SkeletonBase className="h-7 w-7 rounded-md" />
+                    </div>
+                  ) : (
+                    <SkeletonBase className="h-5 w-5 rounded-md" />
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       ))}
