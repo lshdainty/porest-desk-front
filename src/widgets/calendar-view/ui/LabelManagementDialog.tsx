@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
@@ -29,7 +30,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
   const { t: tc } = useTranslation('common')
   const isMobile = useIsMobile()
 
-  const { data: labels = [] } = useEventLabels()
+  const { data: labels = [], isLoading } = useEventLabels()
   const createLabel = useCreateEventLabel()
   const updateLabel = useUpdateEventLabel()
   const deleteLabel = useDeleteEventLabel()
@@ -97,7 +98,16 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
     <ModalShell title={headerTitle} onClose={onClose} mobile={isMobile} size="sm">
         <div className="space-y-3">
           {/* Existing labels */}
-          {labels.map(label => (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                <SkeletonBase className="h-4 w-4 rounded-full shrink-0" />
+                <SkeletonBase className="h-4 flex-1" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+              </div>
+            ))
+          ) : labels.map(label => (
             <div
               key={label.rowId}
               className="flex items-center gap-2 rounded-md border px-3 py-2"
@@ -127,7 +137,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
             </div>
           ))}
 
-          {labels.length === 0 && !isAdding && (
+          {!isLoading && labels.length === 0 && !isAdding && (
             <p className="text-sm text-muted-foreground text-center py-4">{t('noLabels')}</p>
           )}
 
