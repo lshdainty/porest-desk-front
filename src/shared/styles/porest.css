@@ -275,6 +275,13 @@
   position: relative;
   overflow: hidden;
 }
+/* dark: primary-light(#5FA0E5) → primary(#0147AD) 그라데이션. 어두운 페이지에서
+   카드를 밝게 도드라지게 + 디자인 시스템 dark brand 원칙(fg/border 전부 primary-light)
+   정합. --bg-brand 자체를 바꾸면 채움 버튼 전체에 영향 → hero 전용 오버라이드.
+   app tokens.dart bgHeroGradientStart(cobalt400)/End(cobalt500)와 정합. */
+.dark .balance-hero {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+}
 .balance-hero::after {
   content: '';
   position: absolute;
