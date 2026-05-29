@@ -32,12 +32,14 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
                   width: 44,
                   height: 44,
                   borderRadius: 'var(--radius-pill)',
-                  background: 'var(--bg-brand)',
+                  // + 버튼은 light/dark 무관하게 primary(#0147ad) 고정 — --bg-brand는
+                  // dark에서 primary-light로 밝아짐. card 정합 shadow-sm (앱 mobile_tab_bar 정합).
+                  background: 'var(--color-primary)',
                   color: 'var(--fg-on-brand)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: 'var(--shadow-md)',
+                  boxShadow: 'var(--shadow-sm)',
                   marginTop: -6,
                 }}
               >
