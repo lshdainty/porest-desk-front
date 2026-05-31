@@ -508,8 +508,10 @@ export const StatsPage = () => {
   const prevEnd = fmt(prevR.to)
 
   const rangeQ = useRangeSummary(startDate, endDate)
-  // 비교 탭에서만 이전 기간 호출 (다른 탭에선 dummy disabled query)
-  const prevRangeQ = useRangeSummary(tab === 'compare' ? prevStart : '', tab === 'compare' ? prevEnd : '')
+  // 이전 동등 기간 — 비교 탭(전 기간 비교) 또는 월 모드(하루 평균 전월 대비)에서 필요.
+  // 그 외 탭/모드에선 빈 인자로 query disabled.
+  const needPrev = tab === 'compare' || period.segMode === 'm'
+  const prevRangeQ = useRangeSummary(needPrev ? prevStart : '', needPrev ? prevEnd : '')
   const categoriesQ = useExpenseCategories()
   const merchantQ = useMerchantSummary(startDate, endDate)
   // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
@@ -520,7 +522,7 @@ export const StatsPage = () => {
   const initialLoading =
     rangeQ.isLoading || categoriesQ.isLoading || merchantQ.isLoading
     || monthExpensesQ.isLoading || heatmapQ.isLoading
-    || (tab === 'compare' && prevRangeQ.isLoading)
+    || (needPrev && prevRangeQ.isLoading)
   const [hasEverLoaded, setHasEverLoaded] = useState(false)
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
   if (!initialLoading && !hasEverLoaded) setHasEverLoaded(true)
@@ -1139,6 +1141,29 @@ export const StatsPage = () => {
 
   const topMerchant = topMerchants[0]
   const categoryTop = donutBreakdown[0]
+  // 가맹점 대표 카테고리 — 원시 거래에서 해당 가맹점의 지배적(최다 지출) 카테고리 역산
+  const topMerchantCat = useMemo(() => {
+    const mName = topMerchant?.merchant
+    if (!mName) return null
+    const byCat = new Map<number, { amount: number; icon: string | null; color: string | null }>()
+    for (const e of monthExpensesQ.data ?? []) {
+      if (e.merchant !== mName || e.expenseType !== 'EXPENSE') continue
+      const prev = byCat.get(e.categoryRowId)
+      if (prev) {
+        prev.amount += e.amount
+      } else {
+        const cat = categoryById.get(e.categoryRowId)
+        byCat.set(e.categoryRowId, {
+          amount: e.amount,
+          icon: e.categoryIcon ?? cat?.icon ?? null,
+          color: e.categoryColor ?? cat?.color ?? null,
+        })
+      }
+    }
+    let best: { amount: number; icon: string | null; color: string | null } | null = null
+    for (const v of byCat.values()) if (!best || v.amount > best.amount) best = v
+    return best
+  }, [topMerchant, monthExpensesQ.data, categoryById])
   // 기간 일수
   const rangeDays =
     Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
@@ -1158,15 +1183,27 @@ export const StatsPage = () => {
     ? <>{rangeDays}일 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
       ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
-      : '전월 비교 불가'
+      : prevRangeQ.isLoading
+        ? '전월 대비 계산 중…'
+        : '전월 비교 불가'
 
-  const highlights: { lbl: string; val: React.ReactNode; sub: React.ReactNode }[] = [
+  const highlights: {
+    lbl: string
+    val: React.ReactNode
+    sub: React.ReactNode
+    icon: string | null
+    color: string | null
+    fallback: string
+  }[] = [
     {
       lbl: '가장 많이 쓴 카테고리',
       val: categoryTop?.name ?? '—',
       sub: categoryTop
         ? <><MaskAmount>{KRW(categoryTop.amount)}</MaskAmount><HideUnit>원</HideUnit></>
         : '데이터 없음',
+      icon: categoryTop?.icon ?? null,
+      color: categoryTop?.color ?? null,
+      fallback: categoryTop?.name?.charAt(0) || '•',
     },
     {
       lbl: '가장 많이 쓴 가맹점',
@@ -1174,11 +1211,18 @@ export const StatsPage = () => {
       sub: topMerchant
         ? <>{topMerchant.count}회 · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
         : '데이터 없음',
+      // 가맹점이 속한 대표 카테고리 아이콘(역산), 없으면 상점 아이콘 + brand-subtle 타일
+      icon: topMerchantCat?.icon ?? 'store',
+      color: topMerchantCat?.color ?? null,
+      fallback: topMerchant?.merchant?.charAt(0) || '•',
     },
     {
       lbl: avgLabel,
       val: <><MaskAmount>{KRW(avgValue)}</MaskAmount><HideUnit>원</HideUnit></>,
       sub: avgSub,
+      icon: 'calendar-days',
+      color: null,
+      fallback: '∅',
     },
   ]
 
@@ -1190,19 +1234,42 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      {highlights.map((h, i) => (
-        <Card key={i}>
-          <CardContent>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-              {h.lbl}
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-title-md)', fontWeight: '700' }}>{h.val}</div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>{h.sub}</div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {highlights.map((h, i) => {
+        // 카테고리 색은 dark 자동 swap 헬퍼, 메타 없는 카드(가맹점/평균)는 brand-subtle
+        const pal = h.color ? getPaletteByColor(h.color) : null
+        const iconBg = pal ? pal.bg : 'var(--bg-brand-subtle)'
+        const iconFg = pal ? pal.color : 'var(--fg-brand-strong)'
+        return (
+          <Card key={i}>
+            <CardContent>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
+                {h.lbl}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 'var(--radius-tile)',
+                    background: iconBg,
+                    color: iconFg,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {renderIcon(h.icon, h.fallback, 18)}
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{h.val}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 
