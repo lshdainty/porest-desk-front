@@ -1179,10 +1179,11 @@ export const StatsPage = () => {
   const dayPct = prevTotalExpense > 0
     ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
     : 0
+  // 증감 색상: 지출 증가=fg-expense / 감소=fg-income (compare 탭 동일 컨벤션)
   const avgSub: React.ReactNode = period.segMode !== 'm'
     ? <>{rangeDays}일 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
-      ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
+      ? <>전월 대비 <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
       : prevRangeQ.isLoading
         ? '전월 대비 계산 중…'
         : '전월 비교 불가'
