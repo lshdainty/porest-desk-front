@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
+  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
@@ -207,26 +207,6 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <DashboardHeroSkeleton mobile />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-card)',
-                padding: '14px 8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <SkeletonBase className="h-8 w-8 rounded-md" />
-              <SkeletonBase className="h-3 w-10" />
-            </div>
-          ))}
-        </div>
         <DashboardSummaryCardSkeleton mobile />
         <DashboardCategoryCardSkeleton mobile />
         <DashboardBudgetCardSkeleton />
@@ -1163,13 +1143,6 @@ function HomeMobile() {
     })
   }, [budgetsQ.data, categoriesQ.data, monthlyQ.data])
 
-  const quick: { label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string }[] = [
-    { label: '자산', icon: Wallet, path: '/desk/asset' },
-    { label: '가계부', icon: Receipt, path: '/desk/expense' },
-    { label: '예산', icon: Target, path: '/desk/budget' },
-    { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay' },
-  ]
-
   return (
     <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="balance-hero">
@@ -1221,46 +1194,6 @@ function HomeMobile() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        {quick.map(q => {
-          const IconComp = q.icon
-          return (
-            <button
-              key={q.path}
-              onClick={() => navigate(q.path)}
-              style={{
-                background: 'var(--bg-surface)',
-                border: 'none',
-                borderRadius: 'var(--radius-card)',
-                boxShadow: 'var(--shadow-sm)',
-                padding: '14px 8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-                cursor: 'pointer',
-              }}
-            >
-              <span
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 'var(--radius-tile)',
-                  background: 'var(--bg-brand-subtle)',
-                  color: 'var(--fg-brand-strong)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <IconComp size={18} strokeWidth={1.9} />
-              </span>
-              <span style={{ fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-primary)' }}>{q.label}</span>
-            </button>
-          )
-        })}
       </div>
 
       <Card>
