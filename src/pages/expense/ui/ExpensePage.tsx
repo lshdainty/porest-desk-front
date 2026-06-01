@@ -121,16 +121,6 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function ExpenseChipsSkeleton() {
-  return (
-    <div style={{ display: 'flex', gap: 6, marginBottom: 8, paddingBottom: 4 }}>
-      {[0, 1, 2].map(i => (
-        <SkeletonBase key={i} className="h-7 w-12 rounded-full" />
-      ))}
-    </div>
-  )
-}
-
 function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
   return (
     <div>

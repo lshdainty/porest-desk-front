@@ -210,7 +210,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   }, [type, categoryRowId, categories])
 
   const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0
-  const amountFormatted = amountNumber.toLocaleString('ko-KR')
 
   const canSave = (() => {
     if (amountNumber <= 0) return false
@@ -281,7 +280,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     type === 'EXPENSE' ? 'var(--fg-expense)'
     : type === 'INCOME' ? 'var(--fg-income)'
     : 'var(--fg-primary)'
-  const amountPrefix = type === 'EXPENSE' ? '−' : type === 'INCOME' ? '+' : ''
 
   const Footer = (
     <>

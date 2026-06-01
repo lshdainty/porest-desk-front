@@ -134,4 +134,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
+// buttonVariants(cva)는 alert-dialog/calendar 에서 재사용 — 컴포넌트 파일에서 함께 export.
+// (shadcn 관례. Fast Refresh 경고는 의도된 것이라 이 줄만 예외 처리.)
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

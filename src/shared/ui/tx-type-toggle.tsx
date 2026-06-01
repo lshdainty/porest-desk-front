@@ -20,7 +20,6 @@ export type TxTypeOption = {
 const SEMANTIC_FG: Record<ExpenseType, string> = {
   EXPENSE: "var(--fg-expense)",
   INCOME: "var(--fg-income)",
-  TRANSFER: "var(--fg-transfer)",
 }
 
 export interface TxTypeToggleProps {
