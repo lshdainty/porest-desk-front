@@ -935,12 +935,13 @@ export const BudgetPage = () => {
         <ChevronRight size={16} />
       </Button>
       <Button
+        variant="accent"
         size="sm"
         type="button"
         onClick={goToSettings}
         style={{ marginLeft: 'auto' }}
       >
-        <Settings size={14} /> 예산 설정
+        <Settings size={14} /> 설정
       </Button>
     </>
   )
