@@ -10,7 +10,6 @@ import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
-import { Separator } from '@/shared/ui/separator'
 import { Button } from '@/shared/ui/button'
 import { ModeToggle } from '@/shared/ui/mode-toggle'
 
@@ -32,7 +31,6 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   return (
     <header className="top">
       <SidebarTrigger className="h-8 w-8" />
-      <Separator orientation="vertical" className="mx-1 h-5" />
       <div className="top__search">
         <Search size={15} />
         <input placeholder="거래, 카테고리, 계좌 검색" />
