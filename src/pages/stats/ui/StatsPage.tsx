@@ -1717,11 +1717,11 @@ export const StatsPage = () => {
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--bg-brand)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--color-cat-blue)' }} />
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand-mid)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: '#abc8ee' }} />
             {periodPrev}
           </span>
         </div>
@@ -1806,7 +1806,7 @@ export const StatsPage = () => {
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.now / maxCompareAmt) * 100}%`,
-                        background: 'var(--bg-brand)',
+                        background: 'var(--color-cat-blue)',
                         borderRadius: 'var(--radius-pill)',
                       }}
                     />
@@ -1817,7 +1817,7 @@ export const StatsPage = () => {
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.prev / maxCompareAmt) * 100}%`,
-                        background: 'var(--bg-brand-muted)',
+                        background: '#abc8ee',
                         borderRadius: 'var(--radius-pill)',
                       }}
                     />
