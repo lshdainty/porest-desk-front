@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { ChevronRight, CreditCard, Search, SearchX, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CreditCard, Search, SearchX, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Skeleton } from '@/shared/ui/skeleton'
+import { Spinner } from '@/shared/ui/spinner'
 import { decodeHtml } from '@/shared/lib'
-import { useCardCatalogs } from '@/features/card-catalog'
+import { useCardCatalogs, useInfiniteCardCatalogs } from '@/features/card-catalog'
 import type {
   CardBenefitType,
   CardCatalogSummary,
@@ -552,6 +553,7 @@ export const CardBenefitPage = () => {
   const [benefitKey, setBenefitKey] = useState<string>('all')
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null)
+  const [page, setPage] = useState(0)
 
   const debouncedQuery = useDebounced(query.trim(), 300)
 
@@ -560,17 +562,51 @@ export const CardBenefitPage = () => {
     [benefitKey],
   )
 
-  const { data, isLoading, isFetching } = useCardCatalogs({
+  // 검색/필터 변경 시 데스크탑 페이지를 첫 페이지로 리셋 (render 중 상태 조정 — effect 불필요).
+  const filterSig = `${debouncedQuery}|${typeFilter}|${benefitType ?? ''}|${includeDiscontinued}`
+  const [prevFilterSig, setPrevFilterSig] = useState(filterSig)
+  if (filterSig !== prevFilterSig) {
+    setPrevFilterSig(filterSig)
+    setPage(0)
+  }
+
+  const baseParams = {
     keyword: debouncedQuery || undefined,
     cardType: typeFilter === 'all' ? undefined : (typeFilter as CardType),
     benefitType,
     includeDiscontinued,
-    page: 0,
     size: PAGE_SIZE,
-  })
+  }
 
-  const cards = data?.content ?? []
-  const total = data?.meta.totalElements ?? cards.length
+  // 데스크탑/태블릿: 페이지네이션. 모바일: 인피니티 스크롤. 활성 쿼리만 enabled.
+  const pageQ = useCardCatalogs({ ...baseParams, page }, { enabled: !mobile })
+  const infQ = useInfiniteCardCatalogs(baseParams, { enabled: mobile })
+
+  const cards = mobile
+    ? (infQ.data?.pages.flatMap(p => p.content) ?? [])
+    : (pageQ.data?.content ?? [])
+  const total = mobile
+    ? (infQ.data?.pages[0]?.meta.totalElements ?? cards.length)
+    : (pageQ.data?.meta.totalElements ?? cards.length)
+  const isLoading = mobile ? infQ.isLoading : pageQ.isLoading
+  const isFetching = mobile ? infQ.isFetching : pageQ.isFetching
+  const totalPages = pageQ.data?.meta.totalPages ?? 1
+
+  // 모바일 인피니티 스크롤 sentinel observer.
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = infQ
+  useEffect(() => {
+    if (!mobile) return
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [mobile, hasNextPage, isFetchingNextPage, fetchNextPage, cards.length])
 
   const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: f.label }))
   const typeOptions: { key: TypeKey; label: string }[] = [
@@ -584,22 +620,83 @@ export const CardBenefitPage = () => {
   ) : cards.length === 0 ? (
     <EmptyState />
   ) : mobile ? (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
-      {cards.map(c => (
-        <CardListTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+        {cards.map(c => (
+          <CardListTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
+        ))}
+      </div>
+      {/* 인피니티 스크롤 sentinel + 더보기 로딩 */}
+      <div ref={sentinelRef} style={{ height: 1 }} />
+      {infQ.isFetchingNextPage && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 4px' }}>
+          <Spinner size="sm" />
+        </div>
+      )}
     </div>
   ) : (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: 16,
-      }}
-    >
-      {cards.map(c => (
-        <CardArtworkTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 16,
+        }}
+      >
+        {cards.map(c => (
+          <CardArtworkTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
+        ))}
+      </div>
+
+      {/* 페이지네이션 컨트롤 — 2페이지 이상일 때만 노출 */}
+      {totalPages > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={page <= 0}
+            onClick={() => {
+              setPage(p => Math.max(0, p - 1))
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+          >
+            <ChevronLeft size={14} />
+            이전
+          </Button>
+          <span
+            style={{
+              fontSize: 12.5,
+              color: 'var(--fg-tertiary)',
+              fontVariantNumeric: 'tabular-nums',
+              minWidth: 56,
+              textAlign: 'center',
+            }}
+          >
+            {page + 1} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={page >= totalPages - 1}
+            onClick={() => {
+              setPage(p => Math.min(totalPages - 1, p + 1))
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+          >
+            다음
+            <ChevronRight size={14} />
+          </Button>
+        </div>
+      )}
     </div>
   )
 
