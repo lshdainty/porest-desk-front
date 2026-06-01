@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { renderIcon } from "@/shared/lib"
+import { renderIcon, tileRadius } from "@/shared/lib"
 
 /**
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`
@@ -50,7 +50,7 @@ export function CategoryTile({
         style={{
           width: 32,
           height: 32,
-          borderRadius: "var(--radius-tile)",
+          borderRadius: tileRadius(32),
           // 18% color-mix — 다크모드에서도 자연스럽게 채도 유지.
           background: `color-mix(in oklch, ${color} 18%, transparent)`,
           color,

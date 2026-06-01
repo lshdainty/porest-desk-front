@@ -8,6 +8,7 @@ import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { KRW } from '@/shared/lib/porest/format'
+import { tileRadius } from '@/shared/lib'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { getPaletteByColor } from './CategoryEditDialog'
 
@@ -128,7 +129,7 @@ export function BudgetEditDialog({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(44),
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',

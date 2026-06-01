@@ -7,7 +7,7 @@ import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { useUpdateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type {
@@ -146,7 +146,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           style={{
             width: 38,
             height: 38,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(38),
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',

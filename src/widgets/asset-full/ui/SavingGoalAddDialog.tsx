@@ -24,6 +24,7 @@ import {
   useUpdateSavingGoal,
 } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
+import { tileRadius } from '@/shared/lib'
 
 const GOAL_ICONS: { k: IconName; label: string }[] = [
   { k: 'plane', label: '여행' },
@@ -241,7 +242,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             style={{
               width: 36,
               height: 36,
-              borderRadius: 'var(--radius-tile)',
+              borderRadius: tileRadius(36),
               background: `oklch(from ${color} l c h / 0.12)`,
               color,
               display: 'inline-flex',

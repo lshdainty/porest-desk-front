@@ -7,6 +7,7 @@ import {
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { tileRadius } from '@/shared/lib'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
@@ -456,7 +457,7 @@ function UpcomingBillsCard() {
               >
                 <span
                   style={{
-                    width: 32, height: 32, borderRadius: 'var(--radius-tile)', flexShrink: 0,
+                    width: 32, height: 32, borderRadius: tileRadius(32), flexShrink: 0,
                     background: 'var(--bg-income-subtle)', color: 'var(--fg-income)',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   }}
@@ -521,7 +522,7 @@ function SavingGoalItem({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span
           style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-tile)',
+            width: 32, height: 32, borderRadius: tileRadius(32),
             background: `oklch(from ${color} l c h / 0.12)`,
             color,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',

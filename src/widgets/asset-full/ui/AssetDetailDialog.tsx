@@ -21,7 +21,7 @@ import {
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 
@@ -167,7 +167,7 @@ export function AssetDetailDialog({
             style={{
               width: 48,
               height: 48,
-              borderRadius: 'var(--radius-tile)',
+              borderRadius: tileRadius(48),
               background: color,
               color: '#fff',
               display: 'inline-flex',

@@ -3,6 +3,7 @@ import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
+import { tileRadius } from '@/shared/lib'
 import { Icon } from './primitives'
 import { TX_ROW } from './tx-row-tokens'
 
@@ -47,7 +48,7 @@ export function CategoryChip({
       style={{
         width: dim,
         height: dim,
-        borderRadius: 'var(--radius-tile)',
+        borderRadius: tileRadius(dim),
         background: palette.bg,
         color: palette.color,
         display: 'inline-flex',

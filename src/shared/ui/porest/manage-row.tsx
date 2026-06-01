@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 
+import { tileRadius } from '@/shared/lib'
+
 /**
  * ManageRow: 설정 화면(카테고리/계좌/예산 등) 좌측 행 레이아웃의 정렬·hover spec 보존.
  * 기존 .cat-row / .cat-row__icon / __text / __label / __meta / __actions / __more / __del 의
@@ -24,7 +26,7 @@ export const MANAGE_ROW = {
   iconStyle: {
     width: 36,
     height: 36,
-    borderRadius: 'var(--radius-tile)',
+    borderRadius: tileRadius(36),
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',

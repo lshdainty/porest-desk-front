@@ -4,3 +4,4 @@ export { formatCurrency, formatNumber, formatDuration, formatTimer } from './for
 export { renderIcon, iconNames } from './icon-map'
 export type { IconName } from './icon-map'
 export { decodeHtml } from './html'
+export { tileRadius } from './tile'

@@ -5,7 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
 import { useSiblingGroupMembers } from '@/features/group'
 import { useExpenseCategories } from '@/features/expense'
@@ -259,7 +259,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           style={{
             width: 38,
             height: 38,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(38),
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',

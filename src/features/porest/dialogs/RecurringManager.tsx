@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   useDeleteRecurringTransaction,
@@ -216,7 +216,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       width: 28,
                       height: 28,
-                      borderRadius: 'var(--radius-tile)',
+                      borderRadius: tileRadius(28),
                       background: palette.bg,
                       color: palette.color,
                       display: 'inline-flex',
@@ -338,7 +338,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   style={{
                     width: 36,
                     height: 36,
-                    borderRadius: 'var(--radius-tile)',
+                    borderRadius: tileRadius(36),
                     background: palette.bg,
                     color: palette.color,
                     opacity: isActive ? 1 : 0.55,

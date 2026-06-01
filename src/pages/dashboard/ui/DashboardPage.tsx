@@ -4,6 +4,7 @@ import {
   CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { tileRadius } from '@/shared/lib'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
@@ -816,7 +817,7 @@ function HomeDesktop() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span
                       style={{
-                        width: 32, height: 32, borderRadius: 'var(--radius-tile)',
+                        width: 32, height: 32, borderRadius: tileRadius(32),
                         background: palette.bg, color: palette.color,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
@@ -1333,7 +1334,7 @@ function HomeMobile() {
                 <div key={b.rowId}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span style={{
-                      width: 28, height: 28, borderRadius: 'var(--radius-tile)',
+                      width: 28, height: 28, borderRadius: tileRadius(28),
                       background: palette.bg, color: palette.color,
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>

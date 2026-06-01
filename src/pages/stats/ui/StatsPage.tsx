@@ -37,7 +37,7 @@ import {
   useExpenses,
 } from '@/features/expense'
 import type { CategoryBreakdown, HeatmapCell, ExpenseCategory } from '@/entities/expense'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 
 type OutletCtx = { mobile: boolean }
 type TabKey = 'cat' | 'trend' | 'compare'
@@ -1761,7 +1761,7 @@ export const StatsPage = () => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 'var(--radius-tile)',
+                      borderRadius: tileRadius(32),
                       background: iconBg,
                       color: iconFg,
                       display: 'inline-flex',
