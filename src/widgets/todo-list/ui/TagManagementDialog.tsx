@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -23,10 +24,9 @@ interface TagManagementDialogProps {
   onClose: () => void
 }
 
-const COLOR_OPTIONS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280',
-]
+// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
+const COLOR_OPTIONS = CHART_PAIRS.map(p => p.base)
+const DEFAULT_COLOR = COLOR_OPTIONS[0]! // red #c73838
 
 export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
   const { t } = useTranslation('todo')
@@ -42,13 +42,13 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<TodoTagFormValues>({
     tagName: '',
-    color: '#3b82f6',
+    color: DEFAULT_COLOR,
   })
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
 
   const openCreateForm = () => {
     setEditingTag(null)
-    setFormData({ tagName: '', color: '#3b82f6' })
+    setFormData({ tagName: '', color: DEFAULT_COLOR })
     setShowForm(true)
   }
 
@@ -56,7 +56,7 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
     setEditingTag(tag)
     setFormData({
       tagName: tag.tagName,
-      color: tag.color || '#3b82f6',
+      color: tag.color || DEFAULT_COLOR,
     })
     setShowForm(true)
   }
@@ -118,7 +118,7 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                         'h-7 w-7 rounded-full transition-all',
                         formData.color === color && 'ring-2 ring-offset-2 ring-primary'
                       )}
-                      style={{ backgroundColor: color }}
+                      style={{ backgroundColor: getPaletteByColor(color).color }}
                     />
                   ))}
                 </div>
@@ -164,7 +164,7 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
                     >
                       <span
                         className="h-2.5 w-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: tag.color || '#6b7280' }}
+                        style={{ backgroundColor: getPaletteByColor(tag.color).color }}
                       />
                       <span className="text-sm font-medium">{tag.tagName}</span>
                       <Button

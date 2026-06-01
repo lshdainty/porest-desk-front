@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import {
   disablePdHideAmounts,
@@ -111,7 +112,7 @@ export function AssetDetailDialog({
   const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
   const seriesLabel = isCard ? '사용' : isInv ? '평가액' : '잔액'
 
-  const color = asset.color || '#6b7280'
+  const color = getPaletteByColor(asset.color).color
   const chartConfig: ChartConfig = {
     balance: { label: seriesLabel, color },
   }

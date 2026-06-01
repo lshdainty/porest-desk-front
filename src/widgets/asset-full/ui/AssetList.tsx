@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { CreditCard, Pencil, Trash2 } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import { cn, formatCurrency, renderIcon } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { Button } from '@/shared/ui/button'
 
 interface AssetListProps {
@@ -66,7 +67,7 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
             <div className="flex items-center gap-3">
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm"
-                style={{ backgroundColor: asset.color || '#6b7280', color: '#fff' }}
+                style={{ backgroundColor: getPaletteByColor(asset.color).color, color: '#fff' }}
               >
                 {renderIcon(asset.icon, asset.assetName.charAt(0), 20)}
               </div>

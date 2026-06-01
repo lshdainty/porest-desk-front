@@ -10,11 +10,11 @@ import {
 } from '@/features/user-calendar'
 import type { UserCalendar, UserCalendarFormValues } from '@/entities/user-calendar'
 import { Button } from '@/shared/ui/button'
-import { ColorPicker } from '@/shared/ui/color-picker'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
@@ -32,6 +32,10 @@ interface CalendarManagementDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+// 캘린더 기본색 = 팔레트 blue #2c70bf (token 매핑 정합).
+const DEFAULT_CALENDAR_COLOR =
+  CAT_PALETTE.find(p => p.baseHex === '#2c70bf')!.baseHex
+
 export const CalendarManagementDialog = ({
   open,
   onOpenChange,
@@ -47,7 +51,7 @@ export const CalendarManagementDialog = ({
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<UserCalendar | null>(null)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState('#0147ad')
+  const [formColor, setFormColor] = useState(DEFAULT_CALENDAR_COLOR)
   const [deleteTarget, setDeleteTarget] = useState<UserCalendar | null>(null)
 
   const allCalendars = calendars ?? []
@@ -55,7 +59,7 @@ export const CalendarManagementDialog = ({
   const openCreateForm = useCallback(() => {
     setEditing(null)
     setFormName('')
-    setFormColor('#0147ad')
+    setFormColor(DEFAULT_CALENDAR_COLOR)
     setShowForm(true)
   }, [])
 
@@ -184,7 +188,19 @@ export const CalendarManagementDialog = ({
             </div>
             <div>
               <Label>{t('form.color')}</Label>
-              <ColorPicker value={formColor} onChange={setFormColor} />
+              <ColorSwatchGroup
+                columns={5}
+                value={String(
+                  Math.max(0, CAT_PALETTE.findIndex(p => p.baseHex === formColor)),
+                )}
+                onValueChange={(v) => setFormColor(CAT_PALETTE[Number(v)]!.baseHex)}
+                options={CAT_PALETTE.map((p, i) => ({
+                  value: String(i),
+                  bg: p.bg,
+                  fg: p.color,
+                  label: `색상 ${i + 1}`,
+                }))}
+              />
             </div>
           </div>
         </ModalShell>

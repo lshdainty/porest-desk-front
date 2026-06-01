@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
 import {
@@ -21,10 +21,8 @@ interface LabelManagementDialogProps {
   onClose: () => void
 }
 
-const labelColorOptions = [
-  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b',
-  '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6b7280',
-]
+// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
+const labelColorOptions = CHART_PAIRS.map(p => p.base)
 
 export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogProps) => {
   const { t } = useTranslation('calendar')
@@ -39,11 +37,11 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
   const [editingLabel, setEditingLabel] = useState<EventLabel | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState<string>(labelColorOptions[0] ?? '#3b82f6')
+  const [formColor, setFormColor] = useState<string>(labelColorOptions[0]!)
 
   const resetForm = () => {
     setFormName('')
-    setFormColor(labelColorOptions[0] ?? '#3b82f6')
+    setFormColor(labelColorOptions[0]!)
     setEditingLabel(null)
     setIsAdding(false)
   }
@@ -161,7 +159,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                       'h-6 w-6 rounded-full transition-all',
                       formColor === color && 'ring-2 ring-offset-1 ring-primary'
                     )}
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: getPaletteByColor(color).color }}
                   />
                 ))}
               </div>

@@ -20,7 +20,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
@@ -41,16 +41,11 @@ interface EventFormProps {
   isLoading?: boolean
 }
 
-const colorOptions = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-]
+// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
+const colorOptions = CHART_PAIRS.map(p => p.base)
+// 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
+const DEFAULT_EVENT_COLOR =
+  CHART_PAIRS.find(p => p.key === 'blue')!.base
 
 type RecurrenceOption = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
 
@@ -126,7 +121,7 @@ export const EventForm = ({
       title: '',
       description: '',
       eventType: 'PERSONAL',
-      color: defaultCalendar?.color ?? '#3b82f6',
+      color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
       startDate: defaultDate,
       endDate: defaultEndDate,
       isAllDay: true,
@@ -184,7 +179,7 @@ export const EventForm = ({
         title: '',
         description: '',
         eventType: 'PERSONAL',
-        color: defaultCalendar?.color ?? '#3b82f6',
+        color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
         startDate: defaultDate,
         endDate: defaultEndDate,
         isAllDay: true,
@@ -376,7 +371,7 @@ export const EventForm = ({
             </div>
           )}
 
-          {/* Color swatches - KEEP custom */}
+          {/* Color swatches — 디자인시스템 차트 10색만 노출 */}
           <div className="space-y-1.5">
             <Label>{t('form.color')}</Label>
             <div className="flex flex-wrap gap-2">
@@ -389,7 +384,7 @@ export const EventForm = ({
                     'h-7 w-7 rounded-full transition-all',
                     selectedColor === color && 'ring-2 ring-offset-2 ring-primary'
                   )}
-                  style={{ backgroundColor: color }}
+                  style={{ backgroundColor: getPaletteByColor(color).color }}
                 />
               ))}
             </div>

@@ -7,6 +7,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,10 +26,9 @@ interface ProjectManagementDialogProps {
   onClose: () => void
 }
 
-const COLOR_OPTIONS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280',
-]
+// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
+const COLOR_OPTIONS = CHART_PAIRS.map(p => p.base)
+const DEFAULT_COLOR = COLOR_OPTIONS[0]! // red #c73838
 
 export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProps) => {
   const { t } = useTranslation('todo')
@@ -44,7 +44,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<TodoProjectFormValues>({
     projectName: '',
-    color: '#3b82f6',
+    color: DEFAULT_COLOR,
     icon: '',
     description: '',
   })
@@ -52,7 +52,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
 
   const openCreateForm = () => {
     setEditingProject(null)
-    setFormData({ projectName: '', color: '#3b82f6', icon: '', description: '' })
+    setFormData({ projectName: '', color: DEFAULT_COLOR, icon: '', description: '' })
     setShowForm(true)
   }
 
@@ -60,7 +60,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
     setEditingProject(project)
     setFormData({
       projectName: project.projectName,
-      color: project.color || '#3b82f6',
+      color: project.color || DEFAULT_COLOR,
       icon: project.icon || '',
       description: project.description || '',
     })
@@ -143,7 +143,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                         'h-7 w-7 rounded-full transition-all',
                         formData.color === color && 'ring-2 ring-offset-2 ring-primary'
                       )}
-                      style={{ backgroundColor: color }}
+                      style={{ backgroundColor: getPaletteByColor(color).color }}
                     />
                   ))}
                 </div>
@@ -185,7 +185,7 @@ export const ProjectManagementDialog = ({ onClose }: ProjectManagementDialogProp
                     <div className="flex items-center gap-2">
                       <span
                         className="h-3 w-3 rounded-full shrink-0"
-                        style={{ backgroundColor: project.color || '#6b7280' }}
+                        style={{ backgroundColor: getPaletteByColor(project.color).color }}
                       />
                       {project.icon && renderIcon(project.icon, '', 16)}
                       <div>

@@ -81,7 +81,7 @@ export const IntegratedEventList = ({
                     {event.labelName && (
                       <span
                         className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
-                        style={{ backgroundColor: event.labelColor ?? '#6b7280' }}
+                        style={{ backgroundColor: getPaletteByColor(event.labelColor).color }}
                       >
                         {event.labelName}
                       </span>
@@ -193,7 +193,7 @@ export const IntegratedEventList = ({
               >
                 <span
                   className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: expense.categoryColor ?? '#6b7280' }}
+                  style={{ backgroundColor: getPaletteByColor(expense.categoryColor).color }}
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
