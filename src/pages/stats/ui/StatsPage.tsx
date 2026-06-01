@@ -183,7 +183,7 @@ function PorestChartTooltip({
   label,
   rows,
 }: TrendTooltipProps & {
-  rows: { dataKey: string; label: string; color: string; format?: (v: number) => string }[]
+  rows: { dataKey: string; label: string; color: string | ((v: number) => string); format?: (v: number) => string }[]
 }) {
   if (!active || !payload || payload.length === 0) return null
   return (
@@ -212,6 +212,7 @@ function PorestChartTooltip({
         const item = payload.find(p => p.dataKey === row.dataKey)
         if (!item) return null
         const v = Number(item.value ?? 0)
+        const swatch = typeof row.color === 'function' ? row.color(v) : row.color
         return (
           <div
             key={row.dataKey}
@@ -222,7 +223,7 @@ function PorestChartTooltip({
                 width: 10,
                 height: 10,
                 borderRadius: 'var(--radius-xs)',
-                background: row.color,
+                background: swatch,
                 flexShrink: 0,
               }}
             />
@@ -1330,7 +1331,7 @@ export const StatsPage = () => {
   const statLabelSave = isSingle ? '순저축' : '평균 저축'
 
   const trendChartConfig: ChartConfig = {
-    income: { label: '수입', color: 'var(--border-brand)' },
+    income: { label: '수입', color: 'var(--status-info-fg)' },
     expense: { label: '지출', color: 'var(--fg-expense)' },
   }
   const savingsChartConfig: ChartConfig = {
@@ -1412,7 +1413,7 @@ export const StatsPage = () => {
                 content={
                   <PorestChartTooltip
                     rows={[
-                      { dataKey: 'income', label: '수입', color: 'var(--border-brand)' },
+                      { dataKey: 'income', label: '수입', color: 'var(--status-info-fg)' },
                       { dataKey: 'expense', label: '지출', color: 'var(--fg-expense)' },
                     ]}
                   />
@@ -1442,7 +1443,7 @@ export const StatsPage = () => {
           </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> 지출
@@ -1531,7 +1532,7 @@ export const StatsPage = () => {
                     {
                       dataKey: 'savings',
                       label: '순저축',
-                      color: 'var(--bg-brand)',
+                      color: (v) => (v < 0 ? 'var(--fg-expense)' : 'var(--status-info-fg)'),
                       format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
                     },
                   ]}
@@ -1545,7 +1546,7 @@ export const StatsPage = () => {
                   fill={
                     d.savings < 0
                       ? 'var(--fg-expense)'
-                      : 'var(--fg-income)'
+                      : 'var(--status-info-fg)'
                   }
                 />
               ))}

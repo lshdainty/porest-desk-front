@@ -37,7 +37,7 @@ import type { Expense } from '@/entities/expense'
 import { aggregateByParent } from '@/entities/expense'
 
 const barChartConfig = {
-  income:  { label: '수입', color: 'var(--bg-brand)' },
+  income:  { label: '수입', color: 'var(--status-info-fg)' },
   expense: { label: '지출', color: 'var(--fg-expense)' },
 } satisfies ChartConfig
 
@@ -66,7 +66,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         {label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--bg-brand)' }} />
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(income)}</MaskAmount>
