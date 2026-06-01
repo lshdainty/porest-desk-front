@@ -750,13 +750,13 @@ export const CardBenefitPage = () => {
         </Card>
       )}
 
-      {/* 검색 */}
+      {/* 검색 — 헤더(top__search) 스타일 정합: filled·radius-md·테두리 없음·compact */}
       <div style={{ position: 'relative' }}>
         <Search
-          size={16}
+          size={15}
           style={{
             position: 'absolute',
-            left: 14,
+            left: 10,
             top: '50%',
             transform: 'translateY(-50%)',
             color: 'var(--fg-tertiary)',
@@ -767,7 +767,7 @@ export const CardBenefitPage = () => {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="카드명, 발급사로 검색"
-          className="h-11 pl-10 pr-10"
+          className="h-9 rounded-[var(--radius-md)] border-transparent bg-[var(--bg-muted)] pl-9 pr-9 text-label-sm focus-visible:bg-[var(--bg-surface)] focus-visible:ring-0"
         />
         {query && (
           <Button
@@ -776,7 +776,7 @@ export const CardBenefitPage = () => {
             size="icon"
             aria-label="지우기"
             onClick={() => setQuery('')}
-            className="absolute right-1.5 top-1/2 h-8 w-8 -translate-y-1/2"
+            className="absolute right-1.5 top-1/2 h-7 w-7 -translate-y-1/2"
           >
             <X size={14} />
           </Button>
