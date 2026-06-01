@@ -126,7 +126,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   const HeaderCardSkeleton = (
-    <Card>
+    <Card className="bg-[var(--bg-brand-tint)]">
       <CardContent>
         <SkeletonBase className="h-3 w-24 mb-2" />
         <SkeletonBase className="h-3 w-3/4 mb-3" />
