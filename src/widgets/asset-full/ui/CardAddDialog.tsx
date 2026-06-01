@@ -178,6 +178,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
               />
               <Input
+                search
                 value={keyword}
                 onChange={e => setKeyword(e.target.value)}
                 placeholder="카드명 또는 발급사 검색"

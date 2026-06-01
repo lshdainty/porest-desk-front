@@ -534,6 +534,7 @@ export function AssetEditDialog({
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
                 />
                 <Input
+                  search
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder={

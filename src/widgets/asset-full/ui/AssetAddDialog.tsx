@@ -156,6 +156,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
             />
             <Input
+              search
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="은행명 또는 증권사 검색"

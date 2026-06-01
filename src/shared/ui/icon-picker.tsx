@@ -78,11 +78,12 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
         <div className="relative mb-3">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" size={14} />
           <Input
+            search
             ref={searchRef}
             placeholder="아이콘 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 pl-8 text-sm"
+            className="pl-8"
           />
         </div>
 

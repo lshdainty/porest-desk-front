@@ -764,10 +764,11 @@ export const CardBenefitPage = () => {
           }}
         />
         <Input
+          search
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="카드명, 발급사로 검색"
-          className="h-9 rounded-[var(--radius-md)] border-transparent bg-[var(--bg-muted)] pl-9 pr-9 text-label-sm focus-visible:bg-[var(--bg-surface)] focus-visible:ring-0"
+          className="pl-9 pr-9"
         />
         {query && (
           <Button

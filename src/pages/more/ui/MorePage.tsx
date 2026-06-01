@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { Input } from '@/shared/ui/input'
 import {
   Bookmark,
   CalendarDays,
@@ -115,23 +116,13 @@ export const MorePage = () => {
             pointerEvents: 'none',
           }}
         />
-        <input
+        <Input
+          search
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="메뉴 검색"
-          style={{
-            width: '100%',
-            boxSizing: 'border-box',
-            padding: '10px 12px 10px 36px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
-            background: 'var(--bg-surface)',
-            fontSize: 14,
-            color: 'var(--fg-primary)',
-            outline: 'none',
-            fontFamily: 'inherit',
-          }}
+          className="w-full pl-9"
         />
       </div>
 

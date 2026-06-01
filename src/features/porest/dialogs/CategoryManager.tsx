@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -176,20 +177,12 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
                 <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-                <input
+                <Input
+                  search
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="카테고리 검색"
-                  style={{ ...MANAGER_LAYOUT.searchInputStyle, minWidth: 0, width: '100%' }}
-                  onFocus={e => {
-                    e.currentTarget.style.borderColor = 'var(--border-focus)'
-                    e.currentTarget.style.outline = '2px solid var(--border-focus)'
-                    e.currentTarget.style.outlineOffset = '-1px'
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                    e.currentTarget.style.outline = 'none'
-                  }}
+                  className="w-full min-w-0 pl-9"
                 />
               </div>
               <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
@@ -210,20 +203,12 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             />
             <div style={MANAGER_LAYOUT.searchWrapStyle}>
               <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-              <input
+              <Input
+                search
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="카테고리 검색"
-                style={MANAGER_LAYOUT.searchInputStyle}
-                onFocus={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-focus)'
-                  e.currentTarget.style.outline = '2px solid var(--border-focus)'
-                  e.currentTarget.style.outlineOffset = '-1px'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                  e.currentTarget.style.outline = 'none'
-                }}
+                className="w-[220px] pl-9"
               />
             </div>
           </div>
