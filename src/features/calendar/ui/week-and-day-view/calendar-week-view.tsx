@@ -115,9 +115,10 @@ const WeekViewMultiDayEventsRow = ({
               }
 
               const positionClasses = {
-                first: 'relative z-10 mr-0 w-[calc(100%_-_3px)] rounded-r-none border-r-0',
-                middle: 'relative z-10 mx-0 w-[calc(100%_+_1px)] rounded-none border-x-0',
-                last: 'ml-0 rounded-l-none border-l-0',
+                // 멀티데이 바: 시작/종료만 round, 중간 full-bleed 연속. divide-x(1px) 는 -ml-px 로 bridge.
+                first: 'relative z-10 mr-0 rounded-r-none',
+                middle: 'relative z-10 mx-0 -ml-px rounded-none',
+                last: 'relative z-10 ml-0 -ml-px rounded-l-none',
                 none: '',
               }
 

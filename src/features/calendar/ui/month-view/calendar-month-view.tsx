@@ -284,9 +284,12 @@ const MonthEventBadge = ({
   const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
 
   const positionClasses = {
-    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
-    middle: 'relative z-10 -ml-px mr-0 w-[calc(100%_+_2px)] rounded-none border-x-0',
-    last: 'relative z-10 -ml-px rounded-l-none border-l-0',
+    // 멀티데이 바: 시작/종료(외곽)만 round, 중간은 full-bleed 연속. 보이는 border 의존 제거 →
+    // 연결 변(邊) margin 0 + lg border-l(1px) 은 -ml-px 로 bridge. lg 라운딩도 명시 override
+    // (base rounded-none 만으론 base 의 lg:rounded-md 가 안 덮여 중간이 둥글어지는 버그 fix).
+    first: 'relative z-10 mr-0 lg:mr-0 rounded-r-none lg:rounded-r-none [&>span]:mr-2.5',
+    middle: 'relative z-10 mx-0 lg:mx-0 lg:-ml-px rounded-none lg:rounded-none',
+    last: 'relative z-10 ml-0 lg:ml-0 lg:-ml-px rounded-l-none lg:rounded-l-none',
     none: '',
   }
 
