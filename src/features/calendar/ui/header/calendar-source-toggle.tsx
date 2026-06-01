@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ListTodo, Flag, Plus, Settings, ChevronDown } from 'lucide-react'
+import { Receipt, ListTodo, Flag, Settings, Settings2, ChevronDown } from 'lucide-react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -132,22 +132,11 @@ const CalendarSourceContent = ({
 
   return (
     <>
-      {/* Section 1: User Calendars */}
+      {/* Section 1: User Calendars (앱 정합 — 헤더 gear/+추가 제거, 하단 관리 링크로 통합) */}
       <div className="p-3 pb-2">
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            {t('title')}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-            onClick={onManage}
-            aria-label={t('manage')}
-          >
-            <Settings size={14} />
-          </Button>
-        </div>
+        <span className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {t('title')}
+        </span>
         <div className="space-y-0.5">
           {userCalendars.map((calendar) => (
             <UserCalendarItem key={calendar.rowId} calendar={calendar} />
@@ -156,34 +145,39 @@ const CalendarSourceContent = ({
             <p className="px-2 py-1.5 text-xs text-muted-foreground">-</p>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-1 w-full justify-start gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-          onClick={onManage}
-        >
-          <Plus size={14} />
-          {t('add')}
-        </Button>
       </div>
 
       <Separator />
 
-      {/* Section 2: Builtin Sources */}
-      <div className="p-3 pt-2">
+      {/* Section 2: 기타 소스 — 공휴일만 (가계부/할일 제거) */}
+      <div className="p-3 py-2">
         <span className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {t('otherSources')}
         </span>
         <div className="space-y-0.5">
-          {builtinSources.map((source) => (
-            <BuiltinSourceItem
-              key={source.id}
-              source={source}
-              onSettings={source.id === 'holiday' ? onHolidayManage : undefined}
-            />
-          ))}
+          {builtinSources
+            .filter((source) => source.id === 'holiday')
+            .map((source) => (
+              <BuiltinSourceItem
+                key={source.id}
+                source={source}
+                onSettings={onHolidayManage}
+              />
+            ))}
         </div>
       </div>
+
+      <Separator />
+
+      {/* Section 3: 캘린더 관리 · 공유 설정 링크 (앱 정합) */}
+      <button
+        type="button"
+        onClick={onManage}
+        className="flex w-full items-center gap-2 p-3 text-sm font-semibold text-[var(--fg-brand)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <Settings2 size={15} />
+        {t('manageShare')}
+      </button>
     </>
   )
 }

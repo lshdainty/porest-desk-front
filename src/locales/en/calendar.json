@@ -63,6 +63,7 @@
   "delete": "Delete",
   "default": "Default",
   "manage": "Manage Calendars",
+  "manageShare": "Calendar & Share Settings",
   "name": "Name",
   "namePlaceholder": "Enter calendar name",
   "deleteConfirm": "Are you sure you want to delete this calendar? All events will be deleted.",
