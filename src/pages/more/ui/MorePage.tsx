@@ -158,7 +158,7 @@ export const MorePage = () => {
                   gap: 6,
                   padding: '12px 8px',
                   background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
+                  // card 와 동일: border 없이 shadow 만 (다크/라이트는 --shadow-sm 가 자동 swap)
                   borderRadius: 'var(--radius-md)',
                   boxShadow: 'var(--shadow-sm)',
                   cursor: 'pointer',
