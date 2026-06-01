@@ -21,7 +21,7 @@ const TYPE_ICONS: Record<NotificationType, React.ReactNode> = {
 /** 알림 목록 skeleton — icon(32x32) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
 function NotificationsPageSkeleton() {
   return (
-    <div className="m-scroll" style={{ padding: 'var(--spacing-xl) 20px' }}>
+    <div className="m-scroll" style={{ padding: 0 }}>
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="notif-row" style={{ pointerEvents: 'none' }}>
           <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
@@ -68,7 +68,7 @@ export function NotificationsPage() {
   if (isLoading) return <NotificationsPageSkeleton />
 
   return (
-    <div className="m-scroll" style={{ padding: 'var(--spacing-xl) 20px' }}>
+    <div className="m-scroll" style={{ padding: 0 }}>
       {unreadCount > 0 && (
         <div
           style={{
