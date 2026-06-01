@@ -1236,10 +1236,11 @@ export const StatsPage = () => {
       }}
     >
       {highlights.map((h, i) => {
-        // 카테고리 색은 dark 자동 swap 헬퍼, 메타 없는 카드(가맹점/평균)는 brand-subtle
-        const pal = h.color ? getPaletteByColor(h.color) : null
-        const iconBg = pal ? pal.bg : 'var(--bg-brand-subtle)'
-        const iconFg = pal ? pal.color : 'var(--fg-brand-strong)'
+        // 카테고리 색은 dark 자동 swap. 색 없는 카드(가맹점/평균)도 getPaletteByColor
+        // 경유 — null 분기가 brand-light 틴트를 주므로 컬러 타일·앱과 동일.
+        const pal = getPaletteByColor(h.color)
+        const iconBg = pal.bg
+        const iconFg = pal.color
         return (
           <Card key={i}>
             <CardContent>
@@ -1750,10 +1751,10 @@ export const StatsPage = () => {
             const diff = r.now - r.prev
             const pct = r.prev > 0 ? (diff / r.prev) * 100 : 0
             const up = diff > 0
-            const iconBg = r.color
-              ? `oklch(from ${r.color} l c h / 0.12)`
-              : 'var(--bg-brand-subtle)'
-            const iconFg = r.color ?? 'var(--fg-brand-strong)'
+            // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
+            const pal = getPaletteByColor(r.color)
+            const iconBg = pal.bg
+            const iconFg = pal.color
             return (
               <div key={r.groupRowId}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
