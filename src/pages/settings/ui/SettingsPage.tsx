@@ -24,6 +24,8 @@ import {
   AccountManager,
   AppearanceSection,
   BudgetManager,
+  CalendarLabelsSection,
+  CalendarShareSection,
   CategoryManager,
   NotificationsManager,
   PresetManager,
@@ -150,6 +152,8 @@ export const SettingsPage = () => {
       case 'budget':        return <BudgetManager mobile={m} />
       case 'recurring':     return <RecurringManager mobile={m} />
       case 'presets':       return <PresetManager mobile={m} />
+      case 'calendar-share':  return <CalendarShareSection mobile={m} />
+      case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       case 'account':       return <AccountSection />
