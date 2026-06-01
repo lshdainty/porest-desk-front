@@ -154,10 +154,12 @@ const MonthDayCell = ({
             className={cn(
               'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
               !currentMonth && 'opacity-20',
-              isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
+              // 오늘 — 앱 bgBrand 정합: 라이트 primary / 다크 primary-light (var(--fg-brand) 가 자동 swap)
+              isToday(date) && 'bg-[var(--fg-brand)] font-bold text-primary-foreground hover:bg-[var(--fg-brand)]'
             )}
             style={{
-              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined),
+              // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
+              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
             }}
           >
             {day}
@@ -424,7 +426,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined }}
+                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}
               >
                 {day}
               </span>
