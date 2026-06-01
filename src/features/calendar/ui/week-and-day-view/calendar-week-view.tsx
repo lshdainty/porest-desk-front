@@ -133,9 +133,9 @@ const WeekViewMultiDayEventsRow = ({
                     positionClasses[position]
                   )}
                   style={{
-                    background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
-                    borderColor: `${badgeColor}40`,
-                    color: badgeColor,
+                    background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                    borderColor: 'transparent',
+                    color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
                   }}
                   onClick={(e) => onEventClick?.(event, e.currentTarget)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -213,9 +213,9 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
-        borderColor: `${badgeColor}40`,
-        color: badgeColor,
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -268,7 +268,7 @@ const CalendarWeekView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 const dayOfWeek = day.getDay()
                 const isSunday = dayOfWeek === 0
                 const isSaturday = dayOfWeek === 6
-                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined
+                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined
 
                 return (
                   <div key={index} className="py-2 text-center text-xs font-medium">

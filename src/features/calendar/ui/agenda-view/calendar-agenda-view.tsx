@@ -41,9 +41,9 @@ const AgendaEventCard = ({
       tabIndex={0}
       className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       style={{
-        backgroundColor: `${badgeColor}15`,
-        borderColor: `${badgeColor}40`,
-        color: badgeColor,
+        backgroundColor: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}

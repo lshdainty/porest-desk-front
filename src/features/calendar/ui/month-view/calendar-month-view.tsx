@@ -299,11 +299,11 @@ const MonthEventBadge = ({
         className
       )}
       style={{
-        background: position !== 'none'
-          ? `linear-gradient(${badgeColor}25, ${badgeColor}25), var(--background)`
-          : `${badgeColor}20`,
-        borderColor: `${badgeColor}50`,
-        color: badgeColor,
+        // 클로드 디자인 정합: 알파(투명) 틴트 대신 surface 와 섞은 불투명 bg +
+        // fg-primary 와 섞은 적응형 텍스트(다크에서 자동 light → 가독성). border 없음.
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}

@@ -42,7 +42,7 @@ const CalendarWeekViewSkeleton = () => {
 
               return (
                 <div key={index} className="py-2 text-center text-xs font-medium">
-                  <span style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined }}>
+                  <span style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}>
                     {day}
                   </span>
                   <div className="h-4 w-4 mx-auto mt-1 rounded bg-muted animate-pulse" />

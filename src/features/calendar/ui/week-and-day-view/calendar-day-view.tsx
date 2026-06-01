@@ -70,9 +70,9 @@ const DayViewMultiDayEventsRow = ({
               tabIndex={0}
               className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               style={{
-                background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
-                borderColor: `${badgeColor}40`,
-                color: badgeColor,
+                background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                borderColor: 'transparent',
+                color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
               }}
               onClick={(e) => onEventClick?.(event, e.currentTarget)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -156,9 +156,9 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `linear-gradient(${badgeColor}20, ${badgeColor}20), var(--background)`,
-        borderColor: `${badgeColor}40`,
-        color: badgeColor,
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -215,7 +215,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPro
           <div className="relative z-20 flex border-b">
             <div className="w-18" />
             <div className="flex-1 border-l py-2 text-center text-xs font-medium">
-              <div style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--color-info)' : undefined }}>
+              <div style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}>
                 {format(selectedDate, 'EE', { locale })}{' '}
                 <span className="font-semibold">{format(selectedDate, 'd')}</span>
               </div>
