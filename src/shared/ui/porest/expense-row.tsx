@@ -39,7 +39,6 @@ export function CategoryChip({
   size?: 'sm' | 'md' | 'lg'
 }) {
   const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : 40
-  const radius = size === 'sm' ? 10 : size === 'lg' ? 14 : 12
   const iconSize = size === 'sm' ? 16 : size === 'lg' ? 22 : 18
   // hex / oklch / var 문자열을 모두 인식해 tint + 아이콘 색 조합 생성
   const palette = getPaletteByColor(color)
@@ -48,7 +47,7 @@ export function CategoryChip({
       style={{
         width: dim,
         height: dim,
-        borderRadius: radius,
+        borderRadius: 'var(--radius-tile)',
         background: palette.bg,
         color: palette.color,
         display: 'inline-flex',

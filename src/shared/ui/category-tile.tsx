@@ -6,7 +6,7 @@ import { renderIcon } from "@/shared/lib"
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`
  * 등에서 5×N 그리드의 한 칸으로 쓰는 공통 카드.
  *
- * - radius `var(--radius-tile)` (=10px) — 양쪽 (카드/내부 아이콘 박스) 동일.
+ * - radius `var(--radius-tile)` (=12px, = --radius-lg) — 양쪽 (카드/내부 아이콘 박스) 동일.
  * - active 시: 브랜드 subtle 배경 + 브랜드 보더 + 라벨 강조.
  * - 색은 카테고리 정의 색을 oklch alpha 로 soft-bg 처리.
  */

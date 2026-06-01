@@ -216,7 +216,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       width: 28,
                       height: 28,
-                      borderRadius: 'var(--radius-sm)',
+                      borderRadius: 'var(--radius-tile)',
                       background: palette.bg,
                       color: palette.color,
                       display: 'inline-flex',
@@ -338,7 +338,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   style={{
                     width: 36,
                     height: 36,
-                    borderRadius: 'var(--radius-sm)',
+                    borderRadius: 'var(--radius-tile)',
                     background: palette.bg,
                     color: palette.color,
                     opacity: isActive ? 1 : 0.55,

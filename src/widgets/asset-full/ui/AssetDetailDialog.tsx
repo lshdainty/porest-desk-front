@@ -167,7 +167,7 @@ export function AssetDetailDialog({
             style={{
               width: 48,
               height: 48,
-              borderRadius: 'var(--radius-lg)',
+              borderRadius: 'var(--radius-tile)',
               background: color,
               color: '#fff',
               display: 'inline-flex',

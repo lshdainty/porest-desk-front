@@ -128,7 +128,7 @@ export function BudgetEditDialog({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 'var(--radius-lg)',
+            borderRadius: 'var(--radius-tile)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',

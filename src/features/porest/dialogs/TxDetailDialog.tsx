@@ -195,7 +195,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               style={{
                 width: 40,
                 height: 40,
-                borderRadius: 'var(--radius-lg)',
+                borderRadius: 'var(--radius-tile)',
                 background: palette.bg,
                 color: palette.color,
                 display: 'inline-flex',
