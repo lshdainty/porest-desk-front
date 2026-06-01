@@ -551,6 +551,10 @@ export const BudgetPage = () => {
         <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>지출 페이스</CardTitle>
         <Badge
           variant={onTrack ? 'success' : 'warning'}
+          // 색은 앱 정합 — 다크에서 -fg(light variant)·-subtle 로 (text-warning 고정 base 대신)
+          className={onTrack
+            ? 'bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]'
+            : 'bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]'}
         >
           {onTrack ? '정상 속도' : '빠른 속도'}
         </Badge>
