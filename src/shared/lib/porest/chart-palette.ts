@@ -80,7 +80,12 @@ export function getPaletteByColor(
       color.length === 4
         ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
         : color
-    return { color: hex, bg: `color-mix(in oklch, ${hex} 18%, transparent)` }
+    // 커스텀(비팔레트) 색: 다크에서 흰색과 혼합해 밝게(--swatch-lift: 라이트 0% / 다크 38%).
+    // 팔레트 색은 위 alias 분기에서 처리 → 이 분기는 커스텀 hex 만(예: 캘린더 기본 색).
+    return {
+      color: `color-mix(in oklab, white var(--swatch-lift), ${hex})`,
+      bg: `color-mix(in oklch, ${hex} 18%, transparent)`,
+    }
   }
   return {
     color: 'var(--fg-brand-strong)',

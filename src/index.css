@@ -38,6 +38,8 @@
   /* Semantic — light (Phase 1: Porest 토큰 alias)
    * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Porest로 alias.
    * 기존 컴포넌트는 변수명 그대로 사용 — 색만 Cobalt 톤으로 전환. */
+  /* 커스텀(비팔레트) 색 스와치 다크 lift — 라이트 0% / 다크에서 흰색 혼합 비율(가독성) */
+  --swatch-lift:      0%;
   --bg-canvas:        var(--color-bg-page);
   --bg-surface:       var(--color-surface-default);
   --bg-surface-raised: var(--color-surface-default);
@@ -222,6 +224,7 @@
   --shadow-xl:            var(--shadow-xl-dark);
 
   /* Semantic alias — Porest 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
+  --swatch-lift:      38%;
   --bg-canvas:        var(--color-bg-page);
   --bg-surface:       var(--color-surface-default);
   --bg-surface-raised: var(--color-surface-default);
