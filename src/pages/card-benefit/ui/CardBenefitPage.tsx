@@ -14,6 +14,7 @@ import type {
   CardCatalogSummary,
   CardType,
 } from '@/entities/card'
+import { getCardBrand } from '@/entities/card'
 import { CardBenefitDetailDialog } from './CardBenefitDetailDialog'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -29,10 +30,6 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
  */
 
 const PAGE_SIZE = 60
-
-/** imgUrl 없을 때 카드 아트워크 fallback 그라데이션 (브랜드 토큰 예외 상수). */
-const CARD_FALLBACK_GRADIENT =
-  'linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong))'
 
 type TypeKey = 'all' | 'CREDIT' | 'CHECK'
 
@@ -125,6 +122,11 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
   const companyName = decodeHtml(card.company?.name ?? '')
   const discontinued = card.isDiscontinued === 'Y'
 
+  // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 아트워크 / 미상 → 중립.
+  const [imgError, setImgError] = useState(false)
+  const showImg = !!card.imgUrl && !imgError
+  const brand = getCardBrand(companyName)
+
   return (
     <button
       type="button"
@@ -154,8 +156,8 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
         e.currentTarget.style.transform = 'none'
       }}
     >
-      {/* 아트워크 */}
-      {card.imgUrl ? (
+      {/* 아트워크 — showImg 면 <img>, 아니면 브랜드 색(or 중립) 아트워크 */}
+      {showImg ? (
         <div
           style={{
             width: '100%',
@@ -166,8 +168,9 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
           }}
         >
           <img
-            src={card.imgUrl}
+            src={card.imgUrl ?? undefined}
             alt={cardName}
+            onError={() => setImgError(true)}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           {discontinued && (
@@ -193,8 +196,8 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
           style={{
             width: '100%',
             aspectRatio: '1.586 / 1',
-            background: CARD_FALLBACK_GRADIENT,
-            color: 'var(--fg-on-brand)',
+            background: brand.bg,
+            color: brand.fg,
             padding: '16px 18px',
             position: 'relative',
             overflow: 'hidden',
@@ -264,7 +267,7 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
           flex: 1,
         }}
       >
-        {card.imgUrl && (
+        {showImg && (
           <div
             style={{
               fontSize: 13.5,
@@ -324,6 +327,11 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
   const companyName = decodeHtml(card.company?.name ?? '')
   const discontinued = card.isDiscontinued === 'Y'
 
+  // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 / 미상 → 중립.
+  const [imgError, setImgError] = useState(false)
+  const showImg = !!card.imgUrl && !imgError
+  const brand = getCardBrand(companyName)
+
   return (
     <button
       type="button"
@@ -343,7 +351,7 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
         fontFamily: 'inherit',
       }}
     >
-      {/* 미니 카드 비주얼 */}
+      {/* 미니 카드 비주얼 — showImg 면 <img>, 아니면 브랜드 색(or 중립) 아트워크 */}
       <span
         style={{
           width: 56,
@@ -352,16 +360,17 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
           flexShrink: 0,
           position: 'relative',
           overflow: 'hidden',
-          background: card.imgUrl ? 'var(--bg-sunken)' : CARD_FALLBACK_GRADIENT,
+          background: showImg ? 'var(--bg-sunken)' : brand.bg,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        {card.imgUrl ? (
+        {showImg ? (
           <img
-            src={card.imgUrl}
+            src={card.imgUrl ?? undefined}
             alt={cardName}
+            onError={() => setImgError(true)}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
@@ -383,7 +392,7 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
                 fontSize: 9,
                 fontWeight: 700,
                 letterSpacing: '0.05em',
-                color: 'var(--fg-on-brand)',
+                color: brand.fg,
               }}
             >
               {companyName.replace('카드', '').slice(0, 4)}

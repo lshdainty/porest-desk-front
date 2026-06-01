@@ -6,23 +6,21 @@ import { Spinner } from '@/shared/ui/spinner'
 import { decodeHtml } from '@/shared/lib'
 import { useCardCatalogDetail } from '@/features/card-catalog'
 import type { CardCatalogDetail, CardCatalogSummary } from '@/entities/card'
+import { getCardBrand } from '@/entities/card'
 
 /**
  * 카드 혜택 상세 모달 — porest-design `card-benefits.jsx` CardBenefitDialog SoT 정합.
  *
  * - ModalShell(title="카드 상세", footer 닫기 버튼)
- * - 카드 hero: imgUrl 있으면 <img object-fit cover>, 없으면 중립 브랜드 그라데이션 fallback
- *   (fallback 일 때만 브랜드명/카드명 오버레이)
+ * - 카드 hero: 3단계 fallback — imgUrl 로드 성공 → <img object-fit cover> /
+ *   실패·없음 → 카드사 브랜드 색 아트워크(브랜드명/카드명 오버레이) /
+ *   브랜드 미상 → 중립 그라데이션
  * - 연회비 · 전월 실적 stat 2셀
  * - 주요 혜택 태그 칩 (topBenefits flatten)
  * - 혜택 상세 · N건 아코디언 (모두 펼치기/접기 토글 + 개별 펼침)
  *
  * 신규 API 금지 — rowId 로 useCardCatalogDetail 만 사용.
  */
-
-/** imgUrl 없을 때 카드 hero fallback 그라데이션 (브랜드 토큰 예외 상수). */
-const CARD_FALLBACK_GRADIENT =
-  'linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong))'
 
 function formatKRW(n: number) {
   return new Intl.NumberFormat('ko-KR').format(n)
@@ -66,7 +64,12 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
   const companyName = decodeHtml(summary.company?.name ?? '')
   const discontinued = summary.isDiscontinued === 'Y'
 
-  if (summary.imgUrl) {
+  // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 / 미상 → 중립.
+  const [imgError, setImgError] = useState(false)
+  const showImg = !!summary.imgUrl && !imgError
+  const brand = getCardBrand(companyName)
+
+  if (showImg) {
     return (
       <div
         style={{
@@ -82,8 +85,9 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
         }}
       >
         <img
-          src={summary.imgUrl}
+          src={summary.imgUrl ?? undefined}
           alt={cardName}
+          onError={() => setImgError(true)}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
         {discontinued && (
@@ -107,7 +111,7 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
     )
   }
 
-  // imgUrl 없음 → 중립 브랜드 그라데이션 fallback + 브랜드명/카드명 오버레이
+  // imgUrl 없음·로드 실패 → 브랜드 색(or 중립) 아트워크 + 브랜드명/카드명 오버레이
   return (
     <div
       style={{
@@ -115,8 +119,8 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
         aspectRatio: '1.586 / 1',
         maxHeight: 220,
         borderRadius: 'var(--radius-lg)',
-        background: CARD_FALLBACK_GRADIENT,
-        color: 'var(--fg-on-brand)',
+        background: brand.bg,
+        color: brand.fg,
         padding: 22,
         marginBottom: 18,
         position: 'relative',
