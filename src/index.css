@@ -278,8 +278,9 @@
   --bg-disabled:          var(--color-surface-input);
   --bg-track:             var(--color-border-default);
 
-  --bg-brand-tint:        color-mix(in srgb, var(--color-primary) 12%, transparent);
-  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  /* 디자인 p-card--brand 정합: 다크에선 primary-light(cobalt400) 기반 — base navy 보다 밝은 파랑 틴트 */
+  --bg-brand-tint:        color-mix(in srgb, var(--color-primary-light) 12%, transparent);
+  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary-light) 22%, transparent);
   --border-brand-soft:    color-mix(in srgb, var(--color-primary) 35%, transparent);
   --border-brand-mid:     var(--color-primary-light);
 
