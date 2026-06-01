@@ -447,7 +447,7 @@ export const BudgetPage = () => {
             }}
           >
             <span>{pct.toFixed(0)}% 사용</span>
-            <span>
+            <span style={{ color: totalLimit - totalSpent < 0 ? 'var(--fg-expense)' : undefined }}>
               {totalLimit - totalSpent >= 0
                 ? <>남은 예산 <MaskAmount mask="••••">{KRW(totalLimit - totalSpent)}</MaskAmount><HideUnit>원</HideUnit></>
                 : <>한도 <MaskAmount mask="••••">{KRW(totalSpent - totalLimit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>}
@@ -881,7 +881,7 @@ export const BudgetPage = () => {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{name}</div>
-                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                    <div style={{ fontSize: 'var(--text-caption)', color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
                         ? <>한도 <MaskAmount mask="••••">{KRW(spent - limit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>
                         : <>남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limit - spent))}</MaskAmount><HideUnit>원</HideUnit></>}

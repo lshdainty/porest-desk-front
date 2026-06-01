@@ -31,6 +31,7 @@ import {
   useExpenseBudgets,
 } from '@/features/expense'
 import { getPaletteByColor } from '@/features/porest/dialogs'
+import { useUserPreferences } from '@/features/user'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 import { aggregateByParent } from '@/entities/expense'
@@ -412,6 +413,9 @@ function HomeDesktop() {
   const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
   const categoriesQ = useExpenseCategories()
   const recurringQ = useRecurringTransactions()
+  const preferencesQ = useUserPreferences()
+  // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
 
   const summary = dashboardQ.data
   const assetSummary = assetSummaryQ.data
@@ -514,7 +518,7 @@ function HomeDesktop() {
         ? totalExpense
         : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
@@ -527,7 +531,7 @@ function HomeDesktop() {
         state,
       }
     })
-  }, [budgetsQ.data, categoriesQ.data, monthly])
+  }, [budgetsQ.data, categoriesQ.data, monthly, warnThreshold])
 
   const upcomingPayments = useMemo(() => {
     const today = new Date()
@@ -1055,6 +1059,9 @@ function HomeMobile() {
   const recentQ = useExpenses({ startDate: monthStartM, endDate: monthEndM })
   const budgetsQ = useExpenseBudgets({ year, month })
   const categoriesQ = useExpenseCategories()
+  const preferencesQ = useUserPreferences()
+  // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
 
   const summary = dashboardQ.data
   const assetSummary = assetSummaryQ.data
@@ -1129,7 +1136,7 @@ function HomeMobile() {
     return budgets.map(b => {
       const spent = b.categoryRowId == null ? totalEx : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
@@ -1142,7 +1149,7 @@ function HomeMobile() {
         state,
       }
     })
-  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data])
+  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold])
 
   return (
     <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
