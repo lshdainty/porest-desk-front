@@ -1,31 +1,9 @@
-import {
-  AlertTriangle,
-  Bell,
-  CalendarClock,
-  ChevronRight,
-  ListChecks,
-} from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
-import type { Notification, NotificationType } from '@/entities/notification'
-
-function iconFor(type: NotificationType): {
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
-  bg: string
-  fg: string
-} {
-  switch (type) {
-    case 'BUDGET_ALERT':
-      return { Icon: AlertTriangle, bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)' }
-    case 'TODO_REMINDER':
-      return { Icon: ListChecks, bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)' }
-    case 'EVENT_REMINDER':
-      return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
-    default:
-      return { Icon: Bell, bg: 'var(--bg-sunken)', fg: 'var(--fg-secondary)' }
-  }
-}
+import { notificationVisual } from '@/entities/notification'
+import type { Notification } from '@/entities/notification'
 
 /**
  * createAt (ISO 또는 date-ms) → "방금 / n분 전 / n시간 전 / 어제 / n일 전 / yyyy-MM-dd"
@@ -151,7 +129,7 @@ export function NotificationsPopover({
             </div>
           )}
           {items.map(n => {
-            const { Icon, bg, fg } = iconFor(n.notificationType)
+            const { Icon, bg, fg } = notificationVisual(n.notificationType)
             return (
               <div
                 key={n.rowId}

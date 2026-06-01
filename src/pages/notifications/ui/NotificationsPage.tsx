@@ -1,4 +1,5 @@
-import { Calendar, CheckSquare, Info, Wallet, X } from 'lucide-react'
+import { ChevronRight, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -9,14 +10,8 @@ import {
   useNotifications,
   useUnreadCount,
 } from '@/features/notification'
-import type { Notification, NotificationType } from '@/entities/notification'
-
-const TYPE_ICONS: Record<NotificationType, React.ReactNode> = {
-  EVENT_REMINDER: <Calendar size={16} />,
-  BUDGET_ALERT: <Wallet size={16} />,
-  TODO_REMINDER: <CheckSquare size={16} />,
-  SYSTEM: <Info size={16} />,
-}
+import { notificationVisual } from '@/entities/notification'
+import type { Notification } from '@/entities/notification'
 
 /** 알림 목록 skeleton — icon(32x32) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
 function NotificationsPageSkeleton() {
@@ -55,6 +50,7 @@ function timeAgo(dateStr: string): string {
  * 이전: MobileNotificationSheet (드로어) → 변경: 풀 페이지 라우트.
  */
 export function NotificationsPage() {
+  const navigate = useNavigate()
   const { data: notifications = [], isLoading } = useNotifications()
   const { data: unreadCount = 0 } = useUnreadCount()
   const markRead = useMarkRead()
@@ -80,8 +76,10 @@ export function NotificationsPage() {
             fontSize: 'var(--text-label-sm)',
           }}
         >
-          <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }}>{unreadCount}</b>
-          <span>개의 새 알림</span>
+          <span>
+            읽지 않은 알림{' '}
+            <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }}>{unreadCount}</b>개
+          </span>
           <Button
             variant="ghost"
             size="sm"
@@ -98,45 +96,59 @@ export function NotificationsPage() {
           새 알림이 없습니다
         </div>
       ) : (
-        notifications.map(n => (
-          <div
-            key={n.rowId}
-            className={cn('notif-row', !n.isRead && 'unread')}
-            onClick={() => handleClick(n)}
-          >
+        notifications.map(n => {
+          const { Icon, bg, fg } = notificationVisual(n.notificationType)
+          return (
             <div
-              className="notif-row__icon"
-              style={{
-                background: 'var(--bg-brand-subtle)',
-                color: 'var(--fg-brand-strong)',
-              }}
+              key={n.rowId}
+              className={cn('notif-row', !n.isRead && 'unread')}
+              onClick={() => handleClick(n)}
             >
-              {TYPE_ICONS[n.notificationType]}
-            </div>
-            <div className="notif-row__text">
-              <div className="notif-row__title">
-                {n.title}
-                {!n.isRead && <span className="notif-row__dot" />}
+              <div className="notif-row__icon" style={{ background: bg, color: fg }}>
+                <Icon size={16} strokeWidth={1.9} />
               </div>
-              <div className="notif-row__desc">{n.message}</div>
+              <div className="notif-row__text">
+                <div className="notif-row__title">
+                  {n.title}
+                  {!n.isRead && <span className="notif-row__dot" />}
+                </div>
+                <div className="notif-row__desc">{n.message}</div>
+              </div>
+              <div className="notif-row__time">{timeAgo(n.createAt)}</div>
+              <Button
+                variant="ghost"
+                size="icon"
+                loading={deleteNotif.isPending}
+                onClick={e => {
+                  e.stopPropagation()
+                  deleteNotif.mutate(n.rowId)
+                }}
+                className="h-7 w-7 text-[var(--fg-tertiary)]"
+                aria-label="삭제"
+              >
+                <X size={12} />
+              </Button>
             </div>
-            <div className="notif-row__time">{timeAgo(n.createAt)}</div>
-            <Button
-              variant="ghost"
-              size="icon"
-              loading={deleteNotif.isPending}
-              onClick={e => {
-                e.stopPropagation()
-                deleteNotif.mutate(n.rowId)
-              }}
-              className="h-7 w-7 text-[var(--fg-tertiary)]"
-              aria-label="삭제"
-            >
-              <X size={12} />
-            </Button>
-          </div>
-        ))
+          )
+        })
       )}
+      <div
+        style={{
+          padding: '10px 14px',
+          borderTop: '1px solid var(--border-subtle)',
+          background: 'var(--bg-sunken)',
+        }}
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/desk/settings?section=notifications')}
+          className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
+        >
+          알림 설정 <ChevronRight size={12} />
+        </Button>
+      </div>
     </div>
   )
 }
