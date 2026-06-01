@@ -237,7 +237,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           <BudgetManagerSkeleton mobile={mobile} />
         ) : (
         <>
-        <Card className="bg-[var(--bg-brand-tint)]">
+        <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
@@ -537,7 +537,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
 function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
-      <Card className="bg-[var(--bg-brand-tint)]">
+      <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
         <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
