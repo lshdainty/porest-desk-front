@@ -22,6 +22,7 @@ const MTITLE: Record<string, string> = {
   '/desk/todo': '할 일',
   '/desk/dutch-pay': '더치페이',
   '/desk/memo': '메모',
+  '/desk/card-benefit': '카드 혜택',
   '/desk/more': '전체',
   '/desk/search': '검색',
   '/desk/notifications': '알림',

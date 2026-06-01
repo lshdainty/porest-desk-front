@@ -62,6 +62,7 @@ const GROUPS: NavGroup[] = [
       { label: '할 일', icon: ListChecks, path: '/desk/todo', desc: '마감 · 우선순위 · 태그' },
       { label: '메모', icon: NotebookPen, path: '/desk/memo', desc: '분류 · 고정 · 검색' },
       { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay', desc: '정산 · 친구 · 송금 요청' },
+      { label: '카드 혜택', icon: CreditCard, path: '/desk/card-benefit', desc: '신용·체크 카드 검색' },
     ],
   },
   {
