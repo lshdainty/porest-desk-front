@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ListTodo, Flag, Settings, Settings2, ChevronDown } from 'lucide-react'
+import { Receipt, ListTodo, Flag, Settings, Settings2, ChevronDown, X } from 'lucide-react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
-import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody } from '@/shared/ui/drawer'
+import { Drawer, DrawerClose, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody } from '@/shared/ui/drawer'
 import { Button } from '@/shared/ui/button'
 import { Separator } from '@/shared/ui/separator'
 import { cn } from '@/shared/lib'
@@ -216,7 +216,16 @@ const CalendarSourceToggle = () => {
           <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>{t('title')}</DrawerTitle>
+              <DrawerTitle className="flex-1">{t('title')}</DrawerTitle>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </DrawerClose>
             </DrawerHeader>
             <DrawerBody className="pb-6">
               <CalendarSourceContent

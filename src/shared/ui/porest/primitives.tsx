@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -333,7 +333,16 @@ export function MonthPicker({
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>월 선택</DrawerTitle>
+              <DrawerTitle className="flex-1">월 선택</DrawerTitle>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </DrawerClose>
             </DrawerHeader>
             <DrawerBody style={{ padding: '0 20px 8px' }}>
               {yearNav}

@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, ChevronDown } from 'lucide-react'
+import { CalendarClock, ChevronDown, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
 import {
   Drawer,
   DrawerBody,
+  DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
@@ -2030,7 +2031,16 @@ function RangePickerSheet({
       <Drawer open onOpenChange={(o) => { if (!o) onCancel() }}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>기간 선택</DrawerTitle>
+            <DrawerTitle className="flex-1">기간 선택</DrawerTitle>
+            <DrawerClose asChild>
+              <button
+                type="button"
+                aria-label="닫기"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </DrawerClose>
           </DrawerHeader>
           <DrawerBody>{formBody}</DrawerBody>
           <DrawerFooter>

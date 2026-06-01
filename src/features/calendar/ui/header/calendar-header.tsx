@@ -1,4 +1,4 @@
-import { CalendarRange, Columns, Grid2x2, Grid3x3, List, ChevronLeft, ChevronRight, ChevronDown, Navigation } from 'lucide-react'
+import { CalendarRange, Columns, Grid2x2, Grid3x3, List, ChevronLeft, ChevronRight, ChevronDown, Navigation, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, ko } from 'date-fns/locale'
@@ -8,7 +8,7 @@ import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { getEventsCount, navigateDate, rangeText } from '@/features/calendar/lib/helpers'
 import { Button } from '@/shared/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
-import { Drawer, DrawerContent, DrawerTrigger, DrawerHeader, DrawerTitle, DrawerBody } from '@/shared/ui/drawer'
+import { Drawer, DrawerClose, DrawerContent, DrawerTrigger, DrawerHeader, DrawerTitle, DrawerBody } from '@/shared/ui/drawer'
 import { CalendarSourceToggle } from '@/features/calendar/ui/header/calendar-source-toggle'
 import { useIsMobile } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
@@ -139,7 +139,16 @@ const CalendarHeader = ({ events }: IProps) => {
             </DrawerTrigger>
             <DrawerContent>
               <DrawerHeader>
-                <DrawerTitle>날짜 이동</DrawerTitle>
+                <DrawerTitle className="flex-1">날짜 이동</DrawerTitle>
+                <DrawerClose asChild>
+                  <button
+                    type="button"
+                    aria-label="닫기"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </DrawerClose>
               </DrawerHeader>
               <DrawerBody className="pb-6">
                 <MonthYearPickerContent
