@@ -168,7 +168,6 @@ export const SettingsPage = () => {
         zIndex: 100,
         background: 'var(--bg-canvas)',
         display: 'flex', flexDirection: 'column',
-        overflowY: 'auto',
       }}>
         <div
           style={{
@@ -198,7 +197,7 @@ export const SettingsPage = () => {
             {activeSection?.label}
           </h2>
         </div>
-        <div style={{ padding: '20px 16px', flex: 1 }}>{renderBody(true)}</div>
+        <div style={{ padding: '20px 16px', flex: 1, overflowY: 'auto', minHeight: 0 }}>{renderBody(true)}</div>
       </div>
     )
   }
