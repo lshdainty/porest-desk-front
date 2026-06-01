@@ -204,14 +204,14 @@ const CalendarSourceToggle = () => {
   const totalCount = userCalendars.filter(c => c.isVisible).length + builtinSources.filter(s => s.enabled).length
 
   const triggerButton = (
-    <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5 rounded-full">
+    <Button variant="outline" size="sm" className="gap-1 h-7 px-2 rounded-full">
       <span className="flex items-center gap-0.5">
         {dotColors.map((color, i) => (
-          <span key={i} className="size-2 rounded-full" style={{ backgroundColor: color }} />
+          <span key={i} className="size-1.5 rounded-full" style={{ backgroundColor: color }} />
         ))}
       </span>
       <span className="text-xs font-medium">{totalCount}개</span>
-      <ChevronDown size={12} className="text-muted-foreground" />
+      <ChevronDown size={11} className="text-muted-foreground" />
     </Button>
   )
 
