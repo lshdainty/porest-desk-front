@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
 import {
@@ -114,7 +115,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
             >
               <span
                 className="h-4 w-4 rounded-full shrink-0"
-                style={{ backgroundColor: label.color }}
+                style={{ backgroundColor: getPaletteByColor(label.color).color }}
               />
               <span className="flex-1 text-sm truncate">{label.labelName}</span>
               <Button

@@ -7,6 +7,7 @@ import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/drag-select-context'
 import { calculateMonthEventPositions, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
 
@@ -280,7 +281,7 @@ const MonthEventBadge = ({
 
   const renderBadgeText = ['first', 'none'].includes(position)
   const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
-  const badgeColor = event.labelColor ?? event.color
+  const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
 
   const positionClasses = {
     first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',

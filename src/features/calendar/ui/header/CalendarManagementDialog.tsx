@@ -14,6 +14,7 @@ import { ColorPicker } from '@/shared/ui/color-picker'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
@@ -115,7 +116,7 @@ export const CalendarManagementDialog = ({
               >
                 <div
                   className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: cal.color }}
+                  style={{ backgroundColor: getPaletteByColor(cal.color).color }}
                 />
                 <span className="flex-1 text-sm">{cal.calendarName}</span>
                 {cal.isDefault && (

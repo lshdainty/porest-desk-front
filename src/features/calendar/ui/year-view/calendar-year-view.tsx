@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { cn } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -64,14 +65,14 @@ const YearViewDayCell = ({
               <div
                 key={event.id}
                 className="size-1.5 rounded-full"
-                style={{ backgroundColor: event.color }}
+                style={{ backgroundColor: getPaletteByColor(event.color).color }}
               />
             ))
           ) : (
             <>
               <div
                 className="size-1.5 rounded-full"
-                style={{ backgroundColor: events[0]?.color }}
+                style={{ backgroundColor: getPaletteByColor(events[0]?.color).color }}
               />
               <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>
             </>

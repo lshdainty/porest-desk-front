@@ -8,6 +8,7 @@ import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, Drawer
 import { Button } from '@/shared/ui/button'
 import { Separator } from '@/shared/ui/separator'
 import { cn } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 
 import type { IBuiltinSource, TCalendarSourceType } from '@/features/calendar/model/types'
@@ -73,7 +74,7 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
       <CheckboxIndicator checked={calendar.isVisible} color={calendar.color} />
       <span
         className="size-2.5 shrink-0 rounded-full"
-        style={{ backgroundColor: calendar.color }}
+        style={{ backgroundColor: getPaletteByColor(calendar.color).color }}
       />
       <span className="truncate">{calendar.calendarName}</span>
     </button>

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { getCurrentEvents, getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
 import { cn } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -62,7 +63,7 @@ const DayViewMultiDayEventsRow = ({
           const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1
           const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1
 
-          const badgeColor = event.labelColor ?? event.color
+          const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
           return (
             <div
               key={event.id}
@@ -144,7 +145,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
   const heightInPixels = (durationInMinutes / 60) * 96 - 8
-  const badgeColor = event.labelColor ?? event.color
+  const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
 
   return (
     <div

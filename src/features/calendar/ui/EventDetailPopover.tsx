@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/shared/ui/button'
 import { Separator } from '@/shared/ui/separator'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -47,7 +48,7 @@ const EventDetailPopover = ({ event, onEdit, onDelete }: EventDetailPopoverProps
       {/* Title */}
       <div className="flex items-start gap-2">
         <svg width="10" height="10" viewBox="0 0 10 10" className="mt-1 shrink-0">
-          <circle cx="5" cy="5" r="5" fill={event.color} />
+          <circle cx="5" cy="5" r="5" fill={getPaletteByColor(event.color).color} />
         </svg>
         <h3 className="text-sm font-semibold leading-snug break-words">{event.title}</h3>
       </div>

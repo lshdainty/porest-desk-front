@@ -20,6 +20,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
@@ -290,7 +291,7 @@ export const EventForm = ({
                       <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: cal.color }}
+                          style={{ backgroundColor: getPaletteByColor(cal.color).color }}
                         />
                         {cal.calendarName}
                       </span>
@@ -364,7 +365,7 @@ export const EventForm = ({
                       <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: label.color }}
+                          style={{ backgroundColor: getPaletteByColor(label.color).color }}
                         />
                         {label.labelName}
                       </span>

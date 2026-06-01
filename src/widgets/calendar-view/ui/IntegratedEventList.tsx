@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Calendar, CheckSquare, Wallet, MapPin, Repeat } from 'lucide-react'
 import { cn, formatDate, formatCurrency } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { isSameDay } from '@/shared/lib/date'
 import type { CalendarEvent } from '@/entities/calendar'
 import type { Todo } from '@/entities/todo'
@@ -72,7 +73,7 @@ export const IntegratedEventList = ({
               >
                 <span
                   className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: event.color }}
+                  style={{ backgroundColor: getPaletteByColor(event.color).color }}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
