@@ -59,7 +59,13 @@ export function getPaletteByColor(
   color: string | null | undefined,
 ): { color: string; bg: string } {
   if (!color) {
-    return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
+    // 색 없음(예: 예산 '전체' 행) — 컬러 타일과 동일하게 brand 색 @18% 틴트.
+    // bg-brand-subtle(=primary base @12%) 은 다크에서 어두운 navy 라 light variant
+    // 인 fg-brand-strong 기반 틴트로 통일(앱 softBg(fgBrand) 정합).
+    return {
+      color: 'var(--fg-brand-strong)',
+      bg: 'color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)',
+    }
   }
   const pair = BASE_TO_PAIR.get(color.toLowerCase())
   if (pair) {
@@ -76,7 +82,10 @@ export function getPaletteByColor(
         : color
     return { color: hex, bg: `color-mix(in oklch, ${hex} 18%, transparent)` }
   }
-  return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
+  return {
+    color: 'var(--fg-brand-strong)',
+    bg: 'color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)',
+  }
 }
 
 /**
