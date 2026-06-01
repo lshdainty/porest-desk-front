@@ -44,7 +44,7 @@ const CheckboxIndicator = ({
         height="10"
         viewBox="0 0 10 10"
         fill="none"
-        className="text-white"
+        style={{ color: 'var(--swatch-check)' }}
       >
         <path
           d="M8.5 2.5L3.5 7.5L1.5 5.5"
@@ -71,7 +71,7 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
         !calendar.isVisible && 'opacity-50',
       )}
     >
-      <CheckboxIndicator checked={calendar.isVisible} color={calendar.color} />
+      <CheckboxIndicator checked={calendar.isVisible} color={getPaletteByColor(calendar.color).color} />
       <span
         className="size-2.5 shrink-0 rounded-full"
         style={{ backgroundColor: getPaletteByColor(calendar.color).color }}
@@ -98,8 +98,8 @@ const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onS
           !source.enabled && 'opacity-50',
         )}
       >
-        <CheckboxIndicator checked={source.enabled} color={source.color} />
-        <Icon className="size-4 shrink-0" style={{ color: source.enabled ? source.color : undefined }} />
+        <CheckboxIndicator checked={source.enabled} color={getPaletteByColor(source.color).color} />
+        <Icon className="size-4 shrink-0" style={{ color: source.enabled ? getPaletteByColor(source.color).color : undefined }} />
         <span className="truncate">
           {t(`source.${source.id}`)}
         </span>
