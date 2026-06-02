@@ -9,7 +9,7 @@ import {
   useUpdateAsset,
 } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -149,7 +149,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 const isCard = g === 'card'
                 const amt = Math.abs(asset.balance ?? 0)
                 const neg = isCard
-                const accentColor = asset.color || 'var(--fg-tertiary)'
+                const brand = getBrandColor(asset.institution, asset.assetName)
+                const accentColor = asset.color || brand?.bg || 'var(--fg-tertiary)'
                 const iconChar = (asset.institution || asset.assetName || '?').charAt(0)
                 return (
                   <div
@@ -162,11 +163,11 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       style={{
                         ...MANAGE_ROW.iconStyle,
                         background: accentColor,
-                        color: 'var(--fg-on-brand)',
+                        color: brand?.fg || 'var(--fg-on-brand)',
                         fontSize: 'var(--text-label-sm)',
                       }}
                     >
-                      {asset.icon ? renderIcon(asset.icon, iconChar, 14) : iconChar}
+                      {iconChar}
                     </span>
                     <div style={MANAGE_ROW.textStyle}>
                       <div style={MANAGE_ROW.labelStyle}>{asset.assetName}</div>
