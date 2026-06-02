@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
-import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -421,7 +421,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">수입</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
-                  +{KRW(incomeSum)}원
+                  <MaskAmount>+{KRW(incomeSum)}</MaskAmount><HideUnit>원</HideUnit>
                 </span>
               </div>
             )}
@@ -429,7 +429,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  −{KRW(expenseSum)}원
+                  <MaskAmount>−{KRW(expenseSum)}</MaskAmount><HideUnit>원</HideUnit>
                 </span>
               </div>
             )}

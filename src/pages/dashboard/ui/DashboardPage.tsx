@@ -837,10 +837,8 @@ function HomeDesktop() {
                         color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
                       }}
                     >
-                      <MaskAmount mask="••••">
-                        {KRW(b.spent)}
-                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / {KRW(b.budgetAmount)}</span>
-                      </MaskAmount>
+                      <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar">
@@ -1353,7 +1351,7 @@ function HomeMobile() {
                       color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                     }}>
                       <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / {KRW(b.budgetAmount)}</span>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar" style={{ height: 6 }}>
