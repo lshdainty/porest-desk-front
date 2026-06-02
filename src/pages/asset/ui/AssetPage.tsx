@@ -901,7 +901,6 @@ function AssetLogo({ asset }: { asset: Asset }) {
   const brand = getBrandColor(asset.institution, asset.assetName)
   const bg = asset.color ?? brand?.bg ?? `oklch(0.55 0.12 ${hashHue(asset.assetName ?? 'asset')})`
   const fg = brand?.fg ?? '#fff'
-  const iconChar = asset.icon && asset.icon.trim().length > 0 ? asset.icon.trim().charAt(0) : null
   return (
     <span
       style={{
@@ -919,7 +918,7 @@ function AssetLogo({ asset }: { asset: Asset }) {
         color: fg,
       }}
     >
-      {iconChar ?? label}
+      {label}
     </span>
   )
 }
