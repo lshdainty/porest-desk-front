@@ -202,7 +202,7 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         style={{ padding: 'var(--spacing-xl) 20px' }}
       >
         <ExpenseSummarySkeleton mobile />
-        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+        <div className="flex-1 min-h-0 flex flex-col">
           <ExpenseCalendarSkeleton />
         </div>
       </div>
@@ -218,7 +218,7 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
-      <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+      <div className="flex-1 min-h-0 flex flex-col">
         <ExpenseCalendarSkeleton />
       </div>
     </div>
@@ -841,7 +841,7 @@ function ExpenseDesktop() {
         headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
       {isCalendarMode ? (
-        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+        <div className="flex-1 min-h-0 flex flex-col">
           {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />}
         </div>
       ) : (
@@ -915,7 +915,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
       {isCalendarMode ? (
-        <div className="flex-1 min-h-0 flex flex-col mt-[var(--spacing-md)]">
+        <div className="flex-1 min-h-0 flex flex-col">
           {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />}
         </div>
       ) : (
