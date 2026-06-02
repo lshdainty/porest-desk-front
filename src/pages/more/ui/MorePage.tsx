@@ -37,13 +37,6 @@ interface NavGroup {
   items: NavItem[]
 }
 
-const SHORTCUT_ITEMS: NavItem[] = [
-  { label: '가계부', icon: Receipt, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
-  { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌 · 카드 · 투자 · 부채' },
-  { label: '캘린더', icon: CalendarDays, path: '/desk/calendar', desc: '일정 · 반복 · 알림' },
-  { label: '통계', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
-]
-
 const GROUPS: NavGroup[] = [
   {
     label: '돈 관리',
@@ -125,53 +118,6 @@ export const MorePage = () => {
           className="w-full pl-9"
         />
       </div>
-
-      {/* 바로가기 — 검색 비활성일 때만 */}
-      {!isSearching && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 8,
-            marginBottom: 24,
-          }}
-        >
-          {SHORTCUT_ITEMS.map(item => {
-            const IconComp = item.icon
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  padding: '18px 8px',
-                  background: 'var(--bg-surface)',
-                  // card 와 동일: border 없이 shadow 만 (다크/라이트는 --shadow-sm 가 자동 swap)
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-sm)',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-                onMouseEnter={e => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
-                }}
-                onMouseLeave={e => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-surface)'
-                }}
-              >
-                <IconComp size={20} strokeWidth={1.8} color="var(--fg-brand-strong)" />
-                <span style={{ fontSize: 12, color: 'var(--fg-secondary)', fontWeight: 500 }}>
-                  {item.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
 
       {/* 검색 결과 */}
       {isSearching && (
