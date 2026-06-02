@@ -161,8 +161,9 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
 
         {mobile ? (
           <>
-            {/* header 바로 아래 full-width 흰띠 underline 탭 (SettingsPage 모바일 padding 20/16 상쇄) */}
-            <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0' }}>
+            {/* header 바로 아래 full-width 흰띠 underline 탭 (SettingsPage 모바일 padding 20/16 상쇄)
+                sticky — 탭 고정, 그 아래 div(검색+리스트)부터 스크롤. top:-20 = 컨테이너 padding-top(20) 상쇄. */}
+            <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0', position: 'sticky', top: -20, zIndex: 5 }}>
               <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
                 <TabsList variant="underline" className="w-full">
                   <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">

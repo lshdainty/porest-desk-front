@@ -201,7 +201,8 @@ export const SettingsPage = () => {
             {activeSection?.label}
           </h2>
         </div>
-        <div style={{ padding: '20px 16px', flex: 1, overflowY: 'auto', minHeight: 0 }}>{renderBody(true)}</div>
+        {/* 모바일 섹션 본문 스크롤 — scrollbar 숨김(스크롤 기능 유지). 데스크톱/태블릿은 별도 분기라 무관. */}
+        <div className="scrollbar-hide" style={{ padding: '20px 16px', flex: 1, overflowY: 'auto', minHeight: 0 }}>{renderBody(true)}</div>
       </div>
     )
   }
