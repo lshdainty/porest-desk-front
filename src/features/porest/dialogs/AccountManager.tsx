@@ -9,6 +9,7 @@ import {
   useUpdateAsset,
 } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
+import { tileRadius } from '@/shared/lib'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -155,13 +156,18 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 return (
                   <div
                     key={asset.rowId}
-                    className={MANAGE_ROW.className}
+                    // 계좌·카드 관리 행만 앱(account_card_manage)과 동일 크기로 — py 16 / 아이콘 40 / 금액 16.
+                    // (공용 MANAGE_ROW 는 12/36 유지 — 카테고리 등 다른 매니저 영향 없음)
+                    className={`${MANAGE_ROW.className} !py-4`}
                     style={{ cursor: 'pointer' }}
                     onClick={() => setDetail(asset)}
                   >
                     <span
                       style={{
                         ...MANAGE_ROW.iconStyle,
+                        width: 40,
+                        height: 40,
+                        borderRadius: tileRadius(40),
                         background: accentColor,
                         color: brand?.fg || 'var(--fg-on-brand)',
                         fontSize: 'var(--text-label-sm)',
@@ -185,7 +191,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       <div
                         className="num"
                         style={{
-                          fontSize: 'var(--text-body-sm)',
+                          fontSize: 'var(--text-body-lg)',
                           fontWeight: 'var(--font-weight-bold)',
                           letterSpacing: '-0.012em',
                           color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
