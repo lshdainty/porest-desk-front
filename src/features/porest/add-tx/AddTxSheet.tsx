@@ -9,6 +9,7 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   Select,
@@ -428,7 +429,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 const active = activePresetId === p.rowId
                 const showAmount = p.lockAmount === 'Y' && p.amount != null
                 const cat = p.categoryRowId != null ? categories.find(c => c.rowId === p.categoryRowId) : undefined
-                const catColor = cat?.color ?? 'var(--bg-brand)'
+                // 카테고리 아이콘색 — 다크모드 light variant 자동 swap(앱 resolveChartColor 정합)
+                const catPal = getPaletteByColor(cat?.color)
                 return (
                   <button
                     key={p.rowId}
@@ -440,8 +442,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       alignItems: 'center',
                       gap: 7,
                       padding: '7px 11px',
-                      background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                      border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
+                      // border 사각형 제거 — 아이콘+글씨만 노출. active 만 subtle 채움으로 강조.
+                      background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                      border: 'none',
                       borderRadius: 'var(--radius-pill)',
                       cursor: 'pointer',
                       fontSize: 'var(--text-label-sm)',
@@ -449,7 +452,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                       whiteSpace: 'nowrap',
                       transition: 'all 0.12s',
-                      boxShadow: active ? '0 0 0 2px var(--bg-brand-subtle)' : 'none',
                       fontFamily: 'inherit',
                     }}
                   >
@@ -459,8 +461,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                           width: 18,
                           height: 18,
                           borderRadius: 'var(--radius-sm)',
-                          background: `color-mix(in oklch, ${catColor} 18%, transparent)`,
-                          color: catColor,
+                          background: catPal.bg,
+                          color: catPal.color,
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
