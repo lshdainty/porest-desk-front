@@ -397,7 +397,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       </span>
                     )}
                     {it.autoLog && (
-                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--bg-brand)', flexShrink: 0 }}>
+                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-brand-strong)', flexShrink: 0 }}>
                         <Zap size={11} strokeWidth={2.4} />
                       </span>
                     )}
