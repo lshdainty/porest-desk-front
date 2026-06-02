@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
-import { cn } from '@/shared/lib'
+import { Input } from '@/shared/ui/input'
 
 interface MemoSearchProps {
   value: string
@@ -15,17 +15,15 @@ export const MemoSearch = ({ value, onChange }: MemoSearchProps) => {
     <div className="relative">
       <Search
         size={16}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)] pointer-events-none z-[1]"
       />
-      <input
+      <Input
+        search
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t('searchPlaceholder')}
-        className={cn(
-          'w-full rounded-md border bg-background py-2 pl-9 pr-8 text-sm outline-none',
-          'focus:ring-2 focus:ring-primary/20 focus:border-primary'
-        )}
+        className="w-full pl-9 pr-8"
       />
       {value && (
         <Button
