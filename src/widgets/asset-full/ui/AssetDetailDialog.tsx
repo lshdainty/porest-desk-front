@@ -156,8 +156,8 @@ export function AssetDetailDialog({
       {/* Hero */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${color}1a, ${color}08)`,
-          border: `1px solid ${color}33`,
+          background: `linear-gradient(135deg, color-mix(in oklch, ${color} 12%, transparent), color-mix(in oklch, ${color} 4%, transparent))`,
+          border: `1px solid color-mix(in oklch, ${color} 22%, transparent)`,
           borderRadius: 'var(--radius-xl)',
           padding: 22,
           marginBottom: 18,
