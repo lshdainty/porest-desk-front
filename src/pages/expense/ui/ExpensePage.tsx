@@ -442,13 +442,12 @@ function DayDetailDialog({
           이 날의 거래가 없어요
         </div>
       ) : (
-        <Card className="overflow-hidden">
+        // card 없이 깔끔한 리스트 — 앱 _DayDetailBody 정합(TxDetail/AssetDetail 와 동일 패턴)
+        <div>
           {items.map((e) => (
-            <div key={e.rowId} className="px-[var(--spacing-md)]">
-              <ExpenseRow expense={e} onClick={(ex) => onItemClick?.(ex)} />
-            </div>
+            <ExpenseRow key={e.rowId} expense={e} onClick={(ex) => onItemClick?.(ex)} />
           ))}
-        </Card>
+        </div>
       )}
     </ModalShell>
   )
