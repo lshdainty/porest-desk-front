@@ -8,6 +8,7 @@ import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/dra
 import { calculateMonthEventPositions, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
 
@@ -85,6 +86,9 @@ const MonthDayCell = ({
   const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
   const { startSelection, updateSelection, endSelection, isDateInSelection } = useDragSelect()
+  // 금액 숨김 — 셀 합계가 formatNumber 로 직접 렌더돼 마스킹이 누락되던 버그 fix.
+  // masked 면 부호 없이 점(compact 4개)만 — 다른 화면 MaskAmount 정합.
+  const hideAmounts = useHideAmounts()
 
   const { day, currentMonth, date } = cell
 
@@ -194,7 +198,7 @@ const MonthDayCell = ({
             {/* 모바일: 글자 수별 step text-[NNpx] (11/10/9/8). lg+: text-base (16px) 고정.
                 inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
             {expenseSummary.expense > 0 && (() => {
-              const text = `−${formatNumber(expenseSummary.expense)}`
+              const text = hideAmounts ? '••••' : `−${formatNumber(expenseSummary.expense)}`
               // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :
@@ -209,7 +213,7 @@ const MonthDayCell = ({
               )
             })()}
             {expenseSummary.income > 0 && (() => {
-              const text = `+${formatNumber(expenseSummary.income)}`
+              const text = hideAmounts ? '••••' : `+${formatNumber(expenseSummary.income)}`
               // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :
