@@ -321,8 +321,9 @@
   opacity: 0.78;
 }
 .balance-hero__sub .chg { display: inline-flex; align-items: center; gap: 2px; opacity: 1; font-weight: 600; }
-.balance-hero__sub .chg.up { color: color-mix(in srgb, var(--color-success) 60%, white); }
-.balance-hero__sub .chg.down { color: color-mix(in srgb, var(--color-error) 60%, white); }
+/* hero gradient(코발트) 위 등락 — success/error 80% + white 20% (60%는 옅고 100%는 진해 안 보임) */
+.balance-hero__sub .chg.up { color: color-mix(in srgb, var(--color-success) 80%, white); }
+.balance-hero__sub .chg.down { color: color-mix(in srgb, var(--color-error) 80%, white); }
 .balance-hero__split {
   display: grid;
   grid-template-columns: 1fr 1fr;
