@@ -392,7 +392,8 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                               fontSize: 10.5,
                               fontWeight: 600,
                               color: 'var(--fg-tertiary)',
-                              background: 'var(--bg-sunken)',
+                              // 앱 badge(bgSunken: 다크 #1A1F2E) 정합 — bg-canvas 가 다크에서 #1A1F2E.
+                              background: 'var(--bg-canvas)',
                               padding: '2px 7px',
                               borderRadius: 'var(--radius-pill)',
                             }}
