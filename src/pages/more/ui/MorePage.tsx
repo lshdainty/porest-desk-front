@@ -147,8 +147,8 @@ export const MorePage = () => {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 6,
-                  padding: '12px 8px',
+                  gap: 8,
+                  padding: '18px 8px',
                   background: 'var(--bg-surface)',
                   // card 와 동일: border 없이 shadow 만 (다크/라이트는 --shadow-sm 가 자동 swap)
                   borderRadius: 'var(--radius-md)',
