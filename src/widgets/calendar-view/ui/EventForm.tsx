@@ -20,7 +20,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE, CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
@@ -39,8 +40,6 @@ interface EventFormProps {
   isLoading?: boolean
 }
 
-// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
-const colorOptions = CHART_PAIRS.map(p => p.base)
 // 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
 const DEFAULT_EVENT_COLOR =
   CHART_PAIRS.find(p => p.key === 'blue')!.base
@@ -330,23 +329,19 @@ export const EventForm = ({
             </div>
           )}
 
-          {/* Color swatches — 디자인시스템 차트 10색만 노출 */}
+          {/* Color swatches — 디자인시스템 차트 10색 (ColorSwatchGroup) */}
           <div className="space-y-1.5">
             <Label>{t('form.color')}</Label>
-            <div className="flex flex-wrap gap-2">
-              {colorOptions.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setValue('color', color)}
-                  className={cn(
-                    'h-7 w-7 rounded-full transition-all',
-                    selectedColor === color && 'ring-2 ring-offset-2 ring-primary'
-                  )}
-                  style={{ backgroundColor: getPaletteByColor(color).color }}
-                />
-              ))}
-            </div>
+            <ColorSwatchGroup
+              columns={5}
+              value={selectedColor}
+              onValueChange={(v) => setValue('color', v, { shouldDirty: true })}
+              options={CAT_PALETTE.map((p) => ({
+                value: p.baseHex,
+                bg: p.bg,
+                fg: p.color,
+              }))}
+            />
           </div>
 
           {/* All-day switch */}

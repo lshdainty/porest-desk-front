@@ -25,6 +25,8 @@ import {
 } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
 import { tileRadius } from '@/shared/lib'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 
 const GOAL_ICONS: { k: IconName; label: string }[] = [
   { k: 'plane', label: '여행' },
@@ -37,15 +39,6 @@ const GOAL_ICONS: { k: IconName; label: string }[] = [
   { k: 'heart', label: '건강' },
   { k: 'piggy-bank', label: '저축' },
   { k: 'wallet', label: '지갑' },
-]
-
-const GOAL_COLORS = [
-  'var(--color-chart-blue)',
-  'var(--bg-brand)',
-  'var(--fg-expense)',
-  'var(--clay-500)',
-  'oklch(0.60 0.18 290)',
-  'oklch(0.58 0.15 180)',
 ]
 
 function formatDeadlineLabel(iso: string): string {
@@ -84,7 +77,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   )
   const [deadlineDate, setDeadlineDate] = useState<string>(goal?.deadlineDate ?? '')
   const [icon, setIcon] = useState<IconName>(((goal?.icon as IconName) || 'piggy-bank') as IconName)
-  const [color, setColor] = useState<string>(goal?.color ?? GOAL_COLORS[0]!)
+  const [color, setColor] = useState<string>(goal?.color ?? CAT_PALETTE[0]!.baseHex)
   const [err, setErr] = useState<string>('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -425,31 +418,17 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field>
         <FieldLabel>색상</FieldLabel>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {GOAL_COLORS.map(c => {
-            const active = color === c
-            return (
-              <button
-                key={c}
-                type="button"
-                aria-label={`색상 ${c}`}
-                onClick={() => setColor(c)}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 'var(--radius-tile)',
-                  background: c,
-                  border: active ? '2px solid var(--fg-primary)' : '2px solid transparent',
-                  boxShadow: active
-                    ? `0 0 0 2px var(--bg-surface), 0 0 0 3.5px ${c}`
-                    : 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              />
-            )
-          })}
-        </div>
+        <ColorSwatchGroup
+          columns={5}
+          value={color}
+          onValueChange={setColor}
+          options={CAT_PALETTE.map((p, i) => ({
+            value: p.baseHex,
+            bg: p.bg,
+            fg: p.color,
+            label: `색상 ${i + 1}`,
+          }))}
+        />
       </Field>
 
       {err && (

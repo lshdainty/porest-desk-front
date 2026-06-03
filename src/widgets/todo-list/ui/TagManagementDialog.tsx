@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Spinner } from '@/shared/ui/spinner'
-import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,8 +25,7 @@ interface TagManagementDialogProps {
 }
 
 // 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
-const COLOR_OPTIONS = CHART_PAIRS.map(p => p.base)
-const DEFAULT_COLOR = COLOR_OPTIONS[0]! // red #c73838
+const DEFAULT_COLOR = CAT_PALETTE[0]!.baseHex // red #c73838
 
 export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
   const { t } = useTranslation('todo')
@@ -108,20 +107,16 @@ export const TagManagementDialog = ({ onClose }: TagManagementDialogProps) => {
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex flex-wrap gap-2">
-                  {COLOR_OPTIONS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color })}
-                      className={cn(
-                        'h-7 w-7 rounded-full transition-all',
-                        formData.color === color && 'ring-2 ring-offset-2 ring-primary'
-                      )}
-                      style={{ backgroundColor: getPaletteByColor(color).color }}
-                    />
-                  ))}
-                </div>
+                <ColorSwatchGroup
+                  columns={5}
+                  value={formData.color}
+                  onValueChange={(color) => color && setFormData({ ...formData, color })}
+                  options={CAT_PALETTE.map((p) => ({
+                    value: p.baseHex,
+                    bg: p.bg,
+                    fg: p.color,
+                  }))}
+                />
               </div>
 
               <div className="flex gap-2 pt-2">

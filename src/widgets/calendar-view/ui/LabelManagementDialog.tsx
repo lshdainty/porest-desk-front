@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Check } from 'lucide-react'
-import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
 import {
@@ -21,9 +21,6 @@ interface LabelManagementDialogProps {
   onClose: () => void
 }
 
-// 디자인시스템 차트 10색 base hex 만 노출 (token 매핑 정합).
-const labelColorOptions = CHART_PAIRS.map(p => p.base)
-
 export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
@@ -37,11 +34,11 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
   const [editingLabel, setEditingLabel] = useState<EventLabel | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState<string>(labelColorOptions[0]!)
+  const [formColor, setFormColor] = useState<string>(CAT_PALETTE[0]!.baseHex)
 
   const resetForm = () => {
     setFormName('')
-    setFormColor(labelColorOptions[0]!)
+    setFormColor(CAT_PALETTE[0]!.baseHex)
     setEditingLabel(null)
     setIsAdding(false)
   }
@@ -149,20 +146,16 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 placeholder={t('form.labelName')}
                 autoFocus
               />
-              <div className="flex flex-wrap gap-1.5">
-                {labelColorOptions.map(color => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setFormColor(color)}
-                    className={cn(
-                      'h-6 w-6 rounded-full transition-all',
-                      formColor === color && 'ring-2 ring-offset-1 ring-primary'
-                    )}
-                    style={{ backgroundColor: getPaletteByColor(color).color }}
-                  />
-                ))}
-              </div>
+              <ColorSwatchGroup
+                columns={5}
+                value={formColor}
+                onValueChange={setFormColor}
+                options={CAT_PALETTE.map(p => ({
+                  value: p.baseHex,
+                  bg: p.bg,
+                  fg: p.color,
+                }))}
+              />
               <div className="flex gap-2">
                 <Button
                   variant="outline"
