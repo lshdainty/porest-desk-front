@@ -535,7 +535,8 @@ export function AssetDetailDialog({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={formatChartAxis}
+                // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
+                tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
                 tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 width={44}
               />

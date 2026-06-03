@@ -105,6 +105,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
   data: { label: string; income: number; expense: number }[]
   height?: number
 }) {
+  const hidden = useHideAmounts()
   return (
     <ChartContainer
       config={barChartConfig}
@@ -127,7 +128,8 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={formatChartAxis}
+          // 금액 숨기기 시 Y축도 마스킹 ('••••' 4점)
+          tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
           tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={48}
         />
