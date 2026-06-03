@@ -4,7 +4,6 @@ import {
   StickyNote,
   CalendarDays,
   Wallet,
-  UsersRound,
 } from 'lucide-react'
 import Logo from '@/shared/assets/img/porest.svg'
 import LogoDark from '@/shared/assets/img/porest_dark.svg'
@@ -55,7 +54,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         { title: t('dutchPay'), url: '/desk/dutch-pay' },
       ],
     },
-    { title: t('group'), url: '/desk/group', icon: UsersRound },
   ]
 
   return (

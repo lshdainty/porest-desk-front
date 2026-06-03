@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Check, Divide, ListOrdered, Percent, Plus, Send, UserPlus, X } from 'lucide-react'
+import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -7,7 +7,6 @@ import { Textarea } from '@/shared/ui/textarea'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
-import { useSiblingGroupMembers } from '@/features/group'
 import { useExpenseCategories } from '@/features/expense'
 import { useCurrentUser } from '@/features/user'
 import type { Expense } from '@/entities/expense'
@@ -65,11 +64,10 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const expenseDateTime = (expense.expenseDate ?? '').slice(0, 16).replace('T', ' ')
 
   const createMut = useCreateDutchPay()
-  const siblingsQ = useSiblingGroupMembers()
   const categoriesQ = useExpenseCategories()
   const currentUserQ = useCurrentUser()
 
-  const isLoading = siblingsQ.isLoading || categoriesQ.isLoading || currentUserQ.isLoading
+  const isLoading = categoriesQ.isLoading || currentUserQ.isLoading
 
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
   const palette = getPaletteByColor(category?.color)
@@ -126,19 +124,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const remainder = totalAbs - sumAmount
   const matched = remainder === 0 && participants.length >= 1
 
-  const usedUserIds = useMemo(
-    () => new Set(others.map(p => p.userRowId).filter((id): id is number => id !== null)),
-    [others],
-  )
-
-  const quickAddSuggestions = useMemo(() => {
-    const all = siblingsQ.data ?? []
-    return all
-      .filter(m => !usedUserIds.has(m.userRowId))
-      .filter(m => m.userRowId !== meRowId)
-      .slice(0, 8)
-  }, [siblingsQ.data, usedUserIds, meRowId])
-
   const addManual = () => {
     const name = manualName.trim()
     if (!name) return
@@ -154,20 +139,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       },
     ])
     setManualName('')
-  }
-
-  const addFromSibling = (userRowId: number, name: string) => {
-    setOthers([
-      ...others,
-      {
-        uid: newUid(),
-        userRowId,
-        name,
-        isMe: false,
-        customAmount: String(perPersonAmount),
-        ratio: '1',
-      },
-    ])
   }
 
   const removeOther = (uid: string) => {
@@ -536,34 +507,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           <UserPlus size={14} /> 추가
         </Button>
       </div>
-
-      {/* 빠른 추가 chips */}
-      {quickAddSuggestions.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {quickAddSuggestions.map((m, i) => {
-            const palette = PARTICIPANT_PALETTE[i % PARTICIPANT_PALETTE.length]!
-            return (
-              <Button
-                key={m.userRowId}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => addFromSibling(m.userRowId, m.userName)}
-                title={m.userEmail}
-                className="rounded-full gap-1.5 text-caption font-semibold"
-              >
-                <span
-                  aria-hidden
-                  className="inline-block h-2 w-2 rounded-full"
-                  style={{ background: palette.color }}
-                />
-                {m.userName}
-                <Plus size={12} className="text-text-tertiary" />
-              </Button>
-            )
-          })}
-        </div>
-      )}
 
       {/* 요청 메시지 */}
       <Section title="요청 메시지 (선택)" tightTop>

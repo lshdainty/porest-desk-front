@@ -119,26 +119,9 @@ export const dutchPayKeys = {
   detail: (id: number) => [...dutchPayKeys.all, 'detail', id] as const,
 }
 
-export const groupKeys = {
-  all: ['groups'] as const,
-  list: () => [...groupKeys.all, 'list'] as const,
-  detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
-  siblingMembers: () => [...groupKeys.all, 'sibling-members'] as const,
-}
-
 export const expenseSplitKeys = {
   all: ['expense-splits'] as const,
   list: (expenseId: number) => [...expenseSplitKeys.all, 'list', expenseId] as const,
-}
-
-export const groupTypeKeys = {
-  all: ['group-types'] as const,
-  list: () => [...groupTypeKeys.all, 'list'] as const,
-}
-
-export const eventCommentKeys = {
-  all: ['event-comments'] as const,
-  list: (eventId: number) => [...eventCommentKeys.all, 'list', eventId] as const,
 }
 
 export const fileKeys = {
