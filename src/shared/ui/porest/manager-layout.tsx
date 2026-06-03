@@ -158,7 +158,8 @@ export function ManagerTabs<T extends string>({
         alignSelf: fill ? undefined : 'flex-start',
         background: 'var(--bg-sunken)',
         padding: 4,
-        borderRadius: 'var(--radius-tile)',
+        // 프리셋 정렬 토글(ToggleGroup segmented)·toggle-group spec 과 동일하게 radius-md(8px).
+        borderRadius: 'var(--radius-md)',
         gap: 2,
         border: '1px solid var(--border-subtle)',
       }}
