@@ -16,7 +16,6 @@ export interface Asset {
   assetType: AssetType
   balance: number
   currency: string
-  icon: string | null
   color: string | null
   institution: string | null
   memo: string | null
@@ -32,7 +31,6 @@ export interface AssetFormValues {
   assetType: AssetType
   balance: number
   currency?: string
-  icon?: string
   color?: string
   institution?: string
   memo?: string
@@ -45,7 +43,6 @@ export interface AssetUpdateFormValues {
   assetType: AssetType
   balance: number
   currency?: string
-  icon?: string
   color?: string
   institution?: string
   memo?: string

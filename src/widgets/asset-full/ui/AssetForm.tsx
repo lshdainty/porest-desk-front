@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { IconPicker } from '@/shared/ui/icon-picker'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 import { CardCatalogCombobox } from '@/features/card-catalog'
@@ -41,7 +40,6 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
   const [balance, setBalance] = useState(asset?.balance?.toString() ?? '0')
   const [institution, setInstitution] = useState(asset?.institution ?? '')
   const [memo, setMemo] = useState(asset?.memo ?? '')
-  const [icon, setIcon] = useState(asset?.icon ?? '')
   const [color, setColor] = useState(asset?.color ?? DEFAULT_ASSET_COLOR)
   const [cardCatalogRowId, setCardCatalogRowId] = useState<number | null>(asset?.cardCatalog?.rowId ?? null)
 
@@ -70,7 +68,6 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       assetType,
       balance: parseInt(balance) || 0,
       currency: 'KRW',
-      icon: icon || undefined,
       color,
       institution: institution || undefined,
       memo: memo || undefined,
@@ -79,7 +76,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
     }
 
     onSubmit(data)
-  }, [assetName, assetType, balance, icon, color, institution, memo, cardCatalogRowId, isCardAsset, asset, onSubmit])
+  }, [assetName, assetType, balance, color, institution, memo, cardCatalogRowId, isCardAsset, asset, onSubmit])
 
   const Footer = (
     <>
@@ -160,27 +157,21 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
           />
         </div>
 
-        <div className="flex gap-3">
-          <div>
-            <Label>{t('form.icon')}</Label>
-            <IconPicker value={icon} onChange={setIcon} />
-          </div>
-          <div className="flex-1">
-            <Label>{t('form.color')}</Label>
-            <ColorSwatchGroup
-              columns={5}
-              value={String(
-                Math.max(0, CAT_PALETTE.findIndex(p => p.baseHex === color)),
-              )}
-              onValueChange={(v) => setColor(CAT_PALETTE[Number(v)]!.baseHex)}
-              options={CAT_PALETTE.map((p, i) => ({
-                value: String(i),
-                bg: p.bg,
-                fg: p.color,
-                label: `색상 ${i + 1}`,
-              }))}
-            />
-          </div>
+        <div>
+          <Label>{t('form.color')}</Label>
+          <ColorSwatchGroup
+            columns={5}
+            value={String(
+              Math.max(0, CAT_PALETTE.findIndex(p => p.baseHex === color)),
+            )}
+            onValueChange={(v) => setColor(CAT_PALETTE[Number(v)]!.baseHex)}
+            options={CAT_PALETTE.map((p, i) => ({
+              value: String(i),
+              bg: p.bg,
+              fg: p.color,
+              label: `색상 ${i + 1}`,
+            }))}
+          />
         </div>
 
         <div>

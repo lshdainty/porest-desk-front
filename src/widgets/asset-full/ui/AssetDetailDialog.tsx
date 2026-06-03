@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, Eye, EyeOff, Pencil } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import type { Asset } from '@/entities/asset'
+import { AssetLogo, type Asset } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
@@ -22,7 +22,6 @@ import {
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
-import { renderIcon, tileRadius } from '@/shared/lib'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 
@@ -164,23 +163,7 @@ export function AssetDetailDialog({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-          <span
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: tileRadius(48),
-              background: color,
-              color: '#fff',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: '700',
-              fontSize: 'var(--text-title-md)',
-              flexShrink: 0,
-            }}
-          >
-            {renderIcon(asset.icon, asset.assetName.charAt(0), 22)}
-          </span>
+          <AssetLogo asset={asset} size={48} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>
               {asset.assetName}

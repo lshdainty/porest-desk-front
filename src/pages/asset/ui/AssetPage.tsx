@@ -28,7 +28,7 @@ import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
-import type { Asset, AssetType } from '@/entities/asset'
+import { AssetLogo, type Asset, type AssetType } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
 
 const netWorthChartConfig = {
@@ -651,12 +651,6 @@ const CARD_TYPES: AssetType[] = ['CREDIT_CARD', 'CHECK_CARD']
 const INVESTMENT_TYPES: AssetType[] = ['INVESTMENT']
 const LOAN_TYPES: AssetType[] = ['LOAN']
 
-function hashHue(text: string): number {
-  let h = 0
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) & 0xffffffff
-  return Math.abs(h) % 360
-}
-
 /**
  * AssetPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
  * 자식 컴포넌트가 동일 쿼리를 호출해도 TanStack Query 캐시 히트라 추가 fetch 없음 —
@@ -872,33 +866,6 @@ export const AssetPage = () => {
   const { isLoading } = useAssetPageData()
   if (isLoading) return <AssetPageSkeleton mobile={mobile} />
   return mobile ? <AssetMobile /> : <AssetDesktop />
-}
-
-function AssetLogo({ asset }: { asset: Asset }) {
-  const label = (asset.institution ?? asset.assetName ?? '?').trim().charAt(0) || '?'
-  const brand = getBrandColor(asset.institution, asset.assetName)
-  const bg = asset.color ?? brand?.bg ?? `oklch(0.55 0.12 ${hashHue(asset.assetName ?? 'asset')})`
-  const fg = brand?.fg ?? '#fff'
-  return (
-    <span
-      style={{
-        width: 40,
-        height: 40,
-        borderRadius: 'var(--radius-tile)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 'var(--text-body-sm)',
-        fontWeight: '800',
-        letterSpacing: '-0.022em',
-        flexShrink: 0,
-        background: bg,
-        color: fg,
-      }}
-    >
-      {label}
-    </span>
-  )
 }
 
 // AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,

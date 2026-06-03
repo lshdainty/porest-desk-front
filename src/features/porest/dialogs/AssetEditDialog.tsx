@@ -34,11 +34,12 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
 import { useCardCatalogs } from '@/features/card-catalog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
-import type {
-  Asset,
-  AssetFormValues,
-  AssetType,
-  AssetUpdateFormValues,
+import {
+  AssetLogo,
+  type Asset,
+  type AssetFormValues,
+  type AssetType,
+  type AssetUpdateFormValues,
 } from '@/entities/asset'
 
 export type AssetGroup = 'account' | 'card' | 'invest'
@@ -231,11 +232,6 @@ export function AssetEditDialog({
     return `${brand} · 미리보기`
   })()
 
-  const previewLetter = (() => {
-    if (editingGroup === 'card') return (cardCompanyName[0] ?? '?').trim()
-    return (brand[0] ?? '?').trim()
-  })()
-
   // 유효성
   const canSubmit = (() => {
     if (editingGroup === 'card') {
@@ -385,12 +381,10 @@ export function AssetEditDialog({
                 <CreditCard size={20} />
               </span>
             ) : (
-              <span
-                className="inline-flex items-center justify-center rounded-[var(--radius-md)] font-bold text-base flex-shrink-0"
-                style={{ background: previewBg, color: previewFg, width: 52, height: 52 }}
-              >
-                {previewLetter}
-              </span>
+              <AssetLogo
+                asset={{ assetName: previewName, institution: brand, color: brandColor?.bg ?? item?.color ?? null }}
+                size={52}
+              />
             )}
             <div className="min-w-0">
               <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">{previewName}</div>

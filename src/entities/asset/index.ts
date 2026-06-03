@@ -1,3 +1,4 @@
+export { AssetLogo } from './ui/asset-logo'
 export type {
   AssetType,
   YNType,
