@@ -143,6 +143,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         </ToggleGroup>
         <Button
           type="button"
+          variant="accent"
           style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
           onClick={() => setEditing('new')}
         >
