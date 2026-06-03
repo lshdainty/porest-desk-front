@@ -259,10 +259,11 @@ export const SettingsPage = () => {
                   gap: 10,
                   padding: '9px 12px',
                   border: 0,
-                  // 설정 nav 한정: 선택 배경을 다크에서만 primary 15%(글로벌 bg-brand-subtle 다크 12% 대비 ↑).
+                  // 설정 nav 한정: 다크에선 배경 틴트도 primary-light(#5fa0e5) 15% mix — 텍스트와 같은 light 톤.
+                  // (라이트는 글로벌 bg-brand-subtle = primary 8% 유지.)
                   background: active
                     ? dark
-                      ? 'color-mix(in srgb, var(--color-primary) 15%, transparent)'
+                      ? 'color-mix(in srgb, var(--color-primary-light) 15%, transparent)'
                       : 'var(--bg-brand-subtle)'
                     : 'transparent',
                   color: navColor,
