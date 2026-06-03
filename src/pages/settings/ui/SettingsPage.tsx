@@ -243,12 +243,12 @@ export const SettingsPage = () => {
           {SECTIONS.map(s => {
             const IconComp = s.icon
             const active = section === s.id
-            // 다크모드: 아이콘·텍스트를 light variant 로 끌어올려 가독성 확보(클로드 디자인 정합).
-            //   inactive #b0b8c4 → fg-primary(near-white), active #0147ad → primary-light(#5fa0e5).
+            // inactive 는 회색(fg-secondary) 그대로 유지. 선택 탭만 다크에서 brand light variant 로.
+            // DESIGN.desk.md: 어두운 표면 위 브랜드 텍스트·아이콘 = primary-light(#5fa0e5) — spec 정합.
             const dark = resolvedTheme === 'dark'
             const navColor = active
               ? dark ? 'var(--color-primary-light)' : 'var(--fg-brand-strong)'
-              : dark ? 'var(--fg-primary)' : 'var(--fg-secondary)'
+              : 'var(--fg-secondary)'
             return (
               <button
                 key={s.id}
