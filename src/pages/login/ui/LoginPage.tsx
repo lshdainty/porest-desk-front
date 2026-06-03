@@ -22,7 +22,7 @@ export const LoginPage = () => {
       <div className="w-full md:max-w-6xl">
         <div className={cn('flex flex-col gap-6 h-[700px]')}>
           <Card className="overflow-hidden p-0 h-full">
-            <CardContent className="grid p-0 md:grid-cols-[2fr_1fr] h-full">
+            <CardContent className="grid p-0 md:p-0 md:grid-cols-[2fr_1fr] h-full">
               <div className="bg-muted relative hidden md:block">
                 <img
                   src={loginBG}
