@@ -327,8 +327,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               lineHeight: '1.5',
             }}
           >
-            예산 사용률이 이 값을 넘으면 <strong>경고</strong> 상태로 표시되고 알림을 받습니다.
-            100%는 <strong>초과</strong>로 별도 알림이 발생합니다.
+            예산 사용률이 이 값을 넘으면 <strong style={{ color: 'var(--status-warning-fg)' }}>경고</strong> 상태로 표시되고 알림을 받습니다.
+            100%는 <strong style={{ color: 'var(--status-danger-fg)' }}>초과</strong>로 별도 알림이 발생합니다.
           </div>
           <div style={{ marginBottom: 8 }}>
             <Slider
