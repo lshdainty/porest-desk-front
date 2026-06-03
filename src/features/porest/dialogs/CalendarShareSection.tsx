@@ -27,7 +27,8 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { getPaletteByColor, CHART_PAIRS } from '@/shared/lib/porest/chart-palette'
+import { getPaletteByColor, CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { useCurrentUser } from '@/features/user'
 import {
   useCalendarMembers,
@@ -490,30 +491,12 @@ function CalendarManageDialog({
           {/* 색상 */}
           <Field style={{ marginBottom: 14 }}>
             <FieldLabel>색상</FieldLabel>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 2 }}>
-              {CHART_PAIRS.map(p => {
-                const selected = color === p.base
-                return (
-                  <button
-                    key={p.key}
-                    type="button"
-                    aria-label={`색상 ${p.key}`}
-                    onClick={() => setColor(p.base)}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 'var(--radius-pill)',
-                      background: p.base,
-                      border: 'none',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      outline: selected ? '2px solid var(--fg-primary)' : '2px solid transparent',
-                      outlineOffset: 2,
-                    }}
-                  />
-                )
-              })}
-            </div>
+            <ColorSwatchGroup
+              columns={5}
+              value={color}
+              onValueChange={setColor}
+              options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
+            />
           </Field>
 
           {dirty && (
@@ -686,30 +669,12 @@ function CalendarCreateDialog({
 
       <Field>
         <FieldLabel>색상</FieldLabel>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 2 }}>
-          {CHART_PAIRS.map(p => {
-            const selected = color === p.base
-            return (
-              <button
-                key={p.key}
-                type="button"
-                aria-label={`색상 ${p.key}`}
-                onClick={() => setColor(p.base)}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 'var(--radius-pill)',
-                  background: p.base,
-                  border: 'none',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  outline: selected ? '2px solid var(--fg-primary)' : '2px solid transparent',
-                  outlineOffset: 2,
-                }}
-              />
-            )
-          })}
-        </div>
+        <ColorSwatchGroup
+          columns={5}
+          value={color}
+          onValueChange={setColor}
+          options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
+        />
       </Field>
     </ModalShell>
   )
