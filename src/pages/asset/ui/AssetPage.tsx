@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  ChevronRight, CreditCard, Eye, EyeOff, Plus, RefreshCw,
+  ChevronRight, Eye, EyeOff, Plus, RefreshCw,
   Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
@@ -413,19 +413,15 @@ function UpcomingBillsCard() {
             <div
               key={i}
               style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                padding: '16px 18px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-lg)',
               }}
             >
-              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/2" />
-              </div>
-              <SkeletonBase className="h-4 w-16 shrink-0" />
+              <SkeletonBase className="h-4 w-24" />
+              <SkeletonBase className="h-4 w-20 shrink-0" />
             </div>
           ))}
         </div>
@@ -443,8 +439,8 @@ function UpcomingBillsCard() {
                 type="button"
                 onClick={() => goToSettings(it.rowId)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  padding: '16px 18px',
                   background: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
@@ -457,35 +453,17 @@ function UpcomingBillsCard() {
               >
                 <span
                   style={{
-                    width: 32, height: 32, borderRadius: tileRadius(32), flexShrink: 0,
-                    background: 'var(--bg-income-subtle)', color: 'var(--fg-income)',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 'var(--text-body-sm)',
+                    fontWeight: urgent ? 600 : 500,
+                    color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
                   }}
                 >
-                  <CreditCard size={15} />
+                  {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
                 </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 'var(--text-body-sm)', fontWeight: '600',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {it.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 'var(--text-caption)', marginTop: 1,
-                      color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
-                      fontWeight: urgent ? 600 : 400,
-                    }}
-                  >
-                    {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
-                  </div>
-                </div>
-                <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
+                <span className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', flexShrink: 0 }}>
                   <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
-                </div>
+                </span>
               </button>
             )
           })}
