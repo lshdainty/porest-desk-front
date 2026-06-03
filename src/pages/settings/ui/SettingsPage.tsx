@@ -259,7 +259,12 @@ export const SettingsPage = () => {
                   gap: 10,
                   padding: '9px 12px',
                   border: 0,
-                  background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                  // 설정 nav 한정: 선택 배경을 다크에서만 primary 15%(글로벌 bg-brand-subtle 다크 12% 대비 ↑).
+                  background: active
+                    ? dark
+                      ? 'color-mix(in srgb, var(--color-primary) 15%, transparent)'
+                      : 'var(--bg-brand-subtle)'
+                    : 'transparent',
                   color: navColor,
                   borderRadius: 'var(--radius-tile)',
                   fontSize: 'var(--text-label-sm)',
