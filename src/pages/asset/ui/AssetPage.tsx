@@ -868,6 +868,53 @@ export const AssetPage = () => {
   return mobile ? <AssetMobile /> : <AssetDesktop />
 }
 
+// 카드 사용률 게이지 — usage = abs(balance)/creditLimit*100.
+// 70%↑ status-warning, 90%↑ status-danger. SavingGoalItem 진행률 바 패턴 재활용(height 6px pill bg-sunken).
+function CardUsageGauge({ asset }: { asset: Asset }) {
+  if (asset.assetType !== 'CREDIT_CARD' || asset.creditLimit == null || asset.creditLimit <= 0) {
+    return null
+  }
+  const used = Math.abs(asset.balance)
+  const usage = (used / asset.creditLimit) * 100
+  const barColor =
+    usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--bg-brand)'
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8, marginBottom: 4,
+        }}
+      >
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
+          {asset.paymentDay != null ? `${asset.paymentDay}일 결제 · ` : ''}
+          한도 <MaskAmount mask="••••">{KRW(asset.creditLimit)}</MaskAmount>
+        </span>
+        <span
+          className="num"
+          style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: barColor }}
+        >
+          {usage.toFixed(0)}%
+        </span>
+      </div>
+      <div
+        style={{
+          height: 6, background: 'var(--bg-sunken)',
+          borderRadius: 'var(--radius-pill)', overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, usage)}%`, height: '100%',
+            background: barColor, borderRadius: 'var(--radius-pill)',
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,
 // item 사이 border-top 구분선 (TypeGroup 에서 처리). hover 는 background tint 만.
 function AssetCard({
@@ -931,6 +978,7 @@ function AssetCard({
             {asset.memo}
           </div>
         )}
+        <CardUsageGauge asset={asset} />
       </div>
       <div
         className="num"

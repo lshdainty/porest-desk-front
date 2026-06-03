@@ -22,6 +22,12 @@ export interface Asset {
   sortOrder: number
   isIncludedInTotal: YNType
   cardCatalog: AssetCardCatalogBrief | null
+  /** 신용카드 한도 (CREDIT_CARD 전용, nullable) */
+  creditLimit?: number | null
+  /** 결제일 1~31 (CREDIT_CARD 전용, nullable) */
+  paymentDay?: number | null
+  /** 결제 출금계좌 자산 rowId (CREDIT_CARD 전용, nullable) */
+  paymentAssetRowId?: number | null
   createAt: string
   modifyAt: string
 }
@@ -37,6 +43,9 @@ export interface AssetFormValues {
   sortOrder?: number
   isIncludedInTotal?: YNType
   cardCatalogRowId?: number | null
+  creditLimit?: number | null
+  paymentDay?: number | null
+  paymentAssetRowId?: number | null
 }
 
 export interface AssetUpdateFormValues {
@@ -49,6 +58,38 @@ export interface AssetUpdateFormValues {
   memo?: string
   isIncludedInTotal?: YNType
   cardCatalogRowId?: number | null
+  creditLimit?: number | null
+  paymentDay?: number | null
+  paymentAssetRowId?: number | null
+}
+
+export type BillingStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'
+
+export interface BillingItem {
+  rowId: number
+  cardAssetRowId: number
+  paymentAssetRowId: number | null
+  billingAmount: number
+  /** "yyyy-MM-dd" */
+  periodStart: string
+  /** "yyyy-MM-dd" */
+  periodEnd: string
+  /** "yyyy-MM-dd" */
+  paymentDate: string
+  status: BillingStatus
+  transferRowId: number | null
+  failureReason: string | null
+}
+
+export interface CardBilling {
+  cardAssetRowId: number
+  /** abs(카드 balance) — 이번 결제예정액 */
+  upcomingAmount: number
+  /** "yyyy-MM-dd" | null */
+  nextPaymentDate: string | null
+  paymentDay: number | null
+  paymentAssetRowId: number | null
+  history: BillingItem[]
 }
 
 export interface AssetSummary {

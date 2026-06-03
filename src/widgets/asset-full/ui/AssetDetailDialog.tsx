@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, Eye, EyeOff, Pencil } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { AssetLogo, type Asset } from '@/entities/asset'
+import { toast } from 'sonner'
+import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend } from '@/features/asset'
+import { useAssetBalanceTrend, useCardBilling, usePayCard } from '@/features/asset'
 import { useSearchExpenses } from '@/features/expense'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -71,6 +73,171 @@ const groupOf = (asset: Asset): AssetGroup => {
   if (asset.assetType === 'CREDIT_CARD' || asset.assetType === 'CHECK_CARD') return 'card'
   if (asset.assetType === 'INVESTMENT') return 'invest'
   return 'account'
+}
+
+// 청구 상태 배지 — COMPLETED=success / PENDING=neutral / FAILED=danger / SKIPPED=neutral
+const BILLING_STATUS_META: Record<BillingStatus, { label: string; variant: 'success' | 'secondary' | 'error' }> = {
+  COMPLETED: { label: '완료', variant: 'success' },
+  PENDING: { label: '대기', variant: 'secondary' },
+  FAILED: { label: '실패', variant: 'error' },
+  SKIPPED: { label: '건너뜀', variant: 'secondary' },
+}
+
+function CardBillingSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
+  const { data: billing, isLoading } = useCardBilling(asset.rowId)
+  const payCard = usePayCard()
+  const [confirmPay, setConfirmPay] = useState(false)
+
+  const handlePay = () => {
+    payCard.mutate(asset.rowId, {
+      onSuccess: () => {
+        setConfirmPay(false)
+        toast.success('결제가 기록되었어요')
+      },
+      onError: () => {
+        setConfirmPay(false)
+        toast.error('결제 처리에 실패했어요')
+      },
+    })
+  }
+
+  const upcomingAmount = billing?.upcomingAmount ?? Math.abs(asset.balance)
+  const nextPaymentDate = billing?.nextPaymentDate ?? null
+  const history: BillingItem[] = billing?.history ?? []
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: mobile ? 'flex-start' : 'center',
+          flexDirection: mobile ? 'column' : 'row',
+          gap: 12,
+          padding: '16px 18px',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
+            결제 예정액
+          </div>
+          <div
+            className="num"
+            style={{ fontSize: 'var(--text-body-lg)', fontWeight: '800', color: 'var(--fg-expense)', letterSpacing: '-0.012em' }}
+          >
+            <MaskAmount>−{KRW(upcomingAmount)}</MaskAmount>
+            <HideUnit>원</HideUnit>
+          </div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            {nextPaymentDate ? `결제 예정일 ${nextPaymentDate}` : '결제일 미설정'}
+          </div>
+        </div>
+        <Button
+          variant="default"
+          size="sm"
+          disabled={upcomingAmount <= 0 || payCard.isPending}
+          onClick={() => setConfirmPay(true)}
+          style={mobile ? { width: '100%' } : undefined}
+        >
+          지금 결제
+        </Button>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+        <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
+          청구 이력{history.length > 0 ? ` (${history.length})` : ''}
+        </h4>
+      </div>
+      <div
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+        }}
+      >
+        {isLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '14px' }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
+                </div>
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : history.length === 0 ? (
+          <div
+            style={{
+              padding: '24px 0',
+              textAlign: 'center',
+              color: 'var(--fg-tertiary)',
+              fontSize: 'var(--text-label-sm)',
+            }}
+          >
+            청구 이력이 없어요.
+          </div>
+        ) : (
+          history.map((b, i) => {
+            const meta = BILLING_STATUS_META[b.status]
+            return (
+              <div
+                key={b.rowId}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 16px',
+                  borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
+                      {b.paymentDate}
+                    </span>
+                    <Badge variant={meta.variant}>{meta.label}</Badge>
+                  </div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                    {b.periodStart} ~ {b.periodEnd}
+                    {b.failureReason ? ` · ${b.failureReason}` : ''}
+                  </div>
+                </div>
+                <span
+                  className="num"
+                  style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', flexShrink: 0, color: 'var(--fg-expense)' }}
+                >
+                  <MaskAmount>−{KRW(b.billingAmount)}</MaskAmount>
+                  <HideUnit>원</HideUnit>
+                </span>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {confirmPay && (
+        <ConfirmDialog
+          title="지금 결제"
+          message={
+            <>
+              결제 예정액 <strong>{KRW(upcomingAmount)}원</strong>을 지금 결제 처리할까요?
+              {nextPaymentDate ? ` 결제일은 ${nextPaymentDate} 입니다.` : ''}
+            </>
+          }
+          confirmLabel="결제하기"
+          loading={payCard.isPending}
+          onCancel={() => { if (!payCard.isPending) setConfirmPay(false) }}
+          onConfirm={handlePay}
+        />
+      )}
+    </div>
+  )
 }
 
 export function AssetDetailDialog({
@@ -204,6 +371,11 @@ export function AssetDetailDialog({
           </HideUnit>
         </div>
       </div>
+
+      {/* Card billing cycle (CREDIT_CARD 전용) */}
+      {isCard && asset.assetType === 'CREDIT_CARD' && (
+        <CardBillingSection asset={asset} mobile={mobile} />
+      )}
 
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>

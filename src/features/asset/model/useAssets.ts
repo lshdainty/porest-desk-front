@@ -85,6 +85,26 @@ export const useDeleteAsset = () => {
   })
 }
 
+export const useCardBilling = (id: number) => {
+  return useQuery({
+    queryKey: assetKeys.billing(id),
+    queryFn: () => assetApi.getCardBilling(id),
+    enabled: id > 0,
+  })
+}
+
+export const usePayCard = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => assetApi.payCard(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: assetKeys.billing(id) })
+    },
+  })
+}
+
 export const useReorderAssets = () => {
   const queryClient = useQueryClient()
 

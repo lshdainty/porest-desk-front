@@ -7,6 +7,14 @@ import { Label } from '@/shared/ui/label'
 import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
 import { Switch } from '@/shared/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import { useAssets } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
@@ -129,6 +137,26 @@ export function AssetEditDialog({
   const [cardKeyword, setCardKeyword] = useState('')
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CardCatalogSummary | null>(null)
+
+  // 신용카드 청구사이클 (CREDIT_CARD 전용)
+  const [creditLimit, setCreditLimit] = useState<string>(
+    item?.creditLimit != null ? String(item.creditLimit) : '',
+  )
+  const [paymentDay, setPaymentDay] = useState<string>(
+    item?.paymentDay != null ? String(item.paymentDay) : '',
+  )
+  const [paymentAssetRowId, setPaymentAssetRowId] = useState<number | null>(
+    item?.paymentAssetRowId ?? null,
+  )
+
+  const { data: assetsData } = useAssets()
+  const bankAccounts = useMemo(
+    () =>
+      (assetsData?.assets ?? []).filter(
+        a => a.assetType === 'BANK_ACCOUNT' && a.rowId !== item?.rowId,
+      ),
+    [assetsData, item?.rowId],
+  )
 
   const catalogQ = useCardCatalogs({
     keyword: cardKeyword.trim() || undefined,
@@ -272,12 +300,21 @@ export function AssetEditDialog({
 
     if (editingGroup === 'card') {
       const type: AssetType = cardType === 'CREDIT' ? 'CREDIT_CARD' : 'CHECK_CARD'
+      const isCredit = cardType === 'CREDIT'
       const resolvedName =
         name.trim() || selectedCard?.cardName || item?.assetName || '카드'
       const catalogId = selectedCard?.rowId ?? item?.cardCatalog?.rowId ?? null
       const institution =
         selectedCard?.company?.name ?? item?.institution ?? undefined
       const color = cardBrandColor?.bg ?? item?.color ?? undefined
+
+      const parsedLimit = creditLimit.trim() ? parseInt(creditLimit, 10) : null
+      const parsedDay = paymentDay.trim() ? parseInt(paymentDay, 10) : null
+      const billingFields = {
+        creditLimit: isCredit ? (Number.isFinite(parsedLimit as number) ? parsedLimit : null) : null,
+        paymentDay: isCredit ? (Number.isFinite(parsedDay as number) ? parsedDay : null) : null,
+        paymentAssetRowId: isCredit ? paymentAssetRowId : null,
+      }
 
       if (isNew) {
         onCreate({
@@ -289,6 +326,7 @@ export function AssetEditDialog({
           color,
           isIncludedInTotal,
           cardCatalogRowId: catalogId,
+          ...billingFields,
         })
       } else {
         onUpdate({
@@ -301,6 +339,7 @@ export function AssetEditDialog({
           memo: memo.trim() || undefined,
           isIncludedInTotal,
           cardCatalogRowId: catalogId,
+          ...billingFields,
         })
       }
       return
@@ -512,6 +551,54 @@ export function AssetEditDialog({
                   )
                 })}
               </SearchableList>
+
+              {cardType === 'CREDIT' && (
+                <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5">
+                  <div className="text-[12px] font-semibold text-[var(--fg-secondary)]">청구 사이클 (선택)</div>
+                  <div>
+                    <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">신용한도 (원)</Label>
+                    <Input
+                      id="card-credit-limit"
+                      inputMode="numeric"
+                      value={creditLimit}
+                      onChange={e => setCreditLimit(e.target.value.replace(/[^\d]/g, ''))}
+                      placeholder="예: 3000000"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[13px] font-medium mb-2 block">결제일</Label>
+                    <Select value={paymentDay || undefined} onValueChange={v => setPaymentDay(v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="결제일 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                          <SelectItem key={d} value={String(d)}>{d}일</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-[13px] font-medium mb-2 block">결제계좌</Label>
+                    <Select
+                      value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
+                      onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
+                      disabled={bankAccounts.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={bankAccounts.length === 0 ? '입출금 계좌가 없어요' : '결제 출금계좌 선택'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.map(a => (
+                          <SelectItem key={a.rowId} value={String(a.rowId)}>
+                            {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div>
