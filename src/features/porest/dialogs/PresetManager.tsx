@@ -123,7 +123,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       >
         <ToggleGroup
           type="single"
-          variant="segmented-subtle"
+          variant="segmented"
           size="sm"
           value={sortBy}
           onValueChange={(v) => v && setSortBy(v as SortKey)}
