@@ -206,13 +206,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 >
                   <Copy size={13} /> 지난달 복사
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setEditing('new')}
-                  disabled={loading}
-                >
-                  <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
-                </Button>
               </div>
             }
           />
@@ -358,24 +351,24 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           </CardContent>
         </Card>
 
-        <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-            카테고리별 예산 · {categoryBudgets.length}개
-          </div>
-          {mobile && (
+        {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
+              카테고리별 예산 · {categoryBudgets.length}개
+            </div>
             <Button
-              variant="ghost"
+              variant="accent"
               size="sm"
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditing('new')}
               disabled={loading}
             >
-              <Plus size={12} />추가
+              <Plus size={14} /> {mobile ? '추가' : '카테고리 예산 추가'}
             </Button>
-          )}
-        </div>
+          </div>
 
-        <div className="cat-list">
+          <div className="cat-list">
           {categoryBudgets.length === 0 ? (
             <div className="cat-list__empty">
               <span>설정된 카테고리 예산이 없어요</span>
@@ -456,19 +449,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             })
           )}
         </div>
+        </div>
         </>
-        )}
-
-        {mobile && (
-          <Button
-            size="lg"
-            className="cat-add-fab"
-            onClick={() => setEditing('new')}
-            disabled={loading}
-          >
-            <Plus size={20} strokeWidth={2.4} />
-            <span>카테고리 예산 추가</span>
-          </Button>
         )}
       </ManagerShell>
 
