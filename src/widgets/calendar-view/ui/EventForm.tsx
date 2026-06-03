@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Repeat, Bell, Tag, Check, Users } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Form } from '@/shared/ui/form'
@@ -25,10 +25,8 @@ import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
 import { useUserCalendars } from '@/features/user-calendar'
-import { useGroups } from '@/features/group'
 import { format } from 'date-fns'
 
-const NO_GROUP_VALUE = '__none__'
 const NO_LABEL_VALUE = '__none__'
 
 interface EventFormProps {
@@ -100,7 +98,6 @@ export const EventForm = ({
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
   const { data: userCalendars = [] } = useUserCalendars()
-  const { data: groups = [] } = useGroups()
   const isMobile = useIsMobile()
 
   const defaultDate = selectedDate
@@ -130,7 +127,6 @@ export const EventForm = ({
       rrule: undefined,
       reminderMinutes: [],
       calendarRowId: defaultCalendar?.rowId,
-      groupRowId: undefined,
     },
   })
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
@@ -139,7 +135,6 @@ export const EventForm = ({
   const isAllDay = watch('isAllDay')
   const selectedLabelRowId = watch('labelRowId')
   const selectedCalendarRowId = watch('calendarRowId')
-  const selectedGroupRowId = watch('groupRowId')
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -170,7 +165,6 @@ export const EventForm = ({
         rrule: event.rrule ?? undefined,
         reminderMinutes: reminderMins,
         calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
-        groupRowId: event.groupRowId ?? undefined,
       })
       setRecurrence(rruleToRecurrence(event.rrule))
       setSelectedReminders(reminderMins)
@@ -188,7 +182,6 @@ export const EventForm = ({
         rrule: undefined,
         reminderMinutes: [],
         calendarRowId: defaultCalendar?.rowId,
-        groupRowId: undefined,
       })
       setRecurrence('none')
       setSelectedReminders([])
@@ -216,7 +209,6 @@ export const EventForm = ({
       rrule: data.rrule || undefined,
       reminderMinutes: selectedReminders.length > 0 ? selectedReminders : undefined,
       calendarRowId: data.calendarRowId || undefined,
-      groupRowId: data.groupRowId || undefined,
     })
   }
 
@@ -289,39 +281,6 @@ export const EventForm = ({
                           style={{ backgroundColor: getPaletteByColor(cal.color).color }}
                         />
                         {cal.calendarName}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Group selector */}
-          {groups.length > 0 && (
-            <div className="space-y-1.5">
-              <Label>
-                <Users size={14} className="inline mr-1" />
-                {t('selectGroup')}
-              </Label>
-              <Select
-                value={selectedGroupRowId ? String(selectedGroupRowId) : NO_GROUP_VALUE}
-                onValueChange={(v) =>
-                  setValue('groupRowId', v === NO_GROUP_VALUE ? undefined : Number(v), {
-                    shouldDirty: true,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_GROUP_VALUE}>{t('personal')}</SelectItem>
-                  {groups.map((group) => (
-                    <SelectItem key={group.rowId} value={String(group.rowId)}>
-                      <span className="flex items-center gap-2">
-                        <Users size={14} className="text-muted-foreground" />
-                        {group.groupName}
                       </span>
                     </SelectItem>
                   ))}

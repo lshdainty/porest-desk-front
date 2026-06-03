@@ -1,11 +1,16 @@
 import { apiClient } from '@/shared/api'
 import type { ApiResponse } from '@/shared/types'
-import type { UserCalendar, UserCalendarFormValues } from '@/entities/user-calendar'
+import type {
+  UserCalendar,
+  UserCalendarFormValues,
+  CalendarMember,
+  CalendarRole,
+} from '@/entities/user-calendar'
 
 /**
  * 백엔드 API 응답의 UserCalendar를 프론트엔드 타입으로 변환
- * - isDefault: "Y"/"N" → boolean
- * - isVisible: "Y"/"N" → boolean
+ * - isDefault / isVisible: "Y"/"N" 또는 boolean → boolean
+ * - 공유 필드(isShared/isOwner/myRole/inviteCode/memberCount/ownerRowId/ownerName)는 그대로 전달
  */
 function fromApiCalendar(cal: Record<string, unknown>): UserCalendar {
   return {
@@ -38,6 +43,37 @@ export const userCalendarApi = {
 
   deleteCalendar: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/calendar/calendars/${id}`)
+    return resp.data
+  },
+
+  // ── 공유 ──
+  getMembers: async (id: number): Promise<CalendarMember[]> => {
+    const resp: ApiResponse<{ members: CalendarMember[] }> = await apiClient.get(`/v1/calendar/calendars/${id}/members`)
+    return resp.data.members
+  },
+
+  regenerateInviteCode: async (id: number): Promise<string> => {
+    const resp: ApiResponse<{ inviteCode: string }> = await apiClient.patch(
+      `/v1/calendar/calendars/${id}/regenerate-invite-code`
+    )
+    return resp.data.inviteCode
+  },
+
+  joinByCode: async (inviteCode: string): Promise<UserCalendar> => {
+    const resp: ApiResponse<UserCalendar> = await apiClient.post('/v1/calendar/calendars/join', { inviteCode })
+    return fromApiCalendar(resp.data as unknown as Record<string, unknown>)
+  },
+
+  removeMember: async (id: number, memberId: number): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.delete(`/v1/calendar/calendars/${id}/member/${memberId}`)
+    return resp.data
+  },
+
+  changeMemberRole: async (id: number, memberId: number, permission: CalendarRole): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.patch(
+      `/v1/calendar/calendars/${id}/member/${memberId}/role`,
+      { permission }
+    )
     return resp.data
   },
 }

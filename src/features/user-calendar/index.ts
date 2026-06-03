@@ -5,4 +5,9 @@ export {
   useUpdateUserCalendar,
   useToggleCalendarVisibility,
   useDeleteUserCalendar,
+  useCalendarMembers,
+  useRegenerateCalendarInviteCode,
+  useJoinCalendar,
+  useRemoveCalendarMember,
+  useChangeCalendarMemberRole,
 } from './model/useUserCalendars'

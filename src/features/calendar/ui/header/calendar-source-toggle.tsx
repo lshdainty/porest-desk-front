@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ListTodo, Flag, Settings, Settings2, ChevronDown, X } from 'lucide-react'
 
@@ -13,7 +14,6 @@ import { useIsMobile } from '@/shared/hooks'
 
 import type { IBuiltinSource, TCalendarSourceType } from '@/features/calendar/model/types'
 import type { UserCalendar } from '@/entities/user-calendar'
-import { CalendarManagementDialog } from './CalendarManagementDialog'
 import { HolidayManagementDialog } from './HolidayManagementDialog'
 
 const SOURCE_ICONS: Record<TCalendarSourceType, React.ElementType> = {
@@ -186,8 +186,10 @@ const CalendarSourceToggle = () => {
   const { t } = useTranslation('calendar')
   const { builtinSources, userCalendars } = useCalendar()
   const isMobile = useIsMobile()
-  const [managementOpen, setManagementOpen] = useState(false)
+  const navigate = useNavigate()
   const [holidayManagementOpen, setHolidayManagementOpen] = useState(false)
+  // 관리·공유는 설정의 "캘린더 관리·공유" 탭으로 이동 (별도 dialog 폐지)
+  const goManageShare = () => navigate('/desk/settings?section=calendar-share')
 
   // 필터 칩 도트 — visible 캘린더 최대 3개 + builtin 소스 색상
   const dotColors = [
@@ -229,7 +231,7 @@ const CalendarSourceToggle = () => {
             </DrawerHeader>
             <DrawerBody className="pb-6">
               <CalendarSourceContent
-                onManage={() => setManagementOpen(true)}
+                onManage={goManageShare}
                 onHolidayManage={() => setHolidayManagementOpen(true)}
               />
             </DrawerBody>
@@ -245,17 +247,12 @@ const CalendarSourceToggle = () => {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 p-0">
             <CalendarSourceContent
-              onManage={() => setManagementOpen(true)}
+              onManage={goManageShare}
               onHolidayManage={() => setHolidayManagementOpen(true)}
             />
           </PopoverContent>
         </Popover>
       )}
-
-      <CalendarManagementDialog
-        open={managementOpen}
-        onOpenChange={setManagementOpen}
-      />
 
       <HolidayManagementDialog
         open={holidayManagementOpen}
