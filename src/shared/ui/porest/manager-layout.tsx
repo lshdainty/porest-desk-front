@@ -157,7 +157,8 @@ export function ManagerTabs<T extends string>({
         // fill=false(데스크톱): 부모 flex stretch 방지 → sunken bar 가 탭 내용에 딱 맞음
         alignSelf: fill ? undefined : 'flex-start',
         background: 'var(--bg-sunken)',
-        padding: 4,
+        // 프리셋 토글 p-0.5(=2px) 와 동일. spacing 스케일 최소가 xs(4px)라 2px 전용 토큰은 없음(raw).
+        padding: 2,
         // 프리셋 정렬 토글(ToggleGroup segmented)·toggle-group spec 과 동일하게 radius-md(8px).
         borderRadius: 'var(--radius-md)',
         gap: 2,
