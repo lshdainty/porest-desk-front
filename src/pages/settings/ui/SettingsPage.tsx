@@ -237,7 +237,7 @@ export const SettingsPage = () => {
             padding: 8,
             background: 'var(--bg-surface)',
             boxShadow: 'var(--shadow-sm)',
-            borderRadius: 'var(--radius-card)',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           {SECTIONS.map(s => {
@@ -267,7 +267,7 @@ export const SettingsPage = () => {
                       : 'var(--bg-brand-subtle)'
                     : 'transparent',
                   color: navColor,
-                  borderRadius: 'var(--radius-tile)',
+                  borderRadius: 'var(--radius-md)',
                   fontSize: 'var(--text-label-sm)',
                   fontWeight: active ? 600 : 500,
                   cursor: 'pointer',
