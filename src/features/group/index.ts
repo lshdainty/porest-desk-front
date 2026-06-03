@@ -1,29 +1,4 @@
+// group 도메인은 캘린더 공유가 user_calendar로 이전되면서 UI는 폐지됨.
+// DutchPay 의 형제 그룹 멤버(빠른 추가) 기능만 남김.
 export { groupApi } from './api/groupApi'
-export { eventCommentApi } from './api/eventCommentApi'
-export { groupTypeApi } from './api/groupTypeApi'
-export {
-  useGroups,
-  useGroup,
-  useSiblingGroupMembers,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useRegenerateInviteCode,
-  useJoinGroup,
-  useRemoveMember,
-  useChangeMemberRole,
-  useGroupEvents,
-  useGroupExpenses,
-} from './model/useGroup'
-export {
-  useEventComments,
-  useCreateEventComment,
-  useUpdateEventComment,
-  useDeleteEventComment,
-} from './model/useEventComment'
-export {
-  useGroupTypes,
-  useCreateGroupType,
-  useUpdateGroupType,
-  useDeleteGroupType,
-} from './model/useGroupType'
+export { useSiblingGroupMembers } from './model/useGroup'

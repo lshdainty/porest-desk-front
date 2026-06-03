@@ -19,7 +19,6 @@ const SearchPage = lazy(() => import('@/pages/search/ui/SearchPage').then(m => (
 const NotificationsPage = lazy(() => import('@/pages/notifications/ui/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const CardDetailPage = lazy(() => import('@/pages/card').then(m => ({ default: m.CardDetailPage })))
 const CardBenefitPage = lazy(() => import('@/pages/card-benefit').then(m => ({ default: m.CardBenefitPage })))
-const GroupPage = lazy(() => import('@/pages/group/ui/GroupPage').then(m => ({ default: m.GroupPage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
 
@@ -49,7 +48,6 @@ export const AppRouter = () => {
               <Route path="/desk/memo" element={<MemoPage />} />
               <Route path="/desk/card/:assetRowId" element={<CardDetailPage />} />
               <Route path="/desk/card-benefit" element={<CardBenefitPage />} />
-              <Route path="/desk/group" element={<GroupPage />} />
               <Route path="/desk/settings" element={<SettingsPage />} />
               <Route path="/desk/more" element={<MorePage />} />
               <Route path="/desk/search" element={<SearchPage />} />
