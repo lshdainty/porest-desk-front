@@ -114,7 +114,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             title="캘린더 관리·공유"
             description="여러 캘린더를 만들고 가족·친구를 초대해 일정을 함께 관리할 수 있어요."
             actions={
-              <Button onClick={() => setCreating(true)}>
+              <Button size="sm" onClick={() => setCreating(true)}>
                 <Plus size={14} strokeWidth={2.4} />새 캘린더
               </Button>
             }

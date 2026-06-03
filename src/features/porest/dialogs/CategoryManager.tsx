@@ -151,7 +151,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             title="카테고리 관리"
             description="지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요."
             actions={
-              <Button onClick={() => setEditing({ kind: 'new' })}>
+              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
                 추가
               </Button>
