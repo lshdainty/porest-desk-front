@@ -234,7 +234,7 @@ export const SettingsPage = () => {
             gap: 2,
             padding: 8,
             background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-sm)',
             borderRadius: 'var(--radius-card)',
           }}
         >

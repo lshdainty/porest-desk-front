@@ -13,14 +13,16 @@ import { cn } from '@/shared/lib/index'
 const RadioList = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <RadioGroupPrimitive.Root
     ref={ref}
     className={cn(
-      'rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-surface-default overflow-hidden',
+      // shadow 카드 — border 대신 elevation. 내부 행 구분은 divide-y 유지.
+      'rounded-[var(--radius-lg)] bg-surface-default overflow-hidden',
       'divide-y divide-[var(--border-subtle)]',
       className,
     )}
+    style={{ boxShadow: 'var(--shadow-sm)', ...style }}
     {...props}
   />
 ))
