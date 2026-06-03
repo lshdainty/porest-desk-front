@@ -113,7 +113,9 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 }
 
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  background: 'var(--fg-income)',
+  // 스펙 toggle-group solid: active = bg-primary(#0147ad — 다크에서 light variant swap 안 함) + 흰글씨.
+  // (기존 --fg-income 은 fg-brand → 다크에서 primary-light(#5fa0e5)로 swap 돼 연한 파랑이 됨)
+  background: 'var(--bg-brand)',
   color: 'var(--fg-on-brand)',
   fontWeight: '700',
   boxShadow: 'var(--shadow-sm)',
