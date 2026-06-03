@@ -35,6 +35,7 @@ export interface AssetFormValues {
   institution?: string
   memo?: string
   sortOrder?: number
+  isIncludedInTotal?: YNType
   cardCatalogRowId?: number | null
 }
 

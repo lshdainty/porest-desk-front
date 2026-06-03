@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { CreditCard, Search, Trash2 } from 'lucide-react'
+import { CreditCard, Search, Trash2, Wallet } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -40,6 +40,7 @@ import {
   type AssetFormValues,
   type AssetType,
   type AssetUpdateFormValues,
+  type YNType,
 } from '@/entities/asset'
 
 export type AssetGroup = 'account' | 'card' | 'invest'
@@ -111,6 +112,7 @@ export function AssetEditDialog({
   const [query, setQuery] = useState('')
   const [name, setName] = useState(item?.assetName ?? '')
   const [memo, setMemo] = useState(item?.memo ?? '')
+  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(item?.isIncludedInTotal ?? 'Y')
   const [balanceStr, setBalanceStr] = useState<string>(
     item ? KRW(item.balance ?? 0) : '0',
   )
@@ -285,6 +287,7 @@ export function AssetEditDialog({
           currency: 'KRW',
           institution,
           color,
+          isIncludedInTotal,
           cardCatalogRowId: catalogId,
         })
       } else {
@@ -296,7 +299,7 @@ export function AssetEditDialog({
           institution,
           color,
           memo: memo.trim() || undefined,
-          isIncludedInTotal: item?.isIncludedInTotal,
+          isIncludedInTotal,
           cardCatalogRowId: catalogId,
         })
       }
@@ -314,6 +317,7 @@ export function AssetEditDialog({
           institution: brand,
           color: brandColor?.bg,
           memo: memo.trim() || undefined,
+          isIncludedInTotal,
         })
       } else {
         onUpdate({
@@ -324,7 +328,7 @@ export function AssetEditDialog({
           institution: brand,
           color: brandColor?.bg,
           memo: memo.trim() || undefined,
-          isIncludedInTotal: item?.isIncludedInTotal,
+          isIncludedInTotal,
         })
       }
       return
@@ -342,6 +346,7 @@ export function AssetEditDialog({
         institution: brand,
         color: brandColor?.bg,
         memo: memo.trim() || undefined,
+        isIncludedInTotal,
       })
     } else {
       onUpdate({
@@ -352,7 +357,7 @@ export function AssetEditDialog({
         institution: brand,
         color: brandColor?.bg,
         memo: memo.trim() || undefined,
-        isIncludedInTotal: item?.isIncludedInTotal,
+        isIncludedInTotal,
       })
     }
   }
@@ -707,6 +712,20 @@ export function AssetEditDialog({
               />
             </div>
           )}
+
+          <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
+              <Wallet size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-semibold text-[var(--fg-primary)]">전체 자산 합계에 포함</div>
+              <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">순자산·총자산 계산에 반영됩니다</div>
+            </div>
+            <Switch
+              checked={isIncludedInTotal === 'Y'}
+              onCheckedChange={(b) => setIsIncludedInTotal(b ? 'Y' : 'N')}
+            />
+          </div>
     </Fragment>
   )
 

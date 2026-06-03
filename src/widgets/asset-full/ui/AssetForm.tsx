@@ -1,9 +1,11 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Asset, AssetType, AssetFormValues, AssetUpdateFormValues } from '@/entities/asset'
+import { Wallet } from 'lucide-react'
+import type { Asset, AssetType, AssetFormValues, AssetUpdateFormValues, YNType } from '@/entities/asset'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { Switch } from '@/shared/ui/switch'
 import { Textarea } from '@/shared/ui/textarea'
 import {
   Select,
@@ -41,6 +43,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
   const [institution, setInstitution] = useState(asset?.institution ?? '')
   const [memo, setMemo] = useState(asset?.memo ?? '')
   const [color, setColor] = useState(asset?.color ?? DEFAULT_ASSET_COLOR)
+  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(asset?.isIncludedInTotal ?? 'Y')
   const [cardCatalogRowId, setCardCatalogRowId] = useState<number | null>(asset?.cardCatalog?.rowId ?? null)
 
   const isCardAsset = assetType === 'CREDIT_CARD' || assetType === 'CHECK_CARD'
@@ -71,12 +74,12 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       color,
       institution: institution || undefined,
       memo: memo || undefined,
+      isIncludedInTotal,
       cardCatalogRowId: isCardAsset ? cardCatalogRowId : null,
-      ...(asset ? { isIncludedInTotal: asset.isIncludedInTotal ?? 'Y' } : {}),
     }
 
     onSubmit(data)
-  }, [assetName, assetType, balance, color, institution, memo, cardCatalogRowId, isCardAsset, asset, onSubmit])
+  }, [assetName, assetType, balance, color, institution, memo, isIncludedInTotal, cardCatalogRowId, isCardAsset, onSubmit])
 
   const Footer = (
     <>
@@ -181,6 +184,20 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder={t('form.memoPlaceholder')}
+          />
+        </div>
+
+        <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
+            <Wallet size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold text-[var(--fg-primary)]">전체 자산 합계에 포함</div>
+            <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">순자산·총자산 계산에 반영됩니다</div>
+          </div>
+          <Switch
+            checked={isIncludedInTotal === 'Y'}
+            onCheckedChange={(b) => setIsIncludedInTotal(b ? 'Y' : 'N')}
           />
         </div>
       </div>
