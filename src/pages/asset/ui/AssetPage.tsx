@@ -877,7 +877,7 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
   const used = Math.abs(asset.balance)
   const usage = (used / asset.creditLimit) * 100
   const barColor =
-    usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--bg-brand)'
+    usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--fg-brand)'
 
   return (
     <div style={{ marginTop: 8 }}>
