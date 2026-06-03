@@ -123,7 +123,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
 
         {/* 안내 카드 */}
         <Card style={{ background: 'var(--bg-brand-subtle)' }}>
-          <CardContent>
+          <CardContent style={{ padding: 'var(--spacing-lg)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span
                 style={{
@@ -302,7 +302,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             초대 코드로 참여
           </div>
           <Card>
-            <CardContent>
+            <CardContent style={{ padding: 'var(--spacing-lg)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
                 <Field style={{ flex: 1, minWidth: 0 }}>
                   <FieldLabel>초대 코드</FieldLabel>
