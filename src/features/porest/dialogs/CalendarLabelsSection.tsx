@@ -54,7 +54,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
             title="캘린더 라벨"
             description="모든 캘린더에서 공용으로 사용되는 라벨이에요. 일정 등록 시 선택할 수 있어요."
             actions={
-              <Button onClick={() => setEditing({ kind: 'new' })}>
+              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />새 라벨
               </Button>
             }
