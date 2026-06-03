@@ -3,16 +3,17 @@ import {
   ChevronRight,
   Copy,
   Crown,
+  Eye,
   LogIn,
+  Pencil,
   Plus,
   RefreshCw,
-  Shield,
   Trash2,
-  User,
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent } from '@/shared/ui/card'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { getPaletteByColor, CHART_PAIRS } from '@/shared/lib/porest/chart-palette'
 import { useCurrentUser } from '@/features/user'
 import {
   useChangeMemberRole,
@@ -46,14 +48,28 @@ import type {
 
 const ROLE_ICON: Record<GroupRole, typeof Crown> = {
   OWNER: Crown,
-  ADMIN: Shield,
-  MEMBER: User,
+  EDIT: Pencil,
+  READ: Eye,
 }
 
 const ROLE_LABEL: Record<GroupRole, string> = {
   OWNER: '소유자',
-  ADMIN: '관리자',
-  MEMBER: '멤버',
+  EDIT: '편집 가능',
+  READ: '읽기 전용',
+}
+
+// 권한 배지 — badge.md "같은 카테고리는 한 style(outline)" 규칙: 색만 분기.
+const ROLE_BADGE_VARIANT: Record<GroupRole, 'outline-info' | 'outline-success' | 'outline'> = {
+  OWNER: 'outline-info',
+  EDIT: 'outline-success',
+  READ: 'outline',
+}
+
+// 멤버 아바타 — 권한 색 톤 (소유자 info / 편집 success / 읽기 neutral).
+const ROLE_AVATAR: Record<GroupRole, { bg: string; fg: string }> = {
+  OWNER: { bg: 'color-mix(in srgb, var(--color-info) 14%, transparent)', fg: 'var(--color-info)' },
+  EDIT: { bg: 'color-mix(in srgb, var(--color-success) 14%, transparent)', fg: 'var(--color-success)' },
+  READ: { bg: 'var(--bg-sunken)', fg: 'var(--fg-tertiary)' },
 }
 
 export function CalendarShareSection({ mobile }: { mobile: boolean }) {
@@ -194,7 +210,9 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                   </div>
                 </div>
               ) : (
-                list.map((group, i) => (
+                list.map((group, i) => {
+                  const pal = getPaletteByColor(group.color ?? group.groupTypeColor)
+                  return (
                   <div
                     key={group.rowId}
                     onClick={() => setManagingId(group.rowId)}
@@ -215,8 +233,8 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                         width: 32,
                         height: 32,
                         borderRadius: 'var(--radius-md)',
-                        background: 'var(--bg-brand)',
-                        color: 'var(--fg-on-brand)',
+                        background: pal.bg,
+                        color: pal.color,
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -264,7 +282,8 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                       style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }}
                     />
                   </div>
-                ))
+                  )
+                })
               )}
             </CardContent>
           </Card>
@@ -455,6 +474,7 @@ function ShareManageDialog({
               groupTypeId: detail.groupTypeId,
               groupTypeName: detail.groupTypeName,
               groupTypeColor: detail.groupTypeColor,
+              color: detail.color,
               inviteCode: detail.inviteCode,
               memberCount: detail.members.length,
               createAt: detail.createAt,
@@ -559,8 +579,8 @@ function ShareManageDialog({
                       width: 36,
                       height: 36,
                       borderRadius: 'var(--radius-pill)',
-                      background: 'var(--bg-brand)',
-                      color: 'var(--fg-on-brand)',
+                      background: ROLE_AVATAR[member.role].bg,
+                      color: ROLE_AVATAR[member.role].fg,
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -612,12 +632,12 @@ function ShareManageDialog({
                         }
                         disabled={roleMut.isPending}
                       >
-                        <SelectTrigger className="h-8 w-24 text-xs">
+                        <SelectTrigger className="h-8 w-28 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ADMIN">{ROLE_LABEL.ADMIN}</SelectItem>
-                          <SelectItem value="MEMBER">{ROLE_LABEL.MEMBER}</SelectItem>
+                          <SelectItem value="EDIT">{ROLE_LABEL.EDIT}</SelectItem>
+                          <SelectItem value="READ">{ROLE_LABEL.READ}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -632,19 +652,13 @@ function ShareManageDialog({
                       </Button>
                     </>
                   ) : (
-                    <span
-                      style={{
-                        fontSize: 'var(--text-badge)',
-                        fontWeight: '600',
-                        color: 'var(--fg-tertiary)',
-                        background: 'var(--bg-sunken)',
-                        padding: '2px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        flexShrink: 0,
-                      }}
+                    <Badge
+                      variant={ROLE_BADGE_VARIANT[member.role]}
+                      style={{ flexShrink: 0 }}
                     >
+                      <RoleIcon size={11} strokeWidth={2.2} />
                       {ROLE_LABEL[member.role]}
-                    </span>
+                    </Badge>
                   )}
                 </div>
               )
@@ -664,7 +678,7 @@ function CalendarCreateDialog({
 }: {
   onClose: () => void
   onCreate: (
-    values: { groupName: string; description?: string },
+    values: { groupName: string; description?: string; color?: string },
     onDone: () => void,
   ) => void
   submitting?: boolean
@@ -672,6 +686,7 @@ function CalendarCreateDialog({
 }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [color, setColor] = useState('#2c70bf') // 기본 blue (chart blue)
   const [touched, setTouched] = useState(false)
 
   const nameTrim = name.trim()
@@ -685,6 +700,7 @@ function CalendarCreateDialog({
       {
         groupName: nameTrim,
         description: description.trim() || undefined,
+        color,
       },
       onClose,
     )
@@ -732,6 +748,36 @@ function CalendarCreateDialog({
             {err}
           </div>
         )}
+      </Field>
+
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>색상</FieldLabel>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 2 }}>
+          {CHART_PAIRS.map((p) => {
+            const selected = color === p.base
+            return (
+              <button
+                key={p.key}
+                type="button"
+                aria-label={`색상 ${p.key}`}
+                onClick={() => setColor(p.base)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 'var(--radius-pill)',
+                  background: p.base,
+                  border: 'none',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  outline: selected
+                    ? '2px solid var(--fg-primary)'
+                    : '2px solid transparent',
+                  outlineOffset: 2,
+                }}
+              />
+            )
+          })}
+        </div>
       </Field>
 
       <Field>

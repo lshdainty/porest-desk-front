@@ -5,8 +5,7 @@ import {
   LogIn,
   Users,
   Crown,
-  Shield,
-  User,
+  Eye,
   Copy,
   RefreshCw,
   Trash2,
@@ -61,8 +60,8 @@ import type { GroupFormValues, UserGroup, GroupRole } from '@/entities/group'
 
 const roleIcons: Record<GroupRole, typeof Crown> = {
   OWNER: Crown,
-  ADMIN: Shield,
-  MEMBER: User,
+  EDIT: Pencil,
+  READ: Eye,
 }
 
 export const GroupFullWidget = () => {
@@ -282,12 +281,12 @@ export const GroupFullWidget = () => {
                                   }
                                   disabled={changeMemberRole.isPending}
                                 >
-                                  <SelectTrigger className="h-7 w-24 text-xs">
+                                  <SelectTrigger className="h-7 w-28 text-xs">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="ADMIN">{t('role.ADMIN')}</SelectItem>
-                                    <SelectItem value="MEMBER">{t('role.MEMBER')}</SelectItem>
+                                    <SelectItem value="EDIT">{t('role.EDIT')}</SelectItem>
+                                    <SelectItem value="READ">{t('role.READ')}</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <Button

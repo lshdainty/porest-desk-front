@@ -11,7 +11,8 @@ export interface GroupTypeFormValues {
   sortOrder?: number
 }
 
-export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER'
+// 공유 캘린더(그룹) 멤버 권한 — 소유자 / 편집가능 / 읽기전용 3단계.
+export type GroupRole = 'OWNER' | 'EDIT' | 'READ'
 
 export interface GroupMember {
   rowId: number
@@ -29,6 +30,7 @@ export interface UserGroup {
   groupTypeId: number | null
   groupTypeName: string | null
   groupTypeColor: string | null
+  color: string | null
   inviteCode: string
   memberCount: number
   createAt: string
@@ -41,6 +43,7 @@ export interface UserGroupDetail {
   groupTypeId: number | null
   groupTypeName: string | null
   groupTypeColor: string | null
+  color: string | null
   inviteCode: string
   members: GroupMember[]
   createAt: string
@@ -57,6 +60,7 @@ export interface GroupFormValues {
   groupName: string
   description?: string
   groupTypeId?: number | null
+  color?: string
 }
 
 export interface EventComment {
