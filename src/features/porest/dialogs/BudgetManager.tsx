@@ -70,6 +70,14 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     [budgetList],
   )
 
+  // 예산 추가 가능 카테고리 = EXPENSE top-level(BudgetEditDialog 의 selectable 과 동일).
+  // 전부 예산 보유 시 "예산 추가" 버튼 비활성화.
+  const allCategoriesBudgeted = useMemo(() => {
+    const top = categoryList.filter(c => c.expenseType === 'EXPENSE' && c.parentRowId == null)
+    const used = new Set(categoryBudgets.map(b => b.categoryRowId))
+    return top.length > 0 && top.every(c => used.has(c.rowId))
+  }, [categoryList, categoryBudgets])
+
   // 카테고리별 실제 사용 금액: monthlySummary.categoryBreakdown 을 categoryRowId + 부모 카테고리(roll-up) 기준으로 집계
   const spentByCategory = useMemo(() => {
     const map = new Map<number, number>()
@@ -362,9 +370,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               size="sm"
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditing('new')}
-              disabled={loading}
+              disabled={loading || allCategoriesBudgeted}
+              title={allCategoriesBudgeted ? '모든 카테고리에 이미 예산이 설정되어 있어요' : undefined}
             >
-              <Plus size={14} /> {mobile ? '추가' : '카테고리 예산 추가'}
+              <Plus size={14} /> 예산 추가
             </Button>
           </div>
 
@@ -387,7 +396,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 <div
                   key={b.rowId}
                   className={MANAGE_ROW.className}
-                  style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}
+                  style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
+                  onClick={mobile ? () => setEditing(b) : undefined}
+                  role={mobile ? 'button' : undefined}
                 >
                   <span
                     style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
