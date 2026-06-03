@@ -32,6 +32,7 @@ import {
   RecurringManager,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
+import { useTheme } from '@/shared/ui/theme-provider'
 import { useCurrentUser } from '@/features/user'
 import { useAuth } from '@/features/auth'
 import { Switch } from '@/shared/ui/switch'
@@ -117,6 +118,7 @@ const MENU_GROUPS: GroupDef[] = [
 
 export const SettingsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { resolvedTheme } = useTheme()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const querySection = (() => {
@@ -241,6 +243,12 @@ export const SettingsPage = () => {
           {SECTIONS.map(s => {
             const IconComp = s.icon
             const active = section === s.id
+            // 다크모드: 아이콘·텍스트를 light variant 로 끌어올려 가독성 확보(클로드 디자인 정합).
+            //   inactive #b0b8c4 → fg-primary(near-white), active #0147ad → primary-light(#5fa0e5).
+            const dark = resolvedTheme === 'dark'
+            const navColor = active
+              ? dark ? 'var(--color-primary-light)' : 'var(--fg-brand-strong)'
+              : dark ? 'var(--fg-primary)' : 'var(--fg-secondary)'
             return (
               <button
                 key={s.id}
@@ -252,7 +260,7 @@ export const SettingsPage = () => {
                   padding: '9px 12px',
                   border: 0,
                   background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                  color: active ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
+                  color: navColor,
                   borderRadius: 'var(--radius-tile)',
                   fontSize: 'var(--text-label-sm)',
                   fontWeight: active ? 600 : 500,
