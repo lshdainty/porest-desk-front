@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import { PresetEditDialog } from './PresetEditDialog'
@@ -179,6 +180,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         ) : (
           sorted.map((p, i) => {
             const cat = p.categoryRowId != null ? categoryById.get(p.categoryRowId) : undefined
+            const palette = cat ? getPaletteByColor(cat.color) : null
             const lock = p.lockAmount === 'Y'
             const amountDisplay = lock && p.amount != null ? KRW(p.amount) : '—'
             return (
@@ -198,10 +200,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     width: 40,
                     height: 40,
                     borderRadius: 'var(--radius-tile)',
-                    background: cat
-                      ? `color-mix(in oklch, ${cat.color ?? 'var(--bg-brand)'} 18%, transparent)`
-                      : 'var(--bg-sunken)',
-                    color: cat?.color ?? 'var(--fg-tertiary)',
+                    background: palette ? palette.bg : 'var(--bg-sunken)',
+                    color: palette ? palette.color : 'var(--fg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

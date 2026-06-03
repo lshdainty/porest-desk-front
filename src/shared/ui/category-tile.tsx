@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { renderIcon, tileRadius } from "@/shared/lib"
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette"
 
 /**
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`
@@ -22,11 +23,12 @@ export interface CategoryTileProps {
 
 export function CategoryTile({
   name,
-  color = "var(--bg-brand)",
+  color,
   icon,
   active,
   onClick,
 }: CategoryTileProps) {
+  const palette = getPaletteByColor(color)
   return (
     <button
       type="button"
@@ -51,9 +53,9 @@ export function CategoryTile({
           width: 32,
           height: 32,
           borderRadius: tileRadius(32),
-          // 18% color-mix — 다크모드에서도 자연스럽게 채도 유지.
-          background: `color-mix(in oklch, ${color} 18%, transparent)`,
-          color,
+          // getPaletteByColor: 팔레트 base hex → --color-cat-* alias(다크 자동 light swap) + 18% bg.
+          background: palette.bg,
+          color: palette.color,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
