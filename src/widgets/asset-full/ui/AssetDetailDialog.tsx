@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Eye, EyeOff, Pencil } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Pencil, TrendingUp, Wallet } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard } from '@/features/asset'
+import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -75,16 +76,109 @@ const groupOf = (asset: Asset): AssetGroup => {
   return 'account'
 }
 
-// 청구 상태 배지 — COMPLETED=success / PENDING=neutral / FAILED=danger / SKIPPED=neutral
-const BILLING_STATUS_META: Record<BillingStatus, { label: string; variant: 'success' | 'secondary' | 'error' }> = {
+// 청구 상태 배지 — app _StatusBadge 미러: COMPLETED=success / PENDING=warning / FAILED=error / SKIPPED=neutral
+const BILLING_STATUS_META: Record<BillingStatus, { label: string; variant: 'success' | 'secondary' | 'warning' | 'error' }> = {
   COMPLETED: { label: '완료', variant: 'success' },
-  PENDING: { label: '대기', variant: 'secondary' },
+  PENDING: { label: '대기', variant: 'warning' },
   FAILED: { label: '실패', variant: 'error' },
   SKIPPED: { label: '건너뜀', variant: 'secondary' },
 }
 
-function CardBillingSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
-  const { data: billing, isLoading } = useCardBilling(asset.rowId)
+/** 'yyyy-MM-dd' → 'M.d' 표기 — app _fmtDate 미러. */
+function fmtBillingDate(iso: string): string {
+  const [, mm, dd] = iso.split('-')
+  if (mm == null || dd == null) return iso
+  const m = parseInt(mm, 10)
+  const d = parseInt(dd, 10)
+  if (!Number.isFinite(m) || !Number.isFinite(d)) return iso
+  return `${m}.${d}`
+}
+
+function currentYearMonth(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+// 카드 월 실적 카드 — app CardPerformanceBar 미러.
+// 헤더('YYYY-MM 실적' + pct%) / progress 8px / 사용·필요액 + 남은/달성 / requiredText.
+// 실적 무관 카드면 숨김. 달성(100%↑) 시 bar·% status-success, 미만은 fg-brand(다크 primary-light).
+function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
+  const ym = currentYearMonth()
+  const { data: p } = useCardPerformance(assetRowId, ym)
+  if (!p || !p.isRequired || p.requiredAmount == null) return null
+  const rate = Math.min(Math.max(p.achievementRate, 0), 1.5)
+  const pct = Math.trunc(rate * 100)
+  const overrun = p.achievementRate >= 1.0
+  const barColor = overrun ? 'var(--status-success)' : 'var(--fg-brand)'
+  return (
+    <div
+      style={{
+        padding: 12,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        marginBottom: 18,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <TrendingUp size={14} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
+        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          {ym} 실적
+        </span>
+        <span
+          className="num"
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: barColor }}
+        >
+          {pct}%
+        </span>
+      </div>
+      <div
+        style={{
+          height: 8, background: 'var(--bg-track)',
+          borderRadius: 'var(--radius-xs)', overflow: 'hidden', margin: '6px 0',
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, rate * 100)}%`, height: '100%',
+            background: barColor, borderRadius: 'var(--radius-xs)',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)',
+        }}
+      >
+        <span className="num">
+          <MaskAmount mask="•••">{KRW(p.currentAmount)}</MaskAmount>
+          {' / '}
+          <MaskAmount mask="•••">{KRW(p.requiredAmount)}</MaskAmount>
+          <HideUnit>원</HideUnit>
+        </span>
+        {!p.isAchieved && p.remainingAmount != null ? (
+          <span className="num" style={{ marginLeft: 'auto' }}>
+            남은 <MaskAmount mask="•••">{KRW(p.remainingAmount)}</MaskAmount>
+            <HideUnit>원</HideUnit>
+          </span>
+        ) : (
+          <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>달성</span>
+        )}
+      </div>
+      {p.requiredText && (
+        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+          {p.requiredText}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 신용카드 청구 사이클 — app _CardBillingSection 미러.
+// 단일 bordered 카드 안에 [결제 예정 + 예정일 M.d] / [금액 + 지금 결제] / 매월 N일 결제 / divider / 청구 이력.
+function CardBillingSection({ asset }: { asset: Asset }) {
+  const { data: billing, isLoading, isError } = useCardBilling(asset.rowId)
   const payCard = usePayCard()
   const [confirmPay, setConfirmPay] = useState(false)
 
@@ -103,123 +197,135 @@ function CardBillingSection({ asset, mobile }: { asset: Asset; mobile: boolean }
 
   const upcomingAmount = billing?.upcomingAmount ?? Math.abs(asset.balance)
   const nextPaymentDate = billing?.nextPaymentDate ?? null
+  const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null
   const history: BillingItem[] = billing?.history ?? []
+  const canPay = upcomingAmount > 0 && !payCard.isPending
+
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: 'var(--radius-lg)',
+    padding: 16,
+    marginBottom: 18,
+  }
+
+  if (isLoading) {
+    return (
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <SkeletonBase className="h-4 w-16" />
+          <SkeletonBase className="h-3 w-10" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 8 }}>
+          <SkeletonBase className="h-7 w-28" />
+          <SkeletonBase className="h-8 w-24 rounded-md" />
+        </div>
+        <SkeletonBase className="h-3 w-24 mt-2" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div style={cardStyle}>
+        <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
+          청구 정보를 불러오지 못했어요
+        </span>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ marginBottom: 18 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: mobile ? 'flex-start' : 'center',
-          flexDirection: mobile ? 'column' : 'row',
-          gap: 12,
-          padding: '16px 18px',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: 14,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
-            결제 예정액
-          </div>
-          <div
+    <div style={cardStyle}>
+      {/* 헤더: 결제 예정 + 다음 결제일 M.d */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          결제 예정
+        </span>
+        {nextPaymentDate && (
+          <span
             className="num"
-            style={{ fontSize: 'var(--text-body-lg)', fontWeight: '800', color: 'var(--fg-expense)', letterSpacing: '-0.012em' }}
+            style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}
           >
-            <MaskAmount>−{KRW(upcomingAmount)}</MaskAmount>
-            <HideUnit>원</HideUnit>
-          </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {nextPaymentDate ? `결제 예정일 ${nextPaymentDate}` : '결제일 미설정'}
-          </div>
+            {fmtBillingDate(nextPaymentDate)}
+          </span>
+        )}
+      </div>
+
+      {/* 금액 + 지금 결제 */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 8 }}>
+        <div
+          className="num"
+          style={{
+            fontWeight: '700',
+            letterSpacing: '-0.012em',
+            color: upcomingAmount > 0 ? 'var(--status-danger-fg)' : 'var(--fg-primary)',
+          }}
+        >
+          <MaskAmount>
+            <span style={{ fontSize: 'var(--text-display-sm)' }}>{KRW(upcomingAmount)}</span>
+          </MaskAmount>
+          <HideUnit>
+            <span style={{ fontSize: 'var(--text-body-sm)' }}>원</span>
+          </HideUnit>
         </div>
         <Button
           variant="default"
           size="sm"
-          disabled={upcomingAmount <= 0 || payCard.isPending}
+          style={{ marginLeft: 'auto' }}
+          disabled={!canPay}
           onClick={() => setConfirmPay(true)}
-          style={mobile ? { width: '100%' } : undefined}
         >
+          <Wallet size={14} />
           지금 결제
         </Button>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-          청구 이력{history.length > 0 ? ` (${history.length})` : ''}
-        </h4>
-      </div>
-      <div
-        style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
-        }}
-      >
-        {isLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '14px' }}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-                  <SkeletonBase className="h-3 w-1/3" />
-                </div>
-                <SkeletonBase className="h-4 w-20 shrink-0" />
-              </div>
-            ))}
+      {paymentDay != null && (
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
+          매월 {paymentDay}일 결제
+        </div>
+      )}
+
+      {/* 청구 이력 — divider 아래 같은 카드 내부 (app 정합) */}
+      {history.length > 0 && (
+        <>
+          <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '12px 0 8px' }} />
+          <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>
+            청구 이력
           </div>
-        ) : history.length === 0 ? (
-          <div
-            style={{
-              padding: '24px 0',
-              textAlign: 'center',
-              color: 'var(--fg-tertiary)',
-              fontSize: 'var(--text-label-sm)',
-            }}
-          >
-            청구 이력이 없어요.
-          </div>
-        ) : (
-          history.map((b, i) => {
-            const meta = BILLING_STATUS_META[b.status]
-            return (
-              <div
-                key={b.rowId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 16px',
-                  borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ marginTop: 4 }}>
+            {history.map(b => {
+              const meta = BILLING_STATUS_META[b.status]
+              return (
+                <div key={b.rowId} style={{ padding: '8px 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
-                      {b.paymentDate}
+                    <span
+                      className="num"
+                      style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}
+                    >
+                      <MaskAmount>{KRW(b.billingAmount)}</MaskAmount>
+                      <HideUnit>원</HideUnit>
                     </span>
                     <Badge variant={meta.variant}>{meta.label}</Badge>
                   </div>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                    {b.periodStart} ~ {b.periodEnd}
-                    {b.failureReason ? ` · ${b.failureReason}` : ''}
+                  <div
+                    className="num"
+                    style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}
+                  >
+                    {fmtBillingDate(b.periodStart)} ~ {fmtBillingDate(b.periodEnd)} · 결제일 {fmtBillingDate(b.paymentDate)}
                   </div>
+                  {b.failureReason && (
+                    <div style={{ fontSize: 'var(--text-badge)', color: 'var(--status-danger-fg)', marginTop: 2 }}>
+                      {b.failureReason}
+                    </div>
+                  )}
                 </div>
-                <span
-                  className="num"
-                  style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', flexShrink: 0, color: 'var(--fg-expense)' }}
-                >
-                  <MaskAmount>−{KRW(b.billingAmount)}</MaskAmount>
-                  <HideUnit>원</HideUnit>
-                </span>
-              </div>
-            )
-          })
-        )}
-      </div>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {confirmPay && (
         <ConfirmDialog
@@ -372,10 +478,11 @@ export function AssetDetailDialog({
         </div>
       </div>
 
-      {/* Card billing cycle (CREDIT_CARD 전용) */}
-      {isCard && asset.assetType === 'CREDIT_CARD' && (
-        <CardBillingSection asset={asset} mobile={mobile} />
-      )}
+      {/* 카드 월 실적 (카드 공통) — app CardPerformanceBar 미러 */}
+      {isCard && <CardPerformanceCard assetRowId={asset.rowId} />}
+
+      {/* Card billing cycle (CREDIT_CARD 전용) — app _CardBillingSection 미러 */}
+      {asset.assetType === 'CREDIT_CARD' && <CardBillingSection asset={asset} />}
 
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
