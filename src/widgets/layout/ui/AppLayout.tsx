@@ -16,7 +16,7 @@ import { useEventLabels } from '@/features/event-label'
 const MONEY_PATHS = ['/desk/expense', '/desk/asset', '/desk/stats', '/desk/budget']
 const CALENDAR_PATH = '/desk/calendar'
 // 모바일 풀스크린 페이지 — 전역 헤더/탭바 없이 페이지 자체 ← 헤더로 렌더 (앱 push 화면 미러).
-const FULLSCREEN_PATHS = ['/desk/memo', '/desk/todo']
+const FULLSCREEN_PATHS = ['/desk/memo', '/desk/todo', '/desk/dutch-pay', '/desk/card-benefit']
 
 /** 캘린더 일정 생성 폼 — AppLayout에서 + 버튼 클릭 시 마운트. */
 const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => {

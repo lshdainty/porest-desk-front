@@ -7,6 +7,7 @@ import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { Spinner } from '@/shared/ui/spinner'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { decodeHtml } from '@/shared/lib'
 import { useCardCatalogs, useInfiniteCardCatalogs } from '@/features/card-catalog'
 import type {
@@ -828,7 +829,10 @@ export const CardBenefitPage = () => {
   return (
     <>
       {mobile ? (
-        <div style={{ padding: '16px 16px 24px' }}>{Controls}</div>
+        <>
+          <MobileBackHeader title="카드 혜택" />
+          <div style={{ padding: '16px 16px 24px' }}>{Controls}</div>
+        </>
       ) : (
         <div style={{ padding: 0 }}>
           <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>

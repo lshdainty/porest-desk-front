@@ -24,6 +24,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount, HideUnit } from '@/shared/lib/porest/hide-amounts'
@@ -406,7 +407,9 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 모바일 ────────────────────────────────────────────────────────────────
   if (mobile) {
     return (
-      <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+      <>
+        <MobileBackHeader title="더치페이" />
+        <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {Summary}
           {Tabs}
@@ -419,7 +422,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           className="m-fab"
           style={{
             position: 'fixed',
-            bottom: 88,
+            // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
+            bottom: 24,
             right: 18,
             width: 52,
             height: 52,
@@ -438,7 +442,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           <Plus size={22} strokeWidth={2.5} />
         </button>
         {dialogs}
-      </div>
+        </div>
+      </>
     )
   }
 
@@ -1406,13 +1411,16 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
 
   if (mobile) {
     return (
-      <div style={{ padding: '16px 16px 96px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {Summary}
-          {Tabs}
-          {Cards}
+      <>
+        <MobileBackHeader title="더치페이" />
+        <div style={{ padding: '16px 16px 96px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {Summary}
+            {Tabs}
+            {Cards}
+          </div>
         </div>
-      </div>
+      </>
     )
   }
   return (
