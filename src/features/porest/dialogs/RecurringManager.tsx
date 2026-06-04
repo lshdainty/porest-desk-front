@@ -17,6 +17,7 @@ import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
+import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import {
   useDeleteRecurringTransaction,
   useRecurringTransactions,
@@ -152,15 +153,15 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               </div>
               <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
-                <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
+                <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+                <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               </div>
             </>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
               <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
-              <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
-              <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
+              <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+              <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
             </div>
           )}
@@ -236,7 +237,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
-                    {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
+                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 </div>
               )
@@ -423,7 +424,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       opacity: isActive ? 1 : 0.55,
                     }}
                   >
-                    {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
+                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -440,7 +441,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           opacity: isActive ? 1 : 0.55,
                         }}
                       >
-                        {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
+                        <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                       </span>
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <button
@@ -693,7 +694,7 @@ function RecStat({
   tone,
 }: {
   label: string
-  value: string
+  value: React.ReactNode
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
   tone?: 'expense' | 'income' | 'muted'
 }) {

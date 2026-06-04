@@ -10,6 +10,7 @@ import {
 } from '@/features/expense'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { KRW } from '@/shared/lib/porest/format'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -256,8 +257,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
               {monthlyBudget ? (
                 <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.022em' }}>
-                  {KRW(monthlyLimit)}
-                  <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
+                  <MaskAmount>{KRW(monthlyLimit)}</MaskAmount>
+                  <HideUnit>
+                    <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
+                  </HideUnit>
                 </div>
               ) : (
                 <div style={{ fontSize: 'var(--text-body-lg)', color: 'var(--fg-tertiary)', fontWeight: '600' }}>
@@ -308,7 +311,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 사용
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
-                {KRW(totalSpent)}
+                <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
               </div>
             </div>
             <div>
@@ -316,7 +319,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 할당됨
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
-                {KRW(totalAssigned)}
+                <MaskAmount mask="••••">{KRW(totalAssigned)}</MaskAmount>
               </div>
             </div>
             <div>
@@ -331,8 +334,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
-                {remaining >= 0 ? '+' : ''}
-                {KRW(remaining)}
+                <MaskAmount mask="••••">
+                  {remaining >= 0 ? '+' : ''}
+                  {KRW(remaining)}
+                </MaskAmount>
               </div>
             </div>
           </div>
@@ -352,7 +357,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               }}
             >
               <AlertTriangle size={13} />
-              카테고리 한도 합이 전체 상한을 {KRW(Math.abs(remaining))}원 초과했어요.
+              카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(Math.abs(remaining))}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
               전체 상한을 올리거나 카테고리 한도를 줄여주세요.
             </div>
           )}
@@ -417,10 +422,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
-                        {KRW(spent)}
+                        <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
                         <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>
                           {' '}
-                          / {KRW(limitAmt)}
+                          / <MaskAmount mask="••••">{KRW(limitAmt)}</MaskAmount>
                         </span>
                       </div>
                     </div>
@@ -431,9 +436,17 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       />
                     </div>
                     <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-                      {state === 'over'
-                        ? `${KRW(spent - limitAmt)}원 초과`
-                        : `남은 예산 ${KRW(Math.max(0, limitAmt - spent))}원`}
+                      {state === 'over' ? (
+                        <>
+                          <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
+                          <HideUnit>원</HideUnit> 초과
+                        </>
+                      ) : (
+                        <>
+                          남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                          <HideUnit>원</HideUnit>
+                        </>
+                      )}
                     </div>
                   </div>
                   {!mobile && (
