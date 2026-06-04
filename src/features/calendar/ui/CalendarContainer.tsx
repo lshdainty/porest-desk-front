@@ -1,4 +1,5 @@
 import { isSameDay, parseISO } from 'date-fns'
+import { X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,7 +24,7 @@ import { CalendarYearView } from '@/features/calendar/ui/year-view/calendar-year
 import { CalendarYearViewSkeleton } from '@/features/calendar/ui/year-view/calendar-year-view-skeleton'
 
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
-import { Drawer, DrawerBody, DrawerContent } from '@/shared/ui/drawer'
+import { Drawer, DrawerBody, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/shared/ui/drawer'
 import { Popover, PopoverAnchor, PopoverContent } from '@/shared/ui/popover'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -235,10 +236,22 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         </DndProviderWrapper>
       </div>
 
-      {/* Event Detail — 모바일은 앱처럼 bottom Drawer, 데스크톱·태블릿은 Popover */}
+      {/* Event Detail — 모바일은 표준 모바일 drawer 패턴(DrawerHeader+제목+X), 데스크톱·태블릿은 Popover */}
       {isMobile ? (
         <Drawer open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
           <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle className="flex-1">일정 상세</DrawerTitle>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </DrawerClose>
+            </DrawerHeader>
             <DrawerBody className="pb-5">
               {selectedEvent && (
                 <EventDetailPopover
