@@ -1,99 +1,129 @@
+import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Plus } from 'lucide-react'
-import { useTodos, useToggleTodoStatus } from '@/features/todo'
-import type { Todo, TodoPriority } from '@/entities/todo'
+import {
+  Plus,
+  Check,
+  Sparkles,
+  CheckCheck,
+  AlignLeft,
+  Settings2,
+  Flame,
+  CircleDot,
+  Leaf,
+  Trash2,
+} from 'lucide-react'
+import {
+  useTodos,
+  useCreateTodo,
+  useUpdateTodo,
+  useToggleTodoStatus,
+  useDeleteTodo,
+} from '@/features/todo'
+import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
-import { Checkbox } from '@/shared/ui/checkbox'
+import { Input } from '@/shared/ui/input'
+import { Textarea } from '@/shared/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import { Field, FieldLabel } from '@/shared/ui/field'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
-// 세 priority 모두 *-subtle bg + *-fg text 패턴으로 통일 (라이트/다크 자동 swap).
-const PRIORITY_STYLE: Record<TodoPriority, { bg: string; fg: string; label: string }> = {
-  HIGH: { bg: 'var(--status-danger-subtle)', fg: 'var(--status-danger-fg)', label: '중요' },
-  MEDIUM: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)', label: '보통' },
-  LOW: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)', label: '여유' },
+// 태그 select 옵션 7종 (양 플랫폼 공통 확정). category 필드에 저장. 기본값 '개인'.
+const TAG_OPTIONS = ['가계부', '자산', '결제', '업무', '개인', '건강', '고정비'] as const
+const DEFAULT_TAG = '개인'
+
+// 우선순위 칩/아이콘 스타일 (양 플랫폼 공통 확정).
+//  high = chart-red + bg 14% 틴트 / med = chart-orange + 14% 틴트 /
+//  low  = fg-tertiary + bg-sunken.
+const PRIO: Record<
+  TodoPriority,
+  { label: string; color: string; bg: string; order: number }
+> = {
+  HIGH: {
+    label: '중요',
+    color: 'var(--color-chart-red)',
+    bg: 'color-mix(in oklab, var(--color-chart-red) 14%, var(--bg-surface))',
+    order: 0,
+  },
+  MEDIUM: {
+    label: '보통',
+    color: 'var(--color-chart-orange)',
+    bg: 'color-mix(in oklab, var(--color-chart-orange) 14%, var(--bg-surface))',
+    order: 1,
+  },
+  LOW: {
+    label: '여유',
+    color: 'var(--fg-tertiary)',
+    bg: 'var(--bg-sunken)',
+    order: 2,
+  },
+}
+const PRIO_ORDER: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
+
+type FilterKey = 'today' | 'week' | 'all' | 'done'
+
+// ── 날짜 유틸 ──────────────────────────────────────────────────────────────
+const DOW = ['일', '월', '화', '수', '목', '금', '토']
+
+/** 로컬 오늘 'YYYY-MM-DD'. */
+function todayISO(): string {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
 }
 
-/** TodoPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
+/** dueDate(날짜 또는 datetime) → 'YYYY-MM-DD'. nullable. */
+function dueKey(due: string | null | undefined): string | null {
+  if (!due) return null
+  return due.slice(0, 10)
+}
+
+/** 두 'YYYY-MM-DD' 사이 일수 차이 (b - a). */
+function dayDiff(a: string, b: string): number {
+  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000)
+}
+
+/** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
+function kDate(s: string): { md: string; full: string } {
+  const [y, m, d] = s.split('-').map(Number)
+  const dow = DOW[new Date(y!, m! - 1, d!).getDay()]
+  return { md: `${m}월 ${d}일`, full: `${m}월 ${d}일 (${dow})` }
+}
+
+/** 상대 시간: 오늘/내일/어제/N일 후/N일 전(±7) · 그 외 'M월 D일'. */
+function relativeDate(due: string, today: string): string {
+  const diff = dayDiff(today, due)
+  if (diff === 0) return '오늘'
+  if (diff === 1) return '내일'
+  if (diff === -1) return '어제'
+  if (diff > 0 && diff <= 7) return `${diff}일 후`
+  if (diff < 0 && diff >= -7) return `${-diff}일 전`
+  return kDate(due).md
+}
+
+const NO_DUE_KEY = '￿' // 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel
+
+function isDone(t: Todo): boolean {
+  return t.status === 'COMPLETED'
+}
+/** Todo.category → 태그 라벨 (없으면 '개인'). */
+function todoTag(t: Todo): string {
+  return t.category || DEFAULT_TAG
+}
+
+/** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useTodoPageData() {
   const todosQ = useTodos()
-  return {
-    isLoading: todosQ.isLoading,
-  }
-}
-
-/** Todo row skeleton — checkbox + title + meta + priority badge. */
-function TodoRowSkeleton() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '12px 14px',
-        borderRadius: 'var(--radius-tile)',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-      }}
-    >
-      <SkeletonBase className="h-[18px] w-[18px] rounded-sm shrink-0" />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <SkeletonBase className="h-4 w-3/5 mb-1.5" />
-        <SkeletonBase className="h-3 w-1/3" />
-      </div>
-      <SkeletonBase className="h-5 w-12 rounded-full shrink-0" />
-    </div>
-  )
-}
-
-function TodoSectionSkeleton({ rows = 3 }: { rows?: number }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <SkeletonBase className="h-3 w-20 mb-1" />
-      {Array.from({ length: rows }).map((_, i) => (
-        <TodoRowSkeleton key={i} />
-      ))}
-    </div>
-  )
-}
-
-/** Todo 페이지 구조 일치 skeleton — 헤더 + 추가 버튼 + 진행중/완료 섹션. */
-function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
-  const Body = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <TodoSectionSkeleton rows={3} />
-      <TodoSectionSkeleton rows={2} />
-    </div>
-  )
-
-  if (mobile) {
-    return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <SkeletonBase className="h-7 w-16" />
-          <div style={{ marginLeft: 'auto' }}>
-            <SkeletonBase className="h-9 w-24 rounded-md" />
-          </div>
-        </div>
-        {Body}
-      </div>
-    )
-  }
-  return (
-    <div style={{ padding: 0 }}>
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
-        <div>
-          <SkeletonBase className="h-8 w-20 mb-2" />
-          <SkeletonBase className="h-4 w-32" />
-        </div>
-        <div className="right">
-          <SkeletonBase className="h-9 w-28 rounded-md" />
-        </div>
-      </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 720 }}>{Body}</div>
-    </div>
-  )
+  return { isLoading: todosQ.isLoading }
 }
 
 export const TodoPage = () => {
@@ -105,196 +135,949 @@ export const TodoPage = () => {
 
 const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const todosQ = useTodos()
+  const createTodo = useCreateTodo()
+  const updateTodo = useUpdateTodo()
   const toggleStatus = useToggleTodoStatus()
+  const deleteTodo = useDeleteTodo()
 
-  const todos: Todo[] = todosQ.data ?? []
-  const pending = todos.filter(t => t.status !== 'COMPLETED')
-  const done = todos.filter(t => t.status === 'COMPLETED')
+  const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data])
+  const today = useMemo(() => todayISO(), [])
 
-  const Row = (t: Todo) => {
-    const prio = PRIORITY_STYLE[t.priority]
-    const isDone = t.status === 'COMPLETED'
+  const [filter, setFilter] = useState<FilterKey>('today')
+  const [quickAdd, setQuickAdd] = useState('')
+  // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
+  const [editing, setEditing] = useState<Todo | { _new: true } | null>(null)
+
+  const inSevenDays = (key: string | null): boolean => {
+    if (!key) return false
+    const diff = dayDiff(today, key)
+    return diff >= 0 && diff <= 7
+  }
+
+  // 필터별 카운트 (칩 뱃지).
+  const counts = useMemo(() => {
+    let t = 0
+    let w = 0
+    let a = 0
+    let d = 0
+    for (const todo of todos) {
+      if (isDone(todo)) {
+        d++
+        continue
+      }
+      a++
+      const key = dueKey(todo.dueDate)
+      if (key === today) t++
+      if (inSevenDays(key)) w++
+    }
+    return { today: t, week: w, all: a, done: d }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todos, today])
+
+  const completedPct =
+    todos.length > 0
+      ? Math.round((counts.done / todos.length) * 100)
+      : 0
+
+  // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
+  const groups = useMemo(() => {
+    let visible: Todo[]
+    if (filter === 'today')
+      visible = todos.filter(t => !isDone(t) && dueKey(t.dueDate) === today)
+    else if (filter === 'week')
+      visible = todos.filter(t => !isDone(t) && inSevenDays(dueKey(t.dueDate)))
+    else if (filter === 'all') visible = todos.filter(t => !isDone(t))
+    else visible = todos.filter(isDone)
+
+    const sorted = [...visible].sort((a, b) => {
+      const pa = PRIO[a.priority].order
+      const pb = PRIO[b.priority].order
+      if (pa !== pb) return pa - pb
+      const da = dueKey(a.dueDate) ?? NO_DUE_KEY
+      const db = dueKey(b.dueDate) ?? NO_DUE_KEY
+      return da.localeCompare(db)
+    })
+
+    const map = new Map<string, Todo[]>()
+    for (const t of sorted) {
+      const k = dueKey(t.dueDate) ?? NO_DUE_KEY
+      const arr = map.get(k)
+      if (arr) arr.push(t)
+      else map.set(k, [t])
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todos, filter, today])
+
+  const handleQuickAdd = () => {
+    const v = quickAdd.trim()
+    if (!v) return
+    createTodo.mutate(
+      {
+        title: v,
+        priority: 'MEDIUM',
+        category: DEFAULT_TAG,
+        dueDate: today,
+      },
+      { onSuccess: () => setQuickAdd('') },
+    )
+  }
+
+  const onSave = (values: TodoFormValues, id?: number) => {
+    if (id != null)
+      updateTodo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
+    else createTodo.mutate(values, { onSuccess: () => setEditing(null) })
+  }
+  const onDelete = (id: number) => {
+    deleteTodo.mutate(id, { onSuccess: () => setEditing(null) })
+  }
+
+  // ── 통계 3카드 ────────────────────────────────────────────────────────────
+  const StatCards = (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: mobile ? 8 : 12,
+      }}
+    >
+      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+        <div style={statLabel}>오늘</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span
+            className="num"
+            style={{
+              ...statNum(mobile),
+              color: counts.today > 0 ? 'var(--color-primary)' : 'var(--fg-primary)',
+            }}
+          >
+            {counts.today}
+          </span>
+          <span style={statUnit}>건</span>
+        </div>
+      </div>
+      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+        <div style={statLabel}>이번 주</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span className="num" style={statNum(mobile)}>
+            {counts.week}
+          </span>
+          <span style={statUnit}>건</span>
+        </div>
+      </div>
+      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+        <div style={statLabel}>완료율</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span
+            className="num"
+            style={{ ...statNum(mobile), color: 'var(--status-success-fg)' }}
+          >
+            {completedPct}
+          </span>
+          <span style={{ ...statUnit, fontSize: 14 }}>%</span>
+        </div>
+        <div className="budget-bar" style={{ marginTop: 8, height: 6 }}>
+          <div
+            className="budget-bar__fill"
+            style={{ width: `${completedPct}%`, background: 'var(--status-success)' }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── 퀵추가 ────────────────────────────────────────────────────────────────
+  const QuickAdd = (
+    <div
+      className="p-card"
+      style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}
+    >
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--fg-tertiary)',
+          flexShrink: 0,
+        }}
+      >
+        <Plus size={18} />
+      </span>
+      <input
+        value={quickAdd}
+        onChange={e => setQuickAdd(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') handleQuickAdd()
+        }}
+        placeholder="할 일을 입력하고 Enter"
+        aria-label="할 일 빠른 추가"
+        style={{
+          flex: 1,
+          minWidth: 0,
+          border: 0,
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 14,
+          color: 'var(--fg-primary)',
+          padding: '8px 0',
+          fontFamily: 'inherit',
+        }}
+      />
+      <Button
+        size="sm"
+        onClick={handleQuickAdd}
+        loading={createTodo.isPending}
+        style={{ flexShrink: 0 }}
+      >
+        추가
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setEditing({ _new: true })}
+        style={{ flexShrink: 0 }}
+      >
+        <Settings2 size={13} /> 자세히
+      </Button>
+    </div>
+  )
+
+  // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
+  const FilterChips = (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {(
+        [
+          { id: 'today', label: '오늘', count: counts.today },
+          { id: 'week', label: '이번 주', count: counts.week },
+          { id: 'all', label: '전체', count: counts.all },
+          { id: 'done', label: '완료', count: counts.done },
+        ] as const
+      ).map(f => {
+        const active = filter === f.id
+        return (
+          <button
+            key={f.id}
+            className={`chip ${active ? 'active' : ''}`}
+            onClick={() => setFilter(f.id)}
+          >
+            {f.label}
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                fontVariantNumeric: 'tabular-nums',
+                opacity: active ? 0.85 : 0.55,
+                marginLeft: 2,
+              }}
+            >
+              {f.count}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  // ── 행 ────────────────────────────────────────────────────────────────────
+  const Row = ({ t, last }: { t: Todo; last: boolean }) => {
+    const prio = PRIO[t.priority]
+    const done = isDone(t)
+    const key = dueKey(t.dueDate)
+    const overdue = !done && !!key && key < today
     return (
-      <label
-        key={t.rowId}
+      <div
+        onClick={() => setEditing(t)}
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          padding: '12px 14px',
-          borderRadius: 'var(--radius-tile)',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
+          padding: '12px 4px',
           cursor: 'pointer',
-          opacity: isDone ? 0.55 : 1,
+          borderBottom: last ? 'none' : '1px solid var(--border-subtle)',
+          transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+          opacity: done ? 0.55 : 1,
         }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-muted)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <Checkbox
-          checked={isDone}
-          onCheckedChange={() => toggleStatus.mutate(t.rowId)}
-          onClick={(e) => e.stopPropagation()}
-        />
+        <button
+          type="button"
+          onClick={e => {
+            e.stopPropagation()
+            toggleStatus.mutate(t.rowId)
+          }}
+          aria-label={done ? '완료 취소' : '완료'}
+          aria-pressed={done}
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 999,
+            border: done
+              ? '0'
+              : `2px solid ${overdue ? 'var(--color-chart-red)' : 'var(--border-strong)'}`,
+            background: done ? 'var(--color-primary)' : 'transparent',
+            cursor: 'pointer',
+            flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            transition: 'all var(--motion-duration-fast) var(--motion-ease-out)',
+          }}
+        >
+          {done && <Check size={13} color="#fff" strokeWidth={3} />}
+        </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--text-body-sm)',
+              fontSize: 14,
               fontWeight: '600',
-              textDecoration: isDone ? 'line-through' : 'none',
               color: 'var(--fg-primary)',
+              letterSpacing: '-0.01em',
+              textDecoration: done ? 'line-through' : 'none',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {t.title}
           </div>
           <div
             style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 2,
               display: 'flex',
-              gap: 8,
               alignItems: 'center',
-              flexWrap: 'wrap',
+              gap: 8,
+              marginTop: 4,
+              fontSize: 12,
             }}
           >
-            {t.dueDate && <span>{t.dueDate.slice(5, 10)}</span>}
-            {t.tags && t.tags.length > 0 && (
+            <span
+              style={{
+                color: overdue ? 'var(--color-chart-red)' : 'var(--fg-tertiary)',
+                fontWeight: overdue ? '600' : '500',
+              }}
+            >
+              {key ? relativeDate(key, today) : '마감일 없음'}
+            </span>
+            <span style={dot} />
+            <span style={{ color: 'var(--fg-tertiary)' }}>{todoTag(t)}</span>
+            {t.content && (
               <>
-                {t.dueDate && <span>·</span>}
-                <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap' }}>
-                  {t.tags.map(tag => (
-                    <span
-                      key={tag.rowId}
-                      style={{
-                        fontSize: 'var(--text-badge)',
-                        fontWeight: '600',
-                        padding: '2px 7px',
-                        borderRadius: 'var(--radius-pill)',
-                        background: tag.color ? `${tag.color}22` : 'var(--bg-sunken)',
-                        color: tag.color ?? 'var(--fg-secondary)',
-                      }}
-                    >
-                      {tag.tagName}
-                    </span>
-                  ))}
-                </span>
+                <span style={dot} />
+                <AlignLeft size={11} color="var(--fg-tertiary)" />
               </>
             )}
           </div>
         </div>
         <span
           style={{
-            fontSize: 'var(--text-badge)',
-            fontWeight: '700',
-            padding: '3px 9px',
-            borderRadius: 'var(--radius-pill)',
+            padding: '3px 8px',
+            borderRadius: 'var(--radius-sm)',
             background: prio.bg,
-            color: prio.fg,
+            color: prio.color,
+            fontSize: 11,
+            fontWeight: '600',
             flexShrink: 0,
           }}
         >
           {prio.label}
         </span>
-      </label>
-    )
-  }
-
-  const AddBtn = (
-    <Button
-      size="sm"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        background: 'var(--bg-brand)',
-        color: 'var(--fg-on-brand)',
-        border: 0,
-        borderRadius: 'var(--radius-tile)',
-        padding: '8px 14px',
-        fontSize: 'var(--text-label-sm)',
-        fontWeight: '700',
-        cursor: 'pointer',
-      }}
-    >
-      <Plus size={14} /> 할 일 추가
-    </Button>
-  )
-
-  const SectionHead = (label: string, count: number) => (
-    <div
-      style={{
-        fontSize: 'var(--text-badge)',
-        color: 'var(--fg-tertiary)',
-        fontWeight: '600',
-        letterSpacing: '0.04em',
-        textTransform: 'uppercase',
-        marginBottom: 2,
-      }}
-    >
-      {label} · {count}
-    </div>
-  )
-
-  const EmptyHint = (msg: string) => (
-    <div
-      style={{
-        padding: '16px 0',
-        textAlign: 'center',
-        color: 'var(--fg-tertiary)',
-        fontSize: 'var(--text-label-sm)',
-      }}
-    >
-      {msg}
-    </div>
-  )
-
-  const Body = (
-    <>
-      {todosQ.isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <TodoSectionSkeleton rows={3} />
-          <TodoSectionSkeleton rows={2} />
-        </div>
-      ) : todos.length === 0 ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-          할 일이 없어요
-        </div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {SectionHead('진행 중', pending.length)}
-            {pending.length === 0 ? EmptyHint('진행 중인 할 일이 없어요') : pending.map(Row)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {SectionHead('완료', done.length)}
-            {done.length === 0 ? EmptyHint('완료된 할 일이 없어요') : done.map(Row)}
-          </div>
-        </>
-      )}
-    </>
-  )
-
-  if (mobile) {
-    return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>할 일</h2>
-          <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
-        </div>
-        {Body}
       </div>
     )
   }
 
+  // ── 빈 상태 ───────────────────────────────────────────────────────────────
+  const EmptyState = (
+    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+      <div
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 999,
+          background: 'var(--bg-sunken)',
+          color: 'var(--fg-tertiary)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 14,
+        }}
+      >
+        {filter === 'done' ? <CheckCheck size={24} /> : <Sparkles size={24} />}
+      </div>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: '700',
+          color: 'var(--fg-primary)',
+          marginBottom: 4,
+        }}
+      >
+        {filter === 'today'
+          ? '오늘 할 일이 없어요'
+          : filter === 'week'
+            ? '이번 주는 한가해요'
+            : filter === 'done'
+              ? '아직 완료된 일이 없어요'
+              : '할 일이 없어요'}
+      </div>
+      <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>
+        {filter === 'done'
+          ? '할 일을 완료하면 여기에 모입니다.'
+          : '위 입력칸으로 빠르게 추가해보세요.'}
+      </div>
+    </div>
+  )
+
+  // ── 그룹 리스트 ───────────────────────────────────────────────────────────
+  const ListCard = (
+    <div className="p-card" style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
+      {groups.length === 0
+        ? EmptyState
+        : groups.map(([k, items]) => (
+            <div key={k}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  color: 'var(--fg-tertiary)',
+                  letterSpacing: '0.04em',
+                  padding: mobile ? '12px 0 6px' : '14px 0 8px',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  marginBottom: 4,
+                }}
+              >
+                {k === NO_DUE_KEY ? '마감일 없음' : kDate(k).full} · {items.length}건
+              </div>
+              {items.map((t, i) => (
+                <Row key={t.rowId} t={t} last={i === items.length - 1} />
+              ))}
+            </div>
+          ))}
+    </div>
+  )
+
+  // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
+  const TagDistribution = (
+    <div className="p-card" style={{ padding: 22 }}>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>태그별 분포</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {TAG_OPTIONS.map(tag => {
+          const tagged = todos.filter(t => todoTag(t) === tag)
+          const total = tagged.length
+          if (total === 0) return null
+          const done = tagged.filter(isDone).length
+          return (
+            <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: 'var(--fg-primary)',
+                  width: 60,
+                  flexShrink: 0,
+                }}
+              >
+                {tag}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 6,
+                  background: 'var(--bg-sunken)',
+                  borderRadius: 999,
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(done / total) * 100}%`,
+                    height: '100%',
+                    background: 'var(--color-primary)',
+                    borderRadius: 999,
+                  }}
+                />
+              </div>
+              <span
+                className="num"
+                style={{
+                  fontSize: 12,
+                  color: 'var(--fg-tertiary)',
+                  minWidth: 36,
+                  textAlign: 'right',
+                }}
+              >
+                {done}/{total}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  // ── 데스크톱 우측: 우선순위 ───────────────────────────────────────────────
+  const PriorityCard = (
+    <div className="p-card" style={{ padding: 22 }}>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>우선순위</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {PRIO_ORDER.map(k => {
+          const p = PRIO[k]
+          const n = todos.filter(t => !isDone(t) && t.priority === k).length
+          const PIcon = k === 'HIGH' ? Flame : k === 'MEDIUM' ? CircleDot : Leaf
+          return (
+            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 'var(--radius-sm)',
+                  background: p.bg,
+                  color: p.color,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <PIcon size={14} />
+              </span>
+              <span style={{ fontSize: 13.5, fontWeight: '600' }}>{p.label}</span>
+              <span
+                className="num"
+                style={{
+                  marginLeft: 'auto',
+                  fontSize: 13,
+                  fontWeight: '700',
+                  color: p.color,
+                }}
+              >
+                {n}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const dialog =
+    editing != null ? (
+      <TodoEditDialog
+        todo={'_new' in editing ? null : editing}
+        mobile={mobile}
+        today={today}
+        onClose={() => setEditing(null)}
+        onSave={onSave}
+        onDelete={onDelete}
+        submitting={createTodo.isPending || updateTodo.isPending}
+        deleting={deleteTodo.isPending}
+      />
+    ) : null
+
+  // ── 모바일 ────────────────────────────────────────────────────────────────
+  if (mobile) {
+    return (
+      <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {StatCards}
+          {QuickAdd}
+          {FilterChips}
+          {ListCard}
+        </div>
+        <button
+          type="button"
+          aria-label="할 일 추가"
+          onClick={() => setEditing({ _new: true })}
+          style={{
+            position: 'fixed',
+            bottom: 88,
+            right: 18,
+            width: 52,
+            height: 52,
+            borderRadius: 999,
+            border: 0,
+            background: 'var(--bg-brand)',
+            color: 'var(--fg-on-brand)',
+            boxShadow: 'var(--shadow-lg)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 20,
+          }}
+        >
+          <Plus size={22} strokeWidth={2.5} />
+        </button>
+        {dialog}
+      </div>
+    )
+  }
+
+  // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
           <h1>할 일</h1>
-          <div className="sub">할 일과 작업 관리</div>
+          <div className="sub">오늘 챙길 거, 한눈에 정리</div>
         </div>
-        <div className="right">{AddBtn}</div>
+        <div className="right">
+          <Button size="sm" onClick={() => setEditing({ _new: true })}>
+            <Plus size={14} /> 새 할 일
+          </Button>
+        </div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 720 }}>{Body}</div>
+      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1.4fr 1fr',
+            gap: 20,
+            alignItems: 'flex-start',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {StatCards}
+            {QuickAdd}
+            {FilterChips}
+            {ListCard}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {TagDistribution}
+            {PriorityCard}
+          </div>
+        </div>
+      </div>
+      {dialog}
+    </div>
+  )
+}
+
+// 공통 인라인 스타일 (통계 카드).
+const statLabel = {
+  fontSize: 11,
+  fontWeight: '600' as const,
+  color: 'var(--fg-tertiary)',
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase' as const,
+  marginBottom: 6,
+}
+const statNum = (mobile: boolean) => ({
+  fontSize: mobile ? 22 : 26,
+  fontWeight: '800' as const,
+  letterSpacing: '-0.025em',
+})
+const statUnit = { fontSize: 12, color: 'var(--fg-tertiary)' }
+const dot = {
+  width: 2,
+  height: 2,
+  borderRadius: 999,
+  background: 'var(--border-strong)',
+  flexShrink: 0,
+} as const
+
+// ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
+
+function TodoEditDialog({
+  todo,
+  mobile,
+  today,
+  onClose,
+  onSave,
+  onDelete,
+  submitting,
+  deleting,
+}: {
+  todo: Todo | null
+  mobile: boolean
+  today: string
+  onClose: () => void
+  onSave: (values: TodoFormValues, id?: number) => void
+  onDelete: (id: number) => void
+  submitting?: boolean
+  deleting?: boolean
+}) {
+  const isNew = !todo
+  const [title, setTitle] = useState(todo?.title ?? '')
+  const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today)
+  const [tag, setTag] = useState(todo?.category || DEFAULT_TAG)
+  const [priority, setPriority] = useState<TodoPriority>(todo?.priority ?? 'MEDIUM')
+  const [note, setNote] = useState(todo?.content ?? '')
+  const [error, setError] = useState(false)
+
+  const busy = !!submitting || !!deleting
+
+  const save = () => {
+    if (!title.trim()) {
+      setError(true)
+      return
+    }
+    onSave(
+      {
+        title: title.trim(),
+        content: note,
+        priority,
+        category: tag,
+        dueDate: due || undefined,
+      },
+      todo?.rowId,
+    )
+  }
+
+  const Footer = (
+    <>
+      {todo ? (
+        <Button
+          variant="ghost"
+          onClick={() => onDelete(todo.rowId)}
+          style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
+          loading={deleting}
+          disabled={busy}
+        >
+          <Trash2 size={14} /> 삭제
+        </Button>
+      ) : (
+        <span style={{ marginRight: 'auto' }} />
+      )}
+      <Button variant="outline" onClick={onClose} disabled={busy}>
+        취소
+      </Button>
+      <Button onClick={save} loading={submitting} disabled={busy}>
+        저장
+      </Button>
+    </>
+  )
+
+  return (
+    <ModalShell
+      title={isNew ? '새 할 일' : '할 일 수정'}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
+      <Field style={{ marginBottom: 14 }}>
+        <Input
+          value={title}
+          onChange={e => {
+            setTitle(e.target.value)
+            if (error) setError(false)
+          }}
+          placeholder="할 일을 적어주세요"
+          aria-invalid={error}
+          autoFocus
+        />
+        {error && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: '8px 12px',
+              background: 'var(--status-danger-subtle)',
+              color: 'var(--status-danger-fg)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 13,
+            }}
+          >
+            제목을 입력해주세요
+          </div>
+        )}
+      </Field>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <Field>
+          <FieldLabel>마감일</FieldLabel>
+          <Input type="date" value={due} onChange={e => setDue(e.target.value)} />
+        </Field>
+        <Field>
+          <FieldLabel>태그</FieldLabel>
+          <Select value={tag} onValueChange={setTag}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TAG_OPTIONS.map(t => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      </div>
+
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>우선순위</FieldLabel>
+        <div
+          style={{
+            display: 'inline-flex',
+            gap: 2,
+            padding: 3,
+            background: 'var(--bg-sunken)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          {PRIO_ORDER.map(k => {
+            const p = PRIO[k]
+            const active = priority === k
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setPriority(k)}
+                style={{
+                  background: active ? 'var(--bg-surface)' : 'transparent',
+                  color: active ? p.color : 'var(--fg-secondary)',
+                  border: 0,
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: 13,
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: active ? 'var(--shadow-sm)' : 'none',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {p.label}
+              </button>
+            )
+          })}
+        </div>
+      </Field>
+
+      <Field>
+        <FieldLabel>메모</FieldLabel>
+        <Textarea
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          placeholder="추가 메모 (선택)"
+          rows={3}
+        />
+      </Field>
+    </ModalShell>
+  )
+}
+
+// ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
+
+/** Todo 행 1줄 skeleton — 원형 체크 + 제목/메타 + 우선순위 칩. */
+function TodoRowSkeleton({ last }: { last?: boolean }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 4px',
+        borderBottom: last ? 'none' : '1px solid var(--border-subtle)',
+      }}
+    >
+      <SkeletonBase className="h-[22px] w-[22px] rounded-full shrink-0" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <SkeletonBase className="h-4 w-3/5 mb-1.5" />
+        <SkeletonBase className="h-3 w-1/3" />
+      </div>
+      <SkeletonBase className="h-5 w-10 rounded-sm shrink-0" />
+    </div>
+  )
+}
+
+/** 통계 카드 1장 skeleton. */
+function StatCardSkeleton({ mobile }: { mobile: boolean }) {
+  return (
+    <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+      <SkeletonBase className="h-3 w-10 mb-2" />
+      <SkeletonBase className={mobile ? 'h-6 w-12' : 'h-7 w-14'} />
+    </div>
+  )
+}
+
+/** Todo 페이지 구조 일치 skeleton — 통계 3카드 + 퀵추가 + 칩 + 그룹 리스트. */
+function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
+  const Stats = (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: mobile ? 8 : 12,
+      }}
+    >
+      <StatCardSkeleton mobile={mobile} />
+      <StatCardSkeleton mobile={mobile} />
+      <StatCardSkeleton mobile={mobile} />
+    </div>
+  )
+  const Chips = (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <SkeletonBase key={i} className="h-8 w-16 rounded-full" />
+      ))}
+    </div>
+  )
+  const List = (
+    <div className="p-card" style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
+      <SkeletonBase className="h-3 w-28 my-3" />
+      {Array.from({ length: 4 }).map((_, i) => (
+        <TodoRowSkeleton key={i} last={i === 3} />
+      ))}
+    </div>
+  )
+  const Left = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {Stats}
+      <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+      {Chips}
+      {List}
+    </div>
+  )
+
+  if (mobile) {
+    return (
+      <div style={{ padding: '16px 16px 96px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {Stats}
+          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+          {Chips}
+          {List}
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div style={{ padding: 0 }}>
+      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+        <div>
+          <SkeletonBase className="h-8 w-20 mb-2" />
+          <SkeletonBase className="h-4 w-40" />
+        </div>
+        <div className="right">
+          <SkeletonBase className="h-8 w-24 rounded-md" />
+        </div>
+      </div>
+      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1.4fr 1fr',
+            gap: 20,
+            alignItems: 'flex-start',
+          }}
+        >
+          {Left}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <SkeletonBase className="h-40 w-full rounded-[var(--radius-lg)]" />
+            <SkeletonBase className="h-32 w-full rounded-[var(--radius-lg)]" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
