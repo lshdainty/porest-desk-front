@@ -49,6 +49,7 @@ import {
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
 import { PasswordChangeDialog } from '@/widgets/sidebar/ui/PasswordChangeDialog'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type SectionId =
@@ -292,7 +293,10 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
   const { data: user } = useCurrentUser()
 
   return (
-    <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
+    <>
+      {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
+      <MobileBackHeader title="설정" />
+      <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
       {/* 프로필 카드 */}
       <button
         onClick={() => changeSection('account')}
@@ -395,20 +399,10 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
                         ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
                       }}
                     >
-                      <div
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 'var(--radius-sm)',
-                          background: 'var(--bg-muted)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}
-                      >
+                      {/* 아이콘 네모 배경 제거 — 아이콘만 (앱 동일 처리) */}
+                      <span style={{ display: 'inline-flex', flexShrink: 0 }}>
                         <IconComp size={16} strokeWidth={1.8} color="var(--fg-secondary)" />
-                      </div>
+                      </span>
                       <span
                         style={{
                           flex: 1,
@@ -429,7 +423,8 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
           )
         })}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 
