@@ -465,31 +465,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           </div>
           {Body}
         </div>
-        <button
-          type="button"
-          aria-label="메모 추가"
-          onClick={() => setEditing({ _new: true })}
-          className="m-fab"
-          style={{
-            position: 'fixed',
-            bottom: 88,
-            right: 18,
-            width: 52,
-            height: 52,
-            borderRadius: 999,
-            border: 0,
-            background: 'var(--bg-brand)',
-            color: 'var(--fg-on-brand)',
-            boxShadow: 'var(--shadow-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 20,
-          }}
-        >
-          <Plus size={22} strokeWidth={2.5} />
-        </button>
+        {/* FAB 제거 — 칩 행 우측 + 추가 버튼이 새 메모 진입점 */}
         {dialog}
       </div>
     )
