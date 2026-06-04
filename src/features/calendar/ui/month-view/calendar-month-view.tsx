@@ -102,6 +102,11 @@ const MonthDayCell = ({
   const isSelected = isDateInSelection(date)
 
   const handleClick = () => {
+    // onDayClick 있으면(모바일 일별 시트/가계부 DayDetail) day 뷰 전환 대신 시트 표시
+    if (onDayClick) {
+      onDayClick(date)
+      return
+    }
     setSelectedDate(date)
     setView('day')
   }
@@ -240,7 +245,9 @@ const MonthDayCell = ({
                 <MonthEventBadge
                   event={event}
                   cellDate={startOfDay(date)}
-                  onEventClick={onEventClick}
+                  // onDayClick 모드(모바일 일별 시트)에선 칩 탭도 셀과 동일하게
+                  // 그날의 시트를 연다 — 앱(셀 단위 탭) 정합.
+                  onEventClick={onDayClick ? () => onDayClick(date) : onEventClick}
                 />
               )}
             </div>

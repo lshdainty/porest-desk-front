@@ -4,11 +4,12 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
+import { useCreateEvent, useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
 import { useIsMobile } from '@/shared/hooks'
 
 import { DndProviderWrapper } from '@/features/calendar/ui/dnd/dnd-provider'
+import { DayEventsDialog } from '@/features/calendar/ui/DayEventsDialog'
 import { EventDetailPopover } from '@/features/calendar/ui/EventDetailPopover'
 
 import { CalendarAgendaView } from '@/features/calendar/ui/agenda-view/calendar-agenda-view'
@@ -79,7 +80,11 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   // Edit/Delete state
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [deletingEventId, setDeletingEventId] = useState<number | null>(null)
+  // 모바일 월간뷰 일별 이벤트 시트 (앱 _DayEventsSheetBody 정합) + 시트의 [+] 생성 폼
+  const [dayDate, setDayDate] = useState<Date | null>(null)
+  const [creatingDate, setCreatingDate] = useState<Date | null>(null)
 
+  const createEvent = useCreateEvent()
   const updateEvent = useUpdateEvent()
   const deleteEvent = useDeleteEvent()
   const { data: labels = [] } = useEventLabels()
@@ -124,6 +129,12 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
       onSuccess: () => setDeletingEventId(null),
     })
   }, [deletingEventId, deleteEvent])
+
+  const handleSubmitCreate = useCallback((data: CalendarEventFormValues) => {
+    createEvent.mutate(data, {
+      onSuccess: () => setCreatingDate(null),
+    })
+  }, [createEvent])
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
@@ -176,6 +187,18 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
     })
   }, [selectedDate, events, view, isBuiltinSourceEnabled, isCalendarVisible])
 
+  // 모바일 일별 시트 이벤트 — 앱 _eventsOnDay 정합 (해당 일과 겹침 + 시작시각 정렬).
+  // 캘린더 이벤트 + 공휴일만 (지출/할일 pseudo-event 제외). 공휴일은 읽기 전용 행.
+  const dayEvents = useMemo(() => {
+    if (!dayDate) return []
+    const ds = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate())
+    const de = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), 23, 59, 59, 999)
+    return filteredEvents
+      .filter(e => e.sourceType === 'calendar' || e.sourceType === 'holiday')
+      .filter(e => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+  }, [dayDate, filteredEvents])
+
   const singleDayEvents = filteredEvents.filter(event => {
     if (event.isAllDay) return false
     const startDate = parseISO(event.startDate)
@@ -203,7 +226,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           {isMobile ? (
             isLoading
               ? <CalendarMonthViewSkeleton />
-              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} mobileHeaderBorder={false} />
+              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
           ) : (
             <>
               {view === 'day' && (
@@ -214,7 +237,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
               {view === 'month' && (
                 isLoading
                   ? <CalendarMonthViewSkeleton />
-                  : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} mobileHeaderBorder={false} />
+                  : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
               )}
               {view === 'week' && (
                 isLoading
@@ -278,6 +301,29 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
             )}
           </PopoverContent>
         </Popover>
+      )}
+
+      {/* 모바일 월간뷰 일별 이벤트 시트 — 앱 _DayEventsSheetBody 정합 */}
+      {dayDate && (
+        <DayEventsDialog
+          date={dayDate}
+          events={dayEvents}
+          mobile
+          onClose={() => setDayDate(null)}
+          onAdd={() => { setCreatingDate(dayDate); setDayDate(null) }}
+          onTapEvent={(e) => { setDayDate(null); setEditingEvent(iEventToCalendarEvent(e)) }}
+        />
+      )}
+
+      {/* 일별 시트 [+] → 해당 날짜 기본값 이벤트 생성 폼 */}
+      {creatingDate && (
+        <EventForm
+          selectedDate={creatingDate}
+          labels={labels}
+          onSubmit={handleSubmitCreate}
+          onClose={() => setCreatingDate(null)}
+          isLoading={createEvent.isPending}
+        />
       )}
 
       {/* Edit Event Form */}
