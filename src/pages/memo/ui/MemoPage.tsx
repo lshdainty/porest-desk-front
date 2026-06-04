@@ -444,7 +444,25 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SearchCard}
-          {TagChips}
+          {/* 칩 행 우측 끝 + 추가 — PresetManager 정렬 토글 행의 accent 추가 버튼 패턴 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}
+          >
+            {TagChips}
+            <Button
+              type="button"
+              variant="accent"
+              style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)', flexShrink: 0 }}
+              onClick={() => setEditing({ _new: true })}
+            >
+              <Plus size={14} /> 추가
+            </Button>
+          </div>
           {Body}
         </div>
         <button
