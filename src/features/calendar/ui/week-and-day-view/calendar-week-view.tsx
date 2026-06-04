@@ -4,9 +4,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
+import { eventBadgeColor, getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
 import { cn } from '@/shared/lib'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -123,7 +122,7 @@ const WeekViewMultiDayEventsRow = ({
               }
 
               const showText = ['first', 'none'].includes(position)
-              const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
+              const badgeColor = eventBadgeColor(event)
 
               return (
                 <div
@@ -203,7 +202,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
   const heightInPixels = (durationInMinutes / 60) * 96 - 8
-  const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
+  const badgeColor = eventBadgeColor(event)
 
   return (
     <div

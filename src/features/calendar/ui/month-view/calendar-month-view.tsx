@@ -5,9 +5,8 @@ import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/drag-select-context'
-import { calculateMonthEventPositions, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
+import { calculateMonthEventPositions, eventBadgeColor, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
@@ -285,7 +284,7 @@ const MonthEventBadge = ({
 
   const renderBadgeText = ['first', 'none'].includes(position)
   const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
-  const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
+  const badgeColor = eventBadgeColor(event)
 
   const positionClasses = {
     // 멀티데이 바: 시작/종료(외곽)만 round, 중간은 full-bleed 연속. 보이는 border 의존 제거 →

@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { eventBadgeColor } from '@/features/calendar/lib/helpers'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -35,7 +35,7 @@ const AgendaEventCard = ({
   const startDate = parseISO(event.startDate)
   const endDate = parseISO(event.endDate)
 
-  const badgeColor = getPaletteByColor(event.labelColor ?? event.color).color
+  const badgeColor = eventBadgeColor(event)
   return (
     <div
       role="button"
