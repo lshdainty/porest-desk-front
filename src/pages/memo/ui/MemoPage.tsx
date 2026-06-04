@@ -410,20 +410,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 14 : 16 }}>
         {pinned.length > 0 && (
           <section>
-            <SectionLabel
-              icon="pin"
-              label={mobile ? '고정' : `고정 · ${pinned.length}`}
-            />
+            {/* 앱과 동일 — 모바일에서도 개수 표시. */}
+            <SectionLabel icon="pin" label={`고정 · ${pinned.length}`} />
             {grid(pinned)}
           </section>
         )}
         {others.length > 0 && (
           <section>
             {pinned.length > 0 && (
-              <SectionLabel
-                icon="note"
-                label={mobile ? '모든 메모' : `모든 메모 · ${others.length}`}
-              />
+              <SectionLabel icon="note" label={`모든 메모 · ${others.length}`} />
             )}
             {grid(others)}
           </section>
