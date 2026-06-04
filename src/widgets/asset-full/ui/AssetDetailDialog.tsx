@@ -550,8 +550,8 @@ export function AssetDetailDialog({
                 stroke="var(--color-balance)"
                 strokeWidth={2}
                 fill={`url(#asset-balance-fill-${asset.rowId})`}
-                dot={{ r: 3, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 1.5 }}
-                activeDot={{ r: 4.5, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
+                dot={{ r: 4, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 1.5 }}
+                activeDot={{ r: 5.5, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
               />
             </AreaChart>
           </ChartContainer>

@@ -152,7 +152,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           stroke="var(--border-brand)"
           strokeWidth={2}
           fill="url(#netWorthFill)"
-          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 4 }}
           activeDot={{ r: 6, fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
         />
       </AreaChart>
