@@ -23,6 +23,7 @@ import { CalendarYearView } from '@/features/calendar/ui/year-view/calendar-year
 import { CalendarYearViewSkeleton } from '@/features/calendar/ui/year-view/calendar-year-view-skeleton'
 
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
+import { Drawer, DrawerBody, DrawerContent } from '@/shared/ui/drawer'
 import { Popover, PopoverAnchor, PopoverContent } from '@/shared/ui/popover'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -234,21 +235,37 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         </DndProviderWrapper>
       </div>
 
-      {/* Event Detail Popover */}
-      <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
-        <PopoverAnchor asChild>
-          <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
-        </PopoverAnchor>
-        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
-          {selectedEvent && (
-            <EventDetailPopover
-              event={selectedEvent}
-              onEdit={handleEditEvent}
-              onDelete={handleDeleteEvent}
-            />
-          )}
-        </PopoverContent>
-      </Popover>
+      {/* Event Detail — 모바일은 앱처럼 bottom Drawer, 데스크톱·태블릿은 Popover */}
+      {isMobile ? (
+        <Drawer open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+          <DrawerContent>
+            <DrawerBody className="pb-5">
+              {selectedEvent && (
+                <EventDetailPopover
+                  event={selectedEvent}
+                  onEdit={handleEditEvent}
+                  onDelete={handleDeleteEvent}
+                />
+              )}
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+          <PopoverAnchor asChild>
+            <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
+          </PopoverAnchor>
+          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
+            {selectedEvent && (
+              <EventDetailPopover
+                event={selectedEvent}
+                onEdit={handleEditEvent}
+                onDelete={handleDeleteEvent}
+              />
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
 
       {/* Edit Event Form */}
       {editingEvent && (
