@@ -24,6 +24,7 @@ import { Switch } from '@/shared/ui/switch'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { MANAGER_LAYOUT } from '@/shared/ui/porest/manager-layout'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 
@@ -174,50 +175,42 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     </Button>
   )
 
-  // ── 검색 카드 (Card padding 8 + search 아이콘 슬롯 + 투명 input + X) ──
+  // ── 검색 바 — 전 검색 input canonical 통일 (header/매니저 검색과 동일 Input search 톤)
   const SearchCard = (
-    <Card style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span
-        style={{
-          width: 32,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          color: 'var(--fg-tertiary)',
-        }}
-      >
-        <Search size={16} />
-      </span>
-      <input
+    <div style={MANAGER_LAYOUT.searchWrapStyle}>
+      <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+      <Input
+        search
         value={query}
         onChange={e => setQuery(e.target.value)}
         placeholder="메모 검색"
         aria-label="메모 검색"
-        style={{
-          flex: 1,
-          minWidth: 0,
-          border: 0,
-          outline: 'none',
-          background: 'transparent',
-          fontSize: 'var(--text-label-sm)',
-          color: 'var(--fg-primary)',
-          padding: '8px 0',
-          fontFamily: 'inherit',
-        }}
+        className="w-full min-w-0 pl-9 pr-8"
       />
       {query && (
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          type="button"
           onClick={() => setQuery('')}
           aria-label="지우기"
-          style={{ flexShrink: 0 }}
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 0,
+            background: 'transparent',
+            color: 'var(--fg-tertiary)',
+            cursor: 'pointer',
+            padding: 2,
+          }}
         >
           <X size={14} />
-        </Button>
+        </button>
       )}
-    </Card>
+    </div>
   )
 
   // ── 태그 칩 ──
