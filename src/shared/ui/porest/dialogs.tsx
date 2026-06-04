@@ -34,6 +34,7 @@ export function ModalShell({
   footer,
   children,
   mobile,
+  mobileMinHeight,
 }: {
   title: ReactNode
   onClose: () => void
@@ -41,6 +42,9 @@ export function ModalShell({
   footer?: ReactNode
   children?: ReactNode
   mobile: boolean
+  /** 모바일 drawer 최소 높이 (예: '85dvh') — 앱 showPSheet initialChildSize 0.85 정합.
+   *  미지정 시 기존처럼 content 높이. */
+  mobileMinHeight?: string
 }) {
   if (mobile) {
     return (
@@ -50,7 +54,10 @@ export function ModalShell({
           if (!open) onClose()
         }}
       >
-        <DrawerContent className="max-h-[88%]">
+        <DrawerContent
+          className="max-h-[88%]"
+          style={mobileMinHeight ? { minHeight: mobileMinHeight } : undefined}
+        >
           <DrawerHeader>
             <DrawerTitle className="flex-1">{title}</DrawerTitle>
             <button

@@ -408,7 +408,7 @@ function DayDetailDialog({
   const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
   const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
   return (
-    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm">
+    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm" mobileMinHeight="85dvh">
       {/* 합계 카드 — 건수 + 우측 라벨/금액 vertical stack (모바일 layout 정합) */}
       <Card variant="bordered" className="mb-[var(--spacing-md)]">
         <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">

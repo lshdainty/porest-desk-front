@@ -43,7 +43,7 @@ export function DayEventsDialog({
       : getPaletteByColor(e.labelColor ?? e.calendarColor ?? e.color).color
 
   return (
-    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm">
+    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm" mobileMinHeight="85dvh">
       {/* N건 + 이벤트 추가 */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
