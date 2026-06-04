@@ -149,8 +149,11 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               {filtered.map(asset => {
                 const g = groupOfAsset(asset)
                 const isCard = g === 'card'
-                const amt = Math.abs(asset.balance ?? 0)
-                const neg = isCard
+                const balance = asset.balance ?? 0
+                const amt = Math.abs(balance)
+                // 카드 사용액은 음수 표기 컨벤션, 계좌는 실제 부호(대출 등 음수 잔액).
+                // 0 은 부호·강조 없이 '0원' (−0원 방지).
+                const neg = (isCard ? -amt : balance) < 0
                 const brand = getBrandColor(asset.institution, asset.assetName)
                 const accentColor = asset.color || brand?.bg || 'var(--fg-tertiary)'
                 const iconChar = (asset.institution || asset.assetName || '?').charAt(0)
