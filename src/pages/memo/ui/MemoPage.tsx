@@ -1,106 +1,111 @@
+import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { NotebookPen, Pin, Plus } from 'lucide-react'
-import { useMemos } from '@/features/memo'
-import type { Memo } from '@/entities/memo'
+import { Pin, Plus, Search, X, StickyNote, SearchX, Trash2 } from 'lucide-react'
+import {
+  useMemos,
+  useCreateMemo,
+  useUpdateMemo,
+  useToggleMemoPin,
+  useDeleteMemo,
+} from '@/features/memo'
+import type { Memo, MemoFormValues } from '@/entities/memo'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent } from '@/shared/ui/card'
+import { Card } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
+import { Textarea } from '@/shared/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import { Switch } from '@/shared/ui/switch'
+import { Field, FieldLabel } from '@/shared/ui/field'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
-// 메모 카드 5색 팔레트. 각 색의 원색을 alpha 로 섞어 기저 bg 에 오버레이 —
-// light/dark 모두 자연 적응. 기존 --mossy-100 등 primitive 를 그대로 쓰면
-// 다크모드에서 라이트 톤이 유지돼 카드가 튀어 보였음.
-const CARD_COLORS = [
-  'color-mix(in oklch, var(--border-brand) 18%, transparent)',   // 모시 그린
-  'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)',  // 햇살 옐로
-  'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)',    // 바크 브라운
-  'color-mix(in oklch, oklch(0.55 0.15 290) 18%, transparent)', // 라벤더
-  'var(--bg-muted)',                                          // 뉴트럴
+// 태그 select 옵션 7종 (양 플랫폼 공통 확정). 기본값 '개인'.
+const TAG_OPTIONS = ['가계부', '자산', '업무', '개인', '건강', '결제', '고정비'] as const
+const DEFAULT_TAG = '개인'
+// 메모 색은 chart palette base hex 저장. null 이면 blue 취급.
+const DEFAULT_COLOR = '#2c70bf' // blue
+
+/*
+ * MEMO_COLORS — base hex 키 맵 (양 플랫폼 공통 확정 규칙).
+ * - swatch = chart 원색(alias var, 다크 자동 swap)
+ * - bg     = color-mix(in oklab, <chart색> 틴트%, var(--bg-surface)) — 카드 배경
+ * - fg     = color-mix(in oklab, <chart색> 믹스%, var(--fg-primary)) — 태그 라벨(테마 적응)
+ * CAT_PALETTE 의 cssVar alias 를 재사용해 라이트/다크 자동 전환.
+ */
+type MemoTone = { key: string; baseHex: string; cssVar: string; bgPct: number; fgPct: number }
+
+const MEMO_TONES: MemoTone[] = [
+  { key: 'blue', baseHex: '#2c70bf', cssVar: '--color-cat-blue', bgPct: 12, fgPct: 72 },
+  { key: 'green', baseHex: '#2d8060', cssVar: '--color-cat-green', bgPct: 14, fgPct: 70 },
+  { key: 'pink', baseHex: '#b83b7a', cssVar: '--color-cat-pink', bgPct: 12, fgPct: 72 },
+  { key: 'violet', baseHex: '#8b4dba', cssVar: '--color-cat-violet', bgPct: 12, fgPct: 72 },
+  { key: 'red', baseHex: '#c73838', cssVar: '--color-cat-red', bgPct: 12, fgPct: 72 },
+  { key: 'orange', baseHex: '#b36418', cssVar: '--color-cat-orange', bgPct: 13, fgPct: 70 },
+  { key: 'indigo', baseHex: '#5e60c8', cssVar: '--color-cat-indigo', bgPct: 13, fgPct: 72 },
+  { key: 'yellow', baseHex: '#8c7400', cssVar: '--color-cat-yellow', bgPct: 16, fgPct: 64 },
+  { key: 'brown', baseHex: '#9a6536', cssVar: '--color-cat-brown', bgPct: 14, fgPct: 68 },
+  { key: 'gray', baseHex: '#6b7484', cssVar: '--color-cat-gray', bgPct: 16, fgPct: 60 },
 ]
 
-const formatDate = (iso: string) => {
-  if (!iso) return ''
-  const date = iso.slice(0, 10)
-  if (date.length < 10) return date
-  return date.slice(5).replace('-', '.')
-}
+const TONE_BY_HEX = new Map(MEMO_TONES.map(t => [t.baseHex.toLowerCase(), t]))
 
-/** MemoPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
-function useMemoPageData() {
-  const memosQ = useMemos()
+type ResolvedTone = { swatch: string; bg: string; fg: string }
+
+/** base hex → { swatch, bg, fg }. null/미지정/미정의 hex 는 blue fallback. */
+function resolveTone(color: string | null | undefined): ResolvedTone {
+  const tone = (color && TONE_BY_HEX.get(color.toLowerCase())) || MEMO_TONES[0]!
+  const v = `var(${tone.cssVar})`
   return {
-    isLoading: memosQ.isLoading,
+    swatch: v,
+    bg: `color-mix(in oklab, ${v} ${tone.bgPct}%, var(--bg-surface))`,
+    fg: `color-mix(in oklab, ${v} ${tone.fgPct}%, var(--fg-primary))`,
   }
 }
 
-/** 메모 카드 1장 skeleton — 핀 아이콘 + 날짜 + 제목 + 본문 라인들. */
-function MemoCardSkeleton() {
-  return (
-    <Card
-      style={{
-        background: 'var(--bg-muted)',
-        border: '1px solid var(--border-subtle)',
-      }}
-    >
-      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <SkeletonBase className="h-3.5 w-3.5 rounded-sm" />
-          <SkeletonBase className="h-3 w-10" />
-          <SkeletonBase className="h-3 w-12 ml-auto" />
-        </div>
-        <SkeletonBase className="h-5 w-4/5" />
-        <SkeletonBase className="h-4 w-full" />
-        <SkeletonBase className="h-4 w-11/12" />
-        <SkeletonBase className="h-4 w-2/3" />
-      </CardContent>
-    </Card>
-  )
+/** modifyAt('YYYY-MM-DD HH:MM[:SS]' 또는 ISO) → 'MM/DD · HH:MM'. */
+function formatStamp(iso: string): string {
+  if (!iso) return ''
+  // slice(5,16): 'MM-DD HH:MM' → '/' · ' '→' · '
+  const s = iso.replace('T', ' ').slice(5, 16)
+  if (s.length < 11) return s.replace('-', '/')
+  return `${s.slice(0, 5).replace('-', '/')} · ${s.slice(6)}`
 }
 
-/** Memo 페이지 구조 일치 skeleton — 헤더 + 메모 카드 grid. */
-function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
-  const Grid = (
+function SectionLabel({ icon, label }: { icon: 'pin' | 'note'; label: string }) {
+  return (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))',
-        gap: 12,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        fontSize: 11,
+        fontWeight: '700',
+        color: 'var(--fg-tertiary)',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        marginBottom: 4,
       }}
     >
-      {Array.from({ length: mobile ? 4 : 6 }).map((_, i) => (
-        <MemoCardSkeleton key={i} />
-      ))}
+      {icon === 'pin' ? <Pin size={12} /> : <StickyNote size={12} />}
+      {label}
     </div>
   )
+}
 
-  if (mobile) {
-    return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <SkeletonBase className="h-7 w-16" />
-          <div style={{ marginLeft: 'auto' }}>
-            <SkeletonBase className="h-9 w-24 rounded-md" />
-          </div>
-        </div>
-        {Grid}
-      </div>
-    )
-  }
-  return (
-    <div style={{ padding: 0 }}>
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
-        <div>
-          <SkeletonBase className="h-8 w-20 mb-2" />
-          <SkeletonBase className="h-4 w-36" />
-        </div>
-        <div className="right">
-          <SkeletonBase className="h-9 w-24 rounded-md" />
-        </div>
-      </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>{Grid}</div>
-    </div>
-  )
+/** MemoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
+function useMemoPageData() {
+  const memosQ = useMemos()
+  return { isLoading: memosQ.isLoading }
 }
 
 export const MemoPage = () => {
@@ -112,132 +117,368 @@ export const MemoPage = () => {
 
 const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const memosQ = useMemos()
+  const createMemo = useCreateMemo()
+  const updateMemo = useUpdateMemo()
+  const togglePin = useToggleMemoPin()
+  const deleteMemo = useDeleteMemo()
 
-  const memos: Memo[] = memosQ.data ?? []
+  const memos: Memo[] = useMemo(() => memosQ.data ?? [], [memosQ.data])
 
-  // Sort: pinned first, then by createAt desc
-  const sorted = [...memos].sort((a, b) => {
-    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
-    return (b.createAt || '').localeCompare(a.createAt || '')
-  })
+  const [query, setQuery] = useState('')
+  const [tagFilter, setTagFilter] = useState<string>('all')
+  // editing: Memo(기존 편집) | { _new: true }(신규) | null(닫힘)
+  const [editing, setEditing] = useState<Memo | { _new: true } | null>(null)
+
+  // 태그 칩: '전체' + 데이터에 존재하는 태그(카운트는 항상 전체 기준).
+  const tagCounts = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const memo of memos) {
+      const t = memo.tag || DEFAULT_TAG
+      m.set(t, (m.get(t) ?? 0) + 1)
+    }
+    return m
+  }, [memos])
+
+  // 정렬·필터: 검색 + 태그 → 핀 우선 → modifyAt desc.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return memos
+      .filter(m => {
+        if (tagFilter !== 'all' && (m.tag || DEFAULT_TAG) !== tagFilter) return false
+        if (q) {
+          const hay = `${m.title}\n${m.content ?? ''}`.toLowerCase()
+          if (!hay.includes(q)) return false
+        }
+        return true
+      })
+      .sort((a, b) => {
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
+        return (b.modifyAt || '').localeCompare(a.modifyAt || '')
+      })
+  }, [memos, query, tagFilter])
+
+  const pinned = filtered.filter(m => m.isPinned)
+  const others = filtered.filter(m => !m.isPinned)
+
+  const onSave = (values: MemoFormValues, id?: number) => {
+    if (id != null) updateMemo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
+    else createMemo.mutate(values, { onSuccess: () => setEditing(null) })
+  }
+  const onDelete = (id: number) => {
+    deleteMemo.mutate(id, { onSuccess: () => setEditing(null) })
+  }
 
   const AddBtn = (
-    <Button size="sm">
-      <Plus size={14} /> 메모 추가
+    <Button size="sm" onClick={() => setEditing({ _new: true })}>
+      <Plus size={14} /> 새 메모
     </Button>
   )
 
-  const MemoCard = (m: Memo, i: number) => {
-    const color = CARD_COLORS[i % CARD_COLORS.length]!
+  // ── 검색 카드 (Card padding 8 + search 아이콘 슬롯 + 투명 input + X) ──
+  const SearchCard = (
+    <Card style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span
+        style={{
+          width: 32,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          color: 'var(--fg-tertiary)',
+        }}
+      >
+        <Search size={16} />
+      </span>
+      <input
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="메모 검색"
+        aria-label="메모 검색"
+        style={{
+          flex: 1,
+          minWidth: 0,
+          border: 0,
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 'var(--text-label-sm)',
+          color: 'var(--fg-primary)',
+          padding: '8px 0',
+          fontFamily: 'inherit',
+        }}
+      />
+      {query && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setQuery('')}
+          aria-label="지우기"
+          style={{ flexShrink: 0 }}
+        >
+          <X size={14} />
+        </Button>
+      )}
+    </Card>
+  )
+
+  // ── 태그 칩 ──
+  const TagChips = (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <button
+        className={`chip ${tagFilter === 'all' ? 'active' : ''}`}
+        onClick={() => setTagFilter('all')}
+      >
+        전체
+        <span style={{ opacity: tagFilter === 'all' ? 0.85 : 0.55, marginLeft: 2 }}>
+          {memos.length}
+        </span>
+      </button>
+      {[...tagCounts.entries()].map(([tag, count]) => {
+        const active = tagFilter === tag
+        return (
+          <button
+            key={tag}
+            className={`chip ${active ? 'active' : ''}`}
+            onClick={() => setTagFilter(active ? 'all' : tag)}
+          >
+            {tag}
+            <span style={{ opacity: active ? 0.85 : 0.55, marginLeft: 2 }}>{count}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  // ── 메모 카드 ──
+  const MemoCard = (m: Memo) => {
+    const t = resolveTone(m.color)
+    const tag = m.tag || DEFAULT_TAG
     return (
       <Card
         key={m.rowId}
+        onClick={() => setEditing(m)}
+        className="group/memo cursor-pointer transition-[transform,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:-translate-y-[2px] hover:shadow-[var(--shadow-md)]"
         style={{
-          background: color,
-          border: '1px solid var(--border-subtle)',
-          cursor: 'pointer',
+          background: t.bg,
+          minHeight: 140,
+          padding: 18,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
         }}
       >
-        <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {m.isPinned ? (
-              <Pin size={13} style={{ color: 'var(--fg-expense)' }} />
-            ) : (
-              <NotebookPen size={14} style={{ color: 'var(--fg-secondary)' }} />
-            )}
-            <span
-              style={{
-                fontSize: 'var(--text-badge)',
-                fontWeight: '700',
-                color: 'var(--fg-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {m.isPinned ? '고정' : '메모'}
-            </span>
-            <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-              {formatDate(m.createAt)}
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: t.swatch,
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 'var(--text-badge)',
+              fontWeight: '600',
+              color: t.fg,
+              letterSpacing: '0.02em',
+              flex: 1,
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {tag}
+          </span>
+          <button
+            type="button"
+            aria-label="고정"
+            aria-pressed={m.isPinned}
+            onClick={ev => {
+              ev.stopPropagation()
+              togglePin.mutate(m.rowId)
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 4,
+              border: 0,
+              background: 'transparent',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <Pin
+              size={13}
+              strokeWidth={m.isPinned ? 2.5 : 1.8}
+              style={{ color: m.isPinned ? t.swatch : 'var(--fg-tertiary)' }}
+            />
+          </button>
+        </div>
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: '700',
+            color: 'var(--fg-primary)',
+            letterSpacing: '-0.015em',
+            lineHeight: 1.3,
+          }}
+        >
+          {m.title}
+        </div>
+        {m.content && (
+          <div
+            style={{
+              fontSize: 12.5,
+              color: 'var(--fg-secondary)',
+              lineHeight: 1.55,
+              whiteSpace: 'pre-wrap',
+              display: '-webkit-box',
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              flex: 1,
+            }}
+          >
+            {m.content}
           </div>
-          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', color: 'var(--fg-primary)' }}>
-            {m.title}
-          </div>
-          {m.content && (
-            <div
-              style={{
-                fontSize: 'var(--text-label-sm)',
-                color: 'var(--fg-secondary)',
-                lineHeight: '1.5',
-                display: '-webkit-box',
-                WebkitLineClamp: 4,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                whiteSpace: 'pre-wrap',
-              }}
-            >
-              {m.content}
-            </div>
-          )}
-        </CardContent>
+        )}
+        <div
+          style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 'auto' }}
+        >
+          {formatStamp(m.modifyAt)}
+        </div>
       </Card>
     )
   }
 
-  const Grid = (
+  const grid = (items: Memo[]) => (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))',
+        gridTemplateColumns: mobile
+          ? 'repeat(2, 1fr)'
+          : 'repeat(auto-fill, minmax(240px, 1fr))',
         gap: 12,
       }}
     >
-      {sorted.map(MemoCard)}
+      {items.map(MemoCard)}
     </div>
   )
 
-  const LoadingState = (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))',
-        gap: 12,
-      }}
-    >
-      {[0, 1, 2, 3, 4, 5].map(i => (
-        <MemoCardSkeleton key={i} />
-      ))}
-    </div>
-  )
-
-  const EmptyState = (
-    <Card>
-      <CardContent
+  // ── 빈 상태 (검색 결과 없음 vs 메모 없음) ──
+  const Empty = (
+    <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+      <div
         style={{
-          textAlign: 'center',
+          width: 56,
+          height: 56,
+          borderRadius: 999,
+          background: 'var(--bg-sunken)',
           color: 'var(--fg-tertiary)',
-          fontSize: 'var(--text-label-sm)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 14,
         }}
       >
-        아직 메모가 없어요
-      </CardContent>
-    </Card>
+        {query ? <SearchX size={24} /> : <StickyNote size={24} />}
+      </div>
+      <div style={{ fontSize: 15, fontWeight: '700', color: 'var(--fg-primary)' }}>
+        {query ? '결과가 없어요' : '메모가 없어요'}
+      </div>
+      <div style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>
+        {query
+          ? '다른 검색어를 입력해보세요.'
+          : '생각이 떠오를 때, 새 메모를 만들어보세요.'}
+      </div>
+      {!query && (
+        <div style={{ marginTop: 16 }}>
+          <Button size="sm" onClick={() => setEditing({ _new: true })}>
+            <Plus size={14} /> 새 메모
+          </Button>
+        </div>
+      )}
+    </div>
   )
 
-  const Body = memosQ.isLoading
-    ? LoadingState
-    : sorted.length === 0
-      ? EmptyState
-      : Grid
+  const Body =
+    filtered.length === 0 ? (
+      Empty
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 14 : 16 }}>
+        {pinned.length > 0 && (
+          <section>
+            <SectionLabel
+              icon="pin"
+              label={mobile ? '고정' : `고정 · ${pinned.length}`}
+            />
+            {grid(pinned)}
+          </section>
+        )}
+        {others.length > 0 && (
+          <section>
+            {pinned.length > 0 && (
+              <SectionLabel
+                icon="note"
+                label={mobile ? '모든 메모' : `모든 메모 · ${others.length}`}
+              />
+            )}
+            {grid(others)}
+          </section>
+        )}
+      </div>
+    )
+
+  const dialog =
+    editing != null ? (
+      <MemoEditDialog
+        memo={'_new' in editing ? null : editing}
+        mobile={mobile}
+        onClose={() => setEditing(null)}
+        onSave={onSave}
+        onDelete={onDelete}
+        submitting={createMemo.isPending || updateMemo.isPending}
+        deleting={deleteMemo.isPending}
+      />
+    ) : null
 
   if (mobile) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', margin: 0, letterSpacing: '-0.022em' }}>메모</h2>
-          <div style={{ marginLeft: 'auto' }}>{AddBtn}</div>
+      <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {SearchCard}
+          {TagChips}
+          {Body}
         </div>
-        {Body}
+        <button
+          type="button"
+          aria-label="메모 추가"
+          onClick={() => setEditing({ _new: true })}
+          className="m-fab"
+          style={{
+            position: 'fixed',
+            bottom: 88,
+            right: 18,
+            width: 52,
+            height: 52,
+            borderRadius: 999,
+            border: 0,
+            background: 'var(--bg-brand)',
+            color: 'var(--fg-on-brand)',
+            boxShadow: 'var(--shadow-lg)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 20,
+          }}
+        >
+          <Plus size={22} strokeWidth={2.5} />
+        </button>
+        {dialog}
       </div>
     )
   }
@@ -247,11 +488,289 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
           <h1>메모</h1>
-          <div className="sub">아이디어와 메모 정리</div>
+          <div className="sub">생각·기록을 한곳에</div>
         </div>
         <div className="right">{AddBtn}</div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>{Body}</div>
+      <div
+        style={{
+          padding: '0 28px 24px',
+          maxWidth: 1320,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '420px 1fr',
+            gap: 16,
+            alignItems: 'center',
+          }}
+        >
+          {SearchCard}
+          {TagChips}
+        </div>
+        {Body}
+      </div>
+      {dialog}
+    </div>
+  )
+}
+
+// ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
+
+function MemoEditDialog({
+  memo,
+  mobile,
+  onClose,
+  onSave,
+  onDelete,
+  submitting,
+  deleting,
+}: {
+  memo: Memo | null
+  mobile: boolean
+  onClose: () => void
+  onSave: (values: MemoFormValues, id?: number) => void
+  onDelete: (id: number) => void
+  submitting?: boolean
+  deleting?: boolean
+}) {
+  const isNew = !memo
+  const [title, setTitle] = useState(memo?.title ?? '')
+  const [content, setContent] = useState(memo?.content ?? '')
+  const [tag, setTag] = useState(memo?.tag || DEFAULT_TAG)
+  const [pinned, setPinned] = useState(memo?.isPinned ?? false)
+  const [color, setColor] = useState(memo?.color || DEFAULT_COLOR)
+  const [error, setError] = useState(false)
+
+  const busy = !!submitting || !!deleting
+
+  const save = () => {
+    if (!title.trim()) {
+      setError(true)
+      return
+    }
+    onSave(
+      {
+        title: title.trim(),
+        content,
+        tag,
+        color,
+        folderRowId: null,
+      },
+      memo?.rowId,
+    )
+  }
+
+  const Footer = (
+    <>
+      {memo ? (
+        <Button
+          variant="ghost"
+          onClick={() => onDelete(memo.rowId)}
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
+          loading={deleting}
+          disabled={busy}
+        >
+          <Trash2 size={14} /> 삭제
+        </Button>
+      ) : (
+        <span style={{ marginRight: 'auto' }} />
+      )}
+      <Button variant="outline" onClick={onClose} disabled={busy}>
+        취소
+      </Button>
+      <Button onClick={save} loading={submitting} disabled={busy}>
+        저장
+      </Button>
+    </>
+  )
+
+  return (
+    <ModalShell
+      title={isNew ? '새 메모' : '메모 수정'}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
+      <Field style={{ marginBottom: 14 }}>
+        <Input
+          value={title}
+          onChange={e => {
+            setTitle(e.target.value)
+            if (error) setError(false)
+          }}
+          placeholder="제목"
+          aria-invalid={error}
+          autoFocus
+        />
+        {error && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: '8px 12px',
+              background: 'var(--status-danger-subtle)',
+              color: 'var(--status-danger-fg)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 13,
+            }}
+          >
+            제목을 입력해주세요
+          </div>
+        )}
+      </Field>
+
+      <Field style={{ marginBottom: 14 }}>
+        <Textarea
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder="여기에 메모를 작성해주세요"
+          rows={8}
+        />
+      </Field>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <Field>
+          <FieldLabel>태그</FieldLabel>
+          <Select value={tag} onValueChange={setTag}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TAG_OPTIONS.map(t => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>고정</FieldLabel>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              minHeight: 'var(--touch-min, 44px)',
+              cursor: 'pointer',
+            }}
+          >
+            <Switch checked={pinned} onCheckedChange={setPinned} />
+            <span style={{ fontSize: 14, color: 'var(--fg-primary)' }}>상단에 고정</span>
+          </label>
+        </Field>
+      </div>
+
+      <Field>
+        <FieldLabel>색상</FieldLabel>
+        <ColorSwatchGroup
+          columns={5}
+          value={color}
+          onValueChange={v => v && setColor(v)}
+          options={CAT_PALETTE.map(p => ({
+            value: p.baseHex,
+            bg: p.bg,
+            fg: p.color,
+            label: `색상 ${p.baseHex}`,
+          }))}
+        />
+      </Field>
+    </ModalShell>
+  )
+}
+
+// ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
+
+/** 메모 카드 1장 skeleton — 톤 dot + 태그 + 핀 + 제목 + 본문 라인. */
+function MemoCardSkeleton() {
+  return (
+    <Card style={{ minHeight: 140, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <SkeletonBase className="h-2 w-2 rounded-full" />
+        <SkeletonBase className="h-3 w-12" />
+        <SkeletonBase className="h-3.5 w-3.5 rounded-sm ml-auto" />
+      </div>
+      <SkeletonBase className="h-4 w-4/5" />
+      <SkeletonBase className="h-3.5 w-full" />
+      <SkeletonBase className="h-3.5 w-11/12" />
+      <SkeletonBase className="h-3.5 w-2/3" />
+      <SkeletonBase className="h-3 w-20 mt-auto" />
+    </Card>
+  )
+}
+
+/** Memo 페이지 구조 일치 skeleton — 검색카드 + 태그칩 + 카드 grid. */
+function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
+  const Chips = (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <SkeletonBase key={i} className="h-7 w-16 rounded-full" />
+      ))}
+    </div>
+  )
+  const Grid = (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: 12,
+      }}
+    >
+      {Array.from({ length: mobile ? 4 : 6 }).map((_, i) => (
+        <MemoCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+
+  if (mobile) {
+    return (
+      <div style={{ padding: '16px 16px 96px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+          {Chips}
+          {Grid}
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div style={{ padding: 0 }}>
+      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+        <div>
+          <SkeletonBase className="h-8 w-20 mb-2" />
+          <SkeletonBase className="h-4 w-36" />
+        </div>
+        <div className="right">
+          <SkeletonBase className="h-8 w-24 rounded-md" />
+        </div>
+      </div>
+      <div
+        style={{
+          padding: '0 28px 24px',
+          maxWidth: 1320,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 16, alignItems: 'center' }}>
+          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+          {Chips}
+        </div>
+        {Grid}
+      </div>
     </div>
   )
 }
