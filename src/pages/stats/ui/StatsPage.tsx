@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -1341,8 +1341,15 @@ export const StatsPage = () => {
     savings: { label: '순저축', color: 'var(--bg-brand)' },
   }
 
-  // shared formatChartAxis — 음수 분기 + 100만 단위 round (예: -5,200만).
-  const fmtTick = formatChartAxis
+  // app stats _fmtTick 정합 — 만 단위 round. 공용 formatChartAxis(100만 단위 round)는
+  // 지출 우축처럼 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져서 stats 엔 부적합.
+  const fmtTick = (v: number): string => {
+    const sign = v < 0 ? '-' : ''
+    const n = Math.abs(v)
+    if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
+    if (n >= 10_000) return `${sign}${Math.round(n / 10_000).toLocaleString('ko-KR')}만`
+    return `${sign}${n.toLocaleString('ko-KR')}`
+  }
 
   const TrendBig = (
     <Card>
@@ -1542,7 +1549,8 @@ export const StatsPage = () => {
                 />
               }
             />
-            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={mobile ? 18 : 28}>
+            {/* 일별(>20개)은 앱(width 4)처럼 얇게 — 월별은 기존 유지 */}
+            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={trendChartData.length > 20 ? 4 : mobile ? 18 : 28}>
               {trendChartData.map((d, i) => (
                 <Cell
                   key={i}
