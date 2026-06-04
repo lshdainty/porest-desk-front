@@ -19,7 +19,7 @@ const MTITLE: Record<string, string> = {
   '/desk/stats': '통계·분석',
   '/desk/budget': '예산',
   '/desk/calendar': '캘린더',
-  '/desk/todo': '할 일',
+  // '/desk/todo' — 풀스크린 페이지(자체 ← 헤더)라 전역 헤더 미사용 (AppLayout FULLSCREEN_PATHS)
   '/desk/dutch-pay': '더치페이',
   // '/desk/memo' — 풀스크린 페이지(자체 ← 헤더)라 전역 헤더 미사용 (AppLayout FULLSCREEN_PATHS)
   '/desk/card-benefit': '카드 혜택',

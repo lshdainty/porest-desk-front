@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowLeft, Pin, Plus, Search, X, StickyNote, SearchX, Trash2 } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
+import { Pin, Plus, Search, X, StickyNote, SearchX, Trash2 } from 'lucide-react'
 import {
   useMemos,
   useCreateMemo,
@@ -25,6 +25,7 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MANAGER_LAYOUT } from '@/shared/ui/porest/manager-layout'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 
@@ -80,46 +81,6 @@ function formatStamp(iso: string): string {
   const s = iso.replace('T', ' ').slice(5, 16)
   if (s.length < 11) return s.replace('-', '/')
   return `${s.slice(0, 5).replace('-', '/')} · ${s.slice(6)}`
-}
-
-/** 모바일 풀스크린 헤더 — 앱 AppBar 미러 (← 뒤로 + 타이틀 18/600, surface bg, sticky).
- *  뒤로가기는 '전체' 페이지로 — 앱에서 메모가 '전체' 탭에서 push 되는 동선과 동일. */
-function MobileMemoHeader() {
-  const navigate = useNavigate()
-  return (
-    <div
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '8px 12px',
-        background: 'var(--bg-surface)',
-        flexShrink: 0,
-      }}
-    >
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label="뒤로"
-        onClick={() => navigate('/desk/more')}
-      >
-        <ArrowLeft size={20} />
-      </Button>
-      <h1
-        style={{
-          fontSize: 'var(--text-title-md)',
-          fontWeight: 600,
-          color: 'var(--fg-primary)',
-          margin: 0,
-        }}
-      >
-        메모
-      </h1>
-    </div>
-  )
 }
 
 function SectionLabel({ icon, label }: { icon: 'pin' | 'note'; label: string }) {
@@ -482,7 +443,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   if (mobile) {
     return (
       <>
-        <MobileMemoHeader />
+        <MobileBackHeader title="메모" />
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SearchCard}
@@ -767,7 +728,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       <>
-        <MobileMemoHeader />
+        <MobileBackHeader title="메모" />
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <SkeletonBase className="h-9 w-full rounded-md" />

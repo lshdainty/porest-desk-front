@@ -32,6 +32,7 @@ import {
 } from '@/shared/ui/select'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -679,7 +680,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 모바일 ────────────────────────────────────────────────────────────────
   if (mobile) {
     return (
-      <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+      <>
+        <MobileBackHeader title="할 일" />
+        <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {StatCards}
           {QuickAdd}
@@ -692,7 +695,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           onClick={() => setEditing({ _new: true })}
           style={{
             position: 'fixed',
-            bottom: 88,
+            // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
+            bottom: 24,
             right: 18,
             width: 52,
             height: 52,
@@ -711,7 +715,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           <Plus size={22} strokeWidth={2.5} />
         </button>
         {dialog}
-      </div>
+        </div>
+      </>
     )
   }
 
@@ -1041,14 +1046,17 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
 
   if (mobile) {
     return (
-      <div style={{ padding: '16px 16px 96px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {Stats}
-          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
-          {Chips}
-          {List}
+      <>
+        <MobileBackHeader title="할 일" />
+        <div style={{ padding: '16px 16px 96px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {Stats}
+            <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+            {Chips}
+            {List}
+          </div>
         </div>
-      </div>
+      </>
     )
   }
   return (
