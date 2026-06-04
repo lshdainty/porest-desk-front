@@ -252,11 +252,13 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         className="group/memo cursor-pointer transition-[transform,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:-translate-y-[2px] hover:shadow-[var(--shadow-md)]"
         style={{
           background: t.bg,
-          minHeight: 140,
+          // 앱 그리드(mainAxisExtent 168)와 동일한 고정 높이 — 카드 높이 균일.
+          height: 168,
           padding: 18,
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
+          overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -284,31 +286,29 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           >
             {tag}
           </span>
-          <button
-            type="button"
-            aria-label="고정"
-            aria-pressed={m.isPinned}
-            onClick={ev => {
-              ev.stopPropagation()
-              togglePin.mutate(m.rowId)
-            }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 4,
-              border: 0,
-              background: 'transparent',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            <Pin
-              size={13}
-              strokeWidth={m.isPinned ? 2.5 : 1.8}
-              style={{ color: m.isPinned ? t.swatch : 'var(--fg-tertiary)' }}
-            />
-          </button>
+          {/* 핀 마크는 고정 메모에만 — 비고정 카드 노이즈 제거 (고정 설정은 편집 다이얼로그). */}
+          {m.isPinned && (
+            <button
+              type="button"
+              aria-label="고정 해제"
+              onClick={ev => {
+                ev.stopPropagation()
+                togglePin.mutate(m.rowId)
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                border: 0,
+                background: 'transparent',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <Pin size={13} strokeWidth={2.5} style={{ color: t.swatch }} />
+            </button>
+          )}
         </div>
         <div
           style={{
@@ -317,6 +317,10 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             color: 'var(--fg-primary)',
             letterSpacing: '-0.015em',
             lineHeight: 1.3,
+            // 앱(maxLines 1)과 동일 — 제목 1줄 ellipsis.
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {m.title}
@@ -326,13 +330,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             style={{
               fontSize: 12.5,
               color: 'var(--fg-secondary)',
-              lineHeight: 1.55,
+              lineHeight: 1.45,
               whiteSpace: 'pre-wrap',
               display: '-webkit-box',
-              WebkitLineClamp: 4,
+              // 고정 높이 168 안에서 깔끔히 떨어지는 3줄 (앱 렌더링과 동일 분량).
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               flex: 1,
+              minHeight: 0,
             }}
           >
             {m.content}
@@ -686,14 +692,13 @@ function MemoEditDialog({
 
 // ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
 
-/** 메모 카드 1장 skeleton — 톤 dot + 태그 + 핀 + 제목 + 본문 라인. */
+/** 메모 카드 1장 skeleton — 톤 dot + 태그 + 제목 + 본문 라인 (실카드 168 고정 높이 동일). */
 function MemoCardSkeleton() {
   return (
-    <Card style={{ minHeight: 140, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <Card style={{ height: 168, padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <SkeletonBase className="h-2 w-2 rounded-full" />
         <SkeletonBase className="h-3 w-12" />
-        <SkeletonBase className="h-3.5 w-3.5 rounded-sm ml-auto" />
       </div>
       <SkeletonBase className="h-4 w-4/5" />
       <SkeletonBase className="h-3.5 w-full" />
@@ -731,7 +736,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <div style={{ padding: '16px 16px 96px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+          <SkeletonBase className="h-9 w-full rounded-md" />
           {Chips}
           {Grid}
         </div>
@@ -759,7 +764,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
         }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 16, alignItems: 'center' }}>
-          <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+          <SkeletonBase className="h-9 w-full rounded-md" />
           {Chips}
         </div>
         {Grid}
