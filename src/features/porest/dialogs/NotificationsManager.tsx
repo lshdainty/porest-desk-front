@@ -95,10 +95,11 @@ function SettingRow({
       <div style={{ minWidth: 0, flex: 1 }}>
         <div
           style={{
-            fontSize: 'var(--text-body-md)',
+            // 앱 행 제목(bodySm 13/semi) 정합 — body-md(15) → label-sm(13).
+            fontSize: 'var(--text-label-sm)',
             fontWeight: '600',
             color: 'var(--fg-primary)',
-            lineHeight: '1.4',
+            lineHeight: '1.5',
           }}
         >
           {title}
