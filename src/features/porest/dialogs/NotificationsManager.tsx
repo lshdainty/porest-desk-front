@@ -41,7 +41,12 @@ const TONE_STYLE: Record<Tone, { bg: string; fg: string }> = {
   expense: { bg: 'var(--status-danger-subtle)', fg: 'var(--status-danger-fg)' },
   warning: { bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)' },
   info: { bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' },
-  brand: { bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)' },
+  // brand-subtle 은 다크에서 surface 와 거의 같아 박스가 묻힘 —
+  // fg-brand(다크=primary-light 자동 swap) 15% 틴트로 양 모드 가시성 확보.
+  brand: {
+    bg: 'color-mix(in srgb, var(--fg-brand) 15%, transparent)',
+    fg: 'var(--fg-brand)',
+  },
   success: { bg: 'var(--status-success-subtle)', fg: 'var(--status-success-fg)' },
 }
 
@@ -288,13 +293,16 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <CardSubtitle>필요한 알림만 켜두면 더 편해요.</CardSubtitle>
         </CardHeader>
         <CardContent>
-          {/* 행 사이 full-width 구분선 — 아이콘 밑까지 한 행 전체 (앱 정합) */}
+          {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (CardContent 패딩을
+              음수 마진으로 뚫고 같은 만큼 안쪽 패딩 복원, 앱 정합) */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {NOTIFY_ROWS.map((row, i) => (
               <div
                 key={row.field}
+                className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)] md:-mx-[var(--spacing-xl)] md:px-[var(--spacing-xl)]"
                 style={{
-                  padding: i === 0 ? '0 0 12px' : i === NOTIFY_ROWS.length - 1 ? '12px 0 0' : '12px 0',
+                  paddingTop: i === 0 ? 0 : 12,
+                  paddingBottom: i === NOTIFY_ROWS.length - 1 ? 0 : 12,
                   borderBottom:
                     i === NOTIFY_ROWS.length - 1 ? 'none' : '1px solid var(--border-subtle)',
                 }}
@@ -445,9 +453,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>소리·진동</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* 행 사이 full-width 구분선 — 아이콘 밑까지 한 행 전체 (앱 정합) */}
+          {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합) */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '0 0 12px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div
+              className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)] md:-mx-[var(--spacing-xl)] md:px-[var(--spacing-xl)]"
+              style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-subtle)' }}
+            >
             <SettingRow
               icon={<Volume2 size={18} strokeWidth={1.9} />}
               tone="info"
@@ -475,7 +486,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               }
             />
             </div>
-            <div style={{ padding: '12px 0 0' }}>
+            <div style={{ paddingTop: 12 }}>
             <SettingRow
               icon={<Vibrate size={18} strokeWidth={1.9} />}
               tone="brand"
