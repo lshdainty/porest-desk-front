@@ -497,8 +497,23 @@
   border-left: 3px solid transparent;
 }
 .notif-row:hover { background: var(--bg-muted); }
-.notif-row.unread { border-left-color: var(--border-brand); background: color-mix(in oklch, var(--bg-brand-subtle) 100%, transparent); }
-.notif-row.unread:hover { background: color-mix(in oklch, var(--bg-brand-muted) 100%, transparent); }
+/* 클로드 디자인: unread 배경 = fg-brand(다크=primary-light 자동 swap) 틴트의
+   좌→우 그라데이션 — brand-subtle(다크=primary 8%)은 배경에 묻혀 디자인과 어긋남. */
+.notif-row.unread {
+  border-left-color: var(--border-brand);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--fg-brand) 16%, transparent),
+    color-mix(in srgb, var(--fg-brand) 6%, transparent)
+  );
+}
+.notif-row.unread:hover {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--fg-brand) 20%, transparent),
+    color-mix(in srgb, var(--fg-brand) 10%, transparent)
+  );
+}
 .notif-row__icon {
   width: 34px;
   height: 34px;
