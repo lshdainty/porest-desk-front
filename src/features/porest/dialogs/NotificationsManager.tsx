@@ -358,6 +358,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               min={50}
               max={100}
               step={5}
+              // 5단위 눈금 점 — 앱 divisions 틱 정합 (10구간 + 1)
+              ticks={11}
               value={[warnThreshold]}
               onValueChange={([v]) => updateMut.mutate({ budgetAlertThreshold: v })}
               disabled={calmDisabled}
