@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import {
   BarChart3,
   Bell,
@@ -55,14 +55,20 @@ function SettingRow({
   icon,
   tone,
   title,
+  titleStyle,
   description,
+  descriptionColor = 'var(--fg-tertiary)',
   control,
   disabled,
 }: {
   icon: ReactNode
   tone: Tone
   title: string
+  /** 제목 타이포 override — 마스터 카드는 카드 제목 톤(16/700) 사용. */
+  titleStyle?: CSSProperties
   description: ReactNode
+  /** 설명 색 override — 마스터 카드 설명은 앱 정합으로 fg-secondary. */
+  descriptionColor?: string
   control: ReactNode
   disabled?: boolean
 }) {
@@ -73,8 +79,8 @@ function SettingRow({
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        opacity: disabled ? 0.5 : 1,
-        transition: 'opacity var(--motion-duration-fast) var(--motion-ease-out)',
+        // 앱 정합: off(disabled) 처리는 행 전체 opacity 가 아닌
+        // 아이콘 박스 opacity 0.4 + 텍스트색 fg-disabled 교체로 표현.
       }}
     >
       <span
@@ -88,6 +94,8 @@ function SettingRow({
           borderRadius: 'var(--radius-md)',
           background: t.bg,
           color: t.fg,
+          opacity: disabled ? 0.4 : 1,
+          transition: 'opacity var(--motion-duration-fast) var(--motion-ease-out)',
         }}
       >
         {icon}
@@ -98,8 +106,9 @@ function SettingRow({
             // 앱 행 제목(bodySm 13/semi) 정합 — body-md(15) → label-sm(13).
             fontSize: 'var(--text-label-sm)',
             fontWeight: '600',
-            color: 'var(--fg-primary)',
+            color: disabled ? 'var(--fg-disabled)' : 'var(--fg-primary)',
             lineHeight: '1.5',
+            ...titleStyle,
           }}
         >
           {title}
@@ -107,7 +116,7 @@ function SettingRow({
         <div
           style={{
             fontSize: 'var(--text-caption)',
-            color: 'var(--fg-tertiary)',
+            color: disabled ? 'var(--fg-disabled)' : descriptionColor,
             // 앱 caption h1.5 정합
             lineHeight: '1.5',
             marginTop: 2,
@@ -238,22 +247,21 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   if (isLoading) {
     return (
       // 앱 카드 간 간격(PSpace.x20) 정합 — ManagerShell(gap 16) 대신 gap 20.
-      <div className="flex flex-col" style={{ gap: 20 }}>
+      // 앱 _Content 하단 SizedBox(x32) 정합 — 최하단 여백 32.
+      <div className="flex flex-col" style={{ gap: 20, paddingBottom: 32 }}>
         {!mobile && (
           <ManagerHead
             title="알림 설정"
             description="결제·예산·일정 등 어떤 알림을 어떻게 받을지 설정합니다."
           />
         )}
+        {/* 앱 _PrefsSkeleton 정합 — 카드별 단일 h96 블록(rounded-lg=12) 4개. */}
         {[0, 1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <SkeletonBase className="h-4 w-32" />
-            </CardHeader>
-            <CardContent>
-              <SkeletonBase className="h-16 w-full rounded-md" />
-            </CardContent>
-          </Card>
+          <SkeletonBase
+            key={i}
+            className="w-full rounded-[var(--radius-lg)]"
+            style={{ height: 96 }}
+          />
         ))}
       </div>
     )
@@ -261,7 +269,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
   return (
     // 앱 카드 간 간격(PSpace.x20) 정합 — ManagerShell(gap 16) 대신 gap 20.
-    <div className="flex flex-col" style={{ gap: 20 }}>
+    // 앱 _Content 하단 SizedBox(x32) 정합 — 최하단 여백 32.
+    <div className="flex flex-col" style={{ gap: 20, paddingBottom: 32 }}>
       {!mobile && (
         <ManagerHead
           title="알림 설정"
@@ -269,16 +278,32 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         />
       )}
 
-      {/* 1) 푸시 알림 (마스터) */}
-      <Card style={{ background: 'var(--bg-brand-subtle)' }}>
-        <CardContent>
+      {/* 1) 푸시 알림 (마스터) — 앱 PCardVariant.brand 정합:
+          bg-brand-subtle + 1px brand border + shadow 없음. */}
+      <Card
+        variant="bordered"
+        style={{
+          background: 'var(--bg-brand-subtle)',
+          borderColor: 'var(--border-brand)',
+        }}
+      >
+        {/* 앱 _MasterCard 패딩 EdgeInsets.all(lg=16) 고정 — 데스크톱에서도 24 아님. */}
+        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           <SettingRow
             icon={<Bell size={18} strokeWidth={1.9} />}
             tone="brand"
             title="푸시 알림"
+            // 앱 _MasterCard 제목은 카드 제목 톤(bodyLg 16/700/lh1.6).
+            titleStyle={{
+              fontSize: 'var(--text-body-lg)',
+              fontWeight: 700,
+              lineHeight: '1.6',
+            }}
             description={
               pushEnabled ? '모든 알림이 활성화되어 있어요' : '알림이 꺼져 있어요'
             }
+            // 앱 _MasterCard 설명색 fgSecondary.
+            descriptionColor="var(--fg-secondary)"
             control={
               <Switch
                 checked={pushEnabled}
@@ -292,19 +317,21 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 2) 알림 종류 */}
       <Card>
-        {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합 */}
-        <CardHeader className="gap-[2px] pb-[8px]">
+        {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합.
+            데스크톱에서도 패딩 16 고정(앱 정합) — md:p-xl(24) override. */}
+        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>알림 종류</CardTitle>
           <CardSubtitle>필요한 알림만 켜두면 더 편해요.</CardSubtitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (CardContent 패딩을
-              음수 마진으로 뚫고 같은 만큼 안쪽 패딩 복원, 앱 정합) */}
+              음수 마진으로 뚫고 같은 만큼 안쪽 패딩 복원, 앱 정합).
+              패딩이 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {NOTIFY_ROWS.map((row, i) => (
               <div
                 key={row.field}
-                className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)] md:-mx-[var(--spacing-xl)] md:px-[var(--spacing-xl)]"
+                className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]"
                 style={{
                   paddingTop: 12,
                   paddingBottom: i === NOTIFY_ROWS.length - 1 ? 0 : 12,
@@ -337,19 +364,21 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         </CardContent>
       </Card>
 
-      {/* 3) 예산 알림 임계값 (기존 슬라이더 카드 유지) */}
+      {/* 3) 예산 알림 임계값 (기존 슬라이더 카드 유지).
+          데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between pb-[2px]">
+        <CardHeader className="flex-row items-center justify-between p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[2px] md:pb-[2px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>예산 알림 임계값</CardTitle>
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
           </span>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           <div
             style={{
               fontSize: 'var(--text-caption)',
-              color: 'var(--fg-secondary)',
+              // 앱 임계값 설명 본문색 fgTertiary 정합.
+              color: 'var(--fg-tertiary)',
               marginBottom: 8,
               lineHeight: '1.5',
             }}
@@ -357,12 +386,13 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             예산 사용률이 이 값을 넘으면 <strong style={{ color: 'var(--status-warning-fg)' }}>경고</strong> 상태로 표시되고 알림을 받습니다.
             100%는 <strong style={{ color: 'var(--status-danger-fg)' }}>초과</strong>로 별도 알림이 발생합니다.
           </div>
-          <div style={{ marginBottom: 8 }}>
+          {/* 앱은 슬라이더 바로 아래 눈금 Row(gap 0) — 슬라이더 하단 여백 제거. */}
+          <div>
             <Slider
               min={50}
               max={100}
               step={5}
-              // 5단위 눈금 점 — 앱 divisions 틱 정합 (10구간 + 1)
+              // 5단위 눈금 점 — 앱 divisions(10) 틱 마커 정합 (10구간 + 1 = 11).
               ticks={11}
               value={[warnThreshold]}
               onValueChange={([v]) => updateMut.mutate({ budgetAlertThreshold: v })}
@@ -373,9 +403,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
+              // 앱 눈금 라벨 PTypo.micro(11/500/lh1.5/ls0.44) 정합.
               fontSize: 'var(--text-badge)',
+              fontWeight: 500,
+              lineHeight: '1.5',
+              letterSpacing: '0.44px',
               color: 'var(--fg-tertiary)',
-              padding: '0 2px',
             }}
           >
             <span>50</span>
@@ -388,17 +421,20 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         </CardContent>
       </Card>
 
-      {/* 4) 방해 금지 시간 */}
+      {/* 4) 방해 금지 시간 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
-        <CardHeader className="gap-[2px] pb-[8px]">
+        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>방해 금지 시간</CardTitle>
           <CardSubtitle>이 시간에는 알림이 소리·진동 없이 표시됩니다.</CardSubtitle>
         </CardHeader>
-        <CardContent>
-          <div style={{ paddingTop: 12 }}>
+        {/* 앱 _QuietHoursCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
+            extra top margin 없이 행 v-padding(12)만으로 분리. */}
+        <CardContent className="p-0 md:p-0">
+          <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Moon size={18} strokeWidth={1.9} />}
-            tone="brand"
+            // 앱 _Tone.info 정합 — Moon 박스 info(파랑계) 톤.
+            tone="info"
             title="방해 금지 사용"
             description="시간대를 지정해 자동 무음"
             control={
@@ -416,15 +452,18 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: 12,
-                marginTop: 16,
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingBottom: 12,
               }}
             >
               <div>
+                {/* 앱 PSectionLabel(label) = caption 12 / fgSecondary, 아래 gap 4. */}
                 <div
                   style={{
-                    fontSize: 'var(--text-label-sm)',
-                    color: 'var(--fg-tertiary)',
-                    marginBottom: 6,
+                    fontSize: 'var(--text-caption)',
+                    color: 'var(--fg-secondary)',
+                    marginBottom: 4,
                   }}
                 >
                   시작
@@ -438,9 +477,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               <div>
                 <div
                   style={{
-                    fontSize: 'var(--text-label-sm)',
-                    color: 'var(--fg-tertiary)',
-                    marginBottom: 6,
+                    fontSize: 'var(--text-caption)',
+                    color: 'var(--fg-secondary)',
+                    marginBottom: 4,
                   }}
                 >
                   종료
@@ -456,16 +495,17 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         </CardContent>
       </Card>
 
-      {/* 5) 소리·진동 */}
+      {/* 5) 소리·진동 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
-        <CardHeader className="pb-[8px]">
+        <CardHeader className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>소리·진동</CardTitle>
         </CardHeader>
-        <CardContent>
-          {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합) */}
+        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
+          {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합).
+              패딩 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div
-              className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)] md:-mx-[var(--spacing-xl)] md:px-[var(--spacing-xl)]"
+              className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]"
               style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-subtle)' }}
             >
             <SettingRow
@@ -481,7 +521,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                     updateMut.mutate({ notificationSound: v as NotificationSound })
                   }
                 >
-                  <SelectTrigger className="w-28">
+                  {/* 앱 PSelect 정합: 폭 120 / 값 폰트 bodyLg(16) / chevron fgSecondary. */}
+                  <SelectTrigger className="w-[120px] text-body-lg [&>svg]:text-text-secondary">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -514,19 +555,22 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         </CardContent>
       </Card>
 
-      {/* 6) 이메일 알림 */}
+      {/* 6) 이메일 알림 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
-        <CardHeader className="gap-[2px] pb-[8px]">
+        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>이메일 알림</CardTitle>
           <CardSubtitle>앱을 잘 안 열어도 이메일로 요약을 받아볼 수 있어요.</CardSubtitle>
         </CardHeader>
-        <CardContent>
-          <div style={{ paddingTop: 12 }}>
+        {/* 앱 _EmailCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
+            extra top margin 없이 행 v-padding(12)만으로 분리. */}
+        <CardContent className="p-0 md:p-0">
+          <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Mail size={18} strokeWidth={1.9} />}
             tone="info"
             title="이메일 받기"
-            description={currentUser?.userEmail ?? '이메일 요약 수신'}
+            // 앱 빈 이메일 fallback 문구 정합.
+            description={currentUser?.userEmail ?? '등록된 이메일이 없습니다'}
             control={
               <Switch
                 checked={emailEnabled}
@@ -537,11 +581,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           />
           </div>
           {emailEnabled && (
-            <div style={{ marginTop: 16 }}>
+            <div style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 12 }}>
+              {/* 앱 PSectionLabel(label) = caption 12 / fgSecondary, 아래 gap 8. */}
               <div
                 style={{
-                  fontSize: 'var(--text-label-sm)',
-                  color: 'var(--fg-tertiary)',
+                  fontSize: 'var(--text-caption)',
+                  color: 'var(--fg-secondary)',
                   marginBottom: 8,
                 }}
               >
@@ -558,7 +603,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 }
               >
                 {EMAIL_FREQ_OPTIONS.map((o) => (
-                  <ToggleGroupItem key={o.value} value={o.value}>
+                  <ToggleGroupItem
+                    key={o.value}
+                    value={o.value}
+                    // 앱 PSegmented 정합: active 굵기 semi(600) + shadow 없음.
+                    className="data-[state=on]:font-semibold data-[state=on]:shadow-none"
+                  >
                     {o.label}
                   </ToggleGroupItem>
                 ))}
@@ -571,7 +621,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       {updateMut.isError && (
         <div
           style={{
-            fontSize: 'var(--text-caption)',
+            // 앱 에러 메시지 타이포 bodySm(13) 정합.
+            fontSize: 'var(--text-body-sm)',
             color: 'var(--fg-expense)',
           }}
         >
