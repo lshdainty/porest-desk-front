@@ -386,8 +386,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             예산 사용률이 이 값을 넘으면 <strong style={{ color: 'var(--status-warning-fg)' }}>경고</strong> 상태로 표시되고 알림을 받습니다.
             100%는 <strong style={{ color: 'var(--status-danger-fg)' }}>초과</strong>로 별도 알림이 발생합니다.
           </div>
-          {/* 앱은 슬라이더 바로 아래 눈금 Row(gap 0) — 슬라이더 하단 여백 제거. */}
-          <div>
+          {/* 앱 Flutter Slider 는 위젯 높이 44 — 트랙 위아래 ~20px 내재 여백.
+              웹 슬라이더(16px)에 동일한 실효 간격을 padding 으로 재현. */}
+          <div style={{ padding: '20px 0' }}>
             <Slider
               min={50}
               max={100}
