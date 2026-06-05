@@ -64,8 +64,12 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
     [assets, tab],
   )
 
+  // '총액 제외'(isIncludedInTotal === 'N') 자산은 탭 합계에서 제외.
   const totalInTab = useMemo(
-    () => filtered.reduce((sum, a) => sum + (a.balance ?? 0), 0),
+    () =>
+      filtered
+        .filter(a => a.isIncludedInTotal !== 'N')
+        .reduce((sum, a) => sum + (a.balance ?? 0), 0),
     [filtered],
   )
 
