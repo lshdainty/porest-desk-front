@@ -22,6 +22,7 @@ const FULLSCREEN_PATHS = [
   '/desk/dutch-pay',
   '/desk/card-benefit',
   '/desk/settings',
+  '/desk/notifications',
 ]
 
 /** 캘린더 일정 생성 폼 — AppLayout에서 + 버튼 클릭 시 마운트. */

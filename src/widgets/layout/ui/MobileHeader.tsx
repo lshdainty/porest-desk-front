@@ -19,11 +19,10 @@ const MTITLE: Record<string, string> = {
   '/desk/stats': '통계·분석',
   '/desk/budget': '예산',
   '/desk/calendar': '캘린더',
-  // '/desk/todo' · '/desk/dutch-pay' · '/desk/memo' · '/desk/card-benefit'
+  // '/desk/todo' · '/desk/dutch-pay' · '/desk/memo' · '/desk/card-benefit' · '/desk/notifications'
   // — 풀스크린 페이지(자체 ← 헤더)라 전역 헤더 미사용 (AppLayout FULLSCREEN_PATHS)
   '/desk/more': '전체',
   '/desk/search': '검색',
-  '/desk/notifications': '알림',
 }
 
 function title(pathname: string) {
