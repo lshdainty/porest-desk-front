@@ -22,7 +22,7 @@ import {
 } from '@/features/user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
-import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
+import { ManagerHead } from '@/shared/ui/porest/manager-layout'
 import {
   Select,
   SelectContent,
@@ -236,7 +236,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
   if (isLoading) {
     return (
-      <ManagerShell>
+      // 앱 카드 간 간격(PSpace.x20) 정합 — ManagerShell(gap 16) 대신 gap 20.
+      <div className="flex flex-col" style={{ gap: 20 }}>
         {!mobile && (
           <ManagerHead
             title="알림 설정"
@@ -253,12 +254,13 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             </CardContent>
           </Card>
         ))}
-      </ManagerShell>
+      </div>
     )
   }
 
   return (
-    <ManagerShell>
+    // 앱 카드 간 간격(PSpace.x20) 정합 — ManagerShell(gap 16) 대신 gap 20.
+    <div className="flex flex-col" style={{ gap: 20 }}>
       {!mobile && (
         <ManagerHead
           title="알림 설정"
@@ -289,7 +291,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 2) 알림 종류 */}
       <Card>
-        <CardHeader>
+        {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합 */}
+        <CardHeader className="gap-[2px] pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>알림 종류</CardTitle>
           <CardSubtitle>필요한 알림만 켜두면 더 편해요.</CardSubtitle>
         </CardHeader>
@@ -302,7 +305,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 key={row.field}
                 className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)] md:-mx-[var(--spacing-xl)] md:px-[var(--spacing-xl)]"
                 style={{
-                  paddingTop: i === 0 ? 0 : 12,
+                  paddingTop: 12,
                   paddingBottom: i === NOTIFY_ROWS.length - 1 ? 0 : 12,
                   borderBottom:
                     i === NOTIFY_ROWS.length - 1 ? 'none' : '1px solid var(--border-subtle)',
@@ -335,7 +338,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 3) 예산 알림 임계값 (기존 슬라이더 카드 유지) */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-row items-center justify-between pb-[2px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산 알림 임계값</CardTitle>
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
@@ -346,7 +349,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             style={{
               fontSize: 'var(--text-caption)',
               color: 'var(--fg-secondary)',
-              marginBottom: 12,
+              marginBottom: 8,
               lineHeight: '1.5',
             }}
           >
@@ -386,11 +389,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 4) 방해 금지 시간 */}
       <Card>
-        <CardHeader>
+        <CardHeader className="gap-[2px] pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>방해 금지 시간</CardTitle>
           <CardSubtitle>이 시간에는 알림이 소리·진동 없이 표시됩니다.</CardSubtitle>
         </CardHeader>
         <CardContent>
+          <div style={{ paddingTop: 12 }}>
           <SettingRow
             icon={<Moon size={18} strokeWidth={1.9} />}
             tone="brand"
@@ -404,6 +408,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               />
             }
           />
+          </div>
           {quietHoursEnabled && (
             <div
               style={{
@@ -452,7 +457,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 5) 소리·진동 */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>소리·진동</CardTitle>
         </CardHeader>
         <CardContent>
@@ -510,11 +515,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 6) 이메일 알림 */}
       <Card>
-        <CardHeader>
+        <CardHeader className="gap-[2px] pb-[8px]">
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>이메일 알림</CardTitle>
           <CardSubtitle>앱을 잘 안 열어도 이메일로 요약을 받아볼 수 있어요.</CardSubtitle>
         </CardHeader>
         <CardContent>
+          <div style={{ paddingTop: 12 }}>
           <SettingRow
             icon={<Mail size={18} strokeWidth={1.9} />}
             tone="info"
@@ -528,6 +534,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               />
             }
           />
+          </div>
           {emailEnabled && (
             <div style={{ marginTop: 16 }}>
               <div
@@ -570,6 +577,6 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
         </div>
       )}
-    </ManagerShell>
+    </div>
   )
 }
