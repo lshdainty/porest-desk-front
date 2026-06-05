@@ -288,23 +288,37 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <CardSubtitle>필요한 알림만 켜두면 더 편해요.</CardSubtitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {NOTIFY_ROWS.map((row) => (
-              <SettingRow
+          {/* 행 사이 full-width 구분선 — 아이콘 밑까지 한 행 전체 (앱 정합) */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {NOTIFY_ROWS.map((row, i) => (
+              <div
                 key={row.field}
-                icon={row.icon}
-                tone={row.tone}
-                title={row.title}
-                description={row.description}
-                disabled={!pushEnabled}
-                control={
-                  <Switch
-                    checked={pref?.[row.field] ?? true}
-                    disabled={!pushEnabled || calmDisabled}
-                    onCheckedChange={(v) => updateMut.mutate({ [row.field]: v })}
-                  />
-                }
-              />
+                style={{
+                  padding: i === 0 ? '0 0 12px' : i === NOTIFY_ROWS.length - 1 ? '12px 0 0' : '12px 0',
+                  borderBottom:
+                    i === NOTIFY_ROWS.length - 1 ? 'none' : '1px solid var(--border-subtle)',
+                }}
+              >
+                <SettingRow
+                  icon={row.icon}
+                  tone={row.tone}
+                  title={row.title}
+                  description={
+                    // 예산 알림 설명은 DB 임계값(budget_alert_threshold) 기반 — 아래 임계값 카드와 동일 값
+                    row.field === 'notifyBudget'
+                      ? `카테고리 예산 ${warnThreshold}%·100% 도달`
+                      : row.description
+                  }
+                  disabled={!pushEnabled}
+                  control={
+                    <Switch
+                      checked={pref?.[row.field] ?? true}
+                      disabled={!pushEnabled || calmDisabled}
+                      onCheckedChange={(v) => updateMut.mutate({ [row.field]: v })}
+                    />
+                  }
+                />
+              </div>
             ))}
           </div>
         </CardContent>
@@ -431,7 +445,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>소리·진동</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* 행 사이 full-width 구분선 — 아이콘 밑까지 한 행 전체 (앱 정합) */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '0 0 12px', borderBottom: '1px solid var(--border-subtle)' }}>
             <SettingRow
               icon={<Volume2 size={18} strokeWidth={1.9} />}
               tone="info"
@@ -458,6 +474,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 </Select>
               }
             />
+            </div>
+            <div style={{ padding: '12px 0 0' }}>
             <SettingRow
               icon={<Vibrate size={18} strokeWidth={1.9} />}
               tone="brand"
@@ -471,6 +489,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 />
               }
             />
+            </div>
           </div>
         </CardContent>
       </Card>
