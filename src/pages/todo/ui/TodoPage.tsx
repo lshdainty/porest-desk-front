@@ -32,6 +32,7 @@ import {
 } from '@/shared/ui/select'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Card } from '@/shared/ui/card'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -291,6 +292,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 퀵추가 ────────────────────────────────────────────────────────────────
   const QuickAdd = (
     <Card
+      className="focus-within:[outline:2px_solid_var(--border-focus)]"
       style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}
     >
       <span
@@ -900,7 +902,7 @@ function TodoEditDialog({
       >
         <Field>
           <FieldLabel>마감일</FieldLabel>
-          <Input type="date" value={due} onChange={e => setDue(e.target.value)} />
+          <InputDatePicker value={due} onValueChange={setDue} placeholder="yyyy-mm-dd" />
         </Field>
         <Field>
           <FieldLabel>태그</FieldLabel>
