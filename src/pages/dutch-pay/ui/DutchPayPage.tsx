@@ -21,6 +21,7 @@ import {
 } from '@/features/dutch-pay'
 import type { DutchPay, DutchPayParticipant, DutchPayFormValues } from '@/entities/dutch-pay'
 import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -304,11 +305,11 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           desc="정산을 마치면 여기에 모입니다."
         />
       ) : (
-        <div className="p-card" style={{ padding: '8px 18px' }}>
+        <Card style={{ padding: '8px 18px' }}>
           {past.map((d, i) => (
             <PastRow key={d.rowId} d={d} first={i === 0} onClick={() => setDetailId(d.rowId)} />
           ))}
-        </div>
+        </Card>
       )
   } else {
     Content =
@@ -319,17 +320,17 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           desc="정산에 친구를 추가하면 여기에 모입니다."
         />
       ) : (
-        <div className="p-card" style={{ padding: '8px 18px' }}>
+        <Card style={{ padding: '8px 18px' }}>
           {friends.map((f, i) => (
             <FriendRow key={f.name} f={f} first={i === 0} />
           ))}
-        </div>
+        </Card>
       )
   }
 
   // ── 데스크톱 우측 사이드 ────────────────────────────────────────────────────
   const TopFriendsCard = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>자주 정산하는 친구</h2>
       {topFriends.length === 0 ? (
         <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>아직 정산 함께한 친구가 없어요.</div>
@@ -346,11 +347,11 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           ))}
         </div>
       )}
-    </div>
+    </Card>
   )
 
   const MonthStatsCard = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>이번 달 정산 통계</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <StatRow label="만든 정산" value={<><span className="num">{monthStats.count}</span>건</>} />
@@ -370,7 +371,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           value={<><span className="num">{monthStats.avg.toFixed(1)}</span>명</>}
         />
       </div>
-    </div>
+    </Card>
   )
 
   // ── 만들기 마법사 + 상세 모달 ───────────────────────────────────────────────
@@ -542,7 +543,7 @@ function SummaryCard({
   const chipVar = receive ? '--color-chart-green' : '--color-chart-orange'
   const fg = receive ? 'var(--status-success-fg)' : 'var(--status-warning-fg)'
   return (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mobile ? 10 : 12 }}>
         <span
           style={{
@@ -580,7 +581,7 @@ function SummaryCard({
         </HideUnit>
       </div>
       <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>{sub}</div>
-    </div>
+    </Card>
   )
 }
 
@@ -601,8 +602,7 @@ function SessionCard({
   const place = d.description?.trim()
   const meta = place ? `${place} · ${kDateMd(d.dutchPayDate)}` : kDateMd(d.dutchPayDate)
   return (
-    <div
-      className="p-card"
+    <Card
       onClick={onClick}
       style={{ padding: mobile ? 18 : 22, cursor: 'pointer' }}
     >
@@ -675,7 +675,7 @@ function SessionCard({
           {paid}/{total}
         </span>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -1360,20 +1360,20 @@ function DutchDetailDialog({
 
 function SummaryCardSkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mobile ? 10 : 12 }}>
         <SkeletonBase className="h-7 w-7 rounded-sm shrink-0" />
         <SkeletonBase className="h-3 w-12" />
       </div>
       <SkeletonBase className={mobile ? 'h-6 w-28' : 'h-7 w-32'} />
       <SkeletonBase className="h-3 w-16 mt-2" />
-    </div>
+    </Card>
   )
 }
 
 function SessionCardSkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <div className="p-card" style={{ padding: mobile ? 18 : 22 }}>
+    <Card style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <SkeletonBase className="h-5 w-2/5 mb-2" />
@@ -1389,7 +1389,7 @@ function SessionCardSkeleton({ mobile }: { mobile: boolean }) {
         <SkeletonBase className="h-1.5 flex-1 rounded-full" />
         <SkeletonBase className="h-3 w-8 shrink-0" />
       </div>
-    </div>
+    </Card>
   )
 }
 

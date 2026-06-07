@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Field, FieldLabel } from '@/shared/ui/field'
+import { Card } from '@/shared/ui/card'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -242,7 +243,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         gap: mobile ? 8 : 12,
       }}
     >
-      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+      <Card style={{ padding: mobile ? 14 : 18 }}>
         <div style={statLabel}>오늘</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span
@@ -256,8 +257,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           </span>
           <span style={statUnit}>건</span>
         </div>
-      </div>
-      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+      </Card>
+      <Card style={{ padding: mobile ? 14 : 18 }}>
         <div style={statLabel}>이번 주</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span className="num" style={statNum(mobile)}>
@@ -265,8 +266,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           </span>
           <span style={statUnit}>건</span>
         </div>
-      </div>
-      <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+      </Card>
+      <Card style={{ padding: mobile ? 14 : 18 }}>
         <div style={statLabel}>완료율</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span
@@ -283,14 +284,13 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             style={{ width: `${completedPct}%`, background: 'var(--status-success)' }}
           />
         </div>
-      </div>
+      </Card>
     </div>
   )
 
   // ── 퀵추가 ────────────────────────────────────────────────────────────────
   const QuickAdd = (
-    <div
-      className="p-card"
+    <Card
       style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}
     >
       <span
@@ -342,7 +342,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       >
         <Settings2 size={13} /> 자세히
       </Button>
-    </div>
+    </Card>
   )
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
@@ -533,7 +533,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   // ── 그룹 리스트 ───────────────────────────────────────────────────────────
   const ListCard = (
-    <div className="p-card" style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
+    <Card style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
       {groups.length === 0
         ? EmptyState
         : groups.map(([k, items]) => (
@@ -556,12 +556,12 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               ))}
             </div>
           ))}
-    </div>
+    </Card>
   )
 
   // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
   const TagDistribution = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>태그별 분포</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {TAG_OPTIONS.map(tag => {
@@ -615,12 +615,12 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           )
         })}
       </div>
-    </div>
+    </Card>
   )
 
   // ── 데스크톱 우측: 우선순위 ───────────────────────────────────────────────
   const PriorityCard = (
-    <div className="p-card" style={{ padding: 22 }}>
+    <Card style={{ padding: 22 }}>
       <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>우선순위</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {PRIO_ORDER.map(k => {
@@ -660,7 +660,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           )
         })}
       </div>
-    </div>
+    </Card>
   )
 
   const dialog =
@@ -998,10 +998,10 @@ function TodoRowSkeleton({ last }: { last?: boolean }) {
 /** 통계 카드 1장 skeleton. */
 function StatCardSkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <div className="p-card" style={{ padding: mobile ? 14 : 18 }}>
+    <Card style={{ padding: mobile ? 14 : 18 }}>
       <SkeletonBase className="h-3 w-10 mb-2" />
       <SkeletonBase className={mobile ? 'h-6 w-12' : 'h-7 w-14'} />
-    </div>
+    </Card>
   )
 }
 
@@ -1028,12 +1028,12 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
     </div>
   )
   const List = (
-    <div className="p-card" style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
+    <Card style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
       <SkeletonBase className="h-3 w-28 my-3" />
       {Array.from({ length: 4 }).map((_, i) => (
         <TodoRowSkeleton key={i} last={i === 3} />
       ))}
-    </div>
+    </Card>
   )
   const Left = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
