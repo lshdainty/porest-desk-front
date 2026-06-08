@@ -4,7 +4,7 @@ import {
   Bell,
   Bookmark,
   CalendarDays,
-  CalendarRange,
+  Calendar1,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -18,7 +18,8 @@ import {
   Target,
   Trash2,
   User,
-  Wallet,
+  CreditCard,
+  FilePen,
 } from 'lucide-react'
 import {
   AccountManager,
@@ -74,11 +75,11 @@ interface SectionDef {
 
 const SECTIONS: SectionDef[] = [
   { id: 'categories', label: '카테고리 관리', icon: Tag, desc: '지출·수입 카테고리 추가·수정·삭제' },
-  { id: 'accounts', label: '계좌·카드 관리', icon: Wallet, desc: '연결된 계좌와 카드 관리' },
-  { id: 'budget', label: '예산 설정', icon: Target, desc: '월간 예산 및 카테고리별 한도' },
+  { id: 'accounts', label: '계좌·카드 관리', icon: CreditCard, desc: '연결된 계좌와 카드 관리' },
+  { id: 'budget', label: '예산 설정', icon: FilePen, desc: '월간 예산 및 카테고리별 한도' },
   { id: 'recurring', label: '반복 거래 관리', icon: Repeat, desc: '구독·고정 결제·정기 수입 일괄 관리' },
   { id: 'presets', label: '프리셋 관리', icon: Bookmark, desc: '자주 쓰는 내역을 한 번 탭으로 채우기' },
-  { id: 'calendar-share', label: '캘린더 관리·공유', icon: CalendarRange, desc: '다중 캘린더 생성과 멤버 공유 설정' },
+  { id: 'calendar-share', label: '캘린더 관리·공유', icon: Calendar1, desc: '다중 캘린더 생성과 멤버 공유 설정' },
   { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
