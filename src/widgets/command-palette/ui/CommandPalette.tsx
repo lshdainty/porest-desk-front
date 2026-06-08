@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard,
   StickyNote,
-  CheckSquare,
+  ListChecks,
   CalendarDays,
   Wallet,
   Sun,
@@ -83,7 +83,7 @@ export const CommandPalette = () => {
   const pages = [
     { label: t('dashboard'), url: '/desk', icon: LayoutDashboard },
     { label: t('memo'), url: '/desk/memo', icon: StickyNote },
-    { label: t('todo'), url: '/desk/todo', icon: CheckSquare },
+    { label: t('todo'), url: '/desk/todo', icon: ListChecks },
     { label: t('calendar'), url: '/desk/calendar', icon: CalendarDays },
     { label: t('expense'), url: '/desk/expense', icon: Wallet },
   ]
