@@ -28,6 +28,7 @@ import {
   CalendarLabelsSection,
   CalendarShareSection,
   CategoryManager,
+  DataExportSection,
   NotificationsManager,
   PresetManager,
   RecurringManager,
@@ -83,7 +84,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
-  { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·PDF로 거래 내역 백업' },
+  { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·Excel·JSON으로 데이터 백업' },
   { id: 'account', label: '계정', icon: User, desc: '프로필·보안·로그아웃' },
 ]
 
@@ -160,6 +161,7 @@ export const SettingsPage = () => {
       case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
+      case 'data':          return <DataExportSection mobile={m} />
       case 'account':       return <AccountSection />
       default:              return <PlaceholderSection section={activeSection} />
     }
