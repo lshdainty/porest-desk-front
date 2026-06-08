@@ -162,9 +162,10 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
         {mobile ? (
           <>
             {/* header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
-                sticky top:0 — 탭이 스크롤포트 상단에 꽉 차게 고정(잘림 없음), 그 아래(검색+리스트)부터 스크롤.
-                margin 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치(불일치 시 탭 띠가 떠 보임). */}
-            <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: 0, zIndex: 5 }}>
+                sticky 기준은 컨테이너 content box(=padding-top 24 아래)라, 시각 최상단에 딱 붙여 고정하려면
+                top 도 padding-top 만큼 음수(-24) 여야 함. top:0 이면 24px 떠 보임.
+                margin/top 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치. */}
+            <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: -24, zIndex: 5 }}>
               <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
                 <TabsList variant="underline" className="w-full">
                   <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">
