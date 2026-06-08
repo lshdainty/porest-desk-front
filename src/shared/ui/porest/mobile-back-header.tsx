@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+import { ChevronLeft } from 'lucide-react'
 
 /**
  * 모바일 풀스크린 페이지 헤더 — 앱 AppBar 미러.
@@ -28,26 +27,41 @@ export function MobileBackHeader({
         zIndex: 10,
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '8px 12px',
+        gap: 8,
+        padding: '12px 8px',
         background: 'var(--bg-surface)',
         flexShrink: 0,
       }}
     >
-      <Button variant="ghost" size="icon" aria-label="뒤로" onClick={() => navigate(to)}>
-        <ArrowLeft size={20} />
-      </Button>
+      <button
+        type="button"
+        aria-label="뒤로"
+        onClick={() => navigate(to)}
+        style={{
+          border: 0,
+          background: 'transparent',
+          padding: 6,
+          display: 'inline-flex',
+          cursor: 'pointer',
+          color: 'var(--fg-primary)',
+          borderRadius: 'var(--radius-md)',
+        }}
+      >
+        <ChevronLeft size={22} />
+      </button>
       <h1
         style={{
+          flex: 1,
           fontSize: 'var(--text-title-md)',
-          fontWeight: 600,
+          fontWeight: 700,
+          letterSpacing: '-0.012em',
           color: 'var(--fg-primary)',
           margin: 0,
         }}
       >
         {title}
       </h1>
-      {trailing && <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>{trailing}</div>}
+      {trailing && <div style={{ display: 'flex', alignItems: 'center' }}>{trailing}</div>}
     </div>
   )
 }
