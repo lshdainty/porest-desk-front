@@ -180,7 +180,7 @@ export const SettingsPage = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
+            gap: 4,
             padding: '12px 8px',
             background: 'var(--bg-surface)',
             flexShrink: 0,
@@ -200,7 +200,7 @@ export const SettingsPage = () => {
           >
             <ChevronLeft size={22} />
           </button>
-          <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: '700', letterSpacing: '-0.012em' }}>
+          <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: '600', letterSpacing: '-0.012em' }}>
             {activeSection?.label}
           </h2>
         </div>

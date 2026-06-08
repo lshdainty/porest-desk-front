@@ -27,7 +27,7 @@ export function MobileBackHeader({
         zIndex: 10,
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
+        gap: 4,
         padding: '12px 8px',
         background: 'var(--bg-surface)',
         flexShrink: 0,
@@ -53,7 +53,7 @@ export function MobileBackHeader({
         style={{
           flex: 1,
           fontSize: 'var(--text-title-md)',
-          fontWeight: 700,
+          fontWeight: 600,
           letterSpacing: '-0.012em',
           color: 'var(--fg-primary)',
           margin: 0,
