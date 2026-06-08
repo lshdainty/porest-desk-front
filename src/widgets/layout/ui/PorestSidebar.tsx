@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, ListChecks,
-  NotebookPen, ReceiptText, Sheet, UsersRound, Wallet,
+  NotebookPen, ReceiptText, FilePen, UsersRound, Wallet,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -32,7 +32,7 @@ export const NAV: NavItem[] = [
   { id: 'assets',   label: '자산',      icon: Wallet,          path: '/desk/asset' },
   { id: 'tx',       label: '가계부',    icon: ReceiptText,         path: '/desk/expense' },
   { id: 'stats',    label: '통계·분석', icon: ChartPie,        path: '/desk/stats' },
-  { id: 'budget',   label: '예산',      icon: Sheet,          path: '/desk/budget' },
+  { id: 'budget',   label: '예산',      icon: FilePen,          path: '/desk/budget' },
   { id: 'calendar', label: '캘린더',    icon: Calendar1,    path: '/desk/calendar' },
   { id: 'todo',     label: '할 일',     icon: ListChecks,      path: '/desk/todo' },
   { id: 'dutch',    label: '더치페이',  icon: UsersRound,      path: '/desk/dutch-pay' },
