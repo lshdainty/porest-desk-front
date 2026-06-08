@@ -302,8 +302,8 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 14,
-        padding: '14px 16px',
+        gap: 12,
+        padding: '12px 16px',
         borderTop: first ? 'none' : '1px solid var(--border-subtle)',
         cursor: 'pointer',
         transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
@@ -311,8 +311,8 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
     >
       <span
         style={{
-          width: 32,
-          height: 32,
+          width: 36,
+          height: 36,
           borderRadius: 'var(--radius-md)',
           background: pal.bg,
           color: pal.color,
@@ -322,16 +322,16 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
           flexShrink: 0,
         }}
       >
-        <Users size={16} strokeWidth={2} />
+        <Users size={18} strokeWidth={2} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span
             style={{
-              fontSize: 'var(--text-body-md)',
+              fontSize: 'var(--text-body-sm)',
               fontWeight: '600',
+              lineHeight: 1.5,
               color: 'var(--fg-primary)',
-              letterSpacing: '-0.01em',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -340,19 +340,11 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
             {cal.calendarName}
           </span>
           {cal.isDefault && (
-            <span
-              style={{
-                fontSize: 'var(--text-badge)',
-                fontWeight: '600',
-                color: 'var(--fg-tertiary)',
-                background: 'var(--bg-sunken)',
-                padding: '1px 6px',
-                borderRadius: 'var(--radius-sm)',
-                flexShrink: 0,
-              }}
-            >
+            // 공용 Badge(secondary) — pill·secondary 회색·8/2 패딩으로 앱 PBadge 정합.
+            // font-bold(w700)로 앱 PBadge 굵기와 일치(badge.md SoT는 600 — 아래 노트 참고).
+            <Badge variant="secondary" className="font-bold" style={{ flexShrink: 0 }}>
               기본
-            </span>
+            </Badge>
           )}
         </div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
