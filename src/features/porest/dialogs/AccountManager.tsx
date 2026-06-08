@@ -106,9 +106,10 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         )}
 
         {mobile ? (
-          // header 바로 아래 full-width 흰띠 underline 탭 (SettingsPage 모바일 padding 20/16 상쇄)
+          // header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
           // sticky top:0 — 탭 고정(스크롤포트 상단 flush, 잘림 없음), 그 아래(검색+리스트)부터 스크롤. (CategoryManager 정합)
-          <div style={{ background: 'var(--bg-surface)', margin: '-20px -16px 0', position: 'sticky', top: 0, zIndex: 5 }}>
+          // margin 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 일치해야 함.
+          <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: 0, zIndex: 5 }}>
             <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
               <TabsList variant="underline" className="w-full">
                 <TabsTrigger variant="underline" value="account" className="flex-1">
