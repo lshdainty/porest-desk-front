@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Calendar1, Home, Menu, Plus, Banknote } from 'lucide-react'
+import { Calendar1, Home, Menu, Plus, ReceiptText } from 'lucide-react'
 
 type TabItem =
   | { id: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string; isFab?: false }
@@ -7,7 +7,7 @@ type TabItem =
 
 const TABS: TabItem[] = [
   { id: 'home', label: '홈', icon: Home, path: '/desk' },
-  { id: 'tx', label: '가계부', icon: Banknote, path: '/desk/expense' },
+  { id: 'tx', label: '가계부', icon: ReceiptText, path: '/desk/expense' },
   { id: 'add', label: '', icon: Plus, isFab: true },
   { id: 'calendar', label: '캘린더', icon: Calendar1, path: '/desk/calendar' },
   { id: 'more', label: '전체', icon: Menu, path: '/desk/more' },

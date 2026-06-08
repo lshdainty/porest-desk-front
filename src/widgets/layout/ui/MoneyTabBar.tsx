@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChartPie, Banknote, Target, Wallet } from 'lucide-react'
+import { ArrowLeft, ChartPie, ReceiptText, Target, Wallet } from 'lucide-react'
 
 /**
  * 금액 sub-navigation 하단바 — money group 진입 시 표시.
@@ -13,7 +13,7 @@ import { ArrowLeft, ChartPie, Banknote, Target, Wallet } from 'lucide-react'
 type Tab = { id: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string }
 
 const TABS: Tab[] = [
-  { id: 'expense', label: '가계부', icon: Banknote, path: '/desk/expense' },
+  { id: 'expense', label: '가계부', icon: ReceiptText, path: '/desk/expense' },
   { id: 'asset', label: '자산', icon: Wallet, path: '/desk/asset' },
   { id: 'stats', label: '통계', icon: ChartPie, path: '/desk/stats' },
   { id: 'budget', label: '예산', icon: Target, path: '/desk/budget' },

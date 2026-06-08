@@ -11,7 +11,7 @@ import {
   ListChecks,
   NotebookPen,
   Palette,
-  Banknote,
+  ReceiptText,
   Repeat,
   Search,
   Settings,
@@ -41,7 +41,7 @@ const GROUPS: NavGroup[] = [
   {
     label: '돈 관리',
     items: [
-      { label: '가계부', icon: Banknote, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
+      { label: '가계부', icon: ReceiptText, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
       { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌 · 카드 · 투자 · 부채' },
       { label: '예산', icon: Target, path: '/desk/budget', desc: '월간 · 카테고리별' },
       { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
