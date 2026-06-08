@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  CalendarDays, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, ListChecks,
+  Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, ListChecks,
   NotebookPen, Banknote, Target, UsersRound, Wallet,
 } from 'lucide-react'
 import {
@@ -33,7 +33,7 @@ export const NAV: NavItem[] = [
   { id: 'tx',       label: '가계부',    icon: Banknote,         path: '/desk/expense' },
   { id: 'stats',    label: '통계·분석', icon: ChartPie,        path: '/desk/stats' },
   { id: 'budget',   label: '예산',      icon: Target,          path: '/desk/budget' },
-  { id: 'calendar', label: '캘린더',    icon: CalendarDays,    path: '/desk/calendar' },
+  { id: 'calendar', label: '캘린더',    icon: Calendar1,    path: '/desk/calendar' },
   { id: 'todo',     label: '할 일',     icon: ListChecks,      path: '/desk/todo' },
   { id: 'dutch',    label: '더치페이',  icon: UsersRound,      path: '/desk/dutch-pay' },
   { id: 'memo',     label: '메모',      icon: NotebookPen,     path: '/desk/memo' },
