@@ -4,6 +4,7 @@ import {
   Copy,
   Crown,
   Eye,
+  Link,
   LogIn,
   Pencil,
   Plus,
@@ -78,23 +79,11 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
   const [managingId, setManagingId] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<UserCalendar | null>(null)
-  const [inviteCode, setInviteCode] = useState('')
+  const [joining, setJoining] = useState(false)
 
   const list = useMemo(() => calendars ?? [], [calendars])
   const owned = useMemo(() => list.filter(c => c.isOwner), [list])
   const shared = useMemo(() => list.filter(c => !c.isOwner), [list])
-
-  const handleJoin = () => {
-    const code = inviteCode.trim()
-    if (!code) return
-    joinMut.mutate(code, {
-      onSuccess: () => {
-        setInviteCode('')
-        toast.success('캘린더에 참여했어요', { id: 'cal-join-success' })
-      },
-      onError: () => toast.error('초대 코드를 확인해주세요', { id: 'cal-join-err' }),
-    })
-  }
 
   const handleDelete = (cal: UserCalendar) => {
     deleteMut.mutate(cal.rowId, {
@@ -123,8 +112,8 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           />
         )}
 
-        {/* 안내 카드 */}
-        <Card style={{ background: 'var(--bg-brand-subtle)' }}>
+        {/* 안내 카드 — 앱 정합: brand-subtle bg + brand 보더 */}
+        <Card style={{ background: 'var(--bg-brand-subtle)', border: '1px solid var(--border-brand)' }}>
           <CardContent style={{ padding: 'var(--spacing-lg)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span
@@ -175,32 +164,39 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           onManage={setManagingId}
         />
 
-        {/* 초대 코드로 참여 */}
-        <div>
-          <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)', padding: '4px 4px 10px' }}>
-            초대 코드로 참여
-          </div>
-          <Card>
-            <CardContent style={{ padding: 'var(--spacing-lg)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-                <Field style={{ flex: 1, minWidth: 0 }}>
-                  <FieldLabel>초대 코드</FieldLabel>
-                  <Input
-                    value={inviteCode}
-                    onChange={e => setInviteCode(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') handleJoin()
-                    }}
-                    placeholder="공유받은 초대 코드를 입력하세요"
-                  />
-                </Field>
-                <Button onClick={handleJoin} disabled={!inviteCode.trim()} loading={joinMut.isPending}>
-                  <LogIn size={14} strokeWidth={2.2} />참여
-                </Button>
+        {/* 초대 코드로 참여 — 앱 정합: 컴팩트 카드 + 참여 버튼(다이얼로그) */}
+        <Card>
+          <CardContent style={{ padding: 'var(--spacing-lg)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-muted)',
+                  color: 'var(--fg-secondary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Link size={18} strokeWidth={1.9} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+                  초대 코드로 참여
+                </div>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
+                  공유받은 초대 코드를 입력해 캘린더에 참여하세요.
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
+                참여
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </ManagerShell>
 
       {managing && (
@@ -224,6 +220,23 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             })
           }
           submitting={createMut.isPending}
+          mobile={mobile}
+        />
+      )}
+
+      {joining && (
+        <CalendarJoinDialog
+          onClose={() => setJoining(false)}
+          onJoin={(code, onDone) =>
+            joinMut.mutate(code, {
+              onSuccess: () => {
+                onDone()
+                toast.success('캘린더에 참여했어요', { id: 'cal-join-success' })
+              },
+              onError: () => toast.error('초대 코드를 확인해주세요', { id: 'cal-join-err' }),
+            })
+          }
+          submitting={joinMut.isPending}
           mobile={mobile}
         />
       )}
@@ -674,6 +687,53 @@ function CalendarCreateDialog({
           value={color}
           onValueChange={setColor}
           options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
+        />
+      </Field>
+    </ModalShell>
+  )
+}
+
+function CalendarJoinDialog({
+  onClose,
+  onJoin,
+  submitting,
+  mobile,
+}: {
+  onClose: () => void
+  onJoin: (code: string, onDone: () => void) => void
+  submitting?: boolean
+  mobile: boolean
+}) {
+  const [code, setCode] = useState('')
+  const valid = code.trim().length > 0
+  const submit = () => {
+    if (!valid) return
+    onJoin(code.trim().toUpperCase(), onClose)
+  }
+
+  const Footer = (
+    <>
+      <Button variant="ghost" onClick={onClose} disabled={submitting}>
+        취소
+      </Button>
+      <Button onClick={submit} disabled={!valid} loading={submitting}>
+        <LogIn size={14} strokeWidth={2.2} />참여
+      </Button>
+    </>
+  )
+
+  return (
+    <ModalShell title="초대 코드로 참여" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+      <Field>
+        <FieldLabel>초대 코드</FieldLabel>
+        <Input
+          value={code}
+          onChange={e => setCode(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') submit()
+          }}
+          placeholder="공유받은 초대 코드를 입력하세요"
+          autoFocus
         />
       </Field>
     </ModalShell>
