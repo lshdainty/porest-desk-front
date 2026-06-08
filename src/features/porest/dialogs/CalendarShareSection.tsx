@@ -357,16 +357,7 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
           {ROLE_LABEL[cal.myRole]}
         </Badge>
       )}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={e => {
-          e.stopPropagation()
-          onManage(cal.rowId)
-        }}
-      >
-        관리
-      </Button>
+      {/* '관리' 버튼 제거 — 앱처럼 행 전체 탭(onClick)으로 진입, chevron 만 표시. */}
       <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
     </div>
   )
