@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
+  Calendar,
   ChevronRight,
   Copy,
   Crown,
@@ -322,7 +323,7 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
           flexShrink: 0,
         }}
       >
-        <Users size={18} strokeWidth={2} />
+        <Calendar size={18} strokeWidth={2} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
