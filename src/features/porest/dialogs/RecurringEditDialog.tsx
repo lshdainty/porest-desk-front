@@ -7,7 +7,7 @@ import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { useUpdateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type {
@@ -56,9 +56,9 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
     recurring.dayOfMonth ?? Math.min(31, baseDom),
   )
 
-  const initialEndMode: EndMode = recurring.endDate ? 'DATE' : 'NONE'
+  const initialEndMode: EndMode = recurring.maxOccurrences ? 'COUNT' : recurring.endDate ? 'DATE' : 'NONE'
   const [endMode, setEndMode] = useState<EndMode>(initialEndMode)
-  const [endCount, setEndCount] = useState<string>('12')
+  const [endCount, setEndCount] = useState<string>(recurring.maxOccurrences ? String(recurring.maxOccurrences) : '12')
   const [endDate, setEndDate] = useState<string>(
     recurring.endDate ?? addYears(startDay, 1),
   )
@@ -93,6 +93,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       dayOfMonth: frequency === 'MONTHLY' || frequency === 'YEARLY' ? dayOfMonth : undefined,
       startDate: startDay,
       endDate: endMode === 'DATE' ? endDate : undefined,
+      maxOccurrences: endMode === 'COUNT' ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
     }
@@ -125,7 +126,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
 
   return (
     <ModalShell title="반복 설정" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
         이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
       </p>
 
@@ -145,7 +146,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           style={{
             width: 38,
             height: 38,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(38),
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',
@@ -156,12 +157,12 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {startDay} 시작
           </div>
         </div>
-        <div className="num" style={{ fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)' }}>
+        <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
           {isExpense ? '−' : '+'}
           {KRW(Math.abs(recurring.amount))}원
         </div>
@@ -203,7 +204,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       {frequency === 'MONTHLY' && (
         <Section title="반복 일자">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>매월</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>매월</span>
             <Input
               className="num"
               value={dayOfMonth}
@@ -214,8 +215,8 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
               inputMode="numeric"
               style={{ width: 64, textAlign: 'center' }}
             />
-            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>일</span>
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>일</span>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
               해당 일이 없는 달은 말일에 처리됩니다
             </span>
           </div>
@@ -296,7 +297,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>다음 예정일</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
@@ -308,8 +309,8 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
                   background: 'var(--bg-sunken)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: '600',
                 }}
               >
                 {formatKoreanMonthDay(d)}
@@ -325,7 +326,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -377,9 +378,9 @@ function RadioCard({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
         {sub && (
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
             {sub}
           </div>
         )}
@@ -429,8 +430,8 @@ function ToggleRow({
         <Icon size={16} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
       <Switch
         checked={value}

@@ -82,6 +82,7 @@ export const assetKeys = {
   netWorthTrend: (months: number) => [...assetKeys.all, 'net-worth-trend', months] as const,
   balanceTrend: (assetId: number, weeks: number) => [...assetKeys.all, 'balance-trend', assetId, weeks] as const,
   transfers: <T = Record<string, unknown>>(params?: T) => [...assetKeys.all, 'transfers', params] as const,
+  billing: (id: number) => [...assetKeys.all, 'billing', id] as const,
 }
 
 export const savingGoalKeys = {
@@ -93,6 +94,7 @@ export const savingGoalKeys = {
 export const cardKeys = {
   all: ['cards'] as const,
   catalogs: <T = Record<string, unknown>>(params?: T) => [...cardKeys.all, 'catalogs', params] as const,
+  catalogsInfinite: <T = Record<string, unknown>>(params?: T) => [...cardKeys.all, 'catalogs-infinite', params] as const,
   catalogDetail: (id: number) => [...cardKeys.all, 'catalog', id] as const,
   performance: (assetRowId: number, yearMonth: string) => [...cardKeys.all, 'performance', assetRowId, yearMonth] as const,
   benefitMappings: () => [...cardKeys.all, 'benefit-mappings'] as const,
@@ -118,26 +120,9 @@ export const dutchPayKeys = {
   detail: (id: number) => [...dutchPayKeys.all, 'detail', id] as const,
 }
 
-export const groupKeys = {
-  all: ['groups'] as const,
-  list: () => [...groupKeys.all, 'list'] as const,
-  detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
-  siblingMembers: () => [...groupKeys.all, 'sibling-members'] as const,
-}
-
 export const expenseSplitKeys = {
   all: ['expense-splits'] as const,
   list: (expenseId: number) => [...expenseSplitKeys.all, 'list', expenseId] as const,
-}
-
-export const groupTypeKeys = {
-  all: ['group-types'] as const,
-  list: () => [...groupTypeKeys.all, 'list'] as const,
-}
-
-export const eventCommentKeys = {
-  all: ['event-comments'] as const,
-  list: (eventId: number) => [...eventCommentKeys.all, 'list', eventId] as const,
 }
 
 export const fileKeys = {

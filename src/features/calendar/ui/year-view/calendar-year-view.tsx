@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { cn } from '@/shared/lib'
+import { eventBadgeColor } from '@/features/calendar/lib/helpers'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
@@ -51,7 +52,7 @@ const YearViewDayCell = ({
           isToday(date) && 'bg-primary font-semibold text-primary-foreground'
         )}
         style={{
-          color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined),
+          color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
         }}
       >
         {day}
@@ -64,14 +65,14 @@ const YearViewDayCell = ({
               <div
                 key={event.id}
                 className="size-1.5 rounded-full"
-                style={{ backgroundColor: event.color }}
+                style={{ backgroundColor: eventBadgeColor(event) }}
               />
             ))
           ) : (
             <>
               <div
                 className="size-1.5 rounded-full"
-                style={{ backgroundColor: events[0]?.color }}
+                style={{ backgroundColor: eventBadgeColor(events[0]) }}
               />
               <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>
             </>
@@ -133,7 +134,7 @@ const YearViewMonth = ({
               <div
                 key={index}
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined }}
+                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}
               >
                 {day}
               </div>

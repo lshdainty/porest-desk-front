@@ -82,19 +82,6 @@ export interface CardPerformance {
   remainingAmount: number | null
 }
 
-export interface CardBenefitCategoryMapping {
-  rowId: number
-  benefitCategory: string
-  expenseCategoryRowId: number
-  expenseCategoryName: string
-  isCustom: boolean
-}
-
-export interface CardBenefitMappingUpsertValues {
-  benefitCategory: string
-  expenseCategoryRowId: number
-}
-
 /**
  * Page 응답 (백엔드 PageResponse)
  */

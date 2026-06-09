@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Pencil, Trash2 } from 'lucide-react'
-import type { Asset } from '@/entities/asset'
-import { cn, formatCurrency, renderIcon } from '@/shared/lib'
+import { AssetLogo, type Asset } from '@/entities/asset'
+import { cn, formatCurrency } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 
 interface AssetListProps {
@@ -64,12 +64,7 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
             )}
           >
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm"
-                style={{ backgroundColor: asset.color || '#6b7280', color: '#fff' }}
-              >
-                {renderIcon(asset.icon, asset.assetName.charAt(0), 20)}
-              </div>
+              <AssetLogo asset={asset} size={40} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium truncate">{asset.assetName}</span>

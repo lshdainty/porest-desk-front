@@ -67,6 +67,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
             className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
           />
           <Input
+            search
             value={searchValue}
             onChange={e => onSearchChange(e.target.value)}
             placeholder={placeholder}

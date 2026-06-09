@@ -19,8 +19,10 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import {
@@ -149,41 +151,71 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             title="카테고리 관리"
             description="지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요."
             actions={
-              <Button onClick={() => setEditing({ kind: 'new' })}>
+              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
-                카테고리 추가
+                추가
               </Button>
             }
           />
         )}
 
-        <div style={MANAGER_LAYOUT.toolbarStyle}>
-          <ManagerTabs<ExpenseType>
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'EXPENSE', label: '지출', count: counts.expense },
-              { value: 'INCOME', label: '수입', count: counts.income },
-            ]}
-          />
-          <div style={MANAGER_LAYOUT.searchWrapStyle}>
-            <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="카테고리 검색"
-              style={MANAGER_LAYOUT.searchInputStyle}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = 'var(--border-focus)'
-                e.currentTarget.style.boxShadow = 'var(--shadow-focus)'
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = 'var(--border-subtle)'
-                e.currentTarget.style.boxShadow = ''
-              }}
+        {mobile ? (
+          <>
+            {/* header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
+                sticky 기준은 컨테이너 content box(=padding-top 24 아래)라, 시각 최상단에 딱 붙여 고정하려면
+                top 도 padding-top 만큼 음수(-24) 여야 함. top:0 이면 24px 떠 보임.
+                margin/top 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치. */}
+            <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: -24, zIndex: 5 }}>
+              <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
+                <TabsList variant="underline" className="w-full">
+                  <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">
+                    지출 {counts.expense}
+                  </TabsTrigger>
+                  <TabsTrigger variant="underline" value="INCOME" className="flex-1">
+                    수입 {counts.income}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
+                <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+                <Input
+                  search
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="카테고리 검색"
+                  className="w-full min-w-0 pl-9"
+                />
+              </div>
+              <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
+                <Plus size={14} strokeWidth={2.4} />
+                추가
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div style={MANAGER_LAYOUT.toolbarStyle}>
+            <ManagerTabs<ExpenseType>
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'EXPENSE', label: '지출', count: counts.expense },
+                { value: 'INCOME', label: '수입', count: counts.income },
+              ]}
             />
+            <div style={MANAGER_LAYOUT.searchWrapStyle}>
+              <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+              <Input
+                search
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="카테고리 검색"
+                className="w-[220px] pl-9"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="cat-list">
           {isLoading ? (
@@ -222,12 +254,6 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           )}
         </div>
 
-        {mobile && (
-          <Button size="lg" className="cat-add-fab" onClick={() => setEditing({ kind: 'new' })}>
-            <Plus size={20} strokeWidth={2.4} />
-            <span>카테고리 추가</span>
-          </Button>
-        )}
       </ManagerShell>
 
       {editing && (
@@ -269,25 +295,59 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
   )
 }
 
-/** CategoryManager skeleton — 카테고리 row 리스트(icon + name + meta + 메뉴). */
+/** CategoryManager skeleton — 트리 구조(부모+자식 들여쓰기) 1:1 미러. */
 function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
+  // 부모 행: grip + chevron + icon + name+meta + add/edit/delete (desktop) | chevron (mobile)
+  // 자식 행: paddingLeft:28 + grip + icon + name + edit/delete (desktop) | chevron (mobile)
+  const entries = [
+    { childCount: 2 },
+    { childCount: 1 },
+    { childCount: 0 },
+  ]
   return (
     <>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className={MANAGE_ROW.className}>
-          <SkeletonBase className="h-4 w-4 shrink-0" />
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-          <div style={MANAGE_ROW.textStyle}>
-            <SkeletonBase className="h-4 w-32 mb-1.5" />
-            <SkeletonBase className="h-3 w-16" />
-          </div>
-          {!mobile ? (
-            <div className="flex gap-1">
-              <SkeletonBase className="h-7 w-14 rounded-md" />
-              <SkeletonBase className="h-7 w-7 rounded-md" />
+      {entries.map((e, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={i}>
+          <div className={MANAGE_ROW.className}>
+            <SkeletonBase className="h-4 w-4 shrink-0" />
+            <SkeletonBase className="h-4 w-4 shrink-0" />
+            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <div style={MANAGE_ROW.textStyle}>
+              <SkeletonBase className="h-4 w-32 mb-1.5" />
+              <SkeletonBase className="h-3 w-16" />
             </div>
-          ) : (
-            <SkeletonBase className="h-5 w-5 rounded-md" />
+            {!mobile ? (
+              <div className="flex gap-1">
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+                <SkeletonBase className="h-7 w-7 rounded-md" />
+              </div>
+            ) : (
+              <SkeletonBase className="h-5 w-5 rounded-md" />
+            )}
+          </div>
+          {e.childCount > 0 && (
+            <div style={{ paddingLeft: 28 }}>
+              {Array.from({ length: e.childCount }).map((_, j) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={j} className={MANAGE_ROW.className}>
+                  <SkeletonBase className="h-4 w-4 shrink-0" />
+                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                  <div style={MANAGE_ROW.textStyle}>
+                    <SkeletonBase className="h-4 w-24" />
+                  </div>
+                  {!mobile ? (
+                    <div className="flex gap-1">
+                      <SkeletonBase className="h-7 w-7 rounded-md" />
+                      <SkeletonBase className="h-7 w-7 rounded-md" />
+                    </div>
+                  ) : (
+                    <SkeletonBase className="h-5 w-5 rounded-md" />
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       ))}
@@ -443,17 +503,16 @@ function SortableRow({
       {!mobile ? (
         <div className={MANAGE_ROW.actionsClassName}>
           {isParent && onAddChild && (
-            <Button variant="ghost" size="sm" onClick={onAddChild} title="하위 추가">
+            <Button variant="ghost" size="icon" onClick={onAddChild} title="하위 추가">
               <Plus size={13} />
-              하위
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={onEdit}>
-            <Pencil size={13} />편집
+          <Button variant="ghost" size="icon" onClick={onEdit} title="편집">
+            <Pencil size={13} />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             className={MANAGE_ROW.delClassName}
             onClick={onDelete}
           >

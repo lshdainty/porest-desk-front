@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ChartPie, Home, Menu, Plus, Receipt } from 'lucide-react'
+import { Calendar1, Home, Menu, Plus, ReceiptText } from 'lucide-react'
 
 type TabItem =
   | { id: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string; isFab?: false }
@@ -7,9 +7,9 @@ type TabItem =
 
 const TABS: TabItem[] = [
   { id: 'home', label: '홈', icon: Home, path: '/desk' },
-  { id: 'tx', label: '가계부', icon: Receipt, path: '/desk/expense' },
+  { id: 'tx', label: '가계부', icon: ReceiptText, path: '/desk/expense' },
   { id: 'add', label: '', icon: Plus, isFab: true },
-  { id: 'stats', label: '통계', icon: ChartPie, path: '/desk/stats' },
+  { id: 'calendar', label: '캘린더', icon: Calendar1, path: '/desk/calendar' },
   { id: 'more', label: '전체', icon: Menu, path: '/desk/more' },
 ]
 
@@ -32,12 +32,14 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
                   width: 44,
                   height: 44,
                   borderRadius: 'var(--radius-pill)',
-                  background: 'var(--bg-brand)',
+                  // + 버튼은 light/dark 무관하게 primary(#0147ad) 고정 — --bg-brand는
+                  // dark에서 primary-light로 밝아짐. card 정합 shadow-sm (앱 mobile_tab_bar 정합).
+                  background: 'var(--color-primary)',
                   color: 'var(--fg-on-brand)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: 'var(--shadow-brand)',
+                  boxShadow: 'var(--shadow-sm)',
                   marginTop: -6,
                 }}
               >

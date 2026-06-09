@@ -38,7 +38,7 @@ const tabsTriggerVariants = cva(
       variant: {
         pill: "rounded-xs px-[var(--spacing-md)] py-[var(--spacing-xs)] text-label-md data-[state=active]:bg-surface-default data-[state=active]:text-text-primary data-[state=active]:shadow-sm",
         underline:
-          "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:font-semibold",
+          "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-[var(--fg-brand)] data-[state=active]:border-[var(--border-brand)] data-[state=active]:font-semibold",
       },
     },
     defaultVariants: { variant: "pill" },

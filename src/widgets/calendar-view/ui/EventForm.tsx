@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Repeat, Bell, Tag, Check, Users } from 'lucide-react'
+import { MapPin, Repeat, Bell, Tag, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Form } from '@/shared/ui/form'
@@ -20,14 +20,14 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE, CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
 import type { EventLabel } from '@/entities/event-label'
 import { useUserCalendars } from '@/features/user-calendar'
-import { useGroups } from '@/features/group'
 import { format } from 'date-fns'
 
-const NO_GROUP_VALUE = '__none__'
 const NO_LABEL_VALUE = '__none__'
 
 interface EventFormProps {
@@ -40,16 +40,9 @@ interface EventFormProps {
   isLoading?: boolean
 }
 
-const colorOptions = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-]
+// 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
+const DEFAULT_EVENT_COLOR =
+  CHART_PAIRS.find(p => p.key === 'blue')!.base
 
 type RecurrenceOption = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
 
@@ -104,7 +97,6 @@ export const EventForm = ({
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
   const { data: userCalendars = [] } = useUserCalendars()
-  const { data: groups = [] } = useGroups()
   const isMobile = useIsMobile()
 
   const defaultDate = selectedDate
@@ -125,7 +117,7 @@ export const EventForm = ({
       title: '',
       description: '',
       eventType: 'PERSONAL',
-      color: defaultCalendar?.color ?? '#3b82f6',
+      color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
       startDate: defaultDate,
       endDate: defaultEndDate,
       isAllDay: true,
@@ -134,7 +126,6 @@ export const EventForm = ({
       rrule: undefined,
       reminderMinutes: [],
       calendarRowId: defaultCalendar?.rowId,
-      groupRowId: undefined,
     },
   })
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = form
@@ -143,7 +134,6 @@ export const EventForm = ({
   const isAllDay = watch('isAllDay')
   const selectedLabelRowId = watch('labelRowId')
   const selectedCalendarRowId = watch('calendarRowId')
-  const selectedGroupRowId = watch('groupRowId')
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -174,7 +164,6 @@ export const EventForm = ({
         rrule: event.rrule ?? undefined,
         reminderMinutes: reminderMins,
         calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
-        groupRowId: event.groupRowId ?? undefined,
       })
       setRecurrence(rruleToRecurrence(event.rrule))
       setSelectedReminders(reminderMins)
@@ -183,7 +172,7 @@ export const EventForm = ({
         title: '',
         description: '',
         eventType: 'PERSONAL',
-        color: defaultCalendar?.color ?? '#3b82f6',
+        color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
         startDate: defaultDate,
         endDate: defaultEndDate,
         isAllDay: true,
@@ -192,7 +181,6 @@ export const EventForm = ({
         rrule: undefined,
         reminderMinutes: [],
         calendarRowId: defaultCalendar?.rowId,
-        groupRowId: undefined,
       })
       setRecurrence('none')
       setSelectedReminders([])
@@ -220,7 +208,6 @@ export const EventForm = ({
       rrule: data.rrule || undefined,
       reminderMinutes: selectedReminders.length > 0 ? selectedReminders : undefined,
       calendarRowId: data.calendarRowId || undefined,
-      groupRowId: data.groupRowId || undefined,
     })
   }
 
@@ -290,42 +277,9 @@ export const EventForm = ({
                       <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: cal.color }}
+                          style={{ backgroundColor: getPaletteByColor(cal.color).color }}
                         />
                         {cal.calendarName}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Group selector */}
-          {groups.length > 0 && (
-            <div className="space-y-1.5">
-              <Label>
-                <Users size={14} className="inline mr-1" />
-                {t('selectGroup')}
-              </Label>
-              <Select
-                value={selectedGroupRowId ? String(selectedGroupRowId) : NO_GROUP_VALUE}
-                onValueChange={(v) =>
-                  setValue('groupRowId', v === NO_GROUP_VALUE ? undefined : Number(v), {
-                    shouldDirty: true,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_GROUP_VALUE}>{t('personal')}</SelectItem>
-                  {groups.map((group) => (
-                    <SelectItem key={group.rowId} value={String(group.rowId)}>
-                      <span className="flex items-center gap-2">
-                        <Users size={14} className="text-muted-foreground" />
-                        {group.groupName}
                       </span>
                     </SelectItem>
                   ))}
@@ -364,7 +318,7 @@ export const EventForm = ({
                       <span className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: label.color }}
+                          style={{ backgroundColor: getPaletteByColor(label.color).color }}
                         />
                         {label.labelName}
                       </span>
@@ -375,23 +329,19 @@ export const EventForm = ({
             </div>
           )}
 
-          {/* Color swatches - KEEP custom */}
+          {/* Color swatches — 디자인시스템 차트 10색 (ColorSwatchGroup) */}
           <div className="space-y-1.5">
             <Label>{t('form.color')}</Label>
-            <div className="flex flex-wrap gap-2">
-              {colorOptions.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setValue('color', color)}
-                  className={cn(
-                    'h-7 w-7 rounded-full transition-all',
-                    selectedColor === color && 'ring-2 ring-offset-2 ring-primary'
-                  )}
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
+            <ColorSwatchGroup
+              columns={5}
+              value={selectedColor}
+              onValueChange={(v) => setValue('color', v, { shouldDirty: true })}
+              options={CAT_PALETTE.map((p) => ({
+                value: p.baseHex,
+                bg: p.bg,
+                fg: p.color,
+              }))}
+            />
           </div>
 
           {/* All-day switch */}

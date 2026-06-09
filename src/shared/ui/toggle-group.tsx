@@ -11,7 +11,8 @@ import { toggleVariants } from "@/shared/ui/toggle"
  *
  * variant:
  *   default — flex gap-1 (개별 toggle 시각이 자체 border/bg)
- *   segmented — POREST .p-seg sunken bar wrapper (--bg-sunken + border + p-0.5)
+ *   segmented (= solid) — POREST .p-seg sunken bar wrapper + active=primary 채움 강조 톤
+ *   segmented-subtle — 같은 sunken bar wrapper + active=surface-input 채움 토스 절제 톤
  */
 
 const ToggleGroupContext = React.createContext<
@@ -26,9 +27,9 @@ const ToggleGroup = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
     VariantProps<typeof toggleVariants>
 >(({ className, variant, size, children, ...props }, ref) => {
-  // POREST .p-seg — sunken bar for segmented control.
+  // POREST .p-seg — sunken bar for segmented control. solid / subtle 둘 다 동일 wrapper.
   const wrapper =
-    variant === "segmented"
+    variant === "segmented" || variant === "segmented-subtle"
       ? "inline-flex w-full gap-[2px] rounded-[var(--radius-md)] border border-border-default bg-[var(--bg-sunken)] p-0.5"
       : "flex items-center justify-center gap-1"
   return (

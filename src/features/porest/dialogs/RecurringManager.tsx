@@ -1,21 +1,23 @@
 import { useMemo, useState } from 'react'
 import {
   Bell,
+  MoreVertical,
   PauseCircle,
   Pause,
   Pencil,
   Play,
+  Plus,
   Repeat,
   TrendingDown,
   TrendingUp,
   Trash2,
   Zap,
 } from 'lucide-react'
-import { Spinner } from '@/shared/ui/spinner'
+import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
+import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import {
   useDeleteRecurringTransaction,
   useRecurringTransactions,
@@ -24,11 +26,20 @@ import {
 import { useExpenseCategories } from '@/features/expense'
 import type { RecurringTransaction } from '@/entities/recurring-transaction'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { RecurringAddDialog } from './RecurringAddDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
+
+const DROP_ITEM_STYLE = {
+  display: 'flex', alignItems: 'center', gap: 8,
+  width: '100%', padding: '10px 14px',
+  border: 'none', background: 'transparent',
+  cursor: 'pointer', textAlign: 'left' as const, fontFamily: 'inherit',
+  fontSize: 'var(--text-body-sm)', color: 'var(--fg-primary)',
+}
 
 export function RecurringManager({ mobile }: { mobile: boolean }) {
   const recurringsQ = useRecurringTransactions()
@@ -43,10 +54,12 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
   const [filter, setFilter] = useState<FilterKey>('all')
   const [editing, setEditing] = useState<RecurringTransaction | null>(null)
+  const [adding, setAdding] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [toast, setToast] = useState<string>('')
   const [pendingToggleId, setPendingToggleId] = useState<number | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -130,24 +143,38 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Summary stats */}
-      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <CardContent>
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
-            <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
-            <RecStat label="매월 고정 지출" value={`-${KRW(stats.monthlyExpense)}`} Icon={TrendingDown} tone="expense" />
-            <RecStat label="매월 고정 수입" value={`+${KRW(stats.monthlyIncome)}`} Icon={TrendingUp} tone="income" />
-            <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
-          </div>
+          {mobile ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
+                <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
+              </div>
+              <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+                <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+              <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
+              <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+              <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+              <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Next 7 days */}
       {stats.next7.length > 0 && (
-        <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+        <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
+            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {stats.next7.map(it => {
@@ -166,7 +193,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     alignItems: 'center',
                     gap: 12,
                     padding: '10px 12px',
-                    borderRadius: 'var(--radius-tile)',
+                    borderRadius: 'var(--radius-sm)',
                     background: isToday ? 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' : 'var(--bg-sunken)',
                     border: isToday ? '1px solid color-mix(in oklch, var(--fg-expense) 25%, transparent)' : '1px solid transparent',
                   }}
@@ -176,8 +203,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     style={{
                       minWidth: 44,
                       textAlign: 'center',
-                      fontSize: 'var(--fs-micro)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontSize: 'var(--text-badge)',
+                      fontWeight: '700',
                       padding: '4px 8px',
                       borderRadius: 'var(--radius-sm)',
                       background: isToday ? 'var(--fg-expense)' : 'var(--bg-surface)',
@@ -188,9 +215,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   </span>
                   <span
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 'var(--radius-tile)',
+                      width: 28,
+                      height: 28,
+                      borderRadius: tileRadius(28),
                       background: palette.bg,
                       color: palette.color,
                       display: 'inline-flex',
@@ -199,18 +226,18 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       flexShrink: 0,
                     }}
                   >
-                    {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 16)}
+                    {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 14)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {displayTitle(it)}
                     </div>
-                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                       {it.assetName ?? '계좌 없음'} · {recurringSummary(it)}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
-                    {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
+                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
+                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 </div>
               )
@@ -221,23 +248,43 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       )}
 
       {/* Filter chips + list */}
-      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
-          <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', margin: 0, marginRight: 'auto' }}>전체 목록</h3>
-          <ToggleGroup
-            type="single"
-            size="sm"
-            value={filter}
-            onValueChange={(v) => v && setFilter(v as typeof filter)}
-            className="flex-wrap justify-start"
-          >
+      <Card style={{ overflow: mobile ? 'visible' : 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+        <div style={{ padding: mobile ? '14px 16px 0' : '16px 20px 0' }}>
+          {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>전체 목록</h3>
+            <div style={{ flex: 1 }} />
+            <Button variant="accent" size="sm" onClick={() => setAdding(true)}>
+              <Plus size={14} /> 추가
+            </Button>
+          </div>
+          {/* 2행: 필터 single toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 10, flexWrap: 'wrap' }}>
             {FILTERS.map((f) => (
-              <ToggleGroupItem key={f.k} value={f.k} className="rounded-full num">
-                {f.label}
-                <span style={{ opacity: 0.7, marginLeft: 3 }}>{f.count}</span>
-              </ToggleGroupItem>
+              <button
+                key={f.k}
+                type="button"
+                onClick={() => setFilter(f.k)}
+                className="num"
+                style={{
+                  height: 28,
+                  padding: '0 8px',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  background: filter === f.k ? 'var(--bg-sunken)' : 'transparent',
+                  color: filter === f.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: filter === f.k ? '600' : '500',
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'background 0.15s',
+                }}
+              >
+                {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
+              </button>
             ))}
-          </ToggleGroup>
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
@@ -267,7 +314,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             </>
           )}
           {!recurringsQ.isLoading && filtered.length === 0 && (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
               해당하는 반복 거래가 없어요
             </div>
           )}
@@ -281,34 +328,34 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                 key={it.rowId}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
+                  gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                   alignItems: 'center',
                   gap: mobile ? 12 : 16,
-                  padding: mobile ? '14px 16px' : '14px 20px',
+                  padding: mobile ? '12px 12px' : '14px 20px',
                   borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
-                  opacity: isActive ? 1 : 0.55,
                 }}
               >
                 <span
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 'var(--radius-tile)',
+                    width: 36,
+                    height: 36,
+                    borderRadius: tileRadius(36),
                     background: palette.bg,
                     color: palette.color,
+                    opacity: isActive ? 1 : 0.55,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 16)}
+                  {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 18)}
                 </span>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, opacity: isActive ? 1 : 0.55 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                     <span
                       style={{
-                        fontSize: 'var(--fs-body)',
-                        fontWeight: 'var(--fw-semi)',
+                        fontSize: 'var(--text-body-sm)',
+                        fontWeight: '600',
                         color: 'var(--fg-primary)',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
@@ -320,29 +367,48 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     {!isActive && (
                       <span
                         style={{
-                          fontSize: 'var(--fs-micro)',
-                          fontWeight: 'var(--fw-bold)',
+                          fontSize: 'var(--text-badge)',
+                          fontWeight: '700',
                           padding: '2px 6px',
                           borderRadius: 'var(--radius-xs)',
                           background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
+                          flexShrink: 0,
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         일시정지
                       </span>
                     )}
+                    {it.maxOccurrences != null && (
+                      <span
+                        className="num"
+                        style={{
+                          fontSize: 'var(--text-badge)',
+                          fontWeight: '700',
+                          padding: '2px 6px',
+                          borderRadius: 'var(--radius-xs)',
+                          background: 'var(--status-warning-subtle)',
+                          color: 'var(--status-warning-fg)',
+                          flexShrink: 0,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {it.executedCount}/{it.maxOccurrences}회
+                      </span>
+                    )}
                     {it.autoLog && (
-                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--bg-brand)' }}>
+                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-brand-strong)', flexShrink: 0 }}>
                         <Zap size={11} strokeWidth={2.4} />
                       </span>
                     )}
                     {it.notifyDayBefore && (
-                      <span title="하루 전 알림" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-tertiary)' }}>
+                      <span title="하루 전 알림" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-tertiary)', flexShrink: 0 }}>
                         <Bell size={11} strokeWidth={2} />
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                     {recurringSummary(it)} · {it.assetName ?? '계좌 없음'} · 다음 {it.nextExecutionDate.slice(5).replace('-', '/')}
                   </div>
                 </div>
@@ -350,51 +416,118 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   <div
                     className="num"
                     style={{
-                      fontSize: 'var(--fs-body)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontSize: 'var(--text-body-sm)',
+                      fontWeight: '700',
                       color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
                       textAlign: 'right',
                       minWidth: 110,
+                      opacity: isActive ? 1 : 0.55,
                     }}
                   >
-                    {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
+                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {mobile && (
-                    <span
-                      className="num"
-                      style={{
-                        fontSize: 'var(--fs-body-sm)',
-                        fontWeight: 'var(--fw-bold)',
-                        color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
-                        marginRight: 4,
-                      }}
-                    >
-                      {isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}
-                    </span>
+                  {mobile ? (
+                    <>
+                      <span
+                        className="num"
+                        style={{
+                          fontSize: 'var(--text-label-sm)',
+                          fontWeight: '700',
+                          color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
+                          marginRight: 4,
+                          flexShrink: 0,
+                          opacity: isActive ? 1 : 0.55,
+                        }}
+                      >
+                        <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
+                      </span>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenMenuId(openMenuId === it.rowId ? null : it.rowId)}
+                          style={{
+                            width: 32, height: 32,
+                            borderRadius: 'var(--radius-md)',
+                            border: 'none',
+                            background: openMenuId === it.rowId ? 'var(--bg-sunken)' : 'transparent',
+                            color: 'var(--fg-tertiary)',
+                            cursor: 'pointer',
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <MoreVertical size={16} strokeWidth={1.9} />
+                        </button>
+                        {openMenuId === it.rowId && (
+                          <div style={{
+                            position: 'absolute', right: 0, top: 36,
+                            background: 'var(--bg-surface)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: 'var(--radius-md)',
+                            boxShadow: 'var(--shadow-md)',
+                            zIndex: 51, minWidth: 140, overflow: 'hidden',
+                          }}>
+                            <button
+                              type="button"
+                              onClick={() => { togglePause(it); setOpenMenuId(null) }}
+                              style={DROP_ITEM_STYLE}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-sunken)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              {isActive ? <Pause size={14} strokeWidth={1.9} /> : <Play size={14} strokeWidth={1.9} />}
+                              <span>{isActive ? '일시정지' : '시작'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setEditing(it); setOpenMenuId(null) }}
+                              style={DROP_ITEM_STYLE}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-sunken)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <Pencil size={14} strokeWidth={1.9} />
+                              <span>수정</span>
+                            </button>
+                            <div style={{ height: 1, background: 'var(--border-subtle)' }} />
+                            <button
+                              type="button"
+                              onClick={() => { setConfirmDeleteId(it.rowId); setOpenMenuId(null) }}
+                              style={{ ...DROP_ITEM_STYLE, color: 'var(--fg-expense)' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <Trash2 size={14} strokeWidth={1.9} />
+                              <span>삭제</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <RecAction
+                        Icon={isActive ? Pause : Play}
+                        title={isActive ? '일시정지' : '재개'}
+                        onClick={() => togglePause(it)}
+                        loading={pendingToggleId === it.rowId}
+                        disabled={pendingToggleId !== null && pendingToggleId !== it.rowId}
+                      />
+                      <RecAction
+                        Icon={Pencil}
+                        title="편집"
+                        onClick={() => setEditing(it)}
+                        disabled={pendingToggleId === it.rowId || pendingDeleteId === it.rowId}
+                      />
+                      <RecAction
+                        Icon={Trash2}
+                        title="삭제"
+                        tone="danger"
+                        onClick={() => setConfirmDeleteId(it.rowId)}
+                        loading={pendingDeleteId === it.rowId}
+                        disabled={pendingToggleId === it.rowId}
+                      />
+                    </>
                   )}
-                  <RecAction
-                    Icon={isActive ? Pause : Play}
-                    title={isActive ? '일시정지' : '재개'}
-                    onClick={() => togglePause(it)}
-                    loading={pendingToggleId === it.rowId}
-                    disabled={pendingToggleId !== null && pendingToggleId !== it.rowId}
-                  />
-                  <RecAction
-                    Icon={Pencil}
-                    title="편집"
-                    onClick={() => setEditing(it)}
-                    disabled={pendingToggleId === it.rowId || pendingDeleteId === it.rowId}
-                  />
-                  <RecAction
-                    Icon={Trash2}
-                    title="삭제"
-                    tone="danger"
-                    onClick={() => setConfirmDeleteId(it.rowId)}
-                    loading={pendingDeleteId === it.rowId}
-                    disabled={pendingToggleId === it.rowId}
-                  />
                 </div>
               </div>
             )
@@ -411,6 +544,14 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         />
       )}
 
+      {adding && (
+        <RecurringAddDialog
+          mobile={mobile}
+          onClose={() => setAdding(false)}
+          onCreated={() => showToast('반복 거래가 추가됐어요')}
+        />
+      )}
+
       {confirmDeleteId !== null && (
         <ConfirmDialog
           title="반복 거래 삭제"
@@ -420,6 +561,13 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           loading={deleteMut.isPending}
           onConfirm={() => removeItem(confirmDeleteId)}
           onCancel={() => !deleteMut.isPending && setConfirmDeleteId(null)}
+        />
+      )}
+
+      {openMenuId !== null && (
+        <div
+          onClick={() => setOpenMenuId(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 50 }}
         />
       )}
 
@@ -434,8 +582,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             background: 'var(--fg-primary)',
             color: 'var(--bg-surface)',
             borderRadius: 'var(--radius-pill)',
-            fontSize: 'var(--fs-body-sm)',
-            fontWeight: 'var(--fw-semi)',
+            fontSize: 'var(--text-label-sm)',
+            fontWeight: '600',
             boxShadow: 'var(--shadow-lg)',
             zIndex: 'var(--z-sticky)',
           }}
@@ -452,7 +600,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Summary stats */}
-      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <CardContent>
           <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
             {Array.from({ length: 4 }).map((_, i) => (
@@ -466,7 +614,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
       </Card>
 
       {/* Next 7 days */}
-      <Card style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <SkeletonBase className="h-4 w-24" />
@@ -499,7 +647,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
       </Card>
 
       {/* Filter chips + list */}
-      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-card)' }}>
+      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -546,7 +694,7 @@ function RecStat({
   tone,
 }: {
   label: string
-  value: string
+  value: React.ReactNode
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
   tone?: 'expense' | 'income' | 'muted'
 }) {
@@ -562,17 +710,17 @@ function RecStat({
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 'var(--fs-caption)',
-          fontWeight: 'var(--fw-semi)',
+          fontSize: 'var(--text-caption)',
+          fontWeight: '600',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
+          letterSpacing: '0.04em',
         }}
       >
         <Icon size={12} strokeWidth={2} />
         {label}
       </div>
-      <div className="num" style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color, lineHeight: 'var(--lh-tight)' }}>
+      <div className="num" style={{ fontSize: 'var(--text-title-lg)', fontWeight: '700', color, lineHeight: '1.15' }}>
         {value}
       </div>
     </div>
@@ -594,41 +742,19 @@ function RecAction({
   loading?: boolean
   disabled?: boolean
 }) {
-  const isDisabled = disabled || loading
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       title={title}
+      aria-label={title}
       onClick={onClick}
-      disabled={isDisabled}
-      aria-busy={loading || undefined}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid transparent',
-        background: 'transparent',
-        color: tone === 'danger' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
-        cursor: isDisabled ? 'not-allowed' : 'pointer',
-        opacity: isDisabled && !loading ? 0.45 : 1,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'inherit',
-        transition: 'background 0.15s, opacity 0.15s',
-      }}
-      onMouseEnter={e => {
-        if (isDisabled) return
-        e.currentTarget.style.background = tone === 'danger'
-          ? 'color-mix(in oklch, var(--fg-expense) 10%, transparent)'
-          : 'var(--bg-sunken)'
-      }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+      loading={loading}
+      disabled={disabled}
+      className={tone === 'danger' ? '!text-[var(--fg-expense)]' : undefined}
     >
-      {loading
-        ? <Spinner size="sm" />
-        : <Icon size={15} strokeWidth={1.9} />}
-    </button>
+      {!loading && <Icon size={16} strokeWidth={1.9} />}
+    </Button>
   )
 }
 

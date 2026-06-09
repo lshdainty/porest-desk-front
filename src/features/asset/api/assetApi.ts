@@ -10,6 +10,8 @@ import type {
   ReorderItem,
   NetWorthTrendPoint,
   AssetBalancePoint,
+  CardBilling,
+  BillingItem,
 } from '@/entities/asset'
 
 export interface TransferListParams {
@@ -57,6 +59,16 @@ export const assetApi = {
   getAssetBalanceTrend: async (assetId: number, weeks: number): Promise<AssetBalancePoint[]> => {
     const resp: ApiResponse<{ trend: AssetBalancePoint[] }> = await apiClient.get(`/v1/asset/${assetId}/balance-trend`, { params: { weeks } })
     return resp.data.trend
+  },
+
+  getCardBilling: async (id: number): Promise<CardBilling> => {
+    const resp: ApiResponse<CardBilling> = await apiClient.get(`/v1/asset/${id}/billing`)
+    return resp.data
+  },
+
+  payCard: async (id: number): Promise<BillingItem> => {
+    const resp: ApiResponse<BillingItem> = await apiClient.post(`/v1/asset/${id}/pay`)
+    return resp.data
   },
 
   reorderAssets: async (items: ReorderItem[]): Promise<void> => {

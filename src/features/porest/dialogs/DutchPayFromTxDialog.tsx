@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Check, Divide, ListOrdered, Percent, Plus, Send, UserPlus, X } from 'lucide-react'
+import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
-import { useSiblingGroupMembers } from '@/features/group'
 import { useExpenseCategories } from '@/features/expense'
 import { useCurrentUser } from '@/features/user'
 import type { Expense } from '@/entities/expense'
@@ -65,11 +64,10 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const expenseDateTime = (expense.expenseDate ?? '').slice(0, 16).replace('T', ' ')
 
   const createMut = useCreateDutchPay()
-  const siblingsQ = useSiblingGroupMembers()
   const categoriesQ = useExpenseCategories()
   const currentUserQ = useCurrentUser()
 
-  const isLoading = siblingsQ.isLoading || categoriesQ.isLoading || currentUserQ.isLoading
+  const isLoading = categoriesQ.isLoading || currentUserQ.isLoading
 
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
   const palette = getPaletteByColor(category?.color)
@@ -126,19 +124,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const remainder = totalAbs - sumAmount
   const matched = remainder === 0 && participants.length >= 1
 
-  const usedUserIds = useMemo(
-    () => new Set(others.map(p => p.userRowId).filter((id): id is number => id !== null)),
-    [others],
-  )
-
-  const quickAddSuggestions = useMemo(() => {
-    const all = siblingsQ.data ?? []
-    return all
-      .filter(m => !usedUserIds.has(m.userRowId))
-      .filter(m => m.userRowId !== meRowId)
-      .slice(0, 8)
-  }, [siblingsQ.data, usedUserIds, meRowId])
-
   const addManual = () => {
     const name = manualName.trim()
     if (!name) return
@@ -154,20 +139,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       },
     ])
     setManualName('')
-  }
-
-  const addFromSibling = (userRowId: number, name: string) => {
-    setOthers([
-      ...others,
-      {
-        uid: newUid(),
-        userRowId,
-        name,
-        isMe: false,
-        customAmount: String(perPersonAmount),
-        ratio: '1',
-      },
-    ])
   }
 
   const removeOther = (uid: string) => {
@@ -207,9 +178,9 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   const Footer = (
     <>
-      <span style={{ marginRight: 'auto', fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>
+      <span style={{ marginRight: 'auto', fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
         1인당{' '}
-        <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-heavy)' }}>
+        <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
           {KRW(perPersonAmount)}원
         </b>
       </span>
@@ -238,7 +209,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   return (
     <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
         이 거래를 기준으로 더치페이 정산을 만듭니다. 참여자에게 송금 요청을 보내고, 정산 진행 상황을 추적할 수 있어요.
       </p>
 
@@ -259,7 +230,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           style={{
             width: 38,
             height: 38,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(38),
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',
@@ -270,12 +241,12 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>{defaultTitle}</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{defaultTitle}</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {expenseDateTime || expenseDay}
           </div>
         </div>
-        <div className="num" style={{ fontWeight: 'var(--fw-heavy)' }}>
+        <div className="num" style={{ fontWeight: '800' }}>
           {KRW(totalAbs)}원
         </div>
       </div>
@@ -310,15 +281,15 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    fontWeight: 'var(--fw-bold)',
-                    fontSize: 'var(--fs-body-sm)',
+                    fontWeight: '700',
+                    fontSize: 'var(--text-label-sm)',
                     color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                   }}
                 >
                   <Icon size={14} />
                   {m.title}
                 </span>
-                <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>{m.sub}</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{m.sub}</span>
               </button>
             )
           })}
@@ -361,14 +332,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>나도 포함해서 분배</span>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
+        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>나도 포함해서 분배</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
       </div>
 
       {/* 참여자 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)' }}>참여자</span>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>참여자</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
           ({participants.length}명)
         </span>
       </div>
@@ -402,8 +373,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 'var(--fw-bold)',
-                  fontSize: 'var(--fs-body-sm)',
+                  fontWeight: '700',
+                  fontSize: 'var(--text-label-sm)',
                   flexShrink: 0,
                 }}
               >
@@ -411,12 +382,12 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               </span>
 
               <span style={{ flex: 1, minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontWeight: 'var(--fw-semi)', fontSize: 'var(--fs-body)' }}>{p.name}</span>
+                <span style={{ fontWeight: '600', fontSize: 'var(--text-body-sm)' }}>{p.name}</span>
                 {p.isMe && (
                   <span
                     style={{
-                      fontSize: 'var(--fs-micro)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontSize: 'var(--text-badge)',
+                      fontWeight: '700',
                       padding: '2px 7px',
                       borderRadius: 'var(--radius-pill)',
                       background: 'color-mix(in oklch, var(--fg-income) 12%, transparent)',
@@ -444,7 +415,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       right: 10,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       color: 'var(--fg-tertiary)',
                       pointerEvents: 'none',
                     }}
@@ -455,7 +426,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'CUSTOM' && p.isMe && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)' }}>
+                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -476,7 +447,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       right: 10,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       color: 'var(--fg-tertiary)',
                       pointerEvents: 'none',
                     }}
@@ -487,13 +458,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               )}
 
               {splitMethod === 'RATIO' && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)', minWidth: 80, textAlign: 'right' }}>
+                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)', minWidth: 80, textAlign: 'right' }}>
                   {KRW(amt)}원
                 </span>
               )}
 
               {splitMethod === 'EQUAL' && (
-                <span className="num" style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)' }}>
+                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
                   {KRW(amt)}원
                 </span>
               )}
@@ -537,34 +508,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         </Button>
       </div>
 
-      {/* 빠른 추가 chips */}
-      {quickAddSuggestions.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {quickAddSuggestions.map((m, i) => {
-            const palette = PARTICIPANT_PALETTE[i % PARTICIPANT_PALETTE.length]!
-            return (
-              <Button
-                key={m.userRowId}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => addFromSibling(m.userRowId, m.userName)}
-                title={m.userEmail}
-                className="rounded-full gap-1.5 text-caption font-semibold"
-              >
-                <span
-                  aria-hidden
-                  className="inline-block h-2 w-2 rounded-full"
-                  style={{ background: palette.color }}
-                />
-                {m.userName}
-                <Plus size={12} className="text-text-tertiary" />
-              </Button>
-            )
-          })}
-        </div>
-      )}
-
       {/* 요청 메시지 */}
       <Section title="요청 메시지 (선택)" tightTop>
         <Textarea
@@ -578,7 +521,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       </Section>
 
       {!matched && (
-        <p style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
+        <p style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
           {remainder > 0
             ? `합계가 총액보다 ${KRW(remainder)}원 부족합니다.`
             : `합계가 총액보다 ${KRW(-remainder)}원 초과합니다.`}
@@ -665,7 +608,7 @@ function Section({
 }) {
   return (
     <div style={{ marginBottom: 16, marginTop: tightTop ? 4 : 0 }}>
-      <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}

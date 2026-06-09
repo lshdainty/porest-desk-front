@@ -1,12 +1,13 @@
 import * as React from "react"
 
-import { renderIcon } from "@/shared/lib"
+import { renderIcon, tileRadius } from "@/shared/lib"
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette"
 
 /**
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`
  * 등에서 5×N 그리드의 한 칸으로 쓰는 공통 카드.
  *
- * - radius `var(--radius-tile)` (=10px) — 양쪽 (카드/내부 아이콘 박스) 동일.
+ * - radius `var(--radius-tile)` (=12px, = --radius-lg) — 양쪽 (카드/내부 아이콘 박스) 동일.
  * - active 시: 브랜드 subtle 배경 + 브랜드 보더 + 라벨 강조.
  * - 색은 카테고리 정의 색을 oklch alpha 로 soft-bg 처리.
  */
@@ -22,11 +23,12 @@ export interface CategoryTileProps {
 
 export function CategoryTile({
   name,
-  color = "var(--bg-brand)",
+  color,
   icon,
   active,
   onClick,
 }: CategoryTileProps) {
+  const palette = getPaletteByColor(color)
   return (
     <button
       type="button"
@@ -50,10 +52,10 @@ export function CategoryTile({
         style={{
           width: 32,
           height: 32,
-          borderRadius: "var(--radius-tile)",
-          // 18% color-mix — 다크모드에서도 자연스럽게 채도 유지.
-          background: `color-mix(in oklch, ${color} 18%, transparent)`,
-          color,
+          borderRadius: tileRadius(32),
+          // getPaletteByColor: 팔레트 base hex → --color-cat-* alias(다크 자동 light swap) + 18% bg.
+          background: palette.bg,
+          color: palette.color,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
@@ -63,7 +65,7 @@ export function CategoryTile({
       </span>
       <span
         style={{
-          fontSize: 'var(--fs-micro)',
+          fontSize: 'var(--text-badge)',
           fontWeight: active ? 700 : 500,
           color: active ? "var(--fg-brand-strong)" : "var(--fg-secondary)",
           overflow: "hidden",

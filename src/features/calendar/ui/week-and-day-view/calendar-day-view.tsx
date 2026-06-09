@@ -4,7 +4,7 @@ import { Calendar as CalendarIcon, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { getCurrentEvents, getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
+import { eventBadgeColor, getCurrentEvents, getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
 import { cn } from '@/shared/lib'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
@@ -62,6 +62,7 @@ const DayViewMultiDayEventsRow = ({
           const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1
           const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1
 
+          const badgeColor = eventBadgeColor(event)
           return (
             <div
               key={event.id}
@@ -69,15 +70,15 @@ const DayViewMultiDayEventsRow = ({
               tabIndex={0}
               className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               style={{
-                background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-                borderColor: `${event.color}40`,
-                color: event.color,
+                background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                borderColor: 'transparent',
+                color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
               }}
               onClick={(e) => onEventClick?.(event, e.currentTarget)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
             >
               <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-                <circle cx="4" cy="4" r="4" fill={event.color} />
+                <circle cx="4" cy="4" r="4" fill={badgeColor} />
               </svg>
               <p className="truncate font-semibold">
                 {eventTotalDays > 1 && (
@@ -143,6 +144,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
   const heightInPixels = (durationInMinutes / 60) * 96 - 8
+  const badgeColor = eventBadgeColor(event)
 
   return (
     <div
@@ -154,16 +156,16 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-        borderColor: `${event.color}40`,
-        color: event.color,
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
       <div className="flex items-center gap-1.5 truncate">
         <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-          <circle cx="4" cy="4" r="4" fill={event.color} />
+          <circle cx="4" cy="4" r="4" fill={badgeColor} />
         </svg>
         <p className="truncate font-semibold">{event.title}</p>
       </div>
@@ -213,7 +215,7 @@ const CalendarDayView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPro
           <div className="relative z-20 flex border-b">
             <div className="w-18" />
             <div className="flex-1 border-l py-2 text-center text-xs font-medium">
-              <div style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined }}>
+              <div style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}>
                 {format(selectedDate, 'EE', { locale })}{' '}
                 <span className="font-semibold">{format(selectedDate, 'd')}</span>
               </div>

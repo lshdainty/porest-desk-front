@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 
+import { tileRadius } from '@/shared/lib'
+
 /**
  * ManageRow: 설정 화면(카테고리/계좌/예산 등) 좌측 행 레이아웃의 정렬·hover spec 보존.
  * 기존 .cat-row / .cat-row__icon / __text / __label / __meta / __actions / __more / __del 의
@@ -24,12 +26,12 @@ export const MANAGE_ROW = {
   iconStyle: {
     width: 36,
     height: 36,
-    borderRadius: 'var(--radius-tile)',
+    borderRadius: tileRadius(36),
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    fontWeight: 'var(--fw-bold)',
+    fontWeight: '700',
     color: 'var(--fg-on-brand)',
   } as CSSProperties,
   /** 텍스트 영역 style (기존 .cat-row__text) */
@@ -38,20 +40,19 @@ export const MANAGE_ROW = {
   labelStyle: {
     font: '600 14px/1.3 var(--font-sans)',
     color: 'var(--fg-primary)',
-    letterSpacing: 'var(--tracking-snug)',
+    letterSpacing: '-0.012em',
     marginBottom: 2,
   } as CSSProperties,
   /** 보조 메타 style (기존 .cat-row__meta) */
   metaStyle: {
-    fontSize: 'var(--fs-caption)',
+    fontSize: 'var(--text-caption)',
     color: 'var(--fg-tertiary)',
     display: 'flex',
     alignItems: 'center',
     gap: 0,
   } as CSSProperties,
-  /** 액션 영역 className: 기본 opacity 0 → group-hover 시 1 */
-  actionsClassName:
-    'flex gap-1 opacity-0 transition-opacity duration-[var(--dur-fast,120ms)] group-hover:opacity-100',
+  /** 액션 영역 className: 아이콘 항상 표시 (hover-reveal 제거, 반복거래관리와 일관). */
+  actionsClassName: 'flex gap-1',
   /** 모바일용 chevron 버튼 style (기존 .cat-row__more) */
   moreStyle: {
     border: 0,
@@ -62,10 +63,10 @@ export const MANAGE_ROW = {
     display: 'inline-flex',
   } as CSSProperties,
   /**
-   * 삭제 버튼에 적용 (기존 .cat-row__del:hover { color: var(--fg-expense) }).
-   * Button 컴포넌트의 hover bg/text 를 그대로 두기 위해 hover:!text-* 만 적용.
+   * 삭제 버튼에 적용 — 항상 빨강(--fg-expense). 반복/프리셋 관리의 삭제 버튼과 색 통일.
+   * ghost variant 의 hover 는 bg 만 바꾸므로 text 는 항상 expense 로 고정.
    */
-  delClassName: 'hover:!text-[var(--fg-expense)]',
+  delClassName: '!text-[var(--fg-expense)]',
 } as const
 
 export function ManageRow({

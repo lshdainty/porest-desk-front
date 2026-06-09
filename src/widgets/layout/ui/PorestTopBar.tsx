@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
 import {
   disablePdHideAmounts,
@@ -10,42 +10,13 @@ import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
-import { Separator } from '@/shared/ui/separator'
 import { Button } from '@/shared/ui/button'
 import { ModeToggle } from '@/shared/ui/mode-toggle'
-import { NAV } from './PorestSidebar'
-
-const TITLE_MAP: Record<string, string> = {
-  '/desk': '홈',
-  '/desk/asset': '자산',
-  '/desk/expense': '가계부',
-  '/desk/stats': '통계·분석',
-  '/desk/budget': '예산',
-  '/desk/calendar': '캘린더',
-  '/desk/todo': '할 일',
-  '/desk/dutch-pay': '더치페이',
-  '/desk/memo': '메모',
-  '/desk/settings': '설정',
-}
-
-const SUB_MAP: Record<string, string | undefined> = {
-  '/desk': '2026년 4월',
-}
-
-function titleFor(pathname: string): { title: string; sub?: string } {
-  const t = TITLE_MAP[pathname]
-  if (t) return { title: t, sub: SUB_MAP[pathname] }
-  const item = NAV.find(n => pathname.startsWith(n.path) && n.path !== '/desk')
-  if (item) return { title: item.label }
-  return { title: TITLE_MAP['/desk'] ?? '홈', sub: SUB_MAP['/desk'] }
-}
 
 export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
-  const location = useLocation()
   const navigate = useNavigate()
   const hidden = useHideAmounts()
   const { data: unreadCount = 0 } = useUnreadCount()
-  const { title, sub } = titleFor(location.pathname)
   const [notifOpen, setNotifOpen] = useState(false)
   const [unlockOpen, setUnlockOpen] = useState(false)
 
@@ -60,11 +31,6 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   return (
     <header className="top">
       <SidebarTrigger className="h-8 w-8" />
-      <Separator orientation="vertical" className="mx-1 h-5" />
-      <div>
-        <div className="top__title">{title}</div>
-        {sub && <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{sub}</div>}
-      </div>
       <div className="top__search">
         <Search size={15} />
         <input placeholder="거래, 카테고리, 계좌 검색" />

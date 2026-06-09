@@ -1,17 +1,21 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Eye, EyeOff, Pencil } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Pencil, TrendingUp, Wallet } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import type { Asset } from '@/entities/asset'
+import { toast } from 'sonner'
+import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend } from '@/features/asset'
+import { useAssetBalanceTrend, useCardBilling, usePayCard } from '@/features/asset'
+import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import {
   disablePdHideAmounts,
@@ -21,14 +25,8 @@ import {
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
-import { renderIcon } from '@/shared/lib'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
-function fmtAxisNum(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1000) return `${(v / 1000).toFixed(0)}k`
-  return String(v)
-}
 
 type BalanceTooltipProps = {
   active?: boolean
@@ -50,18 +48,18 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
         {label}
         {weekStart && <span style={{ marginLeft: 6 }}>· {weekStart.slice(5)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--color-balance)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(val)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
@@ -76,6 +74,276 @@ const groupOf = (asset: Asset): AssetGroup => {
   if (asset.assetType === 'CREDIT_CARD' || asset.assetType === 'CHECK_CARD') return 'card'
   if (asset.assetType === 'INVESTMENT') return 'invest'
   return 'account'
+}
+
+// 청구 상태 배지 — app _StatusBadge 미러: COMPLETED=success / PENDING=warning / FAILED=error / SKIPPED=neutral
+const BILLING_STATUS_META: Record<BillingStatus, { label: string; variant: 'success' | 'secondary' | 'warning' | 'error' }> = {
+  COMPLETED: { label: '완료', variant: 'success' },
+  PENDING: { label: '대기', variant: 'warning' },
+  FAILED: { label: '실패', variant: 'error' },
+  SKIPPED: { label: '건너뜀', variant: 'secondary' },
+}
+
+/** 'yyyy-MM-dd' → 'M.d' 표기 — app _fmtDate 미러. */
+function fmtBillingDate(iso: string): string {
+  const [, mm, dd] = iso.split('-')
+  if (mm == null || dd == null) return iso
+  const m = parseInt(mm, 10)
+  const d = parseInt(dd, 10)
+  if (!Number.isFinite(m) || !Number.isFinite(d)) return iso
+  return `${m}.${d}`
+}
+
+function currentYearMonth(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+// 카드 월 실적 카드 — app CardPerformanceBar 미러.
+// 헤더('YYYY-MM 실적' + pct%) / progress 8px / 사용·필요액 + 남은/달성 / requiredText.
+// 실적 무관 카드면 숨김. 달성(100%↑) 시 bar·% status-success, 미만은 fg-brand(다크 primary-light).
+function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
+  const ym = currentYearMonth()
+  const { data: p } = useCardPerformance(assetRowId, ym)
+  if (!p || !p.isRequired || p.requiredAmount == null) return null
+  const rate = Math.min(Math.max(p.achievementRate, 0), 1.5)
+  const pct = Math.trunc(rate * 100)
+  const overrun = p.achievementRate >= 1.0
+  const barColor = overrun ? 'var(--status-success)' : 'var(--fg-brand)'
+  return (
+    <div
+      style={{
+        padding: 12,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        marginBottom: 18,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <TrendingUp size={14} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
+        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          {ym} 실적
+        </span>
+        <span
+          className="num"
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: barColor }}
+        >
+          {pct}%
+        </span>
+      </div>
+      <div
+        style={{
+          height: 8, background: 'var(--bg-track)',
+          borderRadius: 'var(--radius-xs)', overflow: 'hidden', margin: '6px 0',
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, rate * 100)}%`, height: '100%',
+            background: barColor, borderRadius: 'var(--radius-xs)',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)',
+        }}
+      >
+        <span className="num">
+          <MaskAmount mask="•••">{KRW(p.currentAmount)}</MaskAmount>
+          {' / '}
+          <MaskAmount mask="•••">{KRW(p.requiredAmount)}</MaskAmount>
+          <HideUnit>원</HideUnit>
+        </span>
+        {!p.isAchieved && p.remainingAmount != null ? (
+          <span className="num" style={{ marginLeft: 'auto' }}>
+            남은 <MaskAmount mask="•••">{KRW(p.remainingAmount)}</MaskAmount>
+            <HideUnit>원</HideUnit>
+          </span>
+        ) : (
+          <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>달성</span>
+        )}
+      </div>
+      {p.requiredText && (
+        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+          {p.requiredText}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 신용카드 청구 사이클 — app _CardBillingSection 미러.
+// 단일 bordered 카드 안에 [결제 예정 + 예정일 M.d] / [금액 + 지금 결제] / 매월 N일 결제 / divider / 청구 이력.
+function CardBillingSection({ asset }: { asset: Asset }) {
+  const { data: billing, isLoading, isError } = useCardBilling(asset.rowId)
+  const payCard = usePayCard()
+  const [confirmPay, setConfirmPay] = useState(false)
+
+  const handlePay = () => {
+    payCard.mutate(asset.rowId, {
+      onSuccess: () => {
+        setConfirmPay(false)
+        toast.success('결제가 기록되었어요')
+      },
+      onError: () => {
+        setConfirmPay(false)
+        toast.error('결제 처리에 실패했어요')
+      },
+    })
+  }
+
+  const upcomingAmount = billing?.upcomingAmount ?? Math.abs(asset.balance)
+  const nextPaymentDate = billing?.nextPaymentDate ?? null
+  const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null
+  const history: BillingItem[] = billing?.history ?? []
+  const canPay = upcomingAmount > 0 && !payCard.isPending
+
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: 'var(--radius-lg)',
+    padding: 16,
+    marginBottom: 18,
+  }
+
+  if (isLoading) {
+    return (
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <SkeletonBase className="h-4 w-16" />
+          <SkeletonBase className="h-3 w-10" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 8 }}>
+          <SkeletonBase className="h-7 w-28" />
+          <SkeletonBase className="h-8 w-24 rounded-md" />
+        </div>
+        <SkeletonBase className="h-3 w-24 mt-2" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div style={cardStyle}>
+        <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
+          청구 정보를 불러오지 못했어요
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div style={cardStyle}>
+      {/* 헤더: 결제 예정 + 다음 결제일 M.d */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          결제 예정
+        </span>
+        {nextPaymentDate && (
+          <span
+            className="num"
+            style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}
+          >
+            {fmtBillingDate(nextPaymentDate)}
+          </span>
+        )}
+      </div>
+
+      {/* 금액 + 지금 결제 */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 8 }}>
+        <div
+          className="num"
+          style={{
+            fontWeight: '700',
+            letterSpacing: '-0.012em',
+            color: upcomingAmount > 0 ? 'var(--status-danger-fg)' : 'var(--fg-primary)',
+          }}
+        >
+          <MaskAmount>
+            <span style={{ fontSize: 'var(--text-display-sm)' }}>{KRW(upcomingAmount)}</span>
+          </MaskAmount>
+          <HideUnit>
+            <span style={{ fontSize: 'var(--text-body-sm)' }}>원</span>
+          </HideUnit>
+        </div>
+        <Button
+          variant="default"
+          size="sm"
+          style={{ marginLeft: 'auto' }}
+          disabled={!canPay}
+          onClick={() => setConfirmPay(true)}
+        >
+          <Wallet size={14} />
+          지금 결제
+        </Button>
+      </div>
+
+      {paymentDay != null && (
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
+          매월 {paymentDay}일 결제
+        </div>
+      )}
+
+      {/* 청구 이력 — divider 아래 같은 카드 내부 (app 정합) */}
+      {history.length > 0 && (
+        <>
+          <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '12px 0 8px' }} />
+          <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>
+            청구 이력
+          </div>
+          <div style={{ marginTop: 4 }}>
+            {history.map(b => {
+              const meta = BILLING_STATUS_META[b.status]
+              return (
+                <div key={b.rowId} style={{ padding: '8px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      className="num"
+                      style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}
+                    >
+                      <MaskAmount>{KRW(b.billingAmount)}</MaskAmount>
+                      <HideUnit>원</HideUnit>
+                    </span>
+                    <Badge variant={meta.variant}>{meta.label}</Badge>
+                  </div>
+                  <div
+                    className="num"
+                    style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}
+                  >
+                    {fmtBillingDate(b.periodStart)} ~ {fmtBillingDate(b.periodEnd)} · 결제일 {fmtBillingDate(b.paymentDate)}
+                  </div>
+                  {b.failureReason && (
+                    <div style={{ fontSize: 'var(--text-badge)', color: 'var(--status-danger-fg)', marginTop: 2 }}>
+                      {b.failureReason}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {confirmPay && (
+        <ConfirmDialog
+          title="지금 결제"
+          message={
+            <>
+              결제 예정액 <strong>{KRW(upcomingAmount)}원</strong>을 지금 결제 처리할까요?
+              {nextPaymentDate ? ` 결제일은 ${nextPaymentDate} 입니다.` : ''}
+            </>
+          }
+          confirmLabel="결제하기"
+          loading={payCard.isPending}
+          onCancel={() => { if (!payCard.isPending) setConfirmPay(false) }}
+          onConfirm={handlePay}
+        />
+      )}
+    </div>
+  )
 }
 
 export function AssetDetailDialog({
@@ -116,7 +384,7 @@ export function AssetDetailDialog({
   const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
   const seriesLabel = isCard ? '사용' : isInv ? '평가액' : '잔액'
 
-  const color = asset.color || '#6b7280'
+  const color = getPaletteByColor(asset.color).color
   const chartConfig: ChartConfig = {
     balance: { label: seriesLabel, color },
   }
@@ -160,36 +428,20 @@ export function AssetDetailDialog({
       {/* Hero */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${color}1a, ${color}08)`,
-          border: `1px solid ${color}33`,
+          background: `linear-gradient(135deg, color-mix(in oklch, ${color} 12%, transparent), color-mix(in oklch, ${color} 4%, transparent))`,
+          border: `1px solid color-mix(in oklch, ${color} 22%, transparent)`,
           borderRadius: 'var(--radius-xl)',
           padding: 22,
           marginBottom: 18,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-          <span
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 'var(--radius-lg)',
-              background: color,
-              color: '#fff',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'var(--fw-bold)',
-              fontSize: 'var(--fs-h4)',
-              flexShrink: 0,
-            }}
-          >
-            {renderIcon(asset.icon, asset.assetName.charAt(0), 22)}
-          </span>
+          <AssetLogo asset={asset} size={48} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>
               {asset.assetName}
             </div>
-            <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               {[asset.institution, assetTypeLabel(asset.assetType), asset.memo]
                 .filter(Boolean)
                 .join(' · ')}
@@ -198,10 +450,10 @@ export function AssetDetailDialog({
         </div>
         <div
           style={{
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
-            fontWeight: 'var(--fw-semi)',
-            letterSpacing: 'var(--tracking-wide)',
+            fontWeight: '600',
+            letterSpacing: '0.04em',
             marginBottom: 4,
           }}
         >
@@ -210,9 +462,9 @@ export function AssetDetailDialog({
         <div
           className="num"
           style={{
-            fontSize: 'var(--fs-h1)',
-            fontWeight: 'var(--fw-heavy)',
-            letterSpacing: 'var(--tracking-tight)',
+            fontSize: 'var(--text-display-md)',
+            fontWeight: '800',
+            letterSpacing: '-0.022em',
             color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
           }}
         >
@@ -221,20 +473,26 @@ export function AssetDetailDialog({
             {KRW(absBalance)}
           </MaskAmount>
           <HideUnit>
-            <span style={{ fontSize: 'var(--fs-body-lg)', marginLeft: 2 }}>원</span>
+            <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
           </HideUnit>
         </div>
       </div>
 
+      {/* 카드 월 실적 (카드 공통) — app CardPerformanceBar 미러 */}
+      {isCard && <CardPerformanceCard assetRowId={asset.rowId} />}
+
+      {/* Card billing cycle (CREDIT_CARD 전용) — app _CardBillingSection 미러 */}
+      {asset.assetType === 'CREDIT_CARD' && <CardBillingSection asset={asset} />}
+
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
           <ToggleGroup
             type="single"
-            variant="segmented"
+            variant="segmented-subtle"
             size="sm"
             value={period}
             onValueChange={(v) => v && setPeriod(v as '3m' | '6m' | '1y')}
@@ -251,7 +509,7 @@ export function AssetDetailDialog({
           <div style={{
             height: 160, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-tile)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)',
+            color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)',
           }}>
             표시할 데이터가 없어요
           </div>
@@ -269,7 +527,7 @@ export function AssetDetailDialog({
                 dataKey="label"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 tickMargin={6}
                 interval="preserveStartEnd"
                 minTickGap={18}
@@ -277,8 +535,9 @@ export function AssetDetailDialog({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={fmtAxisNum}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
+                tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 width={44}
               />
               <ChartTooltip
@@ -291,8 +550,8 @@ export function AssetDetailDialog({
                 stroke="var(--color-balance)"
                 strokeWidth={2}
                 fill={`url(#asset-balance-fill-${asset.rowId})`}
-                dot={{ r: 3, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 1.5 }}
-                activeDot={{ r: 4.5, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
+                dot={{ r: 4, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 1.5 }}
+                activeDot={{ r: 5.5, fill: 'var(--color-balance)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
               />
             </AreaChart>
           </ChartContainer>
@@ -302,7 +561,7 @@ export function AssetDetailDialog({
       {/* Recent tx */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <h4 style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+          <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
             최근 거래{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
           </h4>
           <button
@@ -314,8 +573,8 @@ export function AssetDetailDialog({
               border: 0,
               color: 'var(--fg-secondary)',
               cursor: 'pointer',
-              fontSize: 'var(--fs-body-sm)',
-              fontWeight: 'var(--fw-semi)',
+              fontSize: 'var(--text-label-sm)',
+              fontWeight: '600',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 2,
@@ -352,7 +611,7 @@ export function AssetDetailDialog({
                 padding: '24px 0',
                 textAlign: 'center',
                 color: 'var(--fg-tertiary)',
-                fontSize: 'var(--fs-body-sm)',
+                fontSize: 'var(--text-label-sm)',
               }}
             >
               연결된 거래 내역이 없어요.

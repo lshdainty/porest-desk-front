@@ -3,25 +3,25 @@ import { useTranslation } from 'react-i18next'
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
-const DayCellSkeleton = ({ isSunday }: { isSunday: boolean }) => {
+/**
+ * 실제 MonthDayCell 미러 — 모바일은 셀 보더 없음(lg 이상만 grid line),
+ * 이벤트 placeholder 는 실제 칩과 동일한 h-5.5(모바일)/h-6.5(lg) 라운드 사각.
+ */
+const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number }) => {
   return (
-    <div className={`flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? 'border-l-0' : ''}`}>
+    <div className={`flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? 'lg:border-l-0' : ''}`}>
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1 flex-1 min-w-0">
           <div className="size-6 rounded-full bg-muted animate-pulse" />
         </div>
       </div>
 
-      <div className="flex flex-1 h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0">
-        {[0, 1, 2].map(position => (
-          <div key={position} className="lg:min-h-[28px]">
-            {position === 0 && (
-              <>
-                <div className="size-2 rounded-full bg-muted animate-pulse lg:hidden" />
-                <div className="hidden lg:block h-5 w-full rounded mx-1 bg-muted animate-pulse" />
-              </>
-            )}
-          </div>
+      <div className="flex flex-col flex-1 min-h-0 gap-1">
+        {Array.from({ length: chips }).map((_, i) => (
+          <div
+            key={i}
+            className="h-5.5 lg:h-6.5 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md bg-muted animate-pulse"
+          />
         ))}
       </div>
     </div>
@@ -36,7 +36,8 @@ const CalendarMonthViewSkeleton = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-7 divide-x border-b flex-shrink-0">
+      {/* 요일 행 — 실제 월뷰와 동일(모바일 보더 없음, lg 는 첫 셀행의 border-t 가 라인 역할) */}
+      <div className="grid grid-cols-7 flex-shrink-0">
         {weekDays.map((day, index) => {
           const isSunday = index === 0
           const isSaturday = index === 6
@@ -45,7 +46,7 @@ const CalendarMonthViewSkeleton = () => {
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined }}
+                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}
               >
                 {day}
               </span>
@@ -54,10 +55,15 @@ const CalendarMonthViewSkeleton = () => {
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-hidden">
         <div className="grid grid-cols-7 auto-rows-fr h-full">
           {cells.map(index => (
-            <DayCellSkeleton key={index} isSunday={index % 7 === 0} />
+            <DayCellSkeleton
+              key={index}
+              isSunday={index % 7 === 0}
+              // 일부 셀에만 0~2개 칩 — 시각적 다양성 (실데이터 밀도 흉내)
+              chips={index % 7 === 0 ? 2 : index % 5 === 0 ? 1 : 0}
+            />
           ))}
         </div>
       </div>

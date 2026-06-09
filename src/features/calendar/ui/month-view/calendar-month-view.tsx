@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/drag-select-context'
-import { calculateMonthEventPositions, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
+import { calculateMonthEventPositions, eventBadgeColor, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
 
@@ -44,10 +45,17 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
   return map
 }
 
-interface IProps {
+interface IPropsExt {
+  /** 셀 클릭 콜백 — 지정 시 drag-select 우선순위 양보 (가계부 캘린더의 DayDetail 트리거). */
+  onDayClick?: (date: Date) => void
+}
+
+interface IProps extends IPropsExt {
   singleDayEvents: IEvent[]
   multiDayEvents: IEvent[]
   onEventClick?: (event: IEvent, el: HTMLElement) => void
+  /** 모바일에서 요일 헤더 하단 border-b 표시 여부. 가계부는 true(기본), 캘린더는 false. */
+  mobileHeaderBorder?: boolean
 }
 
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -63,6 +71,7 @@ const MonthDayCell = ({
   holidayDateSet,
   maxVisibleEvents,
   onEventClick,
+  onDayClick,
 }: {
   cell: ICalendarCell
   events: IEvent[]
@@ -71,10 +80,14 @@ const MonthDayCell = ({
   holidayDateSet: Set<string>
   maxVisibleEvents: number
   onEventClick?: (event: IEvent, el: HTMLElement) => void
+  onDayClick?: (date: Date) => void
 }) => {
   const { t } = useTranslation('calendar')
   const { setSelectedDate, setView } = useCalendar()
   const { startSelection, updateSelection, endSelection, isDateInSelection } = useDragSelect()
+  // 금액 숨김 — 셀 합계가 formatNumber 로 직접 렌더돼 마스킹이 누락되던 버그 fix.
+  // masked 면 부호 없이 점(compact 4개)만 — 다른 화면 MaskAmount 정합.
+  const hideAmounts = useHideAmounts()
 
   const { day, currentMonth, date } = cell
 
@@ -89,6 +102,11 @@ const MonthDayCell = ({
   const isSelected = isDateInSelection(date)
 
   const handleClick = () => {
+    // onDayClick 있으면(모바일 일별 시트/가계부 DayDetail) day 뷰 전환 대신 시트 표시
+    if (onDayClick) {
+      onDayClick(date)
+      return
+    }
     setSelectedDate(date)
     setView('day')
   }
@@ -107,8 +125,14 @@ const MonthDayCell = ({
       return
     }
 
+    // onDayClick prop 있으면 drag-select 우선순위 양보 — 단순 셀 클릭 처리만.
+    if (onDayClick) {
+      onDayClick(date)
+      return
+    }
+
     startSelection(date)
-  }, [date, startSelection])
+  }, [date, startSelection, onDayClick])
 
   const handleMouseEnter = useCallback(() => {
     updateSelection(date)
@@ -123,8 +147,9 @@ const MonthDayCell = ({
   return (
     <div
       className={cn(
-        'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
-        isSunday && 'border-l-0',
+        // 모바일 (< 1024px) 에선 셀 사이 grid line 제거 (사용자 요청). lg 이상만 표시.
+        'flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 select-none',
+        isSunday && 'lg:border-l-0',
         isSelected && 'bg-blue-100/50 dark:bg-blue-900/20 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]'
       )}
       onMouseDown={handleMouseDown}
@@ -138,26 +163,19 @@ const MonthDayCell = ({
             className={cn(
               'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
               !currentMonth && 'opacity-20',
-              isToday(date) && 'bg-primary font-bold text-primary-foreground hover:bg-primary'
+              // 오늘 — 앱 bgBrand 정합: 라이트 primary / 다크 primary-light (var(--fg-brand) 가 자동 swap)
+              isToday(date) && 'bg-[var(--fg-brand)] font-bold text-primary-foreground hover:bg-[var(--fg-brand)]'
             )}
             style={{
-              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined),
+              // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
+              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
             }}
           >
             {day}
           </button>
 
-          {/* 수입/지출 합계 - 날짜 옆 인라인 (이벤트 배지 정렬에 영향 없음) */}
-          {hasExpense && (
-            <div className={cn('hidden lg:flex items-center gap-1.5 text-[10px] font-medium min-w-0 truncate', !currentMonth && 'opacity-50')}>
-              {expenseSummary.income > 0 && (
-                <span className="truncate" style={{ color: 'var(--fg-income)' }}>+{formatNumber(expenseSummary.income)}</span>
-              )}
-              {expenseSummary.expense > 0 && (
-                <span className="truncate" style={{ color: 'var(--fg-expense)' }}>-{formatNumber(expenseSummary.expense)}</span>
-              )}
-            </div>
-          )}
+          {/* 수입/지출 합계는 날짜 옆이 아닌 셀 본문에 큰 글씨로 표시
+              (좁은 모바일 셀에서 truncate 되지 않게 — 아래 본문 영역으로 옮김) */}
         </div>
 
         {cellEvents.length > maxVisibleEvents && (
@@ -175,17 +193,61 @@ const MonthDayCell = ({
       </div>
 
       <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>
-        {Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
+        {/* 셀 본문 상단에 수입/지출 합계 — 글자 수 따라 fontSize 동적 축소.
+            셀 폭이 좁아 +3,500,000 같은 긴 숫자가 옆 셀 침범하던 버그 fix.
+            step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합).
+            flex-shrink-0 — 아래 event slot 들이 expense 자르지 않게. */}
+        {hasExpense && (
+          <div className="flex flex-col items-start gap-0.5 px-1 lg:px-2 leading-none font-semibold overflow-hidden flex-shrink-0">
+            {/* 모바일: 글자 수별 step text-[NNpx] (11/10/9/8). lg+: text-base (16px) 고정.
+                inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
+            {expenseSummary.expense > 0 && (() => {
+              const text = hideAmounts ? '••••' : `−${formatNumber(expenseSummary.expense)}`
+              // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
+              const mobileFs =
+                text.length <= 6 ? 'text-[11px]' :
+                text.length <= 8 ? 'text-[10px]' :
+                text.length <= 9 ? 'text-[9px]' :
+                text.length <= 10 ? 'text-[8px]' : 'text-[7px]'
+              return (
+                <span
+                  className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
+                  style={{ color: 'var(--fg-expense)' }}
+                >{text}</span>
+              )
+            })()}
+            {expenseSummary.income > 0 && (() => {
+              const text = hideAmounts ? '••••' : `+${formatNumber(expenseSummary.income)}`
+              // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
+              const mobileFs =
+                text.length <= 6 ? 'text-[11px]' :
+                text.length <= 8 ? 'text-[10px]' :
+                text.length <= 9 ? 'text-[9px]' :
+                text.length <= 10 ? 'text-[8px]' : 'text-[7px]'
+              return (
+                <span
+                  className={cn(mobileFs, 'lg:text-base whitespace-nowrap leading-tight num')}
+                  style={{ color: 'var(--fg-income)' }}
+                >{text}</span>
+              )
+            })()}
+          </div>
+        )}
+        {/* expense-only 셀 (regular event 없음) 일 때 빈 event slot 들 그리지 않음
+            — 빈 slot 이 expense summary 자리 침범 + truncate 방지. */}
+        {cellEvents.length > 0 && Array.from({ length: maxVisibleEvents }, (_, i) => i).map(position => {
           const event = cellEvents.find(e => e.position === position)
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="h-6.5">
+            <div key={eventKey} className="h-5.5 lg:h-6.5">
               {event && (
                 <MonthEventBadge
                   event={event}
                   cellDate={startOfDay(date)}
-                  onEventClick={onEventClick}
+                  // onDayClick 모드(모바일 일별 시트)에선 칩 탭도 셀과 동일하게
+                  // 그날의 시트를 연다 — 앱(셀 단위 탭) 정합.
+                  onEventClick={onDayClick ? () => onDayClick(date) : onEventClick}
                 />
               )}
             </div>
@@ -229,11 +291,15 @@ const MonthEventBadge = ({
 
   const renderBadgeText = ['first', 'none'].includes(position)
   const isMultiDay = !isSameDay(parseISO(event.startDate), parseISO(event.endDate))
+  const badgeColor = eventBadgeColor(event)
 
   const positionClasses = {
-    first: 'relative z-10 mr-0 w-[calc(100%_-_2px)] rounded-r-none border-r-0 [&>span]:mr-2.5',
-    middle: 'relative z-10 -ml-px mr-0 w-[calc(100%_+_2px)] rounded-none border-x-0',
-    last: 'relative z-10 -ml-px rounded-l-none border-l-0',
+    // 멀티데이 바: 시작/종료(외곽)만 round, 중간은 full-bleed 연속. 보이는 border 의존 제거 →
+    // 연결 변(邊) margin 0 + lg border-l(1px) 은 -ml-px 로 bridge. lg 라운딩도 명시 override
+    // (base rounded-none 만으론 base 의 lg:rounded-md 가 안 덮여 중간이 둥글어지는 버그 fix).
+    first: 'relative z-10 mr-0 lg:mr-0 rounded-r-none lg:rounded-r-none [&>span]:mr-2.5',
+    middle: 'relative z-10 mx-0 lg:mx-0 lg:-ml-px rounded-none lg:rounded-none',
+    last: 'relative z-10 ml-0 lg:ml-0 lg:-ml-px rounded-l-none lg:rounded-l-none',
     none: '',
   }
 
@@ -242,16 +308,16 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 overflow-hidden whitespace-nowrap rounded-md border px-2 text-[length:var(--fs-micro)] lg:text-[length:var(--fs-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-0.5 lg:mx-1 flex size-auto h-5.5 lg:h-6.5 select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border px-1 lg:px-2 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
       style={{
-        background: position !== 'none'
-          ? `linear-gradient(${event.color}25, ${event.color}25), var(--background)`
-          : `${event.color}20`,
-        borderColor: `${event.color}50`,
-        color: event.color,
+        // 클로드 디자인 정합: 알파(투명) 틴트 대신 surface 와 섞은 불투명 bg +
+        // fg-primary 와 섞은 적응형 텍스트(다크에서 자동 light → 가독성). border 없음.
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => { e.stopPropagation(); onEventClick?.(event, e.currentTarget) }}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -279,7 +345,7 @@ const MonthEventBadge = ({
   )
 }
 
-const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
+const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick, mobileHeaderBorder = true }: IProps) => {
   const { i18n } = useTranslation()
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
@@ -365,7 +431,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-7 divide-x border-b flex-shrink-0">
+      <div className={cn('grid grid-cols-7 flex-shrink-0', mobileHeaderBorder && 'border-b lg:border-b-0')}>
         {weekDays.map((day, index) => {
           const isSunday = index === 0
           const isSaturday = index === 6
@@ -374,7 +440,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
             <div key={day} className="flex items-center justify-center py-2">
               <span
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined }}
+                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}
               >
                 {day}
               </span>
@@ -401,6 +467,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 holidayDateSet={holidayDateSet}
                 maxVisibleEvents={maxVisibleEvents}
                 onEventClick={onEventClick}
+                onDayClick={onDayClick}
               />
             )
           })}
@@ -410,10 +477,16 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
   )
 }
 
-const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick }: IProps) => {
+const CalendarMonthView = ({ singleDayEvents, multiDayEvents, onEventClick, onDayClick, mobileHeaderBorder = true }: IProps) => {
   return (
     <DragSelectProvider>
-      <MonthViewContent singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={onEventClick} />
+      <MonthViewContent
+        singleDayEvents={singleDayEvents}
+        multiDayEvents={multiDayEvents}
+        onEventClick={onEventClick}
+        onDayClick={onDayClick}
+        mobileHeaderBorder={mobileHeaderBorder}
+      />
     </DragSelectProvider>
   )
 }

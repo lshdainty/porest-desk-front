@@ -7,8 +7,42 @@ export interface ChangePasswordReq {
   confirmPassword: string
 }
 
+export type NotificationSound = 'CHIME' | 'DEFAULT' | 'NONE'
+export type EmailFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY'
+
 export interface UserPreferences {
+  /** 마스터 토글 */
+  pushEnabled: boolean
+  /** 결제 알림 */
+  notifyPayment: boolean
+  /** 예산 알림 */
+  notifyBudget: boolean
+  /** 자동 기록 알림 */
+  notifyAutoRecord: boolean
+  /** 더치페이 알림 */
+  notifyDutchPay: boolean
+  /** 일정 알림 */
+  notifyCalendar: boolean
+  /** 주간 리포트 */
+  notifyWeeklyReport: boolean
+  /** 월간 리포트 */
+  notifyMonthlyReport: boolean
+  /** 예산 임계값 50~100 */
   budgetAlertThreshold: number
+  /** 방해 금지 사용 */
+  quietHoursEnabled: boolean
+  /** 방해 금지 시작 "HH:mm" 24h */
+  quietHoursStart: string
+  /** 방해 금지 종료 "HH:mm" 24h */
+  quietHoursEnd: string
+  /** 알림음 */
+  notificationSound: NotificationSound
+  /** 진동 */
+  vibrationEnabled: boolean
+  /** 이메일 수신 */
+  emailEnabled: boolean
+  /** 발송 주기 */
+  emailFrequency: EmailFrequency
 }
 
 export const userApi = {

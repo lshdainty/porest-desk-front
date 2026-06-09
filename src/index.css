@@ -23,70 +23,25 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================
- * POREST Design System — Foundation Tokens (Mossy Bark)
- * "조용하고 따뜻한 방향 — 숲에서 자라는 나무 줄기같은"
+ * POREST Design System — Foundation Tokens (SoT: porest-tokens.css `@theme {}`)
+ *
+ * 옛 Mossy/Bark/Mist palette + sunlit/berry/sky/sprout status palette 는
+ * SoT 정합으로 마이그됨:
+ *   Mossy → --color-chart-green (수입/proto user 색)
+ *   Bark → --color-chart-brown (저축/카드 fallback/proto)
+ *   Mist 200/700 → --color-chart-gray + --color-text-tertiary (chart axis)
+ *   Sunlit → --color-warning(-light) (경고/긴급) 또는 --color-chart-yellow (proto)
+ *   Sky → --color-info (calendar 토요일) 또는 --color-chart-blue (proto)
+ *   Berry / Sprout → 0 사용처 dead code, 제거됨
  * ========================================================================== */
 :root {
-  /* Mossy Bark (primary) */
-  --mossy-50:  oklch(0.972 0.014 110);
-  --mossy-100: oklch(0.942 0.024 110);
-  --mossy-200: oklch(0.880 0.038 110);
-  --mossy-300: oklch(0.790 0.052 110);
-  --mossy-400: oklch(0.660 0.060 110);
-  --mossy-500: oklch(0.520 0.060 110);
-  --mossy-600: oklch(0.455 0.058 110);
-  --mossy-700: oklch(0.385 0.050 110);
-  --mossy-800: oklch(0.310 0.042 110);
-  --mossy-900: oklch(0.235 0.032 110);
-  --mossy-950: oklch(0.165 0.024 110);
-
-  /* Bark (warm) */
-  --bark-50:  oklch(0.978 0.010 75);
-  --bark-100: oklch(0.948 0.020 72);
-  --bark-200: oklch(0.895 0.032 70);
-  --bark-300: oklch(0.820 0.042 68);
-  --bark-400: oklch(0.680 0.048 62);
-  --bark-500: oklch(0.540 0.048 55);
-  --bark-600: oklch(0.440 0.045 50);
-  --bark-700: oklch(0.355 0.038 45);
-  --bark-800: oklch(0.275 0.028 42);
-  --bark-900: oklch(0.200 0.020 40);
-
-  /* Mist (cool neutral) */
-  --mist-0:   #FFFFFF;
-  --mist-50:  oklch(0.988 0.003 170);
-  --mist-100: oklch(0.974 0.005 170);
-  --mist-200: oklch(0.945 0.007 170);
-  --mist-300: oklch(0.905 0.008 170);
-  --mist-400: oklch(0.830 0.010 175);
-  --mist-500: oklch(0.680 0.012 180);
-  --mist-600: oklch(0.530 0.012 185);
-  --mist-700: oklch(0.400 0.012 190);
-  --mist-800: oklch(0.280 0.012 195);
-  --mist-900: oklch(0.180 0.010 200);
-  --mist-950: oklch(0.115 0.008 200);
-
-  /* Status */
-  --sunlit-100: oklch(0.968 0.030 85);
-  --sunlit-300: oklch(0.875 0.080 85);
-  --sunlit-500: oklch(0.745 0.115 82);
-  --sunlit-700: oklch(0.560 0.105 78);
-  --berry-100:  oklch(0.955 0.025 25);
-  --berry-300:  oklch(0.820 0.075 25);
-  --berry-500:  oklch(0.605 0.135 25);
-  --berry-700:  oklch(0.470 0.115 24);
-  --sky-100:    oklch(0.965 0.020 230);
-  --sky-300:    oklch(0.870 0.055 230);
-  --sky-500:    oklch(0.680 0.090 230);
-  --sky-700:    oklch(0.520 0.085 232);
-  --sprout-100: oklch(0.960 0.030 135);
-  --sprout-300: oklch(0.870 0.070 130);
-  --sprout-500: oklch(0.735 0.105 128);
-  --sprout-700: oklch(0.540 0.095 125);
-
   /* Semantic — light (Phase 1: Porest 토큰 alias)
    * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Porest로 alias.
    * 기존 컴포넌트는 변수명 그대로 사용 — 색만 Cobalt 톤으로 전환. */
+  /* 커스텀(비팔레트) 색 스와치 다크 lift — 라이트 0% / 다크에서 흰색 혼합 비율(가독성) */
+  --swatch-lift:      0%;
+  /* 색 스와치 체크박스의 체크 표시 색 — fill 대비(라이트: 진한 fill→흰 체크) */
+  --swatch-check:     #ffffff;
   --bg-canvas:        var(--color-bg-page);
   --bg-surface:       var(--color-surface-default);
   --bg-surface-raised: var(--color-surface-default);
@@ -138,7 +93,8 @@
   --bg-track:             var(--color-border-default);
 
   /* Brand-tinted interaction surfaces */
-  --bg-brand-tint:        color-mix(in srgb, var(--color-primary) 8%, transparent);
+  /* 예산 카드(디자인 p-card--brand): 라이트 = mossy-50 솔리드(#eaf2fb) */
+  --bg-brand-tint:        #eaf2fb;
   --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary) 14%, transparent);
   --border-brand-soft:    var(--color-primary-light);
   --border-brand-mid:     var(--color-primary);
@@ -168,52 +124,38 @@
   --bg-income-subtle:  var(--bg-brand-subtle);
   --bg-transfer-subtle: var(--status-info-subtle);
 
-  /* Radii — prototype spec */
-  --radius-2xs:  2px;   /* chart marker / legend swatch */
-  --radius-xs:   4px;
-  --radius-sm:   6px;
-  --radius-md:   8px;
-  --radius-tile: 10px;  /* category tile, pill button bg */
-  --radius-lg:   12px;
-  --radius-card: 14px;  /* tx-row card, dashboard card */
-  --radius-xl:   16px;
-  --radius-2xl:  20px;
-  --radius-pill: 999px;
+  /* Radii — desk-front custom aliases (radius scale 은 porest-tokens.css SoT).
+   * 옛 --radius-2xs(2px) 는 --radius-xs SoT 와 동일 값이라 마이그됨. */
+  --radius-tile: var(--radius-lg);  /* spec: color-swatch/tile = radius-lg(12px) alias */
+  --radius-card: 14px;              /* desk-front custom: tx-row card, dashboard card (spec 외) */
+  --radius-pill: 9999px;            /* spec radius-full 별명 */
 
-  /* Spacing */
-  --space-0:  0;
-  --space-1:  4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
-  --space-5:  20px; --space-6: 24px; --space-7: 28px; --space-8: 32px;
-  --space-10: 40px; --space-12: 48px; --space-16: 64px; --space-20: 80px;
+  /* Spacing — porest-tokens.css `--spacing-xs/sm/md/lg/xl/2xl/3xl` (SoT) 사용.
+   * 옛 --space-N 시리즈는 마이그 후 제거됨. */
 
-  /* Shadow (tinted Mossy green-black) */
-  --shadow-xs: 0 1px 2px rgba(28, 36, 20, 0.05);
-  --shadow-sm: 0 1px 2px rgba(28, 36, 20, 0.06), 0 1px 3px rgba(28, 36, 20, 0.04);
-  --shadow-md: 0 4px 8px -2px rgba(28, 36, 20, 0.08), 0 2px 4px -2px rgba(28, 36, 20, 0.05);
-  --shadow-lg: 0 12px 24px -6px rgba(28, 36, 20, 0.12), 0 4px 8px -4px rgba(28, 36, 20, 0.06);
-  --shadow-xl: 0 24px 48px -12px rgba(28, 36, 20, 0.18);
-  --shadow-brand: 0 6px 16px -4px oklch(0.52 0.06 110 / 0.35);
-  --shadow-focus: 0 0 0 3px oklch(0.52 0.06 110 / 0.2);
+  /* Shadow — porest-tokens.css `--shadow-sm/md/lg/xl` (SoT cool-neutral rgba(15,18,28,*)) cascade 사용.
+   * 옛 Mossy green-tinted rgba(28,36,20,*) 정의 4 라인 제거됨 — base color 분기:
+   *   sm: rgba(28,36,20,0.06) → rgba(15,18,28,0.05)
+   *   md/lg/xl: 같은 패턴 (Mossy green tint → cool-neutral gray-black) */
 
   /* Typography */
   --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
                'Apple SD Gothic Neo', 'Noto Sans KR', 'Inter', 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', monospace;
-  --fs-display-xl: 56px; --fs-display-lg: 44px; --fs-display-md: 36px;
-  --fs-h1: 30px; --fs-h2: 24px; --fs-h3: 20px; --fs-h4: 17px;
-  --fs-body-lg: 16px; --fs-body: 14px; --fs-body-sm: 13px; --fs-caption: 12px; --fs-micro: 11px;
-  --lh-tight: 1.15; --lh-snug: 1.3; --lh-normal: 1.5; --lh-loose: 1.7;
-  --fw-regular: 400; --fw-medium: 500; --fw-semi: 600; --fw-bold: 700; --fw-heavy: 800;
-  --tracking-tight: -0.022em; --tracking-snug: -0.012em; --tracking-normal: 0; --tracking-wide: 0.04em;
+  /* font-size / line-height / font-weight / letter-spacing — porest-tokens.css `--text-*` SoT 사용.
+   * 옛 --fs-* / --lh-* / --fw-* / --tracking-* legacy 별명은 마이그됨:
+   *   font-size: display-lg 44→40, display-md 36→32, h4 17→18 사이즈별 SoT 정합
+   *   lh/fw/tracking: 직접 값 (숫자/em) 인라인 마이그 — general scale 토큰은 SoT에 없음 (SoT는 사이즈별만)
+   * className utility (text-display-xl 등) 마이그는 별도 task — 인라인 패턴 case-by-case 처리 필요. */
 
-  /* Motion */
-  --dur-instant: 80ms; --dur-fast: 140ms; --dur-base: 200ms; --dur-slow: 320ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);
-  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);
+  /* Motion — porest-tokens.css `--motion-duration-*` / `--motion-ease-out` (SoT) 사용.
+   * 옛 --dur-* / --ease-standard 는 마이그됨. spring/decel 은 SoT 미정의 desk-front custom 보존. */
+  --ease-spring:   cubic-bezier(0.34, 1.26, 0.5, 1);   /* SoT 미정의 — overshoot spring */
+  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);          /* SoT 미정의 — progress bar width 애니메이션 */
 
-  /* Z-index */
-  --z-base: 1; --z-sticky: 100; --z-dropdown: 200; --z-overlay: 300; --z-modal: 400; --z-toast: 500;
+  /* Z-index — porest-tokens.css `--z-*` SoT 사용 (base 0 / dropdown 1000 / sticky 1100 / drawer 1200 / modal 1300 / toast 1400).
+   * 옛 legacy scale (1/100/200/300/400/500) 은 cascade 우선 override 였음 — 제거 후 SoT 자동 적용.
+   * --z-overlay 는 SoT 미정의 (0 사용처라 단순 제거). Tailwind 기본 z-N (z-50 등) 은 별개 scale 보존. */
 
   /* ====== shadcn variable mapping → Porest semantic (Phase 1) ====== */
   --background:           var(--bg-canvas);
@@ -241,6 +183,17 @@
   --chart-3: var(--color-chart-orange);
   --chart-4: var(--color-chart-green);
   --chart-5: var(--color-chart-violet);
+  /* 카테고리 색 alias — DB 가 chart palette base hex 만 저장. 다크모드에서 light variant 로 자동 swap. */
+  --color-cat-red:    var(--color-chart-red);
+  --color-cat-orange: var(--color-chart-orange);
+  --color-cat-yellow: var(--color-chart-yellow);
+  --color-cat-green:  var(--color-chart-green);
+  --color-cat-blue:   var(--color-chart-blue);
+  --color-cat-indigo: var(--color-chart-indigo);
+  --color-cat-violet: var(--color-chart-violet);
+  --color-cat-pink:   var(--color-chart-pink);
+  --color-cat-brown:  var(--color-chart-brown);
+  --color-cat-gray:   var(--color-chart-gray);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
   --sidebar-primary:        var(--color-primary);
@@ -274,6 +227,8 @@
   --shadow-xl:            var(--shadow-xl-dark);
 
   /* Semantic alias — Porest 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
+  --swatch-lift:      38%;
+  --swatch-check:     #1a1f2e; /* 다크: fill 이 light variant → 어두운 체크로 대비 */
   --bg-canvas:        var(--color-bg-page);
   --bg-surface:       var(--color-surface-default);
   --bg-surface-raised: var(--color-surface-default);
@@ -324,8 +279,10 @@
   --bg-disabled:          var(--color-surface-input);
   --bg-track:             var(--color-border-default);
 
-  --bg-brand-tint:        color-mix(in srgb, var(--color-primary) 12%, transparent);
-  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  /* 예산 카드(디자인 p-card--brand 정합): 다크 = cobalt(primary-light) @12% 알파.
+     카드가 page(#1a1f2e) 위에 합성 → 디자인 렌더값 #222E44 와 동일. */
+  --bg-brand-tint:        color-mix(in srgb, var(--color-primary-light) 12%, transparent);
+  --bg-brand-tint-strong: color-mix(in srgb, var(--color-primary-light) 22%, transparent);
   --border-brand-soft:    color-mix(in srgb, var(--color-primary) 35%, transparent);
   --border-brand-mid:     var(--color-primary-light);
 
@@ -368,6 +325,17 @@
   --chart-3: var(--color-chart-orange-light);
   --chart-4: var(--color-chart-green-light);
   --chart-5: var(--color-chart-violet-light);
+  /* 카테고리 색 alias — light variant 로 swap */
+  --color-cat-red:    var(--color-chart-red-light);
+  --color-cat-orange: var(--color-chart-orange-light);
+  --color-cat-yellow: var(--color-chart-yellow-light);
+  --color-cat-green:  var(--color-chart-green-light);
+  --color-cat-blue:   var(--color-chart-blue-light);
+  --color-cat-indigo: var(--color-chart-indigo-light);
+  --color-cat-violet: var(--color-chart-violet-light);
+  --color-cat-pink:   var(--color-chart-pink-light);
+  --color-cat-brown:  var(--color-chart-brown-light);
+  --color-cat-gray:   var(--color-chart-gray-light);
   --sidebar:                var(--bg-surface);
   --sidebar-foreground:     var(--fg-primary);
   --sidebar-primary:        var(--color-primary-light);
@@ -383,15 +351,15 @@
   --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
                'Apple SD Gothic Neo', 'Noto Sans KR', 'Inter', 'Segoe UI', sans-serif;
   /* Tailwind font-X 클래스 → 우리 --fw-* 토큰 매핑 */
-  --font-weight-normal: var(--fw-regular);
-  --font-weight-medium: var(--fw-medium);
-  --font-weight-semibold: var(--fw-semi);
-  --font-weight-bold: var(--fw-bold);
-  --font-weight-extrabold: var(--fw-heavy);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  /* radius-* 토큰은 porest-tokens.css `@theme { ... }`에서 직접 정의됨.
+   * 여기서 self-reference(`--radius-lg: var(--radius-lg)`) 두면 Tailwind v4가
+   * `:root { --radius-lg: var(--radius-lg) }` cascade-killing self-reference를
+   * emit해서 모든 `rounded-*` / `rounded-[var(--radius-*)]` 무효화됨. 제거. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -470,17 +438,17 @@
   }
   body {
     @apply overflow-x-hidden;
-    font-size: var(--fs-body);
-    line-height: var(--lh-normal);
+    font-size: var(--text-body-sm);
+    line-height: 1.5;
     font-feature-settings: 'ss03', 'cv01';
     background: var(--bg-canvas);
     color: var(--fg-primary);
   }
   h1, h2, h3, h4 { margin: 0; color: var(--fg-primary); }
-  h1, .h1 { font-size: var(--fs-h1); font-weight: var(--fw-bold); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); }
-  h2, .h2 { font-size: var(--fs-h2); font-weight: var(--fw-bold); line-height: var(--lh-snug);  letter-spacing: var(--tracking-snug); }
-  h3, .h3 { font-size: var(--fs-h3); font-weight: var(--fw-semi); line-height: var(--lh-snug); }
-  h4, .h4 { font-size: var(--fs-h4); font-weight: var(--fw-semi); line-height: var(--lh-snug); }
+  h1, .h1 { font-size: var(--text-display-md); font-weight: 700; line-height: 1.15; letter-spacing: -0.022em; }
+  h2, .h2 { font-size: var(--text-display-sm); font-weight: 700; line-height: 1.3;  letter-spacing: -0.012em; }
+  h3, .h3 { font-size: var(--text-title-lg); font-weight: 600; line-height: 1.3; }
+  h4, .h4 { font-size: var(--text-title-md); font-weight: 600; line-height: 1.3; }
 
   ::-webkit-scrollbar { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -494,16 +462,16 @@
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .display-xl { font-size: var(--fs-display-xl); font-weight: var(--fw-heavy); letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
-  .display-lg { font-size: var(--fs-display-lg); font-weight: var(--fw-heavy); letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
-  .display-md { font-size: var(--fs-display-md); font-weight: var(--fw-bold); letter-spacing: var(--tracking-snug); line-height: var(--lh-tight); }
-  .body-lg { font-size: var(--fs-body-lg); line-height: var(--lh-normal); }
-  .body-sm { font-size: var(--fs-body-sm); line-height: var(--lh-normal); color: var(--fg-secondary); }
+  .display-xl { font-size: var(--text-display-xl); font-weight: 800; letter-spacing: -0.022em; line-height: 1.15; }
+  .display-lg { font-size: var(--text-display-lg); font-weight: 800; letter-spacing: -0.022em; line-height: 1.15; }
+  .display-md { font-size: var(--text-display-md); font-weight: 700; letter-spacing: -0.012em; line-height: 1.15; }
+  .body-lg { font-size: var(--text-body-lg); line-height: 1.5; }
+  .body-sm { font-size: var(--text-label-sm); line-height: 1.5; color: var(--fg-secondary); }
   .caption {
-    font-size: var(--fs-caption); line-height: var(--lh-snug); color: var(--fg-tertiary);
-    letter-spacing: var(--tracking-wide); text-transform: uppercase; font-weight: var(--fw-medium);
+    font-size: var(--text-caption); line-height: 1.3; color: var(--fg-tertiary);
+    letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500;
   }
-  .micro { font-size: var(--fs-micro); color: var(--fg-tertiary); }
+  .micro { font-size: var(--text-badge); color: var(--fg-tertiary); }
   .tabular { font-variant-numeric: tabular-nums; }
 }
 

@@ -131,6 +131,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
               />
               <Input
+                search
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="증권사·가상자산거래소·상품거래소 검색"

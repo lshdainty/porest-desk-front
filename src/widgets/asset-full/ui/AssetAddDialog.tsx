@@ -17,7 +17,7 @@ import {
 
 const INVEST_CATEGORY_SET = new Set(INVEST_CATEGORIES)
 import { useCreateAsset } from '@/features/asset'
-import type { AssetType } from '@/entities/asset'
+import { AssetLogo, type AssetType } from '@/entities/asset'
 
 type SubType = '입출금' | '적금' | '예금' | '현금' | '대출'
 const SUB_TYPES: SubType[] = ['입출금', '적금', '예금', '현금', '대출']
@@ -67,9 +67,6 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
 
   const brandColor = useMemo(() => getBrandColor(brand), [brand])
   const previewName = nickname.trim() || '새 계좌'
-  const previewLetter = (brand[0] ?? '?').trim()
-  const previewBg = brandColor?.bg ?? 'var(--border-brand)'
-  const previewFg = brandColor?.fg ?? '#fff'
 
   const reset = () => {
     setBrand(BANK_ENTRIES[0]?.name ?? '신한')
@@ -131,12 +128,10 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
     >
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
-          <span
-            className="inline-flex items-center justify-center rounded-[var(--radius-md)] font-bold text-base flex-shrink-0"
-            style={{ background: previewBg, color: previewFg, width: 52, height: 52 }}
-          >
-            {previewLetter}
-          </span>
+          <AssetLogo
+            asset={{ assetName: previewName, institution: brand, color: brandColor?.bg ?? null }}
+            size={52}
+          />
           <div className="min-w-0">
             <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">{previewName}</div>
             <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">{brand} · 미리보기</div>
@@ -156,6 +151,7 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
             />
             <Input
+              search
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="은행명 또는 증권사 검색"

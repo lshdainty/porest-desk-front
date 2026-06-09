@@ -45,7 +45,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
 
   const Footer = (
     <>
-      <span style={{ marginRight: 'auto', fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+      <span style={{ marginRight: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
         약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
       </span>
       <Button variant="ghost" onClick={onClose}>취소</Button>
@@ -80,8 +80,8 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <span
                     style={{
-                      fontWeight: 'var(--fw-bold)',
-                      fontSize: 'var(--fs-body)',
+                      fontWeight: '700',
+                      fontSize: 'var(--text-body-sm)',
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                     }}
                   >
@@ -89,7 +89,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   </span>
                   {active && <CheckCircle2 size={14} style={{ color: 'var(--bg-brand)', marginLeft: 'auto' }} />}
                 </div>
-                <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>{o.d}</div>
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{o.d}</div>
               </button>
             )
           })}
@@ -167,8 +167,8 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   <IconComp size={15} />
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{o.l}</div>
-                  <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{o.l}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
                 </div>
               </label>
             )

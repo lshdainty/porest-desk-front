@@ -9,22 +9,24 @@ import {
   useUpdateAsset,
 } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGE_ROW } from '@/shared/ui/porest/manage-row'
-import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
+import { ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { AssetEditDialog, type AssetGroup } from './AssetEditDialog'
 
 const GROUP_TYPES: Record<AssetGroup, AssetType[]> = {
-  account: ['BANK_ACCOUNT', 'SAVINGS', 'CASH'],
-  card: ['CREDIT_CARD', 'CHECK_CARD', 'LOAN'],
+  account: ['BANK_ACCOUNT', 'SAVINGS', 'CASH', 'LOAN'],
+  card: ['CREDIT_CARD', 'CHECK_CARD'],
   invest: ['INVESTMENT'],
 }
 
 const groupOfAsset = (a: Asset): AssetGroup => {
-  if (a.assetType === 'CREDIT_CARD' || a.assetType === 'CHECK_CARD' || a.assetType === 'LOAN') {
+  if (a.assetType === 'CREDIT_CARD' || a.assetType === 'CHECK_CARD') {
     return 'card'
   }
   if (a.assetType === 'INVESTMENT') return 'invest'
@@ -62,8 +64,12 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
     [assets, tab],
   )
 
+  // '총액 제외'(isIncludedInTotal === 'N') 자산은 탭 합계에서 제외.
   const totalInTab = useMemo(
-    () => filtered.reduce((sum, a) => sum + (a.balance ?? 0), 0),
+    () =>
+      filtered
+        .filter(a => a.isIncludedInTotal !== 'N')
+        .reduce((sum, a) => sum + (a.balance ?? 0), 0),
     [filtered],
   )
 
@@ -96,16 +102,29 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           <ManagerHead
             title="계좌·카드 관리"
             description="연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요."
-            actions={
-              <Button onClick={() => setEditing({ mode: 'create', group: tab })}>
-                <Plus size={14} strokeWidth={2.4} />
-                {groupLabel(tab)} 추가
-              </Button>
-            }
           />
         )}
 
-        <div style={MANAGER_LAYOUT.toolbarStyle}>
+        {mobile ? (
+          // header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
+          // sticky 기준이 content box(padding-top 24 아래)라 시각 최상단 고정엔 top 도 음수(-24) 필요.
+          //   top:0 이면 24px 떠 보임. margin/top 은 스크롤 padding('24px 20px')과 일치. (CategoryManager 정합)
+          <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: -24, zIndex: 5 }}>
+            <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
+              <TabsList variant="underline" className="w-full">
+                <TabsTrigger variant="underline" value="account" className="flex-1">
+                  계좌·예금 {counts.account}
+                </TabsTrigger>
+                <TabsTrigger variant="underline" value="card" className="flex-1">
+                  카드 {counts.card}
+                </TabsTrigger>
+                <TabsTrigger variant="underline" value="invest" className="flex-1">
+                  투자 {counts.invest}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        ) : (
           <ManagerTabs<AssetGroup>
             value={tab}
             onChange={setTab}
@@ -115,15 +134,20 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               { value: 'invest', label: '투자', count: counts.invest },
             ]}
           />
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
-            총{' '}
-            <span className="num" style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
-              {KRW(totalInTab)}원
-            </span>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+            총 <MaskAmount>{KRW(totalInTab)}</MaskAmount>
+            <HideUnit>원</HideUnit>
           </div>
+          <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
+            <Plus size={14} strokeWidth={2.4} />
+            {groupLabel(tab)} 추가
+          </Button>
         </div>
 
-        <div className="cat-list">
+        <div className="cat-list" style={{ marginTop: -12, borderRadius: 'var(--radius-lg)' }}>
           {isLoading ? (
             <AccountManagerSkeleton mobile={mobile} />
           ) : (
@@ -131,9 +155,13 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               {filtered.map(asset => {
                 const g = groupOfAsset(asset)
                 const isCard = g === 'card'
-                const amt = Math.abs(asset.balance ?? 0)
-                const neg = isCard
-                const accentColor = asset.color || 'var(--fg-tertiary)'
+                const balance = asset.balance ?? 0
+                const amt = Math.abs(balance)
+                // 카드 사용액은 음수 표기 컨벤션, 계좌는 실제 부호(대출 등 음수 잔액).
+                // 0 은 부호·강조 없이 '0원' (−0원 방지).
+                const neg = (isCard ? -amt : balance) < 0
+                const brand = getBrandColor(asset.institution, asset.assetName)
+                const accentColor = asset.color || brand?.bg || 'var(--fg-tertiary)'
                 const iconChar = (asset.institution || asset.assetName || '?').charAt(0)
                 return (
                   <div
@@ -146,11 +174,11 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       style={{
                         ...MANAGE_ROW.iconStyle,
                         background: accentColor,
-                        color: 'var(--fg-on-brand)',
-                        fontSize: 'var(--fs-body-sm)',
+                        color: brand?.fg || 'var(--fg-on-brand)',
+                        fontSize: 'var(--text-label-sm)',
                       }}
                     >
-                      {asset.icon ? renderIcon(asset.icon, iconChar, 14) : iconChar}
+                      {iconChar}
                     </span>
                     <div style={MANAGE_ROW.textStyle}>
                       <div style={MANAGE_ROW.labelStyle}>{asset.assetName}</div>
@@ -164,21 +192,24 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         )}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', marginRight: mobile ? 8 : 12 }}>
+                    <div style={{ textAlign: 'right', marginRight: mobile ? -8 : 12 }}>
                       <div
                         className="num"
                         style={{
-                          fontSize: 'var(--fs-body)',
-                          fontWeight: 'var(--fw-bold)',
-                          letterSpacing: 'var(--tracking-snug)',
+                          fontSize: 'var(--text-body-sm)',
+                          fontWeight: 'var(--font-weight-bold)',
+                          letterSpacing: '-0.012em',
                           color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
-                        {neg ? '−' : ''}
-                        {KRW(amt)}원
+                        <MaskAmount mask="••••">
+                          {neg ? '−' : ''}
+                          {KRW(amt)}
+                        </MaskAmount>
+                        <HideUnit>원</HideUnit>
                       </div>
                       {asset.isIncludedInTotal === 'N' && (
-                        <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
                           총액 제외
                         </div>
                       )}
@@ -187,14 +218,15 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       <div className={MANAGE_ROW.actionsClassName} onClick={e => e.stopPropagation()}>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          title="편집"
                           onClick={() => setEditing({ mode: 'edit', asset })}
                         >
-                          <Pencil size={13} />편집
+                          <Pencil size={13} />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           className={MANAGE_ROW.delClassName}
                           onClick={() => setConfirmDelete(asset)}
                         >
@@ -225,16 +257,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           )}
         </div>
 
-        {mobile && (
-          <Button
-            size="lg"
-            className="cat-add-fab"
-            onClick={() => setEditing({ mode: 'create', group: tab })}
-          >
-            <Plus size={20} strokeWidth={2.4} />
-            <span>{groupLabel(tab)} 추가</span>
-          </Button>
-        )}
       </ManagerShell>
 
       {editing && (

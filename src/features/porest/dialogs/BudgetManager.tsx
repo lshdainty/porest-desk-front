@@ -10,6 +10,7 @@ import {
 } from '@/features/expense'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { KRW } from '@/shared/lib/porest/format'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -69,6 +70,14 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     () => budgetList.filter(b => b.categoryRowId !== null),
     [budgetList],
   )
+
+  // 예산 추가 가능 카테고리 = EXPENSE top-level(BudgetEditDialog 의 selectable 과 동일).
+  // 전부 예산 보유 시 "예산 추가" 버튼 비활성화.
+  const allCategoriesBudgeted = useMemo(() => {
+    const top = categoryList.filter(c => c.expenseType === 'EXPENSE' && c.parentRowId == null)
+    const used = new Set(categoryBudgets.map(b => b.categoryRowId))
+    return top.length > 0 && top.every(c => used.has(c.rowId))
+  }, [categoryList, categoryBudgets])
 
   // 카테고리별 실제 사용 금액: monthlySummary.categoryBreakdown 을 categoryRowId + 부모 카테고리(roll-up) 기준으로 집계
   const spentByCategory = useMemo(() => {
@@ -206,13 +215,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 >
                   <Copy size={13} /> 지난달 복사
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setEditing('new')}
-                  disabled={loading}
-                >
-                  <Plus size={14} strokeWidth={2.4} /> 카테고리 예산
-                </Button>
               </div>
             }
           />
@@ -237,16 +239,16 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           <BudgetManagerSkeleton mobile={mobile} />
         ) : (
         <>
-        <Card className="bg-[var(--bg-brand-tint)]">
+        <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
               <div
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 'var(--fw-bold)',
-                  letterSpacing: 'var(--tracking-wide)',
+                  fontWeight: '700',
+                  letterSpacing: '0.04em',
                   textTransform: 'uppercase',
                   marginBottom: 6,
                 }}
@@ -254,12 +256,14 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 {month}월 총 예산
               </div>
               {monthlyBudget ? (
-                <div className="num" style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}>
-                  {KRW(monthlyLimit)}
-                  <span style={{ fontSize: 'var(--fs-body-lg)', marginLeft: 3 }}>원</span>
+                <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.022em' }}>
+                  <MaskAmount>{KRW(monthlyLimit)}</MaskAmount>
+                  <HideUnit>
+                    <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
+                  </HideUnit>
                 </div>
               ) : (
-                <div style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)' }}>
+                <div style={{ fontSize: 'var(--text-body-lg)', color: 'var(--fg-tertiary)', fontWeight: '600' }}>
                   설정되지 않음
                 </div>
               )}
@@ -303,35 +307,37 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             }}
           >
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
                 사용
               </div>
-              <div className="num" style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}>
-                {KRW(totalSpent)}
+              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
+                <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
                 할당됨
               </div>
-              <div className="num" style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)' }}>
-                {KRW(totalAssigned)}
+              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
+                <MaskAmount mask="••••">{KRW(totalAssigned)}</MaskAmount>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
                 할당 가능
               </div>
               <div
                 className="num"
                 style={{
-                  fontSize: 'var(--fs-body-lg)',
-                  fontWeight: 'var(--fw-bold)',
+                  fontSize: 'var(--text-body-lg)',
+                  fontWeight: '700',
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
-                {remaining >= 0 ? '+' : ''}
-                {KRW(remaining)}
+                <MaskAmount mask="••••">
+                  {remaining >= 0 ? '+' : ''}
+                  {KRW(remaining)}
+                </MaskAmount>
               </div>
             </div>
           </div>
@@ -343,7 +349,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
                 borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: 'var(--status-danger-fg)',
                 display: 'flex',
                 alignItems: 'center',
@@ -351,31 +357,32 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               }}
             >
               <AlertTriangle size={13} />
-              카테고리 한도 합이 전체 상한을 {KRW(Math.abs(remaining))}원 초과했어요.
+              카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(Math.abs(remaining))}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
               전체 상한을 올리거나 카테고리 한도를 줄여주세요.
             </div>
           )}
           </CardContent>
         </Card>
 
-        <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
-            카테고리별 예산 · {categoryBudgets.length}개
-          </div>
-          {mobile && (
+        {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
+              카테고리별 예산 · {categoryBudgets.length}개
+            </div>
             <Button
-              variant="ghost"
+              variant="accent"
               size="sm"
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditing('new')}
-              disabled={loading}
+              disabled={loading || allCategoriesBudgeted}
+              title={allCategoriesBudgeted ? '모든 카테고리에 이미 예산이 설정되어 있어요' : undefined}
             >
-              <Plus size={12} />추가
+              <Plus size={14} /> 예산 추가
             </Button>
-          )}
-        </div>
+          </div>
 
-        <div className="cat-list">
+          <div className="cat-list">
           {categoryBudgets.length === 0 ? (
             <div className="cat-list__empty">
               <span>설정된 카테고리 예산이 없어요</span>
@@ -394,7 +401,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 <div
                   key={b.rowId}
                   className={MANAGE_ROW.className}
-                  style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}
+                  style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
+                  onClick={mobile ? () => setEditing(b) : undefined}
+                  role={mobile ? 'button' : undefined}
                 >
                   <span
                     style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
@@ -403,20 +412,20 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{label}</div>
+                      <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{label}</div>
                       <div
                         className="num"
                         style={{
                           marginLeft: 'auto',
-                          fontSize: 'var(--fs-body-sm)',
-                          fontWeight: 'var(--fw-bold)',
+                          fontSize: 'var(--text-label-sm)',
+                          fontWeight: '700',
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
-                        {KRW(spent)}
-                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+                        <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
+                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>
                           {' '}
-                          / {KRW(limitAmt)}
+                          / <MaskAmount mask="••••">{KRW(limitAmt)}</MaskAmount>
                         </span>
                       </div>
                     </div>
@@ -426,24 +435,32 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                         style={{ width: `${Math.min(100, p)}%` }}
                       />
                     </div>
-                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-                      {state === 'over'
-                        ? `${KRW(spent - limitAmt)}원 초과`
-                        : `남은 예산 ${KRW(Math.max(0, limitAmt - spent))}원`}
+                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
+                      {state === 'over' ? (
+                        <>
+                          <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
+                          <HideUnit>원</HideUnit> 초과
+                        </>
+                      ) : (
+                        <>
+                          남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                          <HideUnit>원</HideUnit>
+                        </>
+                      )}
                     </div>
                   </div>
                   {!mobile && (
                     <div className={MANAGE_ROW.actionsClassName}>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => setEditing(b)}
                       >
                         <Pencil size={13} />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         className={MANAGE_ROW.delClassName}
                         onClick={() => setConfirmDelete(b)}
                       >
@@ -456,19 +473,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             })
           )}
         </div>
+        </div>
         </>
-        )}
-
-        {mobile && (
-          <Button
-            size="lg"
-            className="cat-add-fab"
-            onClick={() => setEditing('new')}
-            disabled={loading}
-          >
-            <Plus size={20} strokeWidth={2.4} />
-            <span>카테고리 예산 추가</span>
-          </Button>
         )}
       </ManagerShell>
 
@@ -537,7 +543,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
 function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
-      <Card className="bg-[var(--bg-brand-tint)]">
+      <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
         <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>

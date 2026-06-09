@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { CreditCard, Search, Trash2 } from 'lucide-react'
+import { CreditCard, Search, Trash2, Wallet } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -7,6 +7,14 @@ import { Label } from '@/shared/ui/label'
 import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
 import { Switch } from '@/shared/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
+import { useAssets } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   getBrandColor,
@@ -34,11 +42,13 @@ const CATEGORY_LABEL: Record<BankCategory, string> = {
 import { useCardCatalogs } from '@/features/card-catalog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { CardCatalogSummary, CardType } from '@/entities/card'
-import type {
-  Asset,
-  AssetFormValues,
-  AssetType,
-  AssetUpdateFormValues,
+import {
+  AssetLogo,
+  type Asset,
+  type AssetFormValues,
+  type AssetType,
+  type AssetUpdateFormValues,
+  type YNType,
 } from '@/entities/asset'
 
 export type AssetGroup = 'account' | 'card' | 'invest'
@@ -110,6 +120,7 @@ export function AssetEditDialog({
   const [query, setQuery] = useState('')
   const [name, setName] = useState(item?.assetName ?? '')
   const [memo, setMemo] = useState(item?.memo ?? '')
+  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(item?.isIncludedInTotal ?? 'Y')
   const [balanceStr, setBalanceStr] = useState<string>(
     item ? KRW(item.balance ?? 0) : '0',
   )
@@ -126,6 +137,26 @@ export function AssetEditDialog({
   const [cardKeyword, setCardKeyword] = useState('')
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CardCatalogSummary | null>(null)
+
+  // 신용카드 청구사이클 (CREDIT_CARD 전용)
+  const [creditLimit, setCreditLimit] = useState<string>(
+    item?.creditLimit != null ? String(item.creditLimit) : '',
+  )
+  const [paymentDay, setPaymentDay] = useState<string>(
+    item?.paymentDay != null ? String(item.paymentDay) : '',
+  )
+  const [paymentAssetRowId, setPaymentAssetRowId] = useState<number | null>(
+    item?.paymentAssetRowId ?? null,
+  )
+
+  const { data: assetsData } = useAssets()
+  const bankAccounts = useMemo(
+    () =>
+      (assetsData?.assets ?? []).filter(
+        a => a.assetType === 'BANK_ACCOUNT' && a.rowId !== item?.rowId,
+      ),
+    [assetsData, item?.rowId],
+  )
 
   const catalogQ = useCardCatalogs({
     keyword: cardKeyword.trim() || undefined,
@@ -231,11 +262,6 @@ export function AssetEditDialog({
     return `${brand} · 미리보기`
   })()
 
-  const previewLetter = (() => {
-    if (editingGroup === 'card') return (cardCompanyName[0] ?? '?').trim()
-    return (brand[0] ?? '?').trim()
-  })()
-
   // 유효성
   const canSubmit = (() => {
     if (editingGroup === 'card') {
@@ -274,12 +300,21 @@ export function AssetEditDialog({
 
     if (editingGroup === 'card') {
       const type: AssetType = cardType === 'CREDIT' ? 'CREDIT_CARD' : 'CHECK_CARD'
+      const isCredit = cardType === 'CREDIT'
       const resolvedName =
         name.trim() || selectedCard?.cardName || item?.assetName || '카드'
       const catalogId = selectedCard?.rowId ?? item?.cardCatalog?.rowId ?? null
       const institution =
         selectedCard?.company?.name ?? item?.institution ?? undefined
       const color = cardBrandColor?.bg ?? item?.color ?? undefined
+
+      const parsedLimit = creditLimit.trim() ? parseInt(creditLimit, 10) : null
+      const parsedDay = paymentDay.trim() ? parseInt(paymentDay, 10) : null
+      const billingFields = {
+        creditLimit: isCredit ? (Number.isFinite(parsedLimit as number) ? parsedLimit : null) : null,
+        paymentDay: isCredit ? (Number.isFinite(parsedDay as number) ? parsedDay : null) : null,
+        paymentAssetRowId: isCredit ? paymentAssetRowId : null,
+      }
 
       if (isNew) {
         onCreate({
@@ -289,7 +324,9 @@ export function AssetEditDialog({
           currency: 'KRW',
           institution,
           color,
+          isIncludedInTotal,
           cardCatalogRowId: catalogId,
+          ...billingFields,
         })
       } else {
         onUpdate({
@@ -300,8 +337,9 @@ export function AssetEditDialog({
           institution,
           color,
           memo: memo.trim() || undefined,
-          isIncludedInTotal: item?.isIncludedInTotal,
+          isIncludedInTotal,
           cardCatalogRowId: catalogId,
+          ...billingFields,
         })
       }
       return
@@ -318,6 +356,7 @@ export function AssetEditDialog({
           institution: brand,
           color: brandColor?.bg,
           memo: memo.trim() || undefined,
+          isIncludedInTotal,
         })
       } else {
         onUpdate({
@@ -328,7 +367,7 @@ export function AssetEditDialog({
           institution: brand,
           color: brandColor?.bg,
           memo: memo.trim() || undefined,
-          isIncludedInTotal: item?.isIncludedInTotal,
+          isIncludedInTotal,
         })
       }
       return
@@ -346,6 +385,7 @@ export function AssetEditDialog({
         institution: brand,
         color: brandColor?.bg,
         memo: memo.trim() || undefined,
+        isIncludedInTotal,
       })
     } else {
       onUpdate({
@@ -356,7 +396,7 @@ export function AssetEditDialog({
         institution: brand,
         color: brandColor?.bg,
         memo: memo.trim() || undefined,
-        isIncludedInTotal: item?.isIncludedInTotal,
+        isIncludedInTotal,
       })
     }
   }
@@ -385,12 +425,10 @@ export function AssetEditDialog({
                 <CreditCard size={20} />
               </span>
             ) : (
-              <span
-                className="inline-flex items-center justify-center rounded-[var(--radius-md)] font-bold text-base flex-shrink-0"
-                style={{ background: previewBg, color: previewFg, width: 52, height: 52 }}
-              >
-                {previewLetter}
-              </span>
+              <AssetLogo
+                asset={{ assetName: previewName, institution: brand, color: brandColor?.bg ?? item?.color ?? null }}
+                size={52}
+              />
             )}
             <div className="min-w-0">
               <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">{previewName}</div>
@@ -471,7 +509,7 @@ export function AssetEditDialog({
                       style={{
                         width: 44,
                         height: 28,
-                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--bark-500)',
+                        background: getBrandColor(c.company?.name)?.bg ?? 'var(--color-chart-brown)',
                       }}
                     >
                       {(c.company?.name ?? c.cardName).slice(0, 1)}
@@ -493,7 +531,7 @@ export function AssetEditDialog({
                               style={{
                                 background: 'var(--bg-disabled)',
                                 color: 'var(--fg-tertiary)',
-                                letterSpacing: 'var(--tracking-wide)',
+                                letterSpacing: '0.04em',
                               }}
                             >
                               단종
@@ -513,6 +551,54 @@ export function AssetEditDialog({
                   )
                 })}
               </SearchableList>
+
+              {cardType === 'CREDIT' && (
+                <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5">
+                  <div className="text-[12px] font-semibold text-[var(--fg-secondary)]">청구 사이클 (선택)</div>
+                  <div>
+                    <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">신용한도 (원)</Label>
+                    <Input
+                      id="card-credit-limit"
+                      inputMode="numeric"
+                      value={creditLimit}
+                      onChange={e => setCreditLimit(e.target.value.replace(/[^\d]/g, ''))}
+                      placeholder="예: 3000000"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[13px] font-medium mb-2 block">결제일</Label>
+                    <Select value={paymentDay || undefined} onValueChange={v => setPaymentDay(v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="결제일 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                          <SelectItem key={d} value={String(d)}>{d}일</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-[13px] font-medium mb-2 block">결제계좌</Label>
+                    <Select
+                      value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
+                      onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
+                      disabled={bankAccounts.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={bankAccounts.length === 0 ? '입출금 계좌가 없어요' : '결제 출금계좌 선택'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.map(a => (
+                          <SelectItem key={a.rowId} value={String(a.rowId)}>
+                            {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div>
@@ -534,6 +620,7 @@ export function AssetEditDialog({
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
                 />
                 <Input
+                  search
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder={
@@ -712,6 +799,20 @@ export function AssetEditDialog({
               />
             </div>
           )}
+
+          <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
+              <Wallet size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-semibold text-[var(--fg-primary)]">전체 자산 합계에 포함</div>
+              <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">순자산·총자산 계산에 반영됩니다</div>
+            </div>
+            <Switch
+              checked={isIncludedInTotal === 'Y'}
+              onCheckedChange={(b) => setIsIncludedInTotal(b ? 'Y' : 'N')}
+            />
+          </div>
     </Fragment>
   )
 

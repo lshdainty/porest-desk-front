@@ -190,7 +190,7 @@ export function FilterDialog({
               />
             </div>
             {customInvalid && (
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
                 시작일이 종료일보다 늦을 수 없습니다.
               </div>
             )}
@@ -213,7 +213,7 @@ export function FilterDialog({
           <FieldLabel>
             카테고리
             {categoryIds.length > 0 && (
-              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', marginLeft: 4 }}>
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: '600', marginLeft: 4 }}>
                 · {categoryIds.length}개 선택
               </span>
             )}
@@ -238,7 +238,7 @@ export function FilterDialog({
           <FieldLabel>
             계좌·카드
             {assetIds.length > 0 && (
-              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: 'var(--fw-semi)', marginLeft: 4 }}>
+              <span style={{ color: 'var(--fg-brand-strong)', fontWeight: '600', marginLeft: 4 }}>
                 · {assetIds.length}개 선택
               </span>
             )}

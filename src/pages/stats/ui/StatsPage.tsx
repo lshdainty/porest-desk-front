@@ -1,15 +1,35 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
-import { SegPicker } from '@/shared/ui/porest/primitives'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { Calendar } from '@/shared/ui/calendar'
+import { CalendarClock, ChevronDown, X } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer'
+import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import {
   useRangeSummary,
   useMerchantSummary,
@@ -18,7 +38,7 @@ import {
   useExpenses,
 } from '@/features/expense'
 import type { CategoryBreakdown, HeatmapCell, ExpenseCategory } from '@/entities/expense'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 
 type OutletCtx = { mobile: boolean }
 type TabKey = 'cat' | 'trend' | 'compare'
@@ -93,18 +113,19 @@ const labelsOf = ({ segMode }: RangeState) =>
         ? { now: '이번 해', prev: '지난 해', mom: '전년 대비', noPrev: '전년 데이터 없음', avg: '월 평균' }
         : { now: '선택 기간', prev: '이전 기간', mom: '이전 기간 대비', noPrev: '이전 기간 데이터 없음', avg: '일 평균' }
 
-// porest chart palette 10색 — 카테고리 donut fallback
+// porest chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
+// `--color-cat-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
-  'var(--color-chart-blue)',
-  'var(--color-chart-green)',
-  'var(--color-chart-orange)',
-  'var(--color-chart-violet)',
-  'var(--color-chart-pink)',
-  'var(--color-chart-indigo)',
-  'var(--color-chart-red)',
-  'var(--color-chart-yellow)',
-  'var(--color-chart-brown)',
-  'var(--color-chart-gray)',
+  'var(--color-cat-blue)',
+  'var(--color-cat-green)',
+  'var(--color-cat-orange)',
+  'var(--color-cat-violet)',
+  'var(--color-cat-pink)',
+  'var(--color-cat-indigo)',
+  'var(--color-cat-red)',
+  'var(--color-cat-yellow)',
+  'var(--color-cat-brown)',
+  'var(--color-cat-gray)',
 ]
 
 // 6-step heatmap palette (empty → deep mossy).
@@ -143,6 +164,12 @@ const HEAT_COLS: { label: string; dow: number }[] = [
 
 const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
 
+// 카테고리 자체 색 1순위 + 인덱스 fallback. 앱 `_donutColor` 정합.
+const segmentColor = (idx: number, rawColor: string | null | undefined) => {
+  if (rawColor && rawColor.trim() !== '') return getPaletteByColor(rawColor).color
+  return colorFor(idx)
+}
+
 type TrendTooltipPayload = {
   dataKey?: string | number
   value?: number
@@ -157,7 +184,7 @@ function PorestChartTooltip({
   label,
   rows,
 }: TrendTooltipProps & {
-  rows: { dataKey: string; label: string; color: string; format?: (v: number) => string }[]
+  rows: { dataKey: string; label: string; color: string | ((v: number) => string); format?: (v: number) => string }[]
 }) {
   if (!active || !payload || payload.length === 0) return null
   return (
@@ -168,15 +195,15 @@ function PorestChartTooltip({
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '10px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 150,
       }}
     >
       <div
         style={{
-          fontSize: 'var(--fs-micro)',
+          fontSize: 'var(--text-badge)',
           color: 'var(--fg-tertiary)',
-          fontWeight: 'var(--fw-semi)',
+          fontWeight: '600',
           marginBottom: 6,
         }}
       >
@@ -186,6 +213,7 @@ function PorestChartTooltip({
         const item = payload.find(p => p.dataKey === row.dataKey)
         if (!item) return null
         const v = Number(item.value ?? 0)
+        const swatch = typeof row.color === 'function' ? row.color(v) : row.color
         return (
           <div
             key={row.dataKey}
@@ -195,18 +223,18 @@ function PorestChartTooltip({
               style={{
                 width: 10,
                 height: 10,
-                borderRadius: 'var(--radius-2xs)',
-                background: row.color,
+                borderRadius: 'var(--radius-xs)',
+                background: swatch,
                 flexShrink: 0,
               }}
             />
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
             <span
               className="num"
               style={{
                 marginLeft: 'auto',
-                fontSize: 'var(--fs-body-sm)',
-                fontWeight: 'var(--fw-bold)',
+                fontSize: 'var(--text-label-sm)',
+                fontWeight: '700',
                 color: 'var(--fg-primary)',
               }}
             >
@@ -233,8 +261,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       style={{
         display: 'flex',
         gap: 16,
-        marginBottom: mobile ? 14 : 20,
-        padding: mobile ? '12px 16px 0' : 0,
+        marginBottom: mobile ? 0 : 20,
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
@@ -405,9 +432,10 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       >
         {[0, 1, 2].map(i => (
           <Card key={i}>
-            <CardContent className="flex flex-col justify-center text-center">
-              <SkeletonBase className={mobile ? 'h-7 w-32 mb-2' : 'h-9 w-40 mb-2'} />
-              <SkeletonBase className="h-3 w-20" />
+            <CardContent>
+              {/* 라벨 위 / 금액 아래 — App _CompareCard 미러 정합 */}
+              <SkeletonBase className="h-3 w-20 mb-2" />
+              <SkeletonBase className={mobile ? 'h-7 w-32' : 'h-9 w-40'} />
             </CardContent>
           </Card>
         ))}
@@ -441,10 +469,14 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const Content = tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
 
   if (mobile) {
+    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
+    // 실제 페이지와 동일한 viewport fit 구조 — 탭 띠 고정 + Content 만 overflow-y-auto.
     return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
-        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
+        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 'var(--spacing-xl) 20px' }}>
+          {Content}
+        </div>
       </div>
     )
   }
@@ -480,8 +512,10 @@ export const StatsPage = () => {
   const prevEnd = fmt(prevR.to)
 
   const rangeQ = useRangeSummary(startDate, endDate)
-  // 비교 탭에서만 이전 기간 호출 (다른 탭에선 dummy disabled query)
-  const prevRangeQ = useRangeSummary(tab === 'compare' ? prevStart : '', tab === 'compare' ? prevEnd : '')
+  // 이전 동등 기간 — 비교 탭(전 기간 비교) 또는 월 모드(하루 평균 전월 대비)에서 필요.
+  // 그 외 탭/모드에선 빈 인자로 query disabled.
+  const needPrev = tab === 'compare' || period.segMode === 'm'
+  const prevRangeQ = useRangeSummary(needPrev ? prevStart : '', needPrev ? prevEnd : '')
   const categoriesQ = useExpenseCategories()
   const merchantQ = useMerchantSummary(startDate, endDate)
   // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
@@ -492,7 +526,7 @@ export const StatsPage = () => {
   const initialLoading =
     rangeQ.isLoading || categoriesQ.isLoading || merchantQ.isLoading
     || monthExpensesQ.isLoading || heatmapQ.isLoading
-    || (tab === 'compare' && prevRangeQ.isLoading)
+    || (needPrev && prevRangeQ.isLoading)
   const [hasEverLoaded, setHasEverLoaded] = useState(false)
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
   if (!initialLoading && !hasEverLoaded) setHasEverLoaded(true)
@@ -597,7 +631,7 @@ export const StatsPage = () => {
     <Tabs
       value={tab}
       onValueChange={(v) => setTab(v as TabKey)}
-      style={{ marginBottom: mobile ? 14 : 20 }}
+      style={{ marginBottom: mobile ? 0 : 20 }}
     >
       {/* 모바일에선 탭이 전체 폭을 균등 분할 — 플러터 앱과 매칭 */}
       <TabsList variant="underline" className={mobile ? 'w-full' : undefined}>
@@ -619,45 +653,53 @@ export const StatsPage = () => {
     </Tabs>
   )
 
-  // '사용자 지정' 활성 시 라벨에 실제 기간 표시. 다른 모드면 '사용자 지정' 그대로.
-  const customLabel =
-    period.segMode === 'custom'
-      ? (period.from.getFullYear() === period.to.getFullYear()
-          ? `${period.from.getMonth() + 1}/${period.from.getDate()} ~ ${period.to.getMonth() + 1}/${period.to.getDate()}`
-          : `${fmt(period.from)} ~ ${fmt(period.to)}`)
-      : '사용자 지정'
-
+  // 가계부 FilterDialog 패턴 정합 — 작은 trigger button (Calendar icon + periodLabel +
+  // chevron). 클릭 시 RangePickerSheet 열림 — 안에서 ToggleGroup(월/분기/년/직접) + range
+  // 모두 선택. SelectedRangeCard 외부 표시 제거 (trigger label 에 통합).
   const PeriodSeg = (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
-      <SegPicker
-        options={[
-          { value: 'm', label: '월' },
-          { value: 'q', label: '분기' },
-          { value: 'y', label: '년' },
-          { value: 'custom', label: customLabel },
-        ]}
-        value={period.segMode}
-        onChange={(v) => {
-          if (v === 'm') setPeriod(monthRangeOf(new Date()))
-          else if (v === 'q') setPeriod(quarterRangeOf(new Date()))
-          else if (v === 'y') setPeriod(yearRangeOf(new Date()))
-          // 'custom' 클릭: 피커 오픈만 — 확정 시점에 segMode 변경
-          else setPickerOpen(true)
+    <>
+      <button
+        type="button"
+        onClick={() => setPickerOpen(true)}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: 'var(--spacing-xs) var(--spacing-md)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-surface)',
+          fontSize: 'var(--text-body-sm)',
+          fontWeight: '500',
+          color: 'var(--fg-primary)',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
         }}
-      />
+      >
+        <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
+        {/* custom + 다른 year 시 'YYYY-MM-DD ~ YYYY-MM-DD' 너무 길어 wrap. ~ 다음에서 명시 break. */}
+        <span style={{ whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.3 }}>
+          {period.segMode === 'custom' && period.from.getFullYear() !== period.to.getFullYear()
+            ? `${fmt(period.from)} ~\n${fmt(period.to)}`
+            : periodLabel(period)}
+        </span>
+        <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+      </button>
       {pickerOpen && (
-        <RangePickerPopover
-          initial={{ from: period.from, to: period.to }}
+        <RangePickerSheet
+          mobile={mobile}
+          initial={period}
           onCancel={() => setPickerOpen(false)}
           onConfirm={(r) => {
-            setPeriod({ from: r.from, to: r.to, segMode: 'custom' })
+            setPeriod(r)
             setPickerOpen(false)
           }}
         />
       )}
-    </div>
+    </>
   )
 
+  // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
   // ---------- LOADING / EMPTY HELPERS ----------
   const EmptyBox = ({ text }: { text: string }) => (
     <div
@@ -665,7 +707,7 @@ export const StatsPage = () => {
         padding: '32px 0',
         textAlign: 'center',
         color: 'var(--fg-tertiary)',
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
       }}
     >
       {text}
@@ -683,7 +725,7 @@ export const StatsPage = () => {
   const DonutCard = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {isDrilled ? (
             <>
               <button
@@ -694,22 +736,22 @@ export const StatsPage = () => {
                   border: 0,
                   color: 'var(--fg-secondary)',
                   cursor: 'pointer',
-                  fontSize: 'var(--fs-body)',
-                  fontWeight: 'var(--fw-medium)',
+                  fontSize: 'var(--text-body-sm)',
+                  fontWeight: '500',
                   padding: 0,
                   fontFamily: 'inherit',
                 }}
               >
                 카테고리별 지출
               </button>
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>›</span>
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
               <span>{activeParent?.name}</span>
             </>
           ) : (
             '카테고리별 지출'
           )}
         </CardTitle>
-        <div>{PeriodSeg}</div>
+        {PeriodSeg}
       </CardHeader>
       <CardContent>
       {donutLoading ? (
@@ -747,12 +789,12 @@ export const StatsPage = () => {
           }}
         >
           <Donut
-            segments={donutView.map((s, i) => ({ value: s.amount, color: colorFor(i) }))}
+            segments={donutView.map((s, i) => ({ value: s.amount, color: segmentColor(i, s.color) }))}
             size={mobile ? 180 : 200}
             stroke={28}
           >
             <div className="lbl">{donutCenterLbl}</div>
-            <div className="val num" style={{ fontSize: 'var(--fs-h3)' }}>
+            <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
               <MaskAmount>{KRW(donutTotal)}</MaskAmount>
               <HideUnit>원</HideUnit>
             </div>
@@ -778,13 +820,13 @@ export const StatsPage = () => {
                     borderRadius: 'var(--radius-md)',
                     padding: clickable ? '4px 6px' : undefined,
                     margin: clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                   }}
                   onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
                 >
-                  <span className="cat-legend__sw" style={{ background: colorFor(i) }} />
+                  <span className="cat-legend__sw" style={{ background: segmentColor(i, s.color) }} />
                   <span className="cat-legend__name">{s.name}</span>
                   <span className="cat-legend__pct num">
                     {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
@@ -815,7 +857,7 @@ export const StatsPage = () => {
       }}
     >
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>많이 쓴 가맹점 TOP 5</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>많이 쓴 가맹점 TOP 5</CardTitle>
       </CardHeader>
       <CardContent>
       {merchantQ.isLoading ? (
@@ -850,8 +892,8 @@ export const StatsPage = () => {
               <span
                 style={{
                   width: 24,
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-bold)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: '700',
                   color: i < 3 ? 'var(--fg-income)' : 'var(--fg-tertiary)',
                   textAlign: 'center',
                 }}
@@ -860,11 +902,11 @@ export const StatsPage = () => {
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{m.merchant}</span>
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+                  <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{m.merchant}</span>
+                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
                     {m.count}회
                   </span>
-                  <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
+                  <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
                     <MaskAmount>{KRW(m.totalAmount)}</MaskAmount>
                     <HideUnit>원</HideUnit>
                   </span>
@@ -945,10 +987,10 @@ export const StatsPage = () => {
   const HeatmapCard = (
     <Card>
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>요일·시간대 지출 패턴</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>요일·시간대 지출 패턴</CardTitle>
       </CardHeader>
       <CardContent>
-      <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
+      <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
       {heatmapQ.isLoading ? (
@@ -977,7 +1019,7 @@ export const StatsPage = () => {
             padding: '40px 0',
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
             background: 'var(--bg-sunken)',
             borderRadius: 'var(--radius-lg)',
           }}
@@ -1000,8 +1042,8 @@ export const StatsPage = () => {
               <span
                 key={col.dow}
                 style={{
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: '600',
                   color: 'var(--fg-tertiary)',
                   textAlign: 'center',
                   paddingBottom: 4,
@@ -1016,16 +1058,16 @@ export const StatsPage = () => {
               <Fragment key={row.label}>
                 <div
                   style={{
-                    fontSize: 'var(--fs-caption)',
+                    fontSize: 'var(--text-caption)',
                     color: 'var(--fg-tertiary)',
-                    lineHeight: 'var(--lh-snug)',
+                    lineHeight: '1.3',
                     paddingRight: 6,
                   }}
                 >
-                  <div style={{ fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', fontSize: 'var(--fs-body-sm)' }}>
+                  <div style={{ fontWeight: '700', color: 'var(--fg-primary)', fontSize: 'var(--text-label-sm)' }}>
                     {row.label}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                     {row.sub}
                   </div>
                 </div>
@@ -1046,13 +1088,13 @@ export const StatsPage = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: mobile ? 10 : 11.5,
-                        fontWeight: 'var(--fw-bold)',
+                        fontWeight: '700',
                         color: pal.fg,
                         fontVariantNumeric: 'tabular-nums',
                         boxShadow: isPeak
                           ? '0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)'
                           : 'none',
-                        transition: 'background var(--dur-fast) var(--ease-standard)',
+                        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                       }}
                     >
                       <MaskAmount mask={value > 0 ? '••' : '—'}>{shortAmount(value)}</MaskAmount>
@@ -1070,7 +1112,7 @@ export const StatsPage = () => {
               alignItems: 'center',
               gap: 8,
               marginTop: 14,
-              fontSize: 'var(--fs-micro)',
+              fontSize: 'var(--text-badge)',
               color: 'var(--fg-tertiary)',
             }}
           >
@@ -1082,7 +1124,7 @@ export const StatsPage = () => {
                   style={{
                     width: 18,
                     height: 10,
-                    borderRadius: 'var(--radius-2xs)',
+                    borderRadius: 'var(--radius-xs)',
                     background: c.bg,
                     border: '1px solid var(--border-subtle)',
                   }}
@@ -1103,6 +1145,29 @@ export const StatsPage = () => {
 
   const topMerchant = topMerchants[0]
   const categoryTop = donutBreakdown[0]
+  // 가맹점 대표 카테고리 — 원시 거래에서 해당 가맹점의 지배적(최다 지출) 카테고리 역산
+  const topMerchantCat = useMemo(() => {
+    const mName = topMerchant?.merchant
+    if (!mName) return null
+    const byCat = new Map<number, { amount: number; icon: string | null; color: string | null }>()
+    for (const e of monthExpensesQ.data ?? []) {
+      if (e.merchant !== mName || e.expenseType !== 'EXPENSE') continue
+      const prev = byCat.get(e.categoryRowId)
+      if (prev) {
+        prev.amount += e.amount
+      } else {
+        const cat = categoryById.get(e.categoryRowId)
+        byCat.set(e.categoryRowId, {
+          amount: e.amount,
+          icon: e.categoryIcon ?? cat?.icon ?? null,
+          color: e.categoryColor ?? cat?.color ?? null,
+        })
+      }
+    }
+    let best: { amount: number; icon: string | null; color: string | null } | null = null
+    for (const v of byCat.values()) if (!best || v.amount > best.amount) best = v
+    return best
+  }, [topMerchant, monthExpensesQ.data, categoryById])
   // 기간 일수
   const rangeDays =
     Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
@@ -1118,19 +1183,32 @@ export const StatsPage = () => {
   const dayPct = prevTotalExpense > 0
     ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
     : 0
+  // 증감 색상: 지출 증가=fg-expense / 감소=fg-income (compare 탭 동일 컨벤션)
   const avgSub: React.ReactNode = period.segMode !== 'm'
     ? <>{rangeDays}일 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
-      ? `전월 대비 ${dayPct >= 0 ? '↑' : '↓'}${Math.abs(dayPct)}%`
-      : '전월 비교 불가'
+      ? <>전월 대비 <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
+      : prevRangeQ.isLoading
+        ? '전월 대비 계산 중…'
+        : '전월 비교 불가'
 
-  const highlights: { lbl: string; val: React.ReactNode; sub: React.ReactNode }[] = [
+  const highlights: {
+    lbl: string
+    val: React.ReactNode
+    sub: React.ReactNode
+    icon: string | null
+    color: string | null
+    fallback: string
+  }[] = [
     {
       lbl: '가장 많이 쓴 카테고리',
       val: categoryTop?.name ?? '—',
       sub: categoryTop
         ? <><MaskAmount>{KRW(categoryTop.amount)}</MaskAmount><HideUnit>원</HideUnit></>
         : '데이터 없음',
+      icon: categoryTop?.icon ?? null,
+      color: categoryTop?.color ?? null,
+      fallback: categoryTop?.name?.charAt(0) || '•',
     },
     {
       lbl: '가장 많이 쓴 가맹점',
@@ -1138,11 +1216,18 @@ export const StatsPage = () => {
       sub: topMerchant
         ? <>{topMerchant.count}회 · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
         : '데이터 없음',
+      // 가맹점이 속한 대표 카테고리 아이콘(역산), 없으면 상점 아이콘 + brand-subtle 타일
+      icon: topMerchantCat?.icon ?? 'store',
+      color: topMerchantCat?.color ?? null,
+      fallback: topMerchant?.merchant?.charAt(0) || '•',
     },
     {
       lbl: avgLabel,
       val: <><MaskAmount>{KRW(avgValue)}</MaskAmount><HideUnit>원</HideUnit></>,
       sub: avgSub,
+      icon: 'calendar-days',
+      color: null,
+      fallback: '∅',
     },
   ]
 
@@ -1154,19 +1239,43 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      {highlights.map((h, i) => (
-        <Card key={i}>
-          <CardContent>
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 10 }}>
-              {h.lbl}
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{h.val}</div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {highlights.map((h, i) => {
+        // 카테고리 색은 dark 자동 swap. 색 없는 카드(가맹점/평균)도 getPaletteByColor
+        // 경유 — null 분기가 brand-light 틴트를 주므로 컬러 타일·앱과 동일.
+        const pal = getPaletteByColor(h.color)
+        const iconBg = pal.bg
+        const iconFg = pal.color
+        return (
+          <Card key={i}>
+            <CardContent>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
+                {h.lbl}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 'var(--radius-tile)',
+                    background: iconBg,
+                    color: iconFg,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {renderIcon(h.icon, h.fallback, 18)}
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{h.val}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 
@@ -1225,25 +1334,28 @@ export const StatsPage = () => {
   const statLabelSave = isSingle ? '순저축' : '평균 저축'
 
   const trendChartConfig: ChartConfig = {
-    income: { label: '수입', color: 'var(--border-brand)' },
+    income: { label: '수입', color: 'var(--status-info-fg)' },
     expense: { label: '지출', color: 'var(--fg-expense)' },
   }
   const savingsChartConfig: ChartConfig = {
     savings: { label: '순저축', color: 'var(--bg-brand)' },
   }
 
-  const fmtTick = (v: number) =>
-    v >= 100_000_000
-      ? `${(v / 100_000_000).toFixed(1)}억`
-      : v >= 10_000
-        ? `${Math.round(v / 10_000).toLocaleString('ko-KR')}만`
-        : v.toLocaleString('ko-KR')
+  // app stats _fmtTick 정합 — 만 단위 round. 공용 formatChartAxis(100만 단위 round)는
+  // 지출 우축처럼 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져서 stats 엔 부적합.
+  const fmtTick = (v: number): string => {
+    const sign = v < 0 ? '-' : ''
+    const n = Math.abs(v)
+    if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
+    if (n >= 10_000) return `${sign}${Math.round(n / 10_000).toLocaleString('ko-KR')}만`
+    return `${sign}${n.toLocaleString('ko-KR')}`
+  }
 
   const TrendBig = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{periodLbl} 수입·지출 추이</CardTitle>
-        <div>{PeriodSeg}</div>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>수입·지출 추이</CardTitle>
+        {PeriodSeg}
       </CardHeader>
       <CardContent>
       {rangeQ.isLoading ? (
@@ -1282,7 +1394,7 @@ export const StatsPage = () => {
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
                 tickMargin={8}
                 interval="preserveStartEnd"
                 minTickGap={mobile ? 16 : 24}
@@ -1292,7 +1404,7 @@ export const StatsPage = () => {
                 yAxisId="income"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-income)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-income)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -1302,7 +1414,7 @@ export const StatsPage = () => {
                 orientation="right"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--color-expense)' }}
+                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-expense)' }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -1311,7 +1423,7 @@ export const StatsPage = () => {
                 content={
                   <PorestChartTooltip
                     rows={[
-                      { dataKey: 'income', label: '수입', color: 'var(--border-brand)' },
+                      { dataKey: 'income', label: '수입', color: 'var(--status-info-fg)' },
                       { dataKey: 'expense', label: '지출', color: 'var(--fg-expense)' },
                     ]}
                   />
@@ -1339,12 +1451,12 @@ export const StatsPage = () => {
               />
             </AreaChart>
           </ChartContainer>
-          <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)' }}>
+          <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} /> 수입
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} /> 지출
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> 지출
             </span>
           </div>
         </>
@@ -1369,12 +1481,12 @@ export const StatsPage = () => {
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         <Card key={i}>
           <CardContent>
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 6 }}>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 6 }}>
               {s.lbl}
             </div>
             <div
               className="num"
-              style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-heavy)', letterSpacing: 'var(--tracking-tight)' }}
+              style={{ fontSize: mobile ? 16 : 18, fontWeight: '800', letterSpacing: '-0.022em' }}
             >
               {s.val}
             </div>
@@ -1387,8 +1499,8 @@ export const StatsPage = () => {
   const SavingsBars = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{useDailyTrend ? '일별 순저축' : '월별 순저축'}</CardTitle>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{useDailyTrend ? '일별 순저축' : '월별 순저축'}</CardTitle>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
       </CardHeader>
       <CardContent>
       {rangeQ.isLoading ? (
@@ -1410,7 +1522,7 @@ export const StatsPage = () => {
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+              tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
               tickMargin={8}
               interval="preserveStartEnd"
               minTickGap={mobile ? 16 : 24}
@@ -1418,7 +1530,7 @@ export const StatsPage = () => {
             <YAxis
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+              tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
               tickFormatter={fmtTick}
               width={52}
             />
@@ -1430,21 +1542,22 @@ export const StatsPage = () => {
                     {
                       dataKey: 'savings',
                       label: '순저축',
-                      color: 'var(--bg-brand)',
+                      color: (v) => (v < 0 ? 'var(--fg-expense)' : 'var(--status-info-fg)'),
                       format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
                     },
                   ]}
                 />
               }
             />
-            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={mobile ? 18 : 28}>
+            {/* 일별(>20개)은 앱(width 4)처럼 얇게 — 월별은 기존 유지 */}
+            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={trendChartData.length > 20 ? 4 : mobile ? 18 : 28}>
               {trendChartData.map((d, i) => (
                 <Cell
                   key={i}
                   fill={
                     d.savings < 0
                       ? 'var(--fg-expense)'
-                      : 'var(--fg-income)'
+                      : 'var(--status-info-fg)'
                   }
                 />
               ))}
@@ -1519,80 +1632,62 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
+      {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold). */}
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {periodNow} 지출
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
-              fontWeight: 'var(--fw-bold)',
+              fontSize: 'var(--text-title-md)',
+              fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
+              lineHeight: 1.2,
               color: 'var(--fg-primary)',
             }}
           >
             <MaskAmount>{KRW(totalNow)}</MaskAmount>
-            <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2, fontWeight: 'var(--fw-medium)' }}>원</span></HideUnit>
-          </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
-            {periodNow} 지출
+            <HideUnit>원</HideUnit>
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {periodPrev} 지출
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
-              fontWeight: 'var(--fw-bold)',
+              fontSize: 'var(--text-title-md)',
+              fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
+              lineHeight: 1.2,
               color: 'var(--fg-secondary)',
             }}
           >
             <MaskAmount>{KRW(totalPrev)}</MaskAmount>
-            <HideUnit><span style={{ fontSize: 'var(--fs-body)', marginLeft: 2, fontWeight: 'var(--fw-medium)' }}>원</span></HideUnit>
-          </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
-            {periodPrev} 지출
+            <HideUnit>원</HideUnit>
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardContent
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
+        <CardContent>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
+            {momLabel}
+          </div>
           <div
             className="num"
             style={{
-              fontSize: mobile ? 28 : 36,
-              fontWeight: 'var(--fw-bold)',
+              fontSize: 'var(--text-title-md)',
+              fontWeight: '700',
               letterSpacing: '-0.02em',
-              lineHeight: 1,
-              color: momUp ? 'var(--fg-expense)' : 'var(--fg-income)',
+              lineHeight: 1.2,
+              color: totalPrev > 0
+                ? (momUp ? 'var(--fg-expense)' : 'var(--fg-income)')
+                : 'var(--fg-primary)',
             }}
           >
             {totalPrev > 0 ? (
@@ -1602,11 +1697,8 @@ export const StatsPage = () => {
               </>
             ) : '—'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 'var(--spacing-sm)', fontWeight: 'var(--fw-medium)' }}>
-            {momLabel}
-          </div>
           {totalPrev > 0 && (
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
               <MaskAmount>
                 {momUp ? '+' : '−'}{KRW(Math.abs(totalNow - totalPrev))}
               </MaskAmount>
@@ -1614,7 +1706,7 @@ export const StatsPage = () => {
             </div>
           )}
           {totalPrev === 0 && (
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
               {noPrevText}
             </div>
           )}
@@ -1626,21 +1718,21 @@ export const StatsPage = () => {
   const CompareCategory = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리별 {momLabel}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>카테고리별 {momLabel}</CardTitle>
         <div
           style={{
             display: 'flex',
             gap: 12,
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--bg-brand)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--color-cat-blue)' }} />
             {periodNow}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand-mid)' }} />
+            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: '#abc8ee' }} />
             {periodPrev}
           </span>
         </div>
@@ -1671,10 +1763,10 @@ export const StatsPage = () => {
             const diff = r.now - r.prev
             const pct = r.prev > 0 ? (diff / r.prev) * 100 : 0
             const up = diff > 0
-            const iconBg = r.color
-              ? `oklch(from ${r.color} l c h / 0.12)`
-              : 'var(--bg-brand-subtle)'
-            const iconFg = r.color ?? 'var(--fg-brand-strong)'
+            // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
+            const pal = getPaletteByColor(r.color)
+            const iconBg = pal.bg
+            const iconFg = pal.color
             return (
               <div key={r.groupRowId}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -1682,7 +1774,7 @@ export const StatsPage = () => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 'var(--radius-tile)',
+                      borderRadius: tileRadius(32),
                       background: iconBg,
                       color: iconFg,
                       display: 'inline-flex',
@@ -1694,16 +1786,16 @@ export const StatsPage = () => {
                     {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)' }}>{r.name}</div>
+                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{r.name}</div>
                   </div>
-                  <span className="num" style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
+                  <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
                     <MaskAmount>{KRW(r.now)}</MaskAmount>
                     <HideUnit>원</HideUnit>
                   </span>
                   <span
                     style={{
-                      fontSize: 'var(--fs-caption)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontSize: 'var(--text-caption)',
+                      fontWeight: '700',
                       minWidth: 56,
                       textAlign: 'right',
                       color: r.prev === 0
@@ -1725,7 +1817,7 @@ export const StatsPage = () => {
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.now / maxCompareAmt) * 100}%`,
-                        background: 'var(--bg-brand)',
+                        background: 'var(--color-cat-blue)',
                         borderRadius: 'var(--radius-pill)',
                       }}
                     />
@@ -1736,7 +1828,7 @@ export const StatsPage = () => {
                         position: 'absolute',
                         inset: 0,
                         width: `${(r.prev / maxCompareAmt) * 100}%`,
-                        background: 'var(--bg-brand-muted)',
+                        background: '#abc8ee',
                         borderRadius: 'var(--radius-pill)',
                       }}
                     />
@@ -1788,13 +1880,18 @@ export const StatsPage = () => {
   if (shouldShowSkeleton) return <StatsPageSkeleton mobile={mobile} tab={tab} />
 
   if (mobile) {
-    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭)
+    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
+    // viewport fit 패턴 — AppLayout `.m-scroll` 가 flex-col 이므로 페이지 root 는
+    // flex-1 + min-h-0 으로 부모 전체 height 차지. 탭 띠는 shrink-0 로 상단 고정,
+    // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 20, 상하 24 padding).
     return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ background: 'var(--bg-surface)' }}>
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
           {StatsTabs}
         </div>
-        <div style={{ padding: '12px 16px 0' }}>{Content}</div>
+        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 'var(--spacing-xl) 20px' }}>
+          {Content}
+        </div>
       </div>
     )
   }
@@ -1814,93 +1911,174 @@ export const StatsPage = () => {
 }
 
 // ───────────────────────────────────────────────────────────
-// RangePickerPopover — 트리거 없는 popover (parent 가 open 제어).
-// react-day-picker mode='range' + 적용/취소 버튼.
+// RangePickerSheet — 직접 기간 선택 모달.
+// - quick chip: 최근 7일/30일/3개월/6개월/1년 (클릭 시 from/to 자동 set)
+// - 시작 / 종료 InputDatePicker (수동 조정 가능)
+// - 적용 버튼: 확정 후 confirm
 // ───────────────────────────────────────────────────────────
-function RangePickerPopover({
+const QUICK_RANGES: { label: string; days: number }[] = [
+  { label: '최근 7일', days: 7 },
+  { label: '최근 30일', days: 30 },
+  { label: '최근 3개월', days: 90 },
+  { label: '최근 6개월', days: 180 },
+  { label: '최근 1년', days: 365 },
+]
+
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const fromISODate = (s: string | undefined): Date | undefined => {
+  if (!s) return undefined
+  const [y, m, d] = s.split('-').map(Number)
+  if (!y || !m || !d) return undefined
+  return new Date(y, m - 1, d)
+}
+
+function RangePickerSheet({
+  mobile,
   initial,
   onCancel,
   onConfirm,
 }: {
-  initial: { from: Date; to: Date }
+  mobile: boolean
+  initial: RangeState
   onCancel: () => void
-  onConfirm: (range: { from: Date; to: Date }) => void
+  onConfirm: (range: RangeState) => void
 }) {
-  const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(
-    () => ({ from: initial.from, to: initial.to }),
-  )
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onCancel()
-    }
-    // mouseup 으로 등록 — 트리거 click 의 mouseup 과 충돌하지 않도록 microtask 후 등록
-    const id = window.setTimeout(() => document.addEventListener('mousedown', onDoc), 0)
-    return () => {
-      window.clearTimeout(id)
-      document.removeEventListener('mousedown', onDoc)
-    }
-  }, [onCancel])
+  const [segMode, setSegMode] = useState<SegMode>(initial.segMode)
+  const [from, setFrom] = useState<Date>(initial.from)
+  const [to, setTo] = useState<Date>(initial.to)
+  const canApply = from.getTime() <= to.getTime()
 
-  return (
-    <div
-      ref={ref}
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 6px)',
-        right: 0,
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-card)',
-        boxShadow: 'var(--shadow-lg)',
-        padding: 12,
-        zIndex: 'var(--z-sticky)',
-      } as React.CSSProperties}
-    >
-      <Calendar
-        mode="range"
-        numberOfMonths={2}
-        selected={{ from: draft.from, to: draft.to }}
-        onSelect={(range) => setDraft({ from: range?.from, to: range?.to })}
-        defaultMonth={draft.from ?? initial.from}
-      />
-      <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
-        <button
-          onClick={onCancel}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
-            background: 'transparent',
-            fontSize: 'var(--fs-caption)',
-            fontWeight: 'var(--fw-semi)',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            color: 'var(--fg-secondary)',
-          }}
+  // segMode 변경 시 — 월/분기/년 의 from/to 자동 계산 (이번 month/quarter/year)
+  // custom 은 기존 from/to 유지.
+  const setSeg = (v: SegMode) => {
+    setSegMode(v)
+    const now = new Date()
+    if (v === 'm') { const r = monthRangeOf(now); setFrom(r.from); setTo(r.to) }
+    else if (v === 'q') { const r = quarterRangeOf(now); setFrom(r.from); setTo(r.to) }
+    else if (v === 'y') { const r = yearRangeOf(now); setFrom(r.from); setTo(r.to) }
+  }
+
+  const applyQuick = (days: number) => {
+    const today = new Date()
+    const start = new Date(today)
+    start.setDate(today.getDate() - days + 1)
+    setFrom(start)
+    setTo(today)
+    setSegMode('custom')
+  }
+
+  // 가계부 FilterDialog 패턴 정합 — 상단 ToggleGroup (월/분기/년/직접) + 항상 date range
+  // + custom 시만 quick chips (최근 N일/N개월) 표시.
+  const formBody = (
+    <>
+      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+        <ToggleGroup
+          type="single"
+          variant="segmented"
+          value={segMode}
+          onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
+          className="w-full"
         >
-          취소
-        </button>
-        <button
-          disabled={!draft.from || !draft.to}
-          onClick={() => {
-            if (draft.from && draft.to) onConfirm({ from: draft.from, to: draft.to })
-          }}
-          style={{
-            padding: '6px 14px',
-            borderRadius: 'var(--radius-md)',
-            border: 0,
-            background: !draft.from || !draft.to ? 'var(--bg-muted)' : 'var(--bg-brand)',
-            color: !draft.from || !draft.to ? 'var(--fg-tertiary)' : 'var(--fg-on-brand)',
-            fontSize: 'var(--fs-caption)',
-            fontWeight: 'var(--fw-bold)',
-            cursor: !draft.from || !draft.to ? 'not-allowed' : 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          적용
-        </button>
+          <ToggleGroupItem value="m" className="flex-1">월</ToggleGroupItem>
+          <ToggleGroupItem value="q" className="flex-1">분기</ToggleGroupItem>
+          <ToggleGroupItem value="y" className="flex-1">년</ToggleGroupItem>
+          <ToggleGroupItem value="custom" className="flex-1">직접</ToggleGroupItem>
+        </ToggleGroup>
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', marginBottom: segMode === 'custom' ? 'var(--spacing-lg)' : 0 }}>
+        <div style={{ flex: 1 }}>
+          <InputDatePicker
+            value={toISODate(from)}
+            onValueChange={(v) => {
+              const d = fromISODate(v)
+              if (d) { setFrom(d); setSegMode('custom') }
+            }}
+          />
+        </div>
+        <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
+        <div style={{ flex: 1 }}>
+          <InputDatePicker
+            value={toISODate(to)}
+            onValueChange={(v) => {
+              const d = fromISODate(v)
+              if (d) { setTo(d); setSegMode('custom') }
+            }}
+          />
+        </div>
+      </div>
+      {segMode === 'custom' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+          {QUICK_RANGES.map((q) => (
+            <button
+              key={q.days}
+              type="button"
+              onClick={() => applyQuick(q.days)}
+              style={{
+                padding: 'var(--spacing-xs) var(--spacing-md)',
+                borderRadius: 'var(--radius-pill)',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-surface)',
+                fontSize: 'var(--text-caption)',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              {q.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  )
+
+  const cancelBtn = <Button variant="ghost" onClick={onCancel}>취소</Button>
+  const applyBtn = (
+    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to, segMode })}>적용</Button>
+  )
+
+  // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
+  if (mobile) {
+    return (
+      <Drawer open onOpenChange={(o) => { if (!o) onCancel() }}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="flex-1">기간 선택</DrawerTitle>
+            <DrawerClose asChild>
+              <button
+                type="button"
+                aria-label="닫기"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </DrawerClose>
+          </DrawerHeader>
+          <DrawerBody>{formBody}</DrawerBody>
+          <DrawerFooter>
+            {cancelBtn}
+            {applyBtn}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
+  // 데스크탑/태블릿: Dialog (modal).
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onCancel() }}>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogTitle>기간 선택</DialogTitle>
+        </DialogHeader>
+        <DialogBody>{formBody}</DialogBody>
+        <DialogFooter>
+          {cancelBtn}
+          {applyBtn}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

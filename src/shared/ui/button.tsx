@@ -45,7 +45,9 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-text-primary border border-border-default hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98] active:brightness-95",
         ghost:
-          "bg-transparent text-text-primary hover:bg-surface-input active:scale-[0.98]",
+          "bg-transparent text-text-primary hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
+        accent:
+          "bg-transparent text-[var(--fg-brand)] hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
         link:
           "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px] active:brightness-90",
         warm:
@@ -57,9 +59,14 @@ const buttonVariants = cva(
         sm:      "h-8 px-3 py-1.5 text-[13px] gap-[5px] rounded-[var(--radius-sm)] [&_svg]:size-3.5",
         md:      "h-10 px-3 py-2 text-sm [&_svg]:size-4",
         lg:      "h-11 px-5 py-3 text-base [&_svg]:size-[18px]",
-        icon:    "h-9 w-9 p-0 [&_svg]:size-4",
+        icon:    "h-9 w-9 p-0 rounded-md [&_svg]:size-4",
       },
     },
+    compoundVariants: [
+      // 아이콘 액션 버튼(ghost+icon): 글씨색을 보조톤(text-secondary)으로 약화 —
+      // 리스트 행/툴바의 quiet 아이콘 액션. porest-design button.md v96 정합.
+      { variant: "ghost", size: "icon", className: "text-text-secondary" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
@@ -127,4 +134,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
+// buttonVariants(cva)는 alert-dialog/calendar 에서 재사용 — 컴포넌트 파일에서 함께 export.
+// (shadcn 관례. Fast Refresh 경고는 의도된 것이라 이 줄만 예외 처리.)
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

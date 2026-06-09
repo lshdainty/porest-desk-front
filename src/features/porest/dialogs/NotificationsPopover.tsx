@@ -1,50 +1,9 @@
-import {
-  AlertTriangle,
-  Bell,
-  CalendarClock,
-  ChevronRight,
-  ListChecks,
-} from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
-import type { Notification, NotificationType } from '@/entities/notification'
-
-function iconFor(type: NotificationType): {
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
-  bg: string
-  fg: string
-} {
-  switch (type) {
-    case 'BUDGET_ALERT':
-      return { Icon: AlertTriangle, bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)' }
-    case 'TODO_REMINDER':
-      return { Icon: ListChecks, bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)' }
-    case 'EVENT_REMINDER':
-      return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
-    default:
-      return { Icon: Bell, bg: 'var(--bg-sunken)', fg: 'var(--fg-secondary)' }
-  }
-}
-
-/**
- * createAt (ISO 또는 date-ms) → "방금 / n분 전 / n시간 전 / 어제 / n일 전 / yyyy-MM-dd"
- */
-function relativeTime(createAt: string): string {
-  const then = new Date(createAt).getTime()
-  if (Number.isNaN(then)) return ''
-  const diffMs = Date.now() - then
-  const m = Math.floor(diffMs / 60_000)
-  if (m < 1) return '방금'
-  if (m < 60) return `${m}분 전`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}시간 전`
-  const d = Math.floor(h / 24)
-  if (d === 1) return '어제'
-  if (d < 7) return `${d}일 전`
-  // 1주 이상 지난 건 날짜만
-  return createAt.slice(0, 10)
-}
+import { NotificationRow } from '@/entities/notification'
+import type { Notification } from '@/entities/notification'
 
 export function NotificationsPopover({
   onClose,
@@ -96,19 +55,19 @@ export function NotificationsPopover({
             <div
               style={{
                 font: '700 15px/1.3 var(--font-sans)',
-                letterSpacing: 'var(--tracking-snug)',
+                letterSpacing: '-0.012em',
                 color: 'var(--fg-primary)',
               }}
             >
               알림
             </div>
             {unreadCount > 0 ? (
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                 읽지 않은 알림 <b style={{ color: 'var(--fg-brand-strong)' }}>{unreadCount}</b>개
               </div>
             ) : (
               !isLoading && items.length === 0 && (
-                <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                   새 알림이 없어요
                 </div>
               )
@@ -146,34 +105,19 @@ export function NotificationsPopover({
             </div>
           )}
           {!isLoading && items.length === 0 && (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
               아직 알림이 없어요
             </div>
           )}
-          {items.map(n => {
-            const { Icon, bg, fg } = iconFor(n.notificationType)
-            return (
-              <div
-                key={n.rowId}
-                className={`notif-row ${n.isRead ? '' : 'unread'}`}
-                onClick={() => {
-                  if (!n.isRead) markRead.mutate(n.rowId)
-                }}
-              >
-                <span className="notif-row__icon" style={{ background: bg, color: fg }}>
-                  <Icon size={16} strokeWidth={1.9} />
-                </span>
-                <div className="notif-row__text">
-                  <div className="notif-row__title">
-                    {n.title}
-                    {!n.isRead && <span className="notif-row__dot" />}
-                  </div>
-                  <div className="notif-row__desc">{n.message}</div>
-                </div>
-                <div className="notif-row__time">{relativeTime(n.createAt)}</div>
-              </div>
-            )
-          })}
+          {items.map(n => (
+            <NotificationRow
+              key={n.rowId}
+              notification={n}
+              onClick={() => {
+                if (!n.isRead) markRead.mutate(n.rowId)
+              }}
+            />
+          ))}
         </div>
         <div
           style={{

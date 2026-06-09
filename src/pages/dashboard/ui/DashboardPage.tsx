@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, Receipt, Target, TrendingDown, TrendingUp, UsersRound, Wallet,
+  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { tileRadius } from '@/shared/lib'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
   enablePdHideAmounts,
@@ -30,20 +31,16 @@ import {
   useExpenseBudgets,
 } from '@/features/expense'
 import { getPaletteByColor } from '@/features/porest/dialogs'
+import { useUserPreferences } from '@/features/user'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 import { aggregateByParent } from '@/entities/expense'
 
 const barChartConfig = {
-  income:  { label: '수입', color: 'var(--bg-brand)' },
+  income:  { label: '수입', color: 'var(--status-info-fg)' },
   expense: { label: '지출', color: 'var(--fg-expense)' },
 } satisfies ChartConfig
 
-function fmtAxisNum(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1000)      return `${(v / 1000).toFixed(0)}k`
-  return String(v)
-}
 
 type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<string, unknown> }
 type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
@@ -61,25 +58,25 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
         {label}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--bg-brand)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>수입</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(income)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>지출</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
+        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(expense)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
@@ -88,11 +85,11 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         display: 'flex', alignItems: 'center', gap: 6,
         marginTop: 5, paddingTop: 5, borderTop: '1px solid var(--border-subtle)',
       }}>
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>저축</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>저축</span>
         <span
           className="num"
           style={{
-            marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)',
+            marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700',
             color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
           }}
         >
@@ -108,6 +105,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
   data: { label: string; income: number; expense: number }[]
   height?: number
 }) {
+  const hidden = useHideAmounts()
   return (
     <ChartContainer
       config={barChartConfig}
@@ -124,14 +122,15 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
           dataKey="label"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           tickMargin={8}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={fmtAxisNum}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          // 금액 숨기기 시 Y축도 마스킹 ('••••' 4점)
+          tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={48}
         />
         <ChartTooltip cursor={{ fill: 'var(--bg-brand)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
@@ -144,18 +143,19 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
-// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용)
+// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
+// `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
-  'var(--color-chart-blue)',
-  'var(--color-chart-green)',
-  'var(--color-chart-orange)',
-  'var(--color-chart-violet)',
-  'var(--color-chart-pink)',
-  'var(--color-chart-indigo)',
-  'var(--color-chart-red)',
-  'var(--color-chart-yellow)',
-  'var(--color-chart-brown)',
-  'var(--color-chart-gray)',
+  'var(--color-cat-blue)',
+  'var(--color-cat-green)',
+  'var(--color-cat-orange)',
+  'var(--color-cat-violet)',
+  'var(--color-cat-pink)',
+  'var(--color-cat-indigo)',
+  'var(--color-cat-red)',
+  'var(--color-cat-yellow)',
+  'var(--color-cat-brown)',
+  'var(--color-cat-gray)',
 ]
 
 function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
@@ -209,28 +209,8 @@ function useDashboardPageData(year: number, month: number, opts?: { includePrevM
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <DashboardHeroSkeleton mobile />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-card)',
-                padding: '14px 8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <SkeletonBase className="h-8 w-8 rounded-md" />
-              <SkeletonBase className="h-3 w-10" />
-            </div>
-          ))}
-        </div>
         <DashboardSummaryCardSkeleton mobile />
         <DashboardCategoryCardSkeleton mobile />
         <DashboardBudgetCardSkeleton />
@@ -435,6 +415,9 @@ function HomeDesktop() {
   const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
   const categoriesQ = useExpenseCategories()
   const recurringQ = useRecurringTransactions()
+  const preferencesQ = useUserPreferences()
+  // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
 
   const summary = dashboardQ.data
   const assetSummary = assetSummaryQ.data
@@ -481,15 +464,24 @@ function HomeDesktop() {
     const expenseOnly = (monthly?.categoryBreakdown ?? []).filter(
       c => c.expenseType === 'EXPENSE',
     )
+    const cats = categoriesQ.data ?? []
+    const catColorMap = new Map<number, string | null | undefined>()
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-    return items.map((c, i) => ({
-      value: c.totalAmount,
-      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
-      label: c.categoryName,
-    }))
-  }, [monthly])
+    return items.map((c, i) => {
+      const raw = catColorMap.get(c.categoryRowId)
+      const color = raw
+        ? getPaletteByColor(raw).color
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+      return {
+        value: c.totalAmount,
+        color,
+        label: c.categoryName,
+      }
+    })
+  }, [monthly, categoriesQ.data])
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
   const barData = useMemo(() => {
@@ -528,7 +520,7 @@ function HomeDesktop() {
         ? totalExpense
         : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
@@ -541,7 +533,7 @@ function HomeDesktop() {
         state,
       }
     })
-  }, [budgetsQ.data, categoriesQ.data, monthly])
+  }, [budgetsQ.data, categoriesQ.data, monthly, warnThreshold])
 
   const upcomingPayments = useMemo(() => {
     const today = new Date()
@@ -635,24 +627,24 @@ function HomeDesktop() {
           <CardContent>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>수입</div>
-              <div className="num" style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand)', letterSpacing: 'var(--tracking-tight)' }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>수입</div>
+              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
                   : <><MaskAmount>+{KRW(income)}</MaskAmount><HideUnit>원</HideUnit></>}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>지출</div>
-              <div className="num" style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)', letterSpacing: 'var(--tracking-tight)' }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>지출</div>
+              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
                   : <><MaskAmount>−{KRW(expense)}</MaskAmount><HideUnit>원</HideUnit></>}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 4 }}>잔액</div>
-              <div className="num" style={{ fontSize: 'var(--fs-h2)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', letterSpacing: 'var(--tracking-tight)' }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>잔액</div>
+              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
                   : <>
@@ -667,7 +659,7 @@ function HomeDesktop() {
           ) : trendQ.isLoading ? (
             <SkeletonBase className="h-[280px] w-full rounded-lg" />
           ) : (
-            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
               데이터가 없습니다
             </div>
           )}
@@ -675,12 +667,12 @@ function HomeDesktop() {
             marginTop: 16,
             paddingTop: 14,
             borderTop: '1px solid var(--border-subtle)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
             color: 'var(--fg-secondary)',
-            lineHeight: 'var(--lh-normal)',
+            lineHeight: '1.5',
           }}>
             하루 평균{' '}
-            <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-bold)' }}>
+            <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
               <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
             </span>
             <HideUnit>원</HideUnit>
@@ -690,7 +682,7 @@ function HomeDesktop() {
                 {' 전월 대비 '}
                 <span style={{
                   color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
-                  fontWeight: 'var(--fw-bold)',
+                  fontWeight: '700',
                 }}>
                   {Math.abs(savingsPct).toFixed(0)}%
                 </span>
@@ -706,7 +698,7 @@ function HomeDesktop() {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
               <CardTitle>오늘 쓴 돈</CardTitle>
               {todayTotal > 0 && (
-                <span className="num" style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-expense)', fontWeight: 'var(--fw-bold)' }}>
+                <span className="num" style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
                   <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
                   <HideUnit>원</HideUnit>
                 </span>
@@ -720,7 +712,7 @@ function HomeDesktop() {
           <div>
             {recentQ.isLoading && <Skeleton height={60} />}
             {!recentQ.isLoading && todayTx.length === 0 && (
-              <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+              <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
                 오늘은 아직 쓴 돈이 없어요
               </div>
             )}
@@ -766,7 +758,7 @@ function HomeDesktop() {
                 </div>
               </div>
             ) : (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
                 카테고리 데이터가 없습니다
               </div>
             )
@@ -818,7 +810,7 @@ function HomeDesktop() {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
                 등록된 예산이 없어요
               </div>
             )
@@ -831,7 +823,7 @@ function HomeDesktop() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span
                       style={{
-                        width: 32, height: 32, borderRadius: 'var(--radius-tile)',
+                        width: 32, height: 32, borderRadius: tileRadius(32),
                         background: palette.bg, color: palette.color,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
@@ -839,18 +831,16 @@ function HomeDesktop() {
                     >
                       <Icon name={b.icon} size={16} strokeWidth={1.9} />
                     </span>
-                    <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)' }}>{b.categoryName ?? '전체'}</span>
+                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600' }}>{b.categoryName ?? '전체'}</span>
                     <span
                       className="num"
                       style={{
-                        marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)',
+                        marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '600',
                         color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
                       }}
                     >
-                      <MaskAmount mask="••••">
-                        {KRW(b.spent)}
-                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}> / {KRW(b.budgetAmount)}</span>
-                      </MaskAmount>
+                      <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar">
@@ -887,7 +877,7 @@ function HomeDesktop() {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
                 예정된 결제가 없어요
               </div>
             )
@@ -899,9 +889,9 @@ function HomeDesktop() {
                     style={{
                       width: 38, height: 38, borderRadius: 'var(--radius-tile)',
                       background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                      color: p.d <= 7 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
+                      color: p.d <= 7 ? 'var(--color-warning)' : 'var(--fg-secondary)',
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body)', letterSpacing: 'var(--tracking-tight)',
+                      fontWeight: '700', fontSize: 'var(--text-body-sm)', letterSpacing: '-0.022em',
                       flexShrink: 0,
                     }}
                   >
@@ -910,17 +900,17 @@ function HomeDesktop() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)',
+                        fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}
                     >
                       {p.title}
                     </div>
-                    <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                       {p.dateLabel}
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)', color: 'var(--fg-expense)' }}>
+                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em', color: 'var(--fg-expense)' }}>
                     <MaskAmount mask="••••">−{KRW(p.amount)}</MaskAmount>
                   </div>
                 </div>
@@ -959,22 +949,22 @@ function HomeDesktop() {
                     borderRadius: 'var(--radius-pill)',
                     background:
                       td.priority === 'HIGH' ? 'var(--fg-expense)'
-                      : td.priority === 'MEDIUM' ? 'var(--sunlit-500)'
+                      : td.priority === 'MEDIUM' ? 'var(--color-warning-light)'
                       : 'var(--bg-brand)',
                   }}
                 />
-                <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-medium)', color: 'var(--fg-primary)', flex: 1 }}>
+                <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '500', color: 'var(--fg-primary)', flex: 1 }}>
                   {td.title}
                 </span>
                 {td.dueDate && (
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
+                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
                     {td.dueDate.slice(5, 10)}
                   </span>
                 )}
               </div>
             ))}
             {(!summary?.recentTodos || summary.recentTodos.length === 0) && (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
                 할 일이 없어요
               </div>
             )}
@@ -999,28 +989,28 @@ function HomeDesktop() {
                     height: 38,
                     borderRadius: 'var(--radius-tile)',
                     background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                    color: ev.daysUntil <= 3 ? 'var(--sunlit-700)' : 'var(--fg-secondary)',
+                    color: ev.daysUntil <= 3 ? 'var(--color-warning)' : 'var(--fg-secondary)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontWeight: 'var(--fw-bold)',
-                    fontSize: 'var(--fs-body)',
-                    letterSpacing: 'var(--tracking-tight)',
+                    fontWeight: '700',
+                    fontSize: 'var(--text-body-sm)',
+                    letterSpacing: '-0.022em',
                     flexShrink: 0,
                   }}
                 >
                   D-{ev.daysUntil}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>{ev.title}</div>
-                  <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{ev.title}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
                     {ev.startDate.slice(5, 10)}
                   </div>
                 </div>
               </div>
             ))}
             {(!summary?.upcomingEvents || summary.upcomingEvents.length === 0) && (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
                 예정 일정이 없어요
               </div>
             )}
@@ -1069,6 +1059,9 @@ function HomeMobile() {
   const recentQ = useExpenses({ startDate: monthStartM, endDate: monthEndM })
   const budgetsQ = useExpenseBudgets({ year, month })
   const categoriesQ = useExpenseCategories()
+  const preferencesQ = useUserPreferences()
+  // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
 
   const summary = dashboardQ.data
   const assetSummary = assetSummaryQ.data
@@ -1104,15 +1097,24 @@ function HomeMobile() {
     const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
       c => c.expenseType === 'EXPENSE',
     )
+    const cats = categoriesQ.data ?? []
+    const catColorMap = new Map<number, string | null | undefined>()
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
     const items = aggregateByParent(expenseOnly)
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
-    return items.map((c, i) => ({
-      value: c.totalAmount,
-      color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)',
-      label: c.categoryName,
-    }))
-  }, [monthlyQ.data])
+    return items.map((c, i) => {
+      const raw = catColorMap.get(c.categoryRowId)
+      const color = raw
+        ? getPaletteByColor(raw).color
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+      return {
+        value: c.totalAmount,
+        color,
+        label: c.categoryName,
+      }
+    })
+  }, [monthlyQ.data, categoriesQ.data])
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
 
   // 예산 — 설정한 전체 표시
@@ -1134,7 +1136,7 @@ function HomeMobile() {
     return budgets.map(b => {
       const spent = b.categoryRowId == null ? totalEx : spentByCat.get(b.categoryRowId) ?? 0
       const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > 85 ? 'warn' : ''
+      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
@@ -1147,17 +1149,10 @@ function HomeMobile() {
         state,
       }
     })
-  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data])
-
-  const quick: { label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string }[] = [
-    { label: '자산', icon: Wallet, path: '/desk/asset' },
-    { label: '가계부', icon: Receipt, path: '/desk/expense' },
-    { label: '예산', icon: Target, path: '/desk/budget' },
-    { label: '더치페이', icon: UsersRound, path: '/desk/dutch-pay' },
-  ]
+  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold])
 
   return (
-    <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
           <Wallet size={13} /> 순자산
@@ -1209,60 +1204,21 @@ function HomeMobile() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        {quick.map(q => {
-          const IconComp = q.icon
-          return (
-            <button
-              key={q.path}
-              onClick={() => navigate(q.path)}
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-card)',
-                padding: '14px 8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-                cursor: 'pointer',
-              }}
-            >
-              <span
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 'var(--radius-tile)',
-                  background: 'var(--bg-brand-subtle)',
-                  color: 'var(--fg-brand-strong)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <IconComp size={18} strokeWidth={1.9} />
-              </span>
-              <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>{q.label}</span>
-            </button>
-          )
-        })}
-      </div>
-
       <Card>
         <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>{month}월 가계부</div>
+          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{month}월 가계부</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>수입</div>
-            <div className="num" style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand)' }}>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>수입</div>
+            <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
               <MaskAmount>+{KRW(income)}</MaskAmount>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>지출</div>
-            <div className="num" style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)' }}>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>지출</div>
+            <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-expense)' }}>
               <MaskAmount>−{KRW(expense)}</MaskAmount>
             </div>
           </div>
@@ -1271,12 +1227,12 @@ function HomeMobile() {
           marginTop: 14,
           paddingTop: 14,
           borderTop: '1px solid var(--border-subtle)',
-          fontSize: 'var(--fs-caption)',
+          fontSize: 'var(--text-caption)',
           color: 'var(--fg-secondary)',
-          lineHeight: 'var(--lh-normal)',
+          lineHeight: '1.5',
         }}>
           하루 평균{' '}
-          <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: 'var(--fw-bold)' }}>
+          <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
             <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
           </span>
           <HideUnit>원</HideUnit>
@@ -1286,7 +1242,7 @@ function HomeMobile() {
               {' 전월 대비 '}
               <span style={{
                 color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
-                fontWeight: 'var(--fw-bold)',
+                fontWeight: '700',
               }}>
                 {Math.abs(savingsPct).toFixed(0)}%
               </span>
@@ -1299,7 +1255,7 @@ function HomeMobile() {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>카테고리</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>카테고리</CardTitle>
           <button className="all" onClick={() => navigate('/desk/stats')}>
             자세히 <ChevronRight size={14} />
           </button>
@@ -1320,15 +1276,15 @@ function HomeMobile() {
               </div>
             </div>
           ) : (
-            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
               카테고리 데이터가 없어요
             </div>
           )
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
-              <div className="lbl" style={{ fontSize: 'var(--fs-micro)' }}>지출</div>
-              <div className="val num" style={{ fontSize: 'var(--fs-caption)' }}>
+              <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>지출</div>
+              <div className="val num" style={{ fontSize: 'var(--text-caption)' }}>
                 <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
               </div>
             </Donut>
@@ -1336,10 +1292,10 @@ function HomeMobile() {
               {donutSegs.map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: s.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {s.label}
                   </span>
-                  <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-primary)', fontWeight: 'var(--fw-semi)' }}>
+                  <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-primary)', fontWeight: '600' }}>
                     <MaskAmount mask="••••">{KRW(s.value)}</MaskAmount>
                   </span>
                 </div>
@@ -1352,7 +1308,7 @@ function HomeMobile() {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예산</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산</CardTitle>
           <button className="all" onClick={() => navigate('/desk/budget')}>
             전체 <ChevronRight size={14} />
           </button>
@@ -1373,7 +1329,7 @@ function HomeMobile() {
               ))}
             </div>
           ) : (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
               등록된 예산이 없어요
             </div>
           )
@@ -1385,19 +1341,19 @@ function HomeMobile() {
                 <div key={b.rowId}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span style={{
-                      width: 28, height: 28, borderRadius: 'var(--radius-tile)',
+                      width: 28, height: 28, borderRadius: tileRadius(28),
                       background: palette.bg, color: palette.color,
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
                       <Icon name={b.icon} size={14} strokeWidth={1.9} />
                     </span>
-                    <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', flex: 1 }}>{b.categoryName}</span>
+                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', flex: 1 }}>{b.categoryName}</span>
                     <span className="num" style={{
-                      fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)',
+                      fontSize: 'var(--text-caption)', fontWeight: '600',
                       color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                     }}>
                       <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}> / {KRW(b.budgetAmount)}</span>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar" style={{ height: 6 }}>
@@ -1416,9 +1372,9 @@ function HomeMobile() {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>오늘 쓴 돈</CardTitle>
+            <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>오늘 쓴 돈</CardTitle>
             {todayTotal > 0 && (
-              <span className="num" style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)', fontWeight: 'var(--fw-bold)' }}>
+              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </span>
@@ -1442,7 +1398,7 @@ function HomeMobile() {
             />
           ))}
           {todayTx.length === 0 && (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
               오늘은 아직 쓴 돈이 없어요
             </div>
           )}
@@ -1483,7 +1439,7 @@ function UpcomingMobileCard({
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />
-            <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
+            <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
               다가오는 일정
             </span>
             <Button
@@ -1498,10 +1454,10 @@ function UpcomingMobileCard({
           {events.map(ev => (
             <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
               <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color || 'var(--fg-brand)', marginRight: 8 }} />
-              <span style={{ flex: 1, fontSize: 'var(--fs-body-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {ev.title}
               </span>
-              <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
+              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
                 {ev.daysUntil === 0 ? '오늘' : ev.daysUntil === 1 ? '내일' : `D-${ev.daysUntil}`}
               </span>
             </div>
@@ -1513,7 +1469,7 @@ function UpcomingMobileCard({
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />
-            <span style={{ marginLeft: 6, fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
+            <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
               최근 할 일
             </span>
             <Button
@@ -1534,11 +1490,11 @@ function UpcomingMobileCard({
                 ) : (
                   <Circle size={14} style={{ color: 'var(--fg-tertiary)', marginRight: 8 }} />
                 )}
-                <span style={{ flex: 1, fontSize: 'var(--fs-body-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {td.title}
                 </span>
                 {td.dueDate && (
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
+                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
                     {td.dueDate.slice(5, 10)}
                   </span>
                 )}

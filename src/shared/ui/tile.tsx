@@ -48,7 +48,7 @@ const SIZE_STYLES = {
 const TileItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   TileItemProps
->(({ className, size = 'md', swatch, swatchClassName, label, description, ...props }, ref) => {
+>(({ className, size = 'md', swatch, swatchClassName, label, description, style, ...props }, ref) => {
   const s = SIZE_STYLES[size]
   return (
     <RadioGroupPrimitive.Item
@@ -57,15 +57,16 @@ const TileItem = React.forwardRef<
         'group/tile relative flex items-center text-left',
         s.padding,
         s.gap,
-        'rounded-[var(--radius-lg)] border bg-surface-default',
-        'border-[var(--border-subtle)] hover:border-[var(--border-default)]',
+        // shadow 카드 — border 대신 elevation. 선택 시에만 브랜드 보더(레이아웃 안정 위해 항상 border-transparent).
+        'rounded-[var(--radius-lg)] border border-transparent bg-surface-default',
         'data-[state=checked]:border-[1.5px] data-[state=checked]:border-primary',
         'data-[state=checked]:bg-[color-mix(in_oklch,var(--color-primary)_8%,transparent)]',
-        'transition-[border-color,background-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
+        'transition-[border-color,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className,
       )}
+      style={{ boxShadow: 'var(--shadow-sm)', ...style }}
       {...props}
     >
       {swatch != null && (

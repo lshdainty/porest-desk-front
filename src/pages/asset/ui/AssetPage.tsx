@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
-  ChevronRight, CreditCard, Eye, EyeOff, Plus, RefreshCw,
+  ChevronRight, Eye, EyeOff, Plus, RefreshCw,
   Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { tileRadius } from '@/shared/lib'
+import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
 import {
   disablePdHideAmounts,
   enablePdHideAmounts,
@@ -22,34 +23,18 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
-import { useAssets, useAssetSummary, useNetWorthTrend, useUpdateAsset } from '@/features/asset'
+import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
-import { AssetAddDialog } from '@/widgets/asset-full/ui/AssetAddDialog'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
-import { InvestmentAddDialog } from '@/widgets/asset-full/ui/InvestmentAddDialog'
-import { CardAddDialog } from '@/widgets/asset-full/ui/CardAddDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
-import { AssetEditDialog, type AssetGroup } from '@/features/porest/dialogs/AssetEditDialog'
-import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
+import { AssetLogo, type Asset, type AssetType } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
-
-/** assetType → AssetEditDialog 용 group 매핑 */
-function assetGroupOf(asset: Asset): AssetGroup {
-  if (asset.assetType === 'CREDIT_CARD' || asset.assetType === 'CHECK_CARD') return 'card'
-  if (asset.assetType === 'INVESTMENT') return 'invest'
-  return 'account'
-}
 
 const netWorthChartConfig = {
   netWorth: { label: '순자산', color: 'var(--border-brand)' },
 } satisfies ChartConfig
 
-function fmtAxisNum(v: number) {
-  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
-  if (v >= 10_000) return `${Math.round(v / 10_000).toLocaleString('ko-KR')}만`
-  return v.toLocaleString('ko-KR')
-}
 
 type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } }
 function NetWorthTooltip({
@@ -71,17 +56,17 @@ function NetWorthTooltip({
         borderRadius: 'var(--radius-tile)',
         boxShadow: 'var(--shadow-md)',
         padding: '8px 12px',
-        fontSize: 'var(--fs-caption)',
+        fontSize: 'var(--text-caption)',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
-        <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>순자산</span>
+        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>순자산</span>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}
         >
           <MaskAmount>{KRW(v)}</MaskAmount>
           <HideUnit>원</HideUnit>
@@ -92,6 +77,7 @@ function NetWorthTooltip({
 }
 
 function NetWorthChart({ height = 180 }: { height?: number }) {
+  const hidden = useHideAmounts()
   const trendQ = useNetWorthTrend(12)
   const data = useMemo(
     () =>
@@ -119,7 +105,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'var(--fg-tertiary)',
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
         }}
       >
         추이 데이터가 없어요
@@ -145,14 +131,15 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           dataKey="monthLabel"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           tickMargin={8}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={fmtAxisNum}
-          tick={{ fontSize: 'var(--fs-micro)', fill: 'var(--fg-tertiary)' }}
+          // 금액 숨기기 시 Y축도 마스킹 (앱 net_worth_chart '••••' 정합)
+          tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
+          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
           width={52}
         />
         <ChartTooltip
@@ -165,7 +152,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           stroke="var(--border-brand)"
           strokeWidth={2}
           fill="url(#netWorthFill)"
-          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 4 }}
           activeDot={{ r: 6, fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
         />
       </AreaChart>
@@ -269,7 +256,7 @@ function AssetCompositionCard({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {active ? (
             <>
               <Button
@@ -279,27 +266,27 @@ function AssetCompositionCard({
               >
                 자산 구성
               </Button>
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>›</span>
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
               <span>{GROUP_META[active].label}</span>
             </>
           ) : (
             '자산 구성'
           )}
         </CardTitle>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
           {dateLabel}
         </span>
       </CardHeader>
       <CardContent>
       {segments.length === 0 ? (
-        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-body-sm)' }}>
+        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
           {active ? '등록된 항목이 없어요' : '자산 데이터가 없어요'}
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Donut size={180} stroke={24} segments={segments}>
             <div className="lbl">{centerLbl}</div>
-            <div className="val num" style={{ fontSize: 'var(--fs-body-lg)' }}>
+            <div className="val num" style={{ fontSize: 'var(--text-body-lg)' }}>
               <MaskAmount mask="••••">{totalLabel}</MaskAmount>
             </div>
           </Donut>
@@ -323,18 +310,18 @@ function AssetCompositionCard({
                     borderRadius: 'var(--radius-md)',
                     padding: row.clickable ? '4px 6px' : undefined,
                     margin: row.clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--dur-fast) var(--ease-standard)',
+                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                   }}
                   onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
                   title={row.clickable ? '클릭하여 하위 자산 보기' : undefined}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-2xs)', background: row.color, flexShrink: 0 }} />
+                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
                     <span
                       style={{
-                        fontSize: 'var(--fs-body-sm)',
-                        fontWeight: 'var(--fw-semi)',
+                        fontSize: 'var(--text-label-sm)',
+                        fontWeight: '600',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -342,7 +329,7 @@ function AssetCompositionCard({
                     >
                       {row.label}
                     </span>
-                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>
+                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
                       <MaskAmount mask="••••">{KRW(row.amt)}</MaskAmount>
                     </span>
                   </div>
@@ -363,7 +350,7 @@ function AssetCompositionCard({
                     <span
                       className="num"
                       style={{
-                        fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-tertiary)',
+                        fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)',
                         minWidth: 40, textAlign: 'right',
                       }}
                     >
@@ -412,7 +399,7 @@ function UpcomingBillsCard() {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예정된 결제 · 고정지출</CardTitle>
         <Button
           variant="link"
           onClick={() => goToSettings()}
@@ -428,24 +415,20 @@ function UpcomingBillsCard() {
             <div
               key={i}
               style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                padding: '16px 18px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-lg)',
               }}
             >
-              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/2" />
-              </div>
-              <SkeletonBase className="h-4 w-16 shrink-0" />
+              <SkeletonBase className="h-4 w-24" />
+              <SkeletonBase className="h-4 w-20 shrink-0" />
             </div>
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--fs-caption)' }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
           예정된 결제가 없어요
         </div>
       ) : (
@@ -458,8 +441,8 @@ function UpcomingBillsCard() {
                 type="button"
                 onClick={() => goToSettings(it.rowId)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  padding: '16px 18px',
                   background: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
@@ -472,35 +455,17 @@ function UpcomingBillsCard() {
               >
                 <span
                   style={{
-                    width: 32, height: 32, borderRadius: 'var(--radius-tile)', flexShrink: 0,
-                    background: 'var(--bg-income-subtle)', color: 'var(--fg-income)',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 'var(--text-body-sm)',
+                    fontWeight: urgent ? 600 : 500,
+                    color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
                   }}
                 >
-                  <CreditCard size={15} />
+                  {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
                 </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {it.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 'var(--fs-caption)', marginTop: 1,
-                      color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
-                      fontWeight: urgent ? 600 : 400,
-                    }}
-                  >
-                    {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
-                  </div>
-                </div>
-                <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-snug)' }}>
+                <span className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', flexShrink: 0 }}>
                   <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
-                </div>
+                </span>
               </button>
             )
           })}
@@ -537,7 +502,7 @@ function SavingGoalItem({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span
           style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-tile)',
+            width: 32, height: 32, borderRadius: tileRadius(32),
             background: `oklch(from ${color} l c h / 0.12)`,
             color,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -549,7 +514,7 @@ function SavingGoalItem({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)',
+              fontSize: 'var(--text-body-sm)', fontWeight: '600',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}
           >
@@ -561,8 +526,8 @@ function SavingGoalItem({
                   padding: '1px 6px',
                   background: 'var(--bg-brand-subtle)',
                   color: 'var(--fg-brand-strong)',
-                  fontSize: 'var(--fs-micro)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontSize: 'var(--text-badge)',
+                  fontWeight: '600',
                   borderRadius: 'var(--radius-sm)',
                 }}
               >
@@ -570,13 +535,13 @@ function SavingGoalItem({
               </span>
             )}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
             {formatDeadline(goal.deadlineDate)}
           </div>
         </div>
         <div className="num" style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)' }}>{pct.toFixed(0)}%</div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{pct.toFixed(0)}%</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
             {KRW(goal.currentAmount)} / {(goal.targetAmount / 10_000).toFixed(0)}만
           </div>
         </div>
@@ -611,7 +576,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>저축 목표</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>저축 목표</CardTitle>
         <Button
           variant="ghost"
           size="sm"
@@ -645,8 +610,8 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '20px 0', textAlign: 'center' }}>
           <div
             style={{
-              fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)',
-              fontWeight: 'var(--fw-medium)', marginBottom: 10,
+              fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)',
+              fontWeight: '500', marginBottom: 10,
             }}
           >
             저축 목표를 추가해보세요
@@ -688,12 +653,6 @@ const CARD_TYPES: AssetType[] = ['CREDIT_CARD', 'CHECK_CARD']
 const INVESTMENT_TYPES: AssetType[] = ['INVESTMENT']
 const LOAN_TYPES: AssetType[] = ['LOAN']
 
-function hashHue(text: string): number {
-  let h = 0
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) & 0xffffffff
-  return Math.abs(h) % 360
-}
-
 /**
  * AssetPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
  * 자식 컴포넌트가 동일 쿼리를 호출해도 TanStack Query 캐시 히트라 추가 fetch 없음 —
@@ -716,7 +675,7 @@ function useAssetPageData() {
 function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <AssetSummarySkeleton mobile />
         <AssetCompositionSkeleton />
         <TypeGroupSkeleton rows={3} />
@@ -911,44 +870,65 @@ export const AssetPage = () => {
   return mobile ? <AssetMobile /> : <AssetDesktop />
 }
 
-function AssetLogo({ asset }: { asset: Asset }) {
-  const label = (asset.institution ?? asset.assetName ?? '?').trim().charAt(0) || '?'
-  const brand = getBrandColor(asset.institution, asset.assetName)
-  const bg = asset.color ?? brand?.bg ?? `oklch(0.55 0.12 ${hashHue(asset.assetName ?? 'asset')})`
-  const fg = brand?.fg ?? '#fff'
-  const iconChar = asset.icon && asset.icon.trim().length > 0 ? asset.icon.trim().charAt(0) : null
+// 카드 사용률 게이지 — usage = abs(balance)/creditLimit*100.
+// 70%↑ status-warning, 90%↑ status-danger. SavingGoalItem 진행률 바 패턴 재활용(height 6px pill bg-sunken).
+function CardUsageGauge({ asset }: { asset: Asset }) {
+  if (asset.assetType !== 'CREDIT_CARD' || asset.creditLimit == null || asset.creditLimit <= 0) {
+    return null
+  }
+  const used = Math.abs(asset.balance)
+  const usage = (used / asset.creditLimit) * 100
+  const barColor =
+    usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--fg-brand)'
+
   return (
-    <span
-      style={{
-        width: 40,
-        height: 40,
-        borderRadius: 'var(--radius-tile)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 'var(--fs-body)',
-        fontWeight: 'var(--fw-heavy)',
-        letterSpacing: 'var(--tracking-tight)',
-        flexShrink: 0,
-        background: bg,
-        color: fg,
-      }}
-    >
-      {iconChar ?? label}
-    </span>
+    <div style={{ marginTop: 8 }}>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8, marginBottom: 4,
+        }}
+      >
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
+          {asset.paymentDay != null ? `${asset.paymentDay}일 결제 · ` : ''}
+          한도 <MaskAmount mask="••••">{KRW(asset.creditLimit)}</MaskAmount>
+        </span>
+        <span
+          className="num"
+          style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: barColor }}
+        >
+          {usage.toFixed(0)}%
+        </span>
+      </div>
+      <div
+        style={{
+          height: 6, background: 'var(--bg-sunken)',
+          borderRadius: 'var(--radius-pill)', overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, usage)}%`, height: '100%',
+            background: barColor, borderRadius: 'var(--radius-pill)',
+          }}
+        />
+      </div>
+    </div>
   )
 }
 
-// AssetCard: 기존 .acc-card / __meta / __name / __num / __amt CSS spec 보존.
-// hover: border-color, translate, shadow 효과는 Tailwind hover + arbitrary value 로 매핑.
+// AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,
+// item 사이 border-top 구분선 (TypeGroup 에서 처리). hover 는 background tint 만.
 function AssetCard({
   asset,
   negativeAmount = false,
   onOpenDetail,
+  showTopBorder = false,
 }: {
   asset: Asset
   negativeAmount?: boolean
   onOpenDetail: (asset: Asset) => void
+  showTopBorder?: boolean
 }) {
   return (
     <div
@@ -956,16 +936,12 @@ function AssetCard({
       tabIndex={0}
       className={[
         'flex items-center gap-[14px] cursor-pointer',
-        'border border-solid',
-        'transition-all duration-[var(--dur-fast)]',
-        'hover:-translate-y-px hover:shadow-[var(--shadow-sm)]',
-        'hover:border-[var(--border-default)]',
+        'transition-colors duration-[var(--motion-duration-fast)]',
+        'hover:bg-[var(--bg-muted)]',
       ].join(' ')}
       style={{
-        background: 'var(--bg-surface)',
-        borderColor: 'var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '16px 18px',
+        padding: '14px 4px',
+        borderTop: showTopBorder ? '1px solid var(--border-subtle)' : 'none',
       }}
       onClick={() => onOpenDetail(asset)}
       onKeyDown={(e) => {
@@ -977,14 +953,14 @@ function AssetCard({
     >
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
           {asset.assetName}
           {asset.institution && (
             <span
               style={{
-                fontWeight: 'var(--fw-medium)',
+                fontWeight: '500',
                 color: 'var(--fg-tertiary)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 marginLeft: 6,
               }}
             >
@@ -995,7 +971,7 @@ function AssetCard({
         {asset.memo && (
           <div
             style={{
-              fontSize: 'var(--fs-caption)',
+              fontSize: 'var(--text-caption)',
               color: 'var(--fg-tertiary)',
               marginTop: 1,
               fontVariantNumeric: 'tabular-nums',
@@ -1004,14 +980,15 @@ function AssetCard({
             {asset.memo}
           </div>
         )}
+        <CardUsageGauge asset={asset} />
       </div>
       <div
         className="num"
         style={{
-          fontSize: 'var(--fs-body-lg)',
-          fontWeight: 'var(--fw-bold)',
+          fontSize: 'var(--text-body-lg)',
+          fontWeight: '700',
           fontVariantNumeric: 'tabular-nums',
-          letterSpacing: 'var(--tracking-tight)',
+          letterSpacing: '-0.022em',
           flexShrink: 0,
         }}
       >
@@ -1031,7 +1008,6 @@ function TypeGroup({
   assets,
   total,
   totalColor,
-  onAdd,
   onOpenDetail,
   negativeTotal = false,
 }: {
@@ -1040,31 +1016,22 @@ function TypeGroup({
   total: number
   totalColor?: string
   mobile: boolean
-  onAdd: () => void
   onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
 }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--fs-body-lg)' }}>{title}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{title}</CardTitle>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: totalColor }}
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: totalColor }}
         >
           <MaskAmount>
             {negativeTotal ? `−${KRW(total)}` : KRW(total)}
           </MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          style={{ marginLeft: 8 }}
-          onClick={onAdd}
-        >
-          <Plus size={13} />추가
-        </Button>
       </CardHeader>
       <CardContent>
       {assets.length === 0 ? (
@@ -1073,19 +1040,20 @@ function TypeGroup({
             padding: '24px 0',
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
           }}
         >
           등록된 항목이 없어요
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {assets.map(a => (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {assets.map((a, i) => (
             <AssetCard
               key={a.rowId}
               asset={a}
               negativeAmount={negativeTotal}
               onOpenDetail={onOpenDetail}
+              showTopBorder={i > 0}
             />
           ))}
         </div>
@@ -1126,7 +1094,7 @@ function SummaryCard({
     <Card style={{ marginBottom: mobile ? 16 : 20 }}>
       <CardContent>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>총 순자산</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>총 순자산</span>
         <button
           onClick={handleHideToggle}
           style={{
@@ -1146,15 +1114,15 @@ function SummaryCard({
         className="num"
         style={{
           fontSize: mobile ? 28 : 36,
-          fontWeight: 'var(--fw-heavy)',
-          letterSpacing: 'var(--tracking-tight)',
-          lineHeight: 'var(--lh-tight)',
+          fontWeight: '800',
+          letterSpacing: '-0.022em',
+          lineHeight: '1.15',
           marginBottom: 6,
         }}
       >
         {isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
         <HideUnit>
-          <span style={{ fontSize: mobile ? 16 : 20, fontWeight: 'var(--fw-bold)', marginLeft: 4 }}>원</span>
+          <span style={{ fontSize: mobile ? 16 : 20, fontWeight: '700', marginLeft: 4 }}>원</span>
         </HideUnit>
       </div>
       <div
@@ -1162,7 +1130,7 @@ function SummaryCard({
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          fontSize: 'var(--fs-body-sm)',
+          fontSize: 'var(--text-label-sm)',
           color: 'var(--fg-secondary)',
           marginBottom: mobile ? 14 : 18,
         }}
@@ -1173,7 +1141,7 @@ function SummaryCard({
             alignItems: 'center',
             gap: 2,
             color: isUp ? 'var(--fg-income)' : 'var(--fg-expense)',
-            fontWeight: 'var(--fw-semi)',
+            fontWeight: '600',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
@@ -1181,7 +1149,7 @@ function SummaryCard({
           {isUp ? '+' : ''}{changePercent.toFixed(1)}%
           {changeAmount !== 0 && (
             <HideUnit>
-              <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: 'var(--fw-medium)' }}>
+              <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
                 ({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)
               </span>
             </HideUnit>
@@ -1203,22 +1171,22 @@ function SummaryCard({
         }}
       >
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>계좌·예금</div>
-          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)' }}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>계좌·예금</div>
+          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
             <MaskAmount>{KRW(accountsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>투자</div>
-          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)' }}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>투자</div>
+          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
             <MaskAmount>{KRW(investmentsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>카드값</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>카드값</div>
           <div
             className="num"
-            style={{ fontSize: mobile ? 14 : 16, fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)' }}
+            style={{ fontSize: mobile ? 14 : 16, fontWeight: '700', color: 'var(--fg-expense)' }}
           >
             <MaskAmount>−{KRW(cardsTotal)}</MaskAmount>
           </div>
@@ -1279,15 +1247,11 @@ function useAssetGroups() {
 }
 
 function AssetDesktop() {
+  const navigate = useNavigate()
   const hidden = useHideAmounts()
   const g = useAssetGroups()
-  const [addOpen, setAddOpen] = useState(false)
-  const [investOpen, setInvestOpen] = useState(false)
-  const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [editAsset, setEditAsset] = useState<Asset | null>(null)
   const [unlockOpen, setUnlockOpen] = useState(false)
-  const updateMut = useUpdateAsset()
 
   const handleHideToggle = () => {
     if (hidden) setUnlockOpen(true)
@@ -1319,9 +1283,6 @@ function AssetDesktop() {
           >
             <RefreshCw size={13} /> 새로고침
           </Button>
-          <Button size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> 계좌 추가
-          </Button>
         </div>
       </div>
 
@@ -1330,17 +1291,17 @@ function AssetDesktop() {
           <CardContent style={{ padding: '64px 20px', textAlign: 'center' }}>
             <div
               style={{
-                fontSize: 'var(--fs-body)',
+                fontSize: 'var(--text-body-sm)',
                 color: 'var(--fg-tertiary)',
-                fontWeight: 'var(--fw-medium)',
+                fontWeight: '500',
                 marginBottom: 12,
               }}
             >
               아직 등록된 자산이 없어요
             </div>
-            <Button size="sm" onClick={() => setAddOpen(true)}>
-              <Plus size={14} /> 첫 자산 추가하기
-            </Button>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+              설정 → 카드·계좌 관리에서 추가할 수 있어요
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -1371,7 +1332,6 @@ function AssetDesktop() {
               assets={g.accounts}
               total={g.accountsTotal}
               mobile={false}
-              onAdd={() => setAddOpen(true)}
               onOpenDetail={setDetailAsset}
             />
             {g.investments.length > 0 && (
@@ -1380,7 +1340,6 @@ function AssetDesktop() {
                 assets={g.investments}
                 total={g.investmentsTotal}
                 mobile={false}
-                onAdd={() => setInvestOpen(true)}
                 onOpenDetail={setDetailAsset}
               />
             )}
@@ -1391,7 +1350,6 @@ function AssetDesktop() {
               totalColor="var(--fg-expense)"
               negativeTotal
               mobile={false}
-              onAdd={() => setCardOpen(true)}
               onOpenDetail={setDetailAsset}
             />
             {g.loans.length > 0 && (
@@ -1402,7 +1360,6 @@ function AssetDesktop() {
                 totalColor="var(--fg-expense)"
                 negativeTotal
                 mobile={false}
-                onAdd={() => setAddOpen(true)}
                 onOpenDetail={setDetailAsset}
               />
             )}
@@ -1410,37 +1367,15 @@ function AssetDesktop() {
           </div>
         </div>
       )}
-      <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
-      <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
-      <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
       {detailAsset && (
         <AssetDetailDialog
           asset={detailAsset}
           mobile={false}
           onClose={() => setDetailAsset(null)}
-          onEdit={asset => {
-            setEditAsset(asset)
+          onEdit={() => {
+            navigate('/desk/settings?section=accounts')
             setDetailAsset(null)
           }}
-        />
-      )}
-      {editAsset && (
-        <AssetEditDialog
-          item={editAsset}
-          group={assetGroupOf(editAsset)}
-          mobile={false}
-          onClose={() => setEditAsset(null)}
-          onCreate={(values: AssetFormValues) => {
-            /* edit 모드에서는 호출되지 않음 */
-            void values
-          }}
-          onUpdate={(values: AssetUpdateFormValues) => {
-            updateMut.mutate(
-              { id: editAsset.rowId, data: values },
-              { onSuccess: () => setEditAsset(null) },
-            )
-          }}
-          isSubmitting={updateMut.isPending}
         />
       )}
       <HideAmountsUnlockDialog
@@ -1453,13 +1388,9 @@ function AssetDesktop() {
 }
 
 function AssetMobile() {
+  const navigate = useNavigate()
   const g = useAssetGroups()
-  const [addOpen, setAddOpen] = useState(false)
-  const [investOpen, setInvestOpen] = useState(false)
-  const [cardOpen, setCardOpen] = useState(false)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [editAsset, setEditAsset] = useState<Asset | null>(null)
-  const updateMut = useUpdateAsset()
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1469,31 +1400,30 @@ function AssetMobile() {
 
   if (isEmpty) {
     return (
-      <div style={{ padding: '4px 20px 24px' }}>
+      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
         <Card>
           <CardContent style={{ padding: '48px 20px', textAlign: 'center' }}>
             <div
               style={{
-                fontSize: 'var(--fs-body)',
+                fontSize: 'var(--text-body-sm)',
                 color: 'var(--fg-tertiary)',
-                fontWeight: 'var(--fw-medium)',
+                fontWeight: '500',
                 marginBottom: 12,
               }}
             >
               아직 등록된 자산이 없어요
             </div>
-            <Button size="sm" onClick={() => setAddOpen(true)}>
-              <Plus size={14} /> 첫 자산 추가하기
-            </Button>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+              설정 → 카드·계좌 관리에서 추가할 수 있어요
+            </div>
           </CardContent>
         </Card>
-        <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '4px 20px 24px' }}>
+    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
       <SummaryCard
         mobile
         netWorth={g.netWorth}
@@ -1510,7 +1440,6 @@ function AssetMobile() {
           assets={g.accounts}
           total={g.accountsTotal}
           mobile
-          onAdd={() => setAddOpen(true)}
           onOpenDetail={setDetailAsset}
         />
         {g.investments.length > 0 && (
@@ -1519,7 +1448,6 @@ function AssetMobile() {
             assets={g.investments}
             total={g.investmentsTotal}
             mobile
-            onAdd={() => setInvestOpen(true)}
             onOpenDetail={setDetailAsset}
           />
         )}
@@ -1530,7 +1458,6 @@ function AssetMobile() {
           totalColor="var(--fg-expense)"
           negativeTotal
           mobile
-          onAdd={() => setCardOpen(true)}
           onOpenDetail={setDetailAsset}
         />
         {g.loans.length > 0 && (
@@ -1541,41 +1468,19 @@ function AssetMobile() {
             totalColor="var(--fg-expense)"
             negativeTotal
             mobile
-            onAdd={() => setAddOpen(true)}
             onOpenDetail={setDetailAsset}
           />
         )}
       </div>
-      <AssetAddDialog open={addOpen} onClose={() => setAddOpen(false)} />
-      <InvestmentAddDialog open={investOpen} onClose={() => setInvestOpen(false)} />
-      <CardAddDialog open={cardOpen} onClose={() => setCardOpen(false)} />
       {detailAsset && (
         <AssetDetailDialog
           asset={detailAsset}
           mobile
           onClose={() => setDetailAsset(null)}
-          onEdit={asset => {
-            setEditAsset(asset)
+          onEdit={() => {
+            navigate('/desk/settings?section=accounts')
             setDetailAsset(null)
           }}
-        />
-      )}
-      {editAsset && (
-        <AssetEditDialog
-          item={editAsset}
-          group={assetGroupOf(editAsset)}
-          mobile
-          onClose={() => setEditAsset(null)}
-          onCreate={(values: AssetFormValues) => {
-            void values
-          }}
-          onUpdate={(values: AssetUpdateFormValues) => {
-            updateMut.mutate(
-              { id: editAsset.rowId, data: values },
-              { onSuccess: () => setEditAsset(null) },
-            )
-          }}
-          isSubmitting={updateMut.isPending}
         />
       )}
     </div>

@@ -14,7 +14,6 @@ import koAsset from '@/locales/ko/asset.json'
 import koDashboard from '@/locales/ko/dashboard.json'
 import koDutchPay from '@/locales/ko/dutchPay.json'
 import koNotification from '@/locales/ko/notification.json'
-import koGroup from '@/locales/ko/group.json'
 import koLogin from '@/locales/ko/login.json'
 import koUser from '@/locales/ko/user.json'
 
@@ -29,7 +28,6 @@ import enAsset from '@/locales/en/asset.json'
 import enDashboard from '@/locales/en/dashboard.json'
 import enDutchPay from '@/locales/en/dutchPay.json'
 import enNotification from '@/locales/en/notification.json'
-import enGroup from '@/locales/en/group.json'
 import enLogin from '@/locales/en/login.json'
 import enUser from '@/locales/en/user.json'
 
@@ -41,7 +39,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo',
   'timer', 'expense', 'asset', 'dashboard', 'dutchPay',
-  'notification', 'group', 'login', 'user'
+  'notification', 'login', 'user'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
 
@@ -59,7 +57,6 @@ const resources = {
     dashboard: koDashboard,
     dutchPay: koDutchPay,
     notification: koNotification,
-    group: koGroup,
     login: koLogin,
     user: koUser,
   },
@@ -75,7 +72,6 @@ const resources = {
     dashboard: enDashboard,
     dutchPay: enDutchPay,
     notification: enNotification,
-    group: enGroup,
     login: enLogin,
     user: enUser,
   },

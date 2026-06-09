@@ -24,6 +24,9 @@ import {
   useUpdateSavingGoal,
 } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
+import { tileRadius } from '@/shared/lib'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 
 const GOAL_ICONS: { k: IconName; label: string }[] = [
   { k: 'plane', label: '여행' },
@@ -36,15 +39,6 @@ const GOAL_ICONS: { k: IconName; label: string }[] = [
   { k: 'heart', label: '건강' },
   { k: 'piggy-bank', label: '저축' },
   { k: 'wallet', label: '지갑' },
-]
-
-const GOAL_COLORS = [
-  'var(--sky-500)',
-  'var(--bg-brand)',
-  'var(--fg-expense)',
-  'var(--clay-500)',
-  'oklch(0.60 0.18 290)',
-  'oklch(0.58 0.15 180)',
 ]
 
 function formatDeadlineLabel(iso: string): string {
@@ -83,7 +77,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   )
   const [deadlineDate, setDeadlineDate] = useState<string>(goal?.deadlineDate ?? '')
   const [icon, setIcon] = useState<IconName>(((goal?.icon as IconName) || 'piggy-bank') as IconName)
-  const [color, setColor] = useState<string>(goal?.color ?? GOAL_COLORS[0]!)
+  const [color, setColor] = useState<string>(goal?.color ?? CAT_PALETTE[0]!.baseHex)
   const [err, setErr] = useState<string>('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -241,7 +235,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             style={{
               width: 36,
               height: 36,
-              borderRadius: 'var(--radius-tile)',
+              borderRadius: tileRadius(36),
               background: `oklch(from ${color} l c h / 0.12)`,
               color,
               display: 'inline-flex',
@@ -255,8 +249,8 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 'var(--fs-body)',
-                fontWeight: 'var(--fw-bold)',
+                fontSize: 'var(--text-body-sm)',
+                fontWeight: '700',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -264,15 +258,15 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             >
               {title || '목표 이름'}
             </div>
-            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)' }}>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
               {formatDeadlineLabel(deadlineDate)}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="num" style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>
+            <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
               {pct.toFixed(0)}%
             </div>
-            <div className="num" style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)' }}>
+            <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
               {current.toLocaleString('ko-KR')} / {target.toLocaleString('ko-KR')}
             </div>
           </div>
@@ -337,7 +331,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 right: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                fontSize: 'var(--fs-body-sm)',
+                fontSize: 'var(--text-label-sm)',
                 color: 'var(--fg-tertiary)',
                 pointerEvents: 'none',
               }}
@@ -366,7 +360,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 right: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                fontSize: 'var(--fs-body-sm)',
+                fontSize: 'var(--text-label-sm)',
                 color: 'var(--fg-tertiary)',
                 pointerEvents: 'none',
               }}
@@ -379,7 +373,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>
-          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)' }}>(선택)</span>
+          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400' }}>(선택)</span>
         </FieldLabel>
         <InputDatePicker
           value={deadlineDate}
@@ -424,31 +418,17 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field>
         <FieldLabel>색상</FieldLabel>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {GOAL_COLORS.map(c => {
-            const active = color === c
-            return (
-              <button
-                key={c}
-                type="button"
-                aria-label={`색상 ${c}`}
-                onClick={() => setColor(c)}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 'var(--radius-tile)',
-                  background: c,
-                  border: active ? '2px solid var(--fg-primary)' : '2px solid transparent',
-                  boxShadow: active
-                    ? `0 0 0 2px var(--bg-surface), 0 0 0 3.5px ${c}`
-                    : 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              />
-            )
-          })}
-        </div>
+        <ColorSwatchGroup
+          columns={5}
+          value={color}
+          onValueChange={setColor}
+          options={CAT_PALETTE.map((p, i) => ({
+            value: p.baseHex,
+            bg: p.bg,
+            fg: p.color,
+            label: `색상 ${i + 1}`,
+          }))}
+        />
       </Field>
 
       {err && (
@@ -459,7 +439,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             background: 'oklch(0.96 0.04 20)',
             border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
             borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--fs-body-sm)',
+            fontSize: 'var(--text-label-sm)',
             color: 'var(--fg-expense)',
             display: 'flex',
             alignItems: 'center',

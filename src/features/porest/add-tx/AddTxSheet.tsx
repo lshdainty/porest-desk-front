@@ -6,8 +6,10 @@ import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { KRW } from '@/shared/lib/porest/format'
 import {
   Select,
@@ -209,7 +211,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   }, [type, categoryRowId, categories])
 
   const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0
-  const amountFormatted = amountNumber.toLocaleString('ko-KR')
 
   const canSave = (() => {
     if (amountNumber <= 0) return false
@@ -280,7 +281,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     type === 'EXPENSE' ? 'var(--fg-expense)'
     : type === 'INCOME' ? 'var(--fg-income)'
     : 'var(--fg-primary)'
-  const amountPrefix = type === 'EXPENSE' ? '−' : type === 'INCOME' ? '+' : ''
 
   const Footer = (
     <>
@@ -317,54 +317,38 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       footer={Footer}
       mobile={mobile}
     >
-      {/* 타입 segment */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 2,
-          padding: 3,
-          background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-tile)',
-          marginBottom: 20,
+      {/* 타입 segment — spec toggle-group.md variant="segmented" (single) */}
+      <ToggleGroup
+        type="single"
+        variant="segmented"
+        value={type}
+        onValueChange={(v) => {
+          if (!v) return
+          const lockedTo = isEdit ? expense?.expenseType ?? type : null
+          if (lockedTo != null && v !== lockedTo) return
+          setType(v as TxType)
+          clearPresetMark()
         }}
+        className="mb-[var(--spacing-md)]"
       >
         {([
-          { v: 'EXPENSE', l: '지출', c: 'var(--fg-expense)' },
-          { v: 'INCOME', l: '수입', c: 'var(--fg-income)' },
-          { v: 'TRANSFER', l: '이체', c: 'var(--fg-transfer)' },
-        ] as { v: TxType; l: string; c: string }[]).map(o => {
-          const active = type === o.v
-          const disabled = isEdit && o.v !== (expense?.expenseType ?? type) // edit 모드는 타입 변경 막음
+          { v: 'EXPENSE', l: '지출' },
+          { v: 'INCOME', l: '수입' },
+          { v: 'TRANSFER', l: '이체' },
+        ] as { v: TxType; l: string }[]).map(o => {
+          const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
           return (
-            <button
+            <ToggleGroupItem
               key={o.v}
-              type="button"
-              onClick={() => {
-                if (disabled) return
-                setType(o.v)
-                clearPresetMark()
-              }}
+              value={o.v}
               disabled={disabled}
-              style={{
-                background: active ? 'var(--bg-surface)' : 'transparent',
-                color: active ? o.c : 'var(--fg-secondary)',
-                border: 0,
-                padding: '8px 0',
-                fontSize: 'var(--fs-body)',
-                fontWeight: 'var(--fw-bold)',
-                borderRadius: 'var(--radius-md)',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                opacity: disabled ? 0.4 : 1,
-                fontFamily: 'inherit',
-                boxShadow: active ? 'var(--shadow-xs)' : 'none',
-              }}
+              aria-label={o.l}
             >
               {o.l}
-            </button>
+            </ToggleGroupItem>
           )
         })}
-      </div>
+      </ToggleGroup>
 
       {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
       {!isEdit && type !== 'TRANSFER' && (
@@ -381,10 +365,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               <Bookmark size={13} style={{ color: 'var(--fg-tertiary)' }} />
               <span
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-tertiary)',
-                  fontWeight: 'var(--fw-semi)',
-                  letterSpacing: 'var(--tracking-wide)',
+                  fontWeight: '600',
+                  letterSpacing: '0.04em',
                   textTransform: 'uppercase',
                 }}
               >
@@ -393,9 +377,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               {activePresetId != null && (
                 <span
                   style={{
-                    fontSize: 'var(--fs-micro)',
+                    fontSize: 'var(--text-badge)',
                     color: 'var(--fg-brand-strong)',
-                    fontWeight: 'var(--fw-bold)',
+                    fontWeight: '700',
                     padding: '2px 6px',
                     background: 'var(--bg-brand-subtle)',
                     borderRadius: 'var(--radius-xs)',
@@ -413,9 +397,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 background: 'transparent',
                 border: 0,
                 padding: 0,
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: amountNumber > 0 && categoryRowId ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                fontWeight: 'var(--fw-semi)',
+                fontWeight: '600',
                 cursor: amountNumber > 0 && categoryRowId ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
@@ -445,7 +429,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 const active = activePresetId === p.rowId
                 const showAmount = p.lockAmount === 'Y' && p.amount != null
                 const cat = p.categoryRowId != null ? categories.find(c => c.rowId === p.categoryRowId) : undefined
-                const catColor = cat?.color ?? 'var(--bg-brand)'
+                // 카테고리 아이콘색 — 다크모드 light variant 자동 swap(앱 resolveChartColor 정합)
+                const catPal = getPaletteByColor(cat?.color)
                 return (
                   <button
                     key={p.rowId}
@@ -457,16 +442,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       alignItems: 'center',
                       gap: 7,
                       padding: '7px 11px',
-                      background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                      border: active ? '1px solid var(--border-brand)' : '1px solid var(--border-subtle)',
+                      // border 사각형 제거 — 아이콘+글씨만 노출. active 만 subtle 채움으로 강조.
+                      background: active ? 'var(--bg-brand-subtle)' : 'transparent',
+                      border: 'none',
                       borderRadius: 'var(--radius-pill)',
                       cursor: 'pointer',
-                      fontSize: 'var(--fs-body-sm)',
+                      fontSize: 'var(--text-label-sm)',
                       fontWeight: active ? 700 : 600,
                       color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
                       whiteSpace: 'nowrap',
                       transition: 'all 0.12s',
-                      boxShadow: active ? '0 0 0 2px var(--bg-brand-subtle)' : 'none',
                       fontFamily: 'inherit',
                     }}
                   >
@@ -476,8 +461,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                           width: 18,
                           height: 18,
                           borderRadius: 'var(--radius-sm)',
-                          background: `color-mix(in oklch, ${catColor} 18%, transparent)`,
-                          color: catColor,
+                          background: catPal.bg,
+                          color: catPal.color,
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -492,9 +477,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                       <span
                         className="num"
                         style={{
-                          fontSize: 'var(--fs-micro)',
+                          fontSize: 'var(--text-badge)',
                           color: active ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                          fontWeight: 'var(--fw-semi)',
+                          fontWeight: '600',
                         }}
                       >
                         {(p.amount as number) >= 10000
@@ -516,8 +501,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     background: 'transparent',
                     border: '1px dashed var(--border-default)',
                     borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--fs-caption)',
-                    fontWeight: 'var(--fw-semi)',
+                    fontSize: 'var(--text-caption)',
+                    fontWeight: '600',
                     color: 'var(--fg-tertiary)',
                     whiteSpace: 'nowrap',
                   }}
@@ -534,7 +519,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 background: 'var(--bg-sunken)',
                 border: '1px dashed var(--border-default)',
                 borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 color: 'var(--fg-tertiary)',
               }}
             >
@@ -558,9 +543,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               <Info size={13} style={{ color: 'var(--fg-brand-strong)' }} />
               <span
                 style={{
-                  fontSize: 'var(--fs-caption)',
+                  fontSize: 'var(--text-caption)',
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontWeight: '600',
                   flex: 1,
                 }}
               >
@@ -573,9 +558,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   background: 'transparent',
                   border: 0,
                   padding: 0,
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-brand-strong)',
-                  fontWeight: 'var(--fw-bold)',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   textDecoration: 'underline',
                   fontFamily: 'inherit',
@@ -598,10 +583,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           placeholder="0"
           inputMode="numeric"
           style={{
-            fontSize: 'var(--fs-h4)',
-            fontWeight: 'var(--fw-bold)',
+            fontSize: 'var(--text-title-md)',
+            fontWeight: '700',
             color: amountColor,
-            background: 'var(--bg-surface)',
           }}
         />
       </Field>
@@ -610,15 +594,15 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         <>
           {/* 카테고리 */}
           {topCategories.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 'var(--spacing-md)' }}>
               <div
                 style={{
-                  fontSize: 'var(--fs-micro)',
+                  fontSize: 'var(--text-badge)',
                   color: 'var(--fg-tertiary)',
-                  fontWeight: 'var(--fw-semi)',
-                  letterSpacing: 'var(--tracking-wide)',
+                  fontWeight: '600',
+                  letterSpacing: '0.04em',
                   textTransform: 'uppercase',
-                  marginBottom: 10,
+                  marginBottom: 'var(--spacing-sm)',
                 }}
               >
                 카테고리
@@ -713,7 +697,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             <FieldLabel>
               {type === 'INCOME' ? '입금 계좌' : '계좌·카드'}
               {paymentMethod && filteredAssets.length !== assets.length && (
-                <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)', marginLeft: 4 }}>
+                <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>
                   ({PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? ''} 기준)
                 </span>
               )}
@@ -738,7 +722,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               </SelectContent>
             </Select>
             {paymentMethod && filteredAssets.length === 0 && (
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
                 해당 결제 수단에 연결된 자산이 없어요.
               </div>
             )}
@@ -862,8 +846,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             onClick={e => e.stopPropagation()}
           >
             <CardContent>
-              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', marginBottom: 8 }}>거래 삭제</div>
-              <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-loose)', marginBottom: 16 }}>
+              <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 8 }}>거래 삭제</div>
+              <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: '1.7', marginBottom: 16 }}>
                 선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -974,8 +958,8 @@ function SavePresetDialog({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--fs-body)',
-              fontWeight: 'var(--fw-bold)',
+              fontSize: 'var(--text-body-sm)',
+              fontWeight: '700',
               color: 'var(--fg-primary)',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -984,7 +968,7 @@ function SavePresetDialog({
           >
             {seed.merchant || '내역 없음'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {seed.categoryName ?? '카테고리 미선택'}
             {seed.assetName ? ` · ${seed.assetName}` : ''}
           </div>
@@ -992,8 +976,8 @@ function SavePresetDialog({
         <div
           className="num"
           style={{
-            fontSize: 'var(--fs-body-lg)',
-            fontWeight: 'var(--fw-heavy)',
+            fontSize: 'var(--text-body-lg)',
+            fontWeight: '800',
             color: seed.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         >
@@ -1030,8 +1014,8 @@ function SavePresetDialog({
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-semi)', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: 'var(--lh-snug)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: '1.3' }}>
             {lockAmount
               ? `${KRW(seed.amount)}원이 항상 채워집니다.`
               : '체크 해제 시 금액은 비워두고 매번 직접 입력합니다.'}
@@ -1040,7 +1024,7 @@ function SavePresetDialog({
       </label>
 
       {seed.categoryRowId == null && (
-        <div style={{ marginTop: 10, fontSize: 'var(--fs-caption)', color: 'var(--fg-expense)' }}>
+        <div style={{ marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-expense)' }}>
           저장하려면 먼저 카테고리를 선택해주세요.
         </div>
       )}

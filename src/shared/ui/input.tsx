@@ -15,8 +15,8 @@ import { cn } from "@/shared/lib/index"
  * - 사이즈 예외 필요 시 사용처 className으로 (예: `className="h-12 text-title-md"`)
  */
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input"> & { search?: boolean }>(
+  ({ className, type, search = false, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -28,6 +28,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
           "aria-invalid:border-error aria-invalid:ring-2 aria-invalid:ring-error/30",
           "disabled:cursor-not-allowed disabled:opacity-50",
+          // search variant — 헤더(top__search) 정합: compact·radius-md·테두리 없음·filled·label-sm
+          search &&
+            "h-9 rounded-[var(--radius-md)] border-transparent bg-[var(--bg-muted)] text-label-sm focus-visible:bg-[var(--bg-surface)] focus-visible:ring-0",
           className,
         )}
         {...props}

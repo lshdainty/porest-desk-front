@@ -122,7 +122,7 @@ export function LineChart({
                 x={padL - 6}
                 y={y + 3}
                 fontSize="10"
-                fill="var(--mist-500)"
+                fill="var(--color-text-tertiary)"
                 textAnchor="end"
                 fontFamily="var(--font-sans)"
               >
@@ -137,7 +137,7 @@ export function LineChart({
             x={padL + i * step}
             y={h - padB + 16}
             fontSize="10"
-            fill="var(--mist-500)"
+            fill="var(--color-text-tertiary)"
             textAnchor="middle"
             fontFamily="var(--font-sans)"
           >
@@ -195,13 +195,13 @@ export function LineChart({
                 borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 pointerEvents: 'none',
                 minWidth: 120,
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
                 {labels[hover.i]}
               </div>
               {series.map((s, si) => (
@@ -213,18 +213,18 @@ export function LineChart({
                     style={{
                       width: 8,
                       height: 8,
-                      borderRadius: 'var(--radius-2xs)',
+                      borderRadius: 'var(--radius-xs)',
                       background: colors[si] || colors[0],
                       display: 'inline-block',
                     }}
                   />
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>{s.label}</span>
+                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{s.label}</span>
                   <span
                     className="num"
                     style={{
                       marginLeft: 'auto',
-                      fontSize: 'var(--fs-caption)',
-                      fontWeight: 'var(--fw-bold)',
+                      fontSize: 'var(--text-caption)',
+                      fontWeight: '700',
                       color: 'var(--fg-primary)',
                     }}
                   >
@@ -298,7 +298,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 strokeWidth="1"
                 strokeDasharray={i === 0 ? '0' : '3 3'}
               />
-              <text x={padL - 6} y={y + 3} fontSize="10" fill="var(--mist-500)" textAnchor="end">
+              <text x={padL - 6} y={y + 3} fontSize="10" fill="var(--color-text-tertiary)" textAnchor="end">
                 {v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : ''}
               </text>
             </g>
@@ -332,7 +332,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 fill="var(--fg-expense)"
                 opacity={isHover ? 1 : 0.92}
               />
-              <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--mist-500)" textAnchor="middle">
+              <text x={cx} y={h - padB + 16} fontSize="10" fill="var(--color-text-tertiary)" textAnchor="middle">
                 {d.label}
               </text>
             </g>
@@ -356,26 +356,26 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 borderRadius: 'var(--radius-tile)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '8px 12px',
-                fontSize: 'var(--fs-caption)',
+                fontSize: 'var(--text-caption)',
                 pointerEvents: 'none',
                 minWidth: 130,
                 zIndex: 'var(--z-base)',
               } as React.CSSProperties}
             >
-              <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-semi)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
                 {d.label}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--border-brand)' }} />
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>수입</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {KRW(d.income)}원
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-2xs)', background: 'var(--fg-expense)' }} />
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>지출</span>
-                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {KRW(d.expense)}원
                 </span>
               </div>
@@ -389,13 +389,13 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   borderTop: '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-secondary)' }}>저축</span>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>저축</span>
                 <span
                   className="num"
                   style={{
                     marginLeft: 'auto',
-                    fontSize: 'var(--fs-caption)',
-                    fontWeight: 'var(--fw-bold)',
+                    fontSize: 'var(--text-caption)',
+                    fontWeight: '700',
                     color: d.income - d.expense >= 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
                   }}
                 >

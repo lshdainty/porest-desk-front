@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
+import { eventBadgeColor, getEventBlockStyle, getVisibleHours, groupEvents, isWorkingHour } from '@/features/calendar/lib/helpers'
 import { cn } from '@/shared/lib'
 
 import type { IEvent } from '@/features/calendar/model/interfaces'
@@ -114,13 +114,15 @@ const WeekViewMultiDayEventsRow = ({
               }
 
               const positionClasses = {
-                first: 'relative z-10 mr-0 w-[calc(100%_-_3px)] rounded-r-none border-r-0',
-                middle: 'relative z-10 mx-0 w-[calc(100%_+_1px)] rounded-none border-x-0',
-                last: 'ml-0 rounded-l-none border-l-0',
+                // 멀티데이 바: 시작/종료만 round, 중간 full-bleed 연속. divide-x(1px) 는 -ml-px 로 bridge.
+                first: 'relative z-10 mr-0 rounded-r-none',
+                middle: 'relative z-10 mx-0 -ml-px rounded-none',
+                last: 'relative z-10 ml-0 -ml-px rounded-l-none',
                 none: '',
               }
 
               const showText = ['first', 'none'].includes(position)
+              const badgeColor = eventBadgeColor(event)
 
               return (
                 <div
@@ -132,9 +134,9 @@ const WeekViewMultiDayEventsRow = ({
                     positionClasses[position]
                   )}
                   style={{
-                    background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-                    borderColor: `${event.color}40`,
-                    color: event.color,
+                    background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                    borderColor: 'transparent',
+                    color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
                   }}
                   onClick={(e) => onEventClick?.(event, e.currentTarget)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
@@ -200,6 +202,7 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
   const end = parseISO(event.endDate)
   const durationInMinutes = differenceInMinutes(end, start)
   const heightInPixels = (durationInMinutes / 60) * 96 - 8
+  const badgeColor = eventBadgeColor(event)
 
   return (
     <div
@@ -211,16 +214,16 @@ const EventBlock = ({ event, onEventClick }: { event: IEvent; onEventClick?: (ev
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `linear-gradient(${event.color}20, ${event.color}20), var(--background)`,
-        borderColor: `${event.color}40`,
-        color: event.color,
+        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        borderColor: 'transparent',
+        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick?.(event, e.currentTarget) } }}
     >
       <div className="flex items-center gap-1.5 truncate">
         <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-          <circle cx="4" cy="4" r="4" fill={event.color} />
+          <circle cx="4" cy="4" r="4" fill={badgeColor} />
         </svg>
         <p className="truncate font-semibold">{event.title}</p>
       </div>
@@ -266,7 +269,7 @@ const CalendarWeekView = ({ singleDayEvents, multiDayEvents, onEventClick }: IPr
                 const dayOfWeek = day.getDay()
                 const isSunday = dayOfWeek === 0
                 const isSaturday = dayOfWeek === 6
-                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--sky-500)' : undefined
+                const textColor = isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined
 
                 return (
                   <div key={index} className="py-2 text-center text-xs font-medium">

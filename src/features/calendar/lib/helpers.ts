@@ -27,6 +27,7 @@ import {
   type Locale,
 } from 'date-fns'
 
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import type { CalendarEvent, Holiday } from '@/entities/calendar'
 import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
@@ -336,6 +337,19 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
 /**
  * Holiday (공휴일 데이터)를 IEvent 인터페이스로 변환
  */
+/**
+ * 이벤트 칩/뱃지/점 색 — 공휴일은 일요일 색과 동일한 error 토큰 고정.
+ * (앱 _CellHolidayLabel 의 tokens.statusDanger 정합 — 라이트/다크 동일 base.)
+ * 일반 이벤트는 label 색 우선 + chart palette alias(다크 자동 swap).
+ */
+export function eventBadgeColor(
+  event?: Pick<IEvent, 'sourceType' | 'labelColor' | 'color'> | null,
+): string {
+  if (!event) return getPaletteByColor(undefined).color
+  if (event.sourceType === 'holiday') return 'var(--color-error)'
+  return getPaletteByColor(event.labelColor ?? event.color).color
+}
+
 export function convertHolidayToIEvent(holiday: Holiday): IEvent {
   return {
     id: holiday.rowId + 1000000,

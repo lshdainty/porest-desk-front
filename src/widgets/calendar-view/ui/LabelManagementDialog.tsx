@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Check } from 'lucide-react'
-import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
 import type { EventLabel } from '@/entities/event-label'
 import {
@@ -19,17 +21,12 @@ interface LabelManagementDialogProps {
   onClose: () => void
 }
 
-const labelColorOptions = [
-  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b',
-  '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6b7280',
-]
-
 export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
   const isMobile = useIsMobile()
 
-  const { data: labels = [] } = useEventLabels()
+  const { data: labels = [], isLoading } = useEventLabels()
   const createLabel = useCreateEventLabel()
   const updateLabel = useUpdateEventLabel()
   const deleteLabel = useDeleteEventLabel()
@@ -37,11 +34,11 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
   const [editingLabel, setEditingLabel] = useState<EventLabel | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [formName, setFormName] = useState('')
-  const [formColor, setFormColor] = useState<string>(labelColorOptions[0] ?? '#3b82f6')
+  const [formColor, setFormColor] = useState<string>(CAT_PALETTE[0]!.baseHex)
 
   const resetForm = () => {
     setFormName('')
-    setFormColor(labelColorOptions[0] ?? '#3b82f6')
+    setFormColor(CAT_PALETTE[0]!.baseHex)
     setEditingLabel(null)
     setIsAdding(false)
   }
@@ -97,14 +94,23 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
     <ModalShell title={headerTitle} onClose={onClose} mobile={isMobile} size="sm">
         <div className="space-y-3">
           {/* Existing labels */}
-          {labels.map(label => (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                <SkeletonBase className="h-4 w-4 rounded-full shrink-0" />
+                <SkeletonBase className="h-4 flex-1" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+                <SkeletonBase className="h-8 w-8 rounded-md" />
+              </div>
+            ))
+          ) : labels.map(label => (
             <div
               key={label.rowId}
               className="flex items-center gap-2 rounded-md border px-3 py-2"
             >
               <span
                 className="h-4 w-4 rounded-full shrink-0"
-                style={{ backgroundColor: label.color }}
+                style={{ backgroundColor: getPaletteByColor(label.color).color }}
               />
               <span className="flex-1 text-sm truncate">{label.labelName}</span>
               <Button
@@ -127,7 +133,7 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
             </div>
           ))}
 
-          {labels.length === 0 && !isAdding && (
+          {!isLoading && labels.length === 0 && !isAdding && (
             <p className="text-sm text-muted-foreground text-center py-4">{t('noLabels')}</p>
           )}
 
@@ -140,20 +146,16 @@ export const LabelManagementDialog = ({ open, onClose }: LabelManagementDialogPr
                 placeholder={t('form.labelName')}
                 autoFocus
               />
-              <div className="flex flex-wrap gap-1.5">
-                {labelColorOptions.map(color => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setFormColor(color)}
-                    className={cn(
-                      'h-6 w-6 rounded-full transition-all',
-                      formColor === color && 'ring-2 ring-offset-1 ring-primary'
-                    )}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
+              <ColorSwatchGroup
+                columns={5}
+                value={formColor}
+                onValueChange={setFormColor}
+                options={CAT_PALETTE.map(p => ({
+                  value: p.baseHex,
+                  bg: p.bg,
+                  fg: p.color,
+                }))}
+              />
               <div className="flex gap-2">
                 <Button
                   variant="outline"

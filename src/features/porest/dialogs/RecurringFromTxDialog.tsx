@@ -7,7 +7,7 @@ import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon } from '@/shared/lib'
+import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type { Expense } from '@/entities/expense'
@@ -16,6 +16,7 @@ import type {
   RecurringTransactionFormValues,
 } from '@/entities/recurring-transaction'
 import { getPaletteByColor } from './CategoryEditDialog'
+import { previewNextDates, addYears, todayIso, formatKoreanMonthDay } from './recurring-date'
 
 const FREQS: { v: RecurringFrequency; l: string }[] = [
   { v: 'DAILY', l: '매일' },
@@ -85,6 +86,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       dayOfMonth: frequency === 'MONTHLY' || frequency === 'YEARLY' ? dayOfMonth : undefined,
       startDate: expenseDay,
       endDate: endMode === 'DATE' ? endDate : undefined,
+      maxOccurrences: endMode === 'COUNT' ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
     }
@@ -114,7 +116,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
   return (
     <ModalShell title="반복 설정" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: 'var(--lh-normal)' }}>
+      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
         이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
       </p>
 
@@ -135,7 +137,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
           style={{
             width: 38,
             height: 38,
-            borderRadius: 'var(--radius-tile)',
+            borderRadius: tileRadius(38),
             background: palette.bg,
             color: palette.color,
             display: 'inline-flex',
@@ -146,14 +148,14 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
           {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
             {expense.merchant || expense.description || '거래'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {expenseDay} 시작
           </div>
         </div>
-        <div className="num" style={{ fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)' }}>
+        <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
           {expense.expenseType === 'INCOME' ? '+' : '−'}
           {KRW(Math.abs(expense.amount))}원
         </div>
@@ -198,7 +200,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       {frequency === 'MONTHLY' && (
         <Section title="반복 일자">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>매월</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>매월</span>
             <Input
               className="num"
               value={dayOfMonth}
@@ -209,8 +211,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
               inputMode="numeric"
               style={{ width: 64, textAlign: 'center' }}
             />
-            <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-secondary)' }}>일</span>
-            <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>일</span>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
               해당 일이 없는 달은 말일에 처리됩니다
             </span>
           </div>
@@ -297,7 +299,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>다음 예정일</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
@@ -309,8 +311,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                   background: 'var(--bg-sunken)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
-                  fontSize: 'var(--fs-caption)',
-                  fontWeight: 'var(--fw-semi)',
+                  fontSize: 'var(--text-caption)',
+                  fontWeight: '600',
                 }}
               >
                 {formatKoreanMonthDay(d)}
@@ -323,10 +325,10 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -334,7 +336,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function RadioCard({
+export function RadioCard({
   selected,
   onSelect,
   title,
@@ -378,9 +380,9 @@ function RadioCard({
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
         {sub && (
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
             {sub}
           </div>
         )}
@@ -389,7 +391,7 @@ function RadioCard({
   )
 }
 
-function ToggleRow({
+export function ToggleRow({
   Icon,
   title,
   sub,
@@ -430,8 +432,8 @@ function ToggleRow({
         <Icon size={16} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)' }}>{title}</div>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
       <Switch
         checked={value}
@@ -442,60 +444,3 @@ function ToggleRow({
   )
 }
 
-// ---- date helpers ----
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function addYears(iso: string, years: number): string {
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  d.setFullYear(d.getFullYear() + years)
-  return d.toISOString().slice(0, 10)
-}
-
-function formatKoreanMonthDay(iso: string): string {
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  return `${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`
-}
-
-function previewNextDates(
-  startIso: string,
-  freq: RecurringFrequency,
-  dayOfWeekUi: number, // 0=일~6=토
-  dayOfMonth: number,
-  count: number,
-): string[] {
-  const start = new Date(startIso)
-  if (isNaN(start.getTime())) return []
-  const out: string[] = []
-  const cursor = new Date(start)
-
-  if (freq === 'WEEKLY') {
-    // 시작일을 dayOfWeekUi 요일로 정규화
-    const diff = (dayOfWeekUi - cursor.getDay() + 7) % 7
-    cursor.setDate(cursor.getDate() + diff)
-  } else if (freq === 'MONTHLY') {
-    cursor.setDate(Math.min(dayOfMonth, daysInMonth(cursor.getFullYear(), cursor.getMonth())))
-  }
-
-  for (let i = 0; i < count; i++) {
-    out.push(cursor.toISOString().slice(0, 10))
-    if (freq === 'DAILY') cursor.setDate(cursor.getDate() + 1)
-    else if (freq === 'WEEKLY') cursor.setDate(cursor.getDate() + 7)
-    else if (freq === 'MONTHLY') {
-      const ny = cursor.getFullYear()
-      const nm = cursor.getMonth() + 1
-      const nd = Math.min(dayOfMonth, daysInMonth(ny, nm))
-      cursor.setFullYear(ny, nm, nd)
-    }
-    else if (freq === 'YEARLY') cursor.setFullYear(cursor.getFullYear() + 1)
-  }
-  return out
-}
-
-function daysInMonth(year: number, monthIdx: number): number {
-  return new Date(year, monthIdx + 1, 0).getDate()
-}

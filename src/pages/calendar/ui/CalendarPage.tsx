@@ -6,7 +6,7 @@ import { CalendarProvider } from '@/features/calendar/model/calendar-context'
 import { useCalendarEvents } from '@/features/calendar/model/useCalendarEvents'
 import { useCalendarHolidays } from '@/features/calendar/model/useCalendarHolidays'
 import { useUserCalendars } from '@/features/user-calendar'
-import { Card, CardContent } from '@/shared/ui/card'
+import { CalendarMonthViewSkeleton } from '@/features/calendar/ui/month-view/calendar-month-view-skeleton'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -66,80 +66,27 @@ function CalendarHeaderSkeleton() {
   )
 }
 
-/** Month grid skeleton — 7×6 셀(요일 row + 6 weeks). */
-function CalendarMonthGridSkeleton() {
+/** 모바일 헤더 skeleton — `<` 2026년 N월 `>` 네비 + 우측 소스 토글 칩 (calendar-header 모바일 분기 미러). */
+function CalendarMobileHeaderSkeleton() {
   return (
-    <div className="flex flex-col h-full">
-      {/* Weekday header row */}
-      <div className="grid grid-cols-7 border-b">
-        {[0, 1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="p-2 border-r last:border-r-0">
-            <SkeletonBase className="h-4 w-8" />
-          </div>
-        ))}
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <div className="flex items-center gap-1">
+        <SkeletonBase className="h-8 w-8 rounded-md" />
+        <SkeletonBase className="h-5 w-24" />
+        <SkeletonBase className="h-8 w-8 rounded-md" />
       </div>
-      {/* 6 weeks */}
-      <div className="grid grid-cols-7 grid-rows-6 flex-1">
-        {Array.from({ length: 42 }).map((_, i) => (
-          <div
-            key={i}
-            className="border-r border-b last:border-r-0 p-1.5 flex flex-col gap-1"
-            style={{ minHeight: 100 }}
-          >
-            <SkeletonBase className="h-4 w-5" />
-            {/* 0~2 mock event lines per cell — 시각적 다양성을 위해 일부 셀에만 추가 */}
-            {i % 5 === 0 && <SkeletonBase className="h-3 w-full" />}
-            {i % 7 === 0 && <SkeletonBase className="h-3 w-3/4" />}
-          </div>
-        ))}
-      </div>
+      <SkeletonBase className="h-7 w-16 rounded-full" />
     </div>
   )
 }
 
-/** Agenda(mobile) skeleton — 날짜 그룹별 이벤트 rows. */
-function CalendarAgendaSkeleton() {
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      {[0, 1, 2].map(g => (
-        <div key={g} className="flex flex-col gap-2">
-          <SkeletonBase className="h-4 w-24 mb-1" />
-          <Card>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[0, 1, 2].map(i => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '8px 0',
-                    borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-                  }}
-                >
-                  <SkeletonBase className="h-3 w-3 rounded-full shrink-0" />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
-                    <SkeletonBase className="h-3 w-1/3" />
-                  </div>
-                  <SkeletonBase className="h-4 w-14 shrink-0" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** Calendar 페이지 구조 일치 skeleton — header + month-grid(desktop) 혹은 agenda(mobile). */
+/** Calendar 페이지 구조 일치 skeleton — 헤더(모바일/데스크톱 분기) + 실제 월뷰 skeleton 재사용. */
 function CalendarPageSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      <CalendarHeaderSkeleton />
+      {mobile ? <CalendarMobileHeaderSkeleton /> : <CalendarHeaderSkeleton />}
       <div className="flex-1 overflow-hidden">
-        {mobile ? <CalendarAgendaSkeleton /> : <CalendarMonthGridSkeleton />}
+        <CalendarMonthViewSkeleton />
       </div>
     </div>
   )
@@ -166,7 +113,7 @@ export const CalendarPage = () => {
       {!hasEverLoaded ? (
         <CalendarPageSkeleton mobile={mobile} />
       ) : (
-        <CalendarProvider events={[]} initialView={mobile ? 'agenda' : 'month'}>
+        <CalendarProvider events={[]} initialView="month">
           <CalendarContent />
         </CalendarProvider>
       )}

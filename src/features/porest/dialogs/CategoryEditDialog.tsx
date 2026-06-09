@@ -15,7 +15,12 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
+
+// 호환 re-export — 호출처가 `@/features/porest/dialogs` 에서 import 한다.
+// eslint-disable-next-line react-refresh/only-export-components
+export { CAT_PALETTE, getPaletteByColor }
 
 /** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
 export interface CategoryItem {
@@ -26,45 +31,6 @@ export interface CategoryItem {
   bg: string
   kind: 'expense' | 'income'
   count: number
-}
-
-// CAT_PALETTE: 팔레트 피커에서 사용자가 고르는 기준 색 정의.
-// porest chart palette 10색과 동일 — 차트 색상과 일관성 유지.
-// color 는 아이콘 색, bg 는 color 를 알파로 섞어 바탕 tint 를 생성.
-// color-mix() 로 라이트/다크 모두 자연 적응 — 라이트에선 파스텔, 다크에선 어둔 tint.
-// eslint-disable-next-line react-refresh/only-export-components
-export const CAT_PALETTE: { color: string; bg: string }[] = [
-  { color: 'var(--color-chart-blue)',   bg: 'color-mix(in oklch, var(--color-chart-blue) 18%, transparent)' },
-  { color: 'var(--color-chart-green)',  bg: 'color-mix(in oklch, var(--color-chart-green) 18%, transparent)' },
-  { color: 'var(--color-chart-orange)', bg: 'color-mix(in oklch, var(--color-chart-orange) 18%, transparent)' },
-  { color: 'var(--color-chart-violet)', bg: 'color-mix(in oklch, var(--color-chart-violet) 18%, transparent)' },
-  { color: 'var(--color-chart-pink)',   bg: 'color-mix(in oklch, var(--color-chart-pink) 18%, transparent)' },
-  { color: 'var(--color-chart-indigo)', bg: 'color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)' },
-  { color: 'var(--color-chart-red)',    bg: 'color-mix(in oklch, var(--color-chart-red) 18%, transparent)' },
-  { color: 'var(--color-chart-yellow)', bg: 'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)' },
-  { color: 'var(--color-chart-brown)',  bg: 'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)' },
-  { color: 'var(--color-chart-gray)',   bg: 'color-mix(in oklch, var(--color-chart-gray) 18%, transparent)' },
-]
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const getPaletteByColor = (color: string | null | undefined) => {
-  // 0) 색상 값 없음 (예: "전체" 예산처럼 categoryRowId=null) → semantic 토큰 사용
-  //    → light/dark 자동 반영
-  if (!color) {
-    return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
-  }
-  // 1) CAT_PALETTE 와 정확히 일치 → 해당 팔레트 (bg 는 이미 color-mix 알파)
-  const found = CAT_PALETTE.find(p => p.color === color)
-  if (found) return found
-  // 2) hex → 아이콘 색은 hex 그대로, bg 는 18% 알파 mix 로 tint. 라이트/다크 모두 적응.
-  if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color)) {
-    const hex = color.length === 4
-      ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
-      : color
-    return { color: hex, bg: `color-mix(in oklch, ${hex} 18%, transparent)` }
-  }
-  // 3) 알 수 없는 형식 → semantic 폴백
-  return { color: 'var(--fg-brand-strong)', bg: 'var(--bg-brand-subtle)' }
 }
 
 const ICON_CHOICES = [
@@ -103,7 +69,7 @@ export function CategoryEditDialog({
   const [icon, setIcon] = useState(cat?.icon || 'tag')
   const [paletteIdx, setPaletteIdx] = useState(() => {
     if (!cat?.color) return 0
-    const idx = CAT_PALETTE.findIndex(p => p.color === cat.color)
+    const idx = CAT_PALETTE.findIndex(p => p.baseHex === cat.color)
     return idx >= 0 ? idx : 0
   })
   const [parentRowId, setParentRowId] = useState<number | null>(
@@ -144,7 +110,7 @@ export function CategoryEditDialog({
     const values: ExpenseCategoryFormValues = {
       categoryName: labelTrim,
       icon,
-      color: palette.color,
+      color: palette.baseHex,
       expenseType: kind,
       sortOrder: cat?.sortOrder,
       parentRowId: parentDisabled ? (cat?.parentRowId ?? null) : parentRowId,
@@ -218,12 +184,12 @@ export function CategoryEditDialog({
             style={{
               font: '700 15px/1.3 var(--font-sans)',
               color: 'var(--fg-primary)',
-              letterSpacing: 'var(--tracking-snug)',
+              letterSpacing: '-0.012em',
             }}
           >
             {labelTrim || '새 카테고리'}
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {kind === 'EXPENSE' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
           </div>
         </div>
@@ -245,7 +211,7 @@ export function CategoryEditDialog({
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>
           상위 카테고리
-          <span style={{ color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-regular)', marginLeft: 4 }}>(선택)</span>
+          <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>(선택)</span>
         </FieldLabel>
         <Select
           value={parentRowId == null ? '__root__' : String(parentRowId)}
@@ -267,7 +233,7 @@ export function CategoryEditDialog({
         {parentDisabled && (
           <div
             style={{
-              fontSize: 'var(--fs-micro)',
+              fontSize: 'var(--text-badge)',
               color: 'var(--fg-tertiary)',
               marginTop: 4,
               textAlign: 'right',
@@ -293,7 +259,7 @@ export function CategoryEditDialog({
         />
         <div
           style={{
-            fontSize: 'var(--fs-micro)',
+            fontSize: 'var(--text-badge)',
             color: 'var(--fg-tertiary)',
             marginTop: 4,
             textAlign: 'right',

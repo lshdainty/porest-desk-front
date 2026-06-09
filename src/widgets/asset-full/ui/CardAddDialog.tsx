@@ -156,7 +156,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               <div className="flex items-center gap-3">
                 <label
                   className="inline-flex items-center cursor-pointer select-none"
-                  style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
+                  style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
                   title="단종된 카드 상품도 검색 결과에 포함합니다"
                 >
                   <Switch
@@ -178,6 +178,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
               />
               <Input
+                search
                 value={keyword}
                 onChange={e => setKeyword(e.target.value)}
                 placeholder="카드명 또는 발급사 검색"
@@ -251,7 +252,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                               style={{
                                 background: 'var(--bg-disabled)',
                                 color: 'var(--fg-tertiary)',
-                                letterSpacing: 'var(--tracking-wide)',
+                                letterSpacing: '0.04em',
                               }}
                             >
                               단종

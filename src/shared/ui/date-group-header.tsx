@@ -32,10 +32,10 @@ export function DateGroupHeader({
         alignItems: "center",
         gap: 8,
         padding: "0 4px 8px",
-        fontSize: 'var(--fs-body-sm)',
+        fontSize: 'var(--text-label-sm)',
       }}
     >
-      <span style={{ fontWeight: 'var(--fw-bold)', color: "var(--fg-primary)" }}>
+      <span style={{ fontWeight: '700', color: "var(--fg-primary)" }}>
         {date}
       </span>
       <span style={{ color: "var(--fg-tertiary)" }}>{weekday}</span>
@@ -44,12 +44,12 @@ export function DateGroupHeader({
         style={{ marginLeft: "auto", display: "inline-flex", gap: 8 }}
       >
         {expense > 0 && (
-          <span style={{ color: "var(--fg-expense)", fontWeight: 'var(--fw-semi)' }}>
+          <span style={{ color: "var(--fg-expense)", fontWeight: '600' }}>
             <MaskAmount>{`−${KRW(expense)}`}</MaskAmount>
           </span>
         )}
         {income > 0 && (
-          <span style={{ color: "var(--fg-income)", fontWeight: 'var(--fw-semi)' }}>
+          <span style={{ color: "var(--fg-income)", fontWeight: '600' }}>
             <MaskAmount>{`+${KRW(income)}`}</MaskAmount>
           </span>
         )}

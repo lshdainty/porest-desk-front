@@ -161,11 +161,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 'var(--fs-body-sm)',
-        fontWeight: 'var(--fw-semi)',
+        fontSize: 'var(--text-label-sm)',
+        fontWeight: '600',
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
-        letterSpacing: 'var(--tracking-wide)',
+        letterSpacing: '0.04em',
         marginBottom: 10,
       }}
     >

@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Download, Filter, Plus, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
-import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+// 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
+// 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
+// expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
+import { CalendarProvider } from '@/features/calendar/model/calendar-context'
+import { CalendarMonthView } from '@/features/calendar/ui/month-view/calendar-month-view'
+import { convertExpenseToIEvent } from '@/features/calendar/lib/helpers'
 import {
   useExpenses,
   useRangeSummary,
@@ -114,16 +121,6 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function ExpenseChipsSkeleton() {
-  return (
-    <div style={{ display: 'flex', gap: 6, marginBottom: 8, paddingBottom: 4 }}>
-      {[0, 1, 2].map(i => (
-        <SkeletonBase key={i} className="h-7 w-12 rounded-full" />
-      ))}
-    </div>
-  )
-}
-
 function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
   return (
     <div>
@@ -159,28 +156,61 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
   )
 }
 
-/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + 칩 + 날짜 그룹별 거래 리스트. */
+/** Calendar grid skeleton — viewMode='calendar' (default) 의 외곽 카드 모양 + 7-col 요일
+ *  헤더 + 6주 cell grid. 부모(flex-1) 가 viewport 의 남은 공간을 잡아주므로
+ *  h-full + min-h-0 으로 그 공간을 완전 채움. */
+function ExpenseCalendarSkeleton() {
+  return (
+    <Card
+      className="max-w-[430px] lg:max-w-none h-full min-h-0"
+      style={{ overflow: 'hidden' }}
+    >
+      <div className="flex flex-col h-full">
+        {/* 요일 헤더 (일~토) */}
+        <div className="grid grid-cols-7 border-b border-[var(--border-subtle)] px-1 py-2">
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="flex justify-center">
+              <SkeletonBase className="h-3 w-4" />
+            </div>
+          ))}
+        </div>
+        {/* 6주 × 7일 cell grid */}
+        <div className="grid grid-cols-7 grid-rows-6 flex-1">
+          {Array.from({ length: 42 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-start gap-1 p-1 lg:p-2 lg:border-l lg:border-t border-[var(--border-subtle)]"
+            >
+              <SkeletonBase className="h-4 w-4 rounded-full" />
+              <SkeletonBase className="h-2 w-8 mt-auto" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+/** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + Calendar grid (default mode).
+ *  ExpenseMobile/Desktop 와 동일한 viewport fit 패턴 — AppLayout scroll wrapper 가
+ *  flex-col 이므로 페이지 wrapper 는 flex-1 + min-h-0 으로 부모 전체 height 차지. */
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ padding: '4px 16px 24px' }}>
+      <div
+        className="flex flex-col flex-1 min-h-0"
+        style={{ padding: 'var(--spacing-xl) 20px' }}
+      >
         <ExpenseSummarySkeleton mobile />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <div style={{ flex: 1, overflow: 'hidden' }}><ExpenseChipsSkeleton /></div>
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <ExpenseDayGroupSkeleton rows={3} />
-          <ExpenseDayGroupSkeleton rows={2} />
-          <ExpenseDayGroupSkeleton rows={2} />
+        <div className="flex-1 min-h-0 flex flex-col">
+          <ExpenseCalendarSkeleton />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="page">
+    <div className="page flex flex-col flex-1 min-h-0" style={{ paddingBottom: 24 }}>
       <div className="page__head">
         <div>
           <h1>가계부</h1>
@@ -188,11 +218,8 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
-      <ExpenseChipsSkeleton />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <ExpenseDayGroupSkeleton rows={3} />
-        <ExpenseDayGroupSkeleton rows={2} />
-        <ExpenseDayGroupSkeleton rows={2} />
+      <div className="flex-1 min-h-0 flex flex-col">
+        <ExpenseCalendarSkeleton />
       </div>
     </div>
   )
@@ -217,6 +244,7 @@ function Summary({
   monthIn,
   monthOut,
   isLoading,
+  headerRight,
 }: {
   month: string
   onMonthChange: (m: string) => void
@@ -224,51 +252,49 @@ function Summary({
   monthIn: number
   monthOut: number
   isLoading: boolean
+  /** month header row 우측 슬롯 (예: ViewModeToggle). 클로드 디자인 정합. */
+  headerRight?: React.ReactNode
 }) {
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
   return (
-    <div
+    <Card
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-card)',
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--tracking-tight)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
+        <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.022em' }}>
           {y}년 {Number(m)}월
         </div>
-        <div style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
-          <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
-        </div>
+        <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
+        {headerRight && <div style={{ marginLeft: 'auto' }}>{headerRight}</div>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>수입</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>수입</div>
           <div
             className="num"
-            style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand)' }}
+            style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-brand)' }}
           >
             {isLoading ? '—' : <MaskAmount>+{KRW(monthIn)}</MaskAmount>}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>지출</div>
-          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 'var(--fw-bold)', color: 'var(--fg-expense)' }}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>지출</div>
+          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-expense)' }}>
             {isLoading ? '—' : <MaskAmount>−{KRW(monthOut)}</MaskAmount>}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)', marginBottom: 2 }}>합계</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>합계</div>
           <div
             className="num"
             style={{
               fontSize: mobile ? 16 : 18,
-              fontWeight: 'var(--fw-bold)',
+              fontWeight: '700',
               color: balance >= 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
             }}
           >
@@ -278,9 +304,171 @@ function Summary({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
+
+type ViewMode = 'calendar' | 'list'
+
+/** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
+ *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
+ *  CalendarMonthView 의 onDayClick prop 으로 셀 클릭 시 그날 거래 내역
+ *  DayDetailDialog (mobile drawer / desktop dialog) 표시. drag-select 의
+ *  quickAdd dialog 는 onDayClick 있으면 자동 양보. */
+function ExpenseCalendar({
+  month,
+  expenses,
+  mobile,
+}: {
+  month: string
+  expenses: Expense[]
+  mobile: boolean
+}) {
+  const events = useMemo(() => {
+    return expenses.map(e => {
+      const ev = convertExpenseToIEvent(e)
+      const dateOnly = (e.expenseDate ?? '').slice(0, 10)
+      const localISO = `${dateOnly}T00:00:00`
+      return { ...ev, startDate: localISO, endDate: localISO }
+    })
+  }, [expenses])
+  const initialDate = useMemo(() => {
+    const [ys, ms] = month.split('-')
+    return new Date(Number(ys), Number(ms) - 1, 1)
+  }, [month])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
+  const [detail, setDetail] = useState<Expense | null>(null)
+  const [editing, setEditing] = useState<Expense | null>(null)
+  const dayItems = useMemo(() => {
+    if (!selectedDate) return [] as Expense[]
+    const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+    return expenses.filter(e => (e.expenseDate ?? '').slice(0, 10) === ymd)
+  }, [selectedDate, expenses])
+  return (
+    <>
+      <Card
+        className="max-w-[430px] lg:max-w-none h-full min-h-0"
+        style={{ overflow: 'hidden' }}
+      >
+        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+          <CalendarMonthView
+            singleDayEvents={events}
+            multiDayEvents={[]}
+            onDayClick={(date) => setSelectedDate(date)}
+          />
+        </CalendarProvider>
+      </Card>
+      {selectedDate && !detail && !editing && (
+        <DayDetailDialog
+          date={selectedDate}
+          items={dayItems}
+          mobile={mobile}
+          onClose={() => setSelectedDate(null)}
+          onItemClick={(e) => setDetail(e)}
+        />
+      )}
+      {detail && !editing && (
+        <TxDetailDialog
+          expense={detail}
+          mobile={mobile}
+          onClose={() => setDetail(null)}
+          onEdit={(e) => { setDetail(null); setEditing(e) }}
+        />
+      )}
+      {editing && (
+        <AddTxSheet
+          expense={editing}
+          mobile={mobile}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </>
+  )
+}
+
+/** 그날 거래 내역 dialog — App _DayDetailBody 정합. ModalShell 의 mobile=drawer /
+ *  desktop=dialog 분기 활용. summary card (지출/수입/건수) + ExpenseRow 리스트. */
+function DayDetailDialog({
+  date,
+  items,
+  mobile,
+  onClose,
+  onItemClick,
+}: {
+  date: Date
+  items: Expense[]
+  mobile: boolean
+  onClose: () => void
+  onItemClick?: (e: Expense) => void
+}) {
+  const dows = ['일', '월', '화', '수', '목', '금', '토']
+  const dow = dows[date.getDay()] ?? ''
+  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dow}요일`
+  const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
+  const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
+  return (
+    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm" mobileMinHeight="85dvh">
+      {/* 합계 카드 — 건수 + 우측 라벨/금액 vertical stack (모바일 layout 정합) */}
+      <Card variant="bordered" className="mb-[var(--spacing-md)]">
+        <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">
+          <div className="flex-1 text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
+            {items.length}건
+          </div>
+          {/* 수입+지출 같이 있을 때 두 column horizontal (모바일 정합). 단독은 1 column. */}
+          <div className="flex items-end gap-[var(--spacing-lg)]">
+            {incomeSum > 0 && (
+              <div className="flex flex-col items-end">
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">수입</span>
+                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
+                  <MaskAmount>+{KRW(incomeSum)}</MaskAmount><HideUnit>원</HideUnit>
+                </span>
+              </div>
+            )}
+            {expenseSum > 0 && (
+              <div className="flex flex-col items-end">
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
+                <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
+                  <MaskAmount>−{KRW(expenseSum)}</MaskAmount><HideUnit>원</HideUnit>
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      {/* 거래 row 들 — item 사이 border 없이 자연 spacing (모바일 정합) */}
+      {items.length === 0 ? (
+        <div className="py-[var(--spacing-xl)] text-center text-[length:var(--text-label-sm)] text-[var(--fg-tertiary)]">
+          이 날의 거래가 없어요
+        </div>
+      ) : (
+        // card 없이 깔끔한 리스트 — 앱 _DayDetailBody 정합(TxDetail/AssetDetail 와 동일 패턴)
+        <div>
+          {items.map((e) => (
+            <ExpenseRow key={e.rowId} expense={e} onClick={(ex) => onItemClick?.(ex)} />
+          ))}
+        </div>
+      )}
+    </ModalShell>
+  )
+}
+
+function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
+  // 단일 toggle button — 현재 mode 의 반대를 보여줌 (calendar 모드면 "목록" 버튼).
+  const isCalendar = value === 'calendar'
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onChange(isCalendar ? 'list' : 'calendar')}
+      aria-label={isCalendar ? '목록 보기' : '달력 보기'}
+    >
+      {isCalendar ? <List size={14} /> : <Calendar size={14} />}
+      <span style={{ marginLeft: 4 }}>{isCalendar ? '목록' : '달력'}</span>
+    </Button>
+  )
+}
+
 
 function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
   return (
@@ -332,7 +520,7 @@ function ExpenseList({
     return (
       <Card>
         <CardContent style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--fs-body)', color: 'var(--fg-tertiary)', fontWeight: 'var(--fw-medium)' }}>
+          <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
             내역이 없어요
           </div>
         </CardContent>
@@ -515,8 +703,8 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
         color: 'var(--fg-brand-strong)',
         border: '1px solid var(--border-brand)',
         borderRadius: 'var(--radius-pill)',
-        fontSize: 'var(--fs-body-sm)',
-        fontWeight: 'var(--fw-semi)',
+        fontSize: 'var(--text-label-sm)',
+        fontWeight: '600',
         marginBottom: 12,
       }}
     >
@@ -601,6 +789,7 @@ function ExpenseDesktop() {
   const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -614,8 +803,16 @@ function ExpenseDesktop() {
 
   const activeCount = filterActiveCount(filterValue)
 
+  // calendar 모드는 viewport fit (스크롤 없이 캘린더가 남은 공간 fill) — AppLayout 의
+  // scroll wrapper 가 flex-col 이므로 페이지를 flex-1 + min-h-0 으로 부모 전체 차지.
+  // 그 안에서 Calendar wrap 만 flex-1 로 Summary 아래 남은 공간 grow. list 모드는
+  // 기존대로 자연 height (콘텐츠가 길면 부모 scroll wrapper 가 scroll).
+  const isCalendarMode = viewMode === 'calendar'
   return (
-    <div className="page">
+    <div
+      className={isCalendarMode ? 'page flex flex-col flex-1 min-h-0' : 'page'}
+      style={isCalendarMode ? { paddingBottom: 24 } : undefined}
+    >
       <div className="page__head">
         <div>
           <h1>가계부</h1>
@@ -641,14 +838,23 @@ function ExpenseDesktop() {
         monthIn={monthIn}
         monthOut={monthOut}
         isLoading={isLoadingSummary}
+        headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
-      <Chips filter={filter} onChange={setFilter} />
-      <EditableList
-        expenses={expenses}
-        isLoading={isLoadingList}
-        mobile={false}
-        focusTxId={focusTxId}
-      />
+      {isCalendarMode ? (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />}
+        </div>
+      ) : (
+        <>
+          <Chips filter={filter} onChange={setFilter} />
+          <EditableList
+            expenses={expenses}
+            isLoading={isLoadingList}
+            mobile={false}
+            focusTxId={focusTxId}
+          />
+        </>
+      )}
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
@@ -672,6 +878,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const focusTxId = Number(searchParams.get('txId')) || null
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState<string>(initialMonth)
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const { assetId, asset, clear } = useAssetFilter()
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
@@ -685,8 +892,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const activeCount = filterActiveCount(filterValue)
 
+  // calendar 모드는 viewport fit (스크롤 없이) — AppLayout 의 .m-scroll 이 flex-col
+  // 이므로 페이지를 flex-1 + min-h-0 으로 그 안에서 부모 전체 차지. Calendar wrap 만
+  // flex-1 로 Summary 아래 남은 공간 grow. list 모드는 자연 height (.m-scroll scroll).
+  const isCalendarMode = viewMode === 'calendar'
   return (
-    <div style={{ padding: '4px 16px 24px' }}>
+    <div
+      className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : undefined}
+      style={{ padding: 'var(--spacing-xl) 20px' }}
+    >
       {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
       {activeCount > 0 && (
         <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
@@ -698,43 +912,52 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         monthIn={monthIn}
         monthOut={monthOut}
         isLoading={isLoadingSummary}
+        headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
       />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <Chips filter={filter} onChange={setFilter} />
+      {isCalendarMode ? (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />}
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setFilterOpen(true)}
-          aria-label="필터"
-          className="relative shrink-0 rounded-[var(--radius-tile)]"
-        >
-          <SlidersHorizontal size={18} />
-          {activeCount > 0 && (
-            <span
-              aria-hidden
-              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--fs-micro)] font-bold text-[var(--fg-on-brand)]"
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <Chips filter={filter} onChange={setFilter} />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setFilterOpen(true)}
+              aria-label="필터"
+              className="relative shrink-0"
             >
-              {activeCount}
-            </span>
-          )}
-        </Button>
-        <Button
-          size="icon"
-          onClick={onAddTx}
-          aria-label="거래 추가"
-          className="shrink-0 rounded-[var(--radius-tile)]"
-        >
-          <Plus size={18} />
-        </Button>
-      </div>
-      <EditableList
-        expenses={expenses}
-        isLoading={isLoadingList}
-        mobile
-        focusTxId={focusTxId}
-      />
+              <SlidersHorizontal size={18} />
+              {activeCount > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
+                >
+                  {activeCount}
+                </span>
+              )}
+            </Button>
+            <Button
+              size="icon"
+              onClick={onAddTx}
+              aria-label="거래 추가"
+              className="shrink-0"
+            >
+              <Plus size={18} />
+            </Button>
+          </div>
+          <EditableList
+            expenses={expenses}
+            isLoading={isLoadingList}
+            mobile
+            focusTxId={focusTxId}
+          />
+        </>
+      )}
       {filterOpen && (
         <FilterDialog
           initial={filterValue}

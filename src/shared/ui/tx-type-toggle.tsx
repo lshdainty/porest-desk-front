@@ -20,7 +20,6 @@ export type TxTypeOption = {
 const SEMANTIC_FG: Record<ExpenseType, string> = {
   EXPENSE: "var(--fg-expense)",
   INCOME: "var(--fg-income)",
-  TRANSFER: "var(--fg-transfer)",
 }
 
 export interface TxTypeToggleProps {
@@ -72,9 +71,9 @@ export function TxTypeToggle({
               border: active
                 ? "1px solid var(--border-brand)"
                 : "1px solid var(--border-subtle)",
-              borderRadius: "var(--radius-tile)",
-              fontWeight: 'var(--fw-bold)',
-              fontSize: 'var(--fs-body-sm)',
+              borderRadius: "var(--radius-sm)",
+              fontWeight: '700',
+              fontSize: 'var(--text-label-sm)',
               cursor: disabled ? "not-allowed" : "pointer",
               opacity: disabled ? 0.6 : 1,
               color: active ? fg : "var(--fg-tertiary)",

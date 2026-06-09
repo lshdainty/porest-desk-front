@@ -18,16 +18,16 @@ export const MANAGER_LAYOUT = {
   } as CSSProperties,
   titleStyle: {
     font: '700 20px/1.3 var(--font-sans)',
-    letterSpacing: 'var(--tracking-tight)',
+    letterSpacing: '-0.022em',
     margin: '0 0 4px',
     color: 'var(--fg-primary)',
   } as CSSProperties,
   subStyle: {
-    fontSize: 'var(--fs-body-sm)',
+    fontSize: 'var(--text-label-sm)',
     color: 'var(--fg-tertiary)',
     margin: 0,
     maxWidth: '52ch',
-    lineHeight: 'var(--lh-normal)',
+    lineHeight: '1.5',
   } as CSSProperties,
   toolbarStyle: {
     display: 'flex',
@@ -50,7 +50,7 @@ export const MANAGER_LAYOUT = {
   searchInputStyle: {
     padding: '8px 12px 8px 30px',
     border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-tile)',
+    borderRadius: 'var(--radius-md)',
     font: '13px/1 var(--font-sans)',
     background: 'var(--bg-surface)',
     color: 'var(--fg-primary)',
@@ -113,19 +113,21 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 }
 
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  background: 'var(--fg-income)',
+  // 스펙 toggle-group solid: active = bg-primary(#0147ad — 다크에서 light variant swap 안 함) + 흰글씨.
+  // (기존 --fg-income 은 fg-brand → 다크에서 primary-light(#5fa0e5)로 swap 돼 연한 파랑이 됨)
+  background: 'var(--bg-brand)',
   color: 'var(--fg-on-brand)',
-  fontWeight: 'var(--fw-bold)',
+  fontWeight: '700',
   boxShadow: 'var(--shadow-sm)',
 }
 
 const TAB_CNT_BASE_STYLE: CSSProperties = {
-  fontSize: 'var(--fs-micro)',
+  fontSize: 'var(--text-badge)',
   color: 'var(--fg-tertiary)',
   background: 'var(--bg-surface)',
   padding: '2px 7px',
   borderRadius: 'var(--radius-pill)',
-  fontWeight: 'var(--fw-bold)',
+  fontWeight: '700',
   minWidth: 20,
   textAlign: 'center',
 }
@@ -139,18 +141,26 @@ export function ManagerTabs<T extends string>({
   value,
   options,
   onChange,
+  fill = false,
 }: {
   value: T
   options: { value: T; label: ReactNode; count?: number }[]
   onChange: (v: T) => void
+  /** true 면 가로 전체를 균등 분할 (앱 PToggleGroup expanded 톤). 모바일에서 사용. */
+  fill?: boolean
 }) {
   return (
     <div
       style={{
-        display: 'inline-flex',
+        display: fill ? 'flex' : 'inline-flex',
+        width: fill ? '100%' : undefined,
+        // fill=false(데스크톱): 부모 flex stretch 방지 → sunken bar 가 탭 내용에 딱 맞음
+        alignSelf: fill ? undefined : 'flex-start',
         background: 'var(--bg-sunken)',
-        padding: 4,
-        borderRadius: 'var(--radius-tile)',
+        // 프리셋 토글 p-0.5(=2px) 와 동일. spacing 스케일 최소가 xs(4px)라 2px 전용 토큰은 없음(raw).
+        padding: 2,
+        // 프리셋 정렬 토글(ToggleGroup segmented)·toggle-group spec 과 동일하게 radius-md(8px).
+        borderRadius: 'var(--radius-md)',
         gap: 2,
         border: '1px solid var(--border-subtle)',
       }}
@@ -163,7 +173,11 @@ export function ManagerTabs<T extends string>({
             type="button"
             onClick={() => onChange(o.value)}
             className={!active ? 'hover:!text-[var(--fg-secondary)]' : ''}
-            style={{ ...TAB_BTN_BASE_STYLE, ...(active ? TAB_BTN_ACTIVE_STYLE : null) }}
+            style={{
+              ...TAB_BTN_BASE_STYLE,
+              ...(fill ? { flex: 1, justifyContent: 'center' } : null),
+              ...(active ? TAB_BTN_ACTIVE_STYLE : null),
+            }}
           >
             {o.label}
             {o.count != null && (

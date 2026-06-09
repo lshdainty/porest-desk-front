@@ -1,12 +1,15 @@
 import { isSameDay, parseISO } from 'date-fns'
+import { X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
+import { useCreateEvent, useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
+import { useIsMobile } from '@/shared/hooks'
 
 import { DndProviderWrapper } from '@/features/calendar/ui/dnd/dnd-provider'
+import { DayEventsDialog } from '@/features/calendar/ui/DayEventsDialog'
 import { EventDetailPopover } from '@/features/calendar/ui/EventDetailPopover'
 
 import { CalendarAgendaView } from '@/features/calendar/ui/agenda-view/calendar-agenda-view'
@@ -22,6 +25,7 @@ import { CalendarYearView } from '@/features/calendar/ui/year-view/calendar-year
 import { CalendarYearViewSkeleton } from '@/features/calendar/ui/year-view/calendar-year-view-skeleton'
 
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
+import { Drawer, DrawerBody, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/shared/ui/drawer'
 import { Popover, PopoverAnchor, PopoverContent } from '@/shared/ui/popover'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -68,6 +72,7 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   const { t } = useTranslation('calendar')
   const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } = useCalendar()
+  const isMobile = useIsMobile()
   // Event detail popover state
   const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -75,7 +80,11 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   // Edit/Delete state
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [deletingEventId, setDeletingEventId] = useState<number | null>(null)
+  // 모바일 월간뷰 일별 이벤트 시트 (앱 _DayEventsSheetBody 정합) + 시트의 [+] 생성 폼
+  const [dayDate, setDayDate] = useState<Date | null>(null)
+  const [creatingDate, setCreatingDate] = useState<Date | null>(null)
 
+  const createEvent = useCreateEvent()
   const updateEvent = useUpdateEvent()
   const deleteEvent = useDeleteEvent()
   const { data: labels = [] } = useEventLabels()
@@ -120,6 +129,12 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
       onSuccess: () => setDeletingEventId(null),
     })
   }, [deletingEventId, deleteEvent])
+
+  const handleSubmitCreate = useCallback((data: CalendarEventFormValues) => {
+    createEvent.mutate(data, {
+      onSuccess: () => setCreatingDate(null),
+    })
+  }, [createEvent])
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
@@ -172,6 +187,18 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
     })
   }, [selectedDate, events, view, isBuiltinSourceEnabled, isCalendarVisible])
 
+  // 모바일 일별 시트 이벤트 — 앱 _eventsOnDay 정합 (해당 일과 겹침 + 시작시각 정렬).
+  // 캘린더 이벤트 + 공휴일만 (지출/할일 pseudo-event 제외). 공휴일은 읽기 전용 행.
+  const dayEvents = useMemo(() => {
+    if (!dayDate) return []
+    const ds = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate())
+    const de = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), 23, 59, 59, 999)
+    return filteredEvents
+      .filter(e => e.sourceType === 'calendar' || e.sourceType === 'holiday')
+      .filter(e => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+  }, [dayDate, filteredEvents])
+
   const singleDayEvents = filteredEvents.filter(event => {
     if (event.isAllDay) return false
     const startDate = parseISO(event.startDate)
@@ -196,49 +223,108 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
 
       <div className="flex-1 overflow-hidden">
         <DndProviderWrapper>
-          {view === 'day' && (
-            isLoading
-              ? <CalendarDayViewSkeleton />
-              : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'month' && (
+          {isMobile ? (
             isLoading
               ? <CalendarMonthViewSkeleton />
-              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'week' && (
-            isLoading
-              ? <CalendarWeekViewSkeleton />
-              : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-          )}
-          {view === 'year' && (
-            isLoading
-              ? <CalendarYearViewSkeleton />
-              : <CalendarYearView allEvents={eventStartDates} />
-          )}
-          {view === 'agenda' && (
-            isLoading
-              ? <CalendarAgendaViewSkeleton />
-              : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
+          ) : (
+            <>
+              {view === 'day' && (
+                isLoading
+                  ? <CalendarDayViewSkeleton />
+                  : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+              {view === 'month' && (
+                isLoading
+                  ? <CalendarMonthViewSkeleton />
+                  : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
+              )}
+              {view === 'week' && (
+                isLoading
+                  ? <CalendarWeekViewSkeleton />
+                  : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+              {view === 'year' && (
+                isLoading
+                  ? <CalendarYearViewSkeleton />
+                  : <CalendarYearView allEvents={eventStartDates} />
+              )}
+              {view === 'agenda' && (
+                isLoading
+                  ? <CalendarAgendaViewSkeleton />
+                  : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
+              )}
+            </>
           )}
         </DndProviderWrapper>
       </div>
 
-      {/* Event Detail Popover */}
-      <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
-        <PopoverAnchor asChild>
-          <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
-        </PopoverAnchor>
-        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
-          {selectedEvent && (
-            <EventDetailPopover
-              event={selectedEvent}
-              onEdit={handleEditEvent}
-              onDelete={handleDeleteEvent}
-            />
-          )}
-        </PopoverContent>
-      </Popover>
+      {/* Event Detail — 모바일은 표준 모바일 drawer 패턴(DrawerHeader+제목+X), 데스크톱·태블릿은 Popover */}
+      {isMobile ? (
+        <Drawer open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle className="flex-1">일정 상세</DrawerTitle>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </DrawerClose>
+            </DrawerHeader>
+            <DrawerBody className="pb-5">
+              {selectedEvent && (
+                <EventDetailPopover
+                  event={selectedEvent}
+                  onEdit={handleEditEvent}
+                  onDelete={handleDeleteEvent}
+                />
+              )}
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+          <PopoverAnchor asChild>
+            <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
+          </PopoverAnchor>
+          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
+            {selectedEvent && (
+              <EventDetailPopover
+                event={selectedEvent}
+                onEdit={handleEditEvent}
+                onDelete={handleDeleteEvent}
+              />
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* 모바일 월간뷰 일별 이벤트 시트 — 앱 _DayEventsSheetBody 정합 */}
+      {dayDate && (
+        <DayEventsDialog
+          date={dayDate}
+          events={dayEvents}
+          mobile
+          onClose={() => setDayDate(null)}
+          onAdd={() => { setCreatingDate(dayDate); setDayDate(null) }}
+          onTapEvent={(e) => { setDayDate(null); setEditingEvent(iEventToCalendarEvent(e)) }}
+        />
+      )}
+
+      {/* 일별 시트 [+] → 해당 날짜 기본값 이벤트 생성 폼 */}
+      {creatingDate && (
+        <EventForm
+          selectedDate={creatingDate}
+          labels={labels}
+          onSubmit={handleSubmitCreate}
+          onClose={() => setCreatingDate(null)}
+          isLoading={createEvent.isPending}
+        />
+      )}
 
       {/* Edit Event Form */}
       {editingEvent && (

@@ -88,7 +88,7 @@ const DrawerBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex-1 overflow-y-auto p-5", className)} {...props} />
+  <div className={cn("flex-1 overflow-y-auto px-5", className)} {...props} />
 )
 DrawerBody.displayName = "DrawerBody"
 

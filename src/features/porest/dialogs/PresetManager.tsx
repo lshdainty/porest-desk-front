@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import { PresetEditDialog } from './PresetEditDialog'
@@ -83,10 +84,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           <Bookmark size={16} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
             프리셋이란?
           </div>
-          <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--fg-secondary)', lineHeight: 'var(--lh-normal)' }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
             자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.
           </div>
         </div>
@@ -142,7 +143,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         </ToggleGroup>
         <Button
           type="button"
-          style={{ padding: '7px 12px', fontSize: 'var(--fs-body-sm)' }}
+          variant="accent"
+          style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
           onClick={() => setEditing('new')}
         >
           <Plus size={14} /> 프리셋 추가
@@ -169,16 +171,17 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             >
               <Bookmark size={22} />
             </div>
-            <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--fg-primary)', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', marginBottom: 4 }}>
               저장된 프리셋이 없어요
             </div>
-            <div style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--fg-tertiary)' }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
               자주 쓰는 내역을 추가해 매번 입력하는 수고를 줄여보세요.
             </div>
           </div>
         ) : (
           sorted.map((p, i) => {
             const cat = p.categoryRowId != null ? categoryById.get(p.categoryRowId) : undefined
+            const palette = cat ? getPaletteByColor(cat.color) : null
             const lock = p.lockAmount === 'Y'
             const amountDisplay = lock && p.amount != null ? KRW(p.amount) : '—'
             return (
@@ -198,10 +201,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     width: 40,
                     height: 40,
                     borderRadius: 'var(--radius-tile)',
-                    background: cat
-                      ? `color-mix(in oklch, ${cat.color ?? 'var(--bg-brand)'} 18%, transparent)`
-                      : 'var(--bg-sunken)',
-                    color: cat?.color ?? 'var(--fg-tertiary)',
+                    background: palette ? palette.bg : 'var(--bg-sunken)',
+                    color: palette ? palette.color : 'var(--fg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -215,8 +216,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <div
                       style={{
-                        fontSize: 'var(--fs-body)',
-                        fontWeight: 'var(--fw-bold)',
+                        fontSize: 'var(--text-body-sm)',
+                        fontWeight: '700',
                         color: 'var(--fg-primary)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -228,12 +229,12 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     {p.expenseType === 'INCOME' && (
                       <span
                         style={{
-                          fontSize: 'var(--fs-micro)',
-                          fontWeight: 'var(--fw-bold)',
+                          fontSize: 'var(--text-badge)',
+                          fontWeight: '700',
                           padding: '1px 5px',
                           background: 'var(--bg-income-subtle)',
                           color: 'var(--fg-income)',
-                          borderRadius: 'var(--radius-2xs)',
+                          borderRadius: 'var(--radius-xs)',
                         }}
                       >
                         수입
@@ -242,12 +243,12 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     {!lock && (
                       <span
                         style={{
-                          fontSize: 'var(--fs-micro)',
-                          fontWeight: 'var(--fw-semi)',
+                          fontSize: 'var(--text-badge)',
+                          fontWeight: '600',
                           padding: '1px 5px',
                           background: 'var(--bg-sunken)',
                           color: 'var(--fg-tertiary)',
-                          borderRadius: 'var(--radius-2xs)',
+                          borderRadius: 'var(--radius-xs)',
                         }}
                       >
                         금액 비움
@@ -256,7 +257,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   </div>
                   <div
                     style={{
-                      fontSize: 'var(--fs-caption)',
+                      fontSize: 'var(--text-caption)',
                       color: 'var(--fg-tertiary)',
                       display: 'flex',
                       alignItems: 'center',
@@ -292,7 +293,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     className="num"
                     style={{
                       fontSize: mobile ? 12.5 : 14,
-                      fontWeight: 'var(--fw-bold)',
+                      fontWeight: '700',
                       color: p.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
                     }}
                   >
@@ -380,11 +381,11 @@ function PMStat({ label, value }: { label: string; value: string }) {
     <div style={{ padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
       <div
         style={{
-          fontSize: 'var(--fs-micro)',
-          fontWeight: 'var(--fw-semi)',
+          fontSize: 'var(--text-badge)',
+          fontWeight: '600',
           color: 'var(--fg-tertiary)',
           textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
+          letterSpacing: '0.04em',
           marginBottom: 4,
         }}
       >
@@ -392,7 +393,7 @@ function PMStat({ label, value }: { label: string; value: string }) {
       </div>
       <div
         className="num"
-        style={{ fontSize: 'var(--fs-h4)', fontWeight: 'var(--fw-heavy)', color: 'var(--fg-primary)', letterSpacing: 'var(--tracking-tight)' }}
+        style={{ fontSize: 'var(--text-title-md)', fontWeight: '800', color: 'var(--fg-primary)', letterSpacing: '-0.022em' }}
       >
         {value}
       </div>
@@ -413,26 +414,15 @@ function PMIconBtn({
 }) {
   const Comp = icon === 'pencil' ? Pencil : Trash2
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={onClick}
       title={title}
       aria-label={title}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: 'var(--radius-md)',
-        background: 'transparent',
-        border: 0,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: tone === 'danger' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
-        fontFamily: 'inherit',
-      }}
+      className={tone === 'danger' ? '!text-[var(--fg-expense)]' : undefined}
     >
-      <Comp size={15} strokeWidth={1.9} />
-    </button>
+      <Comp size={16} strokeWidth={1.9} />
+    </Button>
   )
 }

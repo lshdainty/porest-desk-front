@@ -26,7 +26,6 @@ const breadcrumbMap: Record<string, BreadcrumbEntry[]> = {
   '/desk/expense': [{ label: 'expense', url: '/desk/expense' }, { label: 'expense' }],
   '/desk/asset': [{ label: 'expense', url: '/desk/expense' }, { label: 'asset' }],
   '/desk/dutch-pay': [{ label: 'expense', url: '/desk/expense' }, { label: 'dutchPay' }],
-  '/desk/group': [{ label: 'group' }],
 }
 
 export const LayoutHeader = () => {
