@@ -982,22 +982,29 @@ function AssetCard({
         )}
         <CardUsageGauge asset={asset} />
       </div>
-      <div
-        className="num"
-        style={{
-          fontSize: 'var(--text-body-lg)',
-          fontWeight: '700',
-          fontVariantNumeric: 'tabular-nums',
-          letterSpacing: '-0.022em',
-          flexShrink: 0,
-        }}
-      >
-        <MaskAmount>
-          {negativeAmount
-            ? `−${KRW(Math.abs(asset.balance))}`
-            : KRW(asset.balance)}
-        </MaskAmount>
-        <HideUnit>원</HideUnit>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+        <div
+          className="num"
+          style={{
+            fontSize: 'var(--text-body-lg)',
+            fontWeight: '700',
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '-0.022em',
+          }}
+        >
+          <MaskAmount>
+            {negativeAmount
+              ? `−${KRW(Math.abs(asset.balance))}`
+              : KRW(asset.balance)}
+          </MaskAmount>
+          <HideUnit>원</HideUnit>
+        </div>
+        {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
+        {asset.isIncludedInTotal === 'N' && (
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            총액 제외
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1025,10 +1032,10 @@ function TypeGroup({
         <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{title}</CardTitle>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: totalColor }}
+          style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: total === 0 ? undefined : totalColor }}
         >
           <MaskAmount>
-            {negativeTotal ? `−${KRW(total)}` : KRW(total)}
+            {negativeTotal && total !== 0 ? `−${KRW(total)}` : KRW(total)}
           </MaskAmount>
           <HideUnit>원</HideUnit>
         </span>
