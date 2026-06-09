@@ -882,24 +882,8 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
     usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--fg-brand)'
 
   return (
-    <div style={{ marginTop: 8 }}>
-      <div
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 8, marginBottom: 4,
-        }}
-      >
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-          {asset.paymentDay != null ? `${asset.paymentDay}일 결제 · ` : ''}
-          한도 <MaskAmount mask="••••">{KRW(asset.creditLimit)}</MaskAmount>
-        </span>
-        <span
-          className="num"
-          style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: barColor }}
-        >
-          {usage.toFixed(0)}%
-        </span>
-      </div>
+    <div style={{ marginTop: 6 }}>
+      {/* 앱 정합 — 바(위) → 사용금액/한도 라벨(아래) 순서. 결제일은 행 상단(메모 아래)에 별도 표기 */}
       <div
         style={{
           height: 6, background: 'var(--bg-sunken)',
@@ -912,6 +896,23 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
             background: barColor, borderRadius: 'var(--radius-pill)',
           }}
         />
+      </div>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8, marginTop: 4,
+        }}
+      >
+        <span className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
+          <MaskAmount mask="••• / •••">{KRW(used)} / {KRW(asset.creditLimit)}</MaskAmount>
+          <HideUnit>원</HideUnit>
+        </span>
+        <span
+          className="num"
+          style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: barColor }}
+        >
+          {usage.toFixed(0)}%
+        </span>
       </div>
     </div>
   )
@@ -981,6 +982,18 @@ function AssetCard({
             }}
           >
             {asset.memo}
+          </div>
+        )}
+        {asset.assetType === 'CREDIT_CARD' && asset.paymentDay != null && (
+          <div
+            style={{
+              fontSize: 'var(--text-caption)',
+              color: 'var(--fg-tertiary)',
+              marginTop: 1,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {asset.paymentDay}일 결제
           </div>
         )}
         <CardUsageGauge asset={asset} />
