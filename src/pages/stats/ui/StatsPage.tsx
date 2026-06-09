@@ -10,7 +10,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, ChevronDown, X } from 'lucide-react'
+import { CalendarClock, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -817,6 +817,8 @@ export const StatsPage = () => {
                     }
                   } : undefined}
                   style={{
+                    // 클릭 가능 표식 chevron(>) 자리 — amt 뒤 5번째 열 (앱 _DonutLegendRow 정합).
+                    gridTemplateColumns: 'auto 1fr auto auto auto',
                     cursor: clickable ? 'pointer' : 'default',
                     borderRadius: 'var(--radius-md)',
                     padding: clickable ? '4px 6px' : undefined,
@@ -835,6 +837,10 @@ export const StatsPage = () => {
                   <span className="cat-legend__amt num">
                     <MaskAmount mask="••••">{KRW(s.amount)}</MaskAmount>
                   </span>
+                  {/* 하위 카테고리 있는 행 = 클릭 가능 표식 (앱 chevronRight 정합) */}
+                  {clickable && (
+                    <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} aria-hidden />
+                  )}
                 </div>
               )
             })}
