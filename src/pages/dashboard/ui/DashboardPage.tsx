@@ -6,6 +6,7 @@ import {
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
   disablePdHideAmounts,
   enablePdHideAmounts,
@@ -106,6 +107,11 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
   height?: number
 }) {
   const hidden = useHideAmounts()
+  // Y축: 0기준 nice 눈금 (수입·지출 둘 다 포함, 앱 niceAxis 정합).
+  const yAxis = useMemo(() => {
+    const vals = data.flatMap(d => [d.income, d.expense])
+    return niceAxis(0, Math.max(0, ...vals))
+  }, [data])
   return (
     <ChartContainer
       config={barChartConfig}
@@ -128,6 +134,8 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
         <YAxis
           tickLine={false}
           axisLine={false}
+          domain={[yAxis.min, yAxis.max]}
+          ticks={yAxis.ticks}
           // 금액 숨기기 시 Y축도 마스킹 ('••••' 4점)
           tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
           tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}

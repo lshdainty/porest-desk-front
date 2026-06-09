@@ -15,6 +15,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import {
@@ -381,6 +382,11 @@ export function AssetDetailDialog({
     () => (trendData ?? []).map((p, i) => ({ label: `${i + 1}주`, weekStart: p.weekStart, balance: p.balance })),
     [trendData],
   )
+  // Y축: 0기준 nice 눈금 (앱 asset_detail niceAxis 정합). 음수 잔액(대출)도 0 아래로 확장.
+  const yAxis = useMemo(() => {
+    const vals = chartData.map(d => d.balance)
+    return niceAxis(Math.min(0, ...vals), Math.max(0, ...vals))
+  }, [chartData])
   const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
   const seriesLabel = isCard ? '사용' : isInv ? '평가액' : '잔액'
 
@@ -535,6 +541,8 @@ export function AssetDetailDialog({
               <YAxis
                 tickLine={false}
                 axisLine={false}
+                domain={[yAxis.min, yAxis.max]}
+                ticks={yAxis.ticks}
                 // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
                 tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
                 tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}

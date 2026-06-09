@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
+import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -1351,6 +1352,25 @@ export const StatsPage = () => {
     return `${sign}${n.toLocaleString('ko-KR')}`
   }
 
+  // Y축 nice 눈금 (앱 stats_screen 정합). dual-axis 는 좌·우 각각 0기준 고정 5틱(niceCeil)
+  // 으로 가로 그리드 정렬, 순저축 bar 는 음수 포함 niceAxis.
+  const incomeAxis = useMemo(
+    () => niceCeil(Math.max(0, ...trendChartData.map(d => d.income))),
+    [trendChartData],
+  )
+  const expenseAxis = useMemo(
+    () => niceCeil(Math.max(0, ...trendChartData.map(d => d.expense))),
+    [trendChartData],
+  )
+  const savingsAxis = useMemo(
+    () =>
+      niceAxis(
+        Math.min(0, ...trendChartData.map(d => d.savings)),
+        Math.max(0, ...trendChartData.map(d => d.savings)),
+      ),
+    [trendChartData],
+  )
+
   const TrendBig = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
@@ -1404,6 +1424,8 @@ export const StatsPage = () => {
                 yAxisId="income"
                 tickLine={false}
                 axisLine={false}
+                domain={[0, incomeAxis.max]}
+                ticks={incomeAxis.ticks}
                 tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-income)' }}
                 tickFormatter={fmtTick}
                 width={52}
@@ -1414,6 +1436,8 @@ export const StatsPage = () => {
                 orientation="right"
                 tickLine={false}
                 axisLine={false}
+                domain={[0, expenseAxis.max]}
+                ticks={expenseAxis.ticks}
                 tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-expense)' }}
                 tickFormatter={fmtTick}
                 width={52}
@@ -1530,6 +1554,8 @@ export const StatsPage = () => {
             <YAxis
               tickLine={false}
               axisLine={false}
+              domain={[savingsAxis.min, savingsAxis.max]}
+              ticks={savingsAxis.ticks}
               tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
               tickFormatter={fmtTick}
               width={52}
