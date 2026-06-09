@@ -930,6 +930,9 @@ function AssetCard({
   onOpenDetail: (asset: Asset) => void
   showTopBorder?: boolean
 }) {
+  // 음수(빚)만 fg-expense 빨강 + 부호(−), 0 은 부호·강조 없이 '0원' (−0원 방지)
+  // — 관리 화면(AccountManager) 과 동일 로직.
+  const neg = (negativeAmount ? -Math.abs(asset.balance) : asset.balance) < 0
   return (
     <div
       role="button"
@@ -990,12 +993,11 @@ function AssetCard({
             fontWeight: '700',
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.022em',
+            color: neg ? 'var(--fg-expense)' : undefined,
           }}
         >
           <MaskAmount>
-            {negativeAmount
-              ? `−${KRW(Math.abs(asset.balance))}`
-              : KRW(asset.balance)}
+            {neg ? '−' : ''}{KRW(Math.abs(asset.balance))}
           </MaskAmount>
           <HideUnit>원</HideUnit>
         </div>
