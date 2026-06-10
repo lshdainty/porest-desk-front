@@ -191,10 +191,12 @@ const CalendarSourceToggle = () => {
   // 관리·공유는 설정의 "캘린더 관리·공유" 탭으로 이동 (별도 dialog 폐지)
   const goManageShare = () => navigate('/desk/settings?section=calendar-share')
 
-  // 필터 칩 도트 — visible 캘린더 최대 3개 + builtin 소스 색상
+  // 필터 칩 도트 — visible 캘린더 최대 3개 + builtin 소스 색상.
+  // 드롭다운 항목(getPaletteByColor)과 동일하게 dark-aware 변환 — raw hex 직접 주입 시
+  // 다크모드 light 변형 swap 이 안 돼 앱과 색이 어긋나던 버그 fix (앱 solidSwatchColor 정합).
   const dotColors = [
-    ...userCalendars.filter(c => c.isVisible).map(c => c.color),
-    ...builtinSources.filter(s => s.enabled).map(s => s.color),
+    ...userCalendars.filter(c => c.isVisible).map(c => getPaletteByColor(c.color).color),
+    ...builtinSources.filter(s => s.enabled).map(s => getPaletteByColor(s.color).color),
   ].slice(0, 3)
 
   const totalCount = userCalendars.filter(c => c.isVisible).length + builtinSources.filter(s => s.enabled).length
