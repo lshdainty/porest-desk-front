@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, SquareCheckBig,
-  FileText, ReceiptText, FilePen, Users, Wallet,
+  FileText, ReceiptText, FilePen, TrendingUp, Users, Wallet,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -30,6 +30,7 @@ export interface NavItem {
 export const NAV: NavItem[] = [
   { id: 'home',     label: '홈',        icon: LayoutDashboard, path: '/desk' },
   { id: 'assets',   label: '자산',      icon: Wallet,          path: '/desk/asset' },
+  { id: 'stocks',   label: '증권',      icon: TrendingUp,      path: '/desk/stocks' },
   { id: 'tx',       label: '가계부',    icon: ReceiptText,         path: '/desk/expense' },
   { id: 'stats',    label: '통계·분석', icon: ChartPie,        path: '/desk/stats' },
   { id: 'budget',   label: '예산',      icon: FilePen,          path: '/desk/budget' },
@@ -100,8 +101,8 @@ export function PorestSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {renderGroup('워크스페이스', NAV.slice(0, 5))}
-        {renderGroup('기록', NAV.slice(5))}
+        {renderGroup('워크스페이스', NAV.slice(0, 6))}
+        {renderGroup('기록', NAV.slice(6))}
       </SidebarContent>
 
       <SidebarFooter>

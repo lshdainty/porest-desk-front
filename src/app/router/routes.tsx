@@ -10,6 +10,7 @@ const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(
 const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
 const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
 const AssetPage = lazy(() => import('@/pages/asset/ui/AssetPage').then(m => ({ default: m.AssetPage })))
+const StocksPage = lazy(() => import('@/pages/stocks/ui/StocksPage').then(m => ({ default: m.StocksPage })))
 const DutchPayPage = lazy(() => import('@/pages/dutch-pay/ui/DutchPayPage').then(m => ({ default: m.DutchPayPage })))
 const StatsPage = lazy(() => import('@/pages/stats/ui/StatsPage').then(m => ({ default: m.StatsPage })))
 const BudgetPage = lazy(() => import('@/pages/budget/ui/BudgetPage').then(m => ({ default: m.BudgetPage })))
@@ -39,6 +40,7 @@ export const AppRouter = () => {
             <Route element={<AppLayout />}>
               <Route path="/desk" element={<DashboardPage />} />
               <Route path="/desk/asset" element={<AssetPage />} />
+              <Route path="/desk/stocks" element={<StocksPage />} />
               <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/stats" element={<StatsPage />} />
               <Route path="/desk/budget" element={<BudgetPage />} />
