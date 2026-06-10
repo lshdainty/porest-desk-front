@@ -817,8 +817,6 @@ export const StatsPage = () => {
                     }
                   } : undefined}
                   style={{
-                    // 클릭 가능 표식 chevron(>) 자리 — amt 뒤 5번째 열 (앱 _DonutLegendRow 정합).
-                    gridTemplateColumns: 'auto 1fr auto auto auto',
                     cursor: clickable ? 'pointer' : 'default',
                     borderRadius: 'var(--radius-md)',
                     padding: clickable ? '4px 6px' : undefined,
@@ -834,13 +832,20 @@ export const StatsPage = () => {
                   <span className="cat-legend__pct num">
                     {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
                   </span>
-                  <span className="cat-legend__amt num">
+                  <span
+                    className="cat-legend__amt num"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}
+                  >
                     <MaskAmount mask="••••">{KRW(s.amount)}</MaskAmount>
+                    {/* 하위 카테고리 있는 행 = 클릭 가능 표식 — 숫자 옆 밀착 (앱 chevronRight 정합) */}
+                    {clickable && (
+                      <ChevronRight
+                        size={16}
+                        style={{ color: 'var(--fg-tertiary)', marginRight: -2, flexShrink: 0 }}
+                        aria-hidden
+                      />
+                    )}
                   </span>
-                  {/* 하위 카테고리 있는 행 = 클릭 가능 표식 (앱 chevronRight 정합) */}
-                  {clickable && (
-                    <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} aria-hidden />
-                  )}
                 </div>
               )
             })}
