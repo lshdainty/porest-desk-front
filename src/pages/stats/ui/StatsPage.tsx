@@ -1043,9 +1043,9 @@ export const StatsPage = () => {
           <div
             style={{
               display: 'grid',
-              // 시간 라벨 열 폭·gap 축소 — 앱(라벨 56px·셀 4px)처럼 시간↔요일 간격 좁힘
+              // 앱과 동일 — 라벨 56px, 셀 간격 4px (앱 cell Padding(all:2)=셀간 4px)
               gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
-              gap: mobile ? 4 : 6,
+              gap: 4,
               alignItems: 'center',
             }}
           >
@@ -1099,7 +1099,7 @@ export const StatsPage = () => {
                       key={`${row.label}-${col.dow}`}
                       title={hidden ? `${row.label}·${col.label}` : `${row.label}·${col.label} ${KRW(value)}원`}
                       style={{
-                        aspectRatio: mobile ? '0.9' : '1.1',
+                        aspectRatio: '1', // 앱 AspectRatio(1) 정합 — 정사각형
                         borderRadius: 'var(--radius-sm)',
                         background: pal.bg,
                         display: 'flex',
