@@ -63,7 +63,7 @@ export function NotificationsPage() {
         size="sm"
         loading={markAllRead.isPending}
         onClick={() => markAllRead.mutate()}
-        className="text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
+        className="text-[var(--fg-primary)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-primary)]"
       >
         모두 읽음
       </Button>
