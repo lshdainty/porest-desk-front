@@ -21,6 +21,7 @@ const FULLSCREEN_PATHS = [
   '/desk/todo',
   '/desk/dutch-pay',
   '/desk/card-benefit',
+  '/desk/stocks',
   '/desk/settings',
   '/desk/notifications',
 ]

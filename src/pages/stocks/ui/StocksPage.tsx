@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   FX_USDKRW,
@@ -764,25 +765,28 @@ export function StocksPage() {
     </div>
   )
 
-  // ---- 모바일: 스택 + 상세 시트 ----
+  // ---- 모바일: 풀스크린(← 헤더, 카드 혜택 패턴) + 스택 + 상세 시트 ----
   if (mobile) {
     return (
-      <div style={{ padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {summary}
-        {listPanel}
-        {selected && (
-          <ModalShell title="종목 상세" onClose={() => setSelected(null)} mobile mobileMinHeight="88dvh">
-            <StockDetailBody
-              ticker={selected}
-              holding={selHolding}
-              watched={isWatched(selected)}
-              onToggleWatch={() => toggleWatch(selected)}
-              mobile
-            />
-          </ModalShell>
-        )}
-        {searchOpen && <StockSearchDialog mobile onPick={t => setSelected(t)} onClose={() => setSearchOpen(false)} />}
-      </div>
+      <>
+        <MobileBackHeader title="증권" />
+        <div style={{ padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {summary}
+          {listPanel}
+          {selected && (
+            <ModalShell title="종목 상세" onClose={() => setSelected(null)} mobile mobileMinHeight="88dvh">
+              <StockDetailBody
+                ticker={selected}
+                holding={selHolding}
+                watched={isWatched(selected)}
+                onToggleWatch={() => toggleWatch(selected)}
+                mobile
+              />
+            </ModalShell>
+          )}
+          {searchOpen && <StockSearchDialog mobile onPick={t => setSelected(t)} onClose={() => setSearchOpen(false)} />}
+        </div>
+      </>
     )
   }
 
