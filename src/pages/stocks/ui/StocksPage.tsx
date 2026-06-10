@@ -32,8 +32,7 @@ function fmtPrice(s: Stock): string {
   return `${KRW(s.price)}원`
 }
 
-/** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary).
- *  porest-design DESIGN.desk.md '증권(Stocks) 페이지' 토큰 정합. */
+/** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary). */
 function trendColor(pct: number): string {
   return pct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)'
 }
