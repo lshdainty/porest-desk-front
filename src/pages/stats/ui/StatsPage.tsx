@@ -1045,7 +1045,7 @@ export const StatsPage = () => {
               display: 'grid',
               // 앱과 동일 — 라벨 56px, 셀 간격 4px (앱 cell Padding(all:2)=셀간 4px)
               gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
-              gap: 4,
+              gap: 6,
               alignItems: 'center',
             }}
           >
