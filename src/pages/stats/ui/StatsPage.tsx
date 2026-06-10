@@ -256,25 +256,9 @@ function PorestChartTooltip({
 }
 
 /** Stats 페이지 구조에 맞춘 skeleton — 탭별로 다른 컨텐츠. */
+// 콘텐츠 전용 스켈레톤 — 탭/헤더 같은 정적 틀은 실제 페이지가 항상 렌더한다(스켈레톤 X).
+// 여기선 서버 데이터(카테고리/추이/비교) 자리만 채운다.
 function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
-  const Tabs = (
-    <div
-      style={{
-        display: 'flex',
-        gap: 16,
-        marginBottom: mobile ? 0 : 20,
-        borderBottom: '1px solid var(--border-subtle)',
-      }}
-    >
-      {[0, 1, 2].map(i => (
-        <SkeletonBase
-          key={i}
-          className={mobile ? 'h-8 flex-1' : 'h-8 w-20'}
-        />
-      ))}
-    </div>
-  )
-
   const CategorySkeleton = (
     <>
       <div
@@ -467,32 +451,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
     </div>
   )
 
-  const Content = tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
-
-  if (mobile) {
-    // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
-    // 실제 페이지와 동일한 viewport fit 구조 — 탭 띠 고정 + Content 만 overflow-y-auto.
-    return (
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>{Tabs}</div>
-        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 'var(--spacing-xl) 20px' }}>
-          {Content}
-        </div>
-      </div>
-    )
-  }
-  return (
-    <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>통계·분석</h1>
-          <div className="sub">카테고리·추이·인사이트</div>
-        </div>
-      </div>
-      {Tabs}
-      {Content}
-    </div>
-  )
+  return tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
 }
 
 export const StatsPage = () => {
@@ -1921,7 +1880,8 @@ export const StatsPage = () => {
   // Suppress unused warning if totalIncome isn't used elsewhere
   void totalIncome
 
-  if (shouldShowSkeleton) return <StatsPageSkeleton mobile={mobile} tab={tab} />
+  // 정적 틀(탭·헤더)은 항상 실제 렌더 — 스켈레톤은 콘텐츠 영역에만(서버 데이터 자리).
+  const content = shouldShowSkeleton ? <StatsPageSkeleton mobile={mobile} tab={tab} /> : Content
 
   if (mobile) {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
@@ -1934,7 +1894,7 @@ export const StatsPage = () => {
           {StatsTabs}
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 'var(--spacing-xl) 20px' }}>
-          {Content}
+          {content}
         </div>
       </div>
     )
@@ -1949,7 +1909,7 @@ export const StatsPage = () => {
         </div>
       </div>
       {StatsTabs}
-      {Content}
+      {content}
     </div>
   )
 }
