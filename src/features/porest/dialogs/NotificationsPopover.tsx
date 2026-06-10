@@ -123,8 +123,7 @@ export function NotificationsPopover({
           style={{
             padding: '10px 14px',
             borderTop: '1px solid var(--border-subtle)',
-            /* 앱 footer(bgSunken=slate950=bg-page-dark) 정합 — sunken(input,더밝음) 대신 canvas */
-            background: 'var(--bg-canvas)',
+            background: 'var(--bg-sunken)',
           }}
         >
           <Button
