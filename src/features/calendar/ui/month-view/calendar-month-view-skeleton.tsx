@@ -7,7 +7,7 @@ const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 /**
  * 실제 MonthDayCell 미러 — 모바일은 셀 보더 없음(lg 이상만 grid line),
- * 이벤트 placeholder 는 실제 칩과 동일한 h-5.5(모바일)/h-6.5(lg) 라운드 사각.
+ * 이벤트 placeholder 는 실제 칩과 동일한 h-4(앱 타이트 칩 정합) 라운드 사각.
  */
 const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number }) => {
   return (
@@ -22,7 +22,7 @@ const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number
         {Array.from({ length: chips }).map((_, i) => (
           <Skeleton
             key={i}
-            className="h-5.5 lg:h-6.5 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md"
+            className="h-4 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md"
           />
         ))}
       </div>

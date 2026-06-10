@@ -240,7 +240,7 @@ const MonthDayCell = ({
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="h-5.5 lg:h-6.5">
+            <div key={eventKey} className="h-4">
               {event && (
                 <MonthEventBadge
                   event={event}
@@ -308,7 +308,7 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-0.5 lg:mx-1 flex size-auto h-5.5 lg:h-6.5 select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border px-1 lg:px-2 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-0.5 lg:mx-1 flex size-auto h-4 leading-none select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border px-1 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         positionClasses[position],
         className
       )}
@@ -409,8 +409,8 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
       const rowHeight = wrapperHeight / numRows
       // 셀 내부: 헤더(날짜번호) 24px + padding(top 4 + bottom 8) + cell gap 4px = 40px
       const availableForEvents = rowHeight - 40
-      // 이벤트 배지 26px(h-6.5) + gap 4px(gap-1) = 30px per slot
-      const count = Math.max(0, Math.floor((availableForEvents + 4) / 30))
+      // 이벤트 배지 16px(h-4) + gap 4px(gap-1) = 20px per slot (앱 타이트 칩 정합)
+      const count = Math.max(0, Math.floor((availableForEvents + 4) / 20))
       setMaxVisibleEvents(count)
     }
 
