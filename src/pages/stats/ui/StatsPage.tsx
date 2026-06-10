@@ -840,7 +840,7 @@ export const StatsPage = () => {
                     {/* 하위 카테고리 있는 행 = 클릭 가능 표식 — 숫자 옆 밀착 (앱 chevronRight 정합) */}
                     {clickable && (
                       <ChevronRight
-                        size={16}
+                        size={14}
                         style={{ color: 'var(--fg-tertiary)', marginRight: -2, flexShrink: 0 }}
                         aria-hidden
                       />
