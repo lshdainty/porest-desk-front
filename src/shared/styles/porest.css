@@ -516,7 +516,8 @@
 .notif-row__icon {
   width: 34px;
   height: 34px;
-  border-radius: var(--radius-tile);
+  /* 앱 notification_screen 아이콘 박스(PRadius.brMd=8px) 정합 */
+  border-radius: var(--radius-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
