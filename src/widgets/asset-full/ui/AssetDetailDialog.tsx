@@ -105,7 +105,31 @@ function currentYearMonth(): string {
 // 실적 무관 카드면 숨김. 달성(100%↑) 시 bar·% status-success, 미만은 fg-brand(다크 primary-light).
 function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
   const ym = currentYearMonth()
-  const { data: p } = useCardPerformance(assetRowId, ym)
+  const { data: p, isLoading } = useCardPerformance(assetRowId, ym)
+  // 서버 실적 로딩 중 — 실제 바 레이아웃(헤더/진행바/금액 행) 그대로 스켈레톤 (앱 CardPerformanceBar 정합).
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          padding: 12,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: 18,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <SkeletonBase className="h-3 w-24" />
+          <SkeletonBase className="ml-auto h-3 w-8" />
+        </div>
+        <SkeletonBase className="h-2 w-full rounded-full" style={{ margin: '6px 0' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <SkeletonBase className="h-3 w-28" />
+          <SkeletonBase className="ml-auto h-3 w-16" />
+        </div>
+      </div>
+    )
+  }
   if (!p || !p.isRequired || p.requiredAmount == null) return null
   const rate = Math.min(Math.max(p.achievementRate, 0), 1.5)
   const pct = Math.trunc(rate * 100)
