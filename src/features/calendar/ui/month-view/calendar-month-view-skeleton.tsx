@@ -1,15 +1,17 @@
 import { useTranslation } from 'react-i18next'
 
 import { Skeleton } from '@/shared/ui/skeleton'
+import { useIsMobile } from '@/shared/hooks/use-mobile'
 
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 /**
  * 실제 MonthDayCell 미러 — 모바일은 셀 보더 없음(lg 이상만 grid line),
- * 이벤트 placeholder 는 실제 칩과 동일한 h-4(앱 타이트 칩 정합) 라운드 사각.
+ * 이벤트 placeholder 는 실제 칩과 동일한 높이: 모바일 h-4(앱 타이트 칩) /
+ * 데스크톱·태블릿 h-5.5 lg:h-6.5 (실제 MonthEventBadge 분기 정합).
  */
-const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number }) => {
+const DayCellSkeleton = ({ isSunday, chips, isMobile }: { isSunday: boolean; chips: number; isMobile: boolean }) => {
   return (
     <div className={`flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? 'lg:border-l-0' : ''}`}>
       <div className="flex items-center justify-between px-1">
@@ -22,7 +24,7 @@ const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number
         {Array.from({ length: chips }).map((_, i) => (
           <Skeleton
             key={i}
-            className="h-4 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md"
+            className={`${isMobile ? 'h-4' : 'h-5.5 lg:h-6.5'} mx-0.5 lg:mx-1 rounded-sm lg:rounded-md`}
           />
         ))}
       </div>
@@ -32,6 +34,7 @@ const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number
 
 const CalendarMonthViewSkeleton = () => {
   const { i18n } = useTranslation()
+  const isMobile = useIsMobile()
   const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
   const cells = Array.from({ length: 42 }, (_, i) => i)
@@ -63,6 +66,7 @@ const CalendarMonthViewSkeleton = () => {
             <DayCellSkeleton
               key={index}
               isSunday={index % 7 === 0}
+              isMobile={isMobile}
               // 일부 셀에만 0~2개 칩 — 시각적 다양성 (실데이터 밀도 흉내)
               chips={index % 7 === 0 ? 2 : index % 5 === 0 ? 1 : 0}
             />

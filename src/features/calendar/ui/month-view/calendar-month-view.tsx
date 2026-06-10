@@ -8,6 +8,7 @@ import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/dra
 import { calculateMonthEventPositions, eventBadgeColor, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
 import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { useIsMobile } from '@/shared/hooks/use-mobile'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
 
@@ -70,6 +71,7 @@ const MonthDayCell = ({
   expenseSummary,
   holidayDateSet,
   maxVisibleEvents,
+  isMobile,
   onEventClick,
   onDayClick,
 }: {
@@ -79,6 +81,8 @@ const MonthDayCell = ({
   expenseSummary?: IDayExpenseSummary
   holidayDateSet: Set<string>
   maxVisibleEvents: number
+  /** 모바일(<768px) 여부 — 이벤트 칩을 앱처럼 타이트하게 그릴지 결정. */
+  isMobile: boolean
   onEventClick?: (event: IEvent, el: HTMLElement) => void
   onDayClick?: (date: Date) => void
 }) => {
@@ -240,11 +244,12 @@ const MonthDayCell = ({
           const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`
 
           return (
-            <div key={eventKey} className="h-4">
+            <div key={eventKey} className={isMobile ? 'h-4' : 'h-5.5 lg:h-6.5'}>
               {event && (
                 <MonthEventBadge
                   event={event}
                   cellDate={startOfDay(date)}
+                  isMobile={isMobile}
                   // onDayClick 모드(모바일 일별 시트)에선 칩 탭도 셀과 동일하게
                   // 그날의 시트를 연다 — 앱(셀 단위 탭) 정합.
                   onEventClick={onDayClick ? () => onDayClick(date) : onEventClick}
@@ -261,11 +266,14 @@ const MonthDayCell = ({
 const MonthEventBadge = ({
   event,
   cellDate,
+  isMobile,
   className,
   onEventClick,
 }: {
   event: IEvent
   cellDate: Date
+  /** 모바일(<768px) 여부 — 앱처럼 타이트한 칩(16px·좌우 4px) vs 데스크톱/태블릿 기본 칩. */
+  isMobile: boolean
   className?: string
   onEventClick?: (event: IEvent, el: HTMLElement) => void
 }) => {
@@ -308,7 +316,10 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        'mx-0.5 lg:mx-1 flex size-auto h-4 leading-none select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border px-1 text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'mx-0.5 lg:mx-1 flex size-auto select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        // 모바일(<768px): 앱 _EventBar 정합 타이트 칩(16px·좌우 4px·leading-none).
+        // 데스크톱/태블릿(≥768px): 원래 높이/패딩(22px → lg 26px, 좌우 4 → lg 8px).
+        isMobile ? 'h-4 leading-none px-1' : 'h-5.5 lg:h-6.5 px-1 lg:px-2',
         positionClasses[position],
         className
       )}
@@ -349,6 +360,9 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
   const { i18n } = useTranslation()
   const { selectedDate } = useCalendar()
   const { endSelection } = useDragSelect()
+  // 캘린더 본문은 모바일/데스크톱이 동일 컴포넌트를 공유(라우트 분리 없음) — CalendarContainer
+  // 와 같은 useIsMobile(768px) 기준으로 이벤트 칩을 모바일만 앱처럼 타이트하게 분기.
+  const isMobile = useIsMobile()
 
   const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
 
@@ -409,15 +423,18 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
       const rowHeight = wrapperHeight / numRows
       // 셀 내부: 헤더(날짜번호) 24px + padding(top 4 + bottom 8) + cell gap 4px = 40px
       const availableForEvents = rowHeight - 40
-      // 이벤트 배지 16px(h-4) + gap 4px(gap-1) = 20px per slot (앱 타이트 칩 정합)
-      const count = Math.max(0, Math.floor((availableForEvents + 4) / 20))
+      // per slot = 배지 높이 + gap 4px(gap-1). 모바일은 앱 타이트 칩(h-4 16px → 20px),
+      // 데스크톱/태블릿은 기본 칩(h-6.5 26px → 30px). CSS lg: 로는 계산식을 못 가리므로
+      // CalendarContainer 와 동일한 useIsMobile 기준으로 JS 분기.
+      const perSlot = isMobile ? 20 : 30
+      const count = Math.max(0, Math.floor((availableForEvents + 4) / perSlot))
       setMaxVisibleEvents(count)
     }
 
     const observer = new ResizeObserver(calculate)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [cells.length])
+  }, [cells.length, isMobile])
 
   // Handle mouse up on the grid container (catches mouseup outside cells)
   const handleGridMouseUp = useCallback(() => {
@@ -466,6 +483,7 @@ const MonthViewContent = ({ singleDayEvents, multiDayEvents, onEventClick, onDay
                 expenseSummary={expenseSummaryMap.get(dayKey)}
                 holidayDateSet={holidayDateSet}
                 maxVisibleEvents={maxVisibleEvents}
+                isMobile={isMobile}
                 onEventClick={onEventClick}
                 onDayClick={onDayClick}
               />
