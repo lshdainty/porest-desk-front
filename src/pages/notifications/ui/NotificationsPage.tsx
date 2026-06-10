@@ -134,7 +134,8 @@ export function NotificationsPage() {
       style={{
         padding: '10px 14px',
         borderTop: '1px solid var(--border-subtle)',
-        background: 'var(--bg-sunken)',
+        /* 앱 footer(bg-page-dark) 정합 — sunken(input,더밝음) 대신 canvas */
+        background: 'var(--bg-canvas)',
       }}
     >
       <Button
