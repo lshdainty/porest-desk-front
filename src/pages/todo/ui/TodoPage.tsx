@@ -997,18 +997,45 @@ function TodoRowSkeleton({ last }: { last?: boolean }) {
   )
 }
 
-/** 통계 카드 1장 skeleton. */
-function StatCardSkeleton({ mobile }: { mobile: boolean }) {
+/** 통계 카드 1장 skeleton — 라벨/숫자 placeholder. progress=true 면 3번째 완료율 카드의 진행바도 미러. */
+function StatCardSkeleton({ mobile, progress }: { mobile: boolean; progress?: boolean }) {
   return (
     <Card style={{ padding: mobile ? 14 : 18 }}>
-      <SkeletonBase className="h-3 w-10 mb-2" />
-      <SkeletonBase className={mobile ? 'h-6 w-12' : 'h-7 w-14'} />
+      <SkeletonBase className="h-3 w-10 mb-1.5" />
+      <SkeletonBase className={mobile ? 'h-[22px] w-12' : 'h-[26px] w-14'} />
+      {progress && (
+        <div className="budget-bar" style={{ marginTop: 8, height: 6 }}>
+          <SkeletonBase className="h-full w-2/5 rounded-full" />
+        </div>
+      )}
     </Card>
   )
 }
 
-/** Todo 페이지 구조 일치 skeleton — 통계 3카드 + 퀵추가 + 칩 + 그룹 리스트. */
+/** 데스크톱 우측 분포/우선순위 카드 skeleton — 실제 타이틀 + 막대 행 구조 미러. */
+function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
+  return (
+    <Card style={{ padding: 22 }}>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{title}</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <SkeletonBase className="h-4 w-[60px] shrink-0" />
+            <SkeletonBase className="h-1.5 flex-1 rounded-full" />
+            <SkeletonBase className="h-3 w-9 shrink-0" />
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+/**
+ * Todo 페이지 skeleton — 정적 틀(페이지 헤더 / 퀵추가 / 필터 칩)은 실제 렌더,
+ * 서버 쿼리(useTodos) 의존 데이터 영역(통계 숫자 / 리스트 / 분포)만 skeleton.
+ */
 function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
+  // ── 통계 3카드 (데이터: 숫자/완료율) ──
   const Stats = (
     <div
       style={{
@@ -1019,28 +1046,90 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
     >
       <StatCardSkeleton mobile={mobile} />
       <StatCardSkeleton mobile={mobile} />
-      <StatCardSkeleton mobile={mobile} />
+      <StatCardSkeleton mobile={mobile} progress />
     </div>
   )
+
+  // ── 퀵추가 (정적 틀 — 실제 렌더, 비활성) ──
+  const QuickAdd = (
+    <Card style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--fg-tertiary)',
+          flexShrink: 0,
+        }}
+      >
+        <Plus size={18} />
+      </span>
+      <input
+        disabled
+        placeholder="할 일을 입력하고 Enter"
+        aria-label="할 일 빠른 추가"
+        style={{
+          flex: 1,
+          minWidth: 0,
+          border: 0,
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 14,
+          color: 'var(--fg-primary)',
+          padding: '8px 0',
+          fontFamily: 'inherit',
+        }}
+      />
+      <Button size="sm" disabled style={{ flexShrink: 0 }}>
+        추가
+      </Button>
+      <Button variant="outline" size="sm" disabled style={{ flexShrink: 0 }}>
+        <Settings2 size={13} /> 자세히
+      </Button>
+    </Card>
+  )
+
+  // ── 필터 칩 (정적 틀 — 실제 렌더, 카운트만 skeleton) ──
   const Chips = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <SkeletonBase key={i} className="h-8 w-16 rounded-full" />
+      {['오늘', '이번 주', '전체', '완료'].map((label, i) => (
+        <button
+          key={label}
+          type="button"
+          disabled
+          className={`chip ${i === 0 ? 'active' : ''}`}
+        >
+          {label}
+          <SkeletonBase className="h-3 w-3 ml-0.5 rounded-sm" />
+        </button>
       ))}
     </div>
   )
+
+  // ── 그룹 리스트 (데이터) — 실제 그룹 헤더 + 행 구조 미러 ──
   const List = (
     <Card style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
-      <SkeletonBase className="h-3 w-28 my-3" />
+      <div
+        style={{
+          padding: mobile ? '12px 0 6px' : '14px 0 8px',
+          borderBottom: '1px solid var(--border-subtle)',
+          marginBottom: 4,
+        }}
+      >
+        <SkeletonBase className="h-3 w-28" />
+      </div>
       {Array.from({ length: 4 }).map((_, i) => (
         <TodoRowSkeleton key={i} last={i === 3} />
       ))}
     </Card>
   )
+
   const Left = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {Stats}
-      <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+      {QuickAdd}
       {Chips}
       {List}
     </div>
@@ -1053,7 +1142,7 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Stats}
-            <SkeletonBase className="h-12 w-full rounded-[var(--radius-lg)]" />
+            {QuickAdd}
             {Chips}
             {List}
           </div>
@@ -1063,13 +1152,16 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div style={{ padding: 0 }}>
+      {/* 정적 페이지 헤더 — 실제 렌더 */}
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
-          <SkeletonBase className="h-8 w-20 mb-2" />
-          <SkeletonBase className="h-4 w-40" />
+          <h1>할 일</h1>
+          <div className="sub">오늘 챙길 거, 한눈에 정리</div>
         </div>
         <div className="right">
-          <SkeletonBase className="h-8 w-24 rounded-md" />
+          <Button size="sm" disabled>
+            <Plus size={14} /> 새 할 일
+          </Button>
         </div>
       </div>
       <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
@@ -1083,8 +1175,8 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
         >
           {Left}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <SkeletonBase className="h-40 w-full rounded-[var(--radius-lg)]" />
-            <SkeletonBase className="h-32 w-full rounded-[var(--radius-lg)]" />
+            <RatioCardSkeleton title="태그별 분포" rows={4} />
+            <RatioCardSkeleton title="우선순위" rows={3} />
           </div>
         </div>
       </div>

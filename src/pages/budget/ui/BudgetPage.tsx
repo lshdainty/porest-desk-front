@@ -192,19 +192,19 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         <SkeletonBase className="h-5 w-20" />
       </CardHeader>
       <CardContent>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {[0, 1].map(i => (
             <div
               key={i}
               style={{
-                padding: 14,
+                padding: 12,
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-lg)',
               }}
             >
-              <SkeletonBase className="h-3 w-12 mb-2" />
-              <SkeletonBase className="h-7 w-20" />
+              <SkeletonBase className="h-3 w-10 mb-2" />
+              <SkeletonBase className="h-7 w-16" />
             </div>
           ))}
         </div>
@@ -223,7 +223,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
           {[0, 1, 2, 3].map(i => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <SkeletonBase className="h-4 w-1/2 mb-1.5" />
                   <SkeletonBase className="h-3 w-1/3" />
@@ -233,7 +233,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
                   <SkeletonBase className="h-3 w-16 ml-auto" />
                 </div>
               </div>
-              <SkeletonBase className="h-1.5 w-full rounded-full" />
+              <SkeletonBase className="h-2 w-full rounded-full" />
             </div>
           ))}
         </div>
@@ -821,12 +821,12 @@ export const BudgetPage = () => {
           {[0, 1, 2, 3].map(i => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <SkeletonBase className="h-4 w-2/5 mb-1.5" />
-                  <SkeletonBase className="h-3 w-1/2" />
+                  <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right', minWidth: 90 }}>
                   <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
                   <SkeletonBase className="h-3 w-16 ml-auto" />
                 </div>

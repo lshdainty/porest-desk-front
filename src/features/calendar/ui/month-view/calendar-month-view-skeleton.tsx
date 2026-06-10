@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
+import { Skeleton } from '@/shared/ui/skeleton'
+
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -12,15 +14,15 @@ const DayCellSkeleton = ({ isSunday, chips }: { isSunday: boolean; chips: number
     <div className={`flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? 'lg:border-l-0' : ''}`}>
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1 flex-1 min-w-0">
-          <div className="size-6 rounded-full bg-muted animate-pulse" />
+          <Skeleton className="size-6 rounded-full" />
         </div>
       </div>
 
       <div className="flex flex-col flex-1 min-h-0 gap-1">
         {Array.from({ length: chips }).map((_, i) => (
-          <div
+          <Skeleton
             key={i}
-            className="h-5.5 lg:h-6.5 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md bg-muted animate-pulse"
+            className="h-5.5 lg:h-6.5 mx-0.5 lg:mx-1 rounded-sm lg:rounded-md"
           />
         ))}
       </div>

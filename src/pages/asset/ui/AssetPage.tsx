@@ -600,7 +600,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
           {[0, 1, 2].map(i => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-8 w-8 rounded-[10px] shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <SkeletonBase className="h-4 w-2/3 mb-1.5" />
                   <SkeletonBase className="h-3 w-1/3" />
@@ -757,8 +757,8 @@ function AssetCompositionSkeleton() {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
             {[0, 1, 2, 3].map(i => (
               <div key={i}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <SkeletonBase className="h-2.5 w-2.5 shrink-0" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <SkeletonBase className="h-2.5 w-2.5 rounded-[var(--radius-xs)] shrink-0" />
                   <SkeletonBase className="h-4 w-20" />
                   <SkeletonBase className="h-4 w-16 ml-auto" />
                 </div>
@@ -785,19 +785,15 @@ function UpcomingBillsSkeleton() {
             <div
               key={i}
               style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                padding: '16px 18px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-lg)',
               }}
             >
-              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/2" />
-              </div>
-              <SkeletonBase className="h-4 w-12 shrink-0" />
+              <SkeletonBase className="h-4 w-24" />
+              <SkeletonBase className="h-5 w-20 shrink-0" />
             </div>
           ))}
         </div>
@@ -814,19 +810,17 @@ function TypeGroupSkeleton({ rows = 3 }: { rows?: number }) {
         <SkeletonBase className="h-4 w-16 ml-auto" />
       </CardHeader>
       <CardContent>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {Array.from({ length: rows }).map((_, i) => (
             <div
               key={i}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '16px 18px',
+                padding: '14px 4px',
+                borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
               }}
             >
-              <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+              <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <SkeletonBase className="h-4 w-1/2 mb-1.5" />
                 <SkeletonBase className="h-3 w-1/3" />
@@ -852,14 +846,14 @@ function SavingGoalsSkeleton() {
           {[0, 1].map(i => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-8 w-8 rounded-[10px] shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <SkeletonBase className="h-4 w-3/4 mb-1.5" />
                   <SkeletonBase className="h-3 w-1/3" />
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <SkeletonBase className="h-4 w-10 mb-1" />
-                  <SkeletonBase className="h-3 w-16" />
+                  <SkeletonBase className="h-4 w-10 mb-1 ml-auto" />
+                  <SkeletonBase className="h-3 w-16 ml-auto" />
                 </div>
               </div>
               <SkeletonBase className="h-1.5 w-full rounded-full" />

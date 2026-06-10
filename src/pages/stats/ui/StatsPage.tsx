@@ -328,16 +328,36 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
             <SkeletonBase className="h-5 w-40" />
           </CardHeader>
           <CardContent>
-            <SkeletonBase className="h-3 w-2/3 mb-3" />
+            <SkeletonBase className="h-3 w-2/3 mb-4" />
+            {/* 실제 heatmap grid 정합: 56px 라벨열 + 7 요일열, 헤더 행 + 6 데이터 행, 정사각형 셀 */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(8, 1fr)',
-                gap: mobile ? 6 : 8,
+                gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
+                gap: 6,
+                alignItems: 'center',
               }}
             >
-              {Array.from({ length: 56 }).map((_, i) => (
-                <SkeletonBase key={i} className="h-7 w-full rounded-sm" />
+              <span />
+              {HEAT_COLS.map(col => (
+                <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
+                  <SkeletonBase className="h-3 w-3" />
+                </div>
+              ))}
+              {HEAT_ROWS.map((row, rIdx) => (
+                <Fragment key={row.label}>
+                  <div style={{ paddingRight: 2 }}>
+                    <SkeletonBase className="h-3.5 w-8 mb-1" />
+                    <SkeletonBase className="h-2.5 w-12" />
+                  </div>
+                  {HEAT_COLS.map(col => (
+                    <SkeletonBase
+                      key={`${rIdx}-${col.dow}`}
+                      className="w-full rounded-sm"
+                      style={{ aspectRatio: '1' }}
+                    />
+                  ))}
+                </Fragment>
               ))}
             </div>
           </CardContent>
@@ -965,23 +985,38 @@ export const StatsPage = () => {
         색이 진할수록 지출이 많은 시간대예요 (단위: 원)
       </div>
       {heatmapQ.isLoading ? (
+        // 실제 grid 정합: 56px 라벨열 + 7 요일열, 헤더 행(코너+요일) + 6 데이터 행.
+        // 셀은 aspectRatio 1 정사각형 + radius-sm (로딩 후 컴포넌트와 1:1).
         <div
           style={{
             display: 'grid',
-            gridTemplateRows: `repeat(${HEAT_ROWS.length}, 1fr)`,
+            gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
             gap: 6,
+            alignItems: 'center',
           }}
         >
-          {HEAT_ROWS.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                height: 28,
-                background: 'var(--bg-sunken)',
-                borderRadius: 'var(--radius-md)',
-                opacity: 0.6 + (i % 2) * 0.2,
-              }}
-            />
+          {/* 헤더 행: 빈 코너 + 요일 라벨 placeholder */}
+          <span />
+          {HEAT_COLS.map(col => (
+            <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
+              <SkeletonBase className="h-3 w-3" />
+            </div>
+          ))}
+          {/* 데이터 행: 56px 라벨(2줄) + 정사각형 셀 7개 */}
+          {HEAT_ROWS.map((row, rIdx) => (
+            <Fragment key={row.label}>
+              <div style={{ paddingRight: 2 }}>
+                <SkeletonBase className="h-3.5 w-8 mb-1" />
+                <SkeletonBase className="h-2.5 w-12" />
+              </div>
+              {HEAT_COLS.map(col => (
+                <SkeletonBase
+                  key={`${rIdx}-${col.dow}`}
+                  className="w-full rounded-sm"
+                  style={{ aspectRatio: '1' }}
+                />
+              ))}
+            </Fragment>
           ))}
         </div>
       ) : heatmapTotal === 0 ? (

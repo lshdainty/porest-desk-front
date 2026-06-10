@@ -22,12 +22,12 @@ function NotificationsPageSkeleton() {
     <div style={{ padding: '4px 0' }}>
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="notif-row" style={{ pointerEvents: 'none' }}>
-          <SkeletonBase className="h-8 w-8 rounded-md shrink-0 notif-row__icon" />
+          <SkeletonBase className="h-[34px] w-[34px] rounded-md shrink-0 notif-row__icon" />
           <div className="notif-row__text">
-            <SkeletonBase className={`h-3.5 mb-1.5 ${i % 3 === 0 ? 'w-36' : i % 3 === 1 ? 'w-28' : 'w-40'}`} />
+            <SkeletonBase className={`h-3.5 mb-[3px] ${i % 3 === 0 ? 'w-36' : i % 3 === 1 ? 'w-28' : 'w-40'}`} />
             <SkeletonBase className="h-3 w-48" />
           </div>
-          <SkeletonBase className="h-3 w-8 shrink-0" />
+          <SkeletonBase className="h-3 w-8 shrink-0 mt-[2px]" />
           <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
         </div>
       ))}

@@ -166,15 +166,6 @@ const CATEGORY_PALETTE = [
   'var(--color-cat-gray)',
 ]
 
-function Skeleton({ height = 120, style = {} }: { height?: number; style?: React.CSSProperties }) {
-  return (
-    <div
-      className="animate-pulse bg-surface-input rounded-lg"
-      style={{ height, ...style }}
-    />
-  )
-}
-
 /**
  * Dashboard 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
  * desktop/mobile 공통 — 같은 쿼리들이 재호출되어도 캐시 hit.
@@ -213,42 +204,49 @@ function useDashboardPageData(year: number, month: number, opts?: { includePrevM
   }
 }
 
-/** Dashboard 페이지 구조에 맞춘 skeleton. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정). */
+/**
+ * Dashboard 페이지 구조에 맞춘 skeleton. 정적 틀(헤더 타이틀/MonthPicker/링크/hero 라벨)은
+ * 실제 렌더하고 서버 데이터 영역만 스켈레톤. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정).
+ */
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
+  const navigate = useNavigate()
+  const { key: initialKey, year, month } = useCurrentMonthKey()
+  const [period, setPeriod] = useState(initialKey)
   if (mobile) {
     return (
       <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <DashboardHeroSkeleton mobile />
-        <DashboardSummaryCardSkeleton mobile />
-        <DashboardCategoryCardSkeleton mobile />
-        <DashboardBudgetCardSkeleton />
-        <DashboardListCardSkeleton title rows={3} />
+        <DashboardHeroSkeleton mobile year={year} month={month} />
+        <DashboardSummaryCardSkeleton mobile month={month} period={period} onPeriodChange={setPeriod} />
+        <DashboardCategoryCardSkeleton mobile onDetail={() => navigate('/desk/stats')} />
+        <DashboardBudgetCardSkeleton mobile onManage={() => navigate('/desk/budget')} />
+        <DashboardListCardSkeleton title="오늘 쓴 돈" allLabel="전체" onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
       </div>
     )
   }
   return (
     <div className="dash-grid">
       <div className="dash-grid__left">
-        <DashboardHeroSkeleton mobile={false} />
-        <DashboardSummaryCardSkeleton mobile={false} />
-        <DashboardListCardSkeleton title rows={3} />
+        <DashboardHeroSkeleton mobile={false} year={year} month={month} />
+        <DashboardSummaryCardSkeleton mobile={false} month={month} period={period} onPeriodChange={setPeriod} />
+        <DashboardListCardSkeleton title="오늘 쓴 돈" allLabel="전체 보기" onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
       </div>
       <div className="dash-grid__right">
-        <DashboardCategoryCardSkeleton mobile={false} />
-        <DashboardBudgetCardSkeleton />
-        <DashboardListCardSkeleton title rows={3} />
-        <DashboardListCardSkeleton title rows={4} />
-        <DashboardListCardSkeleton title rows={3} />
+        <DashboardCategoryCardSkeleton mobile={false} onDetail={() => navigate('/desk/stats')} />
+        <DashboardBudgetCardSkeleton mobile={false} onManage={() => navigate('/desk/budget')} />
+        <DashboardListCardSkeleton title="예정된 결제" rows={3} variant="badge" amount />
+        <DashboardListCardSkeleton title="할 일" allLabel="관리" onAll={() => navigate('/desk/todo')} rows={4} variant="dot" />
+        <DashboardListCardSkeleton title="예정된 일정" allLabel="캘린더" onAll={() => navigate('/desk/calendar')} rows={3} variant="badge" />
       </div>
     </div>
   )
 }
 
-function DashboardHeroSkeleton({ mobile }: { mobile: boolean }) {
+function DashboardHeroSkeleton({ mobile, year, month }: { mobile: boolean; year: number; month: number }) {
+  // 정적 틀(eyebrow 라벨 + 자산/부채 라벨)은 실제 렌더, 금액(데이터)만 스켈레톤.
   return (
     <div className="balance-hero" style={mobile ? undefined : { padding: '28px 32px 24px' }}>
       <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-        <SkeletonBase className="h-3 w-24 bg-white/15" />
+        <Wallet size={mobile ? 13 : 14} /> {mobile ? '순자산' : <>순자산 · {year}년 {month}월</>}
       </div>
       <div className="balance-hero__amount num">
         <SkeletonBase className={mobile ? 'h-8 w-40 bg-white/15' : 'h-10 w-56 bg-white/15'} />
@@ -258,11 +256,11 @@ function DashboardHeroSkeleton({ mobile }: { mobile: boolean }) {
       </div>
       <div className="balance-hero__split">
         <div>
-          <SkeletonBase className="h-3 w-12 mb-1 bg-white/15" />
+          <div className="l">{mobile ? '자산' : '총 자산'}</div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
         <div>
-          <SkeletonBase className="h-3 w-12 mb-1 bg-white/15" />
+          <div className="l">{mobile ? '부채' : '총 부채'}</div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
       </div>
@@ -270,23 +268,52 @@ function DashboardHeroSkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function DashboardSummaryCardSkeleton({ mobile }: { mobile: boolean }) {
+function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }: {
+  mobile: boolean
+  month: number
+  period: string
+  onPeriodChange: (v: string) => void
+}) {
+  if (mobile) {
+    // 모바일 "{month}월 가계부" 카드 — 헤더 텍스트(정적) + 2col 라벨(정적) + 금액(데이터) + 요약 라인.
+    return (
+      <Card>
+        <CardContent>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{month}월 가계부</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {['수입', '지출'].map(lbl => (
+              <div key={lbl}>
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{lbl}</div>
+                <SkeletonBase className="h-6 w-24" />
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+            <SkeletonBase className="h-3 w-3/4" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+  // 데스크탑 수입·지출 카드 — 타이틀(정적) + MonthPicker(정적 선택기) + 3col 라벨(정적) + 금액·차트(데이터).
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-28" />
-        <SkeletonBase className="h-7 w-24" />
+        <CardTitle>{month}월 수입·지출</CardTitle>
+        <MonthPicker value={period} onChange={onPeriodChange} />
       </CardHeader>
       <CardContent>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
-          {[0, 1, 2].map(i => (
-            <div key={i}>
-              <SkeletonBase className="h-3 w-10 mb-2" />
+          {['수입', '지출', '잔액'].map(lbl => (
+            <div key={lbl}>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{lbl}</div>
               <SkeletonBase className="h-7 w-24" />
             </div>
           ))}
         </div>
-        <SkeletonBase className={mobile ? 'h-[180px] w-full' : 'h-[280px] w-full'} />
+        <SkeletonBase className="h-[280px] w-full" />
         <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
           <SkeletonBase className="h-3 w-3/4" />
         </div>
@@ -295,12 +322,17 @@ function DashboardSummaryCardSkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function DashboardCategoryCardSkeleton({ mobile }: { mobile: boolean }) {
+function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; onDetail: () => void }) {
+  // 타이틀 + '자세히' 링크(정적 틀)는 실제 렌더, 도넛+범례(데이터)만 스켈레톤.
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-20" />
-        <SkeletonBase className="h-4 w-12" />
+        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>카테고리</CardTitle>
+        {mobile ? (
+          <button className="all" onClick={onDetail}>자세히 <ChevronRight size={14} /></button>
+        ) : (
+          <Button variant="link" className="all h-auto p-0" onClick={onDetail}>자세히 <ChevronRight size={14} /></Button>
+        )}
       </CardHeader>
       <CardContent>
         <div
@@ -329,19 +361,24 @@ function DashboardCategoryCardSkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function DashboardBudgetCardSkeleton() {
+function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; onManage: () => void }) {
+  // 타이틀 + 링크(정적 틀)는 실제 렌더, 예산 항목(데이터)만 스켈레톤.
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-12" />
-        <SkeletonBase className="h-4 w-16" />
+        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>예산</CardTitle>
+        {mobile ? (
+          <button className="all" onClick={onManage}>전체 <ChevronRight size={14} /></button>
+        ) : (
+          <Button variant="link" className="all h-auto p-0" onClick={onManage}>예산 관리 <ChevronRight size={14} /></Button>
+        )}
       </CardHeader>
       <CardContent>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[0, 1, 2].map(i => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className={mobile ? 'h-7 w-7 rounded-md shrink-0' : 'h-8 w-8 rounded-md shrink-0'} />
                 <SkeletonBase className="h-4 w-20" />
                 <SkeletonBase className="h-4 w-24 ml-auto" />
               </div>
@@ -354,25 +391,49 @@ function DashboardBudgetCardSkeleton() {
   )
 }
 
-function DashboardListCardSkeleton({ title, rows = 3 }: { title?: boolean; rows?: number }) {
+/**
+ * 리스트형 카드 스켈레톤 — 타이틀+링크(정적 틀)는 실제 렌더, 행(데이터)만 스켈레톤.
+ * variant 로 로딩-후 실제 행 구조에 맞춤:
+ *  - 'tx'    : ExpenseRow (chip 40 + 2줄 + 금액)            — 오늘 쓴 돈
+ *  - 'badge' : D-뱃지 38 + title/date + (금액)              — 예정된 결제 / 예정된 일정
+ *  - 'dot'   : 6px 점 + title + date (박스·금액 없음)        — 할 일
+ */
+function DashboardListCardSkeleton({
+  title, allLabel, onAll, rows = 3, variant, amount = false,
+}: {
+  title: string
+  allLabel?: string
+  onAll?: () => void
+  rows?: number
+  variant: 'tx' | 'badge' | 'dot'
+  amount?: boolean
+}) {
   return (
     <Card>
-      {title && (
-        <CardHeader className="flex-row items-center justify-between">
-          <SkeletonBase className="h-5 w-24" />
-          <SkeletonBase className="h-4 w-16" />
-        </CardHeader>
-      )}
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>{title}</CardTitle>
+        {allLabel && (
+          <Button variant="link" className="all h-auto p-0" onClick={onAll}>
+            {allLabel} <ChevronRight size={14} />
+          </Button>
+        )}
+      </CardHeader>
       <CardContent>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: variant === 'dot' ? 14 : 12 }}>
           {Array.from({ length: rows }).map((_, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: variant === 'dot' ? 10 : variant === 'tx' ? 12 : 10 }}>
+              {variant === 'dot' ? (
+                <SkeletonBase className="h-1.5 w-1.5 rounded-full shrink-0" />
+              ) : (
+                <SkeletonBase className={variant === 'tx' ? 'h-10 w-10 rounded-md shrink-0' : 'h-[38px] w-[38px] rounded-md shrink-0'} />
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/3" />
+                <SkeletonBase className={variant === 'dot' ? 'h-4 w-1/2' : 'h-4 w-1/2 mb-1.5'} />
+                {variant !== 'dot' && <SkeletonBase className="h-3 w-1/3" />}
               </div>
-              <SkeletonBase className="h-4 w-16 shrink-0" />
+              {(amount || variant === 'dot') && (
+                <SkeletonBase className={variant === 'dot' ? 'h-3 w-10 shrink-0' : 'h-4 w-16 shrink-0'} />
+              )}
             </div>
           ))}
         </div>
@@ -718,7 +779,20 @@ function HomeDesktop() {
           </CardHeader>
           <CardContent>
           <div>
-            {recentQ.isLoading && <Skeleton height={60} />}
+            {recentQ.isLoading && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[0, 1].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                      <SkeletonBase className="h-3 w-1/3" />
+                    </div>
+                    <SkeletonBase className="h-4 w-16 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            )}
             {!recentQ.isLoading && todayTx.length === 0 && (
               <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
                 오늘은 아직 쓴 돈이 없어요

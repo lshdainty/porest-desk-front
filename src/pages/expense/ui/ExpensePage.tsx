@@ -92,44 +92,43 @@ function useExpensePageData(month: string) {
 }
 
 function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
+  // 실제 Summary(<Card> shadow) 구조 정합: 헤더는 [이전화살표][년 월 텍스트][다음화살표]
+  // + marginLeft auto[ViewModeToggle], 본문은 3-col(수입/지출/합계) 라벨+금액.
   return (
-    <div
+    <Card
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-card)',
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <SkeletonBase className="h-7 w-7 rounded-md" />
         <SkeletonBase className="h-5 w-24" />
-        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 4 }}>
-          <SkeletonBase className="h-7 w-7 rounded-md" />
-          <SkeletonBase className="h-7 w-7 rounded-md" />
-        </div>
+        <SkeletonBase className="h-7 w-7 rounded-md" />
+        <SkeletonBase className="h-7 w-16 rounded-md" style={{ marginLeft: 'auto' }} />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {[0, 1, 2].map(i => (
           <div key={i}>
-            <SkeletonBase className="h-3 w-10 mb-2" />
-            <SkeletonBase className={mobile ? 'h-5 w-24' : 'h-6 w-28'} />
+            <SkeletonBase className="h-3 w-8 mb-1.5" />
+            <SkeletonBase className={mobile ? 'h-4 w-24' : 'h-[18px] w-28'} />
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   )
 }
 
 function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
+  // 날짜 헤더 = DateGroupHeader 정합: padding '0 4px 8px', [날짜 bold][요일]
+  // + marginLeft auto[합계 금액]. row = ExpenseRow 정합: CategoryChip 40px(md) +
+  // gap-3(12px) + title 14px / sub 12px + 우측 금액. wrapper padding '0 14px'.
   return (
     <div>
-      {/* 날짜 헤더 — 카드 밖 평문 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 4px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 8px' }}>
         <SkeletonBase className="h-4 w-12" />
-        <SkeletonBase className="h-4 w-6" />
-        <SkeletonBase className="h-3 w-16 ml-auto" />
-        <SkeletonBase className="h-3 w-16" />
+        <SkeletonBase className="h-4 w-5" />
+        <SkeletonBase className="h-3.5 w-16 ml-auto" />
       </div>
       <Card style={{ overflow: 'hidden' }}>
         {Array.from({ length: rows }).map((_, i) => (
@@ -143,12 +142,12 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
               gap: 12,
             }}
           >
-            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+            <SkeletonBase className="h-10 w-10 rounded-[12px] shrink-0" />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+              <SkeletonBase className="h-3.5 w-3/4 mb-2" />
               <SkeletonBase className="h-3 w-1/3" />
             </div>
-            <SkeletonBase className="h-4 w-20 shrink-0" />
+            <SkeletonBase className="h-3.5 w-20 shrink-0" />
           </div>
         ))}
       </Card>
@@ -181,7 +180,7 @@ function ExpenseCalendarSkeleton() {
               key={i}
               className="flex flex-col items-start gap-1 p-1 lg:p-2 lg:border-l lg:border-t border-[var(--border-subtle)]"
             >
-              <SkeletonBase className="h-4 w-4 rounded-full" />
+              <SkeletonBase className="size-6 rounded-full" />
               <SkeletonBase className="h-2 w-8 mt-auto" />
             </div>
           ))}
