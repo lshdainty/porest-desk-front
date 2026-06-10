@@ -557,12 +557,27 @@ function StockSearchDialog({
   return (
     <ModalShell title="종목 검색" onClose={onClose} mobile={mobile} mobileMinHeight="85dvh">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Input
-          autoFocus
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="종목명 · 티커로 검색 (예: 삼성전자, NVDA)"
-        />
+        <div style={{ position: 'relative' }}>
+          <Search
+            size={16}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--fg-tertiary)',
+              pointerEvents: 'none',
+            }}
+          />
+          <Input
+            search
+            autoFocus
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="종목명 · 티커로 검색 (예: 삼성전자, NVDA)"
+            className="w-full pl-9"
+          />
+        </div>
         <div style={{ maxHeight: mobile ? undefined : '56vh', overflowY: 'auto' }}>
           {results.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
@@ -657,26 +672,28 @@ export function StocksPage() {
 
   const listPanel = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <button
-        type="button"
-        onClick={() => setSearchOpen(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          width: '100%',
-          padding: '12px 14px',
-          borderRadius: 'var(--radius-md)',
-          cursor: 'pointer',
-          background: 'var(--bg-muted)',
-          border: '1px solid transparent',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--text-body-sm)',
-          fontFamily: 'inherit',
-        }}
-      >
-        <Search size={17} /> 종목 검색
-      </button>
+      {/* 검색 트리거 — 전체 메뉴와 동일한 공통 패턴 (Input search variant, 36px) */}
+      <div style={{ position: 'relative' }}>
+        <Search
+          size={16}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--fg-tertiary)',
+            pointerEvents: 'none',
+          }}
+        />
+        <Input
+          search
+          readOnly
+          placeholder="종목 검색"
+          className="w-full pl-9"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setSearchOpen(true)}
+        />
+      </div>
 
       <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch')}>
         <TabsList variant="pill">
