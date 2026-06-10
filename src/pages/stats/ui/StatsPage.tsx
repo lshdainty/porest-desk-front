@@ -1043,8 +1043,9 @@ export const StatsPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: `72px repeat(${HEAT_COLS.length}, 1fr)`,
-              gap: mobile ? 6 : 8,
+              // 시간 라벨 열 폭·gap 축소 — 앱(라벨 56px·셀 4px)처럼 시간↔요일 간격 좁힘
+              gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
+              gap: mobile ? 4 : 6,
               alignItems: 'center',
             }}
           >
@@ -1073,7 +1074,7 @@ export const StatsPage = () => {
                     fontSize: 'var(--text-caption)',
                     color: 'var(--fg-tertiary)',
                     lineHeight: '1.3',
-                    paddingRight: 6,
+                    paddingRight: 2,
                   }}
                 >
                   <div style={{ fontWeight: '700', color: 'var(--fg-primary)', fontSize: 'var(--text-label-sm)' }}>
@@ -1088,6 +1089,11 @@ export const StatsPage = () => {
                   const bucket = heatBucket(value)
                   const pal = HEAT_PALETTE[bucket]!
                   const isPeak = value > 0 && value === heatmapMax
+                  const cellText = shortAmount(value)
+                  // 한 줄 유지 — 글자 수에 따라 폰트 축소(가계부 캘린더형 px 조정 로직 정합) + nowrap
+                  const cellFs = mobile
+                    ? cellText.length <= 4 ? 10 : cellText.length <= 5 ? 9 : 8
+                    : cellText.length <= 5 ? 11.5 : 10
                   return (
                     <div
                       key={`${row.label}-${col.dow}`}
@@ -1099,17 +1105,18 @@ export const StatsPage = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: mobile ? 10 : 11.5,
+                        fontSize: cellFs,
                         fontWeight: '700',
                         color: pal.fg,
                         fontVariantNumeric: 'tabular-nums',
+                        whiteSpace: 'nowrap',
                         boxShadow: isPeak
                           ? '0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)'
                           : 'none',
                         transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                       }}
                     >
-                      <MaskAmount mask={value > 0 ? '••' : '—'}>{shortAmount(value)}</MaskAmount>
+                      <MaskAmount mask={value > 0 ? '••' : '—'}>{cellText}</MaskAmount>
                     </div>
                   )
                 })}
