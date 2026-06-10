@@ -537,7 +537,8 @@
   width: 6px;
   height: 6px;
   border-radius: var(--radius-pill);
-  background: var(--bg-brand);
+  /* 라이트=primary, 다크=primary-light 자동 swap (bg-brand 는 다크도 primary 고정이라 fg-brand 사용) */
+  background: var(--fg-brand);
   display: inline-block;
   flex-shrink: 0;
 }
