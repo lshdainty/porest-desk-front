@@ -778,6 +778,20 @@ export const CardBenefitPage = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <FilterPills options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
         <FilterPills options={benefitOptions} value={benefitKey} onChange={setBenefitKey} />
+      </div>
+
+      {/* 결과 카운트 + 단종 포함 토글 — 한 줄(좌: 총 N건 / 우: 단종 체크박스) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 4px' }}>
+        <span
+          style={{
+            fontSize: 12,
+            color: 'var(--fg-tertiary)',
+            fontVariantNumeric: 'tabular-nums',
+            opacity: isFetching ? 0.6 : 1,
+          }}
+        >
+          총 {formatKRW(total)}건
+        </span>
         <label
           style={{
             display: 'inline-flex',
@@ -796,19 +810,6 @@ export const CardBenefitPage = () => {
           />
           단종 카드 포함
         </label>
-      </div>
-
-      {/* 결과 카운트 */}
-      <div
-        style={{
-          fontSize: 12,
-          color: 'var(--fg-tertiary)',
-          padding: '0 4px',
-          fontVariantNumeric: 'tabular-nums',
-          opacity: isFetching ? 0.6 : 1,
-        }}
-      >
-        총 {formatKRW(total)}건
       </div>
 
       {Body}
