@@ -30,6 +30,7 @@ import { RecurringAddDialog } from './RecurringAddDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
@@ -259,32 +260,19 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             </Button>
           </div>
           {/* 2행: 필터 single toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 10, flexWrap: 'wrap' }}>
-            {FILTERS.map((f) => (
-              <button
-                key={f.k}
-                type="button"
-                onClick={() => setFilter(f.k)}
-                className="num"
-                style={{
-                  height: 28,
-                  padding: '0 8px',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  background: filter === f.k ? 'var(--bg-sunken)' : 'transparent',
-                  color: filter === f.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: filter === f.k ? '600' : '500',
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'background 0.15s',
-                }}
-              >
-                {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
-              </button>
-            ))}
-          </div>
+          <Tabs
+            value={filter}
+            onValueChange={(v) => setFilter(v as FilterKey)}
+            style={{ marginTop: 10 }}
+          >
+            <TabsList variant="pill" size="sm">
+              {FILTERS.map((f) => (
+                <TabsTrigger key={f.k} value={f.k} className="num">
+                  {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>

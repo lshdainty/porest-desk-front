@@ -27,6 +27,7 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount, HideUnit } from '@/shared/lib/porest/hide-amounts'
 
@@ -234,49 +235,22 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   // ── seg 탭 3종 ─────────────────────────────────────────────────────────────
-  const Tabs = (
-    <div
-      style={{
-        display: 'inline-flex',
-        gap: 2,
-        padding: 3,
-        background: 'var(--bg-sunken)',
-        borderRadius: 'var(--radius-md)',
-        width: 'fit-content',
-      }}
-    >
-      {(
-        [
-          { id: 'active', label: `진행 중 · ${active.length}` },
-          { id: 'past', label: `완료 · ${past.length}` },
-          { id: 'friends', label: '친구' },
-        ] as const
-      ).map(t => {
-        const on = tab === t.id
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            style={{
-              background: on ? 'var(--bg-surface)' : 'transparent',
-              color: on ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-              border: 0,
-              padding: '6px 14px',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 12.5,
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: on ? 'var(--shadow-xs)' : 'none',
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-            }}
-          >
+  const TabsSeg = (
+    <Tabs value={tab} onValueChange={v => setTab(v as TabKey)} className="w-fit">
+      <TabsList variant="pill" size="sm">
+        {(
+          [
+            { id: 'active', label: `진행 중 · ${active.length}` },
+            { id: 'past', label: `완료 · ${past.length}` },
+            { id: 'friends', label: '친구' },
+          ] as const
+        ).map(t => (
+          <TabsTrigger key={t.id} value={t.id}>
             {t.label}
-          </button>
-        )
-      })}
-    </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 
   // ── 콘텐츠 (탭별) ──────────────────────────────────────────────────────────
@@ -413,7 +387,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {Summary}
-          {Tabs}
+          {TabsSeg}
           {Content}
         </div>
         <button
@@ -473,7 +447,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {Summary}
-            {Tabs}
+            {TabsSeg}
             {Content}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1401,7 +1375,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
       <SummaryCardSkeleton mobile={mobile} />
     </div>
   )
-  const Tabs = <SkeletonBase className="h-9 w-56 rounded-[var(--radius-md)]" />
+  const TabsSk = <SkeletonBase className="h-9 w-56 rounded-[var(--radius-md)]" />
   const Cards = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
       <SessionCardSkeleton mobile={mobile} />
@@ -1416,7 +1390,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Summary}
-            {Tabs}
+            {TabsSk}
             {Cards}
           </div>
         </div>
@@ -1445,7 +1419,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {Summary}
-            {Tabs}
+            {TabsSk}
             {Cards}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
