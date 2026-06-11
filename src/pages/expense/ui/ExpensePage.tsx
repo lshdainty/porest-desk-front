@@ -928,7 +928,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               size="icon"
               onClick={() => setFilterOpen(true)}
               aria-label="필터"
-              className="relative shrink-0"
+              // 앱 정합 — 가계부 필터/추가 버튼은 radius-sm(4px). icon size 기본 rounded-md(8px) override.
+              className="relative shrink-0 rounded-[var(--radius-sm)]"
             >
               <SlidersHorizontal size={18} />
               {activeCount > 0 && (
@@ -944,7 +945,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               size="icon"
               onClick={onAddTx}
               aria-label="거래 추가"
-              className="shrink-0"
+              className="shrink-0 rounded-[var(--radius-sm)]"
             >
               <Plus size={18} />
             </Button>
