@@ -616,12 +616,34 @@ function SessionCard({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          {d.participants.slice(0, 6).map((p, i) => (
-            <span key={p.rowId} style={{ marginLeft: i === 0 ? 0 : -8 }}>
+        {/* 아바타 최대 4개 고정폭(88) — 인원수 무관 진행바 길이 일정. 5+면 3개 + +N */}
+        <div style={{ position: 'relative', width: 88, height: 28, flexShrink: 0 }}>
+          {(d.participants.length > 4 ? d.participants.slice(0, 3) : d.participants.slice(0, 4)).map((p, i) => (
+            <span key={p.rowId} style={{ position: 'absolute', left: i * 20 }}>
               <Avatar name={p.participantName} size={28} dim={!p.isPaid && !isPayer(d, p)} ring />
             </span>
           ))}
+          {d.participants.length > 4 && (
+            <span
+              style={{
+                position: 'absolute',
+                left: 60,
+                width: 28,
+                height: 28,
+                borderRadius: 999,
+                background: 'var(--bg-sunken)',
+                border: '2px solid var(--bg-surface)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: '700',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              +{d.participants.length - 3}
+            </span>
+          )}
         </div>
         <div
           style={{
@@ -636,7 +658,8 @@ function SessionCard({
             style={{
               width: `${pct}%`,
               height: '100%',
-              background: 'var(--color-primary)',
+              // fg-brand = 다크모드 primary-light swap (앱 fgBrand 정합)
+              background: 'var(--fg-brand)',
               borderRadius: 999,
               transition: 'width var(--motion-duration-slow) var(--ease-decel)',
             }}
