@@ -2015,7 +2015,7 @@ function RangePickerSheet({
           value={segMode}
           onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
         >
-          <TabsList variant="pill" size="default" className="w-full">
+          <TabsList variant="pill" size="sm" className="w-full">
             <TabsTrigger value="m" className="flex-1">월</TabsTrigger>
             <TabsTrigger value="q" className="flex-1">분기</TabsTrigger>
             <TabsTrigger value="y" className="flex-1">년</TabsTrigger>

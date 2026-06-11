@@ -329,7 +329,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         }}
         className="mb-[var(--spacing-md)]"
       >
-        <TabsList variant="pill" size="default" className="w-full">
+        <TabsList variant="pill" size="sm" className="w-full">
           {([
             { v: 'EXPENSE', l: '지출' },
             { v: 'INCOME', l: '수입' },

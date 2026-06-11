@@ -450,7 +450,7 @@ export function AssetEditDialog({
                     if (isNew) setSelectedCard(null)
                   }}
                 >
-                  <TabsList variant="pill" size="default" className="w-full">
+                  <TabsList variant="pill" size="sm" className="w-full">
                     <TabsTrigger value="CREDIT" className="flex-1">신용카드</TabsTrigger>
                     <TabsTrigger value="CHECK" className="flex-1">체크카드</TabsTrigger>
                   </TabsList>
@@ -742,7 +742,7 @@ export function AssetEditDialog({
                 value={accountSub}
                 onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
               >
-                <TabsList variant="pill" size="default" className="w-full">
+                <TabsList variant="pill" size="sm" className="w-full">
                   {ACCOUNT_SUBS.map((s) => (
                     <TabsTrigger key={s} value={s} className="flex-1">
                       {s}

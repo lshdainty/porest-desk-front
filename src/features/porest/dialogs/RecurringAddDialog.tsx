@@ -219,7 +219,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
       {/* 유형 */}
       <Section title="유형">
         <Tabs value={type} onValueChange={(v) => v && setType(v as TxType)}>
-          <TabsList variant="pill" size="default" className="w-full">
+          <TabsList variant="pill" size="sm" className="w-full">
             <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
             <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
           </TabsList>
@@ -372,7 +372,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
       {/* 반복 주기 */}
       <Section title="반복 주기">
         <Tabs value={frequency} onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}>
-          <TabsList variant="pill" size="default" className="w-full">
+          <TabsList variant="pill" size="sm" className="w-full">
             {FREQS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
                 {o.l}

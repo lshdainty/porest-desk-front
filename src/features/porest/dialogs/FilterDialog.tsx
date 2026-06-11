@@ -160,7 +160,7 @@ export function FilterDialog({
           value={period}
           onValueChange={(v) => v && selectPeriod(v as FilterPeriod)}
         >
-          <TabsList variant="pill" size="default" className="w-full">
+          <TabsList variant="pill" size="sm" className="w-full">
             {PERIODS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
                 {o.l}

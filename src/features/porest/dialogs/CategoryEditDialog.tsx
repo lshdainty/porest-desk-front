@@ -201,7 +201,7 @@ export function CategoryEditDialog({
           value={kind}
           onValueChange={(v) => v && setKind(v as ExpenseType)}
         >
-          <TabsList variant="pill" size="default" className="w-full">
+          <TabsList variant="pill" size="sm" className="w-full">
             <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
             <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
           </TabsList>
