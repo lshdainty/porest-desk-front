@@ -11,7 +11,7 @@ import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
@@ -520,18 +520,17 @@ export function AssetDetailDialog({
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
             최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
           </h4>
-          <ToggleGroup
-            type="single"
-            variant="segmented-subtle"
-            size="sm"
+          <Tabs
             value={period}
-            onValueChange={(v) => v && setPeriod(v as '3m' | '6m' | '1y')}
-            className="ml-auto w-auto"
+            onValueChange={(v) => setPeriod(v as '3m' | '6m' | '1y')}
+            className="ml-auto"
           >
-            <ToggleGroupItem value="3m">3개월</ToggleGroupItem>
-            <ToggleGroupItem value="6m">6개월</ToggleGroupItem>
-            <ToggleGroupItem value="1y">1년</ToggleGroupItem>
-          </ToggleGroup>
+            <TabsList variant="pill" size="sm">
+              <TabsTrigger value="3m">3개월</TabsTrigger>
+              <TabsTrigger value="6m">6개월</TabsTrigger>
+              <TabsTrigger value="1y">1년</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         {trendLoading ? (
           <SkeletonBase className="h-[160px] w-full rounded-md" />
