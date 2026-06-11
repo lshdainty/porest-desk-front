@@ -26,6 +26,7 @@ function title(pathname: string) {
 /**
  * 모바일 전역 헤더 — 아이콘은 페이지당 1개 (클로드 디자인 MHeader 정합):
  * 홈=알림 벨(+unread dot), 그 외=검색.
+ * 버튼은 size="iconLg" (36×36 원형, glyph 20px, ghost 중립색 — button.md v97).
  * 테마 전환은 설정>표시 설정, 금액 가리기는 홈·자산 순자산 카드 눈 버튼으로 이동.
  */
 export function MobileHeader() {
@@ -40,12 +41,12 @@ export function MobileHeader() {
       {isHome ? (
         <Button
           variant="ghost"
-          size="icon"
+          size="iconLg"
           aria-label="알림"
           onClick={() => navigate('/desk/notifications')}
           className="relative"
         >
-          <Bell size={20} />
+          <Bell />
           {unreadCount > 0 && (
             <span
               aria-hidden
@@ -56,11 +57,11 @@ export function MobileHeader() {
       ) : (
         <Button
           variant="ghost"
-          size="icon"
+          size="iconLg"
           aria-label="검색"
           onClick={() => navigate('/desk/search')}
         >
-          <Search size={20} />
+          <Search />
         </Button>
       )}
     </div>
