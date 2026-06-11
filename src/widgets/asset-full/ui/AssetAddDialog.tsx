@@ -4,6 +4,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useIsMobile } from '@/shared/hooks'
 import { KRW } from '@/shared/lib/porest/format'
 import {
@@ -218,28 +219,15 @@ export function AssetAddDialog({ open, onClose }: AssetAddDialogProps) {
 
         <div>
           <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
-          <div
-            className="grid grid-cols-5 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]"
-          >
-            {SUB_TYPES.map(s => {
-              const active = s === subType
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSubType(s)}
-                  className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                  style={
-                    active
-                      ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                      : { background: 'transparent', color: 'var(--fg-secondary)' }
-                  }
-                >
+          <Tabs value={subType} onValueChange={v => setSubType(v as SubType)}>
+            <TabsList variant="pill" size="sm" className="w-full">
+              {SUB_TYPES.map(s => (
+                <TabsTrigger key={s} value={s} className="flex-1">
                   {s}
-                </button>
-              )
-            })}
-          </div>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

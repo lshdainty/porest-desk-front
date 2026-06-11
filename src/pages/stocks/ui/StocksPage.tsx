@@ -697,7 +697,7 @@ export function StocksPage() {
       </div>
 
       <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch')}>
-        <TabsList variant="pill">
+        <TabsList variant="pill" size="sm">
           <TabsTrigger variant="pill" value="holdings">
             보유 {STOCK_HOLDINGS.length}
           </TabsTrigger>

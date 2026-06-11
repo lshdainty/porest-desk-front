@@ -8,6 +8,7 @@ import { Textarea } from '@/shared/ui/textarea'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -217,15 +218,12 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 유형 */}
       <Section title="유형">
-        <ToggleGroup
-          type="single"
-          variant="segmented"
-          value={type}
-          onValueChange={(v) => v && setType(v as TxType)}
-        >
-          <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
-          <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
-        </ToggleGroup>
+        <Tabs value={type} onValueChange={(v) => v && setType(v as TxType)}>
+          <TabsList variant="pill" size="sm" className="w-full">
+            <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
+            <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </Section>
 
       {/* 금액 */}
@@ -373,18 +371,15 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 반복 주기 */}
       <Section title="반복 주기">
-        <ToggleGroup
-          type="single"
-          variant="segmented"
-          value={frequency}
-          onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}
-        >
-          {FREQS.map(o => (
-            <ToggleGroupItem key={o.v} value={o.v}>
-              {o.l}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <Tabs value={frequency} onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}>
+          <TabsList variant="pill" size="sm" className="w-full">
+            {FREQS.map(o => (
+              <TabsTrigger key={o.v} value={o.v} className="flex-1">
+                {o.l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </Section>
 
       {/* 요일 (매주) */}

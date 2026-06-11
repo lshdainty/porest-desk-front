@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Switch } from '@/shared/ui/switch'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useIsMobile } from '@/shared/hooks'
 import { KRW } from '@/shared/lib/porest/format'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
@@ -123,31 +124,21 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
 
           <div>
             <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
-            <div
-              className="grid grid-cols-2 gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)]"
+            <Tabs
+              value={cardType}
+              onValueChange={v => {
+                setCardType(v as CardType)
+                setSelected(null)
+              }}
             >
-              {(['CREDIT', 'CHECK'] as CardType[]).map(t => {
-                const active = t === cardType
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => {
-                      setCardType(t)
-                      setSelected(null)
-                    }}
-                    className="h-9 rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
-                    style={
-                      active
-                        ? { background: 'var(--fg-brand-strong)', color: 'var(--fg-on-brand)' }
-                        : { background: 'transparent', color: 'var(--fg-secondary)' }
-                    }
-                  >
+              <TabsList variant="pill" size="sm" className="w-full">
+                {(['CREDIT', 'CHECK'] as CardType[]).map(t => (
+                  <TabsTrigger key={t} value={t} className="flex-1">
                     {t === 'CREDIT' ? '신용카드' : '체크카드'}
-                  </button>
-                )
-              })}
-            </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
           <div>

@@ -27,6 +27,7 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount, HideUnit } from '@/shared/lib/porest/hide-amounts'
 
@@ -234,49 +235,22 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   // ── seg 탭 3종 ─────────────────────────────────────────────────────────────
-  const Tabs = (
-    <div
-      style={{
-        display: 'inline-flex',
-        gap: 2,
-        padding: 3,
-        background: 'var(--bg-sunken)',
-        borderRadius: 'var(--radius-md)',
-        width: 'fit-content',
-      }}
-    >
-      {(
-        [
-          { id: 'active', label: `진행 중 · ${active.length}` },
-          { id: 'past', label: `완료 · ${past.length}` },
-          { id: 'friends', label: '친구' },
-        ] as const
-      ).map(t => {
-        const on = tab === t.id
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            style={{
-              background: on ? 'var(--bg-surface)' : 'transparent',
-              color: on ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-              border: 0,
-              padding: '6px 14px',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 12.5,
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: on ? 'var(--shadow-xs)' : 'none',
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-            }}
-          >
+  const TabsSeg = (
+    <Tabs value={tab} onValueChange={v => setTab(v as TabKey)} className="w-fit">
+      <TabsList variant="pill" size="sm">
+        {(
+          [
+            { id: 'active', label: `진행 중 · ${active.length}` },
+            { id: 'past', label: `완료 · ${past.length}` },
+            { id: 'friends', label: '친구' },
+          ] as const
+        ).map(t => (
+          <TabsTrigger key={t.id} value={t.id}>
             {t.label}
-          </button>
-        )
-      })}
-    </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 
   // ── 콘텐츠 (탭별) ──────────────────────────────────────────────────────────
@@ -413,7 +387,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {Summary}
-          {Tabs}
+          {TabsSeg}
           {Content}
         </div>
         <button
@@ -473,7 +447,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {Summary}
-            {Tabs}
+            {TabsSeg}
             {Content}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -642,18 +616,44 @@ function SessionCard({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          {d.participants.slice(0, 6).map((p, i) => (
-            <span key={p.rowId} style={{ marginLeft: i === 0 ? 0 : -8 }}>
+        {/* 아바타 최대 4개 고정폭(88) — 인원수 무관 진행바 길이 일정. 5+면 3개 + +N */}
+        <div style={{ position: 'relative', width: 88, height: 28, flexShrink: 0 }}>
+          {(d.participants.length > 4 ? d.participants.slice(0, 3) : d.participants.slice(0, 4)).map((p, i) => (
+            <span key={p.rowId} style={{ position: 'absolute', left: i * 20 }}>
               <Avatar name={p.participantName} size={28} dim={!p.isPaid && !isPayer(d, p)} ring />
             </span>
           ))}
+          {d.participants.length > 4 && (
+            <span
+              style={{
+                position: 'absolute',
+                left: 60,
+                width: 28,
+                height: 28,
+                borderRadius: 999,
+                background: 'var(--bg-sunken)',
+                border: '2px solid var(--bg-surface)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: '700',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              +{d.participants.length - 3}
+            </span>
+          )}
         </div>
         <div
           style={{
             flex: 1,
             height: 6,
-            background: 'var(--bg-sunken)',
+            // 게이지 track: 디자인 SoT(--bg-sunken 다크 #15192a)·앱(bgSunken slate950 #1A1F2E)
+            // 정합 위해 진한 다크. desk-front --bg-sunken 은 surface-input(연함)으로 잘못
+            // alias, 그리고 --bg-page alias 는 없음(=무효 transparent 였음) → 유효 alias
+            // --bg-canvas(=--color-bg-page 다크 #1a1f2e)로 더치 track 만 처리.
+            background: 'var(--bg-canvas)',
             borderRadius: 999,
             overflow: 'hidden',
           }}
@@ -662,7 +662,8 @@ function SessionCard({
             style={{
               width: `${pct}%`,
               height: '100%',
-              background: 'var(--color-primary)',
+              // fg-brand = 다크모드 primary-light swap (앱 fgBrand 정합)
+              background: 'var(--fg-brand)',
               borderRadius: 999,
               transition: 'width var(--motion-duration-slow) var(--ease-decel)',
             }}
@@ -1401,7 +1402,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
       <SummaryCardSkeleton mobile={mobile} />
     </div>
   )
-  const Tabs = <SkeletonBase className="h-9 w-56 rounded-[var(--radius-md)]" />
+  const TabsSk = <SkeletonBase className="h-9 w-56 rounded-[var(--radius-md)]" />
   const Cards = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
       <SessionCardSkeleton mobile={mobile} />
@@ -1416,7 +1417,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Summary}
-            {Tabs}
+            {TabsSk}
             {Cards}
           </div>
         </div>
@@ -1445,7 +1446,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {Summary}
-            {Tabs}
+            {TabsSk}
             {Cards}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

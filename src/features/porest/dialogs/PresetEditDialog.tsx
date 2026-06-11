@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -134,16 +134,16 @@ export function PresetEditDialog({
       footer={Footer}
     >
       {/* 타입 segment */}
-      <ToggleGroup
-        type="single"
-        variant="segmented"
+      <Tabs
         value={type}
         onValueChange={(v) => v && setType(v as 'EXPENSE' | 'INCOME')}
         className="mb-4"
       >
-        <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
-        <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
-      </ToggleGroup>
+        <TabsList variant="pill" size="sm" className="w-full">
+          <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
+          <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>프리셋 이름</FieldLabel>

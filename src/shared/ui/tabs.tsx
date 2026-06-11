@@ -10,12 +10,15 @@ import { cn } from "@/shared/lib"
  *
  * 2 variants:
  *   pill (default): bg-surface-input 컨테이너 + active bg-surface-default + shadow-sm.
- *                   설정/form section 토글에 적합.
- *   underline: bottom border + active 2px primary 색.
- *              절제 톤 페이지 네비게이션에 적합.
+ *                   = tabs.md container variant. 설정/form section·보조 컨트롤.
+ *   underline: bottom border + active 2px primary 색. 절제 톤 페이지 네비게이션.
+ *
+ * size (pill 전용 — tabs.md Container size variant):
+ *   default: list h-10(40) / trigger min-h-8(32) · 4×12 · label-md(14)
+ *   sm:      list h-8(32)  / trigger min-h-7(28) · 4×8  · label-sm(13)  ← 데스크 보조 컨트롤
+ *   size 는 TabsList 에서 받아 context 로 TabsTrigger 에 전파.
  *
  * - Radix Tabs 베이스. 키보드 네비/ARIA 자동.
- * - manual activation 기본 — focus와 selection 분리(screen reader 보호).
  */
 
 const Tabs = TabsPrimitive.Root
@@ -23,12 +26,17 @@ const Tabs = TabsPrimitive.Root
 const tabsListVariants = cva("", {
   variants: {
     variant: {
-      pill: "inline-flex h-10 items-center justify-center rounded-sm bg-surface-input p-[var(--spacing-xs)] gap-1 text-text-secondary",
+      pill: "inline-flex items-center justify-center rounded-sm bg-surface-input gap-1 text-text-secondary",
       underline:
         "flex gap-0 border-b border-border-default bg-transparent p-0 h-auto rounded-none",
     },
+    size: { default: "", sm: "" },
   },
-  defaultVariants: { variant: "pill" },
+  compoundVariants: [
+    { variant: "pill", size: "default", class: "h-10 p-[var(--spacing-xs)]" },
+    { variant: "pill", size: "sm", class: "h-8 p-0.5" },
+  ],
+  defaultVariants: { variant: "pill", size: "default" },
 })
 
 const tabsTriggerVariants = cva(
@@ -36,14 +44,33 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       variant: {
-        pill: "rounded-xs px-[var(--spacing-md)] py-[var(--spacing-xs)] text-label-md data-[state=active]:bg-surface-default data-[state=active]:text-text-primary data-[state=active]:shadow-sm",
+        pill: "rounded-xs data-[state=active]:bg-surface-default data-[state=active]:text-text-primary data-[state=active]:shadow-sm",
         underline:
           "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-[var(--fg-brand)] data-[state=active]:border-[var(--border-brand)] data-[state=active]:font-semibold",
       },
+      size: { default: "", sm: "" },
     },
-    defaultVariants: { variant: "pill" },
+    compoundVariants: [
+      {
+        variant: "pill",
+        size: "default",
+        class:
+          "min-h-8 px-[var(--spacing-md)] py-[var(--spacing-xs)] text-label-md",
+      },
+      {
+        variant: "pill",
+        size: "sm",
+        class:
+          "min-h-7 px-[var(--spacing-sm)] py-[var(--spacing-xs)] text-label-sm",
+      },
+    ],
+    defaultVariants: { variant: "pill", size: "default" },
   },
 )
+
+// pill size 를 List → Trigger 로 전파 (trigger 마다 size 재지정 불필요)
+type TabsCtx = VariantProps<typeof tabsTriggerVariants>
+const TabsContext = React.createContext<TabsCtx>({})
 
 type TabsListProps = React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> &
   VariantProps<typeof tabsListVariants>
@@ -51,12 +78,14 @@ type TabsListProps = React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> &
 const TabsList = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.List>,
   TabsListProps
->(({ className, variant, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(tabsListVariants({ variant }), className)}
-    {...props}
-  />
+>(({ className, variant, size, ...props }, ref) => (
+  <TabsContext.Provider value={{ variant, size }}>
+    <TabsPrimitive.List
+      ref={ref}
+      className={cn(tabsListVariants({ variant, size }), className)}
+      {...props}
+    />
+  </TabsContext.Provider>
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 
@@ -68,13 +97,22 @@ type TabsTriggerProps = React.ComponentPropsWithoutRef<
 const TabsTrigger = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
->(({ className, variant, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(tabsTriggerVariants({ variant }), className)}
-    {...props}
-  />
-))
+>(({ className, variant, size, ...props }, ref) => {
+  const ctx = React.useContext(TabsContext)
+  return (
+    <TabsPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        tabsTriggerVariants({
+          variant: variant ?? ctx.variant,
+          size: size ?? ctx.size,
+        }),
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
 const TabsContent = React.forwardRef<

@@ -95,8 +95,8 @@ export function ManagerHead({
 }
 
 /**
- * ManagerTabs (cat-mgr__tabs): segmented toggle. active 상태 시 mossy-700 배경.
- * 기존 button 스타일 (font/color/active bg) 그대로 보존 - inline style 로.
+ * ManagerTabs (cat-mgr__tabs): segmented toggle — tabs.md Container 룩.
+ * active = surface-default pill + shadow-sm + text-primary (brand 채움 아님). count 배지 유지.
  */
 const TAB_BTN_BASE_STYLE: CSSProperties = {
   padding: '8px 16px',
@@ -113,11 +113,10 @@ const TAB_BTN_BASE_STYLE: CSSProperties = {
 }
 
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  // 스펙 toggle-group solid: active = bg-primary(#0147ad — 다크에서 light variant swap 안 함) + 흰글씨.
-  // (기존 --fg-income 은 fg-brand → 다크에서 primary-light(#5fa0e5)로 swap 돼 연한 파랑이 됨)
-  background: 'var(--bg-brand)',
-  color: 'var(--fg-on-brand)',
-  fontWeight: '700',
+  // tabs.md Container variant active = surface-default pill + shadow-sm + text-primary (brand 채움 아님).
+  background: 'var(--bg-surface)',
+  color: 'var(--fg-primary)',
+  fontWeight: '600',
   boxShadow: 'var(--shadow-sm)',
 }
 
@@ -133,8 +132,9 @@ const TAB_CNT_BASE_STYLE: CSSProperties = {
 }
 
 const TAB_CNT_ACTIVE_STYLE: CSSProperties = {
-  background: 'rgba(255,255,255,0.22)',
-  color: 'var(--fg-on-brand)',
+  // active pill 이 surface-default(흰색)라 count 배지는 surface-input 으로 대비.
+  background: 'var(--bg-sunken)',
+  color: 'var(--fg-secondary)',
 }
 
 export function ManagerTabs<T extends string>({

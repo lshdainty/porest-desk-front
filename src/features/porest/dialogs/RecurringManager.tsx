@@ -30,6 +30,7 @@ import { RecurringAddDialog } from './RecurringAddDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
@@ -258,33 +259,22 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               <Plus size={14} /> 추가
             </Button>
           </div>
-          {/* 2행: 필터 single toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 10, flexWrap: 'wrap' }}>
+          {/* 2행: 필터 개별 single toggle (배경 없음 — 앱 PToggle row 정합, active=surface-input pill) */}
+          <ToggleGroup
+            type="single"
+            variant="default"
+            size="sm"
+            value={filter}
+            onValueChange={(v) => v && setFilter(v as FilterKey)}
+            style={{ marginTop: 10 }}
+            className="justify-start gap-1"
+          >
             {FILTERS.map((f) => (
-              <button
-                key={f.k}
-                type="button"
-                onClick={() => setFilter(f.k)}
-                className="num"
-                style={{
-                  height: 28,
-                  padding: '0 8px',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  background: filter === f.k ? 'var(--bg-sunken)' : 'transparent',
-                  color: filter === f.k ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: filter === f.k ? '600' : '500',
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'background 0.15s',
-                }}
-              >
-                {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
-              </button>
+              <ToggleGroupItem key={f.k} value={f.k} className="h-7 min-h-7 px-2">
+                {f.label} {f.count}
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>

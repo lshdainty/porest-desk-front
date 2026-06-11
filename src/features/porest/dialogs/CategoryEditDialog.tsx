@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
 
@@ -197,15 +197,15 @@ export function CategoryEditDialog({
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>구분</FieldLabel>
-        <ToggleGroup
-          type="single"
-          variant="segmented"
+        <Tabs
           value={kind}
           onValueChange={(v) => v && setKind(v as ExpenseType)}
         >
-          <ToggleGroupItem value="EXPENSE">지출</ToggleGroupItem>
-          <ToggleGroupItem value="INCOME">수입</ToggleGroupItem>
-        </ToggleGroup>
+          <TabsList variant="pill" size="sm" className="w-full">
+            <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
+            <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </Field>
 
       <Field style={{ marginBottom: 14 }}>

@@ -33,7 +33,7 @@ import {
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Slider } from '@/shared/ui/slider'
 import { Switch } from '@/shared/ui/switch'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type Tone = 'expense' | 'warning' | 'info' | 'brand' | 'success'
 
@@ -593,27 +593,25 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               >
                 발송 주기
               </div>
-              <ToggleGroup
-                type="single"
-                variant="segmented"
-                size="sm"
+              <Tabs
                 value={emailFrequency}
-                disabled={calmDisabled}
                 onValueChange={(v) =>
                   v && updateMut.mutate({ emailFrequency: v as EmailFrequency })
                 }
               >
-                {EMAIL_FREQ_OPTIONS.map((o) => (
-                  <ToggleGroupItem
-                    key={o.value}
-                    value={o.value}
-                    // 앱 PSegmented 정합: active 굵기 semi(600) + shadow 없음.
-                    className="data-[state=on]:font-semibold data-[state=on]:shadow-none"
-                  >
-                    {o.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                <TabsList variant="pill" size="sm" className="w-full">
+                  {EMAIL_FREQ_OPTIONS.map((o) => (
+                    <TabsTrigger
+                      key={o.value}
+                      value={o.value}
+                      className="flex-1"
+                      disabled={calmDisabled}
+                    >
+                      {o.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
           )}
         </CardContent>

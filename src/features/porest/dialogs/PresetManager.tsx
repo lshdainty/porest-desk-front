@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
@@ -121,26 +121,25 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           flexWrap: 'wrap',
         }}
       >
-        <ToggleGroup
-          type="single"
-          variant="segmented"
-          size="sm"
+        <Tabs
           value={sortBy}
           onValueChange={(v) => v && setSortBy(v as SortKey)}
           className="w-auto"
         >
-          {(
-            [
-              { k: 'used', l: '사용 많은 순' },
-              { k: 'recent', l: '최근 사용' },
-              { k: 'name', l: '이름순' },
-            ] as { k: SortKey; l: string }[]
-          ).map((o) => (
-            <ToggleGroupItem key={o.k} value={o.k}>
-              {o.l}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <TabsList variant="pill" size="sm">
+            {(
+              [
+                { k: 'used', l: '사용 많은 순' },
+                { k: 'recent', l: '최근 사용' },
+                { k: 'name', l: '이름순' },
+              ] as { k: SortKey; l: string }[]
+            ).map((o) => (
+              <TabsTrigger key={o.k} value={o.k}>
+                {o.l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
         <Button
           type="button"
           variant="accent"
