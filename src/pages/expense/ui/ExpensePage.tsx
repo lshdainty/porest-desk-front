@@ -24,6 +24,7 @@ import { useAsset, useAssets } from '@/features/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { TxDetailDialog } from '@/features/porest/dialogs/TxDetailDialog'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -471,17 +472,19 @@ function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: Vi
 
 function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
   return (
-    <div style={{ display: 'flex', gap: 6, marginBottom: 8, overflowX: 'auto', paddingBottom: 4 }}>
-      {CHIPS.map(c => (
-        <button
-          key={c.id}
-          className={`chip ${filter === c.id ? 'active' : ''}`}
-          onClick={() => onChange(c.id)}
-        >
-          {c.label}
-        </button>
-      ))}
-    </div>
+    <Tabs
+      value={filter}
+      onValueChange={(v) => v && onChange(v as Filter)}
+      style={{ marginBottom: 8, overflowX: 'auto', paddingBottom: 4 }}
+    >
+      <TabsList variant="pills">
+        {CHIPS.map(c => (
+          <TabsTrigger key={c.id} variant="pills" value={c.id}>
+            {c.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }
 

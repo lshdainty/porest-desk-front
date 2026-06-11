@@ -29,6 +29,8 @@ const tabsListVariants = cva("", {
       pill: "inline-flex items-center justify-center rounded-sm bg-surface-input gap-1 text-text-secondary",
       underline:
         "flex gap-0 border-b border-border-default bg-transparent p-0 h-auto rounded-none",
+      // tabs.md pills variant — 트랙 없는 평면 배치(카테고리 필터·거래 종류 등 모바일 nav)
+      pills: "inline-flex items-center gap-[var(--spacing-xs)] bg-transparent",
     },
     size: { default: "", sm: "" },
   },
@@ -47,6 +49,10 @@ const tabsTriggerVariants = cva(
         pill: "rounded-xs data-[state=active]:bg-surface-default data-[state=active]:text-text-primary data-[state=active]:shadow-sm",
         underline:
           "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-[var(--fg-brand)] data-[state=active]:border-[var(--border-brand)] data-[state=active]:font-semibold",
+        // tabs.md pills — soft rectangle radius-md + active primary fill + on-accent 흰색(토큰=다크/라이트 자동).
+        // 완전 둥근(radius-pill) chip 대신 절제된 토스 톤.
+        pills:
+          "rounded-md px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--bg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
       },
       size: { default: "", sm: "" },
     },
