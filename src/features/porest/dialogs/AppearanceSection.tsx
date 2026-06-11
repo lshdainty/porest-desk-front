@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Monitor, Moon, Sun } from 'lucide-react'
+import { Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
+import { Card } from '@/shared/ui/card'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
+import { Switch } from '@/shared/ui/switch'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import {
+  disablePdHideAmounts,
+  enablePdHideAmounts,
+  useHideAmounts,
+} from '@/shared/lib/porest/hide-amounts'
+import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 
 type DensityKey = 'compact' | 'comfortable' | 'spacious'
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
@@ -59,6 +67,17 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { theme, setTheme } = useTheme()
   const [density, setDensityState] = useState<DensityKey>(readDensity)
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
+  const hidden = useHideAmounts()
+  const [unlockOpen, setUnlockOpen] = useState(false)
+
+  // 켜기는 즉시, 끄기는 비밀번호 인증 (헤더 눈 버튼 제거 후 설정 진입점)
+  const handleHideChange = (checked: boolean) => {
+    if (checked) {
+      enablePdHideAmounts()
+    } else {
+      setUnlockOpen(true)
+    }
+  }
 
   useEffect(() => {
     document.documentElement.setAttribute('data-density', density)
@@ -120,6 +139,42 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
             )
           })}
         </TileGroup>
+      </section>
+
+      <section>
+        <SectionLabel>개인정보 보호</SectionLabel>
+        {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치) */}
+        <Card style={{ padding: '14px 16px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <span
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 'var(--radius-md)',
+              flexShrink: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--bg-sunken)',
+              color: 'var(--fg-secondary)',
+            }}
+          >
+            {hidden ? <EyeOff size={17} /> : <Eye size={17} />}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
+              금액 가리기
+            </div>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+              모든 화면의 금액을 ••••로 표시합니다
+            </div>
+          </div>
+          <Switch checked={hidden} onCheckedChange={handleHideChange} aria-label="금액 가리기" />
+        </Card>
+        <HideAmountsUnlockDialog
+          open={unlockOpen}
+          onOpenChange={setUnlockOpen}
+          onVerified={disablePdHideAmounts}
+        />
       </section>
 
       <section>

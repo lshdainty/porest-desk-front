@@ -1,14 +1,6 @@
-import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Bell, Eye, EyeOff, Moon, Search, Sun } from 'lucide-react'
+import { Bell, Search } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
-import { useTheme } from '@/shared/ui/theme-provider'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { useUnreadCount } from '@/features/notification'
 import { NAV } from './PorestSidebar'
 
@@ -31,45 +23,21 @@ function title(pathname: string) {
   return nav?.label ?? '홈'
 }
 
+/**
+ * 모바일 전역 헤더 — 아이콘은 페이지당 1개 (클로드 디자인 MHeader 정합):
+ * 홈=알림 벨(+unread dot), 그 외=검색.
+ * 테마 전환은 설정>표시 설정, 금액 가리기는 홈·자산 순자산 카드 눈 버튼으로 이동.
+ */
 export function MobileHeader() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [unlockOpen, setUnlockOpen] = useState(false)
   const { data: unreadCount = 0 } = useUnreadCount()
-  const { resolvedTheme, setTheme } = useTheme()
-  const hidden = useHideAmounts()
-  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
-  const handleHideToggle = () => {
-    if (hidden) {
-      setUnlockOpen(true)
-    } else {
-      enablePdHideAmounts()
-    }
-  }
+  const isHome = location.pathname === '/desk'
 
   return (
-    <>
-      <div className="m-header">
-        <h1>{title(location.pathname)}</h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
-          title={resolvedTheme === 'dark' ? '라이트 모드' : '다크 모드'}
-          onClick={toggleTheme}
-        >
-          {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={hidden ? '금액 표시' : '금액 가리기'}
-          title={hidden ? '금액 표시' : '금액 가리기'}
-          onClick={handleHideToggle}
-        >
-          {hidden ? <EyeOff size={20} /> : <Eye size={20} />}
-        </Button>
+    <div className="m-header">
+      <h1>{title(location.pathname)}</h1>
+      {isHome ? (
         <Button
           variant="ghost"
           size="icon"
@@ -85,6 +53,7 @@ export function MobileHeader() {
             />
           )}
         </Button>
+      ) : (
         <Button
           variant="ghost"
           size="icon"
@@ -93,13 +62,7 @@ export function MobileHeader() {
         >
           <Search size={20} />
         </Button>
-      </div>
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
-    </>
+      )}
+    </div>
   )
 }
-
