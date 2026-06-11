@@ -49,10 +49,11 @@ const tabsTriggerVariants = cva(
         pill: "rounded-xs data-[state=active]:bg-surface-default data-[state=active]:text-text-primary data-[state=active]:shadow-sm",
         underline:
           "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-[var(--fg-brand)] data-[state=active]:border-[var(--border-brand)] data-[state=active]:font-semibold",
-        // tabs.md pills — soft rectangle radius-md + active primary fill + on-accent 흰색(토큰=다크/라이트 자동).
-        // 완전 둥근(radius-pill) chip 대신 절제된 토스 톤.
+        // tabs.md pills — soft rectangle radius-md + active primary fill + on-accent 흰색.
+        // active fill = fg-brand(다크에서 primary-light swap, 앱 t.bgBrand 정합). 완전 둥근 chip 대신 토스 톤.
+        // 크기는 size(default/sm) compoundVariant 로 — sm 은 모바일용 얇은 pill.
         pills:
-          "rounded-md px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--bg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
+          "rounded-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--fg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
       },
       size: { default: "", sm: "" },
     },
@@ -65,6 +66,18 @@ const tabsTriggerVariants = cva(
       },
       {
         variant: "pill",
+        size: "sm",
+        class:
+          "min-h-7 px-[var(--spacing-sm)] py-[var(--spacing-xs)] text-label-sm",
+      },
+      // pills default — px-md py-sm label-md (페이지 nav). sm — 얇은 pill(모바일 카테고리 필터).
+      {
+        variant: "pills",
+        size: "default",
+        class: "px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md",
+      },
+      {
+        variant: "pills",
         size: "sm",
         class:
           "min-h-7 px-[var(--spacing-sm)] py-[var(--spacing-xs)] text-label-sm",

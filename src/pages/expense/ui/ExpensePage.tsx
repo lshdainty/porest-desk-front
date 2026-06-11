@@ -477,9 +477,9 @@ function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => 
       onValueChange={(v) => v && onChange(v as Filter)}
       style={{ marginBottom: 8, overflowX: 'auto', paddingBottom: 4 }}
     >
-      <TabsList variant="pills">
+      <TabsList variant="pills" size="sm">
         {CHIPS.map(c => (
-          <TabsTrigger key={c.id} variant="pills" value={c.id}>
+          <TabsTrigger key={c.id} variant="pills" size="sm" value={c.id}>
             {c.label}
           </TabsTrigger>
         ))}
