@@ -649,7 +649,10 @@ function SessionCard({
           style={{
             flex: 1,
             height: 6,
-            background: 'var(--bg-sunken)',
+            // 게이지 track: 디자인 SoT(--bg-sunken 다크 #15192a)·앱(bgSunken slate950 #1A1F2E)
+            // 정합 위해 진한 다크 사용. desk-front --bg-sunken 은 surface-input(연함)으로
+            // 잘못 alias 돼 있어 전역 토큰 대신 --bg-page(다크 #1a1f2e)로 더치 track 만 처리.
+            background: 'var(--bg-page)',
             borderRadius: 999,
             overflow: 'hidden',
           }}
