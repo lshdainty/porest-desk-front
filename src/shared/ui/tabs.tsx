@@ -53,7 +53,7 @@ const tabsTriggerVariants = cva(
         // active fill = fg-brand(다크에서 primary-light swap, 앱 t.bgBrand 정합). 완전 둥근 chip 대신 토스 톤.
         // 크기는 size(default/sm) compoundVariant 로 — sm 은 모바일용 얇은 pill.
         pills:
-          "rounded-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--fg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
+          "leading-none rounded-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--fg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
       },
       size: { default: "", sm: "" },
     },
