@@ -3,7 +3,7 @@ import { Monitor, Moon, Sun } from 'lucide-react'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type DensityKey = 'compact' | 'comfortable' | 'spacious'
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
@@ -124,19 +124,18 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
       <section>
         <SectionLabel>밀도</SectionLabel>
-        <ToggleGroup
-          type="single"
-          variant="segmented"
-          size="sm"
+        <Tabs
           value={density}
           onValueChange={(v) => v && setDensity(v as DensityKey)}
         >
-          {DENSITY_OPTIONS.map((opt) => (
-            <ToggleGroupItem key={opt.k} value={opt.k}>
-              {opt.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <TabsList variant="pill" size="sm" className="w-full">
+            {DENSITY_OPTIONS.map((opt) => (
+              <TabsTrigger key={opt.k} value={opt.k} className="flex-1">
+                {opt.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </section>
 
       <section>

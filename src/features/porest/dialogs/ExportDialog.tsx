@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type FileFormat = 'csv' | 'xlsx' | 'pdf'
 type Period = 'week' | 'month' | '3m' | 'year' | 'custom'
@@ -98,18 +98,18 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
 
       <Field style={{ marginBottom: 18 }}>
         <FieldLabel>기간</FieldLabel>
-        <ToggleGroup
-          type="single"
-          variant="segmented"
+        <Tabs
           value={period}
           onValueChange={(v) => v && setPeriod(v as Period)}
         >
-          {PERIODS.map(o => (
-            <ToggleGroupItem key={o.v} value={o.v}>
-              {o.l}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <TabsList variant="pill" size="default" className="w-full">
+            {PERIODS.map(o => (
+              <TabsTrigger key={o.v} value={o.v} className="flex-1">
+                {o.l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
         {period === 'custom' && (
           <div
             style={{

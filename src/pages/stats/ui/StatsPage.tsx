@@ -4,7 +4,6 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } fro
 import { KRW } from '@/shared/lib/porest/format'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -2012,18 +2011,17 @@ function RangePickerSheet({
   const formBody = (
     <>
       <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-        <ToggleGroup
-          type="single"
-          variant="segmented"
+        <Tabs
           value={segMode}
           onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
-          className="w-full"
         >
-          <ToggleGroupItem value="m" className="flex-1">월</ToggleGroupItem>
-          <ToggleGroupItem value="q" className="flex-1">분기</ToggleGroupItem>
-          <ToggleGroupItem value="y" className="flex-1">년</ToggleGroupItem>
-          <ToggleGroupItem value="custom" className="flex-1">직접</ToggleGroupItem>
-        </ToggleGroup>
+          <TabsList variant="pill" size="default" className="w-full">
+            <TabsTrigger value="m" className="flex-1">월</TabsTrigger>
+            <TabsTrigger value="q" className="flex-1">분기</TabsTrigger>
+            <TabsTrigger value="y" className="flex-1">년</TabsTrigger>
+            <TabsTrigger value="custom" className="flex-1">직접</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
       <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', marginBottom: segMode === 'custom' ? 'var(--spacing-lg)' : 0 }}>
         <div style={{ flex: 1 }}>

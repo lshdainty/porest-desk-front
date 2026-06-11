@@ -6,7 +6,7 @@ import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
@@ -317,10 +317,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       footer={Footer}
       mobile={mobile}
     >
-      {/* 타입 segment — spec toggle-group.md variant="segmented" (single) */}
-      <ToggleGroup
-        type="single"
-        variant="segmented"
+      {/* 타입 segment — spec tabs.md variant="pill" (container) */}
+      <Tabs
         value={type}
         onValueChange={(v) => {
           if (!v) return
@@ -331,24 +329,27 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         }}
         className="mb-[var(--spacing-md)]"
       >
-        {([
-          { v: 'EXPENSE', l: '지출' },
-          { v: 'INCOME', l: '수입' },
-          { v: 'TRANSFER', l: '이체' },
-        ] as { v: TxType; l: string }[]).map(o => {
-          const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
-          return (
-            <ToggleGroupItem
-              key={o.v}
-              value={o.v}
-              disabled={disabled}
-              aria-label={o.l}
-            >
-              {o.l}
-            </ToggleGroupItem>
-          )
-        })}
-      </ToggleGroup>
+        <TabsList variant="pill" size="default" className="w-full">
+          {([
+            { v: 'EXPENSE', l: '지출' },
+            { v: 'INCOME', l: '수입' },
+            { v: 'TRANSFER', l: '이체' },
+          ] as { v: TxType; l: string }[]).map(o => {
+            const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
+            return (
+              <TabsTrigger
+                key={o.v}
+                value={o.v}
+                disabled={disabled}
+                aria-label={o.l}
+                className="flex-1"
+              >
+                {o.l}
+              </TabsTrigger>
+            )
+          })}
+        </TabsList>
+      </Tabs>
 
       {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
       {!isEdit && type !== 'TRANSFER' && (

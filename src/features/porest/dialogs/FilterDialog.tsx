@@ -7,6 +7,7 @@ import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { TxTypeToggle, type TxTypeOption } from '@/shared/ui/tx-type-toggle'
 
@@ -155,18 +156,18 @@ export function FilterDialog({
     <ModalShell title="필터" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <Field style={{ marginBottom: 16 }}>
         <FieldLabel>기간</FieldLabel>
-        <ToggleGroup
-          type="single"
-          variant="segmented"
+        <Tabs
           value={period}
           onValueChange={(v) => v && selectPeriod(v as FilterPeriod)}
         >
-          {PERIODS.map(o => (
-            <ToggleGroupItem key={o.v} value={o.v}>
-              {o.l}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <TabsList variant="pill" size="default" className="w-full">
+            {PERIODS.map(o => (
+              <TabsTrigger key={o.v} value={o.v} className="flex-1">
+                {o.l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
         {period === 'custom' && (
           <div style={{ marginTop: 10 }}>
             <div

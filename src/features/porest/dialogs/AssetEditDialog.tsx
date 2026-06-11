@@ -7,6 +7,7 @@ import { Label } from '@/shared/ui/label'
 import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
 import { Switch } from '@/shared/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -441,9 +442,7 @@ export function AssetEditDialog({
             <>
               <div>
                 <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
-                <ToggleGroup
-                  type="single"
-                  variant="segmented"
+                <Tabs
                   value={cardType}
                   onValueChange={(v) => {
                     if (!v) return
@@ -451,9 +450,11 @@ export function AssetEditDialog({
                     if (isNew) setSelectedCard(null)
                   }}
                 >
-                  <ToggleGroupItem value="CREDIT">신용카드</ToggleGroupItem>
-                  <ToggleGroupItem value="CHECK">체크카드</ToggleGroupItem>
-                </ToggleGroup>
+                  <TabsList variant="pill" size="default" className="w-full">
+                    <TabsTrigger value="CREDIT" className="flex-1">신용카드</TabsTrigger>
+                    <TabsTrigger value="CHECK" className="flex-1">체크카드</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
 
               <SearchableList
@@ -737,18 +738,18 @@ export function AssetEditDialog({
           {editingGroup === 'account' && (
             <div>
               <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
-              <ToggleGroup
-                type="single"
-                variant="segmented"
+              <Tabs
                 value={accountSub}
                 onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
               >
-                {ACCOUNT_SUBS.map((s) => (
-                  <ToggleGroupItem key={s} value={s}>
-                    {s}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                <TabsList variant="pill" size="default" className="w-full">
+                  {ACCOUNT_SUBS.map((s) => (
+                    <TabsTrigger key={s} value={s} className="flex-1">
+                      {s}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
           )}
 

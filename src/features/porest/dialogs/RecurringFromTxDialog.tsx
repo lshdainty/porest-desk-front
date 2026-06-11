@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { KRW } from '@/shared/lib/porest/format'
 import { renderIcon, tileRadius } from '@/shared/lib'
@@ -163,18 +164,18 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
       {/* 반복 주기 */}
       <Section title="반복 주기">
-        <ToggleGroup
-          type="single"
-          variant="segmented"
+        <Tabs
           value={frequency}
           onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}
         >
-          {FREQS.map(o => (
-            <ToggleGroupItem key={o.v} value={o.v}>
-              {o.l}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <TabsList variant="pill" size="default" className="w-full">
+            {FREQS.map(o => (
+              <TabsTrigger key={o.v} value={o.v} className="flex-1">
+                {o.l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </Section>
 
       {/* 요일 (매주) */}
