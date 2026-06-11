@@ -7,6 +7,7 @@ import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { Spinner } from '@/shared/ui/spinner'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { decodeHtml } from '@/shared/lib'
 import { useCardCatalogs, useInfiniteCardCatalogs } from '@/features/card-catalog'
@@ -73,7 +74,7 @@ function performanceText(s: CardCatalogSummary) {
   return '실적 무관'
 }
 
-/** 필터 pill 1행 — 단일 선택. Button(secondary=active / ghost=inactive) 사용. */
+/** 필터 pill 1행 — 단일 선택. Tabs(pills/sm) 사용. */
 function FilterPills<T extends string>({
   options,
   value,
@@ -84,36 +85,24 @@ function FilterPills<T extends string>({
   onChange: (k: T) => void
 }) {
   return (
-    <div
-      style={{
-        display: 'inline-flex',
-        gap: 6,
-        maxWidth: '100%',
-        overflowX: 'auto',
-        scrollbarWidth: 'none',
-      }}
+    <Tabs
+      value={value}
+      onValueChange={v => v && onChange(v as T)}
+      style={{ maxWidth: '100%', overflowX: 'auto', scrollbarWidth: 'none' }}
     >
-      {options.map(o => {
-        const active = value === o.key
-        return (
-          <Button
-            key={o.key}
-            type="button"
-            size="sm"
-            variant={active ? 'secondary' : 'ghost'}
-            onClick={() => onChange(o.key)}
-            className="shrink-0 rounded-full"
-          >
+      <TabsList variant="pills" size="sm">
+        {options.map(o => (
+          <TabsTrigger key={o.key} variant="pills" size="sm" value={o.key}>
             {o.label}
             {o.count != null && (
               <span style={{ fontVariantNumeric: 'tabular-nums', opacity: 0.85 }}>
                 {o.count}
               </span>
             )}
-          </Button>
-        )
-      })}
-    </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }
 

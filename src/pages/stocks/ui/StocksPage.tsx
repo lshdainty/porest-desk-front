@@ -737,18 +737,15 @@ export function StocksPage() {
         </Card>
       ) : (
         <>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {watchGroups.map(g => (
-              <button
-                key={g.id}
-                type="button"
-                className={`chip ${g.id === activeGroup ? 'active' : ''}`}
-                onClick={() => setActiveGroup(g.id)}
-              >
-                {g.name} <span style={{ opacity: 0.7 }}>{g.tickers.length}</span>
-              </button>
-            ))}
-          </div>
+          <Tabs value={activeGroup} onValueChange={val => val && setActiveGroup(val)}>
+            <TabsList variant="pills" size="sm" style={{ flexWrap: 'wrap' }}>
+              {watchGroups.map(g => (
+                <TabsTrigger key={g.id} variant="pills" size="sm" value={g.id}>
+                  {g.name} <span style={{ opacity: 0.7 }}>{g.tickers.length}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <Card style={{ padding: 6 }}>
             {curGroup.tickers.length === 0 ? (
               <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>

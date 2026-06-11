@@ -33,6 +33,7 @@ import {
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Card } from '@/shared/ui/card'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -349,38 +350,36 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
   const FilterChips = (
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {(
-        [
-          { id: 'today', label: '오늘', count: counts.today },
-          { id: 'week', label: '이번 주', count: counts.week },
-          { id: 'all', label: '전체', count: counts.all },
-          { id: 'done', label: '완료', count: counts.done },
-        ] as const
-      ).map(f => {
-        const active = filter === f.id
-        return (
-          <button
-            key={f.id}
-            className={`chip ${active ? 'active' : ''}`}
-            onClick={() => setFilter(f.id)}
-          >
-            {f.label}
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: '700',
-                fontVariantNumeric: 'tabular-nums',
-                opacity: active ? 0.85 : 0.55,
-                marginLeft: 2,
-              }}
-            >
-              {f.count}
-            </span>
-          </button>
-        )
-      })}
-    </div>
+    <Tabs value={filter} onValueChange={v => v && setFilter(v as FilterKey)}>
+      <TabsList variant="pills" size="sm">
+        {(
+          [
+            { id: 'today', label: '오늘', count: counts.today },
+            { id: 'week', label: '이번 주', count: counts.week },
+            { id: 'all', label: '전체', count: counts.all },
+            { id: 'done', label: '완료', count: counts.done },
+          ] as const
+        ).map(f => {
+          const active = filter === f.id
+          return (
+            <TabsTrigger key={f.id} variant="pills" size="sm" value={f.id}>
+              {f.label}
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  fontVariantNumeric: 'tabular-nums',
+                  opacity: active ? 0.85 : 0.55,
+                  marginLeft: 2,
+                }}
+              >
+                {f.count}
+              </span>
+            </TabsTrigger>
+          )
+        })}
+      </TabsList>
+    </Tabs>
   )
 
   // ── 행 ────────────────────────────────────────────────────────────────────
@@ -1093,19 +1092,22 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
 
   // ── 필터 칩 (정적 틀 — 실제 렌더, 카운트만 skeleton) ──
   const Chips = (
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {['오늘', '이번 주', '전체', '완료'].map((label, i) => (
-        <button
-          key={label}
-          type="button"
-          disabled
-          className={`chip ${i === 0 ? 'active' : ''}`}
-        >
-          {label}
-          <SkeletonBase className="h-3 w-3 ml-0.5 rounded-sm" />
-        </button>
-      ))}
-    </div>
+    <Tabs value="오늘">
+      <TabsList variant="pills" size="sm">
+        {['오늘', '이번 주', '전체', '완료'].map(label => (
+          <TabsTrigger
+            key={label}
+            variant="pills"
+            size="sm"
+            value={label}
+            disabled
+          >
+            {label}
+            <SkeletonBase className="h-3 w-3 ml-0.5 rounded-sm" />
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 
   // ── 그룹 리스트 (데이터) — 실제 그룹 헤더 + 행 구조 미러 ──

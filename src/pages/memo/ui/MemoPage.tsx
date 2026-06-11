@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Switch } from '@/shared/ui/switch'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -214,32 +215,31 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     </div>
   )
 
-  // ── 태그 칩 ──
+  // ── 태그 칩 (단일선택 리스트 필터 — Tabs pills sm) ──
   const TagChips = (
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button
-        className={`chip ${tagFilter === 'all' ? 'active' : ''}`}
-        onClick={() => setTagFilter('all')}
-      >
-        전체
-        <span style={{ opacity: tagFilter === 'all' ? 0.85 : 0.55, marginLeft: 2 }}>
-          {memos.length}
-        </span>
-      </button>
-      {[...tagCounts.entries()].map(([tag, count]) => {
-        const active = tagFilter === tag
-        return (
-          <button
-            key={tag}
-            className={`chip ${active ? 'active' : ''}`}
-            onClick={() => setTagFilter(active ? 'all' : tag)}
-          >
-            {tag}
-            <span style={{ opacity: active ? 0.85 : 0.55, marginLeft: 2 }}>{count}</span>
-          </button>
-        )
-      })}
-    </div>
+    <Tabs
+      value={tagFilter}
+      onValueChange={v => v && setTagFilter(v)}
+      style={{ display: 'flex', flexWrap: 'wrap' }}
+    >
+      <TabsList variant="pills" size="sm" style={{ flexWrap: 'wrap', gap: 6 }}>
+        <TabsTrigger variant="pills" size="sm" value="all">
+          전체
+          <span style={{ opacity: tagFilter === 'all' ? 0.85 : 0.55, marginLeft: 2 }}>
+            {memos.length}
+          </span>
+        </TabsTrigger>
+        {[...tagCounts.entries()].map(([tag, count]) => {
+          const active = tagFilter === tag
+          return (
+            <TabsTrigger key={tag} variant="pills" size="sm" value={tag}>
+              {tag}
+              <span style={{ opacity: active ? 0.85 : 0.55, marginLeft: 2 }}>{count}</span>
+            </TabsTrigger>
+          )
+        })}
+      </TabsList>
+    </Tabs>
   )
 
   // ── 메모 카드 ──
