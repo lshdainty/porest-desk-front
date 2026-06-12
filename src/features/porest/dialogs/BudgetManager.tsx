@@ -560,9 +560,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
           confirmLabel="복사"
           loading={copyingPrev}
-          onCancel={() => {
-            if (!copyingPrev) setConfirmCopy(false)
-          }}
+          onCancel={() => setConfirmCopy(false)}
           onConfirm={copyFromLastMonth}
         />
       )}

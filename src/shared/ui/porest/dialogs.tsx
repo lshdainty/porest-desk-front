@@ -149,7 +149,8 @@ export function ConfirmDialog({
           </p>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={onCancel} disabled={loading}>
+          {/* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */}
+          <Button variant="ghost" onClick={onCancel}>
             {cancelLabel}
           </Button>
           <Button
