@@ -56,7 +56,9 @@ const buttonVariants = cva(
       size: {
         default: "h-9 px-4 py-[9px] text-sm [&_svg]:size-4",
         xs:      "h-6 px-2 py-1 text-xs gap-1 rounded-[var(--radius-sm)] [&_svg]:size-3.5",
-        sm:      "h-8 px-3 py-1.5 text-[13px] gap-[5px] rounded-[var(--radius-sm)] [&_svg]:size-3.5",
+        // sm 은 spec 매핑 그대로 (button.md Sizes: h-8 px-2 py-1 text-caption + BASE gap 8)
+        // — 기존 호환층(px-3·13px·gap-5)이 앱 PButton sm 보다 커 보이던 문제 정리.
+        sm:      "h-8 px-2 py-1 text-caption rounded-[var(--radius-sm)] [&_svg]:size-3.5",
         md:      "h-10 px-3 py-2 text-sm [&_svg]:size-4",
         lg:      "h-11 px-5 py-3 text-base [&_svg]:size-[18px]",
         icon:    "h-9 w-9 p-0 rounded-md [&_svg]:size-4",

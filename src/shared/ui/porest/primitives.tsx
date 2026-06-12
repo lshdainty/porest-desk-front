@@ -240,7 +240,7 @@ export function MonthPicker({
         background: 'transparent',
         border: variant === 'borderless' ? 0 : '1px solid var(--border-subtle)',
         borderRadius: variant === 'borderless' ? 0 : 'var(--radius-tile)',
-        padding: variant === 'borderless' ? '4px 6px' : '6px 12px',
+        padding: variant === 'borderless' ? '4px 4px' : '6px 12px',
         fontSize: variant === 'borderless' ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
         fontWeight: variant === 'borderless' ? '700' : '600',
         color: variant === 'borderless' ? 'var(--fg-primary)' : 'var(--fg-secondary)',
