@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   useExpenseBudgets,
   useExpenseCategories,
@@ -191,6 +191,21 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
 
   const submitting = createMut.isPending || updateMut.isPending || deleteMut.isPending
 
+  // 앱 _MonthBar 정합 — 모바일은 prev/next 화살표로 월 ±1 이동 (BudgetPage 개요와 동일).
+  const adjustMonth = (delta: number) => {
+    let ny = year
+    let nm = month + delta
+    if (nm < 1) {
+      ny -= 1
+      nm = 12
+    }
+    if (nm > 12) {
+      ny += 1
+      nm = 1
+    }
+    setMonthKey(`${ny}-${String(nm).padStart(2, '0')}`)
+  }
+
   return (
     <>
       <ManagerShell>
@@ -221,12 +236,19 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         )}
 
         {mobile && (
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
-            <MonthPicker value={monthKey} onChange={setMonthKey} />
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 6 }}>
+            <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
+              <ChevronLeft size={16} />
+            </Button>
+            <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
+            <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
+              <ChevronRight size={16} />
+            </Button>
             <Button
               variant="secondary"
               size="sm"
               type="button"
+              style={{ marginLeft: 'auto' }}
               onClick={() => setConfirmCopy(true)}
               disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
             >
