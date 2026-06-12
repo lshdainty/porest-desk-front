@@ -215,6 +215,30 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
 
   return (
     <>
+      {/* 월 바는 ManagerShell(flex-col gap-4=16px) 밖에 둬서 카드와의 간격을
+          marginBottom 12 로 직접 제어 — 앱 _MonthBar→카드 SizedBox(PSpace.x12) 정합.
+          (쉘 안에 두면 gap 16 + marginBottom 이 더해져 간격이 과하게 벌어짐) */}
+      {mobile && (
+        <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 12 }}>
+          <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
+            <ChevronLeft size={16} />
+          </Button>
+          <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
+          <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
+            <ChevronRight size={16} />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            style={{ marginLeft: 'auto' }}
+            onClick={() => setConfirmCopy(true)}
+            disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
+          >
+            <Copy size={12} /> 지난달 복사
+          </Button>
+        </div>
+      )}
       <ManagerShell>
         {!mobile && (
           <ManagerHead
@@ -240,28 +264,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
             }
           />
-        )}
-
-        {mobile && (
-          <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 6 }}>
-            <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
-              <ChevronLeft size={16} />
-            </Button>
-            <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
-            <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
-              <ChevronRight size={16} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              type="button"
-              style={{ marginLeft: 'auto' }}
-              onClick={() => setConfirmCopy(true)}
-              disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
-            >
-              <Copy size={12} /> 지난달 복사
-            </Button>
-          </div>
         )}
 
         {loading ? (
