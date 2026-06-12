@@ -243,7 +243,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         )}
 
         {mobile && (
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 6 }}>
+          <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 6 }}>
             <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
               <ChevronLeft size={16} />
             </Button>
@@ -316,7 +316,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             </Button>
           </div>
           {monthlyBudget && (
-            <div className="budget-bar" style={{ height: 10, marginTop: 14 }}>
+            <div className="budget-bar" style={{ height: 10, marginTop: 12 }}>
               <div
                 className="budget-bar__fill"
                 style={{
@@ -330,8 +330,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: 12,
-              marginTop: 14,
-              paddingTop: 14,
+              marginTop: 12,
+              paddingTop: 12,
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
@@ -373,7 +373,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           {monthlyBudget != null && remaining < 0 && (
             <div
               style={{
-                marginTop: 10,
+                marginTop: 8,
                 padding: '8px 12px',
                 background: 'var(--status-danger-subtle)',
                 border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
@@ -581,14 +581,14 @@ function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
             </div>
             <SkeletonBase className="h-8 w-16 rounded-md ml-auto" />
           </div>
-          <SkeletonBase className="h-2.5 w-full rounded-full mt-3.5" />
+          <SkeletonBase className="h-2.5 w-full rounded-full mt-3" />
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: 12,
-              marginTop: 14,
-              paddingTop: 14,
+              marginTop: 12,
+              paddingTop: 12,
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
