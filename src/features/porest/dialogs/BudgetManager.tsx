@@ -54,6 +54,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const [confirmDelete, setConfirmDelete] = useState<ExpenseBudget | null>(null)
   const [editMonthly, setEditMonthly] = useState(false)
   const [confirmCopy, setConfirmCopy] = useState(false)
+  const [copyingPrev, setCopyingPrev] = useState(false)
 
   const budgetList = budgets ?? []
   const categoryList: ExpenseCategory[] = categories ?? []
@@ -164,7 +165,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     deleteMut.mutate(b.rowId, { onSuccess: () => setConfirmDelete(null) })
   }
 
-  const copyFromLastMonth = () => {
+  const copyFromLastMonth = async () => {
     const prevList = prevBudgetsQ.data ?? []
     if (prevList.length === 0) {
       setConfirmCopy(false)
@@ -172,21 +173,27 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     }
     const existingByKey = new Map<string, ExpenseBudget>()
     for (const b of budgetList) existingByKey.set(`${b.categoryRowId ?? 'overall'}`, b)
-    for (const p of prevList) {
-      const key = `${p.categoryRowId ?? 'overall'}`
-      const exists = existingByKey.get(key)
-      if (exists) {
-        updateMut.mutate({ id: exists.rowId, budgetAmount: p.budgetAmount })
-      } else {
-        createMut.mutate({
-          categoryRowId: p.categoryRowId ?? null,
-          budgetAmount: p.budgetAmount,
-          budgetYear: year,
-          budgetMonth: month,
-        })
-      }
+    // 다이얼로그를 연 채 '복사' 버튼 스피너 — 모든 mutation 완료까지 대기 후 닫기 (앱 정합).
+    setCopyingPrev(true)
+    try {
+      await Promise.all(
+        prevList.map(p => {
+          const key = `${p.categoryRowId ?? 'overall'}`
+          const exists = existingByKey.get(key)
+          return exists
+            ? updateMut.mutateAsync({ id: exists.rowId, budgetAmount: p.budgetAmount })
+            : createMut.mutateAsync({
+                categoryRowId: p.categoryRowId ?? null,
+                budgetAmount: p.budgetAmount,
+                budgetYear: year,
+                budgetMonth: month,
+              })
+        }),
+      )
+      setConfirmCopy(false)
+    } finally {
+      setCopyingPrev(false)
     }
-    setConfirmCopy(false)
   }
 
   const submitting = createMut.isPending || updateMut.isPending || deleteMut.isPending
@@ -552,8 +559,10 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             prevBudgetsQ.data?.length ?? 0
           }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
           confirmLabel="복사"
-          loading={createMut.isPending || updateMut.isPending}
-          onCancel={() => setConfirmCopy(false)}
+          loading={copyingPrev}
+          onCancel={() => {
+            if (!copyingPrev) setConfirmCopy(false)
+          }}
           onConfirm={copyFromLastMonth}
         />
       )}
