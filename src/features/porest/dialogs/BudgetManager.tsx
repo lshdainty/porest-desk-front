@@ -428,77 +428,100 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               const p = limitAmt > 0 ? (spent / limitAmt) * 100 : 0
               const state = p > 100 ? 'over' : p > 85 ? 'warn' : ''
               const label = cat?.categoryName ?? b.categoryName ?? `카테고리 #${catId}`
+              // 행 레이아웃 — 앱 _CategoryRow 정합:
+              // [icon | 이름+상태(좌) | 사용액 위·/한도 아래(우)] + 하단 풀폭 진행바.
               return (
                 <div
                   key={b.rowId}
                   className={MANAGE_ROW.className}
-                  style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
+                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
                   onClick={mobile ? () => setEditing(b) : undefined}
                   role={mobile ? 'button' : undefined}
                 >
-                  <span
-                    style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
-                  >
-                    <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                      <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{label}</div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span
+                      style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color, marginRight: 12 }}
+                    >
+                      <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* 앱 PTypo.body(14px)/caption(12px·w500) 정합 */}
+                      <div
+                        style={{
+                          fontSize: 'var(--text-body-sm)',
+                          fontWeight: '600',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {label}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 'var(--text-caption)',
+                          fontWeight: '500',
+                          color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
+                          marginTop: 2,
+                        }}
+                      >
+                        {state === 'over' ? (
+                          <>
+                            한도 <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
+                            <HideUnit>원</HideUnit> 초과
+                          </>
+                        ) : (
+                          <>
+                            남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                            <HideUnit>원</HideUnit>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
                       <div
                         className="num"
                         style={{
-                          marginLeft: 'auto',
-                          fontSize: 'var(--text-label-sm)',
+                          fontSize: 'var(--text-body-sm)',
                           fontWeight: '700',
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
                         <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
-                        <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-                          {' '}
-                          / <MaskAmount mask="••••">{KRW(limitAmt)}</MaskAmount>
-                        </span>
+                      </div>
+                      <div
+                        className="num"
+                        style={{ fontSize: 'var(--text-badge)', fontWeight: '500', color: 'var(--fg-tertiary)' }}
+                      >
+                        / <MaskAmount mask="••••">{KRW(limitAmt)}</MaskAmount>
                       </div>
                     </div>
-                    <div className="budget-bar" style={{ height: 6 }}>
-                      <div
-                        className={`budget-bar__fill ${state}`}
-                        style={{ width: `${Math.min(100, p)}%` }}
-                      />
-                    </div>
-                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-                      {state === 'over' ? (
-                        <>
-                          <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
-                          <HideUnit>원</HideUnit> 초과
-                        </>
-                      ) : (
-                        <>
-                          남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
-                          <HideUnit>원</HideUnit>
-                        </>
-                      )}
-                    </div>
+                    {!mobile && (
+                      <div className={MANAGE_ROW.actionsClassName} style={{ marginLeft: 8 }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditing(b)}
+                        >
+                          <Pencil size={13} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={MANAGE_ROW.delClassName}
+                          onClick={() => setConfirmDelete(b)}
+                        >
+                          <Trash2 size={13} />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  {!mobile && (
-                    <div className={MANAGE_ROW.actionsClassName}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditing(b)}
-                      >
-                        <Pencil size={13} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={MANAGE_ROW.delClassName}
-                        onClick={() => setConfirmDelete(b)}
-                      >
-                        <Trash2 size={13} />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="budget-bar" style={{ height: 7 }}>
+                    <div
+                      className={`budget-bar__fill ${state}`}
+                      style={{ width: `${Math.min(100, p)}%` }}
+                    />
+                  </div>
                 </div>
               )
             })
@@ -613,23 +636,26 @@ function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
           <div
             key={i}
             className={MANAGE_ROW.className}
-            style={{ alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}
+            style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 14, paddingBottom: 14 }}
           >
-            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <SkeletonBase className="h-9 w-9 rounded-md shrink-0 mr-3" />
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <SkeletonBase className="h-4 w-24" />
-                <SkeletonBase className="h-4 w-28 ml-auto" />
+                <SkeletonBase className="h-3 w-32 mt-1" />
               </div>
-              <SkeletonBase className="h-1.5 w-full rounded-full" />
-              <SkeletonBase className="h-3 w-32 mt-2" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 8 }}>
+                <SkeletonBase className="h-4 w-20" />
+                <SkeletonBase className="h-3 w-14 mt-1" />
+              </div>
+              {!mobile && (
+                <div className="flex gap-1 ml-2">
+                  <SkeletonBase className="h-7 w-7 rounded-md" />
+                  <SkeletonBase className="h-7 w-7 rounded-md" />
+                </div>
+              )}
             </div>
-            {!mobile && (
-              <div className="flex gap-1">
-                <SkeletonBase className="h-7 w-7 rounded-md" />
-                <SkeletonBase className="h-7 w-7 rounded-md" />
-              </div>
-            )}
+            <SkeletonBase className="h-[7px] w-full rounded-full" />
           </div>
         ))}
       </div>
