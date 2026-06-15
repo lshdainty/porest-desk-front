@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { expenseKeys } from '@/shared/config'
+import { assetKeys, expenseKeys } from '@/shared/config'
 import { expenseApi } from '../api/expenseApi'
 import type { ExpenseListParams, ExpenseSearchParams } from '../api/expenseApi'
 import type { ExpenseFormValues } from '@/entities/expense'
@@ -18,6 +18,8 @@ export const useCreateExpense = () => {
     mutationFn: (data: ExpenseFormValues) => expenseApi.createExpense(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },
   })
 }
@@ -30,6 +32,8 @@ export const useUpdateExpense = () => {
       expenseApi.updateExpense(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },
   })
 }
@@ -41,6 +45,8 @@ export const useDeleteExpense = () => {
     mutationFn: (id: number) => expenseApi.deleteExpense(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },
   })
 }
