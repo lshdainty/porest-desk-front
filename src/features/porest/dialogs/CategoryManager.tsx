@@ -31,7 +31,10 @@ import {
   useUpdateExpenseCategory,
   useDeleteExpenseCategory,
   useReorderExpenseCategories,
+  useExpenseBudgets,
+  useRangeSummary,
 } from '@/features/expense'
+import { KRW } from '@/shared/lib/porest/format'
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
@@ -53,6 +56,30 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
   const [editing, setEditing] = useState<EditingState>(null)
   const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(null)
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+  // 자식 이동 시 새 부모 예산 초과 확인 — 승인하면 저장 진행.
+  const [pendingMove, setPendingMove] = useState<
+    { values: ExpenseCategoryFormValues; id: number; parentName: string; over: number } | null
+  >(null)
+
+  // 이번 달 예산/지출 — 카테고리 삭제(예산 동반) 안내 + 이동 초과 경고용.
+  const cmNow = new Date()
+  const cmYM = { year: cmNow.getFullYear(), month: cmNow.getMonth() + 1 }
+  const cmStart = `${cmYM.year}-${String(cmYM.month).padStart(2, '0')}-01`
+  const cmEnd = `${cmYM.year}-${String(cmYM.month).padStart(2, '0')}-${String(new Date(cmYM.year, cmYM.month, 0).getDate()).padStart(2, '0')}`
+  const { data: budgets } = useExpenseBudgets(cmYM)
+  const { data: rangeSummary } = useRangeSummary(cmStart, cmEnd)
+
+  const budgetOf = (categoryRowId: number): number | null =>
+    budgets?.find(b => b.categoryRowId === categoryRowId)?.budgetAmount ?? null
+  // 카테고리 본인 + 자식 지출 roll-up (백엔드 categoryBreakdown 의 parentCategoryRowId 기준).
+  const spentRollup = (categoryRowId: number): number =>
+    (rangeSummary?.categoryBreakdown ?? [])
+      .filter(c => c.categoryRowId === categoryRowId || c.parentCategoryRowId === categoryRowId)
+      .reduce((s, c) => s + c.totalAmount, 0)
+  const ownSpent = (categoryRowId: number): number =>
+    (rangeSummary?.categoryBreakdown ?? [])
+      .filter(c => c.categoryRowId === categoryRowId)
+      .reduce((s, c) => s + c.totalAmount, 0)
 
   const list = useMemo(() => categories ?? [], [categories])
 
@@ -95,12 +122,32 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
 
   const submitting = createMut.isPending || updateMut.isPending
 
+  const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
+    updateMut.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
+  }
+
   const onSave = (values: ExpenseCategoryFormValues) => {
     if (editing && 'rowId' in editing) {
-      updateMut.mutate(
-        { id: editing.rowId, data: values },
-        { onSuccess: () => setEditing(null) },
-      )
+      // 자식을 다른 부모로 이동 — 새 부모 예산 초과 시 한 번 확인 (룰3).
+      const movedToNewParent =
+        values.parentRowId != null && values.parentRowId !== editing.parentRowId
+      if (movedToNewParent) {
+        const newParentBudget = budgetOf(values.parentRowId!)
+        if (newParentBudget != null) {
+          const projected = spentRollup(values.parentRowId!) + ownSpent(editing.rowId)
+          if (projected > newParentBudget) {
+            const parent = list.find(c => c.rowId === values.parentRowId)
+            setPendingMove({
+              values,
+              id: editing.rowId,
+              parentName: parent?.categoryName ?? '상위 카테고리',
+              over: projected - newParentBudget,
+            })
+            return
+          }
+        }
+      }
+      doUpdate(editing.rowId, values)
     } else {
       createMut.mutate(values, { onSuccess: () => setEditing(null) })
     }
@@ -282,6 +329,8 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           message={
             confirmDelete.hasChildren
               ? `"${confirmDelete.categoryName}" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.`
+              : budgetOf(confirmDelete.rowId) != null
+              ? `예산이 설정되어 있는 카테고리입니다. 삭제 시 예산도 함께 삭제됩니다. "${confirmDelete.categoryName}" 카테고리를 삭제하시겠습니까?`
               : `"${confirmDelete.categoryName}" 카테고리를 삭제하시겠어요?`
           }
           confirmLabel="삭제"
@@ -289,6 +338,19 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => !confirmDelete.hasChildren && onDelete(confirmDelete)}
+        />
+      )}
+      {pendingMove && (
+        <ConfirmDialog
+          title="예산 초과 확인"
+          message={`이동하면 "${pendingMove.parentName}" 예산을 ${KRW(pendingMove.over)}원 초과합니다. 그래도 이동할까요?`}
+          confirmLabel="이동"
+          loading={updateMut.isPending}
+          onCancel={() => setPendingMove(null)}
+          onConfirm={() => {
+            doUpdate(pendingMove.id, pendingMove.values)
+            setPendingMove(null)
+          }}
         />
       )}
     </>
