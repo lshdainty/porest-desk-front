@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      // 탭/창 복귀 시 갱신 — 다른 클라이언트(앱 등)에서 바뀐 데이터를 따라잡는다.
+      refetchOnWindowFocus: true,
       retry: 1,
     },
   },
