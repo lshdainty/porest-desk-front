@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { expenseSplitKeys, expenseKeys } from '@/shared/config'
+import { assetKeys, expenseSplitKeys, expenseKeys } from '@/shared/config'
 import { expenseSplitApi } from '../api/expenseSplitApi'
 import type { ExpenseSplitFormValue } from '@/entities/expense-split'
 
@@ -24,6 +24,8 @@ export const useReplaceExpenseSplits = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: expenseSplitKeys.list(variables.expenseId) })
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 분할은 실제 금액(자산 잔액)에 영향 — 자산 쿼리도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },
   })
 }
@@ -36,6 +38,8 @@ export const useDeleteAllExpenseSplits = () => {
     onSuccess: (_data, expenseId) => {
       queryClient.invalidateQueries({ queryKey: expenseSplitKeys.list(expenseId) })
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 분할은 실제 금액(자산 잔액)에 영향 — 자산 쿼리도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },
   })
 }
