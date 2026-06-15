@@ -94,15 +94,13 @@ export function CategoryEditDialog({
         : null
       : null
 
-  // 상위 카테고리 후보: 같은 expenseType의 최상위(parentRowId=null)이고
-  // 본인 자신 제외, 본인이 이미 자식을 가진 부모인 경우는 parent 변경 불가(깊이 2+ 방지)
-  const selfHasChildren = cat?.hasChildren ?? false
+  // 상위 카테고리 후보: 같은 expenseType의 최상위(parentRowId=null)이고 본인 자신 제외.
+  // (자식 보유 부모는 애초에 '상위 카테고리' 필드를 숨기므로 여기서 따로 막지 않음.)
   const parentOptions = existing.filter(c =>
     c.expenseType === kind &&
     c.parentRowId == null &&
     c.rowId !== cat?.rowId
   )
-  const parentDisabled = selfHasChildren
 
   const save = () => {
     setTouched(true)
@@ -113,7 +111,7 @@ export function CategoryEditDialog({
       color: palette.baseHex,
       expenseType: kind,
       sortOrder: cat?.sortOrder,
-      parentRowId: parentDisabled ? (cat?.parentRowId ?? null) : parentRowId,
+      parentRowId: parentRowId,
     }
     onSave(values)
   }
@@ -208,41 +206,48 @@ export function CategoryEditDialog({
         </Tabs>
       </Field>
 
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>
-          상위 카테고리
-          <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>(선택)</span>
-        </FieldLabel>
-        <Select
-          value={parentRowId == null ? '__root__' : String(parentRowId)}
-          onValueChange={(v) => setParentRowId(v === '__root__' ? null : Number(v))}
-          disabled={parentDisabled || parentOptions.length === 0}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="— 최상위 카테고리로 두기 —" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__root__">— 최상위 카테고리로 두기 —</SelectItem>
-            {parentOptions.map(p => (
-              <SelectItem key={p.rowId} value={String(p.rowId)}>
-                {p.categoryName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {parentDisabled && (
-          <div
-            style={{
-              fontSize: 'var(--text-badge)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 4,
-              textAlign: 'right',
-            }}
+      {/* 상위 카테고리 정책:
+          - 신규: 최상위 또는 특정 부모 아래로 생성 가능(루트 옵션 포함).
+          - 자식 편집: 다른 부모로만 이동(승격='최상위로 두기' 금지 → 루트 옵션 제거).
+          - 최상위 편집: 강등 불가 → 필드 자체를 숨김. */}
+      {(isNew || cat?.parentRowId != null) && (
+        <Field style={{ marginBottom: 14 }}>
+          <FieldLabel>
+            상위 카테고리
+            {isNew && (
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>(선택)</span>
+            )}
+          </FieldLabel>
+          <Select
+            value={parentRowId == null ? '__root__' : String(parentRowId)}
+            onValueChange={(v) => setParentRowId(v === '__root__' ? null : Number(v))}
+            disabled={parentOptions.length === 0}
           >
-            하위 카테고리가 있어 상위를 변경할 수 없어요.
-          </div>
-        )}
-      </Field>
+            <SelectTrigger>
+              <SelectValue placeholder={isNew ? '— 최상위 카테고리로 두기 —' : '상위 카테고리 선택'} />
+            </SelectTrigger>
+            <SelectContent>
+              {isNew && <SelectItem value="__root__">— 최상위 카테고리로 두기 —</SelectItem>}
+              {parentOptions.map(p => (
+                <SelectItem key={p.rowId} value={String(p.rowId)}>
+                  {p.categoryName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!isNew && (
+            <div
+              style={{
+                fontSize: 'var(--text-badge)',
+                color: 'var(--fg-tertiary)',
+                marginTop: 4,
+              }}
+            >
+              다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 연결된 거래를 옮긴 뒤 새로 만들어 주세요.
+            </div>
+          )}
+        </Field>
+      )}
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>이름</FieldLabel>
