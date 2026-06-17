@@ -633,9 +633,9 @@ function ReconcileBtn({
       style={{
         position: 'relative',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
         padding: '10px 11px',
         textAlign: 'left',
         background: active ? 'var(--status-warning-subtle)' : 'var(--bg-surface)',
@@ -647,26 +647,31 @@ function ReconcileBtn({
         fontFamily: 'inherit',
       }}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--status-warning-fg)' }}>
-        <Icon size={15} strokeWidth={2} />
-        {recommended && (
-          <span
-            style={{
-              fontSize: 'var(--text-badge)',
-              fontWeight: '700',
-              padding: '1px 6px',
-              borderRadius: 'var(--radius-pill)',
-              background: 'var(--status-warning-subtle)',
-              color: 'var(--status-warning-fg)',
-            }}
-          >
-            추천
-          </span>
-        )}
-        {active && <Check size={13} />}
+      {/* 앱과 동일: 아이콘 왼쪽 + 제목·설명 세로 컬럼 */}
+      <span style={{ display: 'inline-flex', color: 'var(--status-warning-fg)', flexShrink: 0 }}>
+        <Icon size={16} strokeWidth={2} />
       </span>
-      <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</span>
-      <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)', lineHeight: '1.3' }}>{desc}</span>
+      <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</span>
+          {recommended && (
+            <span
+              style={{
+                fontSize: 'var(--text-badge)',
+                fontWeight: '700',
+                padding: '1px 6px',
+                borderRadius: 'var(--radius-pill)',
+                background: 'var(--status-warning-subtle)',
+                color: 'var(--status-warning-fg)',
+              }}
+            >
+              추천
+            </span>
+          )}
+        </span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)', lineHeight: '1.3' }}>{desc}</span>
+      </span>
+      {active && <Check size={14} style={{ color: 'var(--status-warning-fg)', flexShrink: 0 }} />}
     </button>
   )
 }
