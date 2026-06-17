@@ -450,104 +450,96 @@ export function SplitTxDialog({
 
       {/* Rows */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-        {safeRows.map((r, idx) => (
-          <div
-            key={r.uid}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto 1.4fr 1fr 1.1fr auto',
-              gap: 8,
-              alignItems: 'center',
-              padding: '8px 10px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)',
-            }}
-          >
-            <span
+        {safeRows.map((r, idx) => {
+          const cat = sameTypeCategories.find(c => c.rowId === r.categoryRowId)
+          const pal = getPaletteByColor(cat?.color)
+          const pct = targetTotal > 0 ? Math.round(((Number(r.amount) || 0) / targetTotal) * 100) : 0
+          return (
+            <div
+              key={r.uid}
               style={{
-                width: 24,
-                height: 24,
-                borderRadius: 'var(--radius-pill)',
-                background: 'var(--bg-sunken)',
-                color: 'var(--fg-secondary)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '700',
-                fontSize: 'var(--text-caption)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                padding: 12,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
               }}
             >
-              {idx + 1}
-            </span>
+              {/* 헤더: 색 점 + 항목 N + 비율 + 삭제 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', fontWeight: '600' }}>항목 {idx + 1}</span>
+                <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '700' }}>{pct}%</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRow(r.uid)}
+                  disabled={submitting || safeRows.length <= 1}
+                  aria-label="항목 삭제"
+                  className="h-6 w-6 rounded-full text-[var(--fg-tertiary)]"
+                >
+                  <X size={14} />
+                </Button>
+              </div>
 
-            <Input
-              value={r.label}
-              onChange={e => updateRow(r.uid, { label: e.target.value })}
-              placeholder="항목 이름 (선택)"
-              disabled={submitting}
-            />
-
-            <Select
-              value={r.categoryRowId ? String(r.categoryRowId) : ''}
-              onValueChange={val => updateRow(r.uid, { categoryRowId: Number(val) })}
-            >
-              <SelectTrigger
-                style={{
-                  background: 'var(--bg-surface)',
-                  height: 36,
-                  minHeight: 36,
-                }}
-              >
-                <SelectValue placeholder="카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                {sameTypeCategories.map(c => (
-                  <SelectItem key={c.rowId} value={String(c.rowId)}>
-                    {c.categoryName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div style={{ position: 'relative' }}>
+              {/* 항목 이름 */}
               <Input
-                className="num"
-                value={r.amount}
-                onChange={e => updateRow(r.uid, { amount: e.target.value.replace(/[^0-9]/g, '') })}
-                inputMode="numeric"
-                placeholder="0"
+                value={r.label}
+                onChange={e => updateRow(r.uid, { label: e.target.value })}
+                placeholder="항목 이름 (선택)"
                 disabled={submitting}
-                style={{ paddingRight: 28, textAlign: 'right' }}
               />
-              <span
-                style={{
-                  position: 'absolute',
-                  right: 10,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: 'var(--text-caption)',
-                  color: 'var(--fg-tertiary)',
-                  pointerEvents: 'none',
-                }}
-              >
-                원
-              </span>
-            </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeRow(r.uid)}
-              disabled={submitting || safeRows.length <= 1}
-              aria-label="항목 삭제"
-              className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
-            >
-              <X size={14} />
-            </Button>
-          </div>
-        ))}
+              {/* 카테고리 + 금액 */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Select
+                    value={r.categoryRowId ? String(r.categoryRowId) : ''}
+                    onValueChange={val => updateRow(r.uid, { categoryRowId: Number(val) })}
+                  >
+                    <SelectTrigger style={{ background: 'var(--bg-surface)', width: '100%' }}>
+                      <SelectValue placeholder="카테고리" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sameTypeCategories.map(c => (
+                        <SelectItem key={c.rowId} value={String(c.rowId)}>
+                          {c.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div style={{ flex: '1.4', minWidth: 0, position: 'relative' }}>
+                  <Input
+                    className="num"
+                    value={r.amount}
+                    onChange={e => updateRow(r.uid, { amount: e.target.value.replace(/[^0-9]/g, '') })}
+                    inputMode="numeric"
+                    placeholder="0"
+                    disabled={submitting}
+                    style={{ paddingRight: 28, textAlign: 'right' }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: 'var(--text-caption)',
+                      color: 'var(--fg-tertiary)',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    원
+                  </span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'space-between' }}>
