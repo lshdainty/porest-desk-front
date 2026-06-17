@@ -654,7 +654,11 @@ function useExpenseData(
         list = list.filter(e => filterValue.types.includes(e.expenseType))
       }
       if (allowedCatIds) {
-        list = list.filter(e => allowedCatIds.has(e.categoryRowId))
+        // split-aware: 거래 카테고리 또는 분할 항목 카테고리 중 하나라도 선택 집합에 들면 노출(전액).
+        list = list.filter(e =>
+          allowedCatIds.has(e.categoryRowId)
+          || (e.splitCategoryRowIds ?? []).some(id => allowedCatIds.has(id)),
+        )
       }
       if (filterValue.assetIds.length > 0) {
         list = list.filter(
