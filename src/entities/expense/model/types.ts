@@ -37,6 +37,8 @@ export interface Expense {
   paymentMethod: string | null
   calendarEventRowId: number | null
   todoRowId: number | null
+  /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
+  splitCategoryRowIds?: number[]
   createAt: string
   modifyAt: string
 }
