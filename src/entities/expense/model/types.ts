@@ -1,3 +1,5 @@
+import type { ExpenseSplitFormValue } from '@/entities/expense-split'
+
 export type ExpenseType = 'INCOME' | 'EXPENSE'
 export type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER'
 
@@ -51,6 +53,12 @@ export interface ExpenseFormValues {
   paymentMethod?: string
   calendarEventRowId?: number
   todoRowId?: number
+  /**
+   * 분할 내역 동시 수정(선택). 미전달/undefined = 분할 미변경(기존 유지).
+   * 전달 시 새 분할로 교체되며, 합이 amount와 같아야 한다(백엔드 원자 검증).
+   * 거래 금액을 바꿔 기존 분할 합과 어긋날 때, 맞춘 분할을 함께 보내 일치화하는 용도.
+   */
+  splits?: ExpenseSplitFormValue[]
 }
 
 export interface ExpenseCategoryFormValues {

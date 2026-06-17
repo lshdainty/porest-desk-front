@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bookmark, Info, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors, Trash2 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
@@ -33,10 +33,13 @@ import {
   useDeleteExpense,
 } from '@/features/expense'
 import { useAssets, useCreateTransfer } from '@/features/asset'
+import { useExpenseSplits } from '@/features/expense-split'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
+import type { ExpenseSplitFormValue } from '@/entities/expense-split'
 import { Card, CardContent } from '@/shared/ui/card'
+import { SplitTxDialog } from '../dialogs/SplitTxDialog'
 
 const PAYMENT_METHODS: { v: string; l: string }[] = [
   { v: 'CASH', l: '현금' },
@@ -94,6 +97,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const deleteMut = useDeleteExpense()
   const createTransferMut = useCreateTransfer()
   const touchPresetMut = useTouchExpenseTemplate()
+  // 편집 모드: 기존 분할 내역 — 금액 변경 시 분할 합과 일치 여부 판정용
+  const splitsQ = useExpenseSplits(expense?.rowId ?? null)
 
   const categories: ExpenseCategory[] = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
   const assets: Asset[] = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data])
@@ -123,6 +128,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const [fee, setFee] = useState<string>('')
 
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // 분할 합 일치화: 금액을 바꿔 기존 분할 합과 어긋날 때 맞추기 플로우
+  const [openReconcile, setOpenReconcile] = useState(false)
+  // 이번 편집 세션에서 맞춘 분할(있으면 저장 시 금액과 함께 원자적으로 전송)
+  const [reconciledSplits, setReconciledSplits] = useState<ExpenseSplitFormValue[] | null>(null)
 
   // 프리셋: 적용 추적 + 저장 다이얼로그
   const templatesQ = useExpenseTemplates()
@@ -212,12 +222,31 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
   const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0
 
+  // 유효 분할 = 이번 세션에서 맞춘 분할 ?? 서버 분할. 금액이 분할 합과 어긋나면 일치화 필요.
+  const serverSplitForms: ExpenseSplitFormValue[] = useMemo(
+    () => (splitsQ.data ?? []).map(s => ({
+      categoryRowId: s.categoryRowId,
+      amount: s.amount,
+      label: s.label,
+      sortOrder: s.sortOrder,
+    })),
+    [splitsQ.data],
+  )
+  const effectiveSplits = reconciledSplits ?? serverSplitForms
+  const splitSum = effectiveSplits.reduce((s, p) => s + p.amount, 0)
+  const hasSplits = effectiveSplits.length > 0
+  const splitMismatch = isEdit && type !== 'TRANSFER' && hasSplits && amountNumber > 0 && amountNumber !== splitSum
+
   const canSave = (() => {
     if (amountNumber <= 0) return false
     if (type === 'TRANSFER') {
       return !!fromAssetRowId && !!toAssetRowId && fromAssetRowId !== toAssetRowId
     }
-    return !!categoryRowId
+    if (!categoryRowId) return false
+    // 편집 모드: 분할 내역을 아직 모르면(로딩/에러) 저장 보류. 분할 합 정합 판정이 불가한 상태에서
+    // 금액을 바꾼 분할 거래를 저장하면 백엔드 400(EXP_012)로 새고 정합 안내가 우회되므로 게이트.
+    if (isEdit && (splitsQ.isPending || splitsQ.isError)) return false
+    return true
   })()
 
   const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending || deleteMut.isPending
@@ -238,6 +267,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       )
       return
     }
+    // 분할이 있는 거래의 금액을 바꿔 합과 어긋나면 → 저장 전에 분할을 먼저 맞춘다.
+    if (splitMismatch) {
+      setOpenReconcile(true)
+      return
+    }
     const data: ExpenseFormValues = {
       categoryRowId: categoryRowId!,
       assetRowId: assetRowId ?? undefined,
@@ -247,6 +281,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       expenseDate: `${expenseDate}T${expenseTime}`,
       merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
+      // 일치화한 분할이 있으면 금액과 함께 원자적으로 교체(백엔드가 합==금액 검증).
+      ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
     }
     if (isEdit && expense) {
       updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose })
@@ -304,7 +340,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         disabled={!canSave}
         loading={submitting}
       >
-        {isEdit ? '저장' : '추가'}
+        {splitMismatch ? '분할 맞추고 저장' : isEdit ? '저장' : '추가'}
       </Button>
     </>
   )
@@ -591,6 +627,54 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         />
       </Field>
 
+      {/* 분할 합 불일치 경고 — 금액을 바꿔 기존 분할 합과 어긋날 때 */}
+      {splitMismatch && (
+        <div
+          style={{
+            marginBottom: 18,
+            padding: '13px 15px',
+            borderRadius: 'var(--radius-lg)',
+            background: 'color-mix(in oklch, var(--status-warning) 12%, var(--bg-surface))',
+            border: '1px solid color-mix(in oklch, var(--status-warning) 35%, transparent)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 11,
+          }}
+        >
+          <span
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 'var(--radius-md)',
+              flexShrink: 0,
+              marginTop: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'color-mix(in oklch, var(--status-warning) 22%, var(--bg-surface))',
+              color: 'var(--status-warning-fg)',
+            }}
+          >
+            <AlertTriangle size={16} />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+              분할 내역과 금액이 달라요
+            </div>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 3, lineHeight: '1.5' }}>
+              새 총액 <b className="num">{KRW(amountNumber)}원</b> · 분할 합계 <b className="num">{KRW(splitSum)}원</b> ·{' '}
+              <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
+                {amountNumber - splitSum > 0 ? '+' : '−'}{KRW(Math.abs(amountNumber - splitSum))}원
+              </b>{' '}
+              차이
+            </div>
+            <Button type="button" size="sm" onClick={() => setOpenReconcile(true)} style={{ marginTop: 10 }}>
+              <Scissors size={13} /> 분할 내역 맞추기
+            </Button>
+          </div>
+        </div>
+      )}
+
       {type !== 'TRANSFER' ? (
         <>
           {/* 카테고리 */}
@@ -826,6 +910,21 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             paymentMethod,
             description,
           }}
+        />
+      )}
+
+      {openReconcile && expense && (
+        <SplitTxDialog
+          expense={expense}
+          mobile={mobile}
+          overrideTotal={amountNumber}
+          recordedTotal={Math.abs(expense.amount)}
+          initialSplits={effectiveSplits.length > 0 ? effectiveSplits : undefined}
+          onReconciled={(splits) => {
+            setReconciledSplits(splits)
+            setOpenReconcile(false)
+          }}
+          onClose={() => setOpenReconcile(false)}
         />
       )}
 

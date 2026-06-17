@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { assetKeys, expenseKeys } from '@/shared/config'
+import { assetKeys, expenseKeys, expenseSplitKeys } from '@/shared/config'
 import { expenseApi } from '../api/expenseApi'
 import type { ExpenseListParams, ExpenseSearchParams } from '../api/expenseApi'
 import type { ExpenseFormValues } from '@/entities/expense'
@@ -34,6 +34,8 @@ export const useUpdateExpense = () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
       // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      // 분할 동시 수정(splits 전달)으로 분할 내역이 교체될 수 있음 — 분할 쿼리도 무효화.
+      queryClient.invalidateQueries({ queryKey: expenseSplitKeys.all })
     },
   })
 }
