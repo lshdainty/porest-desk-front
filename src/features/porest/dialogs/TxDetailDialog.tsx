@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Pencil, Repeat, Scissors, Trash2, Users } from 'lucide-react'
+import { ChevronDown, ChevronUp, Pencil, Repeat, Scissors, Split, Trash2, Users } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
@@ -41,6 +41,7 @@ type Props = {
 export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [openSub, setOpenSub] = useState<'split' | 'recurring' | 'dutch' | null>(null)
+  const [splitExpanded, setSplitExpanded] = useState(true)
   const deleteMut = useDeleteExpense()
 
   const categoriesQ = useExpenseCategories()
@@ -347,6 +348,60 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             onClick={() => setOpenSub('dutch')}
           />
         </div>
+
+        {/* 분할 내역 요약 — 분할이 있으면 접을 수 있는 카드로 항목·비율 표시 */}
+        {splitCount > 0 && (
+          <div style={{ marginTop: 12, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+            <button
+              type="button"
+              onClick={() => setSplitExpanded(v => !v)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <Split size={16} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
+              <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>내역 분할 {splitCount}개</span>
+              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>합계 {KRW(Math.abs(expense.amount))}원</span>
+              <span style={{ marginLeft: 'auto', color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
+                {splitExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </span>
+            </button>
+            {splitExpanded && (
+              <div style={{ padding: '0 14px 12px' }}>
+                <div style={{ display: 'flex', height: 8, borderRadius: 'var(--radius-pill)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
+                  {(splitsQ.data ?? []).map(s => {
+                    const total = Math.abs(expense.amount)
+                    const ratio = total > 0 ? s.amount / total : 0
+                    const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
+                    return ratio > 0 ? (
+                      <div key={s.rowId} style={{ width: `${ratio * 100}%`, background: getPaletteByColor(cat?.color).color }} />
+                    ) : null
+                  })}
+                </div>
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(splitsQ.data ?? []).map(s => {
+                    const total = Math.abs(expense.amount)
+                    const pct = total > 0 ? Math.round((s.amount / total) * 100) : 0
+                    const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
+                    const pal = getPaletteByColor(cat?.color)
+                    return (
+                      <div key={s.rowId} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {(s.label && s.label.trim()) ? s.label : (s.categoryName ?? '항목')}
+                          </div>
+                          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
+                        </div>
+                        <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: isIncome ? 'var(--fg-income)' : 'var(--fg-expense)' }}>
+                          {isIncome ? '+' : '−'}{KRW(s.amount)}원
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Merchant history */}
         {merchantKey && history.length > 0 && (

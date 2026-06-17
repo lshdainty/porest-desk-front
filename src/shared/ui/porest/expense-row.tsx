@@ -83,8 +83,18 @@ export function ExpenseRow({
         icon={expense.categoryIcon ?? null}
       />
       <div style={TX_ROW.metaStyle}>
-        <div style={TX_ROW.titleStyle}>
-          {expense.merchant ?? expense.description ?? expense.categoryName ?? '거래'}
+        <div style={{ ...TX_ROW.titleStyle, display: 'flex', alignItems: 'center', gap: 5, overflow: 'visible' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+            {expense.merchant ?? expense.description ?? expense.categoryName ?? '거래'}
+          </span>
+          {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, color: 'var(--fg-brand)' }}>
+              <Icon name="split" size={12} />
+              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 700 }}>
+                {expense.splitCategoryRowIds!.length}
+              </span>
+            </span>
+          )}
         </div>
         <div style={TX_ROW.subStyle}>
           <span>{expense.categoryName ?? '기타'}</span>
