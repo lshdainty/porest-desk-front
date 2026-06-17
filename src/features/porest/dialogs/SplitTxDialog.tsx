@@ -543,10 +543,10 @@ export function SplitTxDialog({
       </div>
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'space-between' }}>
-        <Button type="button" variant="ghost" onClick={addRow} disabled={submitting}>
+        <Button type="button" variant="ghost" size="sm" onClick={addRow} disabled={submitting}>
           <Plus size={14} /> 항목 추가
         </Button>
-        <Button type="button" variant="ghost" onClick={splitEvenly} disabled={submitting}>
+        <Button type="button" variant="ghost" size="sm" onClick={splitEvenly} disabled={submitting}>
           <Scissors size={14} /> 균등 분배
         </Button>
       </div>
