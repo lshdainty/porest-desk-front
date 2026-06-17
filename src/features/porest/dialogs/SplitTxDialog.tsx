@@ -413,8 +413,8 @@ export function SplitTxDialog({
             marginBottom: 14,
             padding: 14,
             borderRadius: 'var(--radius-lg)',
-            background: 'color-mix(in oklch, var(--status-warning) 10%, var(--bg-surface))',
-            border: '1px solid color-mix(in oklch, var(--status-warning) 32%, transparent)',
+            background: 'var(--status-warning-subtle)',
+            border: '1px solid var(--status-warning-border)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -638,12 +638,10 @@ function ReconcileBtn({
         gap: 5,
         padding: '10px 11px',
         textAlign: 'left',
-        background: active
-          ? 'color-mix(in oklch, var(--status-warning) 18%, var(--bg-surface))'
-          : 'var(--bg-surface)',
+        background: active ? 'var(--status-warning-subtle)' : 'var(--bg-surface)',
         border: active
           ? '1px solid var(--status-warning-fg)'
-          : '1px solid color-mix(in oklch, var(--status-warning) 28%, transparent)',
+          : '1px solid var(--status-warning-border)',
         borderRadius: 'var(--radius-md)',
         cursor: 'pointer',
         fontFamily: 'inherit',
@@ -658,7 +656,7 @@ function ReconcileBtn({
               fontWeight: '700',
               padding: '1px 6px',
               borderRadius: 'var(--radius-pill)',
-              background: 'color-mix(in oklch, var(--status-warning) 20%, transparent)',
+              background: 'var(--status-warning-subtle)',
               color: 'var(--status-warning-fg)',
             }}
           >
