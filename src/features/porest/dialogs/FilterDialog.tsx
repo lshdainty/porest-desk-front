@@ -9,7 +9,7 @@ import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Toggle } from '@/shared/ui/toggle'
 import { TxTypeToggle, type TxTypeOption } from '@/shared/ui/tx-type-toggle'
 
 export type FilterPeriod = 'week' | 'month' | '3m' | 'custom'
@@ -245,19 +245,20 @@ export function FilterDialog({
               </span>
             )}
           </FieldLabel>
-          <ToggleGroup
-            type="multiple"
-            size="sm"
-            value={assetIds.map(String)}
-            onValueChange={(v) => setAssetIds(v.map(Number))}
-            className="flex-wrap justify-start"
-          >
+          {/* 다중선택 필터 칩 — spec toggle.md: outline Toggle + radius-md(둥근 사각형). pill 아님. */}
+          <div className="flex flex-wrap gap-2">
             {assets.map((a) => (
-              <ToggleGroupItem key={a.rowId} value={String(a.rowId)} className="rounded-full">
+              <Toggle
+                key={a.rowId}
+                variant="outline"
+                size="sm"
+                pressed={assetIds.includes(a.rowId)}
+                onPressedChange={() => setAssetIds(toggleIn(assetIds, a.rowId))}
+              >
                 {a.assetName}
-              </ToggleGroupItem>
+              </Toggle>
             ))}
-          </ToggleGroup>
+          </div>
         </Field>
       )}
 
