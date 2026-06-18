@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { IconPicker } from '@/shared/ui/icon-picker'
 import { Input } from '@/shared/ui/input'
@@ -117,31 +116,16 @@ export function CategoryEditDialog({
   }
 
   const Footer = (
-    <>
-      {onDelete ? (
-        <Button
-          variant="ghost"
-          flush="left"
-          onClick={onDelete}
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-          disabled={submitting}
-        >
-          <Trash2 size={14} />삭제
-        </Button>
-      ) : (
-        <span style={{ marginRight: 'auto' }} />
-      )}
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        onClick={save}
-        disabled={touched && !valid}
-        loading={submitting}
-      >
-        {isNew ? '추가' : '저장'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel={isNew ? '추가' : '저장'}
+      saving={submitting}
+      saveDisabled={touched && !valid}
+      onCancel={onClose}
+      onDelete={onDelete}
+      deleteLabel="삭제"
+      deleting={submitting}
+    />
   )
 
   return (

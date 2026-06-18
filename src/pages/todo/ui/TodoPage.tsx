@@ -10,7 +10,6 @@ import {
   Flame,
   CircleDot,
   Leaf,
-  Trash2,
 } from 'lucide-react'
 import {
   useTodos,
@@ -35,6 +34,7 @@ import { Card } from '@/shared/ui/card'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
@@ -813,8 +813,6 @@ function TodoEditDialog({
   const [note, setNote] = useState(todo?.content ?? '')
   const [error, setError] = useState(false)
 
-  const busy = !!submitting || !!deleting
-
   const save = () => {
     if (!title.trim()) {
       setError(true)
@@ -833,28 +831,14 @@ function TodoEditDialog({
   }
 
   const Footer = (
-    <>
-      {todo ? (
-        <Button
-          variant="ghost"
-          flush="left"
-          onClick={() => onDelete(todo.rowId)}
-          style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
-          loading={deleting}
-          disabled={busy}
-        >
-          <Trash2 size={14} /> 삭제
-        </Button>
-      ) : (
-        <span style={{ marginRight: 'auto' }} />
-      )}
-      <Button variant="outline" onClick={onClose} disabled={busy}>
-        취소
-      </Button>
-      <Button onClick={save} loading={submitting} disabled={busy}>
-        저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel="저장"
+      saving={submitting}
+      onCancel={onClose}
+      onDelete={todo ? () => onDelete(todo.rowId) : undefined}
+      deleting={deleting}
+    />
   )
 
   return (

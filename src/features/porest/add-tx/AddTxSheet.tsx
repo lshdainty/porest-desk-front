@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors, Trash2 } from 'lucide-react'
+import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
@@ -319,31 +320,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     : 'var(--fg-primary)'
 
   const Footer = (
-    <>
-      {isEdit && (
-        <Button
-          type="button"
-          variant="ghost"
-          flush="left"
-          onClick={onDeleteClick}
-          disabled={submitting}
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-        >
-          <Trash2 size={14} /> 삭제
-        </Button>
-      )}
-      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={save}
-        disabled={!canSave}
-        loading={submitting}
-      >
-        {splitMismatch ? '분할 맞추고 저장' : isEdit ? '저장' : '추가'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel={splitMismatch ? '분할 맞추고 저장' : isEdit ? '저장' : '추가'}
+      saving={submitting}
+      saveDisabled={!canSave}
+      onCancel={onClose}
+      onDelete={isEdit ? onDeleteClick : undefined}
+      deleteLabel="삭제"
+      deleting={deleteMut.isPending}
+    />
   )
 
   return (
@@ -1027,19 +1013,13 @@ function SavePresetDialog({
   }
 
   const Footer = (
-    <>
-      <Button type="button" variant="ghost" onClick={onClose} disabled={createMut.isPending}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={submit}
-        disabled={!canSave}
-        loading={createMut.isPending}
-      >
-        저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={submit}
+      saveLabel="저장"
+      saving={createMut.isPending}
+      saveDisabled={!canSave}
+      onCancel={onClose}
+    />
   )
 
   return (

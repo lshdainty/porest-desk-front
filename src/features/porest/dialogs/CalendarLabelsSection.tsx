@@ -4,6 +4,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
@@ -304,14 +305,13 @@ function LabelEditDialog({
   }
 
   const Footer = (
-    <>
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button onClick={save} disabled={touched && !valid} loading={submitting}>
-        {isNew ? '추가' : '저장'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel={isNew ? '추가' : '저장'}
+      saving={submitting}
+      saveDisabled={touched && !valid}
+      onCancel={onClose}
+    />
   )
 
   return (

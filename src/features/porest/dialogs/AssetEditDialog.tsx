@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { CreditCard, Search, Trash2, Wallet } from 'lucide-react'
+import { CreditCard, Search, Wallet } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { SearchableList, SearchableListItem } from '@/shared/ui/searchable-list'
@@ -819,29 +819,16 @@ export function AssetEditDialog({
 
   // 데스크탑 footer 와 모바일 footer 모두 동일 구조 (삭제 좌측 / 취소+저장 우측)
   const footerInner = (
-    <Fragment>
-      <div className="flex items-center gap-2">
-        {onDelete && (
-          <Button
-            variant="ghost"
-            flush="left"
-            onClick={onDelete}
-            disabled={isSubmitting}
-            style={{ color: 'var(--fg-expense)' }}
-          >
-            <Trash2 size={14} />삭제
-          </Button>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
-          취소
-        </Button>
-        <Button variant="default" onClick={handleSubmit} disabled={!canSubmit} loading={isSubmitting}>
-          {isNew ? '추가' : '저장'}
-        </Button>
-      </div>
-    </Fragment>
+    <ModalFooter
+      onSave={handleSubmit}
+      saveLabel={isNew ? '추가' : '저장'}
+      saving={isSubmitting}
+      saveDisabled={!canSubmit}
+      onCancel={handleClose}
+      cancelLabel="취소"
+      onDelete={onDelete}
+      deleteLabel="삭제"
+    />
   )
 
   return (

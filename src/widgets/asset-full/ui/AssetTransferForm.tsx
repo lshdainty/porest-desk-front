@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Asset, AssetTransferFormValues } from '@/entities/asset'
-import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
@@ -13,6 +12,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { useIsMobile } from '@/shared/hooks'
 
 interface AssetTransferFormProps {
@@ -48,14 +48,14 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
   }, [fromAssetRowId, toAssetRowId, amount, fee, description, transferDate, onSubmit])
 
   const Footer = (
-    <>
-      <Button variant="outline" onClick={onClose} disabled={isLoading}>
-        {tc('cancel')}
-      </Button>
-      <Button onClick={handleSubmit} disabled={!amount || fromAssetRowId === toAssetRowId} loading={isLoading}>
-        {tc('save')}
-      </Button>
-    </>
+    <ModalFooter
+      onCancel={onClose}
+      cancelLabel={tc('cancel')}
+      onSave={handleSubmit}
+      saveLabel={tc('save')}
+      saving={isLoading}
+      saveDisabled={!amount || fromAssetRowId === toAssetRowId}
+    />
   )
 
   return (

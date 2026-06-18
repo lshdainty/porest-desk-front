@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { AlertCircle, Trash2 } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
@@ -85,11 +85,6 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const updateMut = useUpdateSavingGoal()
   const contributeMut = useContributeSavingGoal()
   const deleteMut = useDeleteSavingGoal()
-  const isPending =
-    createMut.isPending ||
-    updateMut.isPending ||
-    contributeMut.isPending ||
-    deleteMut.isPending
 
   const target = parseNum(targetStr)
   const current = parseNum(currentStr)
@@ -179,38 +174,14 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   }
 
   const Footer = (
-    <>
-      {isEdit && (
-        <Button
-          type="button"
-          variant="ghost"
-          flush="left"
-          className="text-[var(--status-danger)] hover:text-[var(--fg-expense)]"
-          onClick={handleDelete}
-          loading={deleteMut.isPending}
-          disabled={createMut.isPending || updateMut.isPending || contributeMut.isPending}
-          style={{ marginRight: 'auto' }}
-        >
-          <Trash2 size={14} /> 삭제
-        </Button>
-      )}
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={onClose}
-        disabled={isPending}
-      >
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={handleSubmit}
-        loading={createMut.isPending || updateMut.isPending || contributeMut.isPending}
-        disabled={deleteMut.isPending}
-      >
-        {isEdit ? '저장' : '추가'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={handleSubmit}
+      saveLabel={isEdit ? '저장' : '추가'}
+      saving={createMut.isPending || updateMut.isPending || contributeMut.isPending}
+      onCancel={onClose}
+      onDelete={isEdit ? handleDelete : undefined}
+      deleting={deleteMut.isPending}
+    />
   )
 
   return (

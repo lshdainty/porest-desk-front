@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { useIsMobile } from '@/shared/hooks'
@@ -218,14 +218,12 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
   )
 
   const footerButtons = (
-    <>
-      <Button variant="ghost" onClick={handleClose} disabled={createMut.isPending}>
-        취소
-      </Button>
-      <Button variant="default" onClick={handleSubmit} loading={createMut.isPending}>
-        추가
-      </Button>
-    </>
+    <ModalFooter
+      onSave={handleSubmit}
+      saveLabel="추가"
+      saving={createMut.isPending}
+      onCancel={handleClose}
+    />
   )
 
   return (

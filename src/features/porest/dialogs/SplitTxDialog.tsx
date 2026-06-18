@@ -11,10 +11,10 @@ import {
   Scale,
   Scissors,
   Sparkles,
-  Trash2,
   X,
 } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import {
@@ -285,34 +285,17 @@ export function SplitTxDialog({
   })
 
   const Footer = (
-    <>
-      {!reconcileMode && (splitsQ.data?.length ?? 0) > 0 && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="md"
-          flush="left"
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-          onClick={handleDeleteAll}
-          loading={deleteAllMut.isPending}
-          disabled={replaceMut.isPending}
-        >
-          <Trash2 size={16} /> 분할 해제
-        </Button>
-      )}
-      <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        size="md"
-        onClick={handleSave}
-        disabled={!matched}
-        loading={replaceMut.isPending}
-      >
-        분할 저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={handleSave}
+      saveLabel="분할 저장"
+      saving={replaceMut.isPending}
+      saveDisabled={!matched}
+      onCancel={onClose}
+      cancelLabel="취소"
+      onDelete={!reconcileMode && (splitsQ.data?.length ?? 0) > 0 ? handleDeleteAll : undefined}
+      deleteLabel="분할 해제"
+      deleting={deleteAllMut.isPending}
+    />
   )
 
   if (isLoading) {

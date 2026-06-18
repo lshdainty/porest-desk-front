@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Input } from '@/shared/ui/input'
@@ -110,19 +110,13 @@ export function PresetEditDialog({
   }
 
   const Footer = (
-    <>
-      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={submit}
-        disabled={!canSave}
-        loading={submitting}
-      >
-        {isNew ? '추가' : '저장'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={submit}
+      saveLabel={isNew ? '추가' : '저장'}
+      saving={submitting}
+      saveDisabled={!canSave}
+      onCancel={onClose}
+    />
   )
 
   return (
