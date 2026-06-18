@@ -85,7 +85,9 @@ const MonthYearPickerContent = ({
       {/* Footer */}
       <div className="flex items-center justify-between border-t px-3 py-2">
         <button
-          className="flex items-center gap-1 text-sm font-medium text-primary hover:opacity-80"
+          // 오늘로 = primary-light(다크에서 --fg-brand-strong→primary-light swap)로 가독성 확보.
+          // primary(--color-primary)는 다크 배경에서 잘 안 보임. 선택 월 박스는 bg-primary 유지.
+          className="flex items-center gap-1 text-sm font-medium text-[var(--fg-brand-strong)] hover:opacity-80"
           onClick={() => { onToday(); onClose() }}
         >
           <Navigation size={13} />
