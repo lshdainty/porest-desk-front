@@ -59,7 +59,8 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          {/* formal action dialog — dialog.md SoT: display-sm(24)/700. ModalShell 시트(18)와 구분 */}
+          <DialogTitle className="text-display-sm font-bold flex items-center gap-2">
             <ShieldCheck size={18} className="text-[var(--fg-brand-strong)]" />
             금액 보기 인증
           </DialogTitle>
