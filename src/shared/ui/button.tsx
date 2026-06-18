@@ -66,6 +66,13 @@ const buttonVariants = cva(
         // ghost 조합에서도 보조톤 약화 없이 중립(text-primary) 유지. button.md v97.
         iconLg:  "h-9 w-9 p-0 rounded-full [&_svg]:size-5",
       },
+      // flush — 컨테이너 edge 에 붙는 ghost 버튼의 광학 정렬용. 해당 방향 좌/우 padding 만
+      // 제거해 글자/아이콘이 edge 에 flush(box·hover 영역 위치는 그대로). footer 좌측
+      // 삭제 버튼 등 ghost 가 채워진 버튼과 edge 가 안 맞아 보이던 문제용.
+      flush: {
+        left:  "pl-0",
+        right: "pr-0",
+      },
     },
     compoundVariants: [
       // 아이콘 액션 버튼(ghost+icon): 글씨색을 보조톤(text-secondary)으로 약화 —
