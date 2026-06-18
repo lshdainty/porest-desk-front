@@ -291,6 +291,7 @@ export function SplitTxDialog({
           type="button"
           variant="ghost"
           size="md"
+          flush="left"
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           onClick={handleDeleteAll}
           loading={deleteAllMut.isPending}
