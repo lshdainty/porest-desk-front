@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { MapPin, Repeat, Bell, Tag, Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
-import { Button } from '@/shared/ui/button'
 import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -20,6 +19,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE, CHART_PAIRS, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useIsMobile } from '@/shared/hooks'
@@ -212,14 +212,13 @@ export const EventForm = ({
   }
 
   const Footer = (
-    <>
-      <Button type="button" variant="outline" onClick={onClose}>
-        {tc('cancel')}
-      </Button>
-      <Button type="button" onClick={handleSubmit(onFormSubmit)} loading={isLoading}>
-        {tc('save')}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={handleSubmit(onFormSubmit)}
+      saveLabel={tc('save')}
+      saving={isLoading}
+      onCancel={onClose}
+      cancelLabel={tc('cancel')}
+    />
   )
 
   return (

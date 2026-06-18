@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Pin, Plus, Search, X, StickyNote, SearchX, Trash2 } from 'lucide-react'
+import { Pin, Plus, Search, X, StickyNote, SearchX } from 'lucide-react'
 import {
   useMemos,
   useCreateMemo,
@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { MANAGER_LAYOUT } from '@/shared/ui/porest/manager-layout'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -538,8 +539,6 @@ function MemoEditDialog({
   const [color, setColor] = useState(memo?.color || DEFAULT_COLOR)
   const [error, setError] = useState(false)
 
-  const busy = !!submitting || !!deleting
-
   const save = () => {
     if (!title.trim()) {
       setError(true)
@@ -558,28 +557,14 @@ function MemoEditDialog({
   }
 
   const Footer = (
-    <>
-      {memo ? (
-        <Button
-          variant="ghost"
-          flush="left"
-          onClick={() => onDelete(memo.rowId)}
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-          loading={deleting}
-          disabled={busy}
-        >
-          <Trash2 size={14} /> 삭제
-        </Button>
-      ) : (
-        <span style={{ marginRight: 'auto' }} />
-      )}
-      <Button variant="outline" onClick={onClose} disabled={busy}>
-        취소
-      </Button>
-      <Button onClick={save} loading={submitting} disabled={busy}>
-        저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel="저장"
+      saving={submitting}
+      onCancel={onClose}
+      onDelete={memo ? () => onDelete(memo.rowId) : undefined}
+      deleting={deleting}
+    />
   )
 
   return (

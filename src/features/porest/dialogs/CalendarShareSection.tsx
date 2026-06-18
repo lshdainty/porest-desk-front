@@ -18,6 +18,7 @@ import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent } from '@/shared/ui/card'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
@@ -638,14 +639,13 @@ function CalendarCreateDialog({
   }
 
   const Footer = (
-    <>
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button onClick={save} disabled={touched && !valid} loading={submitting}>
-        만들기
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel="만들기"
+      saving={submitting}
+      saveDisabled={touched && !valid}
+      onCancel={onClose}
+    />
   )
 
   return (
@@ -697,14 +697,14 @@ function CalendarJoinDialog({
   }
 
   const Footer = (
-    <>
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button onClick={submit} disabled={!valid} loading={submitting}>
-        <LogIn size={14} strokeWidth={2.2} />참여
-      </Button>
-    </>
+    <ModalFooter
+      onSave={submit}
+      saveLabel="참여"
+      saving={submitting}
+      saveDisabled={!valid}
+      saveIcon={<LogIn size={16} strokeWidth={2.2} />}
+      onCancel={onClose}
+    />
   )
 
   return (

@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { useIsMobile } from '@/shared/hooks'
 import {
   AlertDialog,
@@ -188,18 +189,14 @@ export const HolidayManagementDialog = ({
           mobile={isMobile}
           size="sm"
           footer={
-            <>
-              <Button variant="outline" onClick={() => setShowForm(false)}>
-                {tc('cancel')}
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={!formName.trim() || !formDate}
-                loading={createHoliday.isPending || updateHoliday.isPending}
-              >
-                {tc('save')}
-              </Button>
-            </>
+            <ModalFooter
+              onSave={handleSubmit}
+              saveLabel={tc('save')}
+              saving={createHoliday.isPending || updateHoliday.isPending}
+              saveDisabled={!formName.trim() || !formDate}
+              onCancel={() => setShowForm(false)}
+              cancelLabel={tc('cancel')}
+            />
           }
         >
           <div className="space-y-3">

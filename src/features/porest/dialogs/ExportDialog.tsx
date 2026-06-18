@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CheckCircle2, Download, PieChart, Receipt, Target, Wallet } from 'lucide-react'
 import { TX } from '@/shared/lib/porest/data'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -44,15 +44,17 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
     setIncludes(includes.includes(v) ? includes.filter(x => x !== v) : [...includes, v])
 
   const Footer = (
-    <>
-      <span style={{ marginRight: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-        약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
-      </span>
-      <Button variant="ghost" onClick={onClose}>취소</Button>
-      <Button onClick={onClose}>
-        <Download size={14} /> {format.toUpperCase()} 내보내기
-      </Button>
-    </>
+    <ModalFooter
+      leftSlot={
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
+        </span>
+      }
+      onCancel={onClose}
+      onSave={onClose}
+      saveLabel={`${format.toUpperCase()} 내보내기`}
+      saveIcon={<Download size={16} />}
+    />
   )
 
   return (

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CreditCard, Search } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Switch } from '@/shared/ui/switch'
@@ -297,19 +297,13 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   )
 
   const footerButtons = (
-    <>
-      <Button variant="ghost" onClick={handleClose} disabled={createMut.isPending}>
-        취소
-      </Button>
-      <Button
-        variant="default"
-        onClick={handleSubmit}
-        disabled={!selected}
-        loading={createMut.isPending}
-      >
-        {selected ? '추가' : '카드 선택 필요'}
-      </Button>
-    </>
+    <ModalFooter
+      onCancel={handleClose}
+      onSave={handleSubmit}
+      saveLabel={selected ? '추가' : '카드 선택 필요'}
+      saving={createMut.isPending}
+      saveDisabled={!selected}
+    />
   )
 
   return (

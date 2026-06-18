@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Bell, Zap, Calendar } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
@@ -100,19 +100,13 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   }
 
   const Footer = (
-    <>
-      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={handleSave}
-        disabled={!ready}
-        loading={submitting}
-      >
-        반복 저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={handleSave}
+      saveLabel="반복 저장"
+      saving={submitting}
+      saveDisabled={!ready}
+      onCancel={onClose}
+    />
   )
 
   return (

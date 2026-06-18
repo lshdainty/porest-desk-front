@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -75,23 +75,13 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
   if (!open) return null
 
   const Footer = (
-    <>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => onOpenChange(false)}
-        disabled={changePasswordMutation.isPending}
-      >
-        {tc('cancel')}
-      </Button>
-      <Button
-        type="button"
-        onClick={form.handleSubmit(onSubmit)}
-        loading={changePasswordMutation.isPending}
-      >
-        {tc('save')}
-      </Button>
-    </>
+    <ModalFooter
+      onCancel={() => onOpenChange(false)}
+      cancelLabel={tc('cancel')}
+      onSave={form.handleSubmit(onSubmit)}
+      saveLabel={tc('save')}
+      saving={changePasswordMutation.isPending}
+    />
   )
 
   return (

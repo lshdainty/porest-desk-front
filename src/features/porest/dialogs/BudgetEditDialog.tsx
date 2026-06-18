@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
 import { Icon } from '@/shared/ui/porest/primitives'
-import { Button } from '@/shared/ui/button'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
@@ -80,31 +79,15 @@ export function BudgetEditDialog({
     : selectableCats
 
   const Footer = (
-    <>
-      {onDelete ? (
-        <Button
-          variant="ghost"
-          flush="left"
-          onClick={onDelete}
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-          disabled={submitting}
-        >
-          <Trash2 size={14} />삭제
-        </Button>
-      ) : (
-        <span style={{ marginRight: 'auto' }} />
-      )}
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        onClick={save}
-        disabled={touched && !valid}
-        loading={submitting}
-      >
-        {isNew ? '추가' : '저장'}
-      </Button>
-    </>
+    <ModalFooter
+      onSave={save}
+      saveLabel={isNew ? '추가' : '저장'}
+      saving={submitting}
+      saveDisabled={touched && !valid}
+      onCancel={onClose}
+      onDelete={onDelete}
+      deleting={submitting}
+    />
   )
 
   return (
@@ -235,19 +218,13 @@ export function MonthlyBudgetDialog({
   const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000]
 
   const Footer = (
-    <>
-      <span style={{ marginRight: 'auto' }} />
-      <Button variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        onClick={() => onSave(parseInt(v) || 0)}
-        disabled={(parseInt(v) || 0) <= 0}
-        loading={submitting}
-      >
-        저장
-      </Button>
-    </>
+    <ModalFooter
+      onSave={() => onSave(parseInt(v) || 0)}
+      saveLabel="저장"
+      saving={submitting}
+      saveDisabled={(parseInt(v) || 0) <= 0}
+      onCancel={onClose}
+    />
   )
 
   return (

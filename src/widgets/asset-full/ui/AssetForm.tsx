@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Wallet } from 'lucide-react'
 import type { Asset, AssetType, AssetFormValues, AssetUpdateFormValues, YNType } from '@/entities/asset'
-import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Switch } from '@/shared/ui/switch'
@@ -15,6 +14,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 import { CardCatalogCombobox } from '@/features/card-catalog'
@@ -105,14 +105,14 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
   }, [assetName, assetType, balance, color, institution, memo, isIncludedInTotal, cardCatalogRowId, isCardAsset, isCreditCard, creditLimit, paymentDay, paymentAssetRowId, onSubmit])
 
   const Footer = (
-    <>
-      <Button variant="outline" onClick={onClose} disabled={isLoading}>
-        {tc('cancel')}
-      </Button>
-      <Button onClick={handleSubmit} disabled={!assetName.trim()} loading={isLoading}>
-        {tc('save')}
-      </Button>
-    </>
+    <ModalFooter
+      onCancel={onClose}
+      cancelLabel={tc('cancel')}
+      onSave={handleSubmit}
+      saveLabel={tc('save')}
+      saving={isLoading}
+      saveDisabled={!assetName.trim()}
+    />
   )
 
   return (
