@@ -290,19 +290,21 @@ export function SplitTxDialog({
         <Button
           type="button"
           variant="ghost"
+          size="md"
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           onClick={handleDeleteAll}
           loading={deleteAllMut.isPending}
           disabled={replaceMut.isPending}
         >
-          <Trash2 size={14} /> 분할 해제
+          <Trash2 size={16} /> 분할 해제
         </Button>
       )}
-      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
+      <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={submitting}>
         취소
       </Button>
       <Button
         type="button"
+        size="md"
         onClick={handleSave}
         disabled={!matched}
         loading={replaceMut.isPending}
