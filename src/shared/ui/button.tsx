@@ -101,6 +101,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
+      flush,
       asChild = false,
       loading = false,
       disabled,
@@ -112,7 +113,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <Slot
-          className={cn(buttonVariants({ variant, size, className }))}
+          className={cn(buttonVariants({ variant, size, flush, className }))}
           ref={ref}
           {...props}
         >
@@ -122,7 +123,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, flush, className }))}
         ref={ref}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
