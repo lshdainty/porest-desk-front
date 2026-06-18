@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, Pencil, Repeat, Scissors, Split, Trash2, Users } from 'lucide-react'
+import { ChevronDown, ChevronUp, Repeat, Scissors, Split, Users } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
-import { Button } from '@/shared/ui/button'
+import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useDeleteExpense,
@@ -133,35 +133,12 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   }
 
   const Footer = (
-    <>
-      <Button
-        type="button"
-        variant="ghost"
-        flush="left"
-        style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-        onClick={() => setConfirmDelete(true)}
-        disabled={deleteMut.isPending}
-      >
-        <Trash2 size={14} />삭제
-      </Button>
-      {onEdit && (
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleEdit}
-          disabled={deleteMut.isPending}
-        >
-          <Pencil size={14} />편집
-        </Button>
-      )}
-      <Button
-        type="button"
-        onClick={onClose}
-        disabled={deleteMut.isPending}
-      >
-        확인
-      </Button>
-    </>
+    <ModalViewFooter
+      onDelete={() => setConfirmDelete(true)}
+      deleting={deleteMut.isPending}
+      onEdit={onEdit ? handleEdit : undefined}
+      onConfirm={onClose}
+    />
   )
 
   const title = isIncome ? '수입 상세' : '지출 상세'

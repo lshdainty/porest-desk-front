@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Eye, EyeOff, Pencil, TrendingUp, Wallet } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, TrendingUp, Wallet } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
@@ -9,6 +9,7 @@ import { useAssetBalanceTrend, useCardBilling, usePayCard } from '@/features/ass
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -433,24 +434,16 @@ export function AssetDetailDialog({
   }
 
   const Footer = (
-    <>
-      <Button
-        variant="ghost"
-        flush="left"
-        style={{ marginRight: 'auto' }}
-        onClick={handleHideToggle}
-        type="button"
-      >
-        {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
-        {hidden ? '금액 표시' : '금액 가리기'}
-      </Button>
-      {onEdit && (
-        <Button variant="ghost" onClick={() => onEdit(asset)}>
-          <Pencil size={14} />편집
+    <ModalViewFooter
+      leftSlot={
+        <Button variant="ghost" size="md" flush="left" onClick={handleHideToggle} type="button">
+          {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
+          {hidden ? '금액 표시' : '금액 가리기'}
         </Button>
-      )}
-      <Button onClick={onClose}>확인</Button>
-    </>
+      }
+      onEdit={onEdit ? () => onEdit(asset) : undefined}
+      onConfirm={onClose}
+    />
   )
 
   return (
