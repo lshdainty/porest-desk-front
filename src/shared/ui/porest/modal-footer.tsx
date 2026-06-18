@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 
 /**
@@ -83,6 +83,74 @@ export function ModalFooter({
       >
         {saveIcon}
         {saveLabel}
+      </Button>
+    </>
+  )
+}
+
+/**
+ * 뷰(읽기전용) 다이얼로그 footer — 좌측 삭제(danger) 또는 leftSlot(금액 토글 등) /
+ * 우측 편집(opt) + 확인/닫기. 폼 제출이 없는 상세 다이얼로그용(거래·자산·카드 상세).
+ * 앱 PViewFooter 미러.
+ */
+type ModalViewFooterProps = {
+  /** 우측 끝 확인/닫기 핸들러. */
+  onConfirm: () => void
+  confirmLabel?: string
+  /** 'default'(primary 확인) | 'ghost'(단일 닫기). */
+  confirmVariant?: 'default' | 'ghost'
+  /** 우측 편집(opt). */
+  onEdit?: () => void
+  editLabel?: string
+  /** 좌측 삭제(파괴적). leftSlot 과 동시 사용 금지. */
+  onDelete?: () => void
+  deleteLabel?: string
+  deleting?: boolean
+  /** 삭제 대신 좌측에 둘 임의 요소(금액 가리기 토글 등). */
+  leftSlot?: ReactNode
+}
+
+export function ModalViewFooter({
+  onConfirm,
+  confirmLabel = '확인',
+  confirmVariant = 'default',
+  onEdit,
+  editLabel = '편집',
+  onDelete,
+  deleteLabel = '삭제',
+  deleting = false,
+  leftSlot,
+}: ModalViewFooterProps) {
+  return (
+    <>
+      {onDelete ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="md"
+          flush="left"
+          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
+          onClick={onDelete}
+          loading={deleting}
+        >
+          <Trash2 size={16} /> {deleteLabel}
+        </Button>
+      ) : leftSlot ? (
+        <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center' }}>{leftSlot}</div>
+      ) : null}
+      {onEdit && (
+        <Button type="button" variant="ghost" size="md" onClick={onEdit} disabled={deleting}>
+          <Pencil size={16} /> {editLabel}
+        </Button>
+      )}
+      <Button
+        type="button"
+        variant={confirmVariant === 'ghost' ? 'ghost' : 'default'}
+        size="md"
+        onClick={onConfirm}
+        disabled={deleting}
+      >
+        {confirmLabel}
       </Button>
     </>
   )

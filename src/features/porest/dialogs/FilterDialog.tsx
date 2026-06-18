@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Asset } from '@/entities/asset'
 import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
@@ -139,17 +140,17 @@ export function FilterDialog({
     && startDate !== '' && endDate !== '' && startDate > endDate
 
   const Footer = (
-    <>
-      <Button variant="ghost" flush="left" onClick={reset} style={{ marginRight: 'auto' }}>
-        초기화
-      </Button>
-      <Button variant="ghost" onClick={onClose}>
-        취소
-      </Button>
-      <Button onClick={apply} disabled={customInvalid}>
-        필터 적용
-      </Button>
-    </>
+    <ModalFooter
+      leftSlot={
+        <Button variant="ghost" size="md" flush="left" onClick={reset}>
+          초기화
+        </Button>
+      }
+      onCancel={onClose}
+      onSave={apply}
+      saveLabel="필터 적용"
+      saveDisabled={customInvalid}
+    />
   )
 
   return (

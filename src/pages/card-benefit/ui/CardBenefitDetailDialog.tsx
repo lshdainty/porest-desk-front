@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Spinner } from '@/shared/ui/spinner'
 import { decodeHtml } from '@/shared/lib'
@@ -449,9 +450,7 @@ export function CardBenefitDetailDialog({
   const { data: detail, isLoading, isError } = useCardCatalogDetail(rowId)
 
   const footer = (
-    <Button variant="ghost" onClick={onClose} style={{ marginLeft: 'auto' }}>
-      닫기
-    </Button>
+    <ModalViewFooter confirmLabel="닫기" confirmVariant="ghost" onConfirm={onClose} />
   )
 
   return (

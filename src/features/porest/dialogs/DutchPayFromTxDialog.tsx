@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
@@ -177,26 +178,22 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const submitting = createMut.isPending
 
   const Footer = (
-    <>
-      <span style={{ marginRight: 'auto', fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
-        1인당{' '}
-        <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
-          {KRW(perPersonAmount)}원
-        </b>
-      </span>
-      <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
-        취소
-      </Button>
-      <Button
-        type="button"
-        onClick={handleSave}
-        disabled={!matched || participants.length === 0}
-        loading={submitting}
-      >
-        <Send size={14} />
-        정산 만들기
-      </Button>
-    </>
+    <ModalFooter
+      leftSlot={
+        <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
+          1인당{' '}
+          <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
+            {KRW(perPersonAmount)}원
+          </b>
+        </span>
+      }
+      onCancel={onClose}
+      onSave={handleSave}
+      saveLabel="정산 만들기"
+      saveIcon={<Send size={16} />}
+      saving={submitting}
+      saveDisabled={!matched || participants.length === 0}
+    />
   )
 
   if (isLoading) {
