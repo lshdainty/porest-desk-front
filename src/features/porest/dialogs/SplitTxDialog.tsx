@@ -3,11 +3,14 @@ import {
   AlertTriangle,
   ArrowRight,
   Check,
+  ChevronDown,
+  ChevronUp,
   MoveUp,
   Plus,
   PlusCircle,
   Scale,
   Scissors,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react'
@@ -123,6 +126,8 @@ export function SplitTxDialog({
 
   const [rows, setRows] = useState<Row[] | null>(null)
   const [lastApplied, setLastApplied] = useState<ReconcileStrategy | null>(null)
+  // 빠르게 맞추기(일치화 전략) 접힘 상태 — 기본 접힘(footer 정리 후 패널 군더더기 최소화).
+  const [quickOpen, setQuickOpen] = useState(false)
 
   useEffect(() => {
     if (rows !== null) return
@@ -166,6 +171,8 @@ export function SplitTxDialog({
   const remainder = targetTotal - sumAmount
   const matched = remainder === 0 && safeRows.length >= 2
     && safeRows.every(r => r.categoryRowId && Number(r.amount) > 0)
+  // 합계는 맞지만(잔액 0) 카테고리 누락·행 부족 등으로 미저장 가능 — '0원 초과' 오표기 방지용 분기.
+  const balanced = remainder === 0
 
   const addRow = () => {
     setLastApplied(null)
@@ -291,41 +298,6 @@ export function SplitTxDialog({
           <Trash2 size={14} /> 분할 해제
         </Button>
       )}
-      {matched ? (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            marginRight: 'auto',
-            padding: '4px 10px',
-            background: 'color-mix(in oklch, var(--status-success-fg) 12%, transparent)',
-            color: 'var(--status-success-fg)',
-            borderRadius: 'var(--radius-pill)',
-            fontSize: 'var(--text-caption)',
-            fontWeight: '700',
-          }}
-        >
-          <Check size={12} /> 합계 일치
-        </span>
-      ) : (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            marginRight: 'auto',
-            padding: '4px 10px',
-            background: 'color-mix(in oklch, var(--fg-expense) 12%, transparent)',
-            color: 'var(--fg-expense)',
-            borderRadius: 'var(--radius-pill)',
-            fontSize: 'var(--text-caption)',
-            fontWeight: '700',
-          }}
-        >
-          {remainder > 0 ? `${KRW(remainder)}원 부족` : `${KRW(-remainder)}원 초과`}
-        </span>
-      )}
       <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
         취소
       </Button>
@@ -406,8 +378,28 @@ export function SplitTxDialog({
         </div>
       </div>
 
-      {/* 일치화 패널 — 분할 합계가 총액과 어긋날 때(총액 변경 후 가장 흔함) */}
-      {!matched && safeRows.length > 0 && (
+      {/* 상태 패널 — 일치(success)/불일치(warning). footer 검증 pill 대체. */}
+      {safeRows.length > 0 && (matched ? (
+        <div
+          style={{
+            marginBottom: 14,
+            padding: 14,
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--status-success-subtle)',
+            border: '1px solid var(--status-success-border)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Check size={15} style={{ color: 'var(--status-success-fg)' }} />
+            <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+              분할 합계가 총액과 일치해요
+            </span>
+          </div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
+            분할 합계 <b className="num">{KRW(sumAmount)}원</b> · 총액 <b className="num">{KRW(targetTotal)}원</b>
+          </div>
+        </div>
+      ) : (
         <div
           style={{
             marginBottom: 14,
@@ -420,33 +412,64 @@ export function SplitTxDialog({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <AlertTriangle size={15} style={{ color: 'var(--status-warning-fg)' }} />
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              {totalChanged ? '총액이 바뀌어 분할을 맞춰야 해요' : '분할 합계가 총액과 달라요'}
+              {!balanced
+                ? (totalChanged ? '총액이 바뀌어 분할을 맞춰야 해요' : '분할 합계가 총액과 달라요')
+                : '분할 항목을 확인해주세요'}
             </span>
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5', marginBottom: 12 }}>
-            분할 합계 <b className="num">{KRW(sumAmount)}원</b> · 총액 <b className="num">{KRW(targetTotal)}원</b> ·{' '}
-            <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
-              {remainder > 0 ? '부족' : '초과'} {KRW(Math.abs(remainder))}원
-            </b>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
+            분할 합계 <b className="num">{KRW(sumAmount)}원</b> · 총액 <b className="num">{KRW(targetTotal)}원</b>
+            {!balanced && (
+              <>
+                {' · '}
+                <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
+                  {remainder > 0 ? '부족' : '초과'} {KRW(Math.abs(remainder))}원
+                </b>
+              </>
+            )}
           </div>
-          <div style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: 'var(--fg-tertiary)', marginBottom: 7 }}>
-            빠르게 맞추기
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : `repeat(${strategies.length}, 1fr)`, gap: 8 }}>
-            {strategies.map(s => (
-              <ReconcileBtn
-                key={s.key}
-                Icon={s.Icon}
-                title={s.title}
-                desc={s.desc}
-                active={lastApplied === s.key}
-                recommended={s.recommended}
-                onClick={s.onClick}
-              />
-            ))}
-          </div>
+          {!balanced && (
+            <>
+              <button
+                type="button"
+                onClick={() => setQuickOpen(o => !o)}
+                aria-expanded={quickOpen}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginTop: 10,
+                  padding: 0,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: 'var(--text-badge)',
+                  fontWeight: '700',
+                  color: 'var(--fg-brand)',
+                }}
+              >
+                <Sparkles size={14} /> 빠르게 맞추기 {quickOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+              {quickOpen && (
+                <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : `repeat(${strategies.length}, 1fr)`, gap: 8, marginTop: 10 }}>
+                  {strategies.map(s => (
+                    <ReconcileBtn
+                      key={s.key}
+                      Icon={s.Icon}
+                      title={s.title}
+                      desc={s.desc}
+                      active={lastApplied === s.key}
+                      recommended={s.recommended}
+                      onClick={s.onClick}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
-      )}
+      ))}
 
       {/* Rows */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
