@@ -324,6 +324,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         <Button
           type="button"
           variant="ghost"
+          flush="left"
           onClick={onDeleteClick}
           disabled={submitting}
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}

@@ -84,6 +84,7 @@ export function BudgetEditDialog({
       {onDelete ? (
         <Button
           variant="ghost"
+          flush="left"
           onClick={onDelete}
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           disabled={submitting}

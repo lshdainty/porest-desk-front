@@ -436,6 +436,7 @@ export function AssetDetailDialog({
     <>
       <Button
         variant="ghost"
+        flush="left"
         style={{ marginRight: 'auto' }}
         onClick={handleHideToggle}
         type="button"

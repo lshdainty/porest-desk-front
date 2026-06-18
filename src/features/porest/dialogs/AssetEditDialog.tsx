@@ -824,6 +824,7 @@ export function AssetEditDialog({
         {onDelete && (
           <Button
             variant="ghost"
+            flush="left"
             onClick={onDelete}
             disabled={isSubmitting}
             style={{ color: 'var(--fg-expense)' }}

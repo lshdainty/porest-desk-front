@@ -1176,6 +1176,7 @@ function DutchDetailDialog({
     <>
       <Button
         variant="ghost"
+        flush="left"
         onClick={() => onDelete(d.rowId)}
         style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
         loading={deleting}
@@ -1193,6 +1194,7 @@ function DutchDetailDialog({
     <>
       <Button
         variant="ghost"
+        flush="left"
         onClick={() => onDelete(d.rowId)}
         style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
         loading={deleting}

@@ -562,6 +562,7 @@ function MemoEditDialog({
       {memo ? (
         <Button
           variant="ghost"
+          flush="left"
           onClick={() => onDelete(memo.rowId)}
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           loading={deleting}
