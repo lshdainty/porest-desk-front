@@ -460,6 +460,7 @@ function CalendarManageDialog({
       {isOwner && !calendar.isDefault && (
         <Button
           variant="ghost"
+          flush="left"
           onClick={() => {
             onRequestDelete(calendar)
             onClose()

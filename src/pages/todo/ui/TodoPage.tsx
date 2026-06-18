@@ -837,6 +837,7 @@ function TodoEditDialog({
       {todo ? (
         <Button
           variant="ghost"
+          flush="left"
           onClick={() => onDelete(todo.rowId)}
           style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
           loading={deleting}

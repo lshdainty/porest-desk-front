@@ -140,7 +140,7 @@ export function FilterDialog({
 
   const Footer = (
     <>
-      <Button variant="ghost" onClick={reset} style={{ marginRight: 'auto' }}>
+      <Button variant="ghost" flush="left" onClick={reset} style={{ marginRight: 'auto' }}>
         초기화
       </Button>
       <Button variant="ghost" onClick={onClose}>

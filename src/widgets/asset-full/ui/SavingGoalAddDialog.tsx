@@ -184,6 +184,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         <Button
           type="button"
           variant="ghost"
+          flush="left"
           className="text-[var(--status-danger)] hover:text-[var(--fg-expense)]"
           onClick={handleDelete}
           loading={deleteMut.isPending}

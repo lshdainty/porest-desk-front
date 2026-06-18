@@ -121,6 +121,7 @@ export function CategoryEditDialog({
       {onDelete ? (
         <Button
           variant="ghost"
+          flush="left"
           onClick={onDelete}
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
           disabled={submitting}

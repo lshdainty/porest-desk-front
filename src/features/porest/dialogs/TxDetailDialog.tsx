@@ -137,6 +137,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
       <Button
         type="button"
         variant="ghost"
+        flush="left"
         style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
         onClick={() => setConfirmDelete(true)}
         disabled={deleteMut.isPending}
