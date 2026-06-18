@@ -14,18 +14,22 @@ import { cn } from "@/shared/lib/index"
  * - variant=shadow (default): border 없음 + shadow-sm. 일반 정보 카드 (preview .review-* SoT).
  * - variant=bordered (v5): 1px border-subtle + shadow 없음. dense info / inline summary
  *   (선택 기간 hint, chart 내 sub-card). App PCard.bordered 와 정합.
+ * - variant=muted: bg-muted 채움 + border/shadow 없음. dark dialog 위에서 bordered 가
+ *   surface 와 묻혀 안 보이던 inline summary(가계부 day-detail 합계 카드)용.
+ *   App PCard.muted 미러 — web 전용 추가(spec 미반영, desk-app 확장 따름).
  * - CardHeader: flex flex-col gap-xs p-lg md:p-xl.
  * - CardContent: p-lg md:p-xl, CardHeader/CardFooter 다음에 올 땐 pt-0.
  * - CardFooter: flex items-center p-lg md:p-xl pt-0.
  */
 
 const cardVariants = cva(
-  "rounded-[var(--radius-lg)] bg-surface-default text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+  "rounded-[var(--radius-lg)] text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
   {
     variants: {
       variant: {
-        shadow: "",
-        bordered: "border border-border-subtle",
+        shadow: "bg-surface-default",
+        bordered: "bg-surface-default border border-border-subtle",
+        muted: "bg-[var(--bg-muted)]",
       },
     },
     defaultVariants: {
@@ -43,8 +47,11 @@ const Card = React.forwardRef<
     className={cn(cardVariants({ variant }), className)}
     style={{
       // shadow variant 만 inline boxShadow 적용 (Tailwind v4 다크 모드 override 우회).
-      // bordered variant 는 border-only 라 shadow 없음.
-      boxShadow: variant === "bordered" ? undefined : "var(--shadow-sm)",
+      // bordered(border-only)·muted(fill-only) 는 shadow 없음.
+      boxShadow:
+        variant === "bordered" || variant === "muted"
+          ? undefined
+          : "var(--shadow-sm)",
       ...style,
     }}
     {...props}
