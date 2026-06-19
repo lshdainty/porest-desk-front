@@ -340,6 +340,8 @@ function ExpenseCalendar({
   // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 일별 drawer '거래 추가' → 그 날짜 seed 로 신규 AddTxSheet.
+  const [addSeedDate, setAddSeedDate] = useState<string | null>(null)
   const dayItems = useMemo(() => {
     if (!selectedDate) return [] as Expense[]
     const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
@@ -366,6 +368,12 @@ function ExpenseCalendar({
           mobile={mobile}
           onClose={() => setSelectedDate(null)}
           onItemClick={(e) => setDetail(e)}
+          onAddForDay={() => {
+            if (!selectedDate) return
+            const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+            setSelectedDate(null)
+            setAddSeedDate(ymd)
+          }}
         />
       )}
       {detail && !editing && (
@@ -381,6 +389,13 @@ function ExpenseCalendar({
           expense={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {addSeedDate && (
+        <AddTxSheet
+          defaultDate={addSeedDate}
+          mobile={mobile}
+          onClose={() => setAddSeedDate(null)}
         />
       )}
     </>
@@ -401,6 +416,7 @@ function DayDetailDialog({
   mobile: boolean
   onClose: () => void
   onItemClick?: (e: Expense) => void
+  onAddForDay?: () => void
 }) {
   const dows = ['일', '월', '화', '수', '목', '금', '토']
   const dow = dows[date.getDay()] ?? ''
@@ -408,7 +424,18 @@ function DayDetailDialog({
   const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
   const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
   return (
-    <ModalShell title={title} onClose={onClose} mobile={mobile} size="sm" mobileMinHeight="85dvh">
+    <ModalShell
+      title={title}
+      onClose={onClose}
+      mobile={mobile}
+      size="sm"
+      mobileMinHeight="85dvh"
+      footer={
+        <Button size="md" className="w-full" onClick={onAddForDay}>
+          <Plus size={16} /> 거래 추가
+        </Button>
+      }
+    >
       {/* 합계 카드 — muted(채움 bg)로 dark dialog 위에서도 또렷이. App PCard.muted 정합 */}
       <Card variant="muted" className="mb-[var(--spacing-md)]">
         <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">
