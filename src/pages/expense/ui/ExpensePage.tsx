@@ -410,6 +410,7 @@ function DayDetailDialog({
   mobile,
   onClose,
   onItemClick,
+  onAddForDay,
 }: {
   date: Date
   items: Expense[]
