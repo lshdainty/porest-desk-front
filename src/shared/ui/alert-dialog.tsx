@@ -101,7 +101,8 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-[var(--spacing-sm)] sm:flex-row sm:justify-end mt-[var(--spacing-md)]",
+      // spec alert-dialog.md / preview .modal-actions: 항상 가로 우측 정렬 (반응형 세로 분기 없음).
+      "flex gap-[var(--spacing-sm)] justify-end mt-[var(--spacing-md)]",
       className,
     )}
     {...props}
@@ -173,7 +174,6 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0",
       className,
     )}
     {...props}
