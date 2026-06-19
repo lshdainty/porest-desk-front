@@ -231,7 +231,7 @@ export const EventForm = ({
     >
         <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>{t('form.title')}</Label>
             <Input
               {...register('title', { required: t('form.titleRequired') })}
@@ -243,7 +243,7 @@ export const EventForm = ({
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>{t('form.description')}</Label>
             <Textarea
               {...register('description')}
@@ -255,7 +255,7 @@ export const EventForm = ({
 
           {/* Calendar selector */}
           {userCalendars.length > 0 && (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>{t('form.calendar')}</Label>
               <Select
                 value={selectedCalendarRowId ? String(selectedCalendarRowId) : undefined}
@@ -289,7 +289,7 @@ export const EventForm = ({
 
           {/* Label selector */}
           {labels.length > 0 && (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>
                 <Tag size={14} className="inline mr-1" />
                 {t('form.label')}
@@ -329,7 +329,7 @@ export const EventForm = ({
           )}
 
           {/* Color swatches — 디자인시스템 차트 10색 (ColorSwatchGroup) */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>{t('form.color')}</Label>
             <ColorSwatchGroup
               columns={5}
@@ -376,7 +376,7 @@ export const EventForm = ({
 
           {/* allDay=true 는 시작/종료 같은 row, false 는 row stack — date input width 확보 */}
           <div className={isAllDay ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>{t('form.startDate')}</Label>
               {isAllDay ? (
                 <InputDatePicker
@@ -416,7 +416,7 @@ export const EventForm = ({
                 </div>
               )}
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label>{t('form.endDate')}</Label>
               {isAllDay ? (
                 <InputDatePicker
@@ -446,7 +446,7 @@ export const EventForm = ({
           </div>
 
           {/* Location */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>
               <MapPin size={14} className="inline mr-1" />
               {t('form.location')}
@@ -458,7 +458,7 @@ export const EventForm = ({
           </div>
 
           {/* Recurrence — single select */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>
               <Repeat size={14} className="inline mr-1" />
               {t('form.recurrence')}
@@ -479,7 +479,7 @@ export const EventForm = ({
           </div>
 
           {/* Reminder — multi select */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label>
               <Bell size={14} className="inline mr-1" />
               {t('form.reminder')}
