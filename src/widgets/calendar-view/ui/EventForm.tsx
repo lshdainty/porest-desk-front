@@ -38,6 +38,8 @@ interface EventFormProps {
   onSubmit: (data: CalendarEventFormValues) => void
   onClose: () => void
   isLoading?: boolean
+  /** 수정 모드 삭제 — 제공 시 footer 좌측 danger 버튼 노출(앱 PSheetFooter 미러). */
+  onDelete?: () => void
 }
 
 // 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
@@ -93,6 +95,7 @@ export const EventForm = ({
   onSubmit,
   onClose,
   isLoading,
+  onDelete,
 }: EventFormProps) => {
   const { t } = useTranslation('calendar')
   const { t: tc } = useTranslation('common')
@@ -218,6 +221,8 @@ export const EventForm = ({
       saving={isLoading}
       onCancel={onClose}
       cancelLabel={tc('cancel')}
+      onDelete={event && onDelete ? onDelete : undefined}
+      deleteLabel={tc('delete')}
     />
   )
 

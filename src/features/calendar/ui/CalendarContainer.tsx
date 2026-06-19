@@ -334,6 +334,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           onSubmit={handleSubmitEdit}
           onClose={() => setEditingEvent(null)}
           isLoading={updateEvent.isPending}
+          onDelete={() => { setDeletingEventId(editingEvent.rowId); setEditingEvent(null) }}
         />
       )}
 

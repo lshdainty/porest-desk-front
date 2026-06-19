@@ -247,6 +247,7 @@ export const CalendarViewWidget = () => {
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={createEvent.isPending || updateEvent.isPending}
+          onDelete={editingEvent ? () => { setShowDeleteConfirm(editingEvent.rowId); setShowEventForm(false) } : undefined}
         />
       )}
 
