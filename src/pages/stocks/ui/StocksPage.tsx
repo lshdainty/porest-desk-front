@@ -13,21 +13,17 @@ import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import type { TossOrderbook, TossTrade } from '@/features/stock/api/stockApi'
-import { useStockLiveOverlay, useTossOrderbook, useTossTrades } from '@/features/stock/model/useTossStocks'
+import type { TossHoldingsItem, TossOrderbook, TossTrade } from '@/features/stock/api/stockApi'
+import { useStockLiveOverlay, useTossAccounts, useTossHoldings, useTossOrderbook, useTossTrades } from '@/features/stock/model/useTossStocks'
 import {
   dailyQuotes,
   FX_USDKRW,
   findStock,
-  holdingCost,
-  holdingEval,
   MARKET_INDICES,
   priceKRW,
-  STOCK_HOLDINGS,
   STOCK_WATCH,
   STOCKS,
   type Stock,
-  type StockHolding,
   type WatchGroup,
 } from '../model/stocksMock'
 
@@ -458,9 +454,31 @@ const DONUT_PALETTE = [
   'var(--color-cat-brown)',
 ]
 
-function PortfolioDonut({ holdings }: { holdings: StockHolding[] }) {
+/** 서버가 String 으로 내려주는 금액/비율을 숫자로 파싱 (정밀도 손실 없는 표시 범위). */
+function num(s: string | null | undefined): number {
+  return s == null ? 0 : (Number(s) || 0)
+}
+
+/** 증권 계정 미연결 — 보유 탭 빈 상태(연결 유도). */
+function HoldingsEmpty() {
+  return (
+    <Card style={{ padding: '32px 20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
+        <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>증권 계정을 연결해 주세요</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
+          토스증권 키를 연결하면 보유 종목과 평가손익을 실시간으로 볼 수 있어요.
+        </div>
+        <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
+          <a href="/desk/settings">설정에서 연결하기</a>
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
   const rows = holdings
-    .map((h, i) => ({ name: findStock(h.ticker)?.name ?? h.ticker, value: holdingEval(h), color: DONUT_PALETTE[i % DONUT_PALETTE.length]! }))
+    .map((h, i) => ({ name: h.name || h.symbol, value: num(h.marketValue.amount), color: DONUT_PALETTE[i % DONUT_PALETTE.length]! }))
     .sort((a, b) => b.value - a.value)
   const total = rows.reduce((sum, r) => sum + r.value, 0) || 1
   return (
@@ -695,7 +713,7 @@ function StockDetailBody({
   mobile,
 }: {
   ticker: string
-  holding: StockHolding | null
+  holding: TossHoldingsItem | null
   watched: boolean
   onToggleWatch: () => void
   mobile: boolean
@@ -810,18 +828,18 @@ function StockDetailBody({
       {/* 내 보유 (보유 종목일 때) */}
       {holding &&
         (() => {
-          const ev = holdingEval(holding)
-          const cost = holdingCost(holding)
-          const pnl = ev - cost
-          const pnlPct = (pnl / cost) * 100
+          const ev = num(holding.marketValue.amount)
+          const pnl = num(holding.profitLoss.amount)
+          const pnlPct = num(holding.profitLoss.rate)
+          const avg = num(holding.averagePurchasePrice)
+          const isUs = holding.marketCountry.toUpperCase() === 'US' || holding.currency.toUpperCase() === 'USD'
           const rows: Array<[string, React.ReactNode, string]> = [
             ['평가금액', <MaskAmount key="ev">{`${KRW(ev)}원`}</MaskAmount>, 'var(--fg-primary)'],
             ['평가손익', <MaskAmount key="pnl">{`${pnl >= 0 ? '+' : '−'}${KRW(pnl, { abs: true })}원`}</MaskAmount>, trendColor(pnl)],
-            ['보유수량', `${holding.qty}주`, 'var(--fg-primary)'],
+            ['보유수량', `${holding.quantity}주`, 'var(--fg-primary)'],
             ['수익률', `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`, trendColor(pnl)],
-            ['평균단가', s.market === 'US' ? `$${holding.avg.toFixed(2)}` : `${KRW(holding.avg)}원`, 'var(--fg-secondary)'],
-            ['매도가능', `${holding.qty}주`, 'var(--fg-secondary)'],
-            ['매입금액', <MaskAmount key="cost">{`${KRW(cost)}원`}</MaskAmount>, 'var(--fg-secondary)'],
+            ['평균단가', isUs ? `$${avg.toFixed(2)}` : `${KRW(Math.round(avg))}원`, 'var(--fg-secondary)'],
+            ['매도가능', `${holding.quantity}주`, 'var(--fg-secondary)'],
           ]
           return (
             <Card style={{ padding: 16 }}>
@@ -986,11 +1004,20 @@ export function StocksPage() {
   const [watchGroups, setWatchGroups] = useState<WatchGroup[]>(STOCK_WATCH)
   const [activeGroup, setActiveGroup] = useState(STOCK_WATCH[0]!.id)
 
+  // 보유자산 — 키 연결 시 실데이터(/toss/accounts→/toss/holdings), 미연결 시 빈 상태.
+  const { data: accounts } = useTossAccounts()
+  const accountSeq = accounts?.[0]?.accountSeq ?? null
+  const { data: holdings } = useTossHoldings(accountSeq)
+  const holdingItems = useMemo(
+    () => holdings ? [...holdings.items].sort((a, b) => num(b.marketValue.amount) - num(a.marketValue.amount)) : [],
+    [holdings],
+  )
+
   // 데스크톱: 기본 선택 = 첫 보유 종목
   useEffect(() => {
-    if (!mobile && !selected) setSelected(STOCK_HOLDINGS[0]!.ticker)
+    if (!mobile && !selected && holdingItems.length > 0) setSelected(holdingItems[0]!.symbol)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobile])
+  }, [mobile, holdingItems.length])
 
   const watchedTickers = useMemo(() => new Set(watchGroups.flatMap(g => g.tickers)), [watchGroups])
   const isWatched = (t: string) => watchedTickers.has(t)
@@ -1002,16 +1029,22 @@ export function StocksPage() {
     })
   }
 
-  // 요약
-  const totalEval = STOCK_HOLDINGS.reduce((sum, h) => sum + holdingEval(h), 0)
-  const totalCost = STOCK_HOLDINGS.reduce((sum, h) => sum + holdingCost(h), 0)
-  const totalPnl = totalEval - totalCost
-  const totalPnlPct = (totalPnl / totalCost) * 100
-  const holdingsSorted = [...STOCK_HOLDINGS].sort((a, b) => holdingEval(b) - holdingEval(a))
+  // 요약 (서버 계산값)
+  const totalEval = holdings ? num(holdings.marketValue.amount.krw) : 0
+  const totalCost = holdings ? num(holdings.totalPurchaseAmount.krw) : 0
+  const totalPnl = holdings ? num(holdings.profitLoss.amount.krw) : 0
+  const totalPnlPct = holdings ? num(holdings.profitLoss.rate) : 0
   const curGroup = watchGroups.find(g => g.id === activeGroup) ?? watchGroups[0]!
-  const selHolding = selected ? (STOCK_HOLDINGS.find(h => h.ticker === selected) ?? null) : null
+  const selHolding = selected ? (holdingItems.find(h => h.symbol === selected) ?? null) : null
 
-  const summary = (
+  const summary = !holdings ? (
+    <Card style={{ padding: mobile ? 18 : 22 }}>
+      <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>내 투자 평가금액</div>
+      <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', marginTop: 8 }}>
+        증권 계정을 연결하면 보유자산이 보여요
+      </div>
+    </Card>
+  ) : (
     <Card style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>내 투자 평가금액</div>
       <div
@@ -1030,7 +1063,7 @@ export function StocksPage() {
         {(
           [
             ['매입금액', <MaskAmount key="c">{`${KRW(totalCost)}원`}</MaskAmount>],
-            ['보유 종목', `${STOCK_HOLDINGS.length}개`],
+            ['보유 종목', `${holdingItems.length}개`],
             ['환율(USD)', `₩${FX_USDKRW.toLocaleString()}`],
           ] as Array<[string, React.ReactNode]>
         ).map(([k, v]) => (
@@ -1073,7 +1106,7 @@ export function StocksPage() {
       <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
         <TabsList variant="pill" size="sm">
           <TabsTrigger variant="pill" value="holdings">
-            보유 {STOCK_HOLDINGS.length}
+            보유 {holdingItems.length}
           </TabsTrigger>
           <TabsTrigger variant="pill" value="watch">
             관심 {watchedTickers.size}
@@ -1087,18 +1120,27 @@ export function StocksPage() {
       {seg === 'discover' ? (
         <DiscoverPanel onPick={setSelected} selected={selected} />
       ) : seg === 'holdings' ? (
+        !holdings ? (
+          <HoldingsEmpty />
+        ) : holdingItems.length === 0 ? (
+          <Card style={{ padding: 6 }}>
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
+              보유 중인 종목이 없어요.
+            </div>
+          </Card>
+        ) : (
         <Card style={{ padding: 6 }}>
-          {holdingsSorted.map(h => {
-            const ev = holdingEval(h)
-            const pnl = ev - holdingCost(h)
-            const pct = (pnl / holdingCost(h)) * 100
+          {holdingItems.map(h => {
+            const ev = num(h.marketValue.amount)
+            const pnl = num(h.profitLoss.amount)
+            const pct = num(h.profitLoss.rate)
             return (
               <StockRow
-                key={h.ticker}
-                ticker={h.ticker}
-                active={selected === h.ticker}
-                onClick={() => setSelected(h.ticker)}
-                sub={`${h.qty}주 보유`}
+                key={h.symbol}
+                ticker={h.symbol}
+                active={selected === h.symbol}
+                onClick={() => setSelected(h.symbol)}
+                sub={`${h.quantity}주 보유`}
                 right={
                   <>
                     <div className="num" style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-primary)' }}>
@@ -1114,6 +1156,7 @@ export function StocksPage() {
             )
           })}
         </Card>
+        )
       ) : (
         <>
           <Tabs value={activeGroup} onValueChange={val => val && setActiveGroup(val)}>
@@ -1177,7 +1220,7 @@ export function StocksPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 420px) 1fr', gap: 20, alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {summary}
-          <PortfolioDonut holdings={STOCK_HOLDINGS} />
+          {holdings && holdingItems.length > 0 && <PortfolioDonut holdings={holdingItems} />}
           {listPanel}
         </div>
         <Card style={{ padding: 24 }}>

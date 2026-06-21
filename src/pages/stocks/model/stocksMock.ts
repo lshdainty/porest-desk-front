@@ -23,13 +23,6 @@ export interface Stock {
   vol: string
 }
 
-export interface StockHolding {
-  ticker: string
-  qty: number
-  /** 평균단가 — KR=원, US=달러 */
-  avg: number
-}
-
 export interface WatchGroup {
   id: string
   name: string
@@ -121,15 +114,6 @@ export function findStock(ticker: string): Stock | undefined {
   return STOCKS.find(s => s.ticker === ticker)
 }
 
-// 보유 종목 — 평균단가·수량 (평가액/손익은 화면에서 계산)
-export const STOCK_HOLDINGS: StockHolding[] = [
-  { ticker: '005930', qty: 42, avg: 67_200 },
-  { ticker: '000660', qty: 8,  avg: 142_800 },
-  { ticker: '069500', qty: 30, avg: 33_500 },
-  { ticker: 'NVDA',   qty: 12, avg: 98.4 },
-  { ticker: 'AAPL',   qty: 6,  avg: 191.2 },
-]
-
 // 관심종목 — 그룹별
 export const STOCK_WATCH: WatchGroup[] = [
   { id: 'w-main', name: '관심',        tickers: ['035420', '035720', '247540', 'TSLA'] },
@@ -149,18 +133,6 @@ export const MARKET_INDICES: MarketIndex[] = [
 /** 시세 원화 환산 (US는 환율 적용) */
 export function priceKRW(s: Stock): number {
   return s.market === 'US' ? Math.round(s.price * FX_USDKRW) : s.price
-}
-
-export function holdingEval(h: StockHolding): number {
-  const s = findStock(h.ticker)
-  return s ? priceKRW(s) * h.qty : 0
-}
-
-export function holdingCost(h: StockHolding): number {
-  const s = findStock(h.ticker)
-  if (!s) return 0
-  const avgKRW = s.market === 'US' ? Math.round(h.avg * FX_USDKRW) : h.avg
-  return avgKRW * h.qty
 }
 
 // 일별 시세 — 종목 상세 표 (연동 전 시드 고정 의사난수, 최근 8영업일)
