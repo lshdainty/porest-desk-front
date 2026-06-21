@@ -15,12 +15,11 @@ import {
   Palette,
   Repeat,
   Tag,
-  Target,
   Trash2,
   User,
   CreditCard,
   FilePen,
-  TrendingUp,
+  Sparkles,
 } from 'lucide-react'
 import {
   AccountManager,
@@ -33,14 +32,17 @@ import {
   NotificationsManager,
   PresetManager,
   RecurringManager,
-  SecuritiesSettingsSection,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { useCurrentUser } from '@/features/user'
 import { useAuth } from '@/features/auth'
+import { SubscriptionDialog } from '@/features/subscription/ui/SubscriptionDialog'
+import { TossConnectCard } from '@/features/subscription/ui/TossConnectCard'
+import { useMyFeatures, useMySubscription } from '@/features/subscription/model/useSubscription'
 import { Switch } from '@/shared/ui/switch'
 import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,7 +68,6 @@ type SectionId =
   | 'calendar-labels'
   | 'appearance'
   | 'notifications'
-  | 'securities'
   | 'data'
   | 'account'
 
@@ -87,7 +88,6 @@ const SECTIONS: SectionDef[] = [
   { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
-  { id: 'securities', label: '증권 구독·연결', icon: TrendingUp, desc: '구독 · 토스증권 API 키 연결' },
   { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·Excel·JSON으로 데이터 백업' },
   { id: 'account', label: '계정', icon: User, desc: '프로필·보안·로그아웃' },
 ]
@@ -112,10 +112,6 @@ const MENU_GROUPS: GroupDef[] = [
   {
     label: '앱 환경',
     sectionIds: ['appearance', 'notifications'],
-  },
-  {
-    label: '증권',
-    sectionIds: ['securities'],
   },
   {
     label: '데이터',
@@ -169,9 +165,8 @@ export const SettingsPage = () => {
       case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
-      case 'securities':    return <SecuritiesSettingsSection mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />
-      case 'account':       return <AccountSection />
+      case 'account':       return <AccountSection mobile={m} />
       default:              return <PlaceholderSection section={activeSection} />
     }
   }
@@ -442,10 +437,16 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
 }
 
 // ─── Account Section ───────────────────────────────────────────
-function AccountSection() {
+function AccountSection({ mobile }: { mobile: boolean }) {
   const { data: user } = useCurrentUser()
   const { logout } = useAuth()
   const [pwDialogOpen, setPwDialogOpen] = useState(false)
+  const [subOpen, setSubOpen] = useState(false)
+
+  const featuresQ = useMyFeatures()
+  const subQ = useMySubscription()
+  const isPro = featuresQ.data?.features?.includes('SECURITIES') ?? false
+  const nextBill = subQ.data?.currentPeriodEnd ? subQ.data.currentPeriodEnd.slice(0, 10) : null
 
   const nameInitial = user?.userName ? user.userName.charAt(0) : '?'
 
@@ -504,7 +505,7 @@ function AccountSection() {
               letterSpacing: '0.02em',
             }}
           >
-            Pro
+            {isPro ? 'Pro' : 'Free'}
           </span>
         </div>
         <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
@@ -580,18 +581,27 @@ function AccountSection() {
       {/* 구독·결제 */}
       <AccountGroup label="구독·결제">
         <AccountRow
-          icon={<Bookmark size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="Porest Free"
-          desc="무료 플랜 사용 중"
-        />
-        <AccountRow
-          icon={<Target size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="플랜 업그레이드"
-          desc="Pro 9,900원/월"
-          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          icon={<Sparkles size={20} style={{ color: 'var(--fg-brand)' }} />}
+          label="Porest Pro"
+          desc={
+            isPro
+              ? `${nextBill ? `다음 결제 ${nextBill} · ` : ''}증권 등 Pro 기능 이용 중`
+              : '증권 투자는 Pro 전용 · 지금 시작하기'
+          }
+          right={
+            isPro ? (
+              <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />
+            ) : (
+              <Badge variant="default">Pro 시작</Badge>
+            )
+          }
+          onClick={() => setSubOpen(true)}
           isLast
         />
       </AccountGroup>
+
+      {/* 증권 데이터 연동 — 구독(Pro) 시에만 */}
+      {isPro && <TossConnectCard />}
 
       {/* 계정 관리 */}
       <AccountGroup label="계정 관리">
@@ -632,6 +642,9 @@ function AccountSection() {
 
       {/* 비밀번호 변경 다이얼로그 */}
       <PasswordChangeDialog open={pwDialogOpen} onOpenChange={setPwDialogOpen} />
+
+      {/* 구독 관리 다이얼로그 */}
+      {subOpen && <SubscriptionDialog onClose={() => setSubOpen(false)} mobile={mobile} />}
     </div>
   )
 }
