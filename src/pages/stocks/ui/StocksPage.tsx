@@ -13,6 +13,8 @@ import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import type { TossOrderbook, TossTrade } from '@/features/stock/api/stockApi'
+import { useStockLiveOverlay, useTossOrderbook, useTossTrades } from '@/features/stock/model/useTossStocks'
 import {
   dailyQuotes,
   FX_USDKRW,
@@ -41,6 +43,17 @@ function fmtPrice(s: Stock): string {
 /** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary). */
 function trendColor(pct: number): string {
   return pct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)'
+}
+
+/** 라이브 체결 테이프 변환 (토스 trades). 없으면 null → 호출부 폴백. dir=직전 체결가 대비 방향. */
+function liveTradeFills(trades?: TossTrade[]): { time: string; p: number; q: number; dir: number }[] | null {
+  if (!trades || trades.length === 0) return null
+  return trades.slice(0, 12).map((t, i, arr) => {
+    const p = Number.parseFloat(t.price)
+    const prev = i + 1 < arr.length ? Number.parseFloat(arr[i + 1]!.price) : p
+    const time = /(\d{2}:\d{2}:\d{2})/.exec(t.timestamp)?.[1] ?? t.timestamp
+    return { time, p, q: Math.round(Number.parseFloat(t.volume)), dir: p >= prev ? 1 : -1 }
+  })
 }
 
 // ---- 등락률 배지 (색 + 부호 + 아이콘 3중 병기 — A11y 1.4.1) ----------------
@@ -235,14 +248,20 @@ function StockRow({
 
 // ---- 호가창 (order book — 연동 전 시드 고정 의사난수 잔량) -------------------
 
-function OrderBook({ s }: { s: Stock }) {
+function OrderBook({ s, live }: { s: Stock; live?: TossOrderbook | null }) {
   const base = s.price
   const tick = s.market === 'US' ? 0.5 : base >= 100000 ? 500 : base >= 10000 ? 100 : 50
   const fmt = (p: number) => (s.market === 'US' ? `$${p.toFixed(2)}` : KRW(Math.round(p)))
   const rng = (i: number) => ((i * 9301 + 49297) % 233280) / 233280
-  const asks = [4, 3, 2, 1, 0].map(i => ({ p: base + tick * (i + 1), q: Math.round(40 + rng(i + 1) * 960) }))
-  const bids = [0, 1, 2, 3, 4].map(i => ({ p: base - tick * (i + 1), q: Math.round(40 + rng(i + 7) * 960) }))
-  const maxQ = Math.max(...asks.map(a => a.q), ...bids.map(b => b.q))
+  // 라이브 호가(토스): asks=낮은가격순 → 상단 표시 위해 5개 잘라 역순(높은가격 위), bids=높은가격순 그대로.
+  const hasLive = !!live && live.asks.length > 0 && live.bids.length > 0
+  const asks = hasLive
+    ? live!.asks.slice(0, 5).map(e => ({ p: Number.parseFloat(e.price), q: Math.round(Number.parseFloat(e.volume)) })).reverse()
+    : [4, 3, 2, 1, 0].map(i => ({ p: base + tick * (i + 1), q: Math.round(40 + rng(i + 1) * 960) }))
+  const bids = hasLive
+    ? live!.bids.slice(0, 5).map(e => ({ p: Number.parseFloat(e.price), q: Math.round(Number.parseFloat(e.volume)) }))
+    : [0, 1, 2, 3, 4].map(i => ({ p: base - tick * (i + 1), q: Math.round(40 + rng(i + 7) * 960) }))
+  const maxQ = Math.max(1, ...asks.map(a => a.q), ...bids.map(b => b.q))
 
   const Row = ({ p, q, type }: { p: number; q: number; type: 'ask' | 'bid' }) => {
     const isAsk = type === 'ask'
@@ -542,16 +561,22 @@ function DiscoverPanel({ onPick, selected }: { onPick: (t: string) => void; sele
 
 function QuotesCard({ s }: { s: Stock }) {
   const [tab, setTab] = useState<'book' | 'tape'>('book')
+  // 라이브 호가·체결 (토스 Open API). 키/데이터 없으면 의사난수 폴백.
+  const orderbookQ = useTossOrderbook(s.ticker)
+  const tradesQ = useTossTrades(s.ticker)
   const fmt = (p: number) => (s.market === 'US' ? `$${p.toFixed(2)}` : KRW(Math.round(p)))
   const tick = s.market === 'US' ? 0.5 : s.price >= 100000 ? 500 : s.price >= 10000 ? 100 : 50
   const rng = (i: number) => ((i * 2654435761) % 100000) / 100000
-  const fills = Array.from({ length: 12 }, (_, i) => {
-    const dir = rng(i + 3) > 0.45 ? 1 : -1
-    const p = s.price + dir * tick * Math.round(rng(i + 9) * 2)
-    const q = Math.round(1 + rng(i + 5) * 80)
-    const mm = 42 - i
-    return { time: `15:${String(mm).padStart(2, '0')}:${String(Math.round(rng(i + 7) * 59)).padStart(2, '0')}`, p, q, dir }
-  })
+  const liveFills = liveTradeFills(tradesQ.data)
+  const fills =
+    liveFills ??
+    Array.from({ length: 12 }, (_, i) => {
+      const dir = rng(i + 3) > 0.45 ? 1 : -1
+      const p = s.price + dir * tick * Math.round(rng(i + 9) * 2)
+      const q = Math.round(1 + rng(i + 5) * 80)
+      const mm = 42 - i
+      return { time: `15:${String(mm).padStart(2, '0')}:${String(Math.round(rng(i + 7) * 59)).padStart(2, '0')}`, p, q, dir }
+    })
   return (
     <Card style={{ padding: 16 }}>
       <div style={{ marginBottom: 12 }}>
@@ -567,7 +592,7 @@ function QuotesCard({ s }: { s: Stock }) {
         </Tabs>
       </div>
       {tab === 'book' ? (
-        <OrderBook s={s} />
+        <OrderBook s={s} live={orderbookQ.data} />
       ) : (
         <div>
           <div
@@ -953,6 +978,8 @@ function StockSearchDialog({
 
 export function StocksPage() {
   const { mobile } = useOutletContext<OutletCtx>()
+  // 토스 Open API 라이브 시세·환율 오버레이 (키 있으면 실데이터, 없으면 mock 유지)
+  useStockLiveOverlay()
   const [selected, setSelected] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [seg, setSeg] = useState<'holdings' | 'watch' | 'discover'>('holdings')

@@ -53,7 +53,37 @@ export interface DailyQuote {
   vol: number
 }
 
-export const FX_USDKRW = 1383.5
+/**
+ * USD→KRW 환율. 토스 Open API 연동 시 {@link setLiveFx} 로 실환율로 갱신된다(ES 모듈 live binding).
+ * 미연동(키 없음) 시 mock 기본값 유지.
+ */
+export let FX_USDKRW = 1383.5
+
+/** 라이브 환율 적용 (토스 exchange-rate). 변경되면 true. */
+export function setLiveFx(rate: number): boolean {
+  if (Number.isFinite(rate) && rate > 0 && rate !== FX_USDKRW) {
+    FX_USDKRW = rate
+    return true
+  }
+  return false
+}
+
+/**
+ * 라이브 시세 적용 (토스 prices). ticker→현재가 맵을 받아 STOCKS[].price 를 in-place 갱신한다.
+ * 화면은 STOCKS/findStock 을 통해 동기적으로 읽으므로, 연동 전환 시 이 모듈만 갱신하면 된다는
+ * 기존 설계(모듈=API 교체 지점)를 따른 전환용 브리지. 변경분이 있으면 true.
+ */
+export function applyLivePrices(priceByTicker: Record<string, number>): boolean {
+  let changed = false
+  for (const s of STOCKS) {
+    const live = priceByTicker[s.ticker]
+    if (live != null && Number.isFinite(live) && live > 0 && live !== s.price) {
+      s.price = live
+      changed = true
+    }
+  }
+  return changed
+}
 
 // 가벼운 의사난수 스파크라인 (종목별 고정 시드 — 렌더마다 동일)
 function spark(seed: number, n = 24, drift = 0): number[] {

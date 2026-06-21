@@ -1,0 +1,264 @@
+/**
+ * 토스증권 Open API 연동 클라이언트 (백엔드 조회 프록시 `/api/v1/toss/**` 호출).
+ * 백엔드 응답 계약(com.porest.desk.toss.dto)에 정확히 맞춘 타입.
+ * 가격·수량·금액은 백엔드가 정밀도 보존을 위해 String 으로 내려주므로 그대로 string 으로 받는다.
+ *
+ * 키 미설정 시 백엔드가 503(TOSS_NOT_CONFIGURED)을 반환 → 호출부에서 mock 폴백.
+ */
+import { apiClient } from '@/shared/api'
+import type { ApiResponse } from '@/shared/types'
+
+// ---- 응답 타입 (백엔드 toss DTO 미러) -------------------------------------
+
+export interface TossPrice {
+  symbol: string
+  timestamp: string | null
+  lastPrice: string
+  currency: string
+}
+
+export interface TossOrderbookEntry {
+  price: string
+  volume: string
+}
+
+export interface TossOrderbook {
+  timestamp: string | null
+  currency: string
+  asks: TossOrderbookEntry[]
+  bids: TossOrderbookEntry[]
+}
+
+export interface TossTrade {
+  price: string
+  volume: string
+  timestamp: string
+  currency: string
+}
+
+export interface TossCandle {
+  timestamp: string
+  openPrice: string
+  highPrice: string
+  lowPrice: string
+  closePrice: string
+  volume: string
+  currency: string
+}
+
+export interface TossCandlePage {
+  candles: TossCandle[]
+  nextBefore: string | null
+}
+
+export interface TossStockInfo {
+  symbol: string
+  name: string
+  englishName: string
+  isinCode: string
+  market: string
+  securityType: string
+  isCommonShare: boolean
+  status: string
+  currency: string
+  listDate: string | null
+  delistDate: string | null
+  sharesOutstanding: string
+  leverageFactor: string | null
+}
+
+export interface TossStockWarning {
+  warningType: string
+  exchange: string | null
+  startDate: string | null
+  endDate: string | null
+}
+
+export interface TossExchangeRate {
+  baseCurrency: string
+  quoteCurrency: string
+  rate: string
+  midRate: string
+  basisPoint: string
+  rateChangeType: 'UP' | 'EQUAL' | 'DOWN'
+  validFrom: string
+  validUntil: string
+}
+
+/** 시장 세션 (시작/종료 시각). 휴장이면 상위에서 null */
+export interface TossMarketSession {
+  startTime: string
+  endTime: string
+}
+
+export interface TossKrIntegratedHour {
+  preMarket: TossMarketSession | null
+  regularMarket: TossMarketSession | null
+  afterMarket: TossMarketSession | null
+}
+
+export interface TossKrMarketDay {
+  date: string
+  integrated: TossKrIntegratedHour | null
+}
+
+export interface TossKrMarketCalendar {
+  today: TossKrMarketDay
+  previousBusinessDay: TossKrMarketDay
+  nextBusinessDay: TossKrMarketDay
+}
+
+export interface TossUsMarketDay {
+  date: string
+  dayMarket: TossMarketSession | null
+  preMarket: TossMarketSession | null
+  regularMarket: TossMarketSession | null
+  afterMarket: TossMarketSession | null
+}
+
+export interface TossUsMarketCalendar {
+  today: TossUsMarketDay
+  previousBusinessDay: TossUsMarketDay
+  nextBusinessDay: TossUsMarketDay
+}
+
+export interface TossAccount {
+  accountNo: string
+  accountSeq: number
+  accountType: string
+}
+
+/** 통화별 금액 (원화 필수, 외화 nullable) */
+export interface TossPriceAmount {
+  krw: string
+  usd: string | null
+}
+
+export interface TossHoldingsItem {
+  symbol: string
+  name: string
+  marketCountry: string
+  currency: string
+  quantity: string
+  lastPrice: string
+  averagePurchasePrice: string
+  marketValue: { purchaseAmount: string; amount: string; amountAfterCost: string }
+  profitLoss: { amount: string; amountAfterCost: string; rate: string; rateAfterCost: string }
+  dailyProfitLoss: { amount: string; rate: string }
+  cost: { commission: string; tax: string | null }
+}
+
+export interface TossHoldings {
+  totalPurchaseAmount: TossPriceAmount
+  marketValue: { amount: TossPriceAmount; amountAfterCost: TossPriceAmount }
+  profitLoss: { amount: TossPriceAmount; amountAfterCost: TossPriceAmount; rate: string; rateAfterCost: string }
+  dailyProfitLoss: { amount: TossPriceAmount; rate: string }
+  items: TossHoldingsItem[]
+}
+
+export interface TossPriceLimit {
+  timestamp: string
+  upperLimitPrice: string | null
+  lowerLimitPrice: string | null
+  currency: string
+}
+
+// ---- 클라이언트 ------------------------------------------------------------
+
+const BASE = '/v1/toss'
+
+export const stockApi = {
+  // 시세
+  getPrices: async (symbols: string[]): Promise<TossPrice[]> => {
+    const resp: ApiResponse<TossPrice[]> = await apiClient.get(`${BASE}/prices`, {
+      params: { symbols: symbols.join(',') },
+    })
+    return resp.data
+  },
+
+  getOrderbook: async (symbol: string): Promise<TossOrderbook> => {
+    const resp: ApiResponse<TossOrderbook> = await apiClient.get(`${BASE}/orderbook`, {
+      params: { symbol },
+    })
+    return resp.data
+  },
+
+  getTrades: async (symbol: string, count?: number): Promise<TossTrade[]> => {
+    const resp: ApiResponse<TossTrade[]> = await apiClient.get(`${BASE}/trades`, {
+      params: { symbol, count },
+    })
+    return resp.data
+  },
+
+  getPriceLimits: async (symbol: string): Promise<TossPriceLimit> => {
+    const resp: ApiResponse<TossPriceLimit> = await apiClient.get(`${BASE}/price-limits`, {
+      params: { symbol },
+    })
+    return resp.data
+  },
+
+  getCandles: async (
+    symbol: string,
+    interval: '1m' | '1d',
+    opts?: { count?: number; before?: string; adjusted?: boolean },
+  ): Promise<TossCandlePage> => {
+    const resp: ApiResponse<TossCandlePage> = await apiClient.get(`${BASE}/candles`, {
+      params: { symbol, interval, ...opts },
+    })
+    return resp.data
+  },
+
+  // 종목 정보
+  getStocks: async (symbols: string[]): Promise<TossStockInfo[]> => {
+    const resp: ApiResponse<TossStockInfo[]> = await apiClient.get(`${BASE}/stocks`, {
+      params: { symbols: symbols.join(',') },
+    })
+    return resp.data
+  },
+
+  getStockWarnings: async (symbol: string): Promise<TossStockWarning[]> => {
+    const resp: ApiResponse<TossStockWarning[]> = await apiClient.get(
+      `${BASE}/stocks/${encodeURIComponent(symbol)}/warnings`,
+    )
+    return resp.data
+  },
+
+  // 시장 정보
+  getExchangeRate: async (
+    baseCurrency = 'USD',
+    quoteCurrency = 'KRW',
+    dateTime?: string,
+  ): Promise<TossExchangeRate> => {
+    const resp: ApiResponse<TossExchangeRate> = await apiClient.get(`${BASE}/exchange-rate`, {
+      params: { baseCurrency, quoteCurrency, dateTime },
+    })
+    return resp.data
+  },
+
+  getMarketCalendarKr: async (date?: string): Promise<TossKrMarketCalendar> => {
+    const resp: ApiResponse<TossKrMarketCalendar> = await apiClient.get(`${BASE}/market-calendar/KR`, {
+      params: { date },
+    })
+    return resp.data
+  },
+
+  getMarketCalendarUs: async (date?: string): Promise<TossUsMarketCalendar> => {
+    const resp: ApiResponse<TossUsMarketCalendar> = await apiClient.get(`${BASE}/market-calendar/US`, {
+      params: { date },
+    })
+    return resp.data
+  },
+
+  // 계좌 / 보유자산
+  getAccounts: async (): Promise<TossAccount[]> => {
+    const resp: ApiResponse<TossAccount[]> = await apiClient.get(`${BASE}/accounts`)
+    return resp.data
+  },
+
+  getHoldings: async (accountSeq: number, symbol?: string): Promise<TossHoldings> => {
+    const resp: ApiResponse<TossHoldings> = await apiClient.get(`${BASE}/holdings`, {
+      params: { accountSeq, symbol },
+    })
+    return resp.data
+  },
+}

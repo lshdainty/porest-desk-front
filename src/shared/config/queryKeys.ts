@@ -135,3 +135,17 @@ export const dashboardKeys = {
   summary: () => [...dashboardKeys.all, 'summary'] as const,
   layout: () => [...dashboardKeys.all, 'layout'] as const,
 }
+
+export const stockKeys = {
+  all: ['stocks'] as const,
+  prices: (symbols: string[]) => [...stockKeys.all, 'prices', symbols] as const,
+  orderbook: (symbol: string) => [...stockKeys.all, 'orderbook', symbol] as const,
+  trades: (symbol: string) => [...stockKeys.all, 'trades', symbol] as const,
+  exchangeRate: () => [...stockKeys.all, 'exchange-rate'] as const,
+  marketCalendar: (market: 'KR' | 'US') => [...stockKeys.all, 'market-calendar', market] as const,
+  accounts: () => [...stockKeys.all, 'accounts'] as const,
+  holdings: (accountSeq: number) => [...stockKeys.all, 'holdings', accountSeq] as const,
+  stockInfo: (symbols: string[]) => [...stockKeys.all, 'info', symbols] as const,
+  priceLimits: (symbol: string) => [...stockKeys.all, 'price-limits', symbol] as const,
+  candles: (symbol: string, interval: string) => [...stockKeys.all, 'candles', symbol, interval] as const,
+}
