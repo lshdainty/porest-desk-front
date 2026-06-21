@@ -136,6 +136,13 @@ export const dashboardKeys = {
   layout: () => [...dashboardKeys.all, 'layout'] as const,
 }
 
+export const subscriptionKeys = {
+  all: ['subscription'] as const,
+  myFeatures: () => [...subscriptionKeys.all, 'features'] as const,
+  mySubscription: () => [...subscriptionKeys.all, 'me'] as const,
+  tossCredential: () => [...subscriptionKeys.all, 'toss-credential'] as const,
+}
+
 export const stockKeys = {
   all: ['stocks'] as const,
   prices: (symbols: string[]) => [...stockKeys.all, 'prices', symbols] as const,

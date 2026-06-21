@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Input } from '@/shared/ui/input'
+import { useHasSecurities } from '@/features/subscription/model/useSubscription'
 import {
   Bookmark,
   Calendar1,
@@ -84,8 +85,14 @@ export const MorePage = () => {
   const navigate = useNavigate()
   useOutletContext<OutletCtx>()
   const [query, setQuery] = useState('')
+  const hasSecurities = useHasSecurities()
 
-  const allItems: NavItem[] = GROUPS.flatMap(g => g.items)
+  // 증권 메뉴는 구독(SECURITIES) 보유 시에만 노출
+  const visibleGroups: NavGroup[] = hasSecurities
+    ? GROUPS
+    : GROUPS.map(g => ({ ...g, items: g.items.filter(i => i.path !== '/desk/stocks') }))
+
+  const allItems: NavItem[] = visibleGroups.flatMap(g => g.items)
 
   const filteredItems = query.trim()
     ? allItems.filter(item =>
@@ -200,7 +207,7 @@ export const MorePage = () => {
       {/* 그룹 리스트 — 검색 비활성일 때만 */}
       {!isSearching && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {GROUPS.map(group => (
+          {visibleGroups.map(group => (
             <div key={group.label}>
               <div
                 style={{

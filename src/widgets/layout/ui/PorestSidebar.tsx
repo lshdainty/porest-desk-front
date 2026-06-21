@@ -16,6 +16,7 @@ import {
   SidebarRail,
 } from '@/shared/ui/sidebar'
 import { useCurrentUser } from '@/features/user'
+import { useHasSecurities } from '@/features/subscription/model/useSubscription'
 
 export interface NavItem {
   id: string
@@ -44,6 +45,9 @@ export const NAV: NavItem[] = [
 export function PorestSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
+  const hasSecurities = useHasSecurities()
+  // 증권 메뉴는 구독(SECURITIES) 보유 시에만 노출. slice 후 필터(그룹 경계 보존).
+  const gate = (items: NavItem[]) => (hasSecurities ? items : items.filter(n => n.id !== 'stocks'))
   const { data: currentUser } = useCurrentUser()
   const userName = currentUser?.userName ?? ''
   const userEmail = currentUser?.userEmail ?? ''
@@ -101,8 +105,8 @@ export function PorestSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {renderGroup('워크스페이스', NAV.slice(0, 6))}
-        {renderGroup('기록', NAV.slice(6))}
+        {renderGroup('워크스페이스', gate(NAV.slice(0, 6)))}
+        {renderGroup('기록', gate(NAV.slice(6)))}
       </SidebarContent>
 
       <SidebarFooter>

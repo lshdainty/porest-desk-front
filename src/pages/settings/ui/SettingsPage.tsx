@@ -20,6 +20,7 @@ import {
   User,
   CreditCard,
   FilePen,
+  TrendingUp,
 } from 'lucide-react'
 import {
   AccountManager,
@@ -32,6 +33,7 @@ import {
   NotificationsManager,
   PresetManager,
   RecurringManager,
+  SecuritiesSettingsSection,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useTheme } from '@/shared/ui/theme-provider'
@@ -64,6 +66,7 @@ type SectionId =
   | 'calendar-labels'
   | 'appearance'
   | 'notifications'
+  | 'securities'
   | 'data'
   | 'account'
 
@@ -84,6 +87,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
   { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
   { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
+  { id: 'securities', label: '증권 구독·연결', icon: TrendingUp, desc: '구독 · 토스증권 API 키 연결' },
   { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·Excel·JSON으로 데이터 백업' },
   { id: 'account', label: '계정', icon: User, desc: '프로필·보안·로그아웃' },
 ]
@@ -108,6 +112,10 @@ const MENU_GROUPS: GroupDef[] = [
   {
     label: '앱 환경',
     sectionIds: ['appearance', 'notifications'],
+  },
+  {
+    label: '증권',
+    sectionIds: ['securities'],
   },
   {
     label: '데이터',
@@ -161,6 +169,7 @@ export const SettingsPage = () => {
       case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
+      case 'securities':    return <SecuritiesSettingsSection mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />
       case 'account':       return <AccountSection />
       default:              return <PlaceholderSection section={activeSection} />
