@@ -26,9 +26,20 @@ export interface TossCredentialStatus {
   verifiedAt: string | null
 }
 
+export interface SubscriptionPlan {
+  planCode: string
+  planName: string
+  durationMonths: number | null
+}
+
 export const subscriptionApi = {
   getMyFeatures: async (): Promise<MyFeatures> => {
     const resp: ApiResponse<MyFeatures> = await apiClient.get('/v1/users/me/features')
+    return resp.data
+  },
+
+  getPlans: async (): Promise<SubscriptionPlan[]> => {
+    const resp: ApiResponse<SubscriptionPlan[]> = await apiClient.get('/v1/subscriptions/plans')
     return resp.data
   },
 

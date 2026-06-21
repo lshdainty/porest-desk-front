@@ -18,6 +18,13 @@ export const useHasSecurities = (): boolean => {
   return data?.features?.includes(SECURITIES) ?? false
 }
 
+export const useSubscriptionPlans = () =>
+  useQuery({
+    queryKey: [...subscriptionKeys.all, 'plans'],
+    queryFn: () => subscriptionApi.getPlans(),
+    staleTime: 5 * 60_000,
+  })
+
 export const useMySubscription = () =>
   useQuery({
     queryKey: subscriptionKeys.mySubscription(),

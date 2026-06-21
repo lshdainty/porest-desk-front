@@ -10,6 +10,7 @@ import {
   useMySubscription,
   useRegisterTossCredential,
   useSubscribe,
+  useSubscriptionPlans,
   useTossCredentialStatus,
   useDisconnectTossCredential,
 } from '@/features/subscription/model/useSubscription'
@@ -22,6 +23,7 @@ export function SecuritiesSettingsSection({ mobile }: { mobile?: boolean }) {
   const featuresQ = useMyFeatures()
   const subQ = useMySubscription()
   const credQ = useTossCredentialStatus()
+  const plansQ = useSubscriptionPlans()
   const subscribe = useSubscribe()
   const cancel = useCancelSubscription()
   const register = useRegisterTossCredential()
@@ -34,10 +36,11 @@ export function SecuritiesSettingsSection({ mobile }: { mobile?: boolean }) {
   const sub = subQ.data
   const isActive = sub?.status === 'ACTIVE'
   const connected = credQ.data?.connected ?? false
+  const upgradePlan = plansQ.data?.[0]
 
   const onSubscribe = () =>
-    subscribe.mutate('SECURITIES', {
-      onSuccess: () => toast('증권 구독이 시작되었어요'),
+    subscribe.mutate(upgradePlan?.planCode ?? 'SECURITIES', {
+      onSuccess: () => toast('구독이 시작되었어요'),
       onError: () => toast.error('구독에 실패했어요'),
     })
   const onCancel = () =>
@@ -73,7 +76,9 @@ export function SecuritiesSettingsSection({ mobile }: { mobile?: boolean }) {
       <Card style={{ padding: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--fg-primary)' }}>증권 구독</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--fg-primary)' }}>
+              {upgradePlan?.planName ?? '증권 구독'}
+            </div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
               구독하면 증권(시세·호가·보유) 메뉴가 열려요
             </div>
@@ -105,7 +110,7 @@ export function SecuritiesSettingsSection({ mobile }: { mobile?: boolean }) {
           </div>
         ) : (
           <Button size="lg" onClick={onSubscribe} loading={subscribe.isPending} style={{ marginTop: 16, width: '100%' }}>
-            구독하기
+            플랜 업그레이드
           </Button>
         )}
       </Card>
