@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { ChevronDown, ChevronUp, LineChart, Search, Star } from 'lucide-react'
+import { ChevronDown, ChevronUp, Info, LineChart, Search, Star } from 'lucide-react'
 import { toast } from 'sonner'
+import { tileRadius } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import { Donut } from '@/shared/ui/porest/charts'
 import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
+  dailyQuotes,
   FX_USDKRW,
   findStock,
   holdingCost,
   holdingEval,
+  MARKET_INDICES,
   priceKRW,
   STOCK_HOLDINGS,
   STOCK_WATCH,
@@ -71,7 +76,7 @@ function StockBadge({ s, size = 40 }: { s: Stock; size?: number }) {
       style={{
         width: size,
         height: size,
-        borderRadius: 11,
+        borderRadius: tileRadius(size),
         flexShrink: 0,
         display: 'inline-flex',
         alignItems: 'center',
@@ -336,6 +341,323 @@ function OrderBook({ s }: { s: Stock }) {
   )
 }
 
+// ---- 장 상태 바 (Market Info: 장 운영 상태) --------------------------------
+
+function MarketStatusBar() {
+  const markets = [
+    { name: '국내 (KRX·NXT)', open: true, detail: '장중 · 15:42' },
+    { name: '미국 (NASDAQ)', open: false, detail: '장마감 · 익일 22:30 개장' },
+  ]
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+      {markets.map(m => (
+        <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: 'var(--radius-full)',
+              flexShrink: 0,
+              background: m.open ? 'var(--status-success-fg)' : 'var(--fg-tertiary)',
+            }}
+          />
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)' }}>{m.name}</span>
+          <span style={{ fontSize: 'var(--text-caption)', color: m.open ? 'var(--fg-secondary)' : 'var(--fg-tertiary)' }}>
+            {m.detail}
+          </span>
+        </div>
+      ))}
+      <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
+        토스증권 Open API · 시세 지연 표시
+      </span>
+    </div>
+  )
+}
+
+// ---- 시장 지수 스트립 (모바일 가로 스크롤 / 데스크톱 grid) --------------------
+
+function IndexStrip({ mobile }: { mobile: boolean }) {
+  if (mobile) {
+    return (
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
+        {MARKET_INDICES.map(ix => (
+          <Card key={ix.id} style={{ padding: '11px 14px', flexShrink: 0, minWidth: 124 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: 'var(--fg-secondary)' }}>{ix.name}</span>
+              <span className="num" style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)' }}>
+                {ix.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <PctBadge pct={ix.changePct} size={11} />
+            </div>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <Card style={{ padding: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${MARKET_INDICES.length}, 1fr)` }}>
+        {MARKET_INDICES.map((ix, i) => (
+          <div
+            key={ix.id}
+            style={{
+              padding: '14px 18px',
+              borderLeft: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: 'var(--fg-secondary)' }}>{ix.name}</span>
+              <span style={{ width: 44, height: 18, opacity: 0.9 }}>
+                <Sparkline values={ix.spark} height={18} color={trendColor(ix.changePct)} fill={false} />
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+              <span className="num" style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)' }}>
+                {ix.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <PctBadge pct={ix.changePct} size={11.5} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+// ---- 포트폴리오 구성 도넛 (데스크톱) ----------------------------------------
+
+const DONUT_PALETTE = [
+  'var(--color-cat-blue)',
+  'var(--color-cat-green)',
+  'var(--color-cat-violet)',
+  'var(--color-cat-orange)',
+  'var(--color-cat-pink)',
+  'var(--color-cat-indigo)',
+  'var(--color-cat-brown)',
+]
+
+function PortfolioDonut({ holdings }: { holdings: StockHolding[] }) {
+  const rows = holdings
+    .map((h, i) => ({ name: findStock(h.ticker)?.name ?? h.ticker, value: holdingEval(h), color: DONUT_PALETTE[i % DONUT_PALETTE.length]! }))
+    .sort((a, b) => b.value - a.value)
+  const total = rows.reduce((sum, r) => sum + r.value, 0) || 1
+  return (
+    <Card style={{ padding: 22 }}>
+      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 16 }}>포트폴리오 구성</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <Donut size={132} stroke={20} segments={rows.map(r => ({ value: r.value, color: r.color }))}>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>종목</div>
+          <div className="num" style={{ fontSize: 15, fontWeight: 800, color: 'var(--fg-primary)' }}>{rows.length}개</div>
+        </Donut>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9, minWidth: 0 }}>
+          {rows.map(r => (
+            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-xs)', background: r.color, flexShrink: 0 }} />
+              <span
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: 'var(--fg-primary)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {r.name}
+              </span>
+              <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--fg-secondary)' }}>
+                <MaskAmount>{`${((r.value / total) * 100).toFixed(1)}%`}</MaskAmount>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+// ---- 발견(디스커버리) 랭킹 — 급상승/급하락/거래량 ----------------------------
+
+function volNum(vol: string): number {
+  const raw = vol.replace(/,/g, '')
+  if (raw.endsWith('M')) return parseFloat(raw) * 1_000_000
+  if (raw.endsWith('K')) return parseFloat(raw) * 1_000
+  return parseFloat(raw)
+}
+
+function DiscoverPanel({ onPick, selected }: { onPick: (t: string) => void; selected: string | null }) {
+  const [tab, setTab] = useState<'gainers' | 'losers' | 'volume'>('gainers')
+  const list = useMemo(() => {
+    const arr = [...STOCKS]
+    if (tab === 'gainers') arr.sort((a, b) => b.changePct - a.changePct)
+    else if (tab === 'losers') arr.sort((a, b) => a.changePct - b.changePct)
+    else arr.sort((a, b) => volNum(b.vol) - volNum(a.vol))
+    return arr.slice(0, 6)
+  }, [tab])
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <Tabs value={tab} onValueChange={v => setTab(v as 'gainers' | 'losers' | 'volume')}>
+        <TabsList variant="pill" size="sm">
+          <TabsTrigger variant="pill" value="gainers">
+            급상승
+          </TabsTrigger>
+          <TabsTrigger variant="pill" value="losers">
+            급하락
+          </TabsTrigger>
+          <TabsTrigger variant="pill" value="volume">
+            거래량
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <Card style={{ padding: 6 }}>
+        {list.map((s, i) => (
+          <div key={s.ticker} style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              className="num"
+              style={{
+                width: 22,
+                textAlign: 'center',
+                flexShrink: 0,
+                fontSize: 'var(--text-label-sm)',
+                fontWeight: 700,
+                color: i < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)',
+              }}
+            >
+              {i + 1}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <StockRow ticker={s.ticker} active={selected === s.ticker} onClick={() => onPick(s.ticker)} />
+            </div>
+          </div>
+        ))}
+      </Card>
+    </div>
+  )
+}
+
+// ---- 호가 / 체결 탭 카드 ---------------------------------------------------
+
+function QuotesCard({ s }: { s: Stock }) {
+  const [tab, setTab] = useState<'book' | 'tape'>('book')
+  const fmt = (p: number) => (s.market === 'US' ? `$${p.toFixed(2)}` : KRW(Math.round(p)))
+  const tick = s.market === 'US' ? 0.5 : s.price >= 100000 ? 500 : s.price >= 10000 ? 100 : 50
+  const rng = (i: number) => ((i * 2654435761) % 100000) / 100000
+  const fills = Array.from({ length: 12 }, (_, i) => {
+    const dir = rng(i + 3) > 0.45 ? 1 : -1
+    const p = s.price + dir * tick * Math.round(rng(i + 9) * 2)
+    const q = Math.round(1 + rng(i + 5) * 80)
+    const mm = 42 - i
+    return { time: `15:${String(mm).padStart(2, '0')}:${String(Math.round(rng(i + 7) * 59)).padStart(2, '0')}`, p, q, dir }
+  })
+  return (
+    <Card style={{ padding: 16 }}>
+      <div style={{ marginBottom: 12 }}>
+        <Tabs value={tab} onValueChange={v => setTab(v as 'book' | 'tape')}>
+          <TabsList variant="pill" size="sm">
+            <TabsTrigger variant="pill" value="book">
+              호가
+            </TabsTrigger>
+            <TabsTrigger variant="pill" value="tape">
+              체결
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      {tab === 'book' ? (
+        <OrderBook s={s} />
+      ) : (
+        <div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1.2fr 1fr',
+              fontSize: 10.5,
+              color: 'var(--fg-tertiary)',
+              fontWeight: 600,
+              marginBottom: 4,
+              padding: '0 2px',
+            }}
+          >
+            <span>체결시각</span>
+            <span style={{ textAlign: 'right' }}>체결가</span>
+            <span style={{ textAlign: 'right' }}>체결량</span>
+          </div>
+          {fills.map((f, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', alignItems: 'center', height: 25, fontSize: 12 }}>
+              <span className="num" style={{ color: 'var(--fg-tertiary)' }}>{f.time}</span>
+              <span className="num" style={{ textAlign: 'right', fontWeight: 700, color: trendColor(f.dir) }}>{fmt(f.p)}</span>
+              <span className="num" style={{ textAlign: 'right', color: 'var(--fg-secondary)' }}>{f.q.toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+// ---- 일별 시세 표 (상세) ---------------------------------------------------
+
+function DailyQuoteTable({ s }: { s: Stock }) {
+  const rows = dailyQuotes(s)
+  const fmt = (v: number) => (s.market === 'US' ? `$${v.toFixed(2)}` : KRW(Math.round(v)))
+  const headCell = (h: string, align: 'left' | 'right') => (
+    <div
+      key={h}
+      style={{
+        fontSize: 'var(--text-badge)',
+        color: 'var(--fg-tertiary)',
+        fontWeight: 600,
+        padding: '0 0 8px',
+        textAlign: align,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {h}
+    </div>
+  )
+  return (
+    <Card style={{ padding: 16 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 10 }}>일별 시세</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.3fr)' }}>
+        {headCell('일자', 'left')}
+        {headCell('종가', 'right')}
+        {headCell('등락률', 'right')}
+        {headCell('거래량', 'right')}
+        {rows.map(r => (
+          <div key={r.date} style={{ display: 'contents' }}>
+            <div className="num" style={{ fontSize: 12.5, color: 'var(--fg-secondary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>
+              {r.date}
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}
+            >
+              {fmt(r.close)}
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: 12.5, fontWeight: 700, color: trendColor(r.chg), padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}
+            >
+              {r.chg >= 0 ? '+' : ''}
+              {r.chg.toFixed(2)}%
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}
+            >
+              {r.vol.toLocaleString()}
+              {s.market === 'US' ? 'M' : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
 // ---- 종목 상세 본문 ------------------------------------------------------
 
 const RANGES = ['1D', '1주', '1개월', '3개월', '1년'] as const
@@ -357,13 +679,25 @@ function StockDetailBody({
   const s = findStock(ticker)
   if (!s) return null
 
-  const info: Array<[string, string]> = [
-    ['시가총액', s.marketCap],
-    ['PER', s.per != null ? s.per.toFixed(1) : '—'],
-    ['EPS', s.eps != null ? (s.market === 'US' ? `$${s.eps.toFixed(2)}` : KRW(s.eps)) : '—'],
-    ['52주 최고', s.market === 'US' ? `$${s.high52.toFixed(2)}` : KRW(s.high52)],
-    ['52주 최저', s.market === 'US' ? `$${s.low52.toFixed(2)}` : KRW(s.low52)],
-    ['거래량', s.vol],
+  // 국내 종목 상/하한가 (±30%, 호가단위 반올림)
+  const tickOf = (p: number) => (p >= 100000 ? 500 : p >= 10000 ? 100 : p >= 1000 ? 10 : 1)
+  const roundTick = (p: number) => {
+    const t = tickOf(p)
+    return Math.round(p / t) * t
+  }
+  const info: Array<{ k: string; v: string; c?: string }> = [
+    { k: '시가총액', v: s.marketCap },
+    { k: 'PER', v: s.per != null ? s.per.toFixed(1) : '—' },
+    { k: 'EPS', v: s.eps != null ? (s.market === 'US' ? `$${s.eps.toFixed(2)}` : KRW(s.eps)) : '—' },
+    ...(s.market === 'KR'
+      ? [
+          { k: '상한가', v: KRW(roundTick(s.price * 1.3)), c: 'var(--status-danger-fg)' },
+          { k: '하한가', v: KRW(roundTick(s.price * 0.7)), c: 'var(--fg-brand)' },
+        ]
+      : []),
+    { k: '52주 최고', v: s.market === 'US' ? `$${s.high52.toFixed(2)}` : KRW(s.high52) },
+    { k: '52주 최저', v: s.market === 'US' ? `$${s.low52.toFixed(2)}` : KRW(s.low52) },
+    { k: '거래량', v: s.vol },
   ]
 
   return (
@@ -372,9 +706,24 @@ function StockDetailBody({
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <StockBadge s={s} size={46} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>{s.name}</div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-            {s.ticker} · {s.market === 'US' ? '미국' : 'KRX'} · {s.sector}
+          <div
+            style={{
+              fontSize: 17,
+              fontWeight: 800,
+              color: 'var(--fg-primary)',
+              letterSpacing: '-0.01em',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {s.name}
+          </div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span>{s.ticker}</span>
+            <Badge variant="secondary">{s.market === 'US' ? 'NASDAQ' : 'KRX·NXT'}</Badge>
+            <span>·</span>
+            <span>{s.sector}</span>
           </div>
         </div>
         <button
@@ -385,7 +734,7 @@ function StockDetailBody({
           style={{
             width: 38,
             height: 38,
-            borderRadius: 10,
+            borderRadius: tileRadius(38),
             flexShrink: 0,
             cursor: 'pointer',
             display: 'inline-flex',
@@ -420,29 +769,16 @@ function StockDetailBody({
         <div style={{ height: mobile ? 150 : 180 }}>
           <Sparkline values={s.spark} height={mobile ? 150 : 180} color={trendColor(s.changePct)} fill gradientId={`spark-detail-${s.ticker}`} />
         </div>
-        <div style={{ display: 'flex', gap: 4, marginTop: 8, justifyContent: 'center' }}>
-          {RANGES.map(r => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              style={{
-                flex: 1,
-                maxWidth: 64,
-                padding: '6px 0',
-                fontSize: 'var(--text-caption)',
-                fontWeight: 600,
-                cursor: 'pointer',
-                borderRadius: 'var(--radius-sm)',
-                border: 0,
-                background: range === r ? 'var(--bg-brand)' : 'transparent',
-                color: range === r ? 'var(--fg-on-brand)' : 'var(--fg-tertiary)',
-                fontFamily: 'inherit',
-              }}
-            >
-              {r}
-            </button>
-          ))}
+        <div style={{ marginTop: 8 }}>
+          <Tabs value={range} onValueChange={v => setRange(v as (typeof RANGES)[number])}>
+            <TabsList variant="pill" size="sm" style={{ width: '100%' }}>
+              {RANGES.map(r => (
+                <TabsTrigger key={r} variant="pill" value={r} style={{ flex: 1 }}>
+                  {r}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </Card>
 
@@ -459,6 +795,7 @@ function StockDetailBody({
             ['보유수량', `${holding.qty}주`, 'var(--fg-primary)'],
             ['수익률', `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`, trendColor(pnl)],
             ['평균단가', s.market === 'US' ? `$${holding.avg.toFixed(2)}` : `${KRW(holding.avg)}원`, 'var(--fg-secondary)'],
+            ['매도가능', `${holding.qty}주`, 'var(--fg-secondary)'],
             ['매입금액', <MaskAmount key="cost">{`${KRW(cost)}원`}</MaskAmount>, 'var(--fg-secondary)'],
           ]
           return (
@@ -478,18 +815,15 @@ function StockDetailBody({
           )
         })()}
 
-      {/* 호가 + 기본정보 */}
+      {/* 호가/체결 + 기본정보 */}
       <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16 }}>
-        <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 12 }}>호가</div>
-          <OrderBook s={s} />
-        </Card>
+        <QuotesCard s={s} />
         <Card style={{ padding: 16 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 12 }}>기본 정보</div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {info.map(([k, v], i) => (
+            {info.map((it, i) => (
               <div
-                key={k}
+                key={it.k}
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -498,15 +832,18 @@ function StockDetailBody({
                   borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>{k}</span>
-                <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
-                  {v}
+                <span style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>{it.k}</span>
+                <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, color: it.c ?? 'var(--fg-primary)' }}>
+                  {it.v}
                 </span>
               </div>
             ))}
           </div>
         </Card>
       </div>
+
+      {/* 일별 시세 */}
+      <DailyQuoteTable s={s} />
 
       {/* 매매 (모의) — 매도=primary(파랑), 매수=destructive(빨강) — 국내 통념 */}
       <div style={{ display: 'flex', gap: 10 }}>
@@ -526,6 +863,16 @@ function StockDetailBody({
         >
           매수
         </Button>
+      </div>
+
+      {/* 수수료 안내 — 토스증권 Open API 기준 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}>
+        <Info size={14} color="var(--fg-tertiary)" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)', lineHeight: 1.45 }}>
+          {s.market === 'US'
+            ? '미국주식 매매수수료 0.1% · 환전 수수료 별도 적용'
+            : '국내주식 매매수수료 무료 (2026.6까지) · 이후 KRX 0.015% / NXT 0.014%'}
+        </span>
       </div>
 
       <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', textAlign: 'center', lineHeight: 1.5 }}>
@@ -608,7 +955,7 @@ export function StocksPage() {
   const { mobile } = useOutletContext<OutletCtx>()
   const [selected, setSelected] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [seg, setSeg] = useState<'holdings' | 'watch'>('holdings')
+  const [seg, setSeg] = useState<'holdings' | 'watch' | 'discover'>('holdings')
   const [watchGroups, setWatchGroups] = useState<WatchGroup[]>(STOCK_WATCH)
   const [activeGroup, setActiveGroup] = useState(STOCK_WATCH[0]!.id)
 
@@ -696,7 +1043,7 @@ export function StocksPage() {
         />
       </div>
 
-      <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch')}>
+      <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
         <TabsList variant="pill" size="sm">
           <TabsTrigger variant="pill" value="holdings">
             보유 {STOCK_HOLDINGS.length}
@@ -704,10 +1051,15 @@ export function StocksPage() {
           <TabsTrigger variant="pill" value="watch">
             관심 {watchedTickers.size}
           </TabsTrigger>
+          <TabsTrigger variant="pill" value="discover">
+            발견
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {seg === 'holdings' ? (
+      {seg === 'discover' ? (
+        <DiscoverPanel onPick={setSelected} selected={selected} />
+      ) : seg === 'holdings' ? (
         <Card style={{ padding: 6 }}>
           {holdingsSorted.map(h => {
             const ev = holdingEval(h)
@@ -738,9 +1090,9 @@ export function StocksPage() {
       ) : (
         <>
           <Tabs value={activeGroup} onValueChange={val => val && setActiveGroup(val)}>
-            <TabsList variant="pills" size="sm" style={{ flexWrap: 'wrap' }}>
+            <TabsList variant="pill" size="sm">
               {watchGroups.map(g => (
-                <TabsTrigger key={g.id} variant="pills" size="sm" value={g.id}>
+                <TabsTrigger key={g.id} variant="pill" value={g.id}>
                   {g.name} <span style={{ opacity: 0.7 }}>{g.tickers.length}</span>
                 </TabsTrigger>
               ))}
@@ -768,6 +1120,7 @@ export function StocksPage() {
       <>
         <MobileBackHeader title="증권" />
         <div style={{ padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <IndexStrip mobile />
           {summary}
           {listPanel}
           {selected && (
@@ -790,9 +1143,14 @@ export function StocksPage() {
   // ---- 데스크톱/태블릿: 2-pane ----
   return (
     <div style={{ padding: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+        <MarketStatusBar />
+        <IndexStrip mobile={false} />
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 420px) 1fr', gap: 20, alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {summary}
+          <PortfolioDonut holdings={STOCK_HOLDINGS} />
           {listPanel}
         </div>
         <Card style={{ padding: 24 }}>

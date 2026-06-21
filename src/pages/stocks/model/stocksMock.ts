@@ -36,6 +36,23 @@ export interface WatchGroup {
   tickers: string[]
 }
 
+export interface MarketIndex {
+  id: string
+  name: string
+  value: number
+  changePct: number
+  spark: number[]
+}
+
+export interface DailyQuote {
+  date: string
+  close: number
+  /** 전일 대비 등락률 (%) */
+  chg: number
+  /** 거래량 — US는 백만(M) 단위 숫자 */
+  vol: number
+}
+
 export const FX_USDKRW = 1383.5
 
 // 가벼운 의사난수 스파크라인 (종목별 고정 시드 — 렌더마다 동일)
@@ -89,6 +106,14 @@ export const STOCK_WATCH: WatchGroup[] = [
   { id: 'w-us',   name: '미국 기술주', tickers: ['MSFT', 'GOOGL', 'AMZN', 'NVDA'] },
 ]
 
+// 시장 지수 — 상단 스트립 (토스증권 Market Info 가정)
+export const MARKET_INDICES: MarketIndex[] = [
+  { id: 'kospi',  name: 'KOSPI',    value: 2_580.21,  changePct: 0.83,  spark: spark(301, 24, 0.4) },
+  { id: 'kosdaq', name: 'KOSDAQ',   value: 738.45,    changePct: -0.41, spark: spark(317, 24, -0.3) },
+  { id: 'nasdaq', name: 'NASDAQ',   value: 19_210.31, changePct: 1.12,  spark: spark(331, 24, 0.7) },
+  { id: 'snp',    name: 'S&P 500',  value: 5_998.74,  changePct: 0.55,  spark: spark(347, 24, 0.3) },
+]
+
 // ---- 시세 계산 헬퍼 ----
 
 /** 시세 원화 환산 (US는 환율 적용) */
@@ -106,4 +131,29 @@ export function holdingCost(h: StockHolding): number {
   if (!s) return 0
   const avgKRW = s.market === 'US' ? Math.round(h.avg * FX_USDKRW) : h.avg
   return avgKRW * h.qty
+}
+
+// 일별 시세 — 종목 상세 표 (연동 전 시드 고정 의사난수, 최근 8영업일)
+const DAILY_DATES = ['06.20', '06.19', '06.18', '06.17', '06.16', '06.13', '06.12', '06.11']
+
+export function dailyQuotes(s: Stock): DailyQuote[] {
+  let seed = s.ticker.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  const rng = () => {
+    seed = (seed * 9301 + 49297) % 233280
+    return seed / 233280
+  }
+  let close = s.price
+  const volBase = s.market === 'US' ? 30 : 2_000_000
+  return DAILY_DATES.map((date, i) => {
+    const chg = i === 0 ? s.changePct : (rng() - 0.5) * 6
+    const row: DailyQuote = {
+      date,
+      close: s.market === 'US' ? Math.round(close * 100) / 100 : Math.round(close),
+      chg: Math.round(chg * 100) / 100,
+      vol: s.market === 'US' ? Math.round((volBase + rng() * 40) * 10) / 10 : Math.round(volBase + rng() * 8_000_000),
+    }
+    // 과거로 갈수록 등락 역산
+    close = close / (1 + chg / 100)
+    return row
+  })
 }
