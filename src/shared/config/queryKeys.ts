@@ -155,4 +155,5 @@ export const stockKeys = {
   stockInfo: (symbols: string[]) => [...stockKeys.all, 'info', symbols] as const,
   priceLimits: (symbol: string) => [...stockKeys.all, 'price-limits', symbol] as const,
   candles: (symbol: string, interval: string) => [...stockKeys.all, 'candles', symbol, interval] as const,
+  warnings: (symbol: string) => [...stockKeys.all, 'warnings', symbol] as const,
 }

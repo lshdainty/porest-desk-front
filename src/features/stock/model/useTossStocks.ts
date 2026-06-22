@@ -63,12 +63,21 @@ export const useTossStockInfo = (symbols: string[]) =>
     staleTime: 5 * 60_000,
   })
 
-export const useTossCandles = (symbol: string | null, interval: '1m' | '1d') =>
+export const useTossCandles = (symbol: string | null, interval: '1m' | '1d', count?: number) =>
   useQuery({
-    queryKey: stockKeys.candles(symbol ?? '', interval),
-    queryFn: () => stockApi.getCandles(symbol!, interval),
+    queryKey: stockKeys.candles(symbol ?? '', `${interval}:${count ?? ''}`),
+    queryFn: () => stockApi.getCandles(symbol!, interval, count ? { count } : undefined),
     enabled: !!symbol,
     ...COMMON,
+  })
+
+export const useTossStockWarnings = (symbol: string | null) =>
+  useQuery({
+    queryKey: stockKeys.warnings(symbol ?? ''),
+    queryFn: () => stockApi.getStockWarnings(symbol!),
+    enabled: !!symbol,
+    ...COMMON,
+    staleTime: 5 * 60_000,
   })
 
 export const useTossMarketCalendarKr = () =>
