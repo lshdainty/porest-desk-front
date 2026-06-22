@@ -141,7 +141,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           display: 'flex',
           alignItems: 'center',
           gap: 14,
-          padding: '16px 18px',
+          padding: '16px',
           marginBottom: 16,
           borderColor: 'var(--border-brand-soft)',
         }}
