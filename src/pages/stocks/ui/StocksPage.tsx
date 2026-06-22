@@ -15,6 +15,8 @@ import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import type { TossHoldingsItem, TossOrderbook, TossTrade } from '@/features/stock/api/stockApi'
 import { useStockLiveOverlay, useTossAccounts, useTossHoldings, useTossOrderbook, useTossTrades } from '@/features/stock/model/useTossStocks'
+import { useTossCredentialStatus } from '@/features/subscription/model/useSubscription'
+import { Link } from 'react-router-dom'
 import {
   dailyQuotes,
   FX_USDKRW,
@@ -996,7 +998,11 @@ function StockSearchDialog({
 
 export function StocksPage() {
   const { mobile } = useOutletContext<OutletCtx>()
-  // 토스 Open API 라이브 시세·환율 오버레이 (키 있으면 실데이터, 없으면 mock 유지)
+  // 개인키 연결 상태 — 미연결 시 페이지 전체를 '연결 유도'로 게이트(mock 노출 금지).
+  // 토스 API는 시세 포함 모든 조회가 개인키 토큰을 요구하므로(공용키 폐기), 키 없으면 조회 불가.
+  const { data: credential, isLoading: credLoading } = useTossCredentialStatus()
+  const connected = credential?.connected ?? false
+  // 토스 Open API 라이브 시세·환율 오버레이 (연결 시에만 실데이터 적용)
   useStockLiveOverlay()
   const [selected, setSelected] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -1183,6 +1189,33 @@ export function StocksPage() {
       )}
     </div>
   )
+
+  // ---- 개인키 미연결: 전 화면 연결 유도 (mock 노출 금지) ----
+  if (!credLoading && !connected) {
+    const gate = (
+      <Card style={{ padding: '40px 24px', maxWidth: 430, margin: mobile ? undefined : '0 auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
+          <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+            증권 계정을 연결해 주세요
+          </div>
+          <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
+            토스증권 키를 연결하면 시세·보유 종목·평가손익을<br />실시간으로 볼 수 있어요.
+          </div>
+          <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
+            <Link to="/desk/settings">설정에서 연결하기</Link>
+          </Button>
+        </div>
+      </Card>
+    )
+    return mobile ? (
+      <>
+        <MobileBackHeader title="증권" />
+        <div style={{ padding: '16px 16px 24px' }}>{gate}</div>
+      </>
+    ) : (
+      <div style={{ padding: 24 }}>{gate}</div>
+    )
+  }
 
   // ---- 모바일: 풀스크린(← 헤더, 카드 혜택 패턴) + 스택 + 상세 시트 ----
   if (mobile) {
