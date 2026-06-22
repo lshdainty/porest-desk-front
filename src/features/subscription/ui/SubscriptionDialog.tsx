@@ -5,6 +5,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
   AlertDialog,
@@ -47,7 +48,7 @@ const won = (n: number) => n.toLocaleString('ko-KR')
 function FeatureCell({ val, accent }: { val: boolean | string; accent?: boolean }) {
   if (val === true) return <Check size={15} style={{ color: accent ? 'var(--fg-brand)' : 'var(--status-success-fg)' }} />
   if (val === false) return <Minus size={15} style={{ color: 'var(--fg-disabled)' }} />
-  return <span style={{ fontSize: 11.5, fontWeight: 700, color: accent ? 'var(--fg-brand)' : 'var(--fg-secondary)' }}>{val}</span>
+  return <span style={{ fontSize: 'var(--text-caption)', fontWeight: 700, color: accent ? 'var(--fg-brand)' : 'var(--fg-secondary)' }}>{val}</span>
 }
 
 /**
@@ -133,17 +134,16 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
 
   return (
     <ModalShell title="구독 관리" onClose={onClose} size="lg" footer={Footer} mobile={mobile}>
-      {/* 현재 플랜 배너 */}
-      <div
+      {/* 현재 플랜 배너 — Card.brand (bg-brand-subtle + soft brand border) */}
+      <Card
+        variant="brand"
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 14,
-          padding: '16px 18px',
+          padding: '16px',
           marginBottom: 16,
-          borderRadius: 'var(--radius-lg)',
-          background: 'color-mix(in oklab, var(--color-primary) 10%, var(--bg-surface))',
-          border: '1px solid color-mix(in oklab, var(--color-primary) 28%, transparent)',
+          borderColor: 'var(--border-brand-soft)',
         }}
       >
         <span
@@ -152,8 +152,8 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             height: 44,
             borderRadius: 'var(--radius-md)',
             flexShrink: 0,
-            background: 'var(--color-primary)',
-            color: '#fff',
+            background: 'var(--bg-brand)',
+            color: 'var(--fg-on-brand)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -162,27 +162,26 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           <Sparkles size={20} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)' }}>
+          <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>
             {isPro ? 'Porest Pro 이용 중' : 'Free 플랜 이용 중'}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2 }}>
             {isPro
               ? `${nextBill ? `다음 결제 ${nextBill} · ` : ''}${won(proMonthly)}원`
               : '증권·가져오기 등 Pro 기능이 잠겨 있어요'}
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* 증권 스포트라이트 */}
-      <div
+      {/* 증권 스포트라이트 — Card.muted (sunken 톤 info 박스) */}
+      <Card
+        variant="muted"
         style={{
           display: 'flex',
           alignItems: 'flex-start',
           gap: 12,
           padding: '14px 16px',
           marginBottom: 18,
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-sunken)',
         }}
       >
         <span
@@ -191,8 +190,8 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             height: 36,
             borderRadius: 'var(--radius-md)',
             flexShrink: 0,
-            background: 'color-mix(in oklab, var(--color-chart-red) 14%, var(--bg-surface))',
-            color: 'var(--color-chart-red)',
+            background: 'color-mix(in oklab, var(--color-cat-red) 14%, var(--bg-surface))',
+            color: 'var(--color-cat-red)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -201,12 +200,12 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           <TrendingUp size={18} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-primary)' }}>증권 투자는 Pro 전용이에요</div>
-          <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 3, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>증권 투자는 Pro 전용이에요</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 3, lineHeight: 1.5 }}>
             실시간 시세·호가, 국내외 종목 검색, 관심종목, 보유 손익까지 — Pro를 구독하면 증권 탭이 바로 열려요.
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* 결제 주기 토글 */}
       <Tabs value={cycle} onValueChange={v => v && setCycle(v as 'monthly' | 'yearly')} style={{ marginBottom: 14 }}>
@@ -229,55 +228,43 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           marginBottom: 18,
         }}
       >
-        <div
-          style={{
-            padding: 16,
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border-default)',
-            background: 'var(--bg-surface)',
-          }}
-        >
+        <Card variant="bordered" style={{ padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-primary)' }}>Free</span>
+            <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>Free</span>
             {!isPro && <Badge variant="secondary">현재 플랜</Badge>}
           </div>
-          <div className="num" style={{ fontSize: 24, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
+          <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
             0원
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>기본 가계부 기능</div>
-        </div>
-        <div
-          style={{
-            padding: 16,
-            borderRadius: 'var(--radius-lg)',
-            background: 'var(--bg-surface)',
-            border: '2px solid var(--color-primary)',
-            position: 'relative',
-          }}
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>기본 가계부 기능</div>
+        </Card>
+        <Card
+          variant="bordered"
+          style={{ padding: 16, borderColor: 'var(--border-brand)', borderWidth: 2, position: 'relative' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-brand)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-brand)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Sparkles size={13} /> Pro
             </span>
             {isPro && <Badge variant="default">현재 플랜</Badge>}
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span className="num" style={{ fontSize: 24, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
+            <span className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
               {won(proPrice)}원
             </span>
-            <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>/ {cycle === 'monthly' ? '월' : '년'}</span>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>/ {cycle === 'monthly' ? '월' : '년'}</span>
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {cycle === 'yearly' ? `월 ${won(proPerMonth)}원 꼴 · ${savePct}% 절약` : '월 단위 결제'}
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* 기능 비교표 */}
-      <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--fg-tertiary)', letterSpacing: '0.04em', marginBottom: 8 }}>
+      {/* 기능 비교표 — Card.bordered (행 모서리 라운딩은 overflow:hidden 으로 clip) */}
+      <div style={{ fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--fg-tertiary)', letterSpacing: '0.04em', marginBottom: 8 }}>
         기능 비교
       </div>
-      <div style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+      <Card variant="bordered" style={{ overflow: 'hidden' }}>
         <div
           style={{
             display: 'grid',
@@ -287,9 +274,9 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             background: 'var(--bg-sunken)',
           }}
         >
-          <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>기능</span>
-          <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', fontWeight: 600, textAlign: 'center' }}>Free</span>
-          <span style={{ fontSize: 11.5, color: 'var(--fg-brand)', fontWeight: 700, textAlign: 'center' }}>Pro</span>
+          <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>기능</span>
+          <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 600, textAlign: 'center' }}>Free</span>
+          <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-brand)', fontWeight: 700, textAlign: 'center' }}>Pro</span>
         </div>
         {SUB_FEATURES.map((f, i) => (
           <div
@@ -300,20 +287,21 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
               alignItems: 'center',
               padding: '11px 14px',
               borderTop: '1px solid var(--border-subtle)',
-              background: f.star ? 'color-mix(in oklab, var(--color-primary) 5%, var(--bg-surface))' : 'transparent',
+              background: f.star ? 'var(--bg-brand-subtle)' : 'transparent',
             }}
           >
             <span
               style={{
-                fontSize: 12.5,
+                fontSize: 'var(--text-label-sm)',
                 color: 'var(--fg-primary)',
                 fontWeight: f.star ? 700 : 500,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
+                minWidth: 0,
               }}
             >
-              {f.star && <TrendingUp size={13} style={{ color: 'var(--color-chart-red)' }} />}
+              {f.star && <TrendingUp size={13} style={{ color: 'var(--color-cat-red)', flexShrink: 0 }} />}
               {f.label}
             </span>
             <span style={{ textAlign: 'center' }}>
@@ -324,7 +312,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             </span>
           </div>
         ))}
-      </div>
+      </Card>
     </ModalShell>
   )
 }
