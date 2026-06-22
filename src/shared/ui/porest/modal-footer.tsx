@@ -20,6 +20,11 @@ type ModalFooterProps = {
   /** 저장(주 액션) 핸들러 + 라벨. */
   onSave: () => void
   saveLabel: string
+  /**
+   * 주 액션 버튼 variant — 기본 `default`(primary). `destructive` 는 파괴적 주액션
+   * (구독 해지 등)을 우측 솔리드 danger 버튼으로(앱 PButton danger 정합). button.md SoT.
+   */
+  saveVariant?: 'default' | 'destructive'
   /** 저장 진행 중 — spinner + 비활성. */
   saving?: boolean
   /** 저장 불가(폼 미충족 등). */
@@ -43,6 +48,7 @@ type ModalFooterProps = {
 export function ModalFooter({
   onSave,
   saveLabel,
+  saveVariant = 'default',
   saving = false,
   saveDisabled = false,
   saveIcon,
@@ -76,6 +82,7 @@ export function ModalFooter({
       </Button>
       <Button
         type="button"
+        variant={saveVariant === 'destructive' ? 'destructive' : 'default'}
         size="md"
         onClick={onSave}
         disabled={saveDisabled || deleting}

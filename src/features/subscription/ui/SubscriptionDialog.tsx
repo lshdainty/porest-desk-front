@@ -4,9 +4,8 @@ import { Check, Minus, Sparkles, TrendingUp } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +15,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
 import {
   useMyFeatures,
@@ -63,6 +61,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
   const cancel = useCancelSubscription()
 
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const isPro = featuresQ.data?.features?.includes('SECURITIES') ?? false
   const sub = subQ.data
@@ -92,36 +91,16 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
       onError: () => toast.error('해지에 실패했어요'),
     })
 
-  const cancelSlot = (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="md" flush="left" style={{ color: 'var(--status-danger-fg)' }}>
-          구독 해지
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>구독을 해지할까요?</AlertDialogTitle>
-          <AlertDialogDescription>
-            해지하면 {nextBill ?? '만료일'}부터 Free 플랜으로 전환되고 증권 탭이 잠겨요. 그 전까지는 Pro 기능을 계속 쓸 수
-            있어요.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>유지하기</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onCancel}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            구독 해지
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-
+  // 앱 시트 footer 정합 — [닫기 | 구독 해지(danger)] / [닫기 | Pro 시작하기(primary)].
+  // 구독 해지는 ModalFooter 주액션(destructive)으로 두고, 확인 다이얼로그는 controlled 로 띄운다.
   const Footer = isPro ? (
-    <ModalFooter onCancel={onClose} cancelLabel="닫기" onSave={onClose} saveLabel="확인" leftSlot={cancelSlot} />
+    <ModalFooter
+      onCancel={onClose}
+      cancelLabel="닫기"
+      onSave={() => setConfirmOpen(true)}
+      saveLabel="구독 해지"
+      saveVariant="destructive"
+    />
   ) : (
     <ModalFooter
       onCancel={onClose}
@@ -207,23 +186,27 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
         </div>
       </Card>
 
-      {/* 결제 주기 토글 */}
-      <Tabs value={cycle} onValueChange={v => v && setCycle(v as 'monthly' | 'yearly')} style={{ marginBottom: 14 }}>
-        <TabsList style={{ width: '100%' }}>
-          <TabsTrigger value="monthly" style={{ flex: 1 }}>
-            월간
-          </TabsTrigger>
-          <TabsTrigger value="yearly" style={{ flex: 1 }}>
-            연간 <span style={{ color: 'var(--fg-brand)', fontWeight: 700, marginLeft: 4 }}>{savePct}%↓</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* 결제 주기 토글 — ToggleGroup segmented (앱 PSegmented 정합) */}
+      <ToggleGroup
+        type="single"
+        variant="segmented"
+        value={cycle}
+        onValueChange={v => v && setCycle(v as 'monthly' | 'yearly')}
+        style={{ marginBottom: 14 }}
+      >
+        <ToggleGroupItem value="monthly" variant="segmented">
+          월간
+        </ToggleGroupItem>
+        <ToggleGroupItem value="yearly" variant="segmented">
+          연간 {savePct}%↓
+        </ToggleGroupItem>
+      </ToggleGroup>
 
-      {/* 플랜 비교 카드 */}
+      {/* 플랜 비교 카드 — 모바일(drawer)에서도 앱처럼 항상 2열 나란히 */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: mobile ? '1fr' : '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr',
           gap: 12,
           marginBottom: 18,
         }}
@@ -268,10 +251,10 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 56px 56px',
+            gridTemplateColumns: '1fr 52px 52px',
             alignItems: 'center',
             padding: '8px 14px',
-            background: 'var(--bg-sunken)',
+            background: 'var(--bg-table-head)',
           }}
         >
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>기능</span>
@@ -283,7 +266,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             key={i}
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 56px 56px',
+              gridTemplateColumns: '1fr 52px 52px',
               alignItems: 'center',
               padding: '11px 14px',
               borderTop: '1px solid var(--border-subtle)',
@@ -313,6 +296,28 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           </div>
         ))}
       </Card>
+
+      {/* 구독 해지 확인 — footer '구독 해지'(destructive) 클릭 시 controlled 로 표시 */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>구독을 해지할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              해지하면 {nextBill ?? '만료일'}부터 Free 플랜으로 전환되고 증권 탭이 잠겨요. 그 전까지는 Pro 기능을 계속 쓸 수
+              있어요.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>유지하기</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={onCancel}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              구독 해지
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ModalShell>
   )
 }
