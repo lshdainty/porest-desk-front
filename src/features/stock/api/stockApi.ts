@@ -167,6 +167,9 @@ export interface TossPriceLimit {
 
 const BASE = '/v1/toss'
 
+/** 토스 candles 의 count 상한(min:1 max:200). 초과 요청은 before 커서로 페이지네이션. */
+const TOSS_CANDLE_MAX = 200
+
 export const stockApi = {
   // 시세
   getPrices: async (symbols: string[]): Promise<TossPrice[]> => {
@@ -202,10 +205,40 @@ export const stockApi = {
     interval: '1m' | '1d',
     opts?: { count?: number; before?: string; adjusted?: boolean },
   ): Promise<TossCandlePage> => {
-    const resp: ApiResponse<TossCandlePage> = await apiClient.get(`${BASE}/candles`, {
-      params: { symbol, interval, ...opts },
-    })
-    return resp.data
+    const fetchPage = async (count?: number, before?: string): Promise<TossCandlePage> => {
+      const resp: ApiResponse<TossCandlePage> = await apiClient.get(`${BASE}/candles`, {
+        params: { symbol, interval, count, before, adjusted: opts?.adjusted },
+      })
+      return resp.data
+    }
+
+    const wanted = opts?.count
+    // count 미지정 또는 ≤200 → 단일 요청 (기존 동작)
+    if (!wanted || wanted <= TOSS_CANDLE_MAX) {
+      return fetchPage(wanted, opts?.before)
+    }
+
+    // 토스 count 상한(200) 초과 → nextBefore 커서로 누적 (요청당 ≤200)
+    const merged: TossCandle[] = []
+    const seen = new Set<string>()
+    let before = opts.before
+    let nextBefore: string | null = null
+    let remaining = wanted
+    while (remaining > 0) {
+      const page = await fetchPage(Math.min(remaining, TOSS_CANDLE_MAX), before)
+      if (page.candles.length === 0) break
+      for (const c of page.candles) {
+        if (!seen.has(c.timestamp)) {
+          seen.add(c.timestamp)
+          merged.push(c)
+        }
+      }
+      nextBefore = page.nextBefore
+      remaining -= page.candles.length
+      if (!page.nextBefore) break
+      before = page.nextBefore
+    }
+    return { candles: merged, nextBefore }
   },
 
   // 종목 정보
