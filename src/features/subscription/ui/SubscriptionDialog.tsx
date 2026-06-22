@@ -154,7 +154,8 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
         </div>
       </Card>
 
-      {/* 증권 스포트라이트 — Card.muted (sunken 톤 info 박스) */}
+      {/* 증권 스포트라이트 — Card.muted + page 톤 override (앱 bgSunken 정합: surface 보다
+          어두운 sunken. 웹 --bg-muted 는 다크에서 surface 보다 밝아 앱과 반대라 --bg-canvas 사용) */}
       <Card
         variant="muted"
         style={{
@@ -163,6 +164,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           gap: 12,
           padding: '14px 16px',
           marginBottom: 18,
+          background: 'var(--bg-canvas)',
         }}
       >
         <span
