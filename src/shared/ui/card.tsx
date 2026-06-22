@@ -5,18 +5,21 @@ import { cn } from "@/shared/lib/index"
 
 /*
  * Porest Card — porest-design specs/components/card.md SoT 기반.
- * v5: variant 도입 — shadow (default) / bordered.
+ * v5: variant 도입 — shadow (default) / bordered. v6: muted / brand 공식화.
  *
- * - Card: rounded-lg + bg-surface-default + (shadow variant) inline boxShadow.
+ * - Card: rounded-lg + variant 별 bg + (shadow variant) inline boxShadow.
  *   inline boxShadow는 Tailwind v4 utility 내부 분해(--tw-shadow-*) 문제로
  *   다크모드 토큰 override 우회되는 이슈 fix (spec migration note).
  *   Card 자체는 padding 없음 — sub-component가 padding 보유 (shadcn 정석 패턴).
  * - variant=shadow (default): border 없음 + shadow-sm. 일반 정보 카드 (preview .review-* SoT).
  * - variant=bordered (v5): 1px border-subtle + shadow 없음. dense info / inline summary
  *   (선택 기간 hint, chart 내 sub-card). App PCard.bordered 와 정합.
- * - variant=muted: bg-muted 채움 + border/shadow 없음. dark dialog 위에서 bordered 가
+ * - variant=muted (v6): bg-muted 채움 + border/shadow 없음. dark dialog 위에서 bordered 가
  *   surface 와 묻혀 안 보이던 inline summary(가계부 day-detail 합계 카드)용.
- *   App PCard.muted 미러 — web 전용 추가(spec 미반영, desk-app 확장 따름).
+ *   App PCard.muted 정합.
+ * - variant=brand (v6): bg-brand-subtle + 1px border-brand + shadow 없음. 브랜드 틴트 강조
+ *   ('현재 플랜' 배너, selected/active). App PCard.brand 정합. 보더는 사용처에서
+ *   border-brand-soft 로 override 가능(은은한 강조).
  * - CardHeader: flex flex-col gap-xs p-lg md:p-xl.
  * - CardContent: p-lg md:p-xl, CardHeader/CardFooter 다음에 올 땐 pt-0.
  * - CardFooter: flex items-center p-lg md:p-xl pt-0.
@@ -30,6 +33,7 @@ const cardVariants = cva(
         shadow: "bg-surface-default",
         bordered: "bg-surface-default border border-border-subtle",
         muted: "bg-[var(--bg-muted)]",
+        brand: "bg-[var(--bg-brand-subtle)] border border-[var(--border-brand)]",
       },
     },
     defaultVariants: {
@@ -46,12 +50,10 @@ const Card = React.forwardRef<
     ref={ref}
     className={cn(cardVariants({ variant }), className)}
     style={{
-      // shadow variant 만 inline boxShadow 적용 (Tailwind v4 다크 모드 override 우회).
-      // bordered(border-only)·muted(fill-only) 는 shadow 없음.
+      // shadow variant(또는 미지정=default)만 inline boxShadow 적용 (Tailwind v4 다크 모드
+      // override 우회). bordered(border-only)·muted(fill-only)·brand 는 shadow 없음.
       boxShadow:
-        variant === "bordered" || variant === "muted"
-          ? undefined
-          : "var(--shadow-sm)",
+        variant && variant !== "shadow" ? undefined : "var(--shadow-sm)",
       ...style,
     }}
     {...props}
