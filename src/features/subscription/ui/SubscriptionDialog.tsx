@@ -171,8 +171,8 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
             height: 36,
             borderRadius: 'var(--radius-md)',
             flexShrink: 0,
-            background: 'color-mix(in oklab, var(--color-cat-red) 14%, var(--bg-surface))',
-            color: 'var(--color-cat-red)',
+            background: 'var(--status-danger-subtle)',
+            color: 'var(--status-danger-fg)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -286,7 +286,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
                 minWidth: 0,
               }}
             >
-              {f.star && <TrendingUp size={13} style={{ color: 'var(--color-cat-red)', flexShrink: 0 }} />}
+              {f.star && <TrendingUp size={13} style={{ color: 'var(--status-danger-fg)', flexShrink: 0 }} />}
               {f.label}
             </span>
             <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
