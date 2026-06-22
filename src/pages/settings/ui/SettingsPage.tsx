@@ -578,26 +578,9 @@ function AccountSection({ mobile }: { mobile: boolean }) {
         />
       </AccountGroup>
 
-      {/* 구독·결제 */}
+      {/* 구독·결제 — 앱 account_screen 정합: 40 브랜드 칩 + 제목/부제 스택 + 가격/배지 + chevron */}
       <AccountGroup label="구독·결제">
-        <AccountRow
-          icon={<Sparkles size={20} style={{ color: 'var(--fg-brand)' }} />}
-          label="Porest Pro"
-          desc={
-            isPro
-              ? `${nextBill ? `다음 결제 ${nextBill} · ` : ''}증권 등 Pro 기능 이용 중`
-              : '증권 투자는 Pro 전용 · 지금 시작하기'
-          }
-          right={
-            isPro ? (
-              <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />
-            ) : (
-              <Badge variant="default">Pro 시작</Badge>
-            )
-          }
-          onClick={() => setSubOpen(true)}
-          isLast
-        />
+        <SubscriptionRow isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
       </AccountGroup>
 
       {/* 증권 데이터 연동 — 구독(Pro) 시에만 */}
@@ -797,6 +780,96 @@ function AccountRow({
     >
       {content}
     </div>
+  )
+}
+
+// ─── SubscriptionRow (구독·결제) ───────────────────────────────
+// 앱 account_screen 구독 행 정합 — generic AccountRow(가로 desc)는 긴 부제에서
+// 제목이 글자단위로 깨져, 40 브랜드 칩 + 제목/부제 세로 스택 + 우측 가격/배지로 분리.
+function SubscriptionRow({
+  isPro,
+  nextBill,
+  onClick,
+}: {
+  isPro: boolean
+  nextBill: string | null
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width: '100%',
+        padding: '14px 16px',
+        border: 0,
+        background: 'transparent',
+        cursor: 'pointer',
+        textAlign: 'left',
+        fontFamily: 'inherit',
+      }}
+      onMouseEnter={e => {
+        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
+      }}
+      onMouseLeave={e => {
+        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+      }}
+    >
+      <span
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-brand-subtle)',
+          color: 'var(--fg-brand)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <Sparkles size={18} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 'var(--text-body-sm)',
+            fontWeight: 700,
+            color: 'var(--fg-primary)',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          Porest Pro
+        </div>
+        <div
+          style={{
+            fontSize: 'var(--text-caption)',
+            color: 'var(--fg-tertiary)',
+            marginTop: 2,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {isPro
+            ? `${nextBill ? `다음 결제 ${nextBill} · ` : ''}Pro 이용 중`
+            : '증권 투자는 Pro 전용 · 지금 시작하기'}
+        </div>
+      </div>
+      {isPro ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+          <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+            9,900원
+          </div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>/ 월</div>
+        </div>
+      ) : (
+        <Badge variant="default">Pro 시작</Badge>
+      )}
+      <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+    </button>
   )
 }
 
