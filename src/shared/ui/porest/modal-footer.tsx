@@ -25,6 +25,12 @@ type ModalFooterProps = {
    * (구독 해지 등)을 우측 솔리드 danger 버튼으로(앱 PButton danger 정합). button.md SoT.
    */
   saveVariant?: 'default' | 'destructive'
+  /**
+   * 반반(50/50) 풀폭 footer — 취소(outline)+저장 둘 다 `flex:1` 로 동일 폭. 앱 `PSheetFooter`
+   * (Expanded 2개) 정합. 기본(false) 은 우측 정렬 compact(ghost 취소). leftSlot/onDelete 와
+   * 동시 사용하지 말 것.
+   */
+  fullWidth?: boolean
   /** 저장 진행 중 — spinner + 비활성. */
   saving?: boolean
   /** 저장 불가(폼 미충족 등). */
@@ -49,6 +55,7 @@ export function ModalFooter({
   onSave,
   saveLabel,
   saveVariant = 'default',
+  fullWidth = false,
   saving = false,
   saveDisabled = false,
   saveIcon,
@@ -77,7 +84,14 @@ export function ModalFooter({
         </Button>
       )}
       {!onDelete && leftSlot && <div style={{ marginRight: 'auto' }}>{leftSlot}</div>}
-      <Button type="button" variant="ghost" size="md" onClick={onCancel} disabled={busy}>
+      <Button
+        type="button"
+        variant={fullWidth ? 'outline' : 'ghost'}
+        size="md"
+        onClick={onCancel}
+        disabled={busy}
+        style={fullWidth ? { flex: 1 } : undefined}
+      >
         {cancelLabel}
       </Button>
       <Button
@@ -87,6 +101,7 @@ export function ModalFooter({
         onClick={onSave}
         disabled={saveDisabled || deleting}
         loading={saving}
+        style={fullWidth ? { flex: 1 } : undefined}
       >
         {saveIcon}
         {saveLabel}

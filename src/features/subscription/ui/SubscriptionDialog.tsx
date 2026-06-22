@@ -95,6 +95,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
   // 구독 해지는 ModalFooter 주액션(destructive)으로 두고, 확인 다이얼로그는 controlled 로 띄운다.
   const Footer = isPro ? (
     <ModalFooter
+      fullWidth
       onCancel={onClose}
       cancelLabel="닫기"
       onSave={() => setConfirmOpen(true)}
@@ -103,6 +104,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
     />
   ) : (
     <ModalFooter
+      fullWidth
       onCancel={onClose}
       cancelLabel="닫기"
       onSave={onSubscribe}
@@ -287,10 +289,10 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
               {f.star && <TrendingUp size={13} style={{ color: 'var(--color-cat-red)', flexShrink: 0 }} />}
               {f.label}
             </span>
-            <span style={{ textAlign: 'center' }}>
+            <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <FeatureCell val={f.free} />
             </span>
-            <span style={{ textAlign: 'center' }}>
+            <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <FeatureCell val={f.pro} accent={f.star} />
             </span>
           </div>
