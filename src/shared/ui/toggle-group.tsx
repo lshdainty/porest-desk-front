@@ -28,9 +28,11 @@ const ToggleGroup = React.forwardRef<
     VariantProps<typeof toggleVariants>
 >(({ className, variant, size, children, ...props }, ref) => {
   // POREST .p-seg — sunken bar for segmented control. solid / subtle 둘 다 동일 wrapper.
+  // 트랙은 앱 PSegmented 정합으로 어두운 page 톤(--bg-canvas) + gap 0. 웹 --bg-sunken 은
+  // 다크에서 surface 보다 밝아 앱(어두운 sunken)과 반대라, 트랙만 page 톤으로 맞춤.
   const wrapper =
     variant === "segmented" || variant === "segmented-subtle"
-      ? "inline-flex w-full gap-[2px] rounded-[var(--radius-md)] border border-border-default bg-[var(--bg-sunken)] p-0.5"
+      ? "inline-flex w-full gap-0 rounded-[var(--radius-md)] border border-border-default bg-[var(--bg-canvas)] p-0.5"
       : "flex items-center justify-center gap-1"
   return (
     <ToggleGroupPrimitive.Root

@@ -63,17 +63,17 @@ export function TossConnectCard() {
       >
         증권 데이터 연동
       </div>
-      <Card style={{ padding: 0, overflow: 'hidden' }}>
+      <Card variant="bordered" style={{ padding: 0, overflow: 'hidden' }}>
         {/* 헤더 */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 18px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 16px 14px' }}>
           <span
             style={{
               width: 40,
               height: 40,
               borderRadius: 'var(--radius-md)',
               flexShrink: 0,
-              background: 'color-mix(in oklab, var(--color-chart-blue) 14%, var(--bg-surface))',
-              color: 'var(--color-chart-blue)',
+              background: 'var(--bg-brand-subtle)',
+              color: 'var(--fg-brand)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -90,14 +90,14 @@ export function TossConnectCard() {
             </div>
           </div>
           {connected && (
-            <Badge variant="secondary" style={{ flexShrink: 0 }}>
+            <Badge variant="success" style={{ flexShrink: 0 }}>
               연결됨
             </Badge>
           )}
         </div>
 
         {connected ? (
-          <div style={{ padding: '0 18px 18px' }}>
+          <div style={{ padding: '0 16px 16px' }}>
             <div
               style={{
                 display: 'flex',
@@ -105,14 +105,14 @@ export function TossConnectCard() {
                 gap: 12,
                 padding: '12px 14px',
                 borderRadius: 'var(--radius-md)',
-                background: 'var(--bg-sunken)',
+                background: 'var(--bg-canvas)',
               }}
             >
               <CircleCheck size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>본인 API 키 사용 중</div>
-                <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                  {verifiedAt ? `검증 완료 · ${verifiedAt.slice(0, 10)}` : '검증 완료'}
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>토스증권 API 키 연결됨</div>
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                  {verifiedAt ? `마지막 검증 · ${verifiedAt.slice(0, 10)}` : '보유 주식·시세 자동 수집 중'}
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={onDisconnect} loading={disconnect.isPending}>
@@ -121,7 +121,7 @@ export function TossConnectCard() {
             </div>
           </div>
         ) : (
-          <div style={{ padding: '0 18px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Field>
               <FieldLabel>Client ID</FieldLabel>
               <Input
@@ -167,7 +167,7 @@ export function TossConnectCard() {
             >
               연결하기
             </Button>
-            <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
               키는 서버에 암호화되어 저장되며, 본인만 사용합니다. 발급은 토스증권 개발자센터에서 받을 수 있어요.
             </div>
           </div>
