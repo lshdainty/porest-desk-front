@@ -134,28 +134,3 @@ export const MARKET_INDICES: MarketIndex[] = [
 export function priceKRW(s: Stock): number {
   return s.market === 'US' ? Math.round(s.price * FX_USDKRW) : s.price
 }
-
-// 일별 시세 — 종목 상세 표 (연동 전 시드 고정 의사난수, 최근 8영업일)
-const DAILY_DATES = ['06.20', '06.19', '06.18', '06.17', '06.16', '06.13', '06.12', '06.11']
-
-export function dailyQuotes(s: Stock): DailyQuote[] {
-  let seed = s.ticker.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  const rng = () => {
-    seed = (seed * 9301 + 49297) % 233280
-    return seed / 233280
-  }
-  let close = s.price
-  const volBase = s.market === 'US' ? 30 : 2_000_000
-  return DAILY_DATES.map((date, i) => {
-    const chg = i === 0 ? s.changePct : (rng() - 0.5) * 6
-    const row: DailyQuote = {
-      date,
-      close: s.market === 'US' ? Math.round(close * 100) / 100 : Math.round(close),
-      chg: Math.round(chg * 100) / 100,
-      vol: s.market === 'US' ? Math.round((volBase + rng() * 40) * 10) / 10 : Math.round(volBase + rng() * 8_000_000),
-    }
-    // 과거로 갈수록 등락 역산
-    close = close / (1 + chg / 100)
-    return row
-  })
-}
