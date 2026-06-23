@@ -26,6 +26,9 @@ export const useTossPrices = (symbols: string[]) =>
     queryFn: () => stockApi.getPrices(symbols),
     enabled: symbols.length > 0,
     ...COMMON,
+    // 현재가는 라이브로 — 상세 헤더 가격/등락%·리스트 시세가 주기적으로 갱신된다.
+    // (탭이 백그라운드면 react-query 가 기본적으로 폴링 일시정지)
+    refetchInterval: 10_000,
   })
 
 export const useTossOrderbook = (symbol: string | null) =>
