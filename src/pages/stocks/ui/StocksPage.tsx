@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext, Link } from 'react-router-dom'
 import { AlertTriangle, ChevronDown, ChevronUp, Info, LineChart, Search, Star } from 'lucide-react'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import { Input } from '@/shared/ui/input'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { LightweightStockChart } from './LightweightStockChart'
 import type {
   TossCandle,
   TossHoldingsItem,
@@ -215,171 +216,10 @@ function StockRow({ ticker, onClick, sub, right, active }: { ticker: string; onC
   )
 }
 
-// ---- 실시간 가격 차트 (토스 candles · 그리드 · 축 · 크로스헤어) ---------------
+// ---- 차트 기간 탭 (캔들 차트는 LightweightStockChart 가 담당) -----------------
 
 const RANGES = ['1D', '1주', '1개월', '3개월', '1년'] as const
 type Range = (typeof RANGES)[number]
-
-const RANGE_CANDLES: Record<Range, { interval: '1m' | '1d'; count: number; show: number }> = {
-  '1D': { interval: '1m', count: 390, show: 390 },
-  '1주': { interval: '1d', count: 252, show: 5 },
-  '1개월': { interval: '1d', count: 252, show: 22 },
-  '3개월': { interval: '1d', count: 252, show: 66 },
-  '1년': { interval: '1d', count: 252, show: 252 },
-}
-
-const X_LABELS: Record<Range, string[]> = {
-  '1D': ['09:00', '10:30', '12:00', '13:30', '15:30'],
-  '1주': ['5일 전', '4일', '3일', '2일', '어제'],
-  '1개월': ['4주 전', '3주', '2주', '1주', '오늘'],
-  '3개월': ['3개월 전', '2개월', '1개월', '오늘'],
-  '1년': ['1년 전', '9개월', '6개월', '3개월', '오늘'],
-}
-
-function StockChart({ symbol, isUs, range, height, mobile }: { symbol: string; isUs: boolean; range: Range; height: number; mobile: boolean }) {
-  const cfg = RANGE_CANDLES[range]
-  const q = useTossCandles(symbol, cfg.interval, cfg.count)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null)
-
-  const data = useMemo(() => {
-    const all = candleCloses(q.data?.candles ?? [])
-    return range === '1D' ? all : all.slice(-cfg.show)
-  }, [q.data, range, cfg.show])
-
-  if (q.isLoading) {
-    return <div style={{ height, borderRadius: 'var(--radius-md)', background: 'var(--bg-sunken)' }} />
-  }
-  if (data.length < 2) {
-    return (
-      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-        차트 데이터가 없어요
-      </div>
-    )
-  }
-
-  const up = data[data.length - 1]! >= data[0]!
-  const color = up ? 'var(--status-danger-fg)' : 'var(--fg-brand)'
-  const gid = `sc-${symbol.replace(/[^a-z0-9]/gi, '')}-${range.replace(/[^a-z0-9]/gi, '')}`
-
-  const W = 640
-  const H = height
-  const padR = mobile ? 44 : 56
-  const padT = 10
-  const padB = 22
-  const padL = 2
-  const innerW = W - padL - padR
-  const innerH = H - padT - padB
-  const min = Math.min(...data)
-  const max = Math.max(...data)
-  const pad = (max - min) * 0.14 || 1
-  const lo = min - pad
-  const hi = max + pad
-  const X = (i: number) => padL + (i / (data.length - 1)) * innerW
-  const Y = (v: number) => padT + (1 - (v - lo) / (hi - lo)) * innerH
-
-  const linePath = data.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')
-  const areaPath = `${linePath} L${X(data.length - 1).toFixed(1)},${(padT + innerH).toFixed(1)} L${X(0).toFixed(1)},${(padT + innerH).toFixed(1)} Z`
-
-  const fmtY = (v: number) => (isUs ? `$${v.toFixed(v >= 100 ? 0 : 1)}` : Math.round(v).toLocaleString('ko-KR'))
-  const fmtFull = (v: number) => (isUs ? `$${v.toFixed(2)}` : `${Math.round(v).toLocaleString('ko-KR')}원`)
-  const gridY = [0, 1, 2, 3].map(k => lo + (hi - lo) * (k / 3))
-  const labels = X_LABELS[range]
-
-  const onMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!wrapRef.current) return
-    const rect = wrapRef.current.getBoundingClientRect()
-    const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX
-    const px = ((clientX - rect.left) / rect.width) * W
-    let i = Math.round(((px - padL) / innerW) * (data.length - 1))
-    i = Math.max(0, Math.min(data.length - 1, i))
-    setHover({ i, x: X(i), y: Y(data[i]!) })
-  }
-
-  return (
-    <div
-      ref={wrapRef}
-      style={{ position: 'relative', width: '100%', height: H, touchAction: 'pan-y' }}
-      onMouseMove={onMove}
-      onMouseLeave={() => setHover(null)}
-      onTouchStart={onMove}
-      onTouchMove={onMove}
-      onTouchEnd={() => setHover(null)}
-    >
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
-        <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {gridY.map((gv, k) => (
-          <line
-            key={k}
-            x1={padL}
-            y1={Y(gv)}
-            x2={padL + innerW}
-            y2={Y(gv)}
-            stroke="var(--border-subtle)"
-            strokeWidth="1"
-            strokeDasharray={k === 0 ? '0' : '3 4'}
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
-        <path d={areaPath} fill={`url(#${gid})`} />
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-        <circle cx={X(data.length - 1)} cy={Y(data[data.length - 1]!)} r="3.5" fill={color} vectorEffect="non-scaling-stroke" />
-        {hover && (
-          <g>
-            <line x1={hover.x} y1={padT} x2={hover.x} y2={padT + innerH} stroke="var(--fg-tertiary)" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" opacity="0.6" />
-            <circle cx={hover.x} cy={hover.y} r="4.5" fill="var(--bg-surface)" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-          </g>
-        )}
-      </svg>
-      <div style={{ position: 'absolute', top: 0, right: 0, height: H, width: padR, pointerEvents: 'none' }}>
-        {gridY.map((gv, k) => (
-          <div
-            key={k}
-            style={{ position: 'absolute', right: 2, top: `${(Y(gv) / H) * 100}%`, transform: 'translateY(-50%)', fontSize: mobile ? 9.5 : 10.5, color: 'var(--fg-tertiary)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
-          >
-            {fmtY(gv)}
-          </div>
-        ))}
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: padR, bottom: -2, display: 'flex', justifyContent: 'space-between', pointerEvents: 'none' }}>
-        {labels.map((lb, k) => (
-          <span key={k} style={{ fontSize: mobile ? 9.5 : 10.5, color: 'var(--fg-tertiary)' }}>
-            {lb}
-          </span>
-        ))}
-      </div>
-      {hover && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 4,
-            left: `clamp(0px, calc(${(hover.x / W) * 100}% - 52px), calc(100% - ${padR + 96}px))`,
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-md)',
-            padding: '5px 9px',
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}
-        >
-          <div className="num" style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>{fmtFull(data[hover.i]!)}</div>
-          <div className="num" style={{ fontSize: 10, fontWeight: 600, marginTop: 1, color: data[hover.i]! - data[0]! >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)' }}>
-            {(() => {
-              const d = ((data[hover.i]! - data[0]!) / data[0]!) * 100
-              return `${d >= 0 ? '+' : ''}${d.toFixed(2)}%`
-            })()}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
 
 // ---- 호가창 (토스 orderbook · 실데이터 전용) -------------------------------
 
@@ -870,7 +710,7 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
       {/* 차트 (토스 candles) + 기간 세그먼트 */}
       <Card style={{ padding: mobile ? '14px 14px 14px' : '16px 18px 16px' }}>
         <div style={{ height: mobile ? 168 : 200 }}>
-          <StockChart symbol={ticker} isUs={isUs} range={range} height={mobile ? 168 : 200} mobile={mobile} />
+          <LightweightStockChart symbol={ticker} isUs={isUs} range={range} height={mobile ? 168 : 200} />
         </div>
         <div style={{ marginTop: 8 }}>
           <Tabs value={range} onValueChange={v => setRange(v as Range)}>
