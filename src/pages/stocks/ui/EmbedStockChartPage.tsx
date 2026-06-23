@@ -93,8 +93,12 @@ export function EmbedStockChartPage() {
     root.classList.remove('light', 'dark')
     root.classList.add(theme)
     root.setAttribute('data-theme', theme)
-    // 임베드 페이지는 자체 chrome 가 없으므로 배경 투명 — 호스트(WebView) 의 배경이 비치도록.
+    // 임베드는 호스트(앱 PCard) 위에 투명하게 얹혀야 한다. index.css 가 html·body 에 --bg-canvas 를
+    // 깔므로 html/body/#root 배경을 모두 inline 으로 투명 override (inline 이 스타일시트보다 우선).
+    root.style.background = 'transparent'
     document.body.style.background = 'transparent'
+    const mount = document.getElementById('root')
+    if (mount) mount.style.background = 'transparent'
   }, [theme])
 
   // JS 채널 노출 — Dart 측 runJavaScript 가 호출
