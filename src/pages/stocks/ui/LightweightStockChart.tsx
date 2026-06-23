@@ -24,7 +24,14 @@ import {
   type MouseEventParams,
 } from 'lightweight-charts'
 import { useTheme } from '@/shared/ui/theme-provider'
-import { stockApi, type TossCandle } from '@/features/stock/api/stockApi'
+import { stockApi, type TossCandle, type TossCandlePage } from '@/features/stock/api/stockApi'
+
+/** 캔들 페이지를 가져오는 함수. 기본은 stockApi.getCandles, 임베드 컨텍스트는 Bearer 토큰 client 주입. */
+export type CandleFetcher = (
+  symbol: string,
+  interval: '1m' | '1d',
+  opts: { count: number; before?: string },
+) => Promise<TossCandlePage>
 
 type Range = '1D' | '1주' | '1개월' | '3개월' | '1년'
 
@@ -108,11 +115,15 @@ export function LightweightStockChart({
   isUs,
   range,
   height,
+  fetcher = (symbol, interval, opts) => stockApi.getCandles(symbol, interval, opts),
 }: {
   symbol: string
   isUs: boolean
   range: Range
-  height: number
+  /** 차트 높이 — number(px) 또는 '100%'(부모 크기 따라감, embed 풀블리드용). */
+  height: number | '100%'
+  /** 캔들 페치 함수. 기본=stockApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입. */
+  fetcher?: CandleFetcher
 }) {
   const { resolvedTheme } = useTheme()
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -274,8 +285,7 @@ export function LightweightStockChart({
       timeScale: { timeVisible: interval === '1m', secondsVisible: false },
     })
 
-    stockApi
-      .getCandles(symbol, interval, { count: PAGE })
+    fetcher(symbol, interval, { count: PAGE })
       .then(page => {
         if (reqId !== reqIdRef.current) return
         const arr = sortDedup(page.candles.map(toBar).filter((x): x is Bar => x !== null))
@@ -300,7 +310,7 @@ export function LightweightStockChart({
     const reqId = reqIdRef.current
     loadingRef.current = true
     try {
-      const page = await stockApi.getCandles(symbol, interval, { count: PAGE, before: cursorRef.current })
+      const page = await fetcher(symbol, interval, { count: PAGE, before: cursorRef.current })
       if (reqId !== reqIdRef.current) return
       const older = page.candles.map(toBar).filter((x): x is Bar => x !== null)
       const prevLen = barsRef.current.length

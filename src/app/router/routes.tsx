@@ -23,6 +23,7 @@ const CardDetailPage = lazy(() => import('@/pages/card').then(m => ({ default: m
 const CardBenefitPage = lazy(() => import('@/pages/card-benefit').then(m => ({ default: m.CardBenefitPage })))
 const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
+const EmbedStockChartPage = lazy(() => import('@/pages/stocks/ui/EmbedStockChartPage').then(m => ({ default: m.EmbedStockChartPage })))
 
 const Loading = () => (
   <div className="flex h-screen items-center justify-center">
@@ -37,6 +38,8 @@ export const AppRouter = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          {/* 임베드 차트 — ProtectedRoute 밖 (querystring 의 60초 embed_token 으로 인증) */}
+          <Route path="/embed/stocks/:symbol" element={<EmbedStockChartPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/desk" element={<DashboardPage />} />
