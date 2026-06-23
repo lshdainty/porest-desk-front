@@ -122,7 +122,11 @@ export function LightweightStockChart({
   range: Range
   /** 차트 높이 — number(px) 또는 '100%'(부모 크기 따라감, embed 풀블리드용). */
   height: number | '100%'
-  /** 캔들 페치 함수. 기본=stockApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입. */
+  /**
+   * 캔들 페치 함수. 기본=stockApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입.
+   * 인증 컨텍스트를 담는 fetcher 는 useMemo 로 안정화할 것 — effect deps 는 [symbol, interval] 이라
+   * identity 변경만으로는 재로드/무효화가 트리거되지 않는다(폴링 틱은 ref 로 최신 fetcher 사용).
+   */
   fetcher?: CandleFetcher
 }) {
   const { resolvedTheme } = useTheme()
@@ -139,6 +143,8 @@ export function LightweightStockChart({
   const noMoreRef = useRef(false)
   const reqIdRef = useRef(0) // symbol/interval 변경 시 진행 중 비동기 무효화
   const loadOlderRef = useRef<() => void>(() => {})
+  const realtimeRef = useRef(false) // 실시간 폴링 in-flight 가드
+  const pollLatestRef = useRef<() => void>(() => {})
   const [version, setVersion] = useState(0) // 초기 로드 완료 신호(가시범위 재설정 트리거)
   const [legend, setLegend] = useState<
     { o: number; h: number; l: number; c: number; vol: number; up: boolean } | null
@@ -157,8 +163,8 @@ export function LightweightStockChart({
     }
   }
 
-  /** barsRef → 4개 시리즈(캔들/거래량/MA5/MA20)에 반영. 거래량 봉 색은 현재 팔레트 기준. */
-  function applyData() {
+  /** barsRef → 4개 시리즈(캔들/거래량/MA5/MA20)에 반영. 레전드는 건드리지 않음(실시간 폴링용). */
+  function applySeries() {
     const bars = barsRef.current
     const pal = palRef.current
     if (!pal) return
@@ -170,6 +176,11 @@ export function LightweightStockChart({
     )
     ma5Ref.current?.setData(sma(bars, 5))
     ma20Ref.current?.setData(sma(bars, 20))
+  }
+
+  /** 시리즈 반영 + 최신 봉 레전드 표시(초기/기간변경/과거로드 시). */
+  function applyData() {
+    applySeries()
     showLatestLegend()
   }
 
@@ -254,6 +265,9 @@ export function LightweightStockChart({
     }
     ts.subscribeVisibleLogicalRangeChange(onRange)
     return () => {
+      // in-flight loadOlder/pollLatest 를 일괄 무효화 — 언마운트 후 disposed chart 의 series 에
+      // setData 시도하는 것을 reqId 가드(reqId !== reqIdRef.current)로 막는다.
+      reqIdRef.current += 1
       ts.unsubscribeVisibleLogicalRangeChange(onRange)
       chart.unsubscribeCrosshairMove(onCrosshair)
       chart.remove()
@@ -360,6 +374,48 @@ export function LightweightStockChart({
     void fillToShow(show)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range, version])
+
+  // 실시간: 최신 2봉을 주기적으로 받아 마지막 봉(형성 중)을 갱신/추가. 레전드는 건드리지 않음(hover 보존).
+  const pollLatest = async (): Promise<void> => {
+    if (typeof document !== 'undefined' && document.hidden) return
+    if (loadingRef.current || realtimeRef.current || barsRef.current.length === 0 || !candleRef.current) return
+    realtimeRef.current = true
+    const reqId = reqIdRef.current
+    try {
+      const page = await fetcher(symbol, interval, { count: 2 })
+      if (reqId !== reqIdRef.current) return
+      const fresh = page.candles.map(toBar).filter((x): x is Bar => x !== null)
+      if (fresh.length === 0) return
+      // prev 는 await 이후 다시 읽는다 — 폴링 대기 중 loadOlder 가 prepend 한 과거 봉을 덮지 않도록(lost-update 방지).
+      const prev = barsRef.current
+      const merged = sortDedup([...prev, ...fresh])
+      const a = prev[prev.length - 1]
+      const b = merged[merged.length - 1]
+      // 변화 없으면 setData skip(불필요 렌더 방지)
+      const changed =
+        merged.length !== prev.length ||
+        (!!a && !!b && (a.open !== b.open || a.close !== b.close || a.high !== b.high || a.low !== b.low || a.volume !== b.volume))
+      if (!changed) return
+      barsRef.current = merged
+      applySeries()
+    } catch {
+      /* 무시 */
+    } finally {
+      realtimeRef.current = false
+    }
+  }
+  pollLatestRef.current = () => {
+    void pollLatest()
+  }
+
+  // 실시간 폴링 주기 — 분봉(1D)은 15s, 일봉은 60s. 탭/심볼 변경 시 재설정.
+  useEffect(() => {
+    if (!symbol) return
+    const ms = interval === '1m' ? 15_000 : 60_000
+    const id = setInterval(() => pollLatestRef.current(), ms)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, interval])
 
   const fmtPrice = (v: number) => (isUs ? `$${v.toFixed(2)}` : Math.round(v).toLocaleString('ko-KR'))
   const fmtVol = (v: number) =>
