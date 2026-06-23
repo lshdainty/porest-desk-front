@@ -22,6 +22,7 @@ import {
   type UTCTimestamp,
   type LogicalRange,
   type MouseEventParams,
+  type Time,
 } from 'lightweight-charts'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { stockApi, type TossCandle, type TossCandlePage } from '@/features/stock/api/stockApi'
@@ -110,6 +111,29 @@ function sma(bars: Bar[], period: number): LineData<UTCTimestamp>[] {
   return out
 }
 
+const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`)
+
+/** UTCTimestamp(초) → 로컬(기기 타임존, KR 사용자는 KST) Date. Lightweight Charts 는 기본 UTC 표시라 직접 변환. */
+function localDate(time: unknown): Date {
+  const sec = typeof time === 'number' ? time : Number(time)
+  return new Date(sec * 1000)
+}
+
+/** 축 틱 라벨 — 1m=시:분, 1d=월.일 (로컬 타임존). */
+function fmtTick(time: unknown, interval: '1m' | '1d'): string {
+  const d = localDate(time)
+  return interval === '1m'
+    ? `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+    : `${pad2(d.getMonth() + 1)}.${pad2(d.getDate())}`
+}
+
+/** 크로스헤어 시간 라벨 — 1m=YYYY.MM.DD HH:MM, 1d=YYYY.MM.DD (로컬 타임존). */
+function fmtCrosshairTime(time: unknown, interval: '1m' | '1d'): string {
+  const d = localDate(time)
+  const date = `${d.getFullYear()}.${pad2(d.getMonth() + 1)}.${pad2(d.getDate())}`
+  return interval === '1m' ? `${date} ${pad2(d.getHours())}:${pad2(d.getMinutes())}` : date
+}
+
 export function LightweightStockChart({
   symbol,
   isUs,
@@ -145,12 +169,14 @@ export function LightweightStockChart({
   const loadOlderRef = useRef<() => void>(() => {})
   const realtimeRef = useRef(false) // 실시간 폴링 in-flight 가드
   const pollLatestRef = useRef<() => void>(() => {})
+  const intervalRef = useRef<'1m' | '1d'>('1d') // 시간 포맷터(마운트시 등록)가 최신 interval 참조용
   const [version, setVersion] = useState(0) // 초기 로드 완료 신호(가시범위 재설정 트리거)
   const [legend, setLegend] = useState<
     { o: number; h: number; l: number; c: number; vol: number; up: boolean } | null
   >(null)
 
   const interval = RANGE_CFG[range].interval
+  intervalRef.current = interval
 
   function readPalette(): Palette {
     return {
@@ -228,6 +254,15 @@ export function LightweightStockChart({
       crosshair: { mode: CrosshairMode.Normal },
       handleScale: true,
       handleScroll: true,
+      // Lightweight Charts 는 UTCTimestamp 를 기본 UTC 로 표시 → 로컬 타임존(KR=KST)으로 포맷.
+      // (intervalRef 로 1m=시:분 / 1d=월.일 분기)
+      localization: {
+        locale: 'ko-KR',
+        timeFormatter: (time: Time) => fmtCrosshairTime(time, intervalRef.current),
+      },
+      timeScale: {
+        tickMarkFormatter: (time: Time) => fmtTick(time, intervalRef.current),
+      },
     })
     chartRef.current = chart
     candleRef.current = chart.addSeries(CandlestickSeries, {})
