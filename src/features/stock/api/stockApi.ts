@@ -46,6 +46,16 @@ export interface TossCandle {
   currency: string
 }
 
+/**
+ * 백엔드 candle 응답 원형 — porest-core CursorResponse<Candle>.
+ * 클라 내부에서는 {@link TossCandlePage}(candles/nextBefore)로 정규화해 사용한다.
+ */
+export interface TossCandleCursorPage {
+  content: TossCandle[]
+  meta: { size: number; hasNext: boolean; nextCursor: string | null }
+}
+
+/** 클라 내부 정규화 캔들 페이지 (content→candles, meta.nextCursor→nextBefore). */
 export interface TossCandlePage {
   candles: TossCandle[]
   nextBefore: string | null
@@ -205,11 +215,12 @@ export const stockApi = {
     interval: '1m' | '1d',
     opts?: { count?: number; before?: string; adjusted?: boolean },
   ): Promise<TossCandlePage> => {
-    const fetchPage = async (count?: number, before?: string): Promise<TossCandlePage> => {
-      const resp: ApiResponse<TossCandlePage> = await apiClient.get(`${BASE}/candles`, {
-        params: { symbol, interval, count, before, adjusted: opts?.adjusted },
+    // 백엔드는 커서 단일 페이지(size≤200) 프록시 → content/meta.nextCursor 를 정규화해 받는다.
+    const fetchPage = async (size?: number, cursor?: string): Promise<TossCandlePage> => {
+      const resp: ApiResponse<TossCandleCursorPage> = await apiClient.get(`${BASE}/candles`, {
+        params: { symbol, interval, size, cursor, adjusted: opts?.adjusted },
       })
-      return resp.data
+      return { candles: resp.data?.content ?? [], nextBefore: resp.data?.meta?.nextCursor ?? null }
     }
 
     const wanted = opts?.count
@@ -218,14 +229,14 @@ export const stockApi = {
       return fetchPage(wanted, opts?.before)
     }
 
-    // 토스 count 상한(200) 초과 → nextBefore 커서로 누적 (요청당 ≤200)
+    // 토스 count 상한(200) 초과 → nextCursor 커서로 누적 (요청당 ≤200)
     const merged: TossCandle[] = []
     const seen = new Set<string>()
-    let before = opts.before
+    let cursor = opts.before
     let nextBefore: string | null = null
     let remaining = wanted
     while (remaining > 0) {
-      const page = await fetchPage(Math.min(remaining, TOSS_CANDLE_MAX), before)
+      const page = await fetchPage(Math.min(remaining, TOSS_CANDLE_MAX), cursor)
       if (page.candles.length === 0) break
       for (const c of page.candles) {
         if (!seen.has(c.timestamp)) {
@@ -236,7 +247,7 @@ export const stockApi = {
       nextBefore = page.nextBefore
       remaining -= page.candles.length
       if (!page.nextBefore) break
-      before = page.nextBefore
+      cursor = page.nextBefore
     }
     return { candles: merged, nextBefore }
   },
