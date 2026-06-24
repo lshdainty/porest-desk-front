@@ -28,10 +28,10 @@ export interface Asset {
   paymentDay?: number | null
   /** 결제 출금계좌 자산 rowId (CREDIT_CARD 전용, nullable) */
   paymentAssetRowId?: number | null
-  /** 연결된 토스증권 계좌 식별 키 (INVESTMENT 토스 연동 시, nullable) */
-  tossAccountSeq?: number | null
-  /** 연결된 토스 보유종목 심볼 (INVESTMENT 토스 연동 시, nullable) */
+  /** 토스 연동 종목코드 (INVESTMENT 시세×수량 평가, nullable) */
   tossSymbol?: string | null
+  /** 토스 연동 보유수량 (INVESTMENT 시세×수량 평가, nullable) */
+  tossQuantity?: number | null
   createAt: string
   modifyAt: string
 }

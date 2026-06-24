@@ -89,8 +89,8 @@ export const useLinkTossSymbol = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, accountSeq, symbol }: { id: number; accountSeq: number; symbol: string }) =>
-      assetApi.linkTossSymbol(id, accountSeq, symbol),
+    mutationFn: ({ id, symbol, quantity }: { id: number; symbol: string; quantity: number }) =>
+      assetApi.linkTossSymbol(id, symbol, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
     },

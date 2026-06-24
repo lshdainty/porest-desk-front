@@ -1237,9 +1237,9 @@ function useAssetGroups() {
   const valMap = useTossValuationMap(linked)
 
   const groups = useMemo(() => {
-    // 연결 종목은 토스 라이브 평가액으로 balance 치환 → 목록·구성비·합계가 실시간 반영.
+    // 연결 종목은 토스 라이브 평가액(시세×수량)으로 balance 치환 → 목록·구성비·합계가 실시간 반영.
     const list: Asset[] = (assetsQ.data?.assets ?? []).map(a =>
-      a.tossSymbol && valMap.has(a.tossSymbol) ? { ...a, balance: valMap.get(a.tossSymbol)! } : a,
+      valMap.has(a.rowId) ? { ...a, balance: valMap.get(a.rowId)! } : a,
     )
     const accounts = list.filter(a => ACCOUNT_TYPES.includes(a.assetType))
     const cards = list.filter(a => CARD_TYPES.includes(a.assetType))
@@ -1266,7 +1266,7 @@ function useAssetGroups() {
     () =>
       linked.reduce((s, a) => {
         if (a.isIncludedInTotal !== 'Y') return s
-        const v = a.tossSymbol ? valMap.get(a.tossSymbol) : undefined
+        const v = valMap.get(a.rowId)
         return v != null ? s + (v - a.balance) : s
       }, 0),
     [linked, valMap],
