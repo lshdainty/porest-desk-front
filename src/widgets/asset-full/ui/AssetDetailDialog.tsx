@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, Eye, EyeOff, TrendingUp, Wallet } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
@@ -8,7 +8,7 @@ import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { Input } from '@/shared/ui/input'
-import { STOCKS } from '@/pages/stocks/model/stocksMock'
+import { searchKrxStocks, getKrxStockName, type KrxStock } from '@/features/stock/lib/krxSearch'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
@@ -398,6 +398,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   const linkMut = useLinkTossSymbol()
   const unlinkMut = useUnlinkTossSymbol()
   const [query, setQuery] = useState('')
+  const [matches, setMatches] = useState<KrxStock[]>([])
   const [selSymbol, setSelSymbol] = useState(asset.tossSymbol ?? '')
   const [selName, setSelName] = useState('')
   const [qty, setQty] = useState(asset.tossQuantity != null ? String(asset.tossQuantity) : '')
@@ -407,6 +408,34 @@ function TossLinkSection({ asset }: { asset: Asset }) {
       ? { symbol: asset.tossSymbol, quantity: asset.tossQuantity }
       : null,
   )
+  // KRX 마스터에서 조회한 종목명 (연결/선택 종목 표시용).
+  const [resolvedName, setResolvedName] = useState<string | undefined>(undefined)
+
+  // 종목 검색 (KRX 마스터, lazy fetch). 최신 query 만 반영(race-safe).
+  useEffect(() => {
+    const term = query.trim()
+    if (!term) {
+      setMatches([])
+      return
+    }
+    let alive = true
+    searchKrxStocks(term)
+      .then(r => { if (alive) setMatches(r) })
+      .catch(() => { if (alive) setMatches([]) })
+    return () => { alive = false }
+  }, [query])
+
+  // 연결/선택된 종목코드의 이름 조회 (KRX 마스터).
+  useEffect(() => {
+    const sym = linked?.symbol ?? selSymbol
+    if (!sym) {
+      setResolvedName(undefined)
+      return
+    }
+    let alive = true
+    getKrxStockName(sym).then(n => { if (alive) setResolvedName(n) }).catch(() => {})
+    return () => { alive = false }
+  }, [linked, selSymbol])
 
   if (!enabled) return null
 
@@ -417,7 +446,6 @@ function TossLinkSection({ asset }: { asset: Asset }) {
     padding: 16,
     marginBottom: 18,
   }
-  const stockName = (sym: string) => STOCKS.find(s => s.ticker === sym)?.name
 
   if (linked) {
     return (
@@ -425,7 +453,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Badge variant="info">토스 연동 중</Badge>
           <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
-            {stockName(linked.symbol) ?? linked.symbol} · {linked.quantity.toLocaleString()}주
+            {resolvedName ?? linked.symbol} · {linked.quantity.toLocaleString()}주
           </span>
         </div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
@@ -456,14 +484,12 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   }
 
   const q = query.trim()
-  const matches = q
-    ? STOCKS.filter(s => s.name.includes(q) || s.ticker.toUpperCase().includes(q.toUpperCase())).slice(0, 6)
-    : []
   const codeFallback = q && matches.length === 0 ? q.toUpperCase() : ''
   const pick = (symbol: string, name: string) => {
     setSelSymbol(symbol)
     setSelName(name)
     setQuery('')
+    setMatches([])
   }
   const qtyNum = Number(qty.replace(/[^\d]/g, '')) || 0
   const canLink = !!selSymbol && qtyNum > 0 && !linkMut.isPending
@@ -480,7 +506,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
       {selSymbol ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600 }}>
-            {selName || stockName(selSymbol) || selSymbol} ({selSymbol})
+            {selName || resolvedName || selSymbol} ({selSymbol})
           </span>
           <button
             type="button"
