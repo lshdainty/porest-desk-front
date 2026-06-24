@@ -7,8 +7,8 @@ import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/e
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { useTossAccounts, useTossHoldings } from '@/features/stock/model/useTossStocks'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Input } from '@/shared/ui/input'
+import { STOCKS } from '@/pages/stocks/model/stocksMock'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
@@ -375,27 +375,40 @@ function CardBillingSection({ asset }: { asset: Asset }) {
   )
 }
 
+const tossListBtn: React.CSSProperties = {
+  textAlign: 'left',
+  fontSize: 'var(--text-caption)',
+  color: 'var(--fg-primary)',
+  background: 'var(--bg-muted)',
+  border: 'none',
+  borderRadius: 'var(--radius-sm)',
+  padding: '8px 10px',
+  cursor: 'pointer',
+}
+
 /**
- * 투자 자산 ↔ 토스 보유종목 연결 섹션 (프로(SECURITIES) + 토스 연결 사용자에게만 노출).
- * 연결되면 평가액이 토스에서 자동 동기화되어 자산 페이지에 실시간 반영된다.
+ * 투자 자산 ↔ 토스 종목 연결 섹션 (프로(SECURITIES) + 토스 연결 사용자에게만 노출).
+ * 종목 + 보유수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 계산된다.
+ * 토스 계좌 보유분과 무관 — 시세만 빌려 타 증권사 보유 주식도 평가.
  */
 function TossLinkSection({ asset }: { asset: Asset }) {
   const { data: features } = useMyFeatures()
   const enabled =
     (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
-  const { data: accounts } = useTossAccounts()
-  const accountSeq = asset.tossAccountSeq ?? accounts?.[0]?.accountSeq ?? null
-  const { data: holdings } = useTossHoldings(enabled ? accountSeq : null)
   const linkMut = useLinkTossSymbol()
   const unlinkMut = useUnlinkTossSymbol()
-  const [selected, setSelected] = useState('')
-  // 연결 상태는 mutation 후에도 즉시 반영되도록 로컬로 추적 (asset prop 은 부모 state 라 stale).
-  const [linkedSymbol, setLinkedSymbol] = useState<string | null>(asset.tossSymbol ?? null)
+  const [query, setQuery] = useState('')
+  const [selSymbol, setSelSymbol] = useState(asset.tossSymbol ?? '')
+  const [selName, setSelName] = useState('')
+  const [qty, setQty] = useState(asset.tossQuantity != null ? String(asset.tossQuantity) : '')
+  // 연결 상태는 mutation 후 즉시 반영되도록 로컬로 추적 (asset prop 은 부모 state 라 stale).
+  const [linked, setLinked] = useState<{ symbol: string; quantity: number } | null>(
+    asset.tossSymbol && asset.tossQuantity != null
+      ? { symbol: asset.tossSymbol, quantity: asset.tossQuantity }
+      : null,
+  )
 
   if (!enabled) return null
-
-  const items = holdings?.items ?? []
-  const linkedItem = linkedSymbol ? items.find(i => i.symbol === linkedSymbol) : undefined
 
   const box: React.CSSProperties = {
     border: '1px solid var(--border-subtle)',
@@ -404,18 +417,19 @@ function TossLinkSection({ asset }: { asset: Asset }) {
     padding: 16,
     marginBottom: 18,
   }
+  const stockName = (sym: string) => STOCKS.find(s => s.ticker === sym)?.name
 
-  if (linkedSymbol) {
+  if (linked) {
     return (
       <section style={box}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Badge variant="info">토스 연동 중</Badge>
           <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
-            {linkedItem?.name ?? linkedSymbol}
+            {stockName(linked.symbol) ?? linked.symbol} · {linked.quantity.toLocaleString()}주
           </span>
         </div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-          이 자산의 평가액은 토스 보유종목에서 자동으로 갱신됩니다.
+          평가액 = 토스 현재가 × {linked.quantity.toLocaleString()}주 로 실시간 계산됩니다.
         </div>
         <Button
           variant="secondary"
@@ -424,8 +438,11 @@ function TossLinkSection({ asset }: { asset: Asset }) {
           onClick={() =>
             unlinkMut.mutate(asset.rowId, {
               onSuccess: () => {
-                setLinkedSymbol(null)
-                setSelected('')
+                setLinked(null)
+                setSelSymbol('')
+                setSelName('')
+                setQty('')
+                setQuery('')
                 toast.success('토스 연결을 해제했어요')
               },
               onError: () => toast.error('연결 해제에 실패했어요'),
@@ -438,56 +455,93 @@ function TossLinkSection({ asset }: { asset: Asset }) {
     )
   }
 
+  const q = query.trim()
+  const matches = q
+    ? STOCKS.filter(s => s.name.includes(q) || s.ticker.toUpperCase().includes(q.toUpperCase())).slice(0, 6)
+    : []
+  const codeFallback = q && matches.length === 0 ? q.toUpperCase() : ''
+  const pick = (symbol: string, name: string) => {
+    setSelSymbol(symbol)
+    setSelName(name)
+    setQuery('')
+  }
+  const qtyNum = Number(qty.replace(/[^\d]/g, '')) || 0
+  const canLink = !!selSymbol && qtyNum > 0 && !linkMut.isPending
+
   return (
     <section style={box}>
       <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, marginBottom: 6 }}>
-        토스 보유종목 연결
+        토스 시세로 실시간 평가
       </div>
       <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-        이 자산을 토스 보유종목에 연결하면 평가액이 실시간으로 자동 반영됩니다.
+        보유 종목과 수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 반영됩니다.
       </div>
-      {accountSeq == null ? (
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          토스 계좌를 찾을 수 없어요.
-        </div>
-      ) : items.length === 0 ? (
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          토스 보유종목이 없어요.
+
+      {selSymbol ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600 }}>
+            {selName || stockName(selSymbol) || selSymbol} ({selSymbol})
+          </span>
+          <button
+            type="button"
+            onClick={() => { setSelSymbol(''); setSelName('') }}
+            style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            변경
+          </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger style={{ flex: 1 }}>
-              <SelectValue placeholder="보유종목 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              {items.map(it => (
-                <SelectItem key={it.symbol} value={it.symbol}>
-                  {it.name} ({it.symbol})
-                </SelectItem>
+        <>
+          <Input
+            search
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930)"
+          />
+          {(matches.length > 0 || codeFallback) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, marginBottom: 4 }}>
+              {matches.map(s => (
+                <button key={s.ticker} type="button" onClick={() => pick(s.ticker, s.name)} style={tossListBtn}>
+                  {s.name} <span style={{ color: 'var(--fg-tertiary)' }}>({s.ticker})</span>
+                </button>
               ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            disabled={!selected || linkMut.isPending}
-            onClick={() =>
-              linkMut.mutate(
-                { id: asset.rowId, accountSeq, symbol: selected },
-                {
-                  onSuccess: () => {
-                    setLinkedSymbol(selected)
-                    toast.success('토스 보유종목에 연결했어요')
-                  },
-                  onError: () => toast.error('연결에 실패했어요'),
-                },
-              )
-            }
-          >
-            연결
-          </Button>
-        </div>
+              {codeFallback && (
+                <button type="button" onClick={() => pick(codeFallback, '')} style={tossListBtn}>
+                  「{codeFallback}」 종목코드로 연결
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
+
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+        <Input
+          inputMode="numeric"
+          value={qty}
+          onChange={e => setQty(e.target.value.replace(/[^\d]/g, ''))}
+          placeholder="보유 수량"
+          style={{ flex: 1 }}
+        />
+        <Button
+          size="sm"
+          disabled={!canLink}
+          onClick={() =>
+            linkMut.mutate(
+              { id: asset.rowId, symbol: selSymbol, quantity: qtyNum },
+              {
+                onSuccess: () => {
+                  setLinked({ symbol: selSymbol, quantity: qtyNum })
+                  toast.success('토스 시세 연동을 시작했어요')
+                },
+                onError: () => toast.error('연결에 실패했어요'),
+              },
+            )
+          }
+        >
+          연결
+        </Button>
+      </div>
     </section>
   )
 }
