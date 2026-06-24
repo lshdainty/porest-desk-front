@@ -38,6 +38,8 @@ export const useTossOrderbook = (symbol: string | null) =>
     enabled: !!symbol,
     ...COMMON,
     staleTime: 3_000,
+    // 호가는 변동이 잦음 → 5초 폴링. 백그라운드 탭 자동 일시정지.
+    refetchInterval: 5_000,
   })
 
 export const useTossTrades = (symbol: string | null, count = 20) =>
@@ -47,6 +49,8 @@ export const useTossTrades = (symbol: string | null, count = 20) =>
     enabled: !!symbol,
     ...COMMON,
     staleTime: 3_000,
+    // 체결 테이프도 5초 폴링.
+    refetchInterval: 5_000,
   })
 
 export const useTossPriceLimits = (symbol: string | null) =>
@@ -72,6 +76,8 @@ export const useTossCandles = (symbol: string | null, interval: '1m' | '1d', cou
     queryFn: () => stockApi.getCandles(symbol!, interval, count ? { count } : undefined),
     enabled: !!symbol,
     ...COMMON,
+    // 일별표·등락률 계산용 캔들도 주기 갱신 — 1m 은 15초, 1d 는 60초.
+    refetchInterval: interval === '1m' ? 15_000 : 60_000,
   })
 
 export const useTossStockWarnings = (symbol: string | null) =>
