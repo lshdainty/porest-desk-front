@@ -119,6 +119,10 @@ export const useTossHoldings = (accountSeq: number | null) =>
     queryFn: () => stockApi.getHoldings(accountSeq!),
     enabled: !!accountSeq,
     ...COMMON,
+    staleTime: 5_000,
+    // 보유종목 평가액은 현재가 반영 → 라이브로 갱신(상세 보유정보·포트폴리오 도넛).
+    // 백그라운드 탭은 react-query 가 자동 일시정지.
+    refetchInterval: 10_000,
   })
 
 // ---- 라이브 오버레이 브리지 ------------------------------------------------
