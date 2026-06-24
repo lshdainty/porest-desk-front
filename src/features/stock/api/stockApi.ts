@@ -61,6 +61,14 @@ export interface TossCandlePage {
   nextBefore: string | null
 }
 
+/** 국내 종목 전용 상세(KOSPI/KOSDAQ 등). 해외 종목은 null. */
+export interface TossKrMarketDetail {
+  liquidationTrading: boolean
+  nxtSupported: boolean
+  krxTradingSuspended: boolean
+  nxtTradingSuspended: boolean
+}
+
 export interface TossStockInfo {
   symbol: string
   name: string
@@ -75,6 +83,8 @@ export interface TossStockInfo {
   delistDate: string | null
   sharesOutstanding: string
   leverageFactor: string | null
+  /** 국내 종목 상세(거래정지 등). 거래정지 판정은 status 가 아니라 krxTradingSuspended 로. */
+  koreanMarketDetail: TossKrMarketDetail | null
 }
 
 export interface TossStockWarning {
