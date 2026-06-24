@@ -234,7 +234,7 @@ function OrderBook({ s, book, changePct }: { s: Stock; book: TossOrderbook; chan
     const isAsk = type === 'ask'
     const col = isAsk ? 'var(--fg-brand)' : 'var(--status-danger-fg)'
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'center', height: 26, gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 92px 1fr', alignItems: 'center', height: 26 }}>
         {isAsk ? (
           <span />
         ) : (
@@ -260,9 +260,10 @@ function OrderBook({ s, book, changePct }: { s: Stock; book: TossOrderbook; chan
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 92px 1fr', fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
         <span style={{ textAlign: 'right', paddingRight: 6 }}>매수 잔량</span>
-        <span style={{ textAlign: 'left', paddingLeft: 6, gridColumn: 2 }}>매도 잔량</span>
+        <span />
+        <span style={{ textAlign: 'left', paddingLeft: 6 }}>매도 잔량</span>
       </div>
       {asks.map((a, i) => (
         <Row key={`a${i}`} {...a} type="ask" />
@@ -298,9 +299,9 @@ function QuotesCard({ s, changePct }: { s: Stock; changePct: number }) {
     <Card style={{ padding: 16 }}>
       <div style={{ marginBottom: 12 }}>
         <Tabs value={tab} onValueChange={v => setTab(v as 'book' | 'tape')}>
-          <TabsList variant="pill" size="sm">
-            <TabsTrigger variant="pill" value="book">호가</TabsTrigger>
-            <TabsTrigger variant="pill" value="tape">체결</TabsTrigger>
+          <TabsList variant="pill" size="sm" style={{ width: '100%' }}>
+            <TabsTrigger variant="pill" value="book" style={{ flex: 1 }}>호가</TabsTrigger>
+            <TabsTrigger variant="pill" value="tape" style={{ flex: 1 }}>체결</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
