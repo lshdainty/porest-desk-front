@@ -595,8 +595,9 @@ function StockInfoCard({ s, info, isUs }: { s: Stock; info: TossStockInfo | unde
     ...(shares > 0 ? [{ k: '발행주식수', v: fmtShares(shares) }] : []),
     {
       k: '거래상태',
-      v: info && info.status !== 'NORMAL' ? '거래정지' : '정상',
-      c: info && info.status !== 'NORMAL' ? 'var(--status-danger-fg)' : 'var(--status-success-fg)',
+      // 거래정지는 토스 status(분류성 값)가 아니라 KRX 거래정지 플래그로 판정.
+      v: info?.koreanMarketDetail?.krxTradingSuspended ? '거래정지' : '정상',
+      c: info?.koreanMarketDetail?.krxTradingSuspended ? 'var(--status-danger-fg)' : 'var(--status-success-fg)',
     },
   ]
   return (
