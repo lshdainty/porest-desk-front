@@ -45,6 +45,17 @@ export const assetApi = {
     return resp.data
   },
 
+  // 투자 자산 ↔ 토스 보유종목 연결/해제 (프로+토스 연결 사용자 전용).
+  linkTossSymbol: async (id: number, accountSeq: number, symbol: string): Promise<Asset> => {
+    const resp: ApiResponse<Asset> = await apiClient.put(`/v1/asset/${id}/toss-link`, { accountSeq, symbol })
+    return resp.data
+  },
+
+  unlinkTossSymbol: async (id: number): Promise<Asset> => {
+    const resp: ApiResponse<Asset> = await apiClient.delete(`/v1/asset/${id}/toss-link`)
+    return resp.data
+  },
+
   getAssetSummary: async (year?: number, month?: number): Promise<AssetSummary> => {
     const params = year && month ? { year, month } : undefined
     const resp: ApiResponse<AssetSummary> = await apiClient.get('/v1/assets/summary', { params })

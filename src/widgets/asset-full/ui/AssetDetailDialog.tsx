@@ -5,7 +5,10 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend, useCardBilling, usePayCard } from '@/features/asset'
+import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
+import { useMyFeatures } from '@/features/subscription/model/useSubscription'
+import { useTossAccounts, useTossHoldings } from '@/features/stock/model/useTossStocks'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
@@ -372,6 +375,123 @@ function CardBillingSection({ asset }: { asset: Asset }) {
   )
 }
 
+/**
+ * 투자 자산 ↔ 토스 보유종목 연결 섹션 (프로(SECURITIES) + 토스 연결 사용자에게만 노출).
+ * 연결되면 평가액이 토스에서 자동 동기화되어 자산 페이지에 실시간 반영된다.
+ */
+function TossLinkSection({ asset }: { asset: Asset }) {
+  const { data: features } = useMyFeatures()
+  const enabled =
+    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+  const { data: accounts } = useTossAccounts()
+  const accountSeq = asset.tossAccountSeq ?? accounts?.[0]?.accountSeq ?? null
+  const { data: holdings } = useTossHoldings(enabled ? accountSeq : null)
+  const linkMut = useLinkTossSymbol()
+  const unlinkMut = useUnlinkTossSymbol()
+  const [selected, setSelected] = useState('')
+  // 연결 상태는 mutation 후에도 즉시 반영되도록 로컬로 추적 (asset prop 은 부모 state 라 stale).
+  const [linkedSymbol, setLinkedSymbol] = useState<string | null>(asset.tossSymbol ?? null)
+
+  if (!enabled) return null
+
+  const items = holdings?.items ?? []
+  const linkedItem = linkedSymbol ? items.find(i => i.symbol === linkedSymbol) : undefined
+
+  const box: React.CSSProperties = {
+    border: '1px solid var(--border-subtle)',
+    borderRadius: 'var(--radius-lg)',
+    background: 'var(--bg-surface)',
+    padding: 16,
+    marginBottom: 18,
+  }
+
+  if (linkedSymbol) {
+    return (
+      <section style={box}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Badge variant="info">토스 연동 중</Badge>
+          <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
+            {linkedItem?.name ?? linkedSymbol}
+          </span>
+        </div>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
+          이 자산의 평가액은 토스 보유종목에서 자동으로 갱신됩니다.
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={unlinkMut.isPending}
+          onClick={() =>
+            unlinkMut.mutate(asset.rowId, {
+              onSuccess: () => {
+                setLinkedSymbol(null)
+                setSelected('')
+                toast.success('토스 연결을 해제했어요')
+              },
+              onError: () => toast.error('연결 해제에 실패했어요'),
+            })
+          }
+        >
+          연결 해제
+        </Button>
+      </section>
+    )
+  }
+
+  return (
+    <section style={box}>
+      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, marginBottom: 6 }}>
+        토스 보유종목 연결
+      </div>
+      <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
+        이 자산을 토스 보유종목에 연결하면 평가액이 실시간으로 자동 반영됩니다.
+      </div>
+      {accountSeq == null ? (
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          토스 계좌를 찾을 수 없어요.
+        </div>
+      ) : items.length === 0 ? (
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          토스 보유종목이 없어요.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Select value={selected} onValueChange={setSelected}>
+            <SelectTrigger style={{ flex: 1 }}>
+              <SelectValue placeholder="보유종목 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              {items.map(it => (
+                <SelectItem key={it.symbol} value={it.symbol}>
+                  {it.name} ({it.symbol})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            disabled={!selected || linkMut.isPending}
+            onClick={() =>
+              linkMut.mutate(
+                { id: asset.rowId, accountSeq, symbol: selected },
+                {
+                  onSuccess: () => {
+                    setLinkedSymbol(selected)
+                    toast.success('토스 보유종목에 연결했어요')
+                  },
+                  onError: () => toast.error('연결에 실패했어요'),
+                },
+              )
+            }
+          >
+            연결
+          </Button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export function AssetDetailDialog({
   asset,
   onClose,
@@ -501,6 +621,9 @@ export function AssetDetailDialog({
           </HideUnit>
         </div>
       </div>
+
+      {/* 투자 자산 ↔ 토스 보유종목 연결 (프로+토스 연결 사용자만 노출) */}
+      {isInv && <TossLinkSection asset={asset} />}
 
       {/* 카드 월 실적 (카드 공통) — app CardPerformanceBar 미러 */}
       {isCard && <CardPerformanceCard assetRowId={asset.rowId} />}

@@ -85,6 +85,29 @@ export const useDeleteAsset = () => {
   })
 }
 
+export const useLinkTossSymbol = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, accountSeq, symbol }: { id: number; accountSeq: number; symbol: string }) =>
+      assetApi.linkTossSymbol(id, accountSeq, symbol),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+    },
+  })
+}
+
+export const useUnlinkTossSymbol = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => assetApi.unlinkTossSymbol(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+    },
+  })
+}
+
 export const useCardBilling = (id: number) => {
   return useQuery({
     queryKey: assetKeys.billing(id),

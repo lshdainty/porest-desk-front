@@ -24,7 +24,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
-import { useAssets, useAssetSummary, useNetWorthTrend } from '@/features/asset'
+import { useAssets, useAssetSummary, useNetWorthTrend, useTossValuationMap } from '@/features/asset'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
@@ -1229,9 +1229,18 @@ function SummaryCard({
 function useAssetGroups() {
   const assetsQ = useAssets()
   const summaryQ = useAssetSummary()
+  // 토스 연결 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
+  const linked = useMemo(
+    () => (assetsQ.data?.assets ?? []).filter(a => a.tossSymbol),
+    [assetsQ.data],
+  )
+  const valMap = useTossValuationMap(linked)
 
   const groups = useMemo(() => {
-    const list: Asset[] = assetsQ.data?.assets ?? []
+    // 연결 종목은 토스 라이브 평가액으로 balance 치환 → 목록·구성비·합계가 실시간 반영.
+    const list: Asset[] = (assetsQ.data?.assets ?? []).map(a =>
+      a.tossSymbol && valMap.has(a.tossSymbol) ? { ...a, balance: valMap.get(a.tossSymbol)! } : a,
+    )
     const accounts = list.filter(a => ACCOUNT_TYPES.includes(a.assetType))
     const cards = list.filter(a => CARD_TYPES.includes(a.assetType))
     const investments = list.filter(a => INVESTMENT_TYPES.includes(a.assetType))
@@ -1250,11 +1259,26 @@ function useAssetGroups() {
       investmentsTotal: sumIncluded(investments),
       loansTotal: Math.abs(sumIncluded(loans)),
     }
-  }, [assetsQ.data])
+  }, [assetsQ.data, valMap])
 
-  const netWorth = summaryQ.data?.netWorth ?? 0
-  const changeAmount = summaryQ.data?.changeAmount ?? 0
-  const changePercent = summaryQ.data?.changePercent ?? 0
+  // 백엔드 summary(DB 잔액 기준)에 연결 자산의 (라이브−DB) 차액만큼 순자산/변화를 보정.
+  const liveDelta = useMemo(
+    () =>
+      linked.reduce((s, a) => {
+        if (a.isIncludedInTotal !== 'Y') return s
+        const v = a.tossSymbol ? valMap.get(a.tossSymbol) : undefined
+        return v != null ? s + (v - a.balance) : s
+      }, 0),
+    [linked, valMap],
+  )
+
+  const netWorth = (summaryQ.data?.netWorth ?? 0) + liveDelta
+  const changeAmount = (summaryQ.data?.changeAmount ?? 0) + liveDelta
+  const lastMonth = summaryQ.data?.lastMonthNetWorth ?? 0
+  const changePercent =
+    lastMonth !== 0
+      ? Math.round((changeAmount / Math.abs(lastMonth)) * 1000) / 10
+      : summaryQ.data?.changePercent ?? 0
 
   return {
     ...groups,
