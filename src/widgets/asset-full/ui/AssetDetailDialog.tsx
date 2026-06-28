@@ -410,6 +410,9 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   )
   // KRX 마스터에서 조회한 종목명 (연결/선택 종목 표시용).
   const [resolvedName, setResolvedName] = useState<string | undefined>(undefined)
+  // 보유수량 수정 모드.
+  const [editingQty, setEditingQty] = useState(false)
+  const [editQty, setEditQty] = useState('')
 
   // 종목 검색 (KRX 마스터, lazy fetch). 최신 query 만 반영(race-safe).
   useEffect(() => {
@@ -448,6 +451,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   }
 
   if (linked) {
+    const editQtyNum = Number(editQty.replace(/[^\d]/g, '')) || 0
     return (
       <section style={box}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -456,29 +460,77 @@ function TossLinkSection({ asset }: { asset: Asset }) {
             {resolvedName ?? linked.symbol} · {linked.quantity.toLocaleString()}주
           </span>
         </div>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-          평가액 = 토스 현재가 × {linked.quantity.toLocaleString()}주 로 실시간 계산됩니다.
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={unlinkMut.isPending}
-          onClick={() =>
-            unlinkMut.mutate(asset.rowId, {
-              onSuccess: () => {
-                setLinked(null)
-                setSelSymbol('')
-                setSelName('')
-                setQty('')
-                setQuery('')
-                toast.success('토스 연결을 해제했어요')
-              },
-              onError: () => toast.error('연결 해제에 실패했어요'),
-            })
-          }
-        >
-          연결 해제
-        </Button>
+        {editingQty ? (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Input
+              inputMode="numeric"
+              value={editQty}
+              onChange={e => setEditQty(e.target.value.replace(/[^\d]/g, ''))}
+              placeholder="보유 수량"
+              style={{ flex: 1 }}
+            />
+            <Button
+              size="sm"
+              disabled={editQtyNum <= 0 || linkMut.isPending}
+              onClick={() =>
+                linkMut.mutate(
+                  { id: asset.rowId, symbol: linked.symbol, quantity: editQtyNum },
+                  {
+                    onSuccess: () => {
+                      setLinked({ symbol: linked.symbol, quantity: editQtyNum })
+                      setEditingQty(false)
+                      toast.success('보유 수량을 수정했어요')
+                    },
+                    onError: () => toast.error('수량 수정에 실패했어요'),
+                  },
+                )
+              }
+            >
+              저장
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setEditingQty(false)}>
+              취소
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
+              평가액 = 토스 현재가 × {linked.quantity.toLocaleString()}주 로 실시간 계산됩니다.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setEditQty(String(linked.quantity))
+                  setEditingQty(true)
+                }}
+              >
+                수량 수정
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={unlinkMut.isPending}
+                onClick={() =>
+                  unlinkMut.mutate(asset.rowId, {
+                    onSuccess: () => {
+                      setLinked(null)
+                      setSelSymbol('')
+                      setSelName('')
+                      setQty('')
+                      setQuery('')
+                      toast.success('토스 연결을 해제했어요')
+                    },
+                    onError: () => toast.error('연결 해제에 실패했어요'),
+                  })
+                }
+              >
+                연결 해제
+              </Button>
+            </div>
+          </>
+        )}
       </section>
     )
   }
