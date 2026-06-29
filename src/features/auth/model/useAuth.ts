@@ -22,6 +22,25 @@ export const useAuth = () => {
     }
   }, [])
 
+  const exchangeCode = useCallback(
+    async (params: { code: string; codeVerifier: string; redirectUri: string }) => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await authApi.exchangeCode(params)
+        setAuthenticated()
+        return response
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Code exchange failed'
+        setError(message)
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout()
@@ -34,5 +53,5 @@ export const useAuth = () => {
 
   const clearError = useCallback(() => setError(null), [])
 
-  return { exchangeToken, logout, isLoading, error, clearError }
+  return { exchangeToken, exchangeCode, logout, isLoading, error, clearError }
 }
