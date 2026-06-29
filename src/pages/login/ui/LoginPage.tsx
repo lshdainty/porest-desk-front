@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom'
 import { Spinner } from '@/shared/ui/spinner'
 import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
+import { generateCodeVerifier, codeChallenge, generateState, savePkce } from '@/features/auth/lib/pkce'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -48,11 +49,22 @@ const LoginForm = () => {
   const { theme } = useTheme()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  const handleSsoRedirect = () => {
+  const handleSsoRedirect = async () => {
     setIsRedirecting(true)
     const callbackUrl = `${window.location.origin}/auth/callback`
-    const ssoLoginUrl = `${config.ssoUrl}/login?redirect_uri=${encodeURIComponent(callbackUrl)}`
-    window.location.href = ssoLoginUrl
+    // PKCE: code_verifier/state 생성 후 보관, code_challenge(S256) 을 인가 요청에 첨부.
+    const verifier = generateCodeVerifier()
+    const state = generateState()
+    savePkce(verifier, state)
+    const challenge = await codeChallenge(verifier)
+    const params = new URLSearchParams({
+      redirect_uri: callbackUrl,
+      client_id: 'desk',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      state,
+    })
+    window.location.href = `${config.ssoUrl}/login?${params.toString()}`
   }
 
   return (

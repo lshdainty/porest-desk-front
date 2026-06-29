@@ -7,6 +7,14 @@ export const authApi = {
     const resp: ApiResponse<TokenExchangeResponse> = await apiClient.post('/v1/auth/exchange', { ssoToken })
     return resp.data
   },
+  exchangeCode: async (params: {
+    code: string
+    codeVerifier: string
+    redirectUri: string
+  }): Promise<TokenExchangeResponse> => {
+    const resp: ApiResponse<TokenExchangeResponse> = await apiClient.post('/v1/auth/exchange-code', params)
+    return resp.data
+  },
   loginCheck: async (): Promise<LoginCheckResponse> => {
     const resp: ApiResponse<LoginCheckResponse> = await apiClient.get('/v1/auth/check')
     return resp.data
