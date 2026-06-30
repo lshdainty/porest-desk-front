@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
 import { getCodeVerifier, getSavedState, clearPkce } from '@/features/auth/lib/pkce'
@@ -7,8 +7,12 @@ import { Spinner } from '@/shared/ui/spinner'
 export const AuthCallbackPage = () => {
   const navigate = useNavigate()
   const { exchangeToken, exchangeCode } = useAuth()
+  // StrictMode/재렌더로 effect 가 2번 돌아도 일회용 code 를 단 한 번만 교환하도록 가드
+  const calledRef = useRef(false)
 
   useEffect(() => {
+    if (calledRef.current) return
+    calledRef.current = true
     const handleCallback = async () => {
       const query = new URLSearchParams(window.location.search)
       const code = query.get('code')
