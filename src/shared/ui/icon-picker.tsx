@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import type { UIEvent } from 'react'
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Search } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { Input } from '@/shared/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
-import { ScrollArea } from '@/shared/ui/scroll-area'
 
 // 초기 표시 개수 및 스크롤로 더 로드할 때의 증분.
 const STEP = 120
@@ -22,7 +22,6 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
   const [search, setSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(STEP)
   const searchRef = useRef<HTMLInputElement>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Popover 열릴 때 검색창 포커스
   useEffect(() => {
@@ -45,7 +44,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
   const matched = useMemo(() => {
     const query = search.toLowerCase().trim()
     if (!query) return source
-    return source.filter(name => name.includes(query))
+    return source.filter((name) => name.includes(query))
   }, [search, source])
 
   // 검색어가 바뀌면 표시 개수를 초기화(맨 위부터 다시).
@@ -55,23 +54,17 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
 
   // 실제로 렌더할 만큼만 잘라낸다(스크롤로 점진 확장 — 1892개 한 번에 안 그림).
   const visible = useMemo(() => matched.slice(0, visibleCount), [matched, visibleCount])
-  const hasMore = visibleCount < matched.length
 
-  // 무한 스크롤: 그리드 하단 sentinel 이 ScrollArea 뷰포트에 들어오면 STEP 만큼 더 렌더.
-  useEffect(() => {
-    if (!open || !hasMore) return
-    const el = sentinelRef.current
-    if (!el) return
-    const root = el.closest('[data-radix-scroll-area-viewport]')
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) setVisibleCount((c) => c + STEP)
-      },
-      { root: root as Element | null, rootMargin: '150px' },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [open, hasMore, visibleCount])
+  // 스크롤이 하단 근처에 오면 STEP 만큼 더 렌더.
+  const handleScroll = useCallback(
+    (e: UIEvent<HTMLDivElement>) => {
+      const el = e.currentTarget
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 150) {
+        setVisibleCount((c) => (c < matched.length ? c + STEP : c))
+      }
+    },
+    [matched.length],
+  )
 
   const handleSelect = useCallback(
     (iconName: string) => {
@@ -128,34 +121,33 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
         <div className="h-px bg-border-default mb-2" />
 
         {/* 아이콘 그리드 (검색 없이도 스크롤로 전체 탐색 — 점진 로드) */}
-        <ScrollArea className="max-h-60">
+        <div
+          className="max-h-60 overflow-y-auto overscroll-contain pr-1"
+          onScroll={handleScroll}
+        >
           {visible.length > 0 ? (
-            <>
-              <div className="grid grid-cols-8 gap-1">
-                {visible.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    title={name}
-                    onClick={() => handleSelect(name)}
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-sm transition-all hover:bg-surface-input hover:scale-110',
-                      value === name && 'bg-surface-input ring-2 ring-primary ring-offset-1 ring-offset-background',
-                    )}
-                  >
-                    <DynamicIcon name={name as IconName} size={16} />
-                  </button>
-                ))}
-              </div>
-              {/* 스크롤 하단 감지용 sentinel(빈 요소) */}
-              {hasMore && <div ref={sentinelRef} className="h-2 w-full" />}
-            </>
+            <div className="grid grid-cols-8 gap-1">
+              {visible.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  title={name}
+                  onClick={() => handleSelect(name)}
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-sm transition-all hover:bg-surface-input hover:scale-110',
+                    value === name && 'bg-surface-input ring-2 ring-primary ring-offset-1 ring-offset-background',
+                  )}
+                >
+                  <DynamicIcon name={name as IconName} size={16} />
+                </button>
+              ))}
+            </div>
           ) : (
             <p className="py-6 text-center text-xs text-text-secondary">
               검색 결과가 없습니다
             </p>
           )}
-        </ScrollArea>
+        </div>
 
         {/* 결과 카운트 */}
         <p className="mt-2 text-[10px] text-text-secondary text-center">
