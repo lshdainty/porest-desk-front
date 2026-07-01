@@ -7,7 +7,8 @@ import { Input } from '@/shared/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
 import { ScrollArea } from '@/shared/ui/scroll-area'
 
-const MAX_VISIBLE = 100
+// 초기 표시 개수 및 스크롤로 더 로드할 때의 증분.
+const STEP = 120
 
 interface IconPickerProps {
   value: string
@@ -19,7 +20,9 @@ interface IconPickerProps {
 export const IconPicker = ({ value, onChange, className, icons }: IconPickerProps) => {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [visibleCount, setVisibleCount] = useState(STEP)
   const searchRef = useRef<HTMLInputElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Popover 열릴 때 검색창 포커스
   useEffect(() => {
@@ -30,22 +33,45 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
 
   const handleOpenChange = useCallback((next: boolean) => {
     setOpen(next)
-    if (!next) setSearch('')
+    if (!next) {
+      setSearch('')
+      setVisibleCount(STEP)
+    }
   }, [])
 
   const source = useMemo<readonly string[]>(() => icons ?? (iconNames as readonly string[]), [icons])
 
-  const filtered = useMemo(() => {
+  // 검색어로 필터링한 전체 결과(표시 제한 없음).
+  const matched = useMemo(() => {
     const query = search.toLowerCase().trim()
-    if (!query) return source.slice(0, MAX_VISIBLE)
-    return source.filter(name => name.includes(query)).slice(0, MAX_VISIBLE)
+    if (!query) return source
+    return source.filter(name => name.includes(query))
   }, [search, source])
 
-  const totalMatched = useMemo(() => {
-    const query = search.toLowerCase().trim()
-    if (!query) return source.length
-    return source.filter(name => name.includes(query)).length
-  }, [search, source])
+  // 검색어가 바뀌면 표시 개수를 초기화(맨 위부터 다시).
+  useEffect(() => {
+    setVisibleCount(STEP)
+  }, [search])
+
+  // 실제로 렌더할 만큼만 잘라낸다(스크롤로 점진 확장 — 1892개 한 번에 안 그림).
+  const visible = useMemo(() => matched.slice(0, visibleCount), [matched, visibleCount])
+  const hasMore = visibleCount < matched.length
+
+  // 무한 스크롤: 그리드 하단 sentinel 이 ScrollArea 뷰포트에 들어오면 STEP 만큼 더 렌더.
+  useEffect(() => {
+    if (!open || !hasMore) return
+    const el = sentinelRef.current
+    if (!el) return
+    const root = el.closest('[data-radix-scroll-area-viewport]')
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) setVisibleCount((c) => c + STEP)
+      },
+      { root: root as Element | null, rootMargin: '150px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [open, hasMore, visibleCount])
 
   const handleSelect = useCallback(
     (iconName: string) => {
@@ -101,25 +127,29 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
 
         <div className="h-px bg-border-default mb-2" />
 
-        {/* 아이콘 그리드 */}
+        {/* 아이콘 그리드 (검색 없이도 스크롤로 전체 탐색 — 점진 로드) */}
         <ScrollArea className="max-h-60">
-          {filtered.length > 0 ? (
-            <div className="grid grid-cols-8 gap-1">
-              {filtered.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  title={name}
-                  onClick={() => handleSelect(name)}
-                  className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-sm transition-all hover:bg-surface-input hover:scale-110',
-                    value === name && 'bg-surface-input ring-2 ring-primary ring-offset-1 ring-offset-background',
-                  )}
-                >
-                  <DynamicIcon name={name as IconName} size={16} />
-                </button>
-              ))}
-            </div>
+          {visible.length > 0 ? (
+            <>
+              <div className="grid grid-cols-8 gap-1">
+                {visible.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    title={name}
+                    onClick={() => handleSelect(name)}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-sm transition-all hover:bg-surface-input hover:scale-110',
+                      value === name && 'bg-surface-input ring-2 ring-primary ring-offset-1 ring-offset-background',
+                    )}
+                  >
+                    <DynamicIcon name={name as IconName} size={16} />
+                  </button>
+                ))}
+              </div>
+              {/* 스크롤 하단 감지용 sentinel(빈 요소) */}
+              {hasMore && <div ref={sentinelRef} className="h-2 w-full" />}
+            </>
           ) : (
             <p className="py-6 text-center text-xs text-text-secondary">
               검색 결과가 없습니다
@@ -130,8 +160,8 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
         {/* 결과 카운트 */}
         <p className="mt-2 text-[10px] text-text-secondary text-center">
           {search
-            ? `${totalMatched > MAX_VISIBLE ? `${MAX_VISIBLE}개+ 표시 중 (총 ${totalMatched}개)` : `${totalMatched}개 결과`}`
-            : `검색으로 ${iconNames.length}개 아이콘을 찾아보세요`}
+            ? `${matched.length}개 결과`
+            : `전체 ${iconNames.length}개 · 스크롤해서 더 보기`}
         </p>
       </PopoverContent>
     </Popover>
