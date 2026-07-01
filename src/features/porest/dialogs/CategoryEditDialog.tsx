@@ -32,15 +32,6 @@ export interface CategoryItem {
   count: number
 }
 
-const ICON_CHOICES = [
-  'utensils', 'coffee', 'bus', 'shopping-bag', 'home', 'heart-pulse',
-  'ticket', 'receipt-text', 'book-open', 'piggy-bank', 'arrow-down-to-line',
-  'car', 'plane', 'gift', 'dumbbell', 'gamepad-2', 'film', 'music',
-  'baby', 'paw-print', 'shirt', 'sparkles', 'wrench', 'fuel',
-  'pill', 'phone', 'wifi', 'tv', 'briefcase', 'graduation-cap',
-  'trending-up', 'hand-coins', 'landmark', 'tag',
-]
-
 export function CategoryEditDialog({
   cat,
   defaultKind,
@@ -280,7 +271,7 @@ export function CategoryEditDialog({
 
       <Field style={{ marginBottom: 4 }}>
         <FieldLabel>아이콘</FieldLabel>
-        <IconPicker icons={ICON_CHOICES} value={icon} onChange={setIcon} />
+        <IconPicker value={icon} onChange={setIcon} />
       </Field>
     </ModalShell>
   )
