@@ -40,6 +40,10 @@ import { useAuth } from '@/features/auth'
 import { SubscriptionDialog } from '@/features/subscription/ui/SubscriptionDialog'
 import { TossConnectCard } from '@/features/subscription/ui/TossConnectCard'
 import { useMyFeatures, useMySubscription } from '@/features/subscription/model/useSubscription'
+import { oauthLinkApi, useOAuthProviders, useUnlinkOAuth } from '@/features/oauth-link'
+import { oauthKeys } from '@/shared/config'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Switch } from '@/shared/ui/switch'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
@@ -123,10 +127,14 @@ const MENU_GROUPS: GroupDef[] = [
   },
 ]
 
+// 소셜 연동 provider → 표시 이름. 서버 미지원 provider 는 원문(소문자) 그대로 노출.
+const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: 'Google' }
+
 export const SettingsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const { resolvedTheme } = useTheme()
   const [searchParams, setSearchParams] = useSearchParams()
+  const queryClient = useQueryClient()
 
   const querySection = (() => {
     const q = searchParams.get('section')
@@ -141,6 +149,29 @@ export const SettingsPage = () => {
     if (querySection && querySection !== section) setSection(querySection)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
+
+  // 소셜 연동 복귀 처리 — SSO→Google 연동 후 ?linked=<provider>(성공) / ?linkError=<msg>(실패) 를
+  // 달고 이 페이지로 돌아온다. 마운트 1회: 알림 노출 + provider 상태 재조회 + 쿼리 제거.
+  useEffect(() => {
+    const linked = searchParams.get('linked')
+    const linkError = searchParams.get('linkError')
+    if (!linked && !linkError) return
+
+    if (linked) {
+      const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? linked
+      toast(`${name} 계정이 연결되었어요`)
+      queryClient.invalidateQueries({ queryKey: oauthKeys.all })
+    } else if (linkError) {
+      toast.error(linkError || '계정 연결에 실패했어요')
+    }
+
+    // 새로고침·뒤로가기 시 알림이 재노출되지 않도록 쿼리스트링 제거 (section 등 나머지는 보존).
+    const url = new URL(window.location.href)
+    url.searchParams.delete('linked')
+    url.searchParams.delete('linkError')
+    window.history.replaceState({}, '', url.toString())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
   const changeSection = (next: SectionId | 'menu') => {
@@ -450,6 +481,35 @@ function AccountSection({ mobile }: { mobile: boolean }) {
 
   const nameInitial = user?.userName ? user.userName.charAt(0) : '?'
 
+  // 소셜 계정 연동 — Google 만 서버 지원. provider 상태로 '연결/해제' 버튼과 desc 결정.
+  const providersQ = useOAuthProviders()
+  const unlinkGoogle = useUnlinkOAuth()
+  const [linkingGoogle, setLinkingGoogle] = useState(false)
+  const google = providersQ.data?.find(p => p.type === 'GOOGLE')
+  const googleLinked = google?.linked ?? false
+
+  const onLinkGoogle = async () => {
+    setLinkingGoogle(true)
+    try {
+      // returnUrl = 현재 설정 페이지 절대 URL. 연동 후 SSO 가 여기로 ?linked/?linkError 를 달고 복귀.
+      const { startUrl } = await oauthLinkApi.startLink(
+        'google',
+        window.location.origin + window.location.pathname,
+      )
+      window.location.href = startUrl
+    } catch {
+      // 에러 토스트는 전역 인터셉터가 노출. 여기선 버튼 상태만 복구.
+      setLinkingGoogle(false)
+    }
+  }
+
+  const onUnlinkGoogle = () => {
+    unlinkGoogle.mutate('google', {
+      // onSuccess 에서 provider 목록 재조회(invalidate) → 상태 자동 갱신.
+      onSuccess: () => toast('Google 연결을 해제했어요'),
+    })
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* 프로필 헤더 */}
@@ -554,26 +614,50 @@ function AccountSection({ mobile }: { mobile: boolean }) {
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>G</span>}
           label="Google"
-          desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          desc={googleLinked ? '연결됨' : '연결 안 됨'}
+          right={
+            googleLinked ? (
+              <Button
+                variant="outline"
+                size="sm"
+                style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}
+                onClick={onUnlinkGoogle}
+                loading={unlinkGoogle.isPending}
+                disabled={providersQ.isLoading}
+              >
+                해제
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}
+                onClick={onLinkGoogle}
+                loading={linkingGoogle}
+                disabled={providersQ.isLoading}
+              >
+                연결
+              </Button>
+            )
+          }
         />
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>A</span>}
           label="Apple ID"
           desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
         />
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>K</span>}
           label="카카오"
           desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
         />
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>N</span>}
           label="네이버"
           desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
           isLast
         />
       </AccountGroup>
