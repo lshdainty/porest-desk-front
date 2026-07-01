@@ -6,7 +6,7 @@ import { Spinner } from '@/shared/ui/spinner'
 
 export const AuthCallbackPage = () => {
   const navigate = useNavigate()
-  const { exchangeToken, exchangeCode } = useAuth()
+  const { exchangeCode } = useAuth()
   // StrictMode/재렌더로 effect 가 2번 돌아도 일회용 code 를 단 한 번만 교환하도록 가드
   const calledRef = useRef(false)
 
@@ -36,20 +36,12 @@ export const AuthCallbackPage = () => {
         return
       }
 
-      // 기존(병행): fragment 로 받은 SSO 토큰 (#token=)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const ssoToken = hashParams.get('token')
-      if (!ssoToken) {
-        navigate('/login', { replace: true })
-        return
-      }
-      const result = await exchangeToken(ssoToken)
-      window.history.replaceState({}, '', window.location.pathname)
-      navigate(result ? '/desk' : '/login', { replace: true })
+      // code 없음 → 로그인으로
+      navigate('/login', { replace: true })
     }
 
     handleCallback()
-  }, [exchangeToken, exchangeCode, navigate])
+  }, [exchangeCode, navigate])
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-3">

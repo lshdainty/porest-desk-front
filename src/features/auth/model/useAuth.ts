@@ -6,22 +6,6 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const exchangeToken = useCallback(async (ssoToken: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const response = await authApi.exchangeToken(ssoToken)
-      setAuthenticated()
-      return response
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Token exchange failed'
-      setError(message)
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   const exchangeCode = useCallback(
     async (params: { code: string; codeVerifier: string; redirectUri: string }) => {
       setIsLoading(true)
@@ -53,5 +37,5 @@ export const useAuth = () => {
 
   const clearError = useCallback(() => setError(null), [])
 
-  return { exchangeToken, exchangeCode, logout, isLoading, error, clearError }
+  return { exchangeCode, logout, isLoading, error, clearError }
 }
