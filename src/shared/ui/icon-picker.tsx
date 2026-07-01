@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import type { UIEvent } from 'react'
+import type { UIEvent, WheelEvent } from 'react'
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Search } from 'lucide-react'
@@ -56,14 +56,32 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
   const visible = useMemo(() => matched.slice(0, visibleCount), [matched, visibleCount])
 
   // 스크롤이 하단 근처에 오면 STEP 만큼 더 렌더.
-  const handleScroll = useCallback(
-    (e: UIEvent<HTMLDivElement>) => {
-      const el = e.currentTarget
+  const maybeLoadMore = useCallback(
+    (el: HTMLDivElement) => {
       if (el.scrollHeight - el.scrollTop - el.clientHeight < 150) {
         setVisibleCount((c) => (c < matched.length ? c + STEP : c))
       }
     },
     [matched.length],
+  )
+
+  const handleScroll = useCallback(
+    (e: UIEvent<HTMLDivElement>) => maybeLoadMore(e.currentTarget),
+    [maybeLoadMore],
+  )
+
+  // Dialog(react-remove-scroll)가 Popover 내부 커스텀 스크롤 div 의 휠을 막는 문제 우회 —
+  // 휠 델타로 scrollTop 을 직접 조작한다(스크롤바 드래그만 되고 휠이 안 먹던 버그).
+  const handleWheel = useCallback(
+    (e: WheelEvent<HTMLDivElement>) => {
+      const el = e.currentTarget
+      const canScroll = el.scrollHeight > el.clientHeight
+      if (!canScroll) return
+      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY
+      el.scrollTop += delta
+      maybeLoadMore(el)
+    },
+    [maybeLoadMore],
   )
 
   const handleSelect = useCallback(
@@ -124,6 +142,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
         <div
           className="max-h-60 overflow-y-auto overscroll-contain pr-1"
           onScroll={handleScroll}
+          onWheel={handleWheel}
         >
           {visible.length > 0 ? (
             <div className="grid grid-cols-8 gap-1">
