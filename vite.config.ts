@@ -19,5 +19,13 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // lucide 개별 아이콘(1892개) 을 단일 청크로 병합 → 요청 폭주 차단
+          if (id.includes('lucide-react/dist/esm/icons/')) return 'lucide-icons'
+        },
+      },
+    },
   }
 })

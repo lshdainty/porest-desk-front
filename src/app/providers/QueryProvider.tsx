@@ -5,8 +5,10 @@ import type { ReactNode } from 'react'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // 탭/창 복귀 시 갱신 — 다른 클라이언트(앱 등)에서 바뀐 데이터를 따라잡는다.
-      refetchOnWindowFocus: true,
+      // 마운트/리마운트/포커스마다 전 쿼리 재요청되어 요청 폭주 → 60초 신선도로 억제.
+      staleTime: 60_000,
+      // 포커스 복귀마다 전 쿼리 재요청 방지(전역 off). 실시간성 필요 쿼리는 개별 refetchInterval 로 처리.
+      refetchOnWindowFocus: false,
       retry: 1,
     },
   },

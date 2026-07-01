@@ -7,9 +7,9 @@ export const useUserPreferences = () => {
   return useQuery({
     queryKey: PREF_KEY,
     queryFn: () => userApi.getPreferences(),
-    // 앱 등 다른 클라이언트에서 바꾼 값이 바로 보이도록 — 항상 신선도 0 + 포커스 복귀 시 재조회.
-    staleTime: 0,
-    refetchOnWindowFocus: true,
+    // preferences 는 자주 안 바뀜 — 5분 신선도로 마운트/리마운트마다 재요청되던 폭주를 억제.
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   })
 }
 
