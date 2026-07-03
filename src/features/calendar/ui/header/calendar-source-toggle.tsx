@@ -208,7 +208,7 @@ const CalendarSourceToggle = () => {
           <span key={i} className="size-1.5 rounded-full" style={{ backgroundColor: color }} />
         ))}
       </span>
-      <span className="text-xs font-medium">{totalCount}개</span>
+      <span className="text-xs font-medium">{t('sourceCount', { count: totalCount })}</span>
       <ChevronDown size={11} className="text-muted-foreground" />
     </Button>
   )
@@ -224,7 +224,7 @@ const CalendarSourceToggle = () => {
               <DrawerClose asChild>
                 <button
                   type="button"
-                  aria-label="닫기"
+                  aria-label={t('close')}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                 >
                   <X size={18} />

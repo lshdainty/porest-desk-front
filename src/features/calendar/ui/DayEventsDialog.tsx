@@ -1,5 +1,6 @@
 import { ChevronRight, Plus } from 'lucide-react'
 import { parseISO } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/shared/ui/button'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -28,6 +29,7 @@ export function DayEventsDialog({
   onAdd: () => void
   onTapEvent: (event: IEvent) => void
 }) {
+  const { t } = useTranslation('calendar')
   const dows = ['일', '월', '화', '수', '목', '금', '토']
   const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dows[date.getDay()] ?? ''}요일`
 
@@ -47,12 +49,12 @@ export function DayEventsDialog({
       {/* N건 + 이벤트 추가 */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
-          {events.length}건
+          {t('dayEvents.count', { count: events.length })}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          title="이벤트 추가"
+          title={t('addEvent')}
           style={{ marginLeft: 'auto' }}
           onClick={onAdd}
         >
@@ -69,7 +71,7 @@ export function DayEventsDialog({
             color: 'var(--fg-tertiary)',
           }}
         >
-          이날 이벤트가 없습니다
+          {t('noEvents')}
         </div>
       ) : (
         events.map((e, i) => {
@@ -104,7 +106,7 @@ export function DayEventsDialog({
                 color: 'var(--fg-secondary)',
               }}
             >
-              {e.isAllDay ? '종일' : hhmm(e.startDate)}
+              {e.isAllDay ? t('allDay') : hhmm(e.startDate)}
             </span>
             <span style={{ width: 8, flexShrink: 0 }} />
             {/* 세로 색 바 4×24 */}

@@ -264,11 +264,11 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         <Drawer open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle className="flex-1">일정 상세</DrawerTitle>
+              <DrawerTitle className="flex-1">{t('eventDetail')}</DrawerTitle>
               <DrawerClose asChild>
                 <button
                   type="button"
-                  aria-label="닫기"
+                  aria-label={t('close')}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                 >
                   <X size={18} />
