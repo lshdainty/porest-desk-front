@@ -31,6 +31,7 @@ const MonthYearPickerContent = ({
   onToday: () => void
   onClose: () => void
 }) => {
+  const { t } = useTranslation('calendar')
   const [pickerYear, setPickerYear] = useState(selectedDate.getFullYear())
 
   return (
@@ -91,13 +92,13 @@ const MonthYearPickerContent = ({
           onClick={() => { onToday(); onClose() }}
         >
           <Navigation size={13} />
-          오늘로
+          {t('goToToday')}
         </button>
         <button
           className="text-sm text-muted-foreground hover:text-foreground"
           onClick={onClose}
         >
-          닫기
+          {t('close')}
         </button>
       </div>
     </div>
@@ -141,11 +142,11 @@ const CalendarHeader = ({ events }: IProps) => {
             </DrawerTrigger>
             <DrawerContent>
               <DrawerHeader>
-                <DrawerTitle className="flex-1">날짜 이동</DrawerTitle>
+                <DrawerTitle className="flex-1">{t('dateNavigation')}</DrawerTitle>
                 <DrawerClose asChild>
                   <button
                     type="button"
-                    aria-label="닫기"
+                    aria-label={t('close')}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                   >
                     <X size={18} />

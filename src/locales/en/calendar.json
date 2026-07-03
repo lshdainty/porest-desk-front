@@ -101,5 +101,11 @@
   "holiday.deleteConfirm.title": "Delete Holiday",
   "holiday.deleteConfirm.message": "Are you sure you want to delete this holiday?",
   "holiday.deleteConfirm.cancel": "Cancel",
-  "holiday.deleteConfirm.confirm": "Delete"
+  "holiday.deleteConfirm.confirm": "Delete",
+  "close": "Close",
+  "eventDetail": "Event Details",
+  "goToToday": "Today",
+  "dateNavigation": "Go to Date",
+  "dayEvents.count": "{{count}} events",
+  "sourceCount": "{{count}}"
 }

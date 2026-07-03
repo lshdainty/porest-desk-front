@@ -101,5 +101,11 @@
   "holiday.deleteConfirm.title": "공휴일 삭제",
   "holiday.deleteConfirm.message": "이 공휴일을 삭제하시겠습니까?",
   "holiday.deleteConfirm.cancel": "취소",
-  "holiday.deleteConfirm.confirm": "삭제"
+  "holiday.deleteConfirm.confirm": "삭제",
+  "close": "닫기",
+  "eventDetail": "일정 상세",
+  "goToToday": "오늘로",
+  "dateNavigation": "날짜 이동",
+  "dayEvents.count": "{{count}}건",
+  "sourceCount": "{{count}}개"
 }
