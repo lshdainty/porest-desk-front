@@ -910,3 +910,25 @@ category,parentMoveHint,"다른 상위 카테고리로 이동할 수 있어요. 
 category,name,이름,Name
 category,namePlaceholder,"예: 반려동물, 부수입","e.g. Pets, Side income"
 category,colorN,색상 {{n}},Color {{n}}
+dutchPay,fromTx.title,더치페이 시작,Start Dutch Pay
+dutchPay,fromTx.description,"이 거래를 기준으로 더치페이 정산을 만듭니다. 참여자에게 송금 요청을 보내고, 정산 진행 상황을 추적할 수 있어요.",Create a Dutch Pay settlement based on this transaction. Send payment requests to participants and track settlement progress.
+dutchPay,fromTx.me,나,Me
+dutchPay,fromTx.perPerson,1인당,Per person
+dutchPay,fromTx.createSettlement,정산 만들기,Create settlement
+dutchPay,fromTx.splitSection,분배 방식,Split method
+dutchPay,fromTx.split.equal.title,N분의 1,Even split
+dutchPay,fromTx.split.equal.sub,균등 분배,Distribute evenly
+dutchPay,fromTx.split.ratio.title,비율,Ratio
+dutchPay,fromTx.split.ratio.sub,인원수·기준,By count or weight
+dutchPay,fromTx.split.custom.title,개별 금액,Custom amounts
+dutchPay,fromTx.split.custom.sub,각자 다르게,Set individually
+dutchPay,fromTx.includeMe,나도 포함해서 분배,Include me in the split
+dutchPay,fromTx.includeMeHint,내 몫도 계산됩니다,Your share is included
+dutchPay,fromTx.participants,참여자,Participants
+dutchPay,fromTx.removeParticipant,참여자 삭제,Remove participant
+dutchPay,fromTx.addNamePlaceholder,이름 입력 후 추가,Enter a name to add
+dutchPay,fromTx.add,추가,Add
+dutchPay,fromTx.requestMessage,요청 메시지 (선택),Request message (optional)
+dutchPay,fromTx.requestMessagePlaceholder,참여자에게 함께 보낼 한마디를 적어주세요,Write a note to send to participants
+dutchPay,fromTx.shortfall,합계가 총액보다 {{amount}}원 부족합니다.,The total is {{amount}}원 short of the amount.
+dutchPay,fromTx.excess,합계가 총액보다 {{amount}}원 초과합니다.,The total exceeds the amount by {{amount}}원.

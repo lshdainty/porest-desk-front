@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -53,13 +54,14 @@ type Props = {
   mobile: boolean
 }
 
-const SPLIT_METHODS: { v: SplitMethod; icon: React.ComponentType<{ size?: number }>; title: string; sub: string }[] = [
-  { v: 'EQUAL', icon: Divide, title: 'N분의 1', sub: '균등 분배' },
-  { v: 'RATIO', icon: Percent, title: '비율', sub: '인원수·기준' },
-  { v: 'CUSTOM', icon: ListOrdered, title: '개별 금액', sub: '각자 다르게' },
+const SPLIT_METHODS: { v: SplitMethod; icon: React.ComponentType<{ size?: number }>; titleKey: string; subKey: string }[] = [
+  { v: 'EQUAL', icon: Divide, titleKey: 'fromTx.split.equal.title', subKey: 'fromTx.split.equal.sub' },
+  { v: 'RATIO', icon: Percent, titleKey: 'fromTx.split.ratio.title', subKey: 'fromTx.split.ratio.sub' },
+  { v: 'CUSTOM', icon: ListOrdered, titleKey: 'fromTx.split.custom.title', subKey: 'fromTx.split.custom.sub' },
 ]
 
 export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Props) {
+  const { t } = useTranslation('dutchPay')
   const totalAbs = Math.abs(expense.amount)
   const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || new Date().toISOString().slice(0, 10)
   const expenseDateTime = (expense.expenseDate ?? '').slice(0, 16).replace('T', ' ')
@@ -72,10 +74,10 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
   const palette = getPaletteByColor(category?.color)
-  const meName = currentUserQ.data?.userName ?? '나'
+  const meName = currentUserQ.data?.userName ?? t('fromTx.me')
   const meRowId = currentUserQ.data?.rowId ?? null
 
-  const defaultTitle = expense.merchant || expense.description || '더치페이'
+  const defaultTitle = expense.merchant || expense.description || t('title')
 
   const [splitMethod, setSplitMethod] = useState<SplitMethod>('EQUAL')
   const [includeMyself, setIncludeMyself] = useState(true)
@@ -181,7 +183,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
     <ModalFooter
       leftSlot={
         <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
-          1인당{' '}
+          {t('fromTx.perPerson')}{' '}
           <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
             {KRW(perPersonAmount)}원
           </b>
@@ -189,7 +191,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       }
       onCancel={onClose}
       onSave={handleSave}
-      saveLabel="정산 만들기"
+      saveLabel={t('fromTx.createSettlement')}
       saveIcon={<Send size={16} />}
       saving={submitting}
       saveDisabled={!matched || participants.length === 0}
@@ -198,16 +200,16 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   if (isLoading) {
     return (
-      <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+      <ModalShell title={t('fromTx.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
         <DutchPayFromTxSkeleton />
       </ModalShell>
     )
   }
 
   return (
-    <ModalShell title="더치페이 시작" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('fromTx.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        이 거래를 기준으로 더치페이 정산을 만듭니다. 참여자에게 송금 요청을 보내고, 정산 진행 상황을 추적할 수 있어요.
+        {t('fromTx.description')}
       </p>
 
       {/* Source card */}
@@ -249,7 +251,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       </div>
 
       {/* 분배 방식 */}
-      <Section title="분배 방식">
+      <Section title={t('fromTx.splitSection')}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {SPLIT_METHODS.map(m => {
             const Icon = m.icon
@@ -284,9 +286,9 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   }}
                 >
                   <Icon size={14} />
-                  {m.title}
+                  {t(m.titleKey)}
                 </span>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{m.sub}</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t(m.subKey)}</span>
               </button>
             )
           })}
@@ -329,15 +331,15 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>나도 포함해서 분배</span>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>내 몫도 계산됩니다</span>
+        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{t('fromTx.includeMe')}</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('fromTx.includeMeHint')}</span>
       </div>
 
       {/* 참여자 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>참여자</span>
+        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>{t('fromTx.participants')}</span>
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
-          ({participants.length}명)
+          ({participants.length}{t('participants')})
         </span>
       </div>
 
@@ -391,7 +393,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       color: 'var(--fg-income)',
                     }}
                   >
-                    나
+                    {t('fromTx.me')}
                   </span>
                 )}
               </span>
@@ -472,7 +474,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   variant="ghost"
                   size="icon"
                   onClick={() => removeOther(p.uid)}
-                  aria-label="참여자 삭제"
+                  aria-label={t('fromTx.removeParticipant')}
                   className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
                 >
                   <X size={14} />
@@ -491,7 +493,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           value={manualName}
           onChange={e => setManualName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addManual() } }}
-          placeholder="이름 입력 후 추가"
+          placeholder={t('fromTx.addNamePlaceholder')}
           disabled={submitting}
           style={{ flex: 1 }}
         />
@@ -501,16 +503,16 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           onClick={addManual}
           disabled={submitting || !manualName.trim()}
         >
-          <UserPlus size={14} /> 추가
+          <UserPlus size={14} /> {t('fromTx.add')}
         </Button>
       </div>
 
       {/* 요청 메시지 */}
-      <Section title="요청 메시지 (선택)" tightTop>
+      <Section title={t('fromTx.requestMessage')} tightTop>
         <Textarea
           value={requestMessage}
           onChange={e => setRequestMessage(e.target.value)}
-          placeholder="참여자에게 함께 보낼 한마디를 적어주세요"
+          placeholder={t('fromTx.requestMessagePlaceholder')}
           rows={3}
           disabled={submitting}
           style={{ resize: 'vertical', minHeight: 64, fontFamily: 'inherit' }}
@@ -520,8 +522,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       {!matched && (
         <p style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
           {remainder > 0
-            ? `합계가 총액보다 ${KRW(remainder)}원 부족합니다.`
-            : `합계가 총액보다 ${KRW(-remainder)}원 초과합니다.`}
+            ? t('fromTx.shortfall', { amount: KRW(remainder) })
+            : t('fromTx.excess', { amount: KRW(-remainder) })}
         </p>
       )}
     </ModalShell>
