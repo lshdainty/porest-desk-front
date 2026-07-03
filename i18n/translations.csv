@@ -865,3 +865,12 @@ budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 설정되
 budget,edit.monthlyLimitField,월 한도 (원),Monthly limit (KRW)
 budget,edit.monthlyTitle,월 예산 수정,Edit Monthly Budget
 budget,edit.monthlyTotalField,월 총 예산 (원),Total monthly budget (KRW)
+card,loadingCard,카드 로드 중…,Loading card…
+card,selectCard,카드 선택,Select card
+card,searchPlaceholder,카드명 또는 발급사로 검색,Search by card name or issuer
+card,searching,검색 중…,Searching…
+card,noResults,검색 결과가 없습니다,No results found
+card,clearSelection,카드 선택 해제,Clear card selection
+card,noSpendingRequirement,전월 실적 조건 없음 (실적 무관 카드),No prior-month spending requirement
+card,achieved,달성,Achieved
+card,spendMoreForBenefit,{{amount}} 더 사용하면 다음 달 혜택 적용,Spend {{amount}} more to unlock next month's benefits
