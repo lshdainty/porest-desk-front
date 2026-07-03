@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Repeat, Scissors, Split, Users } from 'lucide-react'
 import { KRW } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -39,6 +40,8 @@ type Props = {
 }
 
 export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
+  const { t } = useTranslation('expense')
+  const { t: tc } = useTranslation('common')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [openSub, setOpenSub] = useState<'split' | 'recurring' | 'dutch' | null>(null)
   const [splitExpanded, setSplitExpanded] = useState(true)
@@ -110,10 +113,10 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   const time = toTimeKey(expense.expenseDate)
   const paymentMethodLabel = (() => {
     switch (expense.paymentMethod) {
-      case 'CASH': return '현금'
-      case 'CARD': return '카드'
-      case 'TRANSFER': return '계좌이체'
-      case 'OTHER': return '기타'
+      case 'CASH': return t('form.paymentMethod.CASH')
+      case 'CARD': return t('form.paymentMethod.CARD')
+      case 'TRANSFER': return t('paymentTransferFull')
+      case 'OTHER': return t('form.paymentMethod.OTHER')
       default: return null
     }
   })()
@@ -141,9 +144,9 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
     />
   )
 
-  const title = isIncome ? '수입 상세' : '지출 상세'
+  const title = isIncome ? t('txDetail.incomeTitle') : t('txDetail.expenseTitle')
   const amountColor = isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)'
-  const displayMerchant = expense.merchant ?? expense.description ?? category?.categoryName ?? '거래'
+  const displayMerchant = expense.merchant ?? expense.description ?? category?.categoryName ?? t('transaction')
 
   return (
     <>
@@ -232,7 +235,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           }}
         >
           <FieldRow
-            label="카테고리"
+            label={t('category')}
             value={
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <span
@@ -244,13 +247,13 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                   }}
                 />
                 <span style={{ fontWeight: '600' }}>
-                  {category?.categoryName ?? '미분류'}
+                  {category?.categoryName ?? t('txDetail.uncategorized')}
                 </span>
               </div>
             }
           />
           <FieldRow
-            label="금액"
+            label={t('form.amount')}
             value={
               <span className="num" style={{ fontWeight: '700' }}>
                 <MaskAmount>
@@ -263,7 +266,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           />
           {asset && (
             <FieldRow
-              label="계좌·카드"
+              label={t('accountCard')}
               value={
                 <span style={{ fontWeight: '500' }}>
                   {asset.institution
@@ -275,12 +278,12 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           )}
           {paymentMethodLabel && (
             <FieldRow
-              label="결제 수단"
+              label={t('paymentMethodLabel')}
               value={<span style={{ fontWeight: '500' }}>{paymentMethodLabel}</span>}
             />
           )}
           <FieldRow
-            label="날짜·시간"
+            label={t('dateTime')}
             value={
               <span style={{ fontWeight: '500' }}>
                 {day}
@@ -289,7 +292,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             }
           />
           <FieldRow
-            label="메모"
+            label={t('memo')}
             value={
               <span
                 style={{
@@ -299,7 +302,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                     : 'var(--fg-tertiary)',
                 }}
               >
-                {expense.description || '없음'}
+                {expense.description || t('txDetail.empty')}
               </span>
             }
           />
@@ -309,20 +312,20 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 16 }}>
           <QuickBtn
             Icon={Scissors}
-            label="내역 분할"
-            badge={splitCount > 0 ? `${splitCount}개` : null}
+            label={t('splitTitle')}
+            badge={splitCount > 0 ? t('txDetail.countItems', { count: splitCount }) : null}
             onClick={() => setOpenSub('split')}
           />
           <QuickBtn
             Icon={Repeat}
-            label="반복 설정"
-            badge={linkedRecurring.length > 0 ? '연결됨' : null}
+            label={t('txDetail.recurring')}
+            badge={linkedRecurring.length > 0 ? t('txDetail.linked') : null}
             onClick={() => setOpenSub('recurring')}
           />
           <QuickBtn
             Icon={Users}
-            label="더치페이"
-            badge={linkedDutchPays.length > 0 ? `${linkedDutchPays.length}건` : null}
+            label={t('txDetail.dutchPay')}
+            badge={linkedDutchPays.length > 0 ? t('txDetail.countCases', { count: linkedDutchPays.length }) : null}
             onClick={() => setOpenSub('dutch')}
           />
         </div>
@@ -336,8 +339,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               <Split size={16} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
-              <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>내역 분할 {splitCount}개</span>
-              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>합계 {KRW(Math.abs(expense.amount))}원</span>
+              <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{t('splitTitle')} {t('txDetail.countItems', { count: splitCount })}</span>
+              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('txDetail.sumLabel')} {KRW(Math.abs(expense.amount))}원</span>
               <span style={{ marginLeft: 'auto', color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
                 {splitExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </span>
@@ -365,7 +368,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {(s.label && s.label.trim()) ? s.label : (s.categoryName ?? '항목')}
+                            {(s.label && s.label.trim()) ? s.label : (s.categoryName ?? t('item'))}
                           </div>
                           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
                         </div>
@@ -386,12 +389,12 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           <div style={{ marginTop: 22 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8 }}>
               <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-                {merchantKey}에서의 이전 거래
+                {t('txDetail.prevAtMerchant', { merchant: merchantKey })}
               </h4>
               <span style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                이번 달{' '}
+                {t('txDetail.thisMonth')}{' '}
                 <b className="num" style={{ color: 'var(--fg-secondary)' }}>
-                  {merchantMonthCount}회 · <MaskAmount>{KRW(merchantMonthTotal)}</MaskAmount>
+                  {t('txDetail.countTimes', { count: merchantMonthCount })} · <MaskAmount>{KRW(merchantMonthTotal)}</MaskAmount>
                   <HideUnit>원</HideUnit>
                 </b>
               </span>
@@ -416,9 +419,9 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
 
       {confirmDelete && (
         <ConfirmDialog
-          title="거래 삭제"
-          message={`"${displayMerchant}" 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.`}
-          confirmLabel="삭제"
+          title={t('deleteConfirm.title')}
+          message={t('txDetail.deleteMessage', { name: `"${displayMerchant}"` })}
+          confirmLabel={tc('delete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => !deleteMut.isPending && setConfirmDelete(false)}

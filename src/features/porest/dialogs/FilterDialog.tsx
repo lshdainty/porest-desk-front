@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Asset } from '@/entities/asset'
 import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -39,16 +40,11 @@ export const DEFAULT_FILTER: FilterValue = {
   max: '',
 }
 
-const PERIODS: { v: FilterPeriod; l: string }[] = [
-  { v: 'week', l: '이번 주' },
-  { v: 'month', l: '이번 달' },
-  { v: '3m', l: '3개월' },
-  { v: 'custom', l: '직접 선택' },
-]
-
-const TYPES: TxTypeOption[] = [
-  { value: 'EXPENSE', label: '지출' },
-  { value: 'INCOME', label: '수입' },
+const PERIODS: { v: FilterPeriod; lKey: string }[] = [
+  { v: 'week', lKey: 'filter.period.week' },
+  { v: 'month', lKey: 'filter.period.month' },
+  { v: '3m', lKey: 'stats.period3m' },
+  { v: 'custom', lKey: 'filter.period.custom' },
 ]
 
 function toggleIn<T>(arr: T[], v: T): T[] {
@@ -82,6 +78,11 @@ export function FilterDialog({
   onApply: (v: FilterValue) => void
   mobile: boolean
 }) {
+  const { t } = useTranslation('expense')
+  const TYPES: TxTypeOption[] = [
+    { value: 'EXPENSE', label: t('expense') },
+    { value: 'INCOME', label: t('income') },
+  ]
   const start = initial ?? DEFAULT_FILTER
   const [period, setPeriod] = useState<FilterPeriod>(start.period)
   const initialRange = useMemo(() => {
@@ -143,20 +144,20 @@ export function FilterDialog({
     <ModalFooter
       leftSlot={
         <Button variant="ghost" size="md" flush="left" onClick={reset}>
-          초기화
+          {t('filter.reset')}
         </Button>
       }
       onCancel={onClose}
       onSave={apply}
-      saveLabel="필터 적용"
+      saveLabel={t('filter.apply')}
       saveDisabled={customInvalid}
     />
   )
 
   return (
-    <ModalShell title="필터" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('filter.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <Field style={{ marginBottom: 16 }}>
-        <FieldLabel>기간</FieldLabel>
+        <FieldLabel>{t('filter.period')}</FieldLabel>
         <Tabs
           value={period}
           onValueChange={(v) => v && selectPeriod(v as FilterPeriod)}
@@ -164,7 +165,7 @@ export function FilterDialog({
           <TabsList variant="pill" size="sm" className="w-full">
             {PERIODS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
-                {o.l}
+                {t(o.lKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -182,18 +183,18 @@ export function FilterDialog({
               <InputDatePicker
                 value={startDate}
                 onValueChange={setStartDate}
-                placeholder="시작일"
+                placeholder={t('filter.startDate')}
               />
               <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
               <InputDatePicker
                 value={endDate}
                 onValueChange={setEndDate}
-                placeholder="종료일"
+                placeholder={t('filter.endDate')}
               />
             </div>
             {customInvalid && (
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 6 }}>
-                시작일이 종료일보다 늦을 수 없습니다.
+                {t('filter.dateError')}
               </div>
             )}
           </div>
@@ -201,7 +202,7 @@ export function FilterDialog({
       </Field>
 
       <Field style={{ marginBottom: 16 }}>
-        <FieldLabel>거래 종류</FieldLabel>
+        <FieldLabel>{t('filter.txType')}</FieldLabel>
         <TxTypeToggle
           options={TYPES}
           value={types}
@@ -213,10 +214,10 @@ export function FilterDialog({
       {parentCategories.length > 0 && (
         <Field style={{ marginBottom: 16 }}>
           <FieldLabel>
-            카테고리
+            {t('category')}
             {categoryIds.length > 0 && (
               <span style={{ color: 'var(--fg-brand-strong)', fontWeight: '600', marginLeft: 4 }}>
-                · {categoryIds.length}개 선택
+                · {t('filter.countSelected', { count: categoryIds.length })}
               </span>
             )}
           </FieldLabel>
@@ -238,10 +239,10 @@ export function FilterDialog({
       {assets.length > 0 && (
         <Field style={{ marginBottom: 16 }}>
           <FieldLabel>
-            계좌·카드
+            {t('accountCard')}
             {assetIds.length > 0 && (
               <span style={{ color: 'var(--fg-brand-strong)', fontWeight: '600', marginLeft: 4 }}>
-                · {assetIds.length}개 선택
+                · {t('filter.countSelected', { count: assetIds.length })}
               </span>
             )}
           </FieldLabel>
@@ -263,13 +264,13 @@ export function FilterDialog({
       )}
 
       <Field>
-        <FieldLabel>금액 범위</FieldLabel>
+        <FieldLabel>{t('filter.amountRange')}</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
           <Input
             className="num"
             value={min}
             onChange={e => setMin(e.target.value.replace(/[^0-9]/g, ''))}
-            placeholder="최소 금액"
+            placeholder={t('filter.minAmount')}
             inputMode="numeric"
           />
           <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
@@ -277,7 +278,7 @@ export function FilterDialog({
             className="num"
             value={max}
             onChange={e => setMax(e.target.value.replace(/[^0-9]/g, ''))}
-            placeholder="최대 금액"
+            placeholder={t('filter.maxAmount')}
             inputMode="numeric"
           />
         </div>
