@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertTriangle,
   ArrowRight,
@@ -104,6 +105,8 @@ export function SplitTxDialog({
   initialSplits,
   onReconciled,
 }: Props) {
+  const { t } = useTranslation('expense')
+  const { t: tc } = useTranslation('common')
   const persistedTotal = Math.abs(expense.amount)
   const targetTotal = overrideTotal ?? persistedTotal
   const isIncome = expense.expenseType === 'INCOME'
@@ -236,7 +239,7 @@ export function SplitTxDialog({
         uid: newUid(),
         categoryRowId: expense.categoryRowId,
         amount: String(remainder),
-        label: '추가 금액',
+        label: t('splitTx.extraAmount'),
       },
     ])
     setLastApplied('add')
@@ -244,10 +247,10 @@ export function SplitTxDialog({
 
   // 일치화 빠른 전략 — '조정 항목'은 부족(remainder>0)일 때만 의미가 있어 그때만 노출.
   const strategies = [
-    { key: 'prop' as const, Icon: Scale, title: '비례 배분', desc: '비중대로 자동 조정', recommended: totalChanged, onClick: reconcileProportional },
-    { key: 'largest' as const, Icon: MoveUp, title: '큰 항목 반영', desc: '가장 큰 항목에 차액', recommended: false, onClick: reconcileToLargest },
+    { key: 'prop' as const, Icon: Scale, title: t('splitTx.strategy.prop.title'), desc: t('splitTx.strategy.prop.desc'), recommended: totalChanged, onClick: reconcileProportional },
+    { key: 'largest' as const, Icon: MoveUp, title: t('splitTx.strategy.largest.title'), desc: t('splitTx.strategy.largest.desc'), recommended: false, onClick: reconcileToLargest },
     ...(remainder > 0
-      ? [{ key: 'add' as const, Icon: PlusCircle, title: '조정 항목', desc: '부족분을 새 항목으로', recommended: false, onClick: reconcileAddRow }]
+      ? [{ key: 'add' as const, Icon: PlusCircle, title: t('splitTx.strategy.add.title'), desc: t('splitTx.strategy.add.desc'), recommended: false, onClick: reconcileAddRow }]
       : []),
   ]
 
@@ -281,35 +284,35 @@ export function SplitTxDialog({
     const pal = getPaletteByColor(cat?.color)
     const amt = Number(r.amount) || 0
     const pct = targetTotal > 0 ? Math.round((amt / targetTotal) * 100) : 0
-    return { color: pal.color, name: cat?.categoryName ?? '미선택', pct }
+    return { color: pal.color, name: cat?.categoryName ?? t('splitTx.unselected'), pct }
   })
 
   const Footer = (
     <ModalFooter
       onSave={handleSave}
-      saveLabel="분할 저장"
+      saveLabel={t('splitTx.save')}
       saving={replaceMut.isPending}
       saveDisabled={!matched}
       onCancel={onClose}
-      cancelLabel="취소"
+      cancelLabel={tc('cancel')}
       onDelete={!reconcileMode && (splitsQ.data?.length ?? 0) > 0 ? handleDeleteAll : undefined}
-      deleteLabel="분할 해제"
+      deleteLabel={t('splitTx.remove')}
       deleting={deleteAllMut.isPending}
     />
   )
 
   if (isLoading) {
     return (
-      <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+      <ModalShell title={t('splitTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
         <SplitTxSkeleton />
       </ModalShell>
     )
   }
 
   return (
-    <ModalShell title="내역 분할" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('splitTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        하나의 결제를 카테고리·항목별로 나누어 기록합니다. 예: 마트에서 식품과 생활품을 함께 결제한 경우.
+        {t('splitTx.description')}
       </p>
 
       {/* Source summary */}
@@ -326,13 +329,13 @@ export function SplitTxDialog({
         }}
       >
         <div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>원 거래</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('splitTx.sourceTransaction')}</div>
           <div style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
-            {expense.merchant || expense.description || '거래'}
+            {expense.merchant || expense.description || t('transaction')}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>총액</div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('splitTx.total')}</div>
           {totalChanged ? (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'flex-end', marginTop: 2 }}>
               <span
@@ -378,11 +381,11 @@ export function SplitTxDialog({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <Check size={15} style={{ color: 'var(--status-success-fg)' }} />
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              분할 합계가 총액과 일치해요
+              {t('splitTx.matched')}
             </span>
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
-            분할 합계 <b className="num">{KRW(sumAmount)}원</b> · 총액 <b className="num">{KRW(targetTotal)}원</b>
+            {t('splitTx.splitSum')} <b className="num">{KRW(sumAmount)}원</b> · {t('splitTx.total')} <b className="num">{KRW(targetTotal)}원</b>
           </div>
         </div>
       ) : (
@@ -399,17 +402,17 @@ export function SplitTxDialog({
             <AlertTriangle size={15} style={{ color: 'var(--status-warning-fg)' }} />
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
               {!balanced
-                ? (totalChanged ? '총액이 바뀌어 분할을 맞춰야 해요' : '분할 합계가 총액과 달라요')
-                : '분할 항목을 확인해주세요'}
+                ? (totalChanged ? t('splitTx.totalChangedWarn') : t('splitTx.mismatchWarn'))
+                : t('splitTx.checkItems')}
             </span>
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
-            분할 합계 <b className="num">{KRW(sumAmount)}원</b> · 총액 <b className="num">{KRW(targetTotal)}원</b>
+            {t('splitTx.splitSum')} <b className="num">{KRW(sumAmount)}원</b> · {t('splitTx.total')} <b className="num">{KRW(targetTotal)}원</b>
             {!balanced && (
               <>
                 {' · '}
                 <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
-                  {remainder > 0 ? '부족' : '초과'} {KRW(Math.abs(remainder))}원
+                  {remainder > 0 ? t('splitTx.short') : t('splitTx.over')} {KRW(Math.abs(remainder))}원
                 </b>
               </>
             )}
@@ -435,7 +438,7 @@ export function SplitTxDialog({
                   color: 'var(--fg-brand)',
                 }}
               >
-                <Sparkles size={14} /> 빠르게 맞추기 {quickOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                <Sparkles size={14} /> {t('splitTx.quickAdjust')} {quickOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {quickOpen && (
                 <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : `repeat(${strategies.length}, 1fr)`, gap: 8, marginTop: 10 }}>
@@ -479,7 +482,7 @@ export function SplitTxDialog({
               {/* 헤더: 색 점 + 항목 N + 비율 + 삭제 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', fontWeight: '600' }}>항목 {idx + 1}</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', fontWeight: '600' }}>{t('splitTx.itemN', { n: idx + 1 })}</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '700' }}>{pct}%</span>
                 <Button
                   type="button"
@@ -487,7 +490,7 @@ export function SplitTxDialog({
                   size="icon"
                   onClick={() => removeRow(r.uid)}
                   disabled={submitting || safeRows.length <= 1}
-                  aria-label="항목 삭제"
+                  aria-label={t('splitTx.deleteItem')}
                   className="h-6 w-6 rounded-full text-[var(--fg-tertiary)]"
                 >
                   <X size={14} />
@@ -498,7 +501,7 @@ export function SplitTxDialog({
               <Input
                 value={r.label}
                 onChange={e => updateRow(r.uid, { label: e.target.value })}
-                placeholder="항목 이름 (선택)"
+                placeholder={t('splitTx.itemNamePlaceholder')}
                 disabled={submitting}
               />
 
@@ -510,7 +513,7 @@ export function SplitTxDialog({
                     onValueChange={val => updateRow(r.uid, { categoryRowId: Number(val) })}
                   >
                     <SelectTrigger style={{ background: 'var(--bg-surface)', width: '100%' }}>
-                      <SelectValue placeholder="카테고리" />
+                      <SelectValue placeholder={t('category')} />
                     </SelectTrigger>
                     <SelectContent>
                       {sameTypeCategories.map(c => (
@@ -553,17 +556,17 @@ export function SplitTxDialog({
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'space-between' }}>
         <Button type="button" variant="ghost" size="sm" onClick={addRow} disabled={submitting}>
-          <Plus size={14} /> 항목 추가
+          <Plus size={14} /> {t('splitTx.addItem')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={splitEvenly} disabled={submitting}>
-          <Scissors size={14} /> 균등 분배
+          <Scissors size={14} /> {t('splitTx.splitEvenly')}
         </Button>
       </div>
 
       {/* 분할 비율 */}
       <div style={{ marginTop: 4 }}>
         <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 6 }}>
-          분할 비율
+          {t('splitTx.ratio')}
         </div>
         <div
           style={{
@@ -627,6 +630,7 @@ function ReconcileBtn({
   recommended?: boolean
   onClick?: () => void
 }) {
+  const { t } = useTranslation('expense')
   return (
     <button
       type="button"
@@ -666,7 +670,7 @@ function ReconcileBtn({
                 color: 'var(--status-warning-fg)',
               }}
             >
-              추천
+              {t('splitTx.recommended')}
             </span>
           )}
         </span>

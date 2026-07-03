@@ -932,3 +932,110 @@ dutchPay,fromTx.requestMessage,요청 메시지 (선택),Request message (option
 dutchPay,fromTx.requestMessagePlaceholder,참여자에게 함께 보낼 한마디를 적어주세요,Write a note to send to participants
 dutchPay,fromTx.shortfall,합계가 총액보다 {{amount}}원 부족합니다.,The total is {{amount}}원 short of the amount.
 dutchPay,fromTx.excess,합계가 총액보다 {{amount}}원 초과합니다.,The total exceeds the amount by {{amount}}원.
+expense,accountCard,계좌·카드,Account · Card
+expense,paymentMethodLabel,결제 수단,Payment method
+expense,paymentTransferFull,계좌이체,Bank transfer
+expense,dateTime,날짜·시간,Date · Time
+expense,memo,메모,Memo
+expense,splitTitle,내역 분할,Split transaction
+expense,transaction,거래,Transaction
+expense,item,항목,Item
+expense,selectNone,선택 안 함,None
+expense,addTx.newTitle,내역 추가,Add Transaction
+expense,addTx.editTitle,거래 편집,Edit Transaction
+expense,addTx.transfer,이체,Transfer
+expense,addTx.add,추가,Add
+expense,addTx.saveSplitAndSave,분할 맞추고 저장,Adjust splits & save
+expense,addTx.presetLoad,프리셋 불러오기,Load preset
+expense,addTx.presetApplied,적용됨,Applied
+expense,addTx.saveCurrentInput,현재 입력값 저장,Save current input
+expense,addTx.presetManageHint,설정 → 프리셋 관리,Settings → Manage presets
+expense,addTx.noPresets,저장된 프리셋이 없어요. 자주 쓰는 내역을 입력 후 “현재 입력값 저장”을 눌러보세요.,No saved presets. Enter a frequently used entry and tap “Save current input”.
+expense,addTx.presetFilledHint,프리셋 값이 채워졌어요. 금액·내역만 수정해서 저장하세요.,Preset values filled in. Edit only the amount and details then save.
+expense,addTx.clear,해제,Clear
+expense,addTx.splitMismatchTitle,분할 내역과 금액이 달라요,Split total does not match the amount
+expense,addTx.newTotal,새 총액,New total
+expense,addTx.splitSum,분할 합계,Split total
+expense,addTx.difference,차이,difference
+expense,addTx.matchSplits,분할 내역 맞추기,Adjust splits
+expense,addTx.subCategoryPlaceholder,세부 카테고리,Subcategory
+expense,addTx.parent,상위,Parent
+expense,addTx.detail,세부,Details
+expense,addTx.incomeSource,수입처,Income source
+expense,addTx.merchantPlaceholder,예: 스타벅스 강남점,e.g. Starbucks Gangnam
+expense,addTx.incomeSourcePlaceholder,예: (주)포레스트,e.g. Acme Inc.
+expense,addTx.incomeMethod,수입 방식,Income method
+expense,addTx.depositAccount,입금 계좌,Deposit account
+expense,addTx.basisOf,{{method}} 기준,by {{method}}
+expense,addTx.noAssetForMethod,해당 결제 수단에 연결된 자산이 없어요.,No assets linked to this payment method.
+expense,addTx.fromAccount,출금 계좌,From account
+expense,addTx.selectPlaceholder,선택,Select
+expense,addTx.fee,수수료 (선택),Fee (optional)
+expense,addTx.optional,선택 사항,Optional
+expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
+expense,savePreset.title,프리셋으로 저장,Save as preset
+expense,savePreset.noMerchant,내역 없음,No details
+expense,savePreset.noCategory,카테고리 미선택,No category
+expense,savePreset.name,프리셋 이름,Preset name
+expense,savePreset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
+expense,savePreset.lockAmount,금액도 함께 저장,Save amount too
+expense,savePreset.lockOn,{{amount}}원이 항상 채워집니다.,{{amount}}원 will always be filled in.
+expense,savePreset.lockOff,체크 해제 시 금액은 비워두고 매번 직접 입력합니다.,"When unchecked, the amount stays empty and you enter it each time."
+expense,savePreset.needCategory,저장하려면 먼저 카테고리를 선택해주세요.,Please select a category first to save.
+expense,txDetail.incomeTitle,수입 상세,Income Details
+expense,txDetail.expenseTitle,지출 상세,Expense Details
+expense,txDetail.uncategorized,미분류,Uncategorized
+expense,txDetail.empty,없음,None
+expense,txDetail.countItems,{{count}}개,{{count}}
+expense,txDetail.recurring,반복 설정,Recurring
+expense,txDetail.linked,연결됨,Linked
+expense,txDetail.dutchPay,더치페이,Dutch Pay
+expense,txDetail.countCases,{{count}}건,{{count}}
+expense,txDetail.sumLabel,합계,Total
+expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}
+expense,txDetail.thisMonth,이번 달,This month
+expense,txDetail.countTimes,{{count}}회,{{count}} times
+expense,txDetail.deleteMessage,{{name}} 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the {{name}} transaction? The linked asset balance will be adjusted too.
+expense,splitTx.extraAmount,추가 금액,Extra amount
+expense,splitTx.strategy.prop.title,비례 배분,Proportional
+expense,splitTx.strategy.prop.desc,비중대로 자동 조정,Auto-adjust by weight
+expense,splitTx.strategy.largest.title,큰 항목 반영,Apply to largest
+expense,splitTx.strategy.largest.desc,가장 큰 항목에 차액,Difference to the largest item
+expense,splitTx.strategy.add.title,조정 항목,Adjustment item
+expense,splitTx.strategy.add.desc,부족분을 새 항목으로,Add shortfall as new item
+expense,splitTx.unselected,미선택,Unselected
+expense,splitTx.save,분할 저장,Save split
+expense,splitTx.remove,분할 해제,Remove split
+expense,splitTx.description,하나의 결제를 카테고리·항목별로 나누어 기록합니다. 예: 마트에서 식품과 생활품을 함께 결제한 경우.,Record a single payment split by category or item. e.g. groceries and household goods bought together at a store.
+expense,splitTx.sourceTransaction,원 거래,Original transaction
+expense,splitTx.total,총액,Total
+expense,splitTx.matched,분할 합계가 총액과 일치해요,The split total matches the amount
+expense,splitTx.splitSum,분할 합계,Split total
+expense,splitTx.totalChangedWarn,총액이 바뀌어 분할을 맞춰야 해요,The amount changed — adjust the split
+expense,splitTx.mismatchWarn,분할 합계가 총액과 달라요,The split total differs from the amount
+expense,splitTx.checkItems,분할 항목을 확인해주세요,Please check the split items
+expense,splitTx.short,부족,Short
+expense,splitTx.over,초과,Over
+expense,splitTx.quickAdjust,빠르게 맞추기,Quick adjust
+expense,splitTx.itemN,항목 {{n}},Item {{n}}
+expense,splitTx.deleteItem,항목 삭제,Delete item
+expense,splitTx.itemNamePlaceholder,항목 이름 (선택),Item name (optional)
+expense,splitTx.addItem,항목 추가,Add item
+expense,splitTx.splitEvenly,균등 분배,Split evenly
+expense,splitTx.ratio,분할 비율,Split ratio
+expense,splitTx.recommended,추천,Recommended
+expense,filter.title,필터,Filter
+expense,filter.reset,초기화,Reset
+expense,filter.apply,필터 적용,Apply filter
+expense,filter.period,기간,Period
+expense,filter.period.week,이번 주,This week
+expense,filter.period.month,이번 달,This month
+expense,filter.period.custom,직접 선택,Custom
+expense,filter.startDate,시작일,Start date
+expense,filter.endDate,종료일,End date
+expense,filter.dateError,시작일이 종료일보다 늦을 수 없습니다.,The start date cannot be later than the end date.
+expense,filter.txType,거래 종류,Transaction type
+expense,filter.countSelected,{{count}}개 선택,{{count}} selected
+expense,filter.amountRange,금액 범위,Amount range
+expense,filter.minAmount,최소 금액,Min amount
+expense,filter.maxAmount,최대 금액,Max amount

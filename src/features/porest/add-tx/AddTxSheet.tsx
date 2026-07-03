@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -42,13 +43,6 @@ import type { ExpenseSplitFormValue } from '@/entities/expense-split'
 import { Card, CardContent } from '@/shared/ui/card'
 import { SplitTxDialog } from '../dialogs/SplitTxDialog'
 
-const PAYMENT_METHODS: { v: string; l: string }[] = [
-  { v: 'CASH', l: '현금' },
-  { v: 'CARD', l: '카드' },
-  { v: 'TRANSFER', l: '계좌이체' },
-  { v: 'OTHER', l: '기타' },
-]
-
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
 const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
   CASH: ['CASH'],
@@ -89,7 +83,16 @@ const extractTime = (s?: string | null) => {
 }
 
 export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
+  const { t } = useTranslation('expense')
+  const { t: tc } = useTranslation('common')
   const isEdit = !!expense
+
+  const PAYMENT_METHODS: { v: string; l: string }[] = [
+    { v: 'CASH', l: t('form.paymentMethod.CASH') },
+    { v: 'CARD', l: t('form.paymentMethod.CARD') },
+    { v: 'TRANSFER', l: t('paymentTransferFull') },
+    { v: 'OTHER', l: t('form.paymentMethod.OTHER') },
+  ]
 
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
@@ -322,19 +325,19 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={splitMismatch ? '분할 맞추고 저장' : isEdit ? '저장' : '추가'}
+      saveLabel={splitMismatch ? t('addTx.saveSplitAndSave') : isEdit ? tc('save') : t('addTx.add')}
       saving={submitting}
       saveDisabled={!canSave}
       onCancel={onClose}
       onDelete={isEdit ? onDeleteClick : undefined}
-      deleteLabel="삭제"
+      deleteLabel={tc('delete')}
       deleting={deleteMut.isPending}
     />
   )
 
   return (
     <ModalShell
-      title={isEdit ? '거래 편집' : '내역 추가'}
+      title={isEdit ? t('addTx.editTitle') : t('addTx.newTitle')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -354,9 +357,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       >
         <TabsList variant="pill" size="sm" className="w-full">
           {([
-            { v: 'EXPENSE', l: '지출' },
-            { v: 'INCOME', l: '수입' },
-            { v: 'TRANSFER', l: '이체' },
+            { v: 'EXPENSE', l: t('expense') },
+            { v: 'INCOME', l: t('income') },
+            { v: 'TRANSFER', l: t('addTx.transfer') },
           ] as { v: TxType; l: string }[]).map(o => {
             const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
             return (
@@ -396,7 +399,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   textTransform: 'uppercase',
                 }}
               >
-                프리셋 불러오기
+                {t('addTx.presetLoad')}
               </span>
               {activePresetId != null && (
                 <span
@@ -409,7 +412,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     borderRadius: 'var(--radius-xs)',
                   }}
                 >
-                  적용됨
+                  {t('addTx.presetApplied')}
                 </span>
               )}
             </div>
@@ -431,7 +434,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 fontFamily: 'inherit',
               }}
             >
-              <Plus size={12} /> 현재 입력값 저장
+              <Plus size={12} /> {t('addTx.saveCurrentInput')}
             </button>
           </div>
 
@@ -532,7 +535,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   }}
                 >
                   <MoreHorizontal size={14} />
-                  설정 → 프리셋 관리
+                  {t('addTx.presetManageHint')}
                 </span>
               )}
             </div>
@@ -547,7 +550,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 color: 'var(--fg-tertiary)',
               }}
             >
-              저장된 프리셋이 없어요. 자주 쓰는 내역을 입력 후 “현재 입력값 저장”을 눌러보세요.
+              {t('addTx.noPresets')}
             </div>
           )}
 
@@ -573,7 +576,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   flex: 1,
                 }}
               >
-                프리셋 값이 채워졌어요. 금액·내역만 수정해서 저장하세요.
+                {t('addTx.presetFilledHint')}
               </span>
               <button
                 type="button"
@@ -590,7 +593,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   fontFamily: 'inherit',
                 }}
               >
-                해제
+                {t('addTx.clear')}
               </button>
             </div>
           )}
@@ -599,7 +602,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
       {/* 금액 — 다른 필드와 동일한 라벨+인풋 (모바일 처럼 깔끔하게) */}
       <Field style={{ marginBottom: 18 }}>
-        <FieldLabel>금액</FieldLabel>
+        <FieldLabel>{t('form.amount')}</FieldLabel>
         <Input
           className="num"
           value={amount}
@@ -646,17 +649,17 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              분할 내역과 금액이 달라요
+              {t('addTx.splitMismatchTitle')}
             </div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 3, lineHeight: '1.5' }}>
-              새 총액 <b className="num">{KRW(amountNumber)}원</b> · 분할 합계 <b className="num">{KRW(splitSum)}원</b> ·{' '}
+              {t('addTx.newTotal')} <b className="num">{KRW(amountNumber)}원</b> · {t('addTx.splitSum')} <b className="num">{KRW(splitSum)}원</b> ·{' '}
               <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
                 {amountNumber - splitSum > 0 ? '+' : '−'}{KRW(Math.abs(amountNumber - splitSum))}원
               </b>{' '}
-              차이
+              {t('addTx.difference')}
             </div>
             <Button type="button" size="sm" onClick={() => setOpenReconcile(true)} style={{ marginTop: 10 }}>
-              <Scissors size={13} /> 분할 내역 맞추기
+              <Scissors size={13} /> {t('addTx.matchSplits')}
             </Button>
           </div>
         </div>
@@ -677,7 +680,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   marginBottom: 'var(--spacing-sm)',
                 }}
               >
-                카테고리
+                {t('category')}
               </div>
               <CategoryGrid>
                 {topCategories.map(c => (
@@ -705,18 +708,18 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                     onValueChange={(v) => setCategoryRowId(Number(v))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="세부 카테고리" />
+                      <SelectValue placeholder={t('addTx.subCategoryPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>상위</SelectLabel>
+                        <SelectLabel>{t('addTx.parent')}</SelectLabel>
                         <SelectItem value={String(selectedParentId)}>
-                          {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? '상위'}
+                          {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? t('addTx.parent')}
                         </SelectItem>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
-                        <SelectLabel>세부</SelectLabel>
+                        <SelectLabel>{t('addTx.detail')}</SelectLabel>
                         {(childrenByParent.get(selectedParentId) ?? []).map(child => (
                           <SelectItem key={child.rowId} value={String(child.rowId)}>
                             {child.categoryName}
@@ -732,18 +735,18 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
           {/* 거래처 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{type === 'INCOME' ? '수입처' : '거래처'}</FieldLabel>
+            <FieldLabel>{type === 'INCOME' ? t('addTx.incomeSource') : t('form.merchant')}</FieldLabel>
             <Input
               value={merchant}
               onChange={e => setMerchant(e.target.value)}
-              placeholder={type === 'INCOME' ? '예: (주)포레스트' : '예: 스타벅스 강남점'}
+              placeholder={type === 'INCOME' ? t('addTx.incomeSourcePlaceholder') : t('addTx.merchantPlaceholder')}
             />
           </Field>
 
           {/* 결제 수단 — 먼저 선택, 계좌·카드 목록을 필터링 */}
           <Field style={{ marginBottom: 14 }}>
             <FieldLabel>
-              {type === 'INCOME' ? '수입 방식' : '결제 수단'}
+              {type === 'INCOME' ? t('addTx.incomeMethod') : t('paymentMethodLabel')}
             </FieldLabel>
             <Select
               value={paymentMethod || '__none__'}
@@ -753,10 +756,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="선택 안 함" />
+                <SelectValue placeholder={t('selectNone')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">선택 안 함</SelectItem>
+                <SelectItem value="__none__">{t('selectNone')}</SelectItem>
                 {PAYMENT_METHODS.map(pm => (
                   <SelectItem key={pm.v} value={pm.v}>{pm.l}</SelectItem>
                 ))}
@@ -767,10 +770,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           {/* 계좌·카드 — 결제 수단에 맞춰 필터 */}
           <Field style={{ marginBottom: 14 }}>
             <FieldLabel>
-              {type === 'INCOME' ? '입금 계좌' : '계좌·카드'}
+              {type === 'INCOME' ? t('addTx.depositAccount') : t('accountCard')}
               {paymentMethod && filteredAssets.length !== assets.length && (
                 <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>
-                  ({PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? ''} 기준)
+                  ({t('addTx.basisOf', { method: PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? '' })})
                 </span>
               )}
             </FieldLabel>
@@ -782,10 +785,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="선택 안 함" />
+                <SelectValue placeholder={t('selectNone')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">선택 안 함</SelectItem>
+                <SelectItem value="__none__">{t('selectNone')}</SelectItem>
                 {filteredAssets.map(a => (
                   <SelectItem key={a.rowId} value={String(a.rowId)}>
                     {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
@@ -795,7 +798,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             </Select>
             {paymentMethod && filteredAssets.length === 0 && (
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-                해당 결제 수단에 연결된 자산이 없어요.
+                {t('addTx.noAssetForMethod')}
               </div>
             )}
           </Field>
@@ -804,13 +807,13 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         <>
           {/* 이체: 출금 → 입금 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>출금 계좌</FieldLabel>
+            <FieldLabel>{t('addTx.fromAccount')}</FieldLabel>
             <Select
               value={fromAssetRowId != null ? String(fromAssetRowId) : ''}
               onValueChange={(v) => setFromAssetRowId(v ? Number(v) : null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="선택" />
+                <SelectValue placeholder={t('addTx.selectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {assets.map(a => (
@@ -822,13 +825,13 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             </Select>
           </Field>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>입금 계좌</FieldLabel>
+            <FieldLabel>{t('addTx.depositAccount')}</FieldLabel>
             <Select
               value={toAssetRowId != null ? String(toAssetRowId) : ''}
               onValueChange={(v) => setToAssetRowId(v ? Number(v) : null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="선택" />
+                <SelectValue placeholder={t('addTx.selectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {assets
@@ -842,7 +845,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             </Select>
           </Field>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>수수료 (선택)</FieldLabel>
+            <FieldLabel>{t('addTx.fee')}</FieldLabel>
             <Input
               className="num"
               value={fee}
@@ -856,7 +859,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
       {/* 날짜·시간 (TRANSFER는 시간 없음 — 백엔드 transferDate가 LocalDate) */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{type === 'TRANSFER' ? '날짜' : '날짜·시간'}</FieldLabel>
+        <FieldLabel>{type === 'TRANSFER' ? t('form.date') : t('dateTime')}</FieldLabel>
         {type === 'TRANSFER' ? (
           <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
         ) : (
@@ -873,11 +876,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
       {/* 메모 */}
       <Field style={{ marginBottom: 4 }}>
-        <FieldLabel>메모</FieldLabel>
+        <FieldLabel>{t('memo')}</FieldLabel>
         <Textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="선택 사항"
+          placeholder={t('addTx.optional')}
           style={{ minHeight: 64 }}
         />
       </Field>
@@ -933,9 +936,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
             onClick={e => e.stopPropagation()}
           >
             <CardContent>
-              <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 8 }}>거래 삭제</div>
+              <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 8 }}>{t('deleteConfirm.title')}</div>
               <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: '1.7', marginBottom: 16 }}>
-                선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.
+                {t('addTx.deleteMessage')}
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <Button
@@ -944,7 +947,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   onClick={() => setConfirmDelete(false)}
                   disabled={submitting}
                 >
-                  취소
+                  {tc('cancel')}
                 </Button>
                 <Button
                   type="button"
@@ -952,7 +955,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                   onClick={doDelete}
                   loading={submitting}
                 >
-                  삭제
+                  {tc('delete')}
                 </Button>
               </div>
             </CardContent>
@@ -987,6 +990,8 @@ function SavePresetDialog({
   mobile: boolean
   seed: SavePresetSeed
 }) {
+  const { t } = useTranslation('expense')
+  const { t: tc } = useTranslation('common')
   const [name, setName] = useState(seed.merchant || '')
   const [lockAmount, setLockAmount] = useState(false)
 
@@ -1015,7 +1020,7 @@ function SavePresetDialog({
   const Footer = (
     <ModalFooter
       onSave={submit}
-      saveLabel="저장"
+      saveLabel={tc('save')}
       saving={createMut.isPending}
       saveDisabled={!canSave}
       onCancel={onClose}
@@ -1023,7 +1028,7 @@ function SavePresetDialog({
   )
 
   return (
-    <ModalShell title="프리셋으로 저장" onClose={onClose} mobile={mobile} size="md" footer={Footer}>
+    <ModalShell title={t('savePreset.title')} onClose={onClose} mobile={mobile} size="md" footer={Footer}>
       {/* 시드 미리보기 */}
       <div
         style={{
@@ -1047,10 +1052,10 @@ function SavePresetDialog({
               whiteSpace: 'nowrap',
             }}
           >
-            {seed.merchant || '내역 없음'}
+            {seed.merchant || t('savePreset.noMerchant')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {seed.categoryName ?? '카테고리 미선택'}
+            {seed.categoryName ?? t('savePreset.noCategory')}
             {seed.assetName ? ` · ${seed.assetName}` : ''}
           </div>
         </div>
@@ -1068,11 +1073,11 @@ function SavePresetDialog({
       </div>
 
       <Field style={{ marginBottom: 16 }}>
-        <FieldLabel>프리셋 이름</FieldLabel>
+        <FieldLabel>{t('savePreset.name')}</FieldLabel>
         <Input
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="예: 점심 도시락"
+          placeholder={t('savePreset.namePlaceholder')}
           autoFocus
         />
       </Field>
@@ -1095,18 +1100,18 @@ function SavePresetDialog({
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>금액도 함께 저장</div>
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{t('savePreset.lockAmount')}</div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: '1.3' }}>
             {lockAmount
-              ? `${KRW(seed.amount)}원이 항상 채워집니다.`
-              : '체크 해제 시 금액은 비워두고 매번 직접 입력합니다.'}
+              ? t('savePreset.lockOn', { amount: KRW(seed.amount) })
+              : t('savePreset.lockOff')}
           </div>
         </div>
       </label>
 
       {seed.categoryRowId == null && (
         <div style={{ marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-expense)' }}>
-          저장하려면 먼저 카테고리를 선택해주세요.
+          {t('savePreset.needCategory')}
         </div>
       )}
     </ModalShell>
