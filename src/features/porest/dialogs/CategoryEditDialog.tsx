@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -53,6 +54,9 @@ export function CategoryEditDialog({
   existing: ExpenseCategory[]
   submitting?: boolean
 }) {
+  const { t } = useTranslation('category')
+  const { t: tc } = useTranslation('common')
+  const { t: te } = useTranslation('expense')
   const isNew = !cat
   const [label, setLabel] = useState(cat?.categoryName || '')
   const [kind, setKind] = useState<ExpenseType>(cat?.expenseType || defaultKind)
@@ -76,11 +80,11 @@ export function CategoryEditDialog({
   const err =
     touched && !valid
       ? labelTrim.length === 0
-        ? '이름을 입력해 주세요.'
+        ? t('nameRequired')
         : labelTrim.length > 12
-        ? '이름은 12자 이내로 입력해 주세요.'
+        ? t('nameTooLong')
         : duplicate
-        ? '같은 이름의 카테고리가 있습니다.'
+        ? t('nameDuplicate')
         : null
       : null
 
@@ -109,19 +113,19 @@ export function CategoryEditDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={isNew ? '추가' : '저장'}
+      saveLabel={isNew ? t('add') : tc('save')}
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
       onDelete={onDelete}
-      deleteLabel="삭제"
+      deleteLabel={tc('delete')}
       deleting={submitting}
     />
   )
 
   return (
     <ModalShell
-      title={isNew ? '카테고리 추가' : '카테고리 편집'}
+      title={isNew ? te('addCategory') : t('editTitle')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -161,23 +165,23 @@ export function CategoryEditDialog({
               letterSpacing: '-0.012em',
             }}
           >
-            {labelTrim || '새 카테고리'}
+            {labelTrim || t('newCategory')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {kind === 'EXPENSE' ? '지출 카테고리' : '수입 카테고리'} · 미리보기
+            {kind === 'EXPENSE' ? t('expenseCategory') : t('incomeCategory')} · {t('preview')}
           </div>
         </div>
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>구분</FieldLabel>
+        <FieldLabel>{t('type')}</FieldLabel>
         <Tabs
           value={kind}
           onValueChange={(v) => v && setKind(v as ExpenseType)}
         >
           <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
-            <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+            <TabsTrigger value="EXPENSE" className="flex-1">{te('expense')}</TabsTrigger>
+            <TabsTrigger value="INCOME" className="flex-1">{te('income')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </Field>
@@ -189,9 +193,9 @@ export function CategoryEditDialog({
       {(isNew || cat?.parentRowId != null) && (
         <Field style={{ marginBottom: 14 }}>
           <FieldLabel>
-            상위 카테고리
+            {t('parentCategory')}
             {isNew && (
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>(선택)</span>
+              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>{t('optional')}</span>
             )}
           </FieldLabel>
           <Select
@@ -200,10 +204,10 @@ export function CategoryEditDialog({
             disabled={parentOptions.length === 0}
           >
             <SelectTrigger>
-              <SelectValue placeholder={isNew ? '— 최상위 카테고리로 두기 —' : '상위 카테고리 선택'} />
+              <SelectValue placeholder={isNew ? t('rootOption') : t('selectParent')} />
             </SelectTrigger>
             <SelectContent>
-              {isNew && <SelectItem value="__root__">— 최상위 카테고리로 두기 —</SelectItem>}
+              {isNew && <SelectItem value="__root__">{t('rootOption')}</SelectItem>}
               {parentOptions.map(p => (
                 <SelectItem key={p.rowId} value={String(p.rowId)}>
                   {p.categoryName}
@@ -219,14 +223,14 @@ export function CategoryEditDialog({
                 marginTop: 4,
               }}
             >
-              다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 연결된 거래를 옮긴 뒤 새로 만들어 주세요.
+              {t('parentMoveHint')}
             </div>
           )}
         </Field>
       )}
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>이름</FieldLabel>
+        <FieldLabel>{t('name')}</FieldLabel>
         <Input
           aria-invalid={!!err}
           value={label}
@@ -234,7 +238,7 @@ export function CategoryEditDialog({
             setLabel(e.target.value)
             setTouched(true)
           }}
-          placeholder="예: 반려동물, 부수입"
+          placeholder={t('namePlaceholder')}
           maxLength={14}
           autoFocus
         />
@@ -255,7 +259,7 @@ export function CategoryEditDialog({
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>색상</FieldLabel>
+        <FieldLabel>{te('form.color')}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={String(paletteIdx)}
@@ -264,13 +268,13 @@ export function CategoryEditDialog({
             value: String(i),
             bg: p.bg,
             fg: p.color,
-            label: `색상 ${i + 1}`,
+            label: t('colorN', { n: i + 1 }),
           }))}
         />
       </Field>
 
       <Field style={{ marginBottom: 4 }}>
-        <FieldLabel>아이콘</FieldLabel>
+        <FieldLabel>{te('form.icon')}</FieldLabel>
         <IconPicker value={icon} onChange={setIcon} />
       </Field>
     </ModalShell>

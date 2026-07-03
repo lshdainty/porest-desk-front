@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight, GripVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import {
   DndContext,
@@ -45,6 +46,9 @@ import { CategoryEditDialog, getPaletteByColor } from './CategoryEditDialog'
 type EditingState = ExpenseCategory | { kind: 'new'; parentRowId?: number | null } | null
 
 export function CategoryManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('category')
+  const { t: tc } = useTranslation('common')
+  const { t: te } = useTranslation('expense')
   const { data: categories, isLoading } = useExpenseCategories()
   const createMut = useCreateExpenseCategory()
   const updateMut = useUpdateExpenseCategory()
@@ -140,7 +144,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
             setPendingMove({
               values,
               id: editing.rowId,
-              parentName: parent?.categoryName ?? '상위 카테고리',
+              parentName: parent?.categoryName ?? t('parentFallback'),
               over: projected - newParentBudget,
             })
             return
@@ -195,12 +199,12 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title="카테고리 관리"
-            description="지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요."
+            title={te('categories')}
+            description={t('manager.description')}
             actions={
               <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
-                추가
+                {t('add')}
               </Button>
             }
           />
@@ -216,10 +220,10 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
               <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
                 <TabsList variant="underline" className="w-full">
                   <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">
-                    지출 {counts.expense}
+                    {te('expense')} {counts.expense}
                   </TabsTrigger>
                   <TabsTrigger variant="underline" value="INCOME" className="flex-1">
-                    수입 {counts.income}
+                    {te('income')} {counts.income}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -231,13 +235,13 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                   search
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="카테고리 검색"
+                  placeholder={t('searchPlaceholder')}
                   className="w-full min-w-0 pl-9"
                 />
               </div>
               <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
                 <Plus size={14} strokeWidth={2.4} />
-                추가
+                {t('add')}
               </Button>
             </div>
           </>
@@ -247,8 +251,8 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
               value={tab}
               onChange={setTab}
               options={[
-                { value: 'EXPENSE', label: '지출', count: counts.expense },
-                { value: 'INCOME', label: '수입', count: counts.income },
+                { value: 'EXPENSE', label: te('expense'), count: counts.expense },
+                { value: 'INCOME', label: te('income'), count: counts.income },
               ]}
             />
             <div style={MANAGER_LAYOUT.searchWrapStyle}>
@@ -257,7 +261,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                 search
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="카테고리 검색"
+                placeholder={t('searchPlaceholder')}
                 className="w-[220px] pl-9"
               />
             </div>
@@ -268,9 +272,9 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           {isLoading ? (
             <CategoryManagerSkeleton mobile={mobile} />
           ) : list.length === 0 ? (
-            <div className="cat-list__empty"><span>카테고리가 없어요</span></div>
+            <div className="cat-list__empty"><span>{t('empty')}</span></div>
           ) : tree.length === 0 ? (
-            <div className="cat-list__empty"><span>검색 결과가 없습니다.</span></div>
+            <div className="cat-list__empty"><span>{t('noSearchResults')}</span></div>
           ) : (
             <DndContext
               sensors={sensors}
@@ -325,15 +329,15 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title="카테고리 삭제"
+          title={t('deleteTitle')}
           message={
             confirmDelete.hasChildren
-              ? `"${confirmDelete.categoryName}" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.`
+              ? t('deleteHasChildren', { name: `"${confirmDelete.categoryName}"` })
               : budgetOf(confirmDelete.rowId) != null
-              ? `예산이 설정되어 있는 카테고리입니다. 삭제 시 예산도 함께 삭제됩니다. "${confirmDelete.categoryName}" 카테고리를 삭제하시겠습니까?`
-              : `"${confirmDelete.categoryName}" 카테고리를 삭제하시겠어요?`
+              ? t('deleteWithBudget', { name: `"${confirmDelete.categoryName}"` })
+              : t('deleteConfirm', { name: `"${confirmDelete.categoryName}"` })
           }
-          confirmLabel="삭제"
+          confirmLabel={tc('delete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
@@ -342,9 +346,9 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
       )}
       {pendingMove && (
         <ConfirmDialog
-          title="예산 초과 확인"
-          message={`이동하면 "${pendingMove.parentName}" 예산을 ${KRW(pendingMove.over)}원 초과합니다. 그래도 이동할까요?`}
-          confirmLabel="이동"
+          title={t('overBudgetTitle')}
+          message={t('overBudgetMessage', { parent: `"${pendingMove.parentName}"`, amount: KRW(pendingMove.over) })}
+          confirmLabel={t('move')}
           loading={updateMut.isPending}
           onCancel={() => setPendingMove(null)}
           onConfirm={() => {
@@ -499,6 +503,8 @@ function SortableRow({
   onDelete: () => void
   onAddChild?: () => void
 }) {
+  const { t } = useTranslation('category')
+  const { t: te } = useTranslation('expense')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: cat.rowId,
   })
@@ -513,7 +519,7 @@ function SortableRow({
     <div ref={setNodeRef} style={style} className={MANAGE_ROW.className}>
       <button
         type="button"
-        aria-label="드래그로 순서 변경"
+        aria-label={t('dragReorder')}
         {...attributes}
         {...listeners}
         style={{
@@ -532,7 +538,7 @@ function SortableRow({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={isCollapsed ? '펼치기' : '접기'}
+          aria-label={isCollapsed ? t('expand') : t('collapse')}
           style={{
             background: 'transparent',
             border: 0,
@@ -553,11 +559,11 @@ function SortableRow({
       <div style={MANAGE_ROW.textStyle}>
         <div style={MANAGE_ROW.labelStyle}>{cat.categoryName}</div>
         <div style={MANAGE_ROW.metaStyle}>
-          {cat.expenseType === 'EXPENSE' ? '지출' : '수입'}
+          {cat.expenseType === 'EXPENSE' ? te('expense') : te('income')}
           {isParent && hasChildren && (
             <>
               <span className="dot-sep" />
-              하위 카테고리 있음
+              {t('hasSubcategories')}
             </>
           )}
         </div>
@@ -565,11 +571,11 @@ function SortableRow({
       {!mobile ? (
         <div className={MANAGE_ROW.actionsClassName}>
           {isParent && onAddChild && (
-            <Button variant="ghost" size="icon" onClick={onAddChild} title="하위 추가">
+            <Button variant="ghost" size="icon" onClick={onAddChild} title={t('addSub')}>
               <Plus size={13} />
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={onEdit} title="편집">
+          <Button variant="ghost" size="icon" onClick={onEdit} title={t('edit')}>
             <Pencil size={13} />
           </Button>
           <Button
