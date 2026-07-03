@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronRight, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
@@ -33,14 +34,15 @@ const groupOfAsset = (a: Asset): AssetGroup => {
   return 'account'
 }
 
-const groupLabel = (g: AssetGroup) => (g === 'account' ? '계좌' : g === 'card' ? '카드' : '투자')
-
 type EditingState =
   | { mode: 'create'; group: AssetGroup }
   | { mode: 'edit'; asset: Asset }
   | null
 
 export function AccountManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('asset')
+  const groupLabel = (g: AssetGroup) =>
+    g === 'account' ? t('group.account') : g === 'card' ? t('group.card') : t('group.invest')
   const { data: assetsData, isLoading } = useAssets()
   const createAsset = useCreateAsset()
   const updateAsset = useUpdateAsset()
@@ -100,8 +102,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title="계좌·카드 관리"
-            description="연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요."
+            title={t('manager.title')}
+            description={t('manager.description')}
           />
         )}
 
@@ -113,13 +115,13 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
             <Tabs value={tab} onValueChange={v => setTab(v as AssetGroup)}>
               <TabsList variant="underline" className="w-full">
                 <TabsTrigger variant="underline" value="account" className="flex-1">
-                  계좌·예금 {counts.account}
+                  {t('tab.accountDeposit')} {counts.account}
                 </TabsTrigger>
                 <TabsTrigger variant="underline" value="card" className="flex-1">
-                  카드 {counts.card}
+                  {t('group.card')} {counts.card}
                 </TabsTrigger>
                 <TabsTrigger variant="underline" value="invest" className="flex-1">
-                  투자 {counts.invest}
+                  {t('group.invest')} {counts.invest}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -129,21 +131,21 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
             value={tab}
             onChange={setTab}
             options={[
-              { value: 'account', label: '계좌·예금', count: counts.account },
-              { value: 'card', label: '카드', count: counts.card },
-              { value: 'invest', label: '투자', count: counts.invest },
+              { value: 'account', label: t('tab.accountDeposit'), count: counts.account },
+              { value: 'card', label: t('group.card'), count: counts.card },
+              { value: 'invest', label: t('group.invest'), count: counts.invest },
             ]}
           />
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            총 <MaskAmount>{KRW(totalInTab)}</MaskAmount>
+            {t('manager.totalPrefix')} <MaskAmount>{KRW(totalInTab)}</MaskAmount>
             <HideUnit>원</HideUnit>
           </div>
           <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
             <Plus size={14} strokeWidth={2.4} />
-            {groupLabel(tab)} 추가
+            {t('addToGroup', { group: groupLabel(tab) })}
           </Button>
         </div>
 
@@ -210,7 +212,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       </div>
                       {asset.isIncludedInTotal === 'N' && (
                         <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                          총액 제외
+                          {t('excludedFromTotal')}
                         </div>
                       )}
                     </div>
@@ -219,7 +221,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="편집"
+                          title={t('editAction')}
                           onClick={() => setEditing({ mode: 'edit', asset })}
                         >
                           <Pencil size={13} />
@@ -250,7 +252,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               {filtered.length === 0 && (
                 <div className="cat-list__empty">
                   <Wallet size={20} style={{ color: 'var(--fg-tertiary)' }} />
-                  <div>등록된 {groupLabel(tab)}이 없어요.</div>
+                  <div>{t('noneInGroup', { group: groupLabel(tab) })}</div>
                 </div>
               )}
             </>
@@ -295,13 +297,13 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <ConfirmDialog
           title={
             groupOfAsset(confirmDelete) === 'account'
-              ? '계좌 삭제'
+              ? t('deleteConfirm.titleAccount')
               : groupOfAsset(confirmDelete) === 'card'
-              ? '카드 삭제'
-              : '투자 상품 삭제'
+              ? t('deleteConfirm.titleCard')
+              : t('deleteConfirm.titleInvest')
           }
-          message={`"${confirmDelete.assetName}"을(를) 목록에서 제거합니다. 연결된 거래 내역은 유지됩니다.`}
-          confirmLabel="삭제"
+          message={t('deleteConfirm.messageDetail', { name: `"${confirmDelete.assetName}"` })}
+          confirmLabel={t('deleteConfirm.confirm')}
           danger
           loading={deleteAsset.isPending}
           onCancel={() => setConfirmDelete(null)}
