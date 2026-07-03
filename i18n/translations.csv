@@ -332,6 +332,72 @@ asset,deleteConfirm.title,자산 삭제,Delete Asset
 asset,deleteConfirm.message,"이 자산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this asset? This action cannot be undone."
 asset,deleteConfirm.cancel,취소,Cancel
 asset,deleteConfirm.confirm,삭제,Delete
+asset,group.account,계좌,Account
+asset,group.card,카드,Card
+asset,group.invest,투자,Investment
+asset,addAction,추가,Add
+asset,editAction,편집,Edit
+asset,tab.accountDeposit,계좌·예금,Accounts & Deposits
+asset,manager.title,계좌·카드 관리,Account & Card Management
+asset,manager.description,"연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요.","Manage your linked assets. You can add or edit accounts, cards, and investment products."
+asset,manager.totalPrefix,총,Total
+asset,addToGroup,{{group}} 추가,Add {{group}}
+asset,noneInGroup,등록된 {{group}}이 없어요.,No {{group}} registered.
+asset,excludedFromTotal,총액 제외,Excluded from total
+asset,deleteConfirm.titleAccount,계좌 삭제,Delete Account
+asset,deleteConfirm.titleCard,카드 삭제,Delete Card
+asset,deleteConfirm.titleInvest,투자 상품 삭제,Delete Investment
+asset,deleteConfirm.messageDetail,{{name}}을(를) 목록에서 제거합니다. 연결된 거래 내역은 유지됩니다.,{{name}} will be removed from the list. Linked transactions are kept.
+asset,editDialog.titleAdd,{{group}} 추가,Add {{group}}
+asset,editDialog.titleEdit,{{group}} 편집,Edit {{group}}
+asset,editDialog.newCard,새 카드,New Card
+asset,editDialog.newInvest,새 투자 상품,New Investment
+asset,editDialog.newAccount,새 계좌,New Account
+asset,editDialog.previewSub,{{brand}} · 미리보기,{{brand}} · Preview
+asset,editDialog.nameLabelInvest,상품·종목명,Product/Ticker Name
+asset,editDialog.nameLabelCard,별칭 (선택),Alias (optional)
+asset,editDialog.nameLabelAccount,별칭,Alias
+asset,editDialog.namePlaceholderInvest,"예: KODEX 200, 해외 ETF 포트폴리오","e.g. KODEX 200, Overseas ETF Portfolio"
+asset,editDialog.namePlaceholderCard,예: 신한 Deep Dream,e.g. Shinhan Deep Dream
+asset,editDialog.namePlaceholderAccount,예: 신한 주거래,e.g. Shinhan Main Account
+asset,editDialog.balanceLabelCard,현재 사용액 (원),Current Usage (KRW)
+asset,editDialog.balanceLabelInvest,평가액 (원),Valuation (KRW)
+asset,editDialog.balanceLabelAccount,잔액 (원),Balance (KRW)
+asset,editDialog.cardTypeLabel,카드 종류,Card Type
+asset,editDialog.cardProduct,카드 상품,Card Product
+asset,editDialog.cardSearchPlaceholder,카드명 또는 발급사 검색,Search by card name or issuer
+asset,editDialog.includeDiscontinuedTooltip,단종된 카드 상품도 검색 결과에 포함합니다,Include discontinued cards in search results
+asset,editDialog.includeDiscontinued,단종 포함,Include discontinued
+asset,editDialog.discontinued,단종,Discontinued
+asset,cardTypeShort.credit,신용,Credit
+asset,cardTypeShort.check,체크,Check
+asset,editDialog.annualFeeValue,연회비 {{amount}}원,Annual fee {{amount}} KRW
+asset,editDialog.billingCycle,청구 사이클 (선택),Billing Cycle (optional)
+asset,editDialog.creditLimit,신용한도 (원),Credit Limit (KRW)
+asset,editDialog.creditLimitPlaceholder,예: 3000000,e.g. 3000000
+asset,editDialog.paymentDay,결제일,Payment Day
+asset,editDialog.paymentDayPlaceholder,결제일 선택,Select payment day
+asset,editDialog.dayUnit,{{day}}일,{{day}}
+asset,editDialog.paymentAccount,결제계좌,Payment Account
+asset,editDialog.noCheckingAccount,입출금 계좌가 없어요,No checking account
+asset,editDialog.selectPaymentAccount,결제 출금계좌 선택,Select payment account
+asset,editDialog.brokerExchange,증권사·거래소,Brokerage/Exchange
+asset,editDialog.institutionBrand,기관·브랜드,Institution/Brand
+asset,editDialog.totalCount,총 {{count}}개,{{count}} total
+asset,editDialog.investSearchPlaceholder,증권사·가상자산거래소 검색,Search brokerage/crypto exchange
+asset,editDialog.bankSearchPlaceholder,은행명 검색,Search bank name
+asset,editDialog.noSearchResults,검색 결과가 없어요,No search results
+asset,editDialog.accountTypeLabel,계좌 종류,Account Type
+asset,accountSub.checking,입출금,Checking
+asset,accountSub.savings,적금,Savings
+asset,accountSub.deposit,예금,Deposit
+asset,accountSub.cash,현금,Cash
+asset,accountSub.loan,대출,Loan
+asset,editDialog.cardBalanceHelp,청구될 금액을 입력하세요. 총 부채에 반영됩니다.,Enter the amount to be billed. It counts toward total debt.
+asset,editDialog.memoOptional,메모 (선택),Memo (optional)
+asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
+asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
+asset,editDialog.includeInTotalDesc,순자산·총자산 계산에 반영됩니다,Counts toward net worth and total assets
 dashboard,title,대시보드,Dashboard
 dashboard,welcome,환영합니다,Welcome
 dashboard,overview,개요,Overview

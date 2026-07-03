@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CreditCard, Search, Wallet } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -57,6 +58,21 @@ export type AssetGroup = 'account' | 'card' | 'invest'
 type AccountSub = '입출금' | '적금' | '예금' | '현금' | '대출'
 const ACCOUNT_SUBS: AccountSub[] = ['입출금', '적금', '예금', '현금', '대출']
 
+// AccountSub(타입 판별자, 한글 리터럴)의 표시 라벨 i18n 키 매핑
+const ACCOUNT_SUB_KEY: Record<AccountSub, string> = {
+  '입출금': 'checking',
+  '적금': 'savings',
+  '예금': 'deposit',
+  '현금': 'cash',
+  '대출': 'loan',
+}
+
+const GROUP_NOUN_KEY: Record<AssetGroup, string> = {
+  account: 'group.account',
+  card: 'group.card',
+  invest: 'group.invest',
+}
+
 function subToAssetType(sub: AccountSub): AssetType {
   switch (sub) {
     case '입출금': return 'BANK_ACCOUNT'
@@ -108,6 +124,8 @@ export function AssetEditDialog({
   mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
+  const { t } = useTranslation('asset')
+  const { t: tCommon } = useTranslation('common')
   const isNew = !item
   const editingGroup: AssetGroup = item ? groupOfType(item.assetType) : group
 
@@ -250,17 +268,18 @@ export function AssetEditDialog({
   const previewName = (() => {
     const trimmed = name.trim()
     if (trimmed) return trimmed
-    if (editingGroup === 'card') return selectedCard?.cardName || '새 카드'
-    if (editingGroup === 'invest') return '새 투자 상품'
-    return '새 계좌'
+    if (editingGroup === 'card') return selectedCard?.cardName || t('editDialog.newCard')
+    if (editingGroup === 'invest') return t('editDialog.newInvest')
+    return t('editDialog.newAccount')
   })()
 
   const previewSub = (() => {
     if (editingGroup === 'card') {
       const company = cardCompanyName
-      return `${company ? `${company} · ` : ''}${cardType === 'CREDIT' ? '신용카드' : '체크카드'}`
+      const typeLabel = cardType === 'CREDIT' ? t('assetType.creditcard') : t('assetType.checkcard')
+      return `${company ? `${company} · ` : ''}${typeLabel}`
     }
-    return `${brand} · 미리보기`
+    return t('editDialog.previewSub', { brand })
   })()
 
   // 유효성
@@ -273,22 +292,31 @@ export function AssetEditDialog({
   })()
 
   const title = (() => {
-    const action = isNew ? '추가' : '편집'
-    if (editingGroup === 'card') return `카드 ${action}`
-    if (editingGroup === 'invest') return `투자 ${action}`
-    return `계좌 ${action}`
+    const group = t(GROUP_NOUN_KEY[editingGroup])
+    return isNew
+      ? t('editDialog.titleAdd', { group })
+      : t('editDialog.titleEdit', { group })
   })()
 
-  const nameLabel = editingGroup === 'invest' ? '상품·종목명' : editingGroup === 'card' ? '별칭 (선택)' : '별칭'
+  const nameLabel =
+    editingGroup === 'invest'
+      ? t('editDialog.nameLabelInvest')
+      : editingGroup === 'card'
+      ? t('editDialog.nameLabelCard')
+      : t('editDialog.nameLabelAccount')
   const namePlaceholder =
     editingGroup === 'invest'
-      ? '예: KODEX 200, 해외 ETF 포트폴리오'
+      ? t('editDialog.namePlaceholderInvest')
       : editingGroup === 'card'
-      ? selectedCard?.cardName ?? '예: 신한 Deep Dream'
-      : '예: 신한 주거래'
+      ? selectedCard?.cardName ?? t('editDialog.namePlaceholderCard')
+      : t('editDialog.namePlaceholderAccount')
 
   const balanceLabel =
-    editingGroup === 'card' ? '현재 사용액 (원)' : editingGroup === 'invest' ? '평가액 (원)' : '잔액 (원)'
+    editingGroup === 'card'
+      ? t('editDialog.balanceLabelCard')
+      : editingGroup === 'invest'
+      ? t('editDialog.balanceLabelInvest')
+      : t('editDialog.balanceLabelAccount')
 
   const handleClose = () => {
     if (isSubmitting) return
@@ -441,7 +469,7 @@ export function AssetEditDialog({
           {editingGroup === 'card' ? (
             <>
               <div>
-                <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
+                <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.cardTypeLabel')}</Label>
                 <Tabs
                   value={cardType}
                   onValueChange={(v) => {
@@ -451,18 +479,18 @@ export function AssetEditDialog({
                   }}
                 >
                   <TabsList variant="pill" size="sm" className="w-full">
-                    <TabsTrigger value="CREDIT" className="flex-1">신용카드</TabsTrigger>
-                    <TabsTrigger value="CHECK" className="flex-1">체크카드</TabsTrigger>
+                    <TabsTrigger value="CREDIT" className="flex-1">{t('assetType.creditcard')}</TabsTrigger>
+                    <TabsTrigger value="CHECK" className="flex-1">{t('assetType.checkcard')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
 
               <SearchableList
-                label="카드 상품"
+                label={t('editDialog.cardProduct')}
                 totalCount={catalogQ.data?.meta?.totalElements}
                 searchValue={cardKeyword}
                 onSearchChange={setCardKeyword}
-                placeholder="카드명 또는 발급사 검색"
+                placeholder={t('editDialog.cardSearchPlaceholder')}
                 isLoading={catalogQ.isLoading}
                 loadingSkeleton={
                   <div className="flex flex-col">
@@ -484,13 +512,13 @@ export function AssetEditDialog({
                 headerExtras={
                   <label
                     className="inline-flex items-center cursor-pointer select-none gap-1.5 text-caption text-text-tertiary"
-                    title="단종된 카드 상품도 검색 결과에 포함합니다"
+                    title={t('editDialog.includeDiscontinuedTooltip')}
                   >
                     <Switch
                       checked={includeDiscontinued}
                       onCheckedChange={setIncludeDiscontinued}
                     />
-                    단종 포함
+                    {t('editDialog.includeDiscontinued')}
                   </label>
                 }
               >
@@ -535,16 +563,16 @@ export function AssetEditDialog({
                                 letterSpacing: '0.04em',
                               }}
                             >
-                              단종
+                              {t('editDialog.discontinued')}
                             </span>
                           )}
                         </>
                       }
                       subtitle={
                         <>
-                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
+                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? t('cardTypeShort.credit') : t('cardTypeShort.check')}
                           {c.annualFee.amount > 0 && (
-                            <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
+                            <> · {t('editDialog.annualFeeValue', { amount: c.annualFee.amount.toLocaleString('ko-KR') })}</>
                           )}
                         </>
                       }
@@ -555,39 +583,39 @@ export function AssetEditDialog({
 
               {cardType === 'CREDIT' && (
                 <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5">
-                  <div className="text-[12px] font-semibold text-[var(--fg-secondary)]">청구 사이클 (선택)</div>
+                  <div className="text-[12px] font-semibold text-[var(--fg-secondary)]">{t('editDialog.billingCycle')}</div>
                   <div>
-                    <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">신용한도 (원)</Label>
+                    <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">{t('editDialog.creditLimit')}</Label>
                     <Input
                       id="card-credit-limit"
                       inputMode="numeric"
                       value={creditLimit}
                       onChange={e => setCreditLimit(e.target.value.replace(/[^\d]/g, ''))}
-                      placeholder="예: 3000000"
+                      placeholder={t('editDialog.creditLimitPlaceholder')}
                     />
                   </div>
                   <div>
-                    <Label className="text-[13px] font-medium mb-2 block">결제일</Label>
+                    <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentDay')}</Label>
                     <Select value={paymentDay || undefined} onValueChange={v => setPaymentDay(v)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="결제일 선택" />
+                        <SelectValue placeholder={t('editDialog.paymentDayPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                          <SelectItem key={d} value={String(d)}>{d}일</SelectItem>
+                          <SelectItem key={d} value={String(d)}>{t('editDialog.dayUnit', { day: d })}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[13px] font-medium mb-2 block">결제계좌</Label>
+                    <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentAccount')}</Label>
                     <Select
                       value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
                       onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
                       disabled={bankAccounts.length === 0}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={bankAccounts.length === 0 ? '입출금 계좌가 없어요' : '결제 출금계좌 선택'} />
+                        <SelectValue placeholder={bankAccounts.length === 0 ? t('editDialog.noCheckingAccount') : t('editDialog.selectPaymentAccount')} />
                       </SelectTrigger>
                       <SelectContent>
                         {bankAccounts.map(a => (
@@ -605,14 +633,15 @@ export function AssetEditDialog({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-[13px] font-medium">
-                  {editingGroup === 'invest' ? '증권사·거래소' : '기관·브랜드'}
+                  {editingGroup === 'invest' ? t('editDialog.brokerExchange') : t('editDialog.institutionBrand')}
                 </Label>
                 <span className="text-[11px] text-[var(--fg-tertiary)]">
-                  총{' '}
-                  {editingGroup === 'invest'
-                    ? INVEST_BRANDS.length
-                    : BANK_ENTRIES.filter(e => !INVEST_CATEGORY_SET.has(e.category)).length}
-                  개
+                  {t('editDialog.totalCount', {
+                    count:
+                      editingGroup === 'invest'
+                        ? INVEST_BRANDS.length
+                        : BANK_ENTRIES.filter(e => !INVEST_CATEGORY_SET.has(e.category)).length,
+                  })}
                 </span>
               </div>
               <div className="relative mb-2">
@@ -626,8 +655,8 @@ export function AssetEditDialog({
                   onChange={e => setQuery(e.target.value)}
                   placeholder={
                     editingGroup === 'invest'
-                      ? '증권사·가상자산거래소 검색'
-                      : '은행명 검색'
+                      ? t('editDialog.investSearchPlaceholder')
+                      : t('editDialog.bankSearchPlaceholder')
                   }
                   className="pl-9"
                 />
@@ -639,7 +668,7 @@ export function AssetEditDialog({
                 {editingGroup === 'invest' ? (
                   investFilteredCount === 0 ? (
                     <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                      검색 결과가 없어요
+                      {t('editDialog.noSearchResults')}
                     </div>
                   ) : (
                     <ToggleGroup
@@ -686,7 +715,7 @@ export function AssetEditDialog({
                   )
                 ) : bankFilteredByCategory.length === 0 ? (
                   <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                    검색 결과가 없어요
+                    {t('editDialog.noSearchResults')}
                   </div>
                 ) : (
                   <ToggleGroup
@@ -737,7 +766,7 @@ export function AssetEditDialog({
 
           {editingGroup === 'account' && (
             <div>
-              <Label className="text-[13px] font-medium mb-2 block">계좌 종류</Label>
+              <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.accountTypeLabel')}</Label>
               <Tabs
                 value={accountSub}
                 onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
@@ -745,7 +774,7 @@ export function AssetEditDialog({
                 <TabsList variant="pill" size="sm" className="w-full">
                   {ACCOUNT_SUBS.map((s) => (
                     <TabsTrigger key={s} value={s} className="flex-1">
-                      {s}
+                      {t(`accountSub.${ACCOUNT_SUB_KEY[s]}`)}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -783,19 +812,19 @@ export function AssetEditDialog({
             />
             {editingGroup === 'card' && (
               <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-                청구될 금액을 입력하세요. 총 부채에 반영됩니다.
+                {t('editDialog.cardBalanceHelp')}
               </p>
             )}
           </div>
 
           {editingGroup !== 'card' && (
             <div>
-              <Label htmlFor="asset-edit-memo" className="text-[13px] font-medium mb-2 block">메모 (선택)</Label>
+              <Label htmlFor="asset-edit-memo" className="text-[13px] font-medium mb-2 block">{t('editDialog.memoOptional')}</Label>
               <Input
                 id="asset-edit-memo"
                 value={memo}
                 onChange={e => setMemo(e.target.value)}
-                placeholder="계좌번호 뒷자리, 결제일, 한도 등 메모하세요"
+                placeholder={t('editDialog.memoPlaceholder')}
                 maxLength={120}
               />
             </div>
@@ -806,8 +835,8 @@ export function AssetEditDialog({
               <Wallet size={18} />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold text-[var(--fg-primary)]">전체 자산 합계에 포함</div>
-              <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">순자산·총자산 계산에 반영됩니다</div>
+              <div className="text-[13px] font-semibold text-[var(--fg-primary)]">{t('editDialog.includeInTotal')}</div>
+              <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">{t('editDialog.includeInTotalDesc')}</div>
             </div>
             <Switch
               checked={isIncludedInTotal === 'Y'}
@@ -821,13 +850,13 @@ export function AssetEditDialog({
   const footerInner = (
     <ModalFooter
       onSave={handleSubmit}
-      saveLabel={isNew ? '추가' : '저장'}
+      saveLabel={isNew ? t('addAction') : tCommon('save')}
       saving={isSubmitting}
       saveDisabled={!canSubmit}
       onCancel={handleClose}
-      cancelLabel="취소"
+      cancelLabel={tCommon('cancel')}
       onDelete={onDelete}
-      deleteLabel="삭제"
+      deleteLabel={tCommon('delete')}
     />
   )
 
