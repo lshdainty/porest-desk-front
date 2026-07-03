@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { CardPerformance } from '@/entities/card'
 import { cn } from '@/shared/lib'
 
@@ -11,10 +12,11 @@ function formatKRW(n: number) {
 }
 
 export function CardPerformanceBar({ performance, className }: Props) {
+  const { t } = useTranslation('card')
   if (!performance.isRequired) {
     return (
       <div className={cn('text-sm text-muted-foreground', className)}>
-        전월 실적 조건 없음 (실적 무관 카드)
+        {t('noSpendingRequirement')}
       </div>
     )
   }
@@ -30,7 +32,7 @@ export function CardPerformanceBar({ performance, className }: Props) {
           <span className="text-muted-foreground"> / {formatKRW(performance.requiredAmount)}</span>
         </span>
         <span className={performance.isAchieved ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
-          {pct}% {performance.isAchieved ? '달성' : ''}
+          {pct}% {performance.isAchieved ? t('achieved') : ''}
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -41,7 +43,7 @@ export function CardPerformanceBar({ performance, className }: Props) {
       </div>
       {!performance.isAchieved && performance.remainingAmount != null && (
         <div className="text-xs text-muted-foreground">
-          {formatKRW(performance.remainingAmount)} 더 사용하면 다음 달 혜택 적용
+          {t('spendMoreForBenefit', { amount: formatKRW(performance.remainingAmount) })}
         </div>
       )}
     </div>

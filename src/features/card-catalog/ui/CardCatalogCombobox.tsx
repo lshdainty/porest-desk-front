@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export function CardCatalogCombobox({ value, onChange, cardTypeFilter, disabled }: Props) {
+  const { t } = useTranslation('card')
+  const { t: tAsset } = useTranslation('asset')
   const [open, setOpen] = useState(false)
   const [keyword, setKeyword] = useState('')
 
@@ -61,9 +64,9 @@ export function CardCatalogCombobox({ value, onChange, cardTypeFilter, disabled 
                 </span>
               </span>
             ) : value ? (
-              <span className="text-muted-foreground">카드 로드 중…</span>
+              <span className="text-muted-foreground">{t('loadingCard')}</span>
             ) : (
-              <span className="text-muted-foreground">카드 선택</span>
+              <span className="text-muted-foreground">{t('selectCard')}</span>
             )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -71,13 +74,13 @@ export function CardCatalogCombobox({ value, onChange, cardTypeFilter, disabled 
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="카드명 또는 발급사로 검색"
+              placeholder={t('searchPlaceholder')}
               value={keyword}
               onValueChange={setKeyword}
             />
             <CommandList>
-              {isFetching && <div className="py-3 text-center text-sm text-muted-foreground">검색 중…</div>}
-              {!isFetching && items.length === 0 && <CommandEmpty>검색 결과가 없습니다</CommandEmpty>}
+              {isFetching && <div className="py-3 text-center text-sm text-muted-foreground">{t('searching')}</div>}
+              {!isFetching && items.length === 0 && <CommandEmpty>{t('noResults')}</CommandEmpty>}
               <CommandGroup>
                 {items.map((c) => (
                   <CommandItem
@@ -95,7 +98,7 @@ export function CardCatalogCombobox({ value, onChange, cardTypeFilter, disabled 
                     <div className="flex-1 min-w-0">
                       <div className="truncate text-sm">{c.cardName}</div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {c.company?.name} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
+                        {c.company?.name} · {c.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')}
                       </div>
                     </div>
                     <Check
@@ -116,7 +119,7 @@ export function CardCatalogCombobox({ value, onChange, cardTypeFilter, disabled 
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="카드 선택 해제"
+          aria-label={t('clearSelection')}
           onClick={() => onChange(null)}
           disabled={disabled}
         >
