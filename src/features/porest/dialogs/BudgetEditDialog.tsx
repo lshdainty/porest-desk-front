@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@/shared/ui/porest/primitives'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
@@ -37,6 +38,8 @@ export function BudgetEditDialog({
   mobile: boolean
   submitting?: boolean
 }) {
+  const { t } = useTranslation('budget')
+  const { t: tCommon } = useTranslation('common')
   const isNew = !budget
 
   // 선택 가능한 카테고리 = EXPENSE 타입의 **부모 카테고리(top-level)** 만.
@@ -81,7 +84,7 @@ export function BudgetEditDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={isNew ? '추가' : '저장'}
+      saveLabel={isNew ? t('add') : tCommon('save')}
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
@@ -92,7 +95,7 @@ export function BudgetEditDialog({
 
   return (
     <ModalShell
-      title={isNew ? '카테고리 예산 추가' : '카테고리 예산 수정'}
+      title={isNew ? t('edit.addTitle') : t('edit.editTitle')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -132,17 +135,17 @@ export function BudgetEditDialog({
               letterSpacing: '-0.012em',
             }}
           >
-            {selectedCat?.categoryName ?? '카테고리 선택'}
+            {selectedCat?.categoryName ?? t('edit.selectCategory')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            월 한도 {KRW(parseInt(limit) || 0)}원
+            {t('edit.monthlyLimitPreview')} {KRW(parseInt(limit) || 0)}원
           </div>
         </div>
       </div>
 
       {isNew && (
         <Field style={{ marginBottom: 14 }}>
-          <FieldLabel>카테고리</FieldLabel>
+          <FieldLabel>{t('edit.categoryLabel')}</FieldLabel>
           {availableCats.length === 0 ? (
             <div
               style={{
@@ -153,7 +156,7 @@ export function BudgetEditDialog({
                 color: 'var(--fg-secondary)',
               }}
             >
-              모든 지출 카테고리에 이미 예산이 설정되어 있어요.
+              {t('edit.allBudgeted')}
             </div>
           ) : (
             <CategoryGrid>
@@ -173,7 +176,7 @@ export function BudgetEditDialog({
       )}
 
       <Field style={{ marginBottom: 10 }}>
-        <FieldLabel>월 한도 (원)</FieldLabel>
+        <FieldLabel>{t('edit.monthlyLimitField')}</FieldLabel>
         <Input
           className="num"
           value={limit}
@@ -214,13 +217,15 @@ export function MonthlyBudgetDialog({
   mobile: boolean
   submitting?: boolean
 }) {
+  const { t } = useTranslation('budget')
+  const { t: tCommon } = useTranslation('common')
   const [v, setV] = useState(String(value))
   const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000]
 
   const Footer = (
     <ModalFooter
       onSave={() => onSave(parseInt(v) || 0)}
-      saveLabel="저장"
+      saveLabel={tCommon('save')}
       saving={submitting}
       saveDisabled={(parseInt(v) || 0) <= 0}
       onCancel={onClose}
@@ -228,9 +233,9 @@ export function MonthlyBudgetDialog({
   )
 
   return (
-    <ModalShell title="월 예산 수정" onClose={onClose} size="sm" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('edit.monthlyTitle')} onClose={onClose} size="sm" footer={Footer} mobile={mobile}>
       <Field style={{ marginBottom: 10 }}>
-        <FieldLabel>월 총 예산 (원)</FieldLabel>
+        <FieldLabel>{t('edit.monthlyTotalField')}</FieldLabel>
         <Input
           className="num"
           style={{ fontSize: 'var(--text-title-lg)', fontWeight: '700' }}

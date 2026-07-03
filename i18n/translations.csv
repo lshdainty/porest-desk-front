@@ -827,3 +827,41 @@ user,confirmPasswordRequired,새 비밀번호 확인을 입력해주세요,Passw
 user,passwordMismatch,새 비밀번호가 일치하지 않습니다,New passwords do not match
 user,passwordChangeSuccess,비밀번호가 성공적으로 변경되었습니다,Password changed successfully
 user,passwordChangeError,비밀번호 변경에 실패했습니다,Failed to change password
+budget,add,추가,Add
+budget,copy,복사,Copy
+budget,copyLastMonth,지난달 복사,Copy Last Month
+budget,prevMonth,이전 달,Previous month
+budget,nextMonth,다음 달,Next month
+budget,addBudget,예산 추가,Add Budget
+budget,deleteTitle,예산 삭제,Delete Budget
+budget,manager.title,예산 설정,Budget Settings
+budget,manager.description,월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요.,Set your total monthly budget and per-category limits. We'll notify you when you use 85% or more of a budget.
+budget,manager.noPrevBudget,복사할 지난달 예산이 없어요,No previous month budget to copy
+budget,manager.copyPrevTitle,지난달 한도를 이번 달로 복사,Copy last month's limits to this month
+budget,manager.monthlyTotal,{{month}}월 총 예산,Month {{month}} Total Budget
+budget,manager.notSet,설정되지 않음,Not set
+budget,manager.setBudget,예산 설정,Set Budget
+budget,manager.spent,사용,Spent
+budget,manager.assigned,할당됨,Assigned
+budget,manager.assignable,할당 가능,Assignable
+budget,manager.overCapPre,카테고리 한도 합이 전체 상한을,Category limits exceed the total cap by
+budget,manager.overCapPost,초과했어요. 전체 상한을 올리거나 카테고리 한도를 줄여주세요.,— raise the total cap or lower category limits.
+budget,manager.categoryBudgets,카테고리별 예산 · {{count}}개,Category Budgets · {{count}}
+budget,manager.allBudgetedTooltip,모든 카테고리에 이미 예산이 설정되어 있어요,All categories already have a budget set
+budget,manager.emptyCategory,설정된 카테고리 예산이 없어요,No category budgets set
+budget,manager.categoryFallback,카테고리 #{{id}},Category #{{id}}
+budget,manager.overLimit,한도 초과,Over limit by
+budget,manager.remaining,남은 예산,Remaining
+budget,deleteMessage,{{name}} 카테고리 예산을 삭제하시겠어요?,Delete the budget for {{name}} category?
+budget,thisFallback,이,this
+budget,copyTitle,지난달 예산 복사,Copy Last Month's Budget
+budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도({{count}}개)를 {{year}}년 {{month}}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.,Copy {{count}} budget limits from {{prevYear}}-{{prevMonth}} to {{year}}-{{month}}. Existing budgets this month will be overwritten.
+budget,edit.addTitle,카테고리 예산 추가,Add Category Budget
+budget,edit.editTitle,카테고리 예산 수정,Edit Category Budget
+budget,edit.selectCategory,카테고리 선택,Select Category
+budget,edit.monthlyLimitPreview,월 한도,Monthly limit
+budget,edit.categoryLabel,카테고리,Category
+budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 설정되어 있어요.,All expense categories already have a budget set.
+budget,edit.monthlyLimitField,월 한도 (원),Monthly limit (KRW)
+budget,edit.monthlyTitle,월 예산 수정,Edit Monthly Budget
+budget,edit.monthlyTotalField,월 총 예산 (원),Total monthly budget (KRW)

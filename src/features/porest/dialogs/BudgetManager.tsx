@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   useExpenseBudgets,
@@ -33,6 +34,8 @@ const prevMonthKey = (key: string): string => {
 }
 
 export function BudgetManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('budget')
+  const { t: tCommon } = useTranslation('common')
   const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
   const prevKey = prevMonthKey(monthKey)
@@ -220,11 +223,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           (쉘 안에 두면 gap 16 + marginBottom 이 더해져 간격이 과하게 벌어짐) */}
       {mobile && (
         <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 12 }}>
-          <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
+          <Button variant="ghost" size="icon" type="button" aria-label={t('prevMonth')} onClick={() => adjustMonth(-1)}>
             <ChevronLeft size={16} />
           </Button>
           <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
-          <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
+          <Button variant="ghost" size="icon" type="button" aria-label={t('nextMonth')} onClick={() => adjustMonth(1)}>
             <ChevronRight size={16} />
           </Button>
           <Button
@@ -235,15 +238,15 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             onClick={() => setConfirmCopy(true)}
             disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
           >
-            <Copy size={12} /> 지난달 복사
+            <Copy size={12} /> {t('copyLastMonth')}
           </Button>
         </div>
       )}
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title="예산 설정"
-            description="월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요."
+            title={t('manager.title')}
+            description={t('manager.description')}
             actions={
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <MonthPicker value={monthKey} onChange={setMonthKey} />
@@ -255,11 +258,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   disabled={prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0}
                   title={
                     (prevBudgetsQ.data?.length ?? 0) === 0
-                      ? '복사할 지난달 예산이 없어요'
-                      : '지난달 한도를 이번 달로 복사'
+                      ? t('manager.noPrevBudget')
+                      : t('manager.copyPrevTitle')
                   }
                 >
-                  <Copy size={13} /> 지난달 복사
+                  <Copy size={13} /> {t('copyLastMonth')}
                 </Button>
               </div>
             }
@@ -284,7 +287,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   marginBottom: 6,
                 }}
               >
-                {month}월 총 예산
+                {t('manager.monthlyTotal', { month })}
               </div>
               {monthlyBudget ? (
                 <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.022em' }}>
@@ -295,7 +298,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 </div>
               ) : (
                 <div style={{ fontSize: 'var(--text-body-lg)', color: 'var(--fg-tertiary)', fontWeight: '600' }}>
-                  설정되지 않음
+                  {t('manager.notSet')}
                 </div>
               )}
             </div>
@@ -308,11 +311,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             >
               {monthlyBudget ? (
                 <>
-                  <Pencil size={13} />수정
+                  <Pencil size={13} />{tCommon('edit')}
                 </>
               ) : (
                 <>
-                  <Plus size={13} />예산 설정
+                  <Plus size={13} />{t('manager.setBudget')}
                 </>
               )}
             </Button>
@@ -339,7 +342,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           >
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                사용
+                {t('manager.spent')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
@@ -347,7 +350,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             </div>
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                할당됨
+                {t('manager.assigned')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(totalAssigned)}</MaskAmount>
@@ -355,7 +358,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             </div>
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                할당 가능
+                {t('manager.assignable')}
               </div>
               <div
                 className="num"
@@ -388,8 +391,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               }}
             >
               <AlertTriangle size={13} />
-              카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(Math.abs(remaining))}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
-              전체 상한을 올리거나 카테고리 한도를 줄여주세요.
+              {t('manager.overCapPre')} <MaskAmount mask="••••">{KRW(Math.abs(remaining))}</MaskAmount><HideUnit>원</HideUnit> {t('manager.overCapPost')}
             </div>
           )}
           </CardContent>
@@ -399,7 +401,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-              카테고리별 예산 · {categoryBudgets.length}개
+              {t('manager.categoryBudgets', { count: categoryBudgets.length })}
             </div>
             <Button
               variant="accent"
@@ -407,16 +409,16 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               style={{ marginLeft: 'auto' }}
               onClick={() => setEditing('new')}
               disabled={loading || allCategoriesBudgeted}
-              title={allCategoriesBudgeted ? '모든 카테고리에 이미 예산이 설정되어 있어요' : undefined}
+              title={allCategoriesBudgeted ? t('manager.allBudgetedTooltip') : undefined}
             >
-              <Plus size={14} /> 예산 추가
+              <Plus size={14} /> {t('addBudget')}
             </Button>
           </div>
 
           <div className="cat-list">
           {categoryBudgets.length === 0 ? (
             <div className="cat-list__empty">
-              <span>설정된 카테고리 예산이 없어요</span>
+              <span>{t('manager.emptyCategory')}</span>
             </div>
           ) : (
             categoryBudgets.map(b => {
@@ -427,7 +429,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               const limitAmt = b.budgetAmount
               const p = limitAmt > 0 ? (spent / limitAmt) * 100 : 0
               const state = p > 100 ? 'over' : p > 85 ? 'warn' : ''
-              const label = cat?.categoryName ?? b.categoryName ?? `카테고리 #${catId}`
+              const label = cat?.categoryName ?? b.categoryName ?? t('manager.categoryFallback', { id: catId })
               // 행 레이아웃 — 앱 _CategoryRow 정합:
               // [icon | 이름+상태(좌) | 사용액 위·/한도 아래(우)] + 하단 풀폭 진행바.
               return (
@@ -467,12 +469,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       >
                         {state === 'over' ? (
                           <>
-                            한도 <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
-                            <HideUnit>원</HideUnit> 초과
+                            {t('manager.overLimit')} <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
+                            <HideUnit>원</HideUnit>
                           </>
                         ) : (
                           <>
-                            남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                            {t('manager.remaining')} <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
                             <HideUnit>원</HideUnit>
                           </>
                         )}
@@ -562,15 +564,17 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title="예산 삭제"
-          message={`"${
-            (confirmDelete.categoryRowId != null
-              ? categoryMap.get(confirmDelete.categoryRowId)?.categoryName
-              : null) ??
-            confirmDelete.categoryName ??
-            '이'
-          }" 카테고리 예산을 삭제하시겠어요?`}
-          confirmLabel="삭제"
+          title={t('deleteTitle')}
+          message={t('deleteMessage', {
+            name: `"${
+              (confirmDelete.categoryRowId != null
+                ? categoryMap.get(confirmDelete.categoryRowId)?.categoryName
+                : null) ??
+              confirmDelete.categoryName ??
+              t('thisFallback')
+            }"`,
+          })}
+          confirmLabel={tCommon('delete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
@@ -579,11 +583,15 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       )}
       {confirmCopy && (
         <ConfirmDialog
-          title="지난달 예산 복사"
-          message={`${prevY}년 ${prevM}월 예산 한도(${
-            prevBudgetsQ.data?.length ?? 0
-          }개)를 ${year}년 ${month}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.`}
-          confirmLabel="복사"
+          title={t('copyTitle')}
+          message={t('copyMessage', {
+            prevYear: prevY,
+            prevMonth: prevM,
+            count: prevBudgetsQ.data?.length ?? 0,
+            year,
+            month,
+          })}
+          confirmLabel={t('copy')}
           loading={copyingPrev}
           onCancel={() => setConfirmCopy(false)}
           onConfirm={copyFromLastMonth}
