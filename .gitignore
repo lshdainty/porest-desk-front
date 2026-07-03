@@ -43,3 +43,6 @@ lerna-debug.log*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+### i18n (generated from i18n/translations.csv — CSV가 마스터, JSON은 생성물) ###
+/src/locales/
