@@ -10,6 +10,7 @@ import koCalendar from '@/locales/ko/calendar.json'
 import koMemo from '@/locales/ko/memo.json'
 import koTimer from '@/locales/ko/timer.json'
 import koExpense from '@/locales/ko/expense.json'
+import koBudget from '@/locales/ko/budget.json'
 import koAsset from '@/locales/ko/asset.json'
 import koDashboard from '@/locales/ko/dashboard.json'
 import koDutchPay from '@/locales/ko/dutchPay.json'
@@ -24,6 +25,7 @@ import enCalendar from '@/locales/en/calendar.json'
 import enMemo from '@/locales/en/memo.json'
 import enTimer from '@/locales/en/timer.json'
 import enExpense from '@/locales/en/expense.json'
+import enBudget from '@/locales/en/budget.json'
 import enAsset from '@/locales/en/asset.json'
 import enDashboard from '@/locales/en/dashboard.json'
 import enDutchPay from '@/locales/en/dutchPay.json'
@@ -38,7 +40,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 // 네임스페이스 목록
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo',
-  'timer', 'expense', 'asset', 'dashboard', 'dutchPay',
+  'timer', 'expense', 'budget', 'asset', 'dashboard', 'dutchPay',
   'notification', 'login', 'user'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
@@ -53,6 +55,7 @@ const resources = {
     memo: koMemo,
     timer: koTimer,
     expense: koExpense,
+    budget: koBudget,
     asset: koAsset,
     dashboard: koDashboard,
     dutchPay: koDutchPay,
@@ -68,6 +71,7 @@ const resources = {
     memo: enMemo,
     timer: enTimer,
     expense: enExpense,
+    budget: enBudget,
     asset: enAsset,
     dashboard: enDashboard,
     dutchPay: enDutchPay,
