@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run i18n:generate",
     "dev": "vite",
+    "prebuild": "npm run i18n:generate",
     "build": "tsc --noEmit -p tsconfig.app.json && vite build",
+    "prebuild:skip-check": "npm run i18n:generate",
     "build:skip-check": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
