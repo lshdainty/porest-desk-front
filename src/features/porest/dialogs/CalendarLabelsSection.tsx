@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Tag, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -21,6 +22,7 @@ import {
 type EditingState = EventLabel | { kind: 'new' } | null
 
 export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('calendar')
   const { data: labels, isLoading } = useEventLabels()
   const createMut = useCreateEventLabel()
   const updateMut = useUpdateEventLabel()
@@ -52,11 +54,11 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title="캘린더 라벨"
-            description="모든 캘린더에서 공용으로 사용되는 라벨이에요. 일정 등록 시 선택할 수 있어요."
+            title={t('labelsSection.title')}
+            description={t('labelsSection.description')}
             actions={
               <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                <Plus size={14} strokeWidth={2.4} />새 라벨
+                <Plus size={14} strokeWidth={2.4} />{t('newLabel')}
               </Button>
             }
           />
@@ -89,7 +91,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                     color: 'var(--fg-primary)',
                   }}
                 >
-                  캘린더 라벨
+                  {t('labelsSection.title')}
                 </div>
                 <div
                   style={{
@@ -99,12 +101,12 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                     lineHeight: '1.5',
                   }}
                 >
-                  일정에 라벨을 붙여 한눈에 분류할 수 있어요.
+                  {t('labelsSection.infoDesc')}
                 </div>
               </div>
               {mobile && (
                 <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                  <Plus size={14} strokeWidth={2.4} />새 라벨
+                  <Plus size={14} strokeWidth={2.4} />{t('newLabel')}
                 </Button>
               )}
             </div>
@@ -121,7 +123,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
               padding: '4px 4px 10px',
             }}
           >
-            전체 라벨 · {list.length}
+            {t('labelsSection.allLabels')} · {list.length}
           </div>
           <Card>
             <CardContent style={{ padding: 0 }}>
@@ -144,10 +146,10 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                       color: 'var(--fg-primary)',
                     }}
                   >
-                    라벨이 없어요
+                    {t('noLabels')}
                   </div>
                   <div style={{ fontSize: 'var(--text-caption)', marginTop: 4 }}>
-                    "새 라벨" 버튼으로 만들어보세요
+                    {t('labelsSection.emptyHint', { label: `"${t('newLabel')}"` })}
                   </div>
                 </div>
               ) : (
@@ -203,7 +205,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         variant="ghost"
                         size="icon"
                         className="!text-[var(--fg-expense)]"
-                        aria-label="삭제"
+                        aria-label={t('delete')}
                         onClick={(e) => {
                           e.stopPropagation()
                           setConfirmDelete(label)
@@ -231,9 +233,9 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title="라벨 삭제"
-          message={`"${confirmDelete.labelName}" 라벨을 삭제하시겠어요? 이 라벨이 지정된 일정은 라벨 없음 상태가 됩니다.`}
-          confirmLabel="삭제"
+          title={t('labelsSection.deleteTitle')}
+          message={t('labelsSection.deleteMessage', { name: `"${confirmDelete.labelName}"` })}
+          confirmLabel={t('delete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
@@ -279,6 +281,8 @@ function LabelEditDialog({
   mobile: boolean
   submitting?: boolean
 }) {
+  const { t } = useTranslation('calendar')
+  const { t: tCommon } = useTranslation('common')
   const isNew = !label
   const [name, setName] = useState(label?.labelName ?? '')
   const [paletteIdx, setPaletteIdx] = useState(() => {
@@ -294,8 +298,8 @@ function LabelEditDialog({
   const err =
     touched && !valid
       ? nameTrim.length === 0
-        ? '라벨 이름을 입력해주세요.'
-        : '이름은 12자 이내로 입력해 주세요.'
+        ? t('labelsSection.nameRequired')
+        : t('labelsSection.nameTooLong')
       : null
 
   const save = () => {
@@ -307,7 +311,7 @@ function LabelEditDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={isNew ? '추가' : '저장'}
+      saveLabel={isNew ? t('add') : tCommon('save')}
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
@@ -316,7 +320,7 @@ function LabelEditDialog({
 
   return (
     <ModalShell
-      title={isNew ? '새 라벨' : '라벨 편집'}
+      title={isNew ? t('newLabel') : t('editLabel')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -358,7 +362,7 @@ function LabelEditDialog({
               letterSpacing: '0.02em',
             }}
           >
-            미리보기
+            {t('preview')}
           </div>
           <div
             style={{
@@ -368,13 +372,13 @@ function LabelEditDialog({
               letterSpacing: '-0.01em',
             }}
           >
-            {nameTrim || '새 라벨'}
+            {nameTrim || t('newLabel')}
           </div>
         </div>
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>이름</FieldLabel>
+        <FieldLabel>{t('name')}</FieldLabel>
         <Input
           aria-invalid={!!err}
           value={name}
@@ -382,7 +386,7 @@ function LabelEditDialog({
             setName(e.target.value)
             setTouched(true)
           }}
-          placeholder="예: 중요, 마감일, 회의"
+          placeholder={t('labelsSection.namePlaceholder')}
           maxLength={14}
           autoFocus
         />
@@ -403,7 +407,7 @@ function LabelEditDialog({
       </Field>
 
       <Field>
-        <FieldLabel>색상</FieldLabel>
+        <FieldLabel>{t('form.color')}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={String(paletteIdx)}
@@ -412,7 +416,7 @@ function LabelEditDialog({
             value: String(i),
             bg: p.bg,
             fg: p.color,
-            label: `색상 ${i + 1}`,
+            label: t('labelsSection.colorN', { n: i + 1 }),
           }))}
         />
       </Field>
