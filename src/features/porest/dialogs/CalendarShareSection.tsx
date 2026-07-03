@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Calendar,
   ChevronRight,
@@ -52,12 +53,6 @@ const ROLE_ICON: Record<CalendarRole, typeof Crown> = {
   READ: Eye,
 }
 
-const ROLE_LABEL: Record<CalendarRole, string> = {
-  OWNER: '소유자',
-  EDIT: '편집 가능',
-  READ: '읽기 전용',
-}
-
 // 권한 배지 — badge.md "같은 카테고리는 한 style(outline)" 규칙: 색만 분기.
 const ROLE_BADGE_VARIANT: Record<CalendarRole, 'outline-info' | 'outline-success' | 'outline'> = {
   OWNER: 'outline-info',
@@ -73,6 +68,7 @@ const ROLE_AVATAR: Record<CalendarRole, { bg: string; fg: string }> = {
 }
 
 export function CalendarShareSection({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('calendar')
   const { data: calendars, isLoading } = useUserCalendars()
   const createMut = useCreateUserCalendar()
   const deleteMut = useDeleteUserCalendar()
@@ -92,7 +88,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
       onSuccess: () => {
         setConfirmDelete(null)
         if (managingId === cal.rowId) setManagingId(null)
-        toast.success('캘린더를 삭제했어요', { id: 'cal-delete-success' })
+        toast.success(t('shareSection.toast.deleted'), { id: 'cal-delete-success' })
       },
     })
   }
@@ -104,11 +100,11 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title="캘린더 관리·공유"
-            description="캘린더를 만들고 가족·친구를 초대해 일정을 함께 관리할 수 있어요."
+            title={t('shareSection.title')}
+            description={t('shareSection.description')}
             actions={
               <Button size="sm" onClick={() => setCreating(true)}>
-                <Plus size={14} strokeWidth={2.4} />새 캘린더
+                <Plus size={14} strokeWidth={2.4} />{t('newCalendar')}
               </Button>
             }
           />
@@ -135,15 +131,15 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                  가족·친구와 일정 공유
+                  {t('shareSection.infoTitle')}
                 </div>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
-                  캘린더를 만들고 멤버를 초대해 함께 일정을 관리해요.
+                  {t('shareSection.infoDesc')}
                 </div>
               </div>
               {mobile && (
                 <Button size="sm" onClick={() => setCreating(true)}>
-                  <Plus size={14} strokeWidth={2.4} />새 캘린더
+                  <Plus size={14} strokeWidth={2.4} />{t('newCalendar')}
                 </Button>
               )}
             </div>
@@ -151,18 +147,18 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
         </Card>
 
         <CalendarListSection
-          title={`내 캘린더 · ${owned.length}`}
+          title={`${t('shareSection.myCalendars')} · ${owned.length}`}
           calendars={owned}
           isLoading={isLoading}
-          emptyText="소유한 캘린더가 없어요"
+          emptyText={t('shareSection.emptyOwned')}
           onManage={setManagingId}
         />
 
         <CalendarListSection
-          title={`공유받은 캘린더 · ${shared.length}`}
+          title={`${t('shareSection.sharedCalendars')} · ${shared.length}`}
           calendars={shared}
           isLoading={false}
-          emptyText="공유받은 캘린더가 없어요"
+          emptyText={t('shareSection.emptyShared')}
           onManage={setManagingId}
         />
 
@@ -187,14 +183,14 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                  초대 코드로 참여
+                  {t('joinByCode')}
                 </div>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
-                  공유받은 초대 코드를 입력해 캘린더에 참여하세요.
+                  {t('shareSection.joinDesc')}
                 </div>
               </div>
               <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
-                참여
+                {t('join')}
               </Button>
             </div>
           </CardContent>
@@ -217,7 +213,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             createMut.mutate(values, {
               onSuccess: () => {
                 onDone()
-                toast.success('캘린더를 만들었어요', { id: 'cal-create-success' })
+                toast.success(t('shareSection.toast.created'), { id: 'cal-create-success' })
               },
             })
           }
@@ -233,9 +229,9 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             joinMut.mutate(code, {
               onSuccess: () => {
                 onDone()
-                toast.success('캘린더에 참여했어요', { id: 'cal-join-success' })
+                toast.success(t('shareSection.toast.joined'), { id: 'cal-join-success' })
               },
-              onError: () => toast.error('초대 코드를 확인해주세요', { id: 'cal-join-err' }),
+              onError: () => toast.error(t('shareSection.toast.joinError'), { id: 'cal-join-err' }),
             })
           }
           submitting={joinMut.isPending}
@@ -245,9 +241,9 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
 
       {confirmDelete && (
         <ConfirmDialog
-          title="캘린더 삭제"
-          message={`"${confirmDelete.calendarName}" 캘린더를 삭제하시겠어요? 이 캘린더의 일정은 기본 캘린더로 이동하고, 모든 멤버의 접근 권한이 사라집니다.`}
-          confirmLabel="영구 삭제"
+          title={t('deleteCalendar')}
+          message={t('shareSection.deleteMessage', { name: `"${confirmDelete.calendarName}"` })}
+          confirmLabel={t('shareSection.permanentDelete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
@@ -296,6 +292,7 @@ function CalendarListSection({
 }
 
 function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boolean; onManage: (id: number) => void }) {
+  const { t } = useTranslation('calendar')
   const pal = getPaletteByColor(cal.color)
   return (
     <div
@@ -345,17 +342,17 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
             // 공용 Badge(secondary) — pill·secondary 회색·8/2 패딩으로 앱 PBadge 정합.
             // font-bold(w700)로 앱 PBadge 굵기와 일치(badge.md SoT는 600 — 아래 노트 참고).
             <Badge variant="secondary" className="font-bold" style={{ flexShrink: 0 }}>
-              기본
+              {t('default')}
             </Badge>
           )}
         </div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {cal.memberCount <= 1 ? '나만 사용' : `멤버 ${cal.memberCount}명`}
+          {cal.memberCount <= 1 ? t('shareSection.onlyMe') : t('shareSection.memberCount', { count: cal.memberCount })}
         </div>
       </div>
       {!cal.isOwner && (
         <Badge variant={ROLE_BADGE_VARIANT[cal.myRole]} style={{ flexShrink: 0 }}>
-          {ROLE_LABEL[cal.myRole]}
+          {t(`role.${cal.myRole}`)}
         </Badge>
       )}
       {/* '관리' 버튼 제거 — 앱처럼 행 전체 탭(onClick)으로 진입, chevron 만 표시. */}
@@ -400,6 +397,7 @@ function CalendarManageDialog({
   onRequestDelete: (cal: UserCalendar) => void
   mobile: boolean
 }) {
+  const { t } = useTranslation('calendar')
   const { data: currentUser } = useCurrentUser()
   const { data: members, isLoading } = useCalendarMembers(calendar.rowId)
   const regenMut = useRegenerateCalendarInviteCode()
@@ -416,7 +414,7 @@ function CalendarManageDialog({
     if (!name.trim()) return
     updateMut.mutate(
       { id: calendar.rowId, data: { calendarName: name.trim(), color } },
-      { onSuccess: () => toast.success('캘린더를 수정했어요', { id: 'cal-update' }) },
+      { onSuccess: () => toast.success(t('shareSection.toast.updated'), { id: 'cal-update' }) },
     )
   }
 
@@ -433,26 +431,26 @@ function CalendarManageDialog({
       document.execCommand('copy')
       document.body.removeChild(ta)
     }
-    toast.success('초대 코드를 복사했어요', { id: 'cal-code-copy' })
+    toast.success(t('shareSection.toast.codeCopied'), { id: 'cal-code-copy' })
   }
 
   const handleRegenerate = () => {
     regenMut.mutate(calendar.rowId, {
-      onSuccess: () => toast.success('초대 코드를 새로 만들었어요', { id: 'cal-code-regen' }),
+      onSuccess: () => toast.success(t('shareSection.toast.codeRegenerated'), { id: 'cal-code-regen' }),
     })
   }
 
   const handleRemove = (member: CalendarMember) => {
     removeMut.mutate(
       { id: calendar.rowId, memberId: member.rowId },
-      { onSuccess: () => toast.success('멤버를 제거했어요', { id: 'cal-member-remove' }) },
+      { onSuccess: () => toast.success(t('shareSection.toast.memberRemoved'), { id: 'cal-member-remove' }) },
     )
   }
 
   const handleChangeRole = (member: CalendarMember, permission: CalendarRole) => {
     roleMut.mutate(
       { id: calendar.rowId, memberId: member.rowId, permission },
-      { onSuccess: () => toast.success('권한을 변경했어요', { id: 'cal-role-change' }) },
+      { onSuccess: () => toast.success(t('shareSection.toast.roleChanged'), { id: 'cal-role-change' }) },
     )
   }
 
@@ -468,28 +466,28 @@ function CalendarManageDialog({
           }}
           style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
         >
-          <Trash2 size={14} />캘린더 삭제
+          <Trash2 size={14} />{t('deleteCalendar')}
         </Button>
       )}
       <Button variant="ghost" onClick={onClose}>
-        닫기
+        {t('close')}
       </Button>
     </>
   )
 
   return (
-    <ModalShell title={`${calendar.calendarName} · 관리`} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={`${calendar.calendarName} · ${t('shareSection.manageSuffix')}`} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       {isOwner && (
         <>
           {/* 이름 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>이름</FieldLabel>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="캘린더 이름" />
+            <FieldLabel>{t('name')}</FieldLabel>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('shareSection.namePlaceholder')} />
           </Field>
 
           {/* 색상 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>색상</FieldLabel>
+            <FieldLabel>{t('form.color')}</FieldLabel>
             <ColorSwatchGroup
               columns={5}
               value={color}
@@ -500,24 +498,24 @@ function CalendarManageDialog({
 
           {dirty && (
             <Button size="sm" onClick={handleSaveMeta} loading={updateMut.isPending} style={{ marginBottom: 18 }}>
-              변경 저장
+              {t('shareSection.saveChanges')}
             </Button>
           )}
 
           {/* 초대 코드 */}
           <Field style={{ marginBottom: 18 }}>
-            <FieldLabel>초대 코드</FieldLabel>
+            <FieldLabel>{t('inviteCode')}</FieldLabel>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Input value={calendar.inviteCode ?? ''} readOnly style={{ flex: 1, minWidth: 0 }} />
-              <Button variant="outline" size="icon" aria-label="초대 코드 복사" onClick={() => handleCopyCode(calendar.inviteCode ?? '')}>
+              <Button variant="outline" size="icon" aria-label={t('shareSection.copyCode')} onClick={() => handleCopyCode(calendar.inviteCode ?? '')}>
                 <Copy size={14} />
               </Button>
-              <Button variant="outline" size="icon" aria-label="초대 코드 재생성" onClick={handleRegenerate} loading={regenMut.isPending}>
+              <Button variant="outline" size="icon" aria-label={t('shareSection.regenCode')} onClick={handleRegenerate} loading={regenMut.isPending}>
                 {!regenMut.isPending && <RefreshCw size={14} />}
               </Button>
             </div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-              이 코드를 공유하면 다른 사람이 캘린더에 참여할 수 있어요.
+              {t('shareSection.codeHint')}
             </div>
           </Field>
         </>
@@ -535,7 +533,7 @@ function CalendarManageDialog({
           paddingLeft: 4,
         }}
       >
-        멤버 · {members?.length ?? 0}
+        {t('shareSection.members')} · {members?.length ?? 0}
       </div>
       {isLoading || !members ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -577,7 +575,7 @@ function CalendarManageDialog({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {member.userName}
-                    {isSelf && <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> (나)</span>}
+                    {isSelf && <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> {t('shareSection.you')}</span>}
                   </div>
                   <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {member.userEmail}
@@ -590,18 +588,18 @@ function CalendarManageDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="EDIT">{ROLE_LABEL.EDIT}</SelectItem>
-                        <SelectItem value="READ">{ROLE_LABEL.READ}</SelectItem>
+                        <SelectItem value="EDIT">{t('role.EDIT')}</SelectItem>
+                        <SelectItem value="READ">{t('role.READ')}</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="ghost" size="icon" className="!text-[var(--fg-expense)]" aria-label="멤버 제거" onClick={() => handleRemove(member)} loading={removeMut.isPending}>
+                    <Button variant="ghost" size="icon" className="!text-[var(--fg-expense)]" aria-label={t('shareSection.removeMember')} onClick={() => handleRemove(member)} loading={removeMut.isPending}>
                       {!removeMut.isPending && <Trash2 size={14} />}
                     </Button>
                   </>
                 ) : (
                   <Badge variant={ROLE_BADGE_VARIANT[member.permission]} style={{ flexShrink: 0 }}>
                     <RoleIcon size={11} strokeWidth={2.2} />
-                    {ROLE_LABEL[member.permission]}
+                    {t(`role.${member.permission}`)}
                   </Badge>
                 )}
               </div>
@@ -624,13 +622,14 @@ function CalendarCreateDialog({
   submitting?: boolean
   mobile: boolean
 }) {
+  const { t } = useTranslation('calendar')
   const [name, setName] = useState('')
   const [color, setColor] = useState('#2c70bf')
   const [touched, setTouched] = useState(false)
 
   const nameTrim = name.trim()
   const valid = nameTrim.length > 0
-  const err = touched && !valid ? '캘린더 이름을 입력해주세요.' : null
+  const err = touched && !valid ? t('shareSection.nameRequired') : null
 
   const save = () => {
     setTouched(true)
@@ -641,7 +640,7 @@ function CalendarCreateDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel="만들기"
+      saveLabel={t('shareSection.create')}
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
@@ -649,9 +648,9 @@ function CalendarCreateDialog({
   )
 
   return (
-    <ModalShell title="새 캘린더" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('newCalendar')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>이름</FieldLabel>
+        <FieldLabel>{t('name')}</FieldLabel>
         <Input
           aria-invalid={!!err}
           value={name}
@@ -659,14 +658,14 @@ function CalendarCreateDialog({
             setName(e.target.value)
             setTouched(true)
           }}
-          placeholder="예: 가족, 업무, 운동 일정"
+          placeholder={t('shareSection.createNamePlaceholder')}
           autoFocus
         />
         {err && <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-expense)', marginTop: 4 }}>{err}</div>}
       </Field>
 
       <Field>
-        <FieldLabel>색상</FieldLabel>
+        <FieldLabel>{t('form.color')}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={color}
@@ -689,6 +688,7 @@ function CalendarJoinDialog({
   submitting?: boolean
   mobile: boolean
 }) {
+  const { t } = useTranslation('calendar')
   const [code, setCode] = useState('')
   const valid = code.trim().length > 0
   const submit = () => {
@@ -699,7 +699,7 @@ function CalendarJoinDialog({
   const Footer = (
     <ModalFooter
       onSave={submit}
-      saveLabel="참여"
+      saveLabel={t('join')}
       saving={submitting}
       saveDisabled={!valid}
       saveIcon={<LogIn size={16} strokeWidth={2.2} />}
@@ -708,16 +708,16 @@ function CalendarJoinDialog({
   )
 
   return (
-    <ModalShell title="초대 코드로 참여" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('joinByCode')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <Field>
-        <FieldLabel>초대 코드</FieldLabel>
+        <FieldLabel>{t('inviteCode')}</FieldLabel>
         <Input
           value={code}
           onChange={e => setCode(e.target.value)}
           onKeyDown={e => {
             if (e.key === 'Enter') submit()
           }}
-          placeholder="공유받은 초대 코드를 입력하세요"
+          placeholder={t('shareSection.joinCodePlaceholder')}
           autoFocus
         />
       </Field>
