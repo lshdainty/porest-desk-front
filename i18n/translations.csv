@@ -10,6 +10,7 @@ common,confirm,확인,Confirm
 common,loading,로딩 중...,Loading...
 common,noData,데이터가 없습니다,No data
 common,error,오류가 발생했습니다,An error occurred
+common,close,닫기,Close
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
 layout,calendar,캘린더,Calendar
@@ -1089,3 +1090,27 @@ export,section.dataType.TODO,할 일,To-dos
 export,section.format.csv.desc,엑셀·구글시트,Excel · Google Sheets
 export,section.format.excel.desc,Microsoft Excel,Microsoft Excel
 export,section.format.json.desc,개발자·백업,Developer · Backup
+settings,theme.label,테마,Theme
+settings,theme.light,라이트,Light
+settings,theme.lightDesc,밝은 배경,Light background
+settings,theme.dark,다크,Dark
+settings,theme.darkDesc,어두운 배경,Dark background
+settings,theme.system,시스템,System
+settings,theme.systemDesc,OS 설정 따라가기,Follow OS setting
+settings,privacy.label,개인정보 보호,Privacy
+settings,hideAmounts.label,금액 가리기,Hide Amounts
+settings,hideAmounts.desc,모든 화면의 금액을 ••••로 표시합니다,Show all amounts as •••• everywhere
+settings,hideAmounts.unlockTitle,금액 보기 인증,Verify to View Amounts
+settings,hideAmounts.unlockDesc,금액을 다시 보려면 비밀번호로 본인 확인이 필요해요.,Verify your identity with your password to view amounts again.
+settings,hideAmounts.password,비밀번호,Password
+settings,hideAmounts.passwordPlaceholder,비밀번호 입력,Enter password
+settings,hideAmounts.passwordError,비밀번호가 일치하지 않습니다.,The password does not match.
+settings,density.label,밀도,Density
+settings,density.compact,촘촘,Compact
+settings,density.comfortable,보통,Comfortable
+settings,density.spacious,여유,Spacious
+settings,currency.label,기본 통화,Default Currency
+settings,currency.KRW,대한민국 원,Korean Won
+settings,currency.USD,미국 달러,US Dollar
+settings,currency.EUR,유로,Euro
+settings,currency.JPY,일본 엔,Japanese Yen
