@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
@@ -77,52 +78,52 @@ type SectionId =
 
 interface SectionDef {
   id: SectionId
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
-  desc: string
+  descKey: string
 }
 
 const SECTIONS: SectionDef[] = [
-  { id: 'categories', label: '카테고리 관리', icon: Tag, desc: '지출·수입 카테고리 추가·수정·삭제' },
-  { id: 'accounts', label: '계좌·카드 관리', icon: CreditCard, desc: '연결된 계좌와 카드 관리' },
-  { id: 'budget', label: '예산 설정', icon: FilePen, desc: '월간 예산 및 카테고리별 한도' },
-  { id: 'recurring', label: '반복 거래 관리', icon: Repeat, desc: '구독·고정 결제·정기 수입 일괄 관리' },
-  { id: 'presets', label: '프리셋 관리', icon: Bookmark, desc: '자주 쓰는 내역을 한 번 탭으로 채우기' },
-  { id: 'calendar-share', label: '캘린더 관리·공유', icon: CalendarCog, desc: '다중 캘린더 생성과 멤버 공유 설정' },
-  { id: 'calendar-labels', label: '캘린더 라벨', icon: Tag, desc: '전 캘린더 공용 라벨 관리' },
-  { id: 'appearance', label: '표시 설정', icon: Palette, desc: '테마·밀도·기본 통화' },
-  { id: 'notifications', label: '알림', icon: Bell, desc: '결제 예정·예산 초과 알림' },
-  { id: 'data', label: '데이터 내보내기', icon: Download, desc: 'CSV·Excel·JSON으로 데이터 백업' },
-  { id: 'account', label: '계정', icon: User, desc: '프로필·보안·로그아웃' },
+  { id: 'categories', labelKey: 'sections.categories.label', icon: Tag, descKey: 'sections.categories.desc' },
+  { id: 'accounts', labelKey: 'sections.accounts.label', icon: CreditCard, descKey: 'sections.accounts.desc' },
+  { id: 'budget', labelKey: 'sections.budget.label', icon: FilePen, descKey: 'sections.budget.desc' },
+  { id: 'recurring', labelKey: 'sections.recurring.label', icon: Repeat, descKey: 'sections.recurring.desc' },
+  { id: 'presets', labelKey: 'sections.presets.label', icon: Bookmark, descKey: 'sections.presets.desc' },
+  { id: 'calendar-share', labelKey: 'sections.calendarShare.label', icon: CalendarCog, descKey: 'sections.calendarShare.desc' },
+  { id: 'calendar-labels', labelKey: 'sections.calendarLabels.label', icon: Tag, descKey: 'sections.calendarLabels.desc' },
+  { id: 'appearance', labelKey: 'sections.appearance.label', icon: Palette, descKey: 'sections.appearance.desc' },
+  { id: 'notifications', labelKey: 'sections.notifications.label', icon: Bell, descKey: 'sections.notifications.desc' },
+  { id: 'data', labelKey: 'sections.data.label', icon: Download, descKey: 'sections.data.desc' },
+  { id: 'account', labelKey: 'sections.account.label', icon: User, descKey: 'sections.account.desc' },
 ]
 
 const SECTION_IDS: SectionId[] = SECTIONS.map(s => s.id)
 
 // ─── 모바일 메뉴 그룹 정의 ─────────────────────────────────────
 interface GroupDef {
-  label: string
+  labelKey: string
   sectionIds: SectionId[]
 }
 
 const MENU_GROUPS: GroupDef[] = [
   {
-    label: '데이터 관리',
+    labelKey: 'groups.dataManage',
     sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets'],
   },
   {
-    label: '공유',
+    labelKey: 'groups.share',
     sectionIds: ['calendar-share', 'calendar-labels'],
   },
   {
-    label: '앱 환경',
+    labelKey: 'groups.appEnv',
     sectionIds: ['appearance', 'notifications'],
   },
   {
-    label: '데이터',
+    labelKey: 'groups.data',
     sectionIds: ['data'],
   },
   {
-    label: '계정',
+    labelKey: 'groups.account',
     sectionIds: ['account'],
   },
 ]
@@ -131,6 +132,7 @@ const MENU_GROUPS: GroupDef[] = [
 const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: 'Google' }
 
 export const SettingsPage = () => {
+  const { t } = useTranslation('settings')
   const { mobile } = useOutletContext<OutletCtx>()
   const { resolvedTheme } = useTheme()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -159,10 +161,10 @@ export const SettingsPage = () => {
 
     if (linked) {
       const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? linked
-      toast(`${name} 계정이 연결되었어요`)
+      toast(t('account.toast.linked', { name }))
       queryClient.invalidateQueries({ queryKey: oauthKeys.all })
     } else if (linkError) {
-      toast.error(linkError || '계정 연결에 실패했어요')
+      toast.error(linkError || t('account.toast.linkError'))
     }
 
     // 새로고침·뒤로가기 시 알림이 재노출되지 않도록 쿼리스트링 제거 (section 등 나머지는 보존).
@@ -239,7 +241,7 @@ export const SettingsPage = () => {
             <ChevronLeft size={22} />
           </button>
           <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: '600', letterSpacing: '-0.012em' }}>
-            {activeSection?.label}
+            {activeSection ? t(activeSection.labelKey) : ''}
           </h2>
         </div>
         {/* 모바일 섹션 본문 스크롤 — scrollbar 숨김(스크롤 기능 유지). 데스크톱/태블릿은 별도 분기라 무관. */}
@@ -253,8 +255,8 @@ export const SettingsPage = () => {
     <div style={{ padding: 0 }}>
       <div className="page__head" style={{ padding: '24px 28px 0', margin: 0, maxWidth: 1320 }}>
         <div>
-          <h1>설정</h1>
-          <div className="sub">카테고리·계좌·알림 등</div>
+          <h1>{t('page.title')}</h1>
+          <div className="sub">{t('page.subtitle')}</div>
         </div>
       </div>
       <div
@@ -316,7 +318,7 @@ export const SettingsPage = () => {
                 }}
               >
                 <IconComp size={16} strokeWidth={1.9} />
-                <span>{s.label}</span>
+                <span>{t(s.labelKey)}</span>
               </button>
             )
           })}
@@ -329,12 +331,13 @@ export const SettingsPage = () => {
 
 // ─── 모바일 메뉴 뷰 ────────────────────────────────────────────
 function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'menu') => void }) {
+  const { t } = useTranslation('settings')
   const { data: user } = useCurrentUser()
 
   return (
     <>
       {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
-      <MobileBackHeader title="설정" />
+      <MobileBackHeader title={t('page.title')} />
       <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
       {/* 프로필 카드 */}
       <button
@@ -374,10 +377,10 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>
-            {user?.userName ?? '사용자'}
+            {user?.userName ?? t('account.defaultName')}
           </div>
           <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            내 정보 · 보안 · 연결된 계정
+            {t('account.profileMeta')}
           </div>
         </div>
         <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
@@ -391,7 +394,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
             .filter((s): s is SectionDef => s !== undefined)
 
           return (
-            <div key={group.label}>
+            <div key={group.labelKey}>
               <div
                 style={{
                   fontSize: 13,
@@ -401,7 +404,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
                   paddingLeft: 2,
                 }}
               >
-                {group.label}
+                {t(group.labelKey)}
               </div>
               <div
                 style={{
@@ -451,7 +454,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
                           letterSpacing: '-0.01em',
                         }}
                       >
-                        {s.label}
+                        {t(s.labelKey)}
                       </span>
                       <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
                     </button>
@@ -469,6 +472,9 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
 
 // ─── Account Section ───────────────────────────────────────────
 function AccountSection({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('settings')
+  const { t: tu } = useTranslation('user')
+  const { t: tc } = useTranslation('common')
   const { data: user } = useCurrentUser()
   const { logout } = useAuth()
   const [pwDialogOpen, setPwDialogOpen] = useState(false)
@@ -506,7 +512,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
   const onUnlinkGoogle = () => {
     unlinkGoogle.mutate('google', {
       // onSuccess 에서 provider 목록 재조회(invalidate) → 상태 자동 갱신.
-      onSuccess: () => toast('Google 연결을 해제했어요'),
+      onSuccess: () => toast(t('account.toast.unlinked')),
     })
   }
 
@@ -543,14 +549,14 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           {nameInitial}
         </div>
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
-          {user?.userName ?? '사용자'}
+          {user?.userName ?? t('account.defaultName')}
         </div>
         <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>
           {user?.userEmail ?? ''}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
           <Button variant="ghost" size="sm">
-            ✎ 편집
+            ✎ {t('account.edit')}
           </Button>
           <span
             style={{
@@ -569,52 +575,52 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           </span>
         </div>
         <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          가입 2024년 11월
+          {t('account.joined')}
         </div>
       </div>
 
       {/* 보안 */}
-      <AccountGroup label="보안">
+      <AccountGroup label={t('account.group.security')}>
         <AccountRow
           icon={<Key size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="비밀번호 변경"
-          desc="최근 변경 없음"
+          label={tu('passwordChange')}
+          desc={t('account.password.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
           onClick={() => setPwDialogOpen(true)}
         />
         <AccountRow
           icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="2단계 인증"
-          desc="사용 안 함"
+          label={t('account.twoFactor.label')}
+          desc={t('account.twoFactor.desc')}
           right={<Switch checked={false} onCheckedChange={() => {}} />}
         />
         <AccountRow
           icon={<Fingerprint size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="생체 인증"
-          desc="앱에서 설정 가능"
+          label={t('account.biometric.label')}
+          desc={t('account.biometric.desc')}
           dimmed
         />
         <AccountRow
           icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="로그인된 기기"
-          desc="현재 기기"
+          label={t('account.devices.label')}
+          desc={t('account.devices.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
         />
         <AccountRow
           icon={<CalendarDays size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="로그인 기록"
-          desc="최근 30일"
+          label={t('account.loginHistory.label')}
+          desc={t('account.loginHistory.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
           isLast
         />
       </AccountGroup>
 
       {/* 연결된 계정 */}
-      <AccountGroup label="연결된 계정">
+      <AccountGroup label={t('account.group.connected')}>
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>G</span>}
           label="Google"
-          desc={googleLinked ? '연결됨' : '연결 안 됨'}
+          desc={googleLinked ? t('account.linked') : t('account.notLinked')}
           right={
             googleLinked ? (
               <Button
@@ -625,7 +631,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
                 loading={unlinkGoogle.isPending}
                 disabled={providersQ.isLoading}
               >
-                해제
+                {t('account.unlink')}
               </Button>
             ) : (
               <Button
@@ -636,7 +642,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
                 loading={linkingGoogle}
                 disabled={providersQ.isLoading}
               >
-                연결
+                {t('account.link')}
               </Button>
             )
           }
@@ -644,26 +650,26 @@ function AccountSection({ mobile }: { mobile: boolean }) {
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>A</span>}
           label="Apple ID"
-          desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          desc={t('account.notLinked')}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>{t('account.link')}</Button>}
         />
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>K</span>}
-          label="카카오"
-          desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          label={t('account.provider.kakao')}
+          desc={t('account.notLinked')}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>{t('account.link')}</Button>}
         />
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>N</span>}
-          label="네이버"
-          desc="연결 안 됨"
-          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>연결</Button>}
+          label={t('account.provider.naver')}
+          desc={t('account.notLinked')}
+          right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>{t('account.link')}</Button>}
           isLast
         />
       </AccountGroup>
 
       {/* 구독·결제 — 앱 account_screen 정합: 40 브랜드 칩 + 제목/부제 스택 + 가격/배지 + chevron */}
-      <AccountGroup label="구독·결제">
+      <AccountGroup label={t('account.group.subscription')}>
         <SubscriptionRow isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
       </AccountGroup>
 
@@ -671,11 +677,11 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       {isPro && <TossConnectCard />}
 
       {/* 계정 관리 */}
-      <AccountGroup label="계정 관리">
+      <AccountGroup label={t('account.group.manage')}>
         <AccountRow
           icon={<LogOut size={20} style={{ color: 'var(--fg-secondary)' }} />}
-          label="로그아웃"
-          desc="이 기기에서만"
+          label={t('account.logout.label')}
+          desc={t('account.logout.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
           onClick={logout}
         />
@@ -683,8 +689,8 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           <AlertDialogTrigger asChild>
             <AccountRow
               icon={<Trash2 size={20} style={{ color: 'var(--status-danger)' }} />}
-              label="회원 탈퇴"
-              desc="영구 삭제"
+              label={t('account.withdraw.label')}
+              desc={t('account.withdraw.desc')}
               labelColor="var(--status-danger)"
               isLast
               asChild
@@ -692,15 +698,15 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>정말 탈퇴하시겠습니까?</AlertDialogTitle>
+              <AlertDialogTitle>{t('account.withdrawConfirm.title')}</AlertDialogTitle>
               <AlertDialogDescription>
-                회원 탈퇴 시 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                {t('account.withdrawConfirm.desc')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
               <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                탈퇴하기
+                {t('account.withdrawConfirm.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -879,6 +885,7 @@ function SubscriptionRow({
   nextBill: string | null
   onClick: () => void
 }) {
+  const { t } = useTranslation('settings')
   return (
     <button
       onClick={onClick}
@@ -938,8 +945,10 @@ function SubscriptionRow({
           }}
         >
           {isPro
-            ? `${nextBill ? `다음 결제 ${nextBill} · ` : ''}Pro 이용 중`
-            : '증권 투자는 Pro 전용 · 지금 시작하기'}
+            ? nextBill
+              ? t('account.sub.proActiveBill', { date: nextBill })
+              : t('account.sub.proActive')
+            : t('account.sub.proPromo')}
         </div>
       </div>
       {isPro ? (
@@ -947,10 +956,10 @@ function SubscriptionRow({
           <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
             9,900원
           </div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>/ 월</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{t('account.sub.perMonth')}</div>
         </div>
       ) : (
-        <Badge variant="default">Pro 시작</Badge>
+        <Badge variant="default">{t('account.sub.proStart')}</Badge>
       )}
       <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
     </button>
@@ -959,6 +968,7 @@ function SubscriptionRow({
 
 // ─── PlaceholderSection ────────────────────────────────────────
 function PlaceholderSection({ section }: { section: SectionDef }) {
+  const { t } = useTranslation('settings')
   const IconComp = section.icon
   return (
     <Card
@@ -984,8 +994,8 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
       >
         <IconComp size={22} strokeWidth={1.9} />
       </div>
-      <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 4 }}>{section.label}</div>
-      <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>{section.desc}</div>
+      <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 4 }}>{t(section.labelKey)}</div>
+      <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>{t(section.descKey)}</div>
       <div
         style={{
           fontSize: 'var(--text-badge)',
@@ -995,7 +1005,7 @@ function PlaceholderSection({ section }: { section: SectionDef }) {
           textTransform: 'uppercase',
         }}
       >
-        다음 단계에서 구현
+        {t('account.comingSoon')}
       </div>
       </CardContent>
     </Card>
