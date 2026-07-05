@@ -1039,3 +1039,53 @@ expense,filter.countSelected,{{count}}개 선택,{{count}} selected
 expense,filter.amountRange,금액 범위,Amount range
 expense,filter.minAmount,최소 금액,Min amount
 expense,filter.maxAmount,최대 금액,Max amount
+export,export,내보내기,Export
+export,fileFormat,파일 형식,File format
+export,preview,미리보기,Preview
+export,dialog.title,내보내기,Export
+export,dialog.exportAs,{{format}} 내보내기,Export {{format}}
+export,dialog.period,기간,Period
+export,dialog.includeLabel,포함할 내용,What to include
+export,dialog.noticePre,약,About
+export,dialog.noticePost,건의 거래가 내보내집니다.," transactions will be exported."
+export,dialog.format.csv.d,Excel·Google 시트,Excel · Google Sheets
+export,dialog.format.xlsx.d,xlsx 형식,xlsx format
+export,dialog.format.pdf.d,요약 보고서,Summary report
+export,dialog.period.week,주간,Weekly
+export,dialog.period.month,이번 달,This month
+export,dialog.period.quarter,분기,Quarter
+export,dialog.period.year,올해,This year
+export,dialog.period.custom,직접 선택,Custom
+export,dialog.include.tx.l,거래 내역,Transactions
+export,dialog.include.tx.d,모든 수입·지출·이체,"All income, expenses & transfers"
+export,dialog.include.cat.l,카테고리 요약,Category summary
+export,dialog.include.cat.d,카테고리별 합계와 비율,Totals and ratios by category
+export,dialog.include.budget.l,예산 진행 상황,Budget progress
+export,dialog.include.budget.d,할당·사용·초과 현황,Allocated · used · over status
+export,dialog.include.asset.l,자산 스냅샷,Asset snapshot
+export,dialog.include.asset.d,기간 말일 기준 잔액,Balance as of period end
+export,section.exportDone,내보내기를 완료했어요,Export complete
+export,section.periodSelect,기간 선택,Select period
+export,section.customSelect,직접 선택,Custom
+export,section.dateError,시작일이 종료일보다 늦을 수 없어요.,The start date cannot be later than the end date.
+export,section.dataTypeTitle,데이터 종류 — {{count}}개 선택됨,Data types — {{count}} selected
+export,section.dataTypeDesc,내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶입니다.,Choose the data to export. Multiple types are bundled into a ZIP.
+export,section.countGeon,{{count}}건,{{count}}
+export,section.maskSensitive,민감 정보 가리기 (잔액·금액·기관),"Mask sensitive info (balances, amounts, institutions)"
+export,section.noData,이 기간에 내보낼 데이터가 없어요.,No data to export for this period.
+export,section.previewFooter,상위 {{rows}}행 미리보기 · 선택 {{types}}종 합계 약 {{total}}건,"Top {{rows}} rows · {{types}} types, about {{total}} total"
+export,section.period.thisMonth,이번 달,This month
+export,section.period.lastMonth,지난 달,Last month
+export,section.period.last3m,최근 3개월,Last 3 months
+export,section.period.thisYear,올해,This year
+export,section.period.custom,사용자 지정,Custom
+export,section.dataType.EXPENSE,거래 내역,Transactions
+export,section.dataType.ASSET,자산·계좌,Assets & Accounts
+export,section.dataType.BUDGET,예산 설정,Budget
+export,section.dataType.CATEGORY,카테고리,Categories
+export,section.dataType.MEMO,메모,Memos
+export,section.dataType.CALENDAR,캘린더 일정,Calendar events
+export,section.dataType.TODO,할 일,To-dos
+export,section.format.csv.desc,엑셀·구글시트,Excel · Google Sheets
+export,section.format.excel.desc,Microsoft Excel,Microsoft Excel
+export,section.format.json.desc,개발자·백업,Developer · Backup
