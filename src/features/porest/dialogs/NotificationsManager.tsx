@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   BarChart3,
   Bell,
@@ -158,73 +159,74 @@ const NOTIFY_ROWS: {
     | 'notifyMonthlyReport'
   icon: ReactNode
   tone: Tone
-  title: string
-  description: string
+  titleKey: string
+  descKey: string
 }[] = [
   {
     field: 'notifyPayment',
     icon: <CreditCard size={18} strokeWidth={1.9} />,
     tone: 'expense',
-    title: '결제 알림',
-    description: '결제 예정일 D-1, 결제일 당일 알림',
+    titleKey: 'rows.payment.title',
+    descKey: 'rows.payment.desc',
   },
   {
     field: 'notifyBudget',
     icon: <Target size={18} strokeWidth={1.9} />,
     tone: 'warning',
-    title: '예산 알림',
-    description: '카테고리 예산 50%·80%·100% 도달',
+    titleKey: 'rows.budget.title',
+    descKey: 'rows.budget.desc',
   },
   {
     field: 'notifyAutoRecord',
     icon: <Zap size={18} strokeWidth={1.9} />,
     tone: 'info',
-    title: '자동 기록 알림',
-    description: '반복 거래가 자동으로 기록되었을 때',
+    titleKey: 'rows.autoRecord.title',
+    descKey: 'rows.autoRecord.desc',
   },
   {
     field: 'notifyDutchPay',
     icon: <Users size={18} strokeWidth={1.9} />,
     tone: 'brand',
-    title: '더치페이 알림',
-    description: '송금 요청 / 정산 완료 알림',
+    titleKey: 'rows.dutchPay.title',
+    descKey: 'rows.dutchPay.desc',
   },
   {
     field: 'notifyCalendar',
     icon: <CalendarClock size={18} strokeWidth={1.9} />,
     tone: 'success',
-    title: '일정 알림',
-    description: '캘린더 이벤트 시작 15분 전',
+    titleKey: 'rows.calendar.title',
+    descKey: 'rows.calendar.desc',
   },
   {
     field: 'notifyWeeklyReport',
     icon: <BarChart3 size={18} strokeWidth={1.9} />,
     tone: 'info',
-    title: '주간 리포트',
-    description: '매주 월요일 오전 9시',
+    titleKey: 'rows.weeklyReport.title',
+    descKey: 'rows.weeklyReport.desc',
   },
   {
     field: 'notifyMonthlyReport',
     icon: <FileBarChart size={18} strokeWidth={1.9} />,
     tone: 'info',
-    title: '월간 리포트',
-    description: '매월 1일 오전 9시',
+    titleKey: 'rows.monthlyReport.title',
+    descKey: 'rows.monthlyReport.desc',
   },
 ]
 
-const SOUND_OPTIONS: { value: NotificationSound; label: string }[] = [
-  { value: 'CHIME', label: '차임' },
-  { value: 'DEFAULT', label: '기본' },
-  { value: 'NONE', label: '무음' },
+const SOUND_OPTIONS: { value: NotificationSound; labelKey: string }[] = [
+  { value: 'CHIME', labelKey: 'sound.options.CHIME' },
+  { value: 'DEFAULT', labelKey: 'sound.options.DEFAULT' },
+  { value: 'NONE', labelKey: 'sound.options.NONE' },
 ]
 
-const EMAIL_FREQ_OPTIONS: { value: EmailFrequency; label: string }[] = [
-  { value: 'DAILY', label: '매일' },
-  { value: 'WEEKLY', label: '매주' },
-  { value: 'MONTHLY', label: '매월' },
+const EMAIL_FREQ_OPTIONS: { value: EmailFrequency; labelKey: string }[] = [
+  { value: 'DAILY', labelKey: 'email.frequency.DAILY' },
+  { value: 'WEEKLY', labelKey: 'email.frequency.WEEKLY' },
+  { value: 'MONTHLY', labelKey: 'email.frequency.MONTHLY' },
 ]
 
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('notification')
   const preferencesQ = useUserPreferences()
   const updateMut = useUpdateUserPreferences()
   const { data: currentUser } = useCurrentUser()
@@ -251,8 +253,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       <div className="flex flex-col" style={{ gap: 20, paddingBottom: 32 }}>
         {!mobile && (
           <ManagerHead
-            title="알림 설정"
-            description="결제·예산·일정 등 어떤 알림을 어떻게 받을지 설정합니다."
+            title={t('prefs.title')}
+            description={t('prefs.description')}
           />
         )}
         {/* 앱 _PrefsSkeleton 정합 — 카드별 단일 h96 블록(rounded-lg=12) 4개. */}
@@ -273,8 +275,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
     <div className="flex flex-col" style={{ gap: 20, paddingBottom: 32 }}>
       {!mobile && (
         <ManagerHead
-          title="알림 설정"
-          description="결제·예산·일정 등 어떤 알림을 어떻게 받을지 설정합니다."
+          title={t('prefs.title')}
+          description={t('prefs.description')}
         />
       )}
 
@@ -292,7 +294,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <SettingRow
             icon={<Bell size={18} strokeWidth={1.9} />}
             tone="brand"
-            title="푸시 알림"
+            title={t('push.title')}
             // 앱 _MasterCard 제목은 카드 제목 톤(bodyLg 16/700/lh1.6).
             titleStyle={{
               fontSize: 'var(--text-body-lg)',
@@ -300,7 +302,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               lineHeight: '1.6',
             }}
             description={
-              pushEnabled ? '모든 알림이 활성화되어 있어요' : '알림이 꺼져 있어요'
+              pushEnabled ? t('push.on') : t('push.off')
             }
             // 앱 _MasterCard 설명색 fgSecondary.
             descriptionColor="var(--fg-secondary)"
@@ -320,8 +322,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합.
             데스크톱에서도 패딩 16 고정(앱 정합) — md:p-xl(24) override. */}
         <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>알림 종류</CardTitle>
-          <CardSubtitle>필요한 알림만 켜두면 더 편해요.</CardSubtitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('types.title')}</CardTitle>
+          <CardSubtitle>{t('types.subtitle')}</CardSubtitle>
         </CardHeader>
         <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (CardContent 패딩을
@@ -342,12 +344,12 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 <SettingRow
                   icon={row.icon}
                   tone={row.tone}
-                  title={row.title}
+                  title={t(row.titleKey)}
                   description={
                     // 예산 알림 설명은 DB 임계값(budget_alert_threshold) 기반 — 아래 임계값 카드와 동일 값
                     row.field === 'notifyBudget'
-                      ? `카테고리 예산 ${warnThreshold}%·100% 도달`
-                      : row.description
+                      ? t('rows.budget.desc', { threshold: warnThreshold })
+                      : t(row.descKey)
                   }
                   disabled={!pushEnabled}
                   control={
@@ -368,9 +370,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
         <CardHeader className="flex-row items-center justify-between p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[2px] md:pb-[2px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>예산 알림 임계값</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('threshold.title')}</CardTitle>
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            현재 <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
+            {t('threshold.current')} <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
           </span>
         </CardHeader>
         <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
@@ -383,8 +385,14 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               lineHeight: '1.5',
             }}
           >
-            예산 사용률이 이 값을 넘으면 <strong style={{ color: 'var(--status-warning-fg)' }}>경고</strong> 상태로 표시되고 알림을 받습니다.
-            100%는 <strong style={{ color: 'var(--status-danger-fg)' }}>초과</strong>로 별도 알림이 발생합니다.
+            <Trans
+              t={t}
+              i18nKey="threshold.desc"
+              components={{
+                warn: <strong style={{ color: 'var(--status-warning-fg)' }} />,
+                over: <strong style={{ color: 'var(--status-danger-fg)' }} />,
+              }}
+            />
           </div>
           {/* 앱 Flutter Slider 는 위젯 높이 44 — 트랙 위아래 ~20px 내재 여백.
               웹 슬라이더(16px)에 동일한 실효 간격을 padding 으로 재현. */}
@@ -425,8 +433,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       {/* 4) 방해 금지 시간 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
         <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>방해 금지 시간</CardTitle>
-          <CardSubtitle>이 시간에는 알림이 소리·진동 없이 표시됩니다.</CardSubtitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('quiet.title')}</CardTitle>
+          <CardSubtitle>{t('quiet.subtitle')}</CardSubtitle>
         </CardHeader>
         {/* 앱 _QuietHoursCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
             extra top margin 없이 행 v-padding(12)만으로 분리. */}
@@ -436,8 +444,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             icon={<Moon size={18} strokeWidth={1.9} />}
             // 앱 _Tone.info 정합 — Moon 박스 info(파랑계) 톤.
             tone="info"
-            title="방해 금지 사용"
-            description="시간대를 지정해 자동 무음"
+            title={t('quiet.use.title')}
+            description={t('quiet.use.desc')}
             control={
               <Switch
                 checked={quietHoursEnabled}
@@ -467,7 +475,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                     marginBottom: 4,
                   }}
                 >
-                  시작
+                  {t('quiet.start')}
                 </div>
                 <InputTimePicker
                   value={quietHoursStart}
@@ -483,7 +491,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                     marginBottom: 4,
                   }}
                 >
-                  종료
+                  {t('quiet.end')}
                 </div>
                 <InputTimePicker
                   value={quietHoursEnd}
@@ -499,7 +507,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       {/* 5) 소리·진동 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
         <CardHeader className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>소리·진동</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('sound.title')}</CardTitle>
         </CardHeader>
         <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합).
@@ -512,8 +520,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             <SettingRow
               icon={<Volume2 size={18} strokeWidth={1.9} />}
               tone="info"
-              title="알림음"
-              description="앱 알림 사운드"
+              title={t('sound.notif.title')}
+              description={t('sound.notif.desc')}
               control={
                 <Select
                   value={notificationSound}
@@ -529,7 +537,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                   <SelectContent>
                     {SOUND_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -541,8 +549,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             <SettingRow
               icon={<Vibrate size={18} strokeWidth={1.9} />}
               tone="brand"
-              title="진동"
-              description="모바일에서 진동 함께 알림"
+              title={t('sound.vibration.title')}
+              description={t('sound.vibration.desc')}
               control={
                 <Switch
                   checked={vibrationEnabled}
@@ -559,8 +567,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       {/* 6) 이메일 알림 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
       <Card>
         <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>이메일 알림</CardTitle>
-          <CardSubtitle>앱을 잘 안 열어도 이메일로 요약을 받아볼 수 있어요.</CardSubtitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('email.title')}</CardTitle>
+          <CardSubtitle>{t('email.subtitle')}</CardSubtitle>
         </CardHeader>
         {/* 앱 _EmailCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
             extra top margin 없이 행 v-padding(12)만으로 분리. */}
@@ -569,9 +577,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <SettingRow
             icon={<Mail size={18} strokeWidth={1.9} />}
             tone="info"
-            title="이메일 받기"
+            title={t('email.receive.title')}
             // 앱 빈 이메일 fallback 문구 정합.
-            description={currentUser?.userEmail ?? '등록된 이메일이 없습니다'}
+            description={currentUser?.userEmail ?? t('email.empty')}
             control={
               <Switch
                 checked={emailEnabled}
@@ -591,7 +599,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                   marginBottom: 8,
                 }}
               >
-                발송 주기
+                {t('email.frequency.label')}
               </div>
               <Tabs
                 value={emailFrequency}
@@ -607,7 +615,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                       className="flex-1"
                       disabled={calmDisabled}
                     >
-                      {o.label}
+                      {t(o.labelKey)}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -625,7 +633,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             color: 'var(--fg-expense)',
           }}
         >
-          저장에 실패했어요. 잠시 뒤 다시 시도해주세요.
+          {t('saveError')}
         </div>
       )}
     </div>
