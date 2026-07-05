@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Download, PieChart, Receipt, Target, Wallet } from 'lucide-react'
 import { TX } from '@/shared/lib/porest/data'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -12,28 +13,29 @@ type FileFormat = 'csv' | 'xlsx' | 'pdf'
 type Period = 'week' | 'month' | '3m' | 'year' | 'custom'
 type IncludeKey = 'tx' | 'cat' | 'budget' | 'asset'
 
-const FORMATS: { v: FileFormat; l: string; d: string }[] = [
-  { v: 'csv', l: 'CSV', d: 'Excel·Google 시트' },
-  { v: 'xlsx', l: 'Excel', d: 'xlsx 형식' },
-  { v: 'pdf', l: 'PDF', d: '요약 보고서' },
+const FORMATS: { v: FileFormat; l: string; dKey: string }[] = [
+  { v: 'csv', l: 'CSV', dKey: 'dialog.format.csv.d' },
+  { v: 'xlsx', l: 'Excel', dKey: 'dialog.format.xlsx.d' },
+  { v: 'pdf', l: 'PDF', dKey: 'dialog.format.pdf.d' },
 ]
 
-const PERIODS: { v: Period; l: string }[] = [
-  { v: 'week', l: '주간' },
-  { v: 'month', l: '이번 달' },
-  { v: '3m', l: '분기' },
-  { v: 'year', l: '올해' },
-  { v: 'custom', l: '직접 선택' },
+const PERIODS: { v: Period; lKey: string }[] = [
+  { v: 'week', lKey: 'dialog.period.week' },
+  { v: 'month', lKey: 'dialog.period.month' },
+  { v: '3m', lKey: 'dialog.period.quarter' },
+  { v: 'year', lKey: 'dialog.period.year' },
+  { v: 'custom', lKey: 'dialog.period.custom' },
 ]
 
-const INCLUDES: { v: IncludeKey; l: string; d: string; Icon: React.ComponentType<{ size?: number }> }[] = [
-  { v: 'tx', l: '거래 내역', d: '모든 수입·지출·이체', Icon: Receipt },
-  { v: 'cat', l: '카테고리 요약', d: '카테고리별 합계와 비율', Icon: PieChart },
-  { v: 'budget', l: '예산 진행 상황', d: '할당·사용·초과 현황', Icon: Target },
-  { v: 'asset', l: '자산 스냅샷', d: '기간 말일 기준 잔액', Icon: Wallet },
+const INCLUDES: { v: IncludeKey; lKey: string; dKey: string; Icon: React.ComponentType<{ size?: number }> }[] = [
+  { v: 'tx', lKey: 'dialog.include.tx.l', dKey: 'dialog.include.tx.d', Icon: Receipt },
+  { v: 'cat', lKey: 'dialog.include.cat.l', dKey: 'dialog.include.cat.d', Icon: PieChart },
+  { v: 'budget', lKey: 'dialog.include.budget.l', dKey: 'dialog.include.budget.d', Icon: Target },
+  { v: 'asset', lKey: 'dialog.include.asset.l', dKey: 'dialog.include.asset.d', Icon: Wallet },
 ]
 
 export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile: boolean }) {
+  const { t } = useTranslation('export')
   const [format, setFormat] = useState<FileFormat>('csv')
   const [period, setPeriod] = useState<Period>('month')
   const [includes, setIncludes] = useState<IncludeKey[]>(['tx', 'cat', 'budget'])
@@ -47,20 +49,20 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
     <ModalFooter
       leftSlot={
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          약 <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}건</b>의 거래가 내보내집니다.
+          {t('dialog.noticePre')} <b style={{ color: 'var(--fg-secondary)' }}>{TX.length}</b>{t('dialog.noticePost')}
         </span>
       }
       onCancel={onClose}
       onSave={onClose}
-      saveLabel={`${format.toUpperCase()} 내보내기`}
+      saveLabel={t('dialog.exportAs', { format: format.toUpperCase() })}
       saveIcon={<Download size={16} />}
     />
   )
 
   return (
-    <ModalShell title="내보내기" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('dialog.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <Field style={{ marginBottom: 18 }}>
-        <FieldLabel>파일 형식</FieldLabel>
+        <FieldLabel>{t('fileFormat')}</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {FORMATS.map(o => {
             const active = format === o.v
@@ -91,7 +93,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   </span>
                   {active && <CheckCircle2 size={14} style={{ color: 'var(--bg-brand)', marginLeft: 'auto' }} />}
                 </div>
-                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{o.d}</div>
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{t(o.dKey)}</div>
               </button>
             )
           })}
@@ -99,7 +101,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
       </Field>
 
       <Field style={{ marginBottom: 18 }}>
-        <FieldLabel>기간</FieldLabel>
+        <FieldLabel>{t('dialog.period')}</FieldLabel>
         <Tabs
           value={period}
           onValueChange={(v) => v && setPeriod(v as Period)}
@@ -107,7 +109,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
           <TabsList variant="pill" size="sm" className="w-full">
             {PERIODS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
-                {o.l}
+                {t(o.lKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -130,7 +132,7 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
       </Field>
 
       <Field>
-        <FieldLabel>포함할 내용</FieldLabel>
+        <FieldLabel>{t('dialog.includeLabel')}</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {INCLUDES.map(o => {
             const active = includes.includes(o.v)
@@ -169,8 +171,8 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
                   <IconComp size={15} />
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{o.l}</div>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{o.d}</div>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{t(o.lKey)}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>{t(o.dKey)}</div>
                 </div>
               </label>
             )

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Braces,
   Calendar,
@@ -30,29 +31,29 @@ import {
 
 // ─── 데이터 종류 / 형식 / 기간 정의 ─────────────────────────────
 
-const DATA_TYPES: { v: ExportDataType; label: string; Icon: React.ComponentType<{ size?: number }> }[] = [
-  { v: 'EXPENSE', label: '거래 내역', Icon: Receipt },
-  { v: 'ASSET', label: '자산·계좌', Icon: Wallet },
-  { v: 'BUDGET', label: '예산 설정', Icon: Target },
-  { v: 'CATEGORY', label: '카테고리', Icon: Tag },
-  { v: 'MEMO', label: '메모', Icon: FileText },
-  { v: 'CALENDAR', label: '캘린더 일정', Icon: Calendar },
-  { v: 'TODO', label: '할 일', Icon: SquareCheckBig },
+const DATA_TYPES: { v: ExportDataType; labelKey: string; Icon: React.ComponentType<{ size?: number }> }[] = [
+  { v: 'EXPENSE', labelKey: 'section.dataType.EXPENSE', Icon: Receipt },
+  { v: 'ASSET', labelKey: 'section.dataType.ASSET', Icon: Wallet },
+  { v: 'BUDGET', labelKey: 'section.dataType.BUDGET', Icon: Target },
+  { v: 'CATEGORY', labelKey: 'section.dataType.CATEGORY', Icon: Tag },
+  { v: 'MEMO', labelKey: 'section.dataType.MEMO', Icon: FileText },
+  { v: 'CALENDAR', labelKey: 'section.dataType.CALENDAR', Icon: Calendar },
+  { v: 'TODO', labelKey: 'section.dataType.TODO', Icon: SquareCheckBig },
 ]
-const ALL_TYPES: ExportDataType[] = DATA_TYPES.map(t => t.v)
+const ALL_TYPES: ExportDataType[] = DATA_TYPES.map(dt => dt.v)
 
-const FORMATS: { v: ExportFormat; label: string; ext: string; desc: string; Icon: React.ComponentType<{ size?: number }> }[] = [
-  { v: 'CSV', label: 'CSV', ext: '.csv', desc: '엑셀·구글시트', Icon: FileText },
-  { v: 'EXCEL', label: 'Excel', ext: '.xlsx', desc: 'Microsoft Excel', Icon: Sheet },
-  { v: 'JSON', label: 'JSON', ext: '.json', desc: '개발자·백업', Icon: Braces },
+const FORMATS: { v: ExportFormat; label: string; ext: string; descKey: string; Icon: React.ComponentType<{ size?: number }> }[] = [
+  { v: 'CSV', label: 'CSV', ext: '.csv', descKey: 'section.format.csv.desc', Icon: FileText },
+  { v: 'EXCEL', label: 'Excel', ext: '.xlsx', descKey: 'section.format.excel.desc', Icon: Sheet },
+  { v: 'JSON', label: 'JSON', ext: '.json', descKey: 'section.format.json.desc', Icon: Braces },
 ]
 
-const PERIODS: { v: ExportPeriod; label: string }[] = [
-  { v: 'THIS_MONTH', label: '이번 달' },
-  { v: 'LAST_MONTH', label: '지난 달' },
-  { v: 'LAST_3_MONTHS', label: '최근 3개월' },
-  { v: 'THIS_YEAR', label: '올해' },
-  { v: 'CUSTOM', label: '사용자 지정' },
+const PERIODS: { v: ExportPeriod; labelKey: string }[] = [
+  { v: 'THIS_MONTH', labelKey: 'section.period.thisMonth' },
+  { v: 'LAST_MONTH', labelKey: 'section.period.lastMonth' },
+  { v: 'LAST_3_MONTHS', labelKey: 'section.period.last3m' },
+  { v: 'THIS_YEAR', labelKey: 'section.period.thisYear' },
+  { v: 'CUSTOM', labelKey: 'section.period.custom' },
 ]
 
 const SLUG_TO_EXT: Record<ExportFormat, string> = { CSV: 'csv', EXCEL: 'xlsx', JSON: 'json' }
@@ -98,6 +99,7 @@ function buildFilename(format: ExportFormat, types: ExportDataType[], range: Ran
 // ─── 메인 섹션 ─────────────────────────────────────────────────
 
 export function DataExportSection({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('export')
   const [format, setFormat] = useState<ExportFormat>('CSV')
   const [period, setPeriod] = useState<ExportPeriod>('THIS_MONTH')
   const [customFrom, setCustomFrom] = useState(iso(new Date(new Date().getFullYear(), new Date().getMonth(), 1)))
@@ -139,7 +141,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
   const toggleType = (v: ExportDataType) =>
     setSelected(prev => (prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]))
 
-  const totalSelectedCount = selected.reduce((sum, t) => sum + (counts[TYPE_SLUG[t]] ?? 0), 0)
+  const totalSelectedCount = selected.reduce((sum, ty) => sum + (counts[TYPE_SLUG[ty]] ?? 0), 0)
 
   const handlePreview = async () => {
     if (!selected.length || customInvalid) return
@@ -159,27 +161,27 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
     try {
       const blob = await downloadExport({ ...queryBody(selected), format, mask })
       downloadBlob(blob, buildFilename(format, selected, range))
-      toast.success('내보내기를 완료했어요')
+      toast.success(t('section.exportDone'))
     } finally {
       setDownloading(false)
     }
   }
 
-  const activeTab = preview?.find(t => t.type === previewTab) ?? preview?.[0] ?? null
+  const activeTab = preview?.find(tb => tb.type === previewTab) ?? preview?.[0] ?? null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* 1. 기간 선택 */}
-      <SectionCard title="기간 선택">
+      <SectionCard title={t('section.periodSelect')}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 8 }}>
           {PERIODS.map(p => {
             const active = period === p.v
             const r = resolveRange(p.v, customFrom, customTo)
-            const sub = p.v === 'CUSTOM' ? '직접 선택' : `${krLabel(r.start)} — ${krLabel(r.end)}`
+            const sub = p.v === 'CUSTOM' ? t('section.customSelect') : `${krLabel(r.start)} — ${krLabel(r.end)}`
             return (
               <button key={p.v} type="button" onClick={() => setPeriod(p.v)} style={tileStyle(active)}>
                 <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)' }}>
-                  {p.label}
+                  {t(p.labelKey)}
                 </div>
                 <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 3 }}>{sub}</div>
               </button>
@@ -195,24 +197,24 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
         )}
         {customInvalid && (
           <div style={{ marginTop: 8, fontSize: 'var(--text-caption)', color: 'var(--status-danger)' }}>
-            시작일이 종료일보다 늦을 수 없어요.
+            {t('section.dateError')}
           </div>
         )}
       </SectionCard>
 
       {/* 2. 데이터 종류 */}
       <SectionCard
-        title={`데이터 종류 — ${selected.length}개 선택됨`}
-        desc="내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶입니다."
+        title={t('section.dataTypeTitle', { count: selected.length })}
+        desc={t('section.dataTypeDesc')}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {DATA_TYPES.map((t, idx) => {
-            const active = selected.includes(t.v)
-            const IconComp = t.Icon
-            const cnt = counts[TYPE_SLUG[t.v]]
+          {DATA_TYPES.map((dt, idx) => {
+            const active = selected.includes(dt.v)
+            const IconComp = dt.Icon
+            const cnt = counts[TYPE_SLUG[dt.v]]
             return (
               <label
-                key={t.v}
+                key={dt.v}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -222,11 +224,11 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
                   cursor: 'pointer',
                 }}
               >
-                <Checkbox checked={active} onCheckedChange={() => toggleType(t.v)} onClick={e => e.stopPropagation()} />
+                <Checkbox checked={active} onCheckedChange={() => toggleType(dt.v)} onClick={e => e.stopPropagation()} />
                 <span style={iconBoxStyle}><IconComp size={16} /></span>
-                <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>{t.label}</span>
+                <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>{t(dt.labelKey)}</span>
                 <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                  {cnt == null ? '…' : `${cnt.toLocaleString()}건`}
+                  {cnt == null ? '…' : t('section.countGeon', { count: cnt.toLocaleString() })}
                 </span>
               </label>
             )
@@ -235,7 +237,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
       </SectionCard>
 
       {/* 3. 파일 형식 */}
-      <SectionCard title="파일 형식">
+      <SectionCard title={t('fileFormat')}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 8 }}>
           {FORMATS.map(f => {
             const active = format === f.v
@@ -247,7 +249,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
                   <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)' }}>{f.label}</span>
                   <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{f.ext}</span>
                 </div>
-                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>{f.desc}</div>
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>{t(f.descKey)}</div>
               </button>
             )
           })}
@@ -266,29 +268,29 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
       >
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <Switch checked={mask} onCheckedChange={setMask} />
-          <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)' }}>민감 정보 가리기 (잔액·금액·기관)</span>
+          <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)' }}>{t('section.maskSensitive')}</span>
         </label>
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <Button variant="outline" onClick={handlePreview} loading={previewing} disabled={!selected.length || customInvalid}>
-            <Eye size={14} /> 미리보기
+            <Eye size={14} /> {t('preview')}
           </Button>
           <Button onClick={handleExport} loading={downloading} disabled={!selected.length || customInvalid}>
-            <Download size={14} /> 내보내기
+            <Download size={14} /> {t('export')}
           </Button>
         </div>
       </div>
 
       {/* 미리보기 결과 */}
       {preview && activeTab && (
-        <SectionCard title="미리보기">
+        <SectionCard title={t('preview')}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {preview.map(t => {
-              const on = (previewTab ?? preview[0]?.type) === t.type
+            {preview.map(tbl => {
+              const on = (previewTab ?? preview[0]?.type) === tbl.type
               return (
                 <button
-                  key={t.type}
+                  key={tbl.type}
                   type="button"
-                  onClick={() => setPreviewTab(t.type)}
+                  onClick={() => setPreviewTab(tbl.type)}
                   style={{
                     padding: '5px 10px',
                     borderRadius: 'var(--radius-full)',
@@ -300,7 +302,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
                     cursor: 'pointer',
                   }}
                 >
-                  {t.displayName} {t.totalCount.toLocaleString()}
+                  {tbl.displayName} {tbl.totalCount.toLocaleString()}
                 </button>
               )
             })}
@@ -308,7 +310,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
           <div style={{ overflowX: 'auto' }}>
             {activeTab.rows.length === 0 ? (
               <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-body-sm)' }}>
-                이 기간에 내보낼 데이터가 없어요.
+                {t('section.noData')}
               </div>
             ) : (
               <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 'var(--text-caption)' }}>
@@ -332,7 +334,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
             )}
           </div>
           <div style={{ marginTop: 10, fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-            상위 {activeTab.rows.length}행 미리보기 · 선택 {selected.length}종 합계 약 {totalSelectedCount.toLocaleString()}건
+            {t('section.previewFooter', { rows: activeTab.rows.length, types: selected.length, total: totalSelectedCount.toLocaleString() })}
           </div>
         </SectionCard>
       )}
