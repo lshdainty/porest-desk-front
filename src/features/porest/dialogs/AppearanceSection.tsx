@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
@@ -21,26 +22,26 @@ const CURRENCY_STORAGE_KEY = 'pd-currency'
 
 const THEME_OPTIONS: {
   k: 'light' | 'dark' | 'system'
-  label: string
-  desc: string
+  labelKey: string
+  descKey: string
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
 }[] = [
-  { k: 'light', label: '라이트', desc: '밝은 배경', Icon: Sun },
-  { k: 'dark', label: '다크', desc: '어두운 배경', Icon: Moon },
-  { k: 'system', label: '시스템', desc: 'OS 설정 따라가기', Icon: Monitor },
+  { k: 'light', labelKey: 'theme.light', descKey: 'theme.lightDesc', Icon: Sun },
+  { k: 'dark', labelKey: 'theme.dark', descKey: 'theme.darkDesc', Icon: Moon },
+  { k: 'system', labelKey: 'theme.system', descKey: 'theme.systemDesc', Icon: Monitor },
 ]
 
-const DENSITY_OPTIONS: { k: DensityKey; label: string }[] = [
-  { k: 'compact', label: '촘촘' },
-  { k: 'comfortable', label: '보통' },
-  { k: 'spacious', label: '여유' },
+const DENSITY_OPTIONS: { k: DensityKey; labelKey: string }[] = [
+  { k: 'compact', labelKey: 'density.compact' },
+  { k: 'comfortable', labelKey: 'density.comfortable' },
+  { k: 'spacious', labelKey: 'density.spacious' },
 ]
 
-const CURRENCY_OPTIONS: { k: CurrencyKey; label: string; symbol: string }[] = [
-  { k: 'KRW', label: '대한민국 원', symbol: '₩' },
-  { k: 'USD', label: '미국 달러', symbol: '$' },
-  { k: 'EUR', label: '유로', symbol: '€' },
-  { k: 'JPY', label: '일본 엔', symbol: '¥' },
+const CURRENCY_OPTIONS: { k: CurrencyKey; labelKey: string; symbol: string }[] = [
+  { k: 'KRW', labelKey: 'currency.KRW', symbol: '₩' },
+  { k: 'USD', labelKey: 'currency.USD', symbol: '$' },
+  { k: 'EUR', labelKey: 'currency.EUR', symbol: '€' },
+  { k: 'JPY', labelKey: 'currency.JPY', symbol: '¥' },
 ]
 
 function readDensity(): DensityKey {
@@ -64,6 +65,7 @@ function readCurrency(): CurrencyKey {
 }
 
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('settings')
   const { theme, setTheme } = useTheme()
   const [density, setDensityState] = useState<DensityKey>(readDensity)
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
@@ -104,7 +106,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <section>
-        <SectionLabel>테마</SectionLabel>
+        <SectionLabel>{t('theme.label')}</SectionLabel>
         <TileGroup columns={mobile ? 1 : 3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
           {THEME_OPTIONS.map(opt => {
             const swatchBg =
@@ -118,8 +120,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
               <TileItem
                 key={opt.k}
                 value={opt.k}
-                label={opt.label}
-                description={opt.desc}
+                label={t(opt.labelKey)}
+                description={t(opt.descKey)}
                 swatch={
                   <span
                     style={{
@@ -142,7 +144,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
       </section>
 
       <section>
-        <SectionLabel>개인정보 보호</SectionLabel>
+        <SectionLabel>{t('privacy.label')}</SectionLabel>
         {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치) */}
         <Card style={{ padding: '14px 16px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <span
@@ -162,13 +164,13 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
-              금액 가리기
+              {t('hideAmounts.label')}
             </div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-              모든 화면의 금액을 ••••로 표시합니다
+              {t('hideAmounts.desc')}
             </div>
           </div>
-          <Switch checked={hidden} onCheckedChange={handleHideChange} aria-label="금액 가리기" />
+          <Switch checked={hidden} onCheckedChange={handleHideChange} aria-label={t('hideAmounts.label')} />
         </Card>
         <HideAmountsUnlockDialog
           open={unlockOpen}
@@ -178,7 +180,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
       </section>
 
       <section>
-        <SectionLabel>밀도</SectionLabel>
+        <SectionLabel>{t('density.label')}</SectionLabel>
         <Tabs
           value={density}
           onValueChange={(v) => v && setDensity(v as DensityKey)}
@@ -186,7 +188,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           <TabsList variant="pill" size="sm" className="w-full">
             {DENSITY_OPTIONS.map((opt) => (
               <TabsTrigger key={opt.k} value={opt.k} className="flex-1">
-                {opt.label}
+                {t(opt.labelKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -194,14 +196,14 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
       </section>
 
       <section>
-        <SectionLabel>기본 통화</SectionLabel>
+        <SectionLabel>{t('currency.label')}</SectionLabel>
         <RadioList value={currency} onValueChange={v => setCurrency(v as CurrencyKey)}>
           {CURRENCY_OPTIONS.map(c => (
             <RadioListItem
               key={c.k}
               value={c.k}
               pill={<span className="num">{c.symbol}</span>}
-              label={c.label}
+              label={t(c.labelKey)}
               subLabel={<span className="num">{c.k}</span>}
             />
           ))}

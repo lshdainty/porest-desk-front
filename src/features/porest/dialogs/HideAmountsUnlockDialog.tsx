@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ShieldCheck } from 'lucide-react'
 
 import {
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Props) {
+  const { t } = useTranslation('settings')
+  const { t: tc } = useTranslation('common')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const verifyMut = useVerifyPasswordMutation()
@@ -48,7 +51,7 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
         onOpenChange(false)
       },
       onError: (e) => {
-        setError(e.message || '비밀번호가 일치하지 않습니다.')
+        setError(e.message || t('hideAmounts.passwordError'))
         setPassword('')
         inputRef.current?.focus()
       },
@@ -61,10 +64,10 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-[var(--fg-brand-strong)]" />
-            금액 보기 인증
+            {t('hideAmounts.unlockTitle')}
           </DialogTitle>
           <DialogClose
-            aria-label="닫기"
+            aria-label={tc('close')}
             className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-secondary)] hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)]"
           >
             ✕
@@ -72,10 +75,10 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
         </DialogHeader>
         <DialogBody>
           <p className="mb-4 text-[13.5px] leading-6 text-[var(--fg-secondary)]">
-            금액을 다시 보려면 비밀번호로 본인 확인이 필요해요.
+            {t('hideAmounts.unlockDesc')}
           </p>
           <Field>
-            <FieldLabel htmlFor="hide-unlock-pw">비밀번호</FieldLabel>
+            <FieldLabel htmlFor="hide-unlock-pw">{t('hideAmounts.password')}</FieldLabel>
             <Input
               id="hide-unlock-pw"
               ref={inputRef}
@@ -92,7 +95,7 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
                   submit()
                 }
               }}
-              placeholder="비밀번호 입력"
+              placeholder={t('hideAmounts.passwordPlaceholder')}
               aria-invalid={!!error || undefined}
             />
             {error && (
@@ -102,14 +105,14 @@ export function HideAmountsUnlockDialog({ open, onOpenChange, onVerified }: Prop
         </DialogBody>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            취소
+            {tc('cancel')}
           </Button>
           <Button
             loading={verifyMut.isPending}
             disabled={!password.trim()}
             onClick={submit}
           >
-            확인
+            {tc('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

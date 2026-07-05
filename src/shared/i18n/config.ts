@@ -20,6 +20,7 @@ import koNotification from '@/locales/ko/notification.json'
 import koLogin from '@/locales/ko/login.json'
 import koUser from '@/locales/ko/user.json'
 import koExport from '@/locales/ko/export.json'
+import koSettings from '@/locales/ko/settings.json'
 
 import enCommon from '@/locales/en/common.json'
 import enLayout from '@/locales/en/layout.json'
@@ -38,6 +39,7 @@ import enNotification from '@/locales/en/notification.json'
 import enLogin from '@/locales/en/login.json'
 import enUser from '@/locales/en/user.json'
 import enExport from '@/locales/en/export.json'
+import enSettings from '@/locales/en/settings.json'
 
 // 지원하는 언어 목록
 export const SUPPORTED_LANGUAGES = ['ko', 'en'] as const
@@ -47,7 +49,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo',
   'timer', 'expense', 'budget', 'card', 'category', 'asset', 'dashboard', 'dutchPay',
-  'notification', 'login', 'user', 'export'
+  'notification', 'login', 'user', 'export', 'settings'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
 
@@ -71,6 +73,7 @@ const resources = {
     login: koLogin,
     user: koUser,
     export: koExport,
+    settings: koSettings,
   },
   en: {
     common: enCommon,
@@ -90,6 +93,7 @@ const resources = {
     login: enLogin,
     user: enUser,
     export: enExport,
+    settings: enSettings,
   },
 }
 
