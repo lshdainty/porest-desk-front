@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
@@ -12,6 +13,7 @@ export function NotificationsPopover({
   onClose: () => void
   onGoSettings?: () => void
 }) {
+  const { t } = useTranslation('notification')
   const { data, isLoading } = useNotifications()
   const markRead = useMarkRead()
   const markAllRead = useMarkAllRead()
@@ -24,7 +26,7 @@ export function NotificationsPopover({
       <div className="notif-backdrop" onClick={onClose} />
       <div
         role="dialog"
-        aria-label="알림"
+        aria-label={t('title')}
         style={{
           position: 'fixed',
           top: 58,
@@ -59,16 +61,21 @@ export function NotificationsPopover({
                 color: 'var(--fg-primary)',
               }}
             >
-              알림
+              {t('title')}
             </div>
             {unreadCount > 0 ? (
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                읽지 않은 알림 <b style={{ color: 'var(--fg-brand-strong)' }}>{unreadCount}</b>개
+                <Trans
+                  t={t}
+                  i18nKey="popover.unread"
+                  values={{ count: unreadCount }}
+                  components={{ b: <b style={{ color: 'var(--fg-brand-strong)' }} /> }}
+                />
               </div>
             ) : (
               !isLoading && items.length === 0 && (
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                  새 알림이 없어요
+                  {t('popover.noNew')}
                 </div>
               )
             )}
@@ -81,7 +88,7 @@ export function NotificationsPopover({
               onClick={() => markAllRead.mutate()}
               className="ml-auto text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
             >
-              모두 읽음
+              {t('markAllRead')}
             </Button>
           )}
         </div>
@@ -106,7 +113,7 @@ export function NotificationsPopover({
           )}
           {!isLoading && items.length === 0 && (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-              아직 알림이 없어요
+              {t('popover.empty')}
             </div>
           )}
           {items.map(n => (
@@ -136,7 +143,7 @@ export function NotificationsPopover({
             }}
             className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
           >
-            알림 설정 <ChevronRight size={12} />
+            {t('prefs.title')} <ChevronRight size={12} />
           </Button>
         </div>
       </div>
