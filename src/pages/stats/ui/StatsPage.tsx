@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
@@ -106,12 +107,12 @@ const periodLabel = ({ from, to, segMode }: RangeState): string => {
 
 const labelsOf = ({ segMode }: RangeState) =>
   segMode === 'm'
-    ? { now: '이번 달', prev: '지난 달', mom: '전월 대비', noPrev: '전월 데이터 없음', avg: '하루 평균' }
+    ? { now: 'period.m.now', prev: 'period.m.prev', mom: 'period.m.mom', noPrev: 'period.m.noPrev', avg: 'period.m.avg' }
     : segMode === 'q'
-      ? { now: '이번 분기', prev: '지난 분기', mom: '전분기 대비', noPrev: '전분기 데이터 없음', avg: '월 평균' }
+      ? { now: 'period.q.now', prev: 'period.q.prev', mom: 'period.q.mom', noPrev: 'period.q.noPrev', avg: 'period.q.avg' }
       : segMode === 'y'
-        ? { now: '이번 해', prev: '지난 해', mom: '전년 대비', noPrev: '전년 데이터 없음', avg: '월 평균' }
-        : { now: '선택 기간', prev: '이전 기간', mom: '이전 기간 대비', noPrev: '이전 기간 데이터 없음', avg: '일 평균' }
+        ? { now: 'period.y.now', prev: 'period.y.prev', mom: 'period.y.mom', noPrev: 'period.y.noPrev', avg: 'period.y.avg' }
+        : { now: 'period.custom.now', prev: 'period.custom.prev', mom: 'period.custom.mom', noPrev: 'period.custom.noPrev', avg: 'period.custom.avg' }
 
 // porest chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
 // `--color-cat-*` alias — 라이트/다크 자동 swap.
@@ -142,24 +143,24 @@ const HEAT_PALETTE: { bg: string; fg: string }[] = [
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
 // 하루 흐름: 아침 → 점심 → 오후 → 저녁 → 심야 → 새벽
-const HEAT_ROWS: { label: string; sub: string; hours: number[] }[] = [
-  { label: '아침', sub: '06–10시', hours: [6, 7, 8, 9] },
-  { label: '점심', sub: '10–14시', hours: [10, 11, 12, 13] },
-  { label: '오후', sub: '14–18시', hours: [14, 15, 16, 17] },
-  { label: '저녁', sub: '18–22시', hours: [18, 19, 20, 21] },
-  { label: '심야', sub: '22–02시', hours: [22, 23, 0, 1] },
-  { label: '새벽', sub: '02–06시', hours: [2, 3, 4, 5] },
+const HEAT_ROWS: { labelKey: string; subKey: string; hours: number[] }[] = [
+  { labelKey: 'heatRow.morning', subKey: 'heatRow.morningSub', hours: [6, 7, 8, 9] },
+  { labelKey: 'heatRow.lunch', subKey: 'heatRow.lunchSub', hours: [10, 11, 12, 13] },
+  { labelKey: 'heatRow.afternoon', subKey: 'heatRow.afternoonSub', hours: [14, 15, 16, 17] },
+  { labelKey: 'heatRow.evening', subKey: 'heatRow.eveningSub', hours: [18, 19, 20, 21] },
+  { labelKey: 'heatRow.night', subKey: 'heatRow.nightSub', hours: [22, 23, 0, 1] },
+  { labelKey: 'heatRow.dawn', subKey: 'heatRow.dawnSub', hours: [2, 3, 4, 5] },
 ]
 
 // 열(요일) — Java DayOfWeek: 1=월 ~ 7=일
-const HEAT_COLS: { label: string; dow: number }[] = [
-  { label: '월', dow: 1 },
-  { label: '화', dow: 2 },
-  { label: '수', dow: 3 },
-  { label: '목', dow: 4 },
-  { label: '금', dow: 5 },
-  { label: '토', dow: 6 },
-  { label: '일', dow: 7 },
+const HEAT_COLS: { labelKey: string; dow: number }[] = [
+  { labelKey: 'dow.mon', dow: 1 },
+  { labelKey: 'dow.tue', dow: 2 },
+  { labelKey: 'dow.wed', dow: 3 },
+  { labelKey: 'dow.thu', dow: 4 },
+  { labelKey: 'dow.fri', dow: 5 },
+  { labelKey: 'dow.sat', dow: 6 },
+  { labelKey: 'dow.sun', dow: 7 },
 ]
 
 const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
@@ -344,7 +345,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
                 </div>
               ))}
               {HEAT_ROWS.map((row, rIdx) => (
-                <Fragment key={row.label}>
+                <Fragment key={row.labelKey}>
                   <div style={{ paddingRight: 2 }}>
                     <SkeletonBase className="h-3.5 w-8 mb-1" />
                     <SkeletonBase className="h-2.5 w-12" />
@@ -475,6 +476,8 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
 export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { t } = useTranslation('stats')
+  const { t: te } = useTranslation('expense')
   const hidden = useHideAmounts()
   const [tab, setTab] = useState<TabKey>('cat')
   const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
@@ -615,9 +618,9 @@ export const StatsPage = () => {
       {/* 모바일에선 탭이 전체 폭을 균등 분할 — 플러터 앱과 매칭 */}
       <TabsList variant="underline" className={mobile ? 'w-full' : undefined}>
         {([
-          { v: 'cat', l: '카테고리' },
-          { v: 'trend', l: '추이' },
-          { v: 'compare', l: '비교' },
+          { v: 'cat', l: t('tab.category') },
+          { v: 'trend', l: t('tab.trend') },
+          { v: 'compare', l: t('tab.compare') },
         ] as { v: TabKey; l: string }[]).map(t => (
           <TabsTrigger
             key={t.v}
@@ -696,10 +699,10 @@ export const StatsPage = () => {
   // ---------- CATEGORY TAB ----------
   const donutTotal = donutView.reduce((s, x) => s + x.amount, 0)
   // 도넛 센터 라벨은 항상 짧게 유지 — custom 모드의 full date range 가 도넛 안으로 침범하지 않도록.
-  const centerPeriodLbl = period.segMode === 'custom' ? '선택 기간' : periodLbl
+  const centerPeriodLbl = period.segMode === 'custom' ? t('period.custom.now') : periodLbl
   const donutCenterLbl = isDrilled
-    ? `${activeParent?.name ?? ''} 세부`
-    : `${centerPeriodLbl} 지출`
+    ? t('category.drilledCenter', { name: activeParent?.name ?? '' })
+    : t('compare.periodExpense', { period: centerPeriodLbl })
 
   const DonutCard = (
     <Card>
@@ -721,13 +724,13 @@ export const StatsPage = () => {
                   fontFamily: 'inherit',
                 }}
               >
-                카테고리별 지출
+                {t('category.title')}
               </button>
               <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
               <span>{activeParent?.name}</span>
             </>
           ) : (
-            '카테고리별 지출'
+            t('category.title')
           )}
         </CardTitle>
         {PeriodSeg}
@@ -757,7 +760,7 @@ export const StatsPage = () => {
           </div>
         </div>
       ) : donutView.length === 0 ? (
-        <EmptyBox text="카테고리 데이터가 없습니다" />
+        <EmptyBox text={t('empty.category')} />
       ) : (
         <div
           style={{
@@ -803,7 +806,7 @@ export const StatsPage = () => {
                   }}
                   onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
                   onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
-                  title={clickable ? '클릭하여 하위 카테고리 보기' : undefined}
+                  title={clickable ? t('category.drillHint') : undefined}
                 >
                   <span className="cat-legend__sw" style={{ background: segmentColor(i, s.color) }} />
                   <span className="cat-legend__name">{s.name}</span>
@@ -847,7 +850,7 @@ export const StatsPage = () => {
       }}
     >
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>많이 쓴 가맹점 TOP 5</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('merchant.title')}</CardTitle>
       </CardHeader>
       <CardContent>
       {merchantQ.isLoading ? (
@@ -866,7 +869,7 @@ export const StatsPage = () => {
           ))}
         </div>
       ) : topMerchants.length === 0 ? (
-        <EmptyBox text="가맹점 데이터가 없습니다" />
+        <EmptyBox text={t('empty.merchant')} />
       ) : (
         <div
           style={{
@@ -894,7 +897,7 @@ export const StatsPage = () => {
                 <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 4 }}>
                   <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{m.merchant}</span>
                   <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
-                    {m.count}회
+                    {t('unit.times', { count: m.count })}
                   </span>
                   <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
                     <MaskAmount>{KRW(m.totalAmount)}</MaskAmount>
@@ -977,11 +980,11 @@ export const StatsPage = () => {
   const HeatmapCard = (
     <Card>
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>요일·시간대 지출 패턴</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('heatmap.title')}</CardTitle>
       </CardHeader>
       <CardContent>
       <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
-        색이 진할수록 지출이 많은 시간대예요 (단위: 원)
+        {t('heatmap.subtitle')}
       </div>
       {heatmapQ.isLoading ? (
         // 실제 grid 정합: 56px 라벨열 + 7 요일열, 헤더 행(코너+요일) + 6 데이터 행.
@@ -1003,7 +1006,7 @@ export const StatsPage = () => {
           ))}
           {/* 데이터 행: 56px 라벨(2줄) + 정사각형 셀 7개 */}
           {HEAT_ROWS.map((row, rIdx) => (
-            <Fragment key={row.label}>
+            <Fragment key={row.labelKey}>
               <div style={{ paddingRight: 2 }}>
                 <SkeletonBase className="h-3.5 w-8 mb-1" />
                 <SkeletonBase className="h-2.5 w-12" />
@@ -1029,7 +1032,7 @@ export const StatsPage = () => {
             borderRadius: 'var(--radius-lg)',
           }}
         >
-          이번 달 거래가 아직 적어요
+          {t('heatmap.empty')}
         </div>
       ) : (
         <>
@@ -1055,13 +1058,13 @@ export const StatsPage = () => {
                   paddingBottom: 4,
                 }}
               >
-                {col.label}
+                {t(col.labelKey)}
               </span>
             ))}
 
             {/* 데이터 행들 */}
             {HEAT_ROWS.map((row, rIdx) => (
-              <Fragment key={row.label}>
+              <Fragment key={row.labelKey}>
                 <div
                   style={{
                     fontSize: 'var(--text-caption)',
@@ -1071,10 +1074,10 @@ export const StatsPage = () => {
                   }}
                 >
                   <div style={{ fontWeight: '700', color: 'var(--fg-primary)', fontSize: 'var(--text-label-sm)' }}>
-                    {row.label}
+                    {t(row.labelKey)}
                   </div>
                   <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                    {row.sub}
+                    {t(row.subKey)}
                   </div>
                 </div>
                 {HEAT_COLS.map((col, cIdx) => {
@@ -1089,8 +1092,8 @@ export const StatsPage = () => {
                     : cellText.length <= 5 ? 11.5 : 10
                   return (
                     <div
-                      key={`${row.label}-${col.dow}`}
-                      title={hidden ? `${row.label}·${col.label}` : `${row.label}·${col.label} ${KRW(value)}원`}
+                      key={`${row.labelKey}-${col.dow}`}
+                      title={hidden ? `${t(row.labelKey)}·${t(col.labelKey)}` : `${t(row.labelKey)}·${t(col.labelKey)} ${KRW(value)}원`}
                       style={{
                         aspectRatio: '1', // 앱 AspectRatio(1) 정합 — 정사각형
                         borderRadius: 'var(--radius-sm)',
@@ -1128,7 +1131,7 @@ export const StatsPage = () => {
               color: 'var(--fg-tertiary)',
             }}
           >
-            <span>적음</span>
+            <span>{t('heatmap.less')}</span>
             <div style={{ display: 'flex', gap: 3 }}>
               {HEAT_PALETTE.slice(1).map((c, i) => (
                 <span
@@ -1143,9 +1146,9 @@ export const StatsPage = () => {
                 />
               ))}
             </div>
-            <span>많음</span>
+            <span>{t('heatmap.more')}</span>
             <span style={{ marginLeft: 'auto' }}>
-              총 <MaskAmount>{KRW(heatmapTotal)}</MaskAmount>
+              {t('heatmap.total')} <MaskAmount>{KRW(heatmapTotal)}</MaskAmount>
               <HideUnit>원</HideUnit>
             </span>
           </div>
@@ -1188,7 +1191,7 @@ export const StatsPage = () => {
   const useDailyAvg = period.segMode === 'm' || period.segMode === 'custom'
   const avgDivisor = useDailyAvg ? rangeDays : Math.max(1, monthlyBuckets.length)
   const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
-  const avgLabel = labels.avg
+  const avgLabel = t(labels.avg)
 
   // 이전 동등 기간 총지출 (Compare 탭 미사용 시 0 — query가 disabled)
   const prevTotalExpense = prevRangeQ.data?.totalExpense ?? 0
@@ -1197,12 +1200,12 @@ export const StatsPage = () => {
     : 0
   // 증감 색상: 지출 증가=fg-expense / 감소=fg-income (compare 탭 동일 컨벤션)
   const avgSub: React.ReactNode = period.segMode !== 'm'
-    ? <>{rangeDays}일 합계 <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
+    ? <>{t('avgSub.rangeTotal', { days: rangeDays })} <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
     : prevTotalExpense > 0
-      ? <>전월 대비 <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
+      ? <>{t(labels.mom)} <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
       : prevRangeQ.isLoading
-        ? '전월 대비 계산 중…'
-        : '전월 비교 불가'
+        ? t('avgSub.momCalculating')
+        : t('avgSub.momUnavailable')
 
   const highlights: {
     lbl: string
@@ -1213,21 +1216,21 @@ export const StatsPage = () => {
     fallback: string
   }[] = [
     {
-      lbl: '가장 많이 쓴 카테고리',
+      lbl: t('highlight.topCategory'),
       val: categoryTop?.name ?? '—',
       sub: categoryTop
         ? <><MaskAmount>{KRW(categoryTop.amount)}</MaskAmount><HideUnit>원</HideUnit></>
-        : '데이터 없음',
+        : t('highlight.noData'),
       icon: categoryTop?.icon ?? null,
       color: categoryTop?.color ?? null,
       fallback: categoryTop?.name?.charAt(0) || '•',
     },
     {
-      lbl: '가장 많이 쓴 가맹점',
+      lbl: t('highlight.topMerchant'),
       val: topMerchant?.merchant ?? '—',
       sub: topMerchant
-        ? <>{topMerchant.count}회 · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
-        : '데이터 없음',
+        ? <>{t('unit.times', { count: topMerchant.count })} · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
+        : t('highlight.noData'),
       // 가맹점이 속한 대표 카테고리 아이콘(역산), 없으면 상점 아이콘 + brand-subtle 타일
       icon: topMerchantCat?.icon ?? 'store',
       color: topMerchantCat?.color ?? null,
@@ -1341,16 +1344,16 @@ export const StatsPage = () => {
   const avgOut = sumOut / n
   const avgSave = avgIn - avgOut
   const isSingle = period.segMode === 'm'
-  const statLabelIn = isSingle ? '수입' : '평균 수입'
-  const statLabelOut = isSingle ? '지출' : '평균 지출'
-  const statLabelSave = isSingle ? '순저축' : '평균 저축'
+  const statLabelIn = isSingle ? te('income') : t('trend.avgIncome')
+  const statLabelOut = isSingle ? te('expense') : t('trend.avgExpense')
+  const statLabelSave = isSingle ? t('trend.savings') : t('trend.avgSavings')
 
   const trendChartConfig: ChartConfig = {
-    income: { label: '수입', color: 'var(--status-info-fg)' },
-    expense: { label: '지출', color: 'var(--fg-expense)' },
+    income: { label: te('income'), color: 'var(--status-info-fg)' },
+    expense: { label: te('expense'), color: 'var(--fg-expense)' },
   }
   const savingsChartConfig: ChartConfig = {
-    savings: { label: '순저축', color: 'var(--bg-brand)' },
+    savings: { label: t('trend.savings'), color: 'var(--bg-brand)' },
   }
 
   // app stats _fmtTick 정합 — 만 단위 round. 공용 formatChartAxis(100만 단위 round)는
@@ -1385,7 +1388,7 @@ export const StatsPage = () => {
   const TrendBig = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>수입·지출 추이</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('trend.title')}</CardTitle>
         {PeriodSeg}
       </CardHeader>
       <CardContent>
@@ -1401,7 +1404,7 @@ export const StatsPage = () => {
           </div>
         </>
       ) : trendChartData.length === 0 ? (
-        <EmptyBox text="추이 데이터가 없습니다" />
+        <EmptyBox text={t('empty.trend')} />
       ) : (
         <>
           <ChartContainer
@@ -1458,8 +1461,8 @@ export const StatsPage = () => {
                 content={
                   <PorestChartTooltip
                     rows={[
-                      { dataKey: 'income', label: '수입', color: 'var(--status-info-fg)' },
-                      { dataKey: 'expense', label: '지출', color: 'var(--fg-expense)' },
+                      { dataKey: 'income', label: te('income'), color: 'var(--status-info-fg)' },
+                      { dataKey: 'expense', label: te('expense'), color: 'var(--fg-expense)' },
                     ]}
                   />
                 }
@@ -1488,10 +1491,10 @@ export const StatsPage = () => {
           </ChartContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} /> 수입
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} /> {te('income')}
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> 지출
+              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> {te('expense')}
             </span>
           </div>
         </>
@@ -1512,7 +1515,7 @@ export const StatsPage = () => {
         { lbl: statLabelIn, val: <><MaskAmount>{KRW(Math.round(avgIn))}</MaskAmount><HideUnit>원</HideUnit></> },
         { lbl: statLabelOut, val: <><MaskAmount>{KRW(Math.round(avgOut))}</MaskAmount><HideUnit>원</HideUnit></> },
         { lbl: statLabelSave, val: <><MaskAmount>{KRW(Math.round(avgSave))}</MaskAmount><HideUnit>원</HideUnit></> },
-        { lbl: '저축률', val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
+        { lbl: t('trend.savingsRate'), val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         <Card key={i}>
           <CardContent>
@@ -1534,8 +1537,8 @@ export const StatsPage = () => {
   const SavingsBars = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{useDailyTrend ? '일별 순저축' : '월별 순저축'}</CardTitle>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>수입 − 지출</span>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{useDailyTrend ? t('trend.dailySavings') : t('trend.monthlySavings')}</CardTitle>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.savingsFormula')}</span>
       </CardHeader>
       <CardContent>
       {rangeQ.isLoading ? (
@@ -1544,7 +1547,7 @@ export const StatsPage = () => {
           style={{ height: mobile ? 180 : 220 }}
         />
       ) : trendChartData.length === 0 ? (
-        <EmptyBox text="월별 데이터가 없습니다" />
+        <EmptyBox text={t('empty.monthlyData')} />
       ) : (
         <ChartContainer
           config={savingsChartConfig}
@@ -1578,7 +1581,7 @@ export const StatsPage = () => {
                   rows={[
                     {
                       dataKey: 'savings',
-                      label: '순저축',
+                      label: t('trend.savings'),
                       color: (v) => (v < 0 ? 'var(--fg-expense)' : 'var(--status-info-fg)'),
                       format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
                     },
@@ -1654,10 +1657,10 @@ export const StatsPage = () => {
   const momUp = totalNow >= totalPrev
   const maxCompareAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
 
-  const periodNow = labels.now
-  const periodPrev = labels.prev
-  const momLabel = labels.mom
-  const noPrevText = labels.noPrev
+  const periodNow = t(labels.now)
+  const periodPrev = t(labels.prev)
+  const momLabel = t(labels.mom)
+  const noPrevText = t(labels.noPrev)
 
   const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading
 
@@ -1673,7 +1676,7 @@ export const StatsPage = () => {
       <Card>
         <CardContent>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-            {periodNow} 지출
+            {t('compare.periodExpense', { period: periodNow })}
           </div>
           <div
             className="num"
@@ -1693,7 +1696,7 @@ export const StatsPage = () => {
       <Card>
         <CardContent>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-            {periodPrev} 지출
+            {t('compare.periodExpense', { period: periodPrev })}
           </div>
           <div
             className="num"
@@ -1755,7 +1758,7 @@ export const StatsPage = () => {
   const CompareCategory = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>카테고리별 {momLabel}</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('compare.categoryTitle', { mom: momLabel })}</CardTitle>
         <div
           style={{
             display: 'flex',
@@ -1793,7 +1796,7 @@ export const StatsPage = () => {
           ))}
         </div>
       ) : compareRows.length === 0 ? (
-        <EmptyBox text="비교할 데이터가 없습니다" />
+        <EmptyBox text={t('empty.compare')} />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {compareRows.map(r => {
@@ -1938,8 +1941,8 @@ export const StatsPage = () => {
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>통계·분석</h1>
-          <div className="sub">카테고리·추이·인사이트</div>
+          <h1>{t('page.title')}</h1>
+          <div className="sub">{t('page.subtitle')}</div>
         </div>
       </div>
       {StatsTabs}
@@ -1954,12 +1957,12 @@ export const StatsPage = () => {
 // - 시작 / 종료 InputDatePicker (수동 조정 가능)
 // - 적용 버튼: 확정 후 confirm
 // ───────────────────────────────────────────────────────────
-const QUICK_RANGES: { label: string; days: number }[] = [
-  { label: '최근 7일', days: 7 },
-  { label: '최근 30일', days: 30 },
-  { label: '최근 3개월', days: 90 },
-  { label: '최근 6개월', days: 180 },
-  { label: '최근 1년', days: 365 },
+const QUICK_RANGES: { labelKey: string; days: number }[] = [
+  { labelKey: 'picker.last7d', days: 7 },
+  { labelKey: 'picker.last30d', days: 30 },
+  { labelKey: 'picker.last3m', days: 90 },
+  { labelKey: 'picker.last6m', days: 180 },
+  { labelKey: 'picker.last1y', days: 365 },
 ]
 
 const toISODate = (d: Date) =>
@@ -1982,6 +1985,8 @@ function RangePickerSheet({
   onCancel: () => void
   onConfirm: (range: RangeState) => void
 }) {
+  const { t } = useTranslation('stats')
+  const { t: tc } = useTranslation('common')
   const [segMode, setSegMode] = useState<SegMode>(initial.segMode)
   const [from, setFrom] = useState<Date>(initial.from)
   const [to, setTo] = useState<Date>(initial.to)
@@ -2016,10 +2021,10 @@ function RangePickerSheet({
           onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
         >
           <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="m" className="flex-1">월</TabsTrigger>
-            <TabsTrigger value="q" className="flex-1">분기</TabsTrigger>
-            <TabsTrigger value="y" className="flex-1">년</TabsTrigger>
-            <TabsTrigger value="custom" className="flex-1">직접</TabsTrigger>
+            <TabsTrigger value="m" className="flex-1">{t('picker.segMonth')}</TabsTrigger>
+            <TabsTrigger value="q" className="flex-1">{t('picker.segQuarter')}</TabsTrigger>
+            <TabsTrigger value="y" className="flex-1">{t('picker.segYear')}</TabsTrigger>
+            <TabsTrigger value="custom" className="flex-1">{t('picker.segCustom')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -2063,7 +2068,7 @@ function RangePickerSheet({
                 color: 'var(--fg-secondary)',
               }}
             >
-              {q.label}
+              {t(q.labelKey)}
             </button>
           ))}
         </div>
@@ -2071,9 +2076,9 @@ function RangePickerSheet({
     </>
   )
 
-  const cancelBtn = <Button variant="ghost" onClick={onCancel}>취소</Button>
+  const cancelBtn = <Button variant="ghost" onClick={onCancel}>{tc('cancel')}</Button>
   const applyBtn = (
-    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to, segMode })}>적용</Button>
+    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to, segMode })}>{t('picker.apply')}</Button>
   )
 
   // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
@@ -2082,11 +2087,11 @@ function RangePickerSheet({
       <Drawer open onOpenChange={(o) => { if (!o) onCancel() }}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="flex-1">기간 선택</DrawerTitle>
+            <DrawerTitle className="flex-1">{t('picker.title')}</DrawerTitle>
             <DrawerClose asChild>
               <button
                 type="button"
-                aria-label="닫기"
+                aria-label={tc('close')}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
               >
                 <X size={18} />
@@ -2108,7 +2113,7 @@ function RangePickerSheet({
     <Dialog open onOpenChange={(o) => { if (!o) onCancel() }}>
       <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle>기간 선택</DialogTitle>
+          <DialogTitle>{t('picker.title')}</DialogTitle>
         </DialogHeader>
         <DialogBody>{formBody}</DialogBody>
         <DialogFooter>

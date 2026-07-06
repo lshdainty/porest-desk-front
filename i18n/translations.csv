@@ -1325,3 +1325,91 @@ stocks,range.1m,1개월,1M
 stocks,range.3m,3개월,3M
 stocks,range.1y,1년,1Y
 stocks,embed.chartUnavailable,차트를 표시할 수 없어요,Chart unavailable
+stats,page.title,통계·분석,Statistics
+stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
+stats,tab.category,카테고리,Category
+stats,tab.trend,추이,Trends
+stats,tab.compare,비교,Compare
+stats,period.m.now,이번 달,This month
+stats,period.m.prev,지난 달,Last month
+stats,period.m.mom,전월 대비,vs. last month
+stats,period.m.noPrev,전월 데이터 없음,No prior-month data
+stats,period.m.avg,하루 평균,Daily average
+stats,period.q.now,이번 분기,This quarter
+stats,period.q.prev,지난 분기,Last quarter
+stats,period.q.mom,전분기 대비,vs. last quarter
+stats,period.q.noPrev,전분기 데이터 없음,No prior-quarter data
+stats,period.q.avg,월 평균,Monthly average
+stats,period.y.now,이번 해,This year
+stats,period.y.prev,지난 해,Last year
+stats,period.y.mom,전년 대비,vs. last year
+stats,period.y.noPrev,전년 데이터 없음,No prior-year data
+stats,period.y.avg,월 평균,Monthly average
+stats,period.custom.now,선택 기간,Selected period
+stats,period.custom.prev,이전 기간,Previous period
+stats,period.custom.mom,이전 기간 대비,vs. previous period
+stats,period.custom.noPrev,이전 기간 데이터 없음,No previous-period data
+stats,period.custom.avg,일 평균,Daily average
+stats,category.title,카테고리별 지출,Spending by category
+stats,category.drillHint,클릭하여 하위 카테고리 보기,Click to view subcategories
+stats,category.drilledCenter,{{name}} 세부,{{name}} detail
+stats,empty.category,카테고리 데이터가 없습니다,No category data
+stats,empty.merchant,가맹점 데이터가 없습니다,No merchant data
+stats,empty.trend,추이 데이터가 없습니다,No trend data
+stats,empty.monthlyData,월별 데이터가 없습니다,No monthly data
+stats,empty.compare,비교할 데이터가 없습니다,No data to compare
+stats,merchant.title,많이 쓴 가맹점 TOP 5,Top 5 merchants
+stats,unit.times,{{count}}회,{{count}} times
+stats,heatmap.title,요일·시간대 지출 패턴,Spending by day & time
+stats,heatmap.subtitle,색이 진할수록 지출이 많은 시간대예요 (단위: 원),Darker means more spending (unit: KRW)
+stats,heatmap.empty,이번 달 거래가 아직 적어요,Not enough transactions this month
+stats,heatmap.less,적음,Less
+stats,heatmap.more,많음,More
+stats,heatmap.total,총,Total
+stats,dow.mon,월,Mon
+stats,dow.tue,화,Tue
+stats,dow.wed,수,Wed
+stats,dow.thu,목,Thu
+stats,dow.fri,금,Fri
+stats,dow.sat,토,Sat
+stats,dow.sun,일,Sun
+stats,heatRow.morning,아침,Morning
+stats,heatRow.morningSub,06–10시,6–10am
+stats,heatRow.lunch,점심,Lunch
+stats,heatRow.lunchSub,10–14시,10am–2pm
+stats,heatRow.afternoon,오후,Afternoon
+stats,heatRow.afternoonSub,14–18시,2–6pm
+stats,heatRow.evening,저녁,Evening
+stats,heatRow.eveningSub,18–22시,6–10pm
+stats,heatRow.night,심야,Late night
+stats,heatRow.nightSub,22–02시,10pm–2am
+stats,heatRow.dawn,새벽,Dawn
+stats,heatRow.dawnSub,02–06시,2–6am
+stats,trend.title,수입·지출 추이,Income & expense trend
+stats,trend.savings,순저축,Net savings
+stats,trend.avgIncome,평균 수입,Avg. income
+stats,trend.avgExpense,평균 지출,Avg. expense
+stats,trend.avgSavings,평균 저축,Avg. savings
+stats,trend.savingsRate,저축률,Savings rate
+stats,trend.dailySavings,일별 순저축,Daily net savings
+stats,trend.monthlySavings,월별 순저축,Monthly net savings
+stats,trend.savingsFormula,수입 − 지출,Income − Expense
+stats,highlight.topCategory,가장 많이 쓴 카테고리,Top spending category
+stats,highlight.topMerchant,가장 많이 쓴 가맹점,Top merchant
+stats,highlight.noData,데이터 없음,No data
+stats,avgSub.rangeTotal,{{days}}일 합계,{{days}}-day total
+stats,avgSub.momCalculating,전월 대비 계산 중…,Calculating vs. last month…
+stats,avgSub.momUnavailable,전월 비교 불가,No prior-month comparison
+stats,compare.periodExpense,{{period}} 지출,{{period}} spending
+stats,compare.categoryTitle,카테고리별 {{mom}},By category · {{mom}}
+stats,picker.title,기간 선택,Select period
+stats,picker.apply,적용,Apply
+stats,picker.segMonth,월,Month
+stats,picker.segQuarter,분기,Quarter
+stats,picker.segYear,년,Year
+stats,picker.segCustom,직접,Custom
+stats,picker.last7d,최근 7일,Last 7 days
+stats,picker.last30d,최근 30일,Last 30 days
+stats,picker.last3m,최근 3개월,Last 3 months
+stats,picker.last6m,최근 6개월,Last 6 months
+stats,picker.last1y,최근 1년,Last 1 year
