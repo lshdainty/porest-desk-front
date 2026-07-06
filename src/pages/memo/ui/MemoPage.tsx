@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Pin, Plus, Search, X, StickyNote, SearchX } from 'lucide-react'
 import {
   useMemos,
@@ -120,6 +121,8 @@ export const MemoPage = () => {
 }
 
 const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
+  const { t } = useTranslation('memo')
+  const { t: tc } = useTranslation('common')
   const memosQ = useMemos()
   const createMemo = useCreateMemo()
   const updateMemo = useUpdateMemo()
@@ -174,7 +177,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   const AddBtn = (
     <Button size="sm" onClick={() => setEditing({ _new: true })}>
-      <Plus size={14} /> 새 메모
+      <Plus size={14} /> {t('newMemo')}
     </Button>
   )
 
@@ -186,15 +189,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         search
         value={query}
         onChange={e => setQuery(e.target.value)}
-        placeholder="메모 검색"
-        aria-label="메모 검색"
+        placeholder={t('search')}
+        aria-label={t('search')}
         className="w-full min-w-0 pl-9 pr-8"
       />
       {query && (
         <button
           type="button"
           onClick={() => setQuery('')}
-          aria-label="지우기"
+          aria-label={t('clearSearch')}
           style={{
             position: 'absolute',
             right: 8,
@@ -225,7 +228,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     >
       <TabsList variant="pills" size="sm" style={{ flexWrap: 'wrap', gap: 6 }}>
         <TabsTrigger variant="pills" size="sm" value="all">
-          전체
+          {t('all')}
           <span style={{ opacity: tagFilter === 'all' ? 0.85 : 0.55, marginLeft: 2 }}>
             {memos.length}
           </span>
@@ -245,7 +248,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   // ── 메모 카드 ──
   const MemoCard = (m: Memo) => {
-    const t = resolveTone(m.color)
+    const tone = resolveTone(m.color)
     const tag = m.tag || DEFAULT_TAG
     return (
       <Card
@@ -253,7 +256,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         onClick={() => setEditing(m)}
         className="group/memo cursor-pointer transition-[transform,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:-translate-y-[2px] hover:shadow-[var(--shadow-md)]"
         style={{
-          background: t.bg,
+          background: tone.bg,
           // 앱 그리드(mainAxisExtent 168)와 동일한 고정 높이 — 카드 높이 균일.
           height: 168,
           padding: 18,
@@ -269,7 +272,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
               width: 8,
               height: 8,
               borderRadius: 999,
-              background: t.swatch,
+              background: tone.swatch,
               flexShrink: 0,
             }}
           />
@@ -277,7 +280,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             style={{
               fontSize: 'var(--text-badge)',
               fontWeight: '600',
-              color: t.fg,
+              color: tone.fg,
               letterSpacing: '0.02em',
               flex: 1,
               minWidth: 0,
@@ -292,7 +295,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           {m.isPinned && (
             <button
               type="button"
-              aria-label="고정 해제"
+              aria-label={t('unpin')}
               onClick={ev => {
                 ev.stopPropagation()
                 togglePin.mutate(m.rowId)
@@ -308,7 +311,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
                 flexShrink: 0,
               }}
             >
-              <Pin size={13} strokeWidth={2.5} style={{ color: t.swatch }} />
+              <Pin size={13} strokeWidth={2.5} style={{ color: tone.swatch }} />
             </button>
           )}
         </div>
@@ -388,17 +391,17 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         {query ? <SearchX size={24} /> : <StickyNote size={24} />}
       </div>
       <div style={{ fontSize: 15, fontWeight: '700', color: 'var(--fg-primary)' }}>
-        {query ? '결과가 없어요' : '메모가 없어요'}
+        {query ? t('noResults') : t('noMemos')}
       </div>
       <div style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>
         {query
-          ? '다른 검색어를 입력해보세요.'
-          : '생각이 떠오를 때, 새 메모를 만들어보세요.'}
+          ? t('noResultsHint')
+          : t('noMemosHint')}
       </div>
       {!query && (
         <div style={{ marginTop: 16 }}>
           <Button size="sm" onClick={() => setEditing({ _new: true })}>
-            <Plus size={14} /> 새 메모
+            <Plus size={14} /> {t('newMemo')}
           </Button>
         </div>
       )}
@@ -413,14 +416,14 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
         {pinned.length > 0 && (
           <section>
             {/* 앱과 동일 — 모바일에서도 개수 표시. */}
-            <SectionLabel icon="pin" label={`고정 · ${pinned.length}`} />
+            <SectionLabel icon="pin" label={`${t('pin')} · ${pinned.length}`} />
             {grid(pinned)}
           </section>
         )}
         {others.length > 0 && (
           <section>
             {pinned.length > 0 && (
-              <SectionLabel icon="note" label={`모든 메모 · ${others.length}`} />
+              <SectionLabel icon="note" label={`${t('allMemosSection')} · ${others.length}`} />
             )}
             {grid(others)}
           </section>
@@ -444,7 +447,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="메모" />
+        <MobileBackHeader title={t('title')} />
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SearchCard}
@@ -464,7 +467,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
               style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)', flexShrink: 0 }}
               onClick={() => setEditing({ _new: true })}
             >
-              <Plus size={14} /> 추가
+              <Plus size={14} /> {tc('add')}
             </Button>
           </div>
           {Body}
@@ -480,8 +483,8 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     <div style={{ padding: 0 }}>
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
-          <h1>메모</h1>
-          <div className="sub">생각·기록을 한곳에</div>
+          <h1>{t('title')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">{AddBtn}</div>
       </div>
@@ -531,6 +534,8 @@ function MemoEditDialog({
   submitting?: boolean
   deleting?: boolean
 }) {
+  const { t } = useTranslation('memo')
+  const { t: tc } = useTranslation('common')
   const isNew = !memo
   const [title, setTitle] = useState(memo?.title ?? '')
   const [content, setContent] = useState(memo?.content ?? '')
@@ -559,7 +564,7 @@ function MemoEditDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel="저장"
+      saveLabel={tc('save')}
       saving={submitting}
       onCancel={onClose}
       onDelete={memo ? () => onDelete(memo.rowId) : undefined}
@@ -569,7 +574,7 @@ function MemoEditDialog({
 
   return (
     <ModalShell
-      title={isNew ? '새 메모' : '메모 수정'}
+      title={isNew ? t('newMemo') : t('editMemo')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -582,7 +587,7 @@ function MemoEditDialog({
             setTitle(e.target.value)
             if (error) setError(false)
           }}
-          placeholder="제목"
+          placeholder={t('titlePlaceholder')}
           aria-invalid={error}
           autoFocus
         />
@@ -597,7 +602,7 @@ function MemoEditDialog({
               fontSize: 13,
             }}
           >
-            제목을 입력해주세요
+            {t('titleRequired')}
           </div>
         )}
       </Field>
@@ -606,7 +611,7 @@ function MemoEditDialog({
         <Textarea
           value={content}
           onChange={e => setContent(e.target.value)}
-          placeholder="여기에 메모를 작성해주세요"
+          placeholder={t('contentPlaceholder')}
           rows={8}
         />
       </Field>
@@ -620,22 +625,22 @@ function MemoEditDialog({
         }}
       >
         <Field>
-          <FieldLabel>태그</FieldLabel>
+          <FieldLabel>{t('tagLabel')}</FieldLabel>
           <Select value={tag} onValueChange={setTag}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TAG_OPTIONS.map(t => (
-                <SelectItem key={t} value={t}>
-                  {t}
+              {TAG_OPTIONS.map(opt => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
         <Field>
-          <FieldLabel>고정</FieldLabel>
+          <FieldLabel>{t('pin')}</FieldLabel>
           <label
             style={{
               display: 'flex',
@@ -646,13 +651,13 @@ function MemoEditDialog({
             }}
           >
             <Switch checked={pinned} onCheckedChange={setPinned} />
-            <span style={{ fontSize: 14, color: 'var(--fg-primary)' }}>상단에 고정</span>
+            <span style={{ fontSize: 14, color: 'var(--fg-primary)' }}>{t('pinToTop')}</span>
           </label>
         </Field>
       </div>
 
       <Field>
-        <FieldLabel>색상</FieldLabel>
+        <FieldLabel>{t('colorLabel')}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={color}
@@ -661,7 +666,7 @@ function MemoEditDialog({
             value: p.baseHex,
             bg: p.bg,
             fg: p.color,
-            label: `색상 ${p.baseHex}`,
+            label: `${t('colorLabel')} ${p.baseHex}`,
           }))}
         />
       </Field>
@@ -690,6 +695,7 @@ function MemoCardSkeleton() {
 
 /** Memo 페이지 구조 일치 skeleton — 검색카드 + 태그칩 + 카드 grid. */
 function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('memo')
   const Chips = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {Array.from({ length: 4 }).map((_, i) => (
@@ -714,7 +720,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="메모" />
+        <MobileBackHeader title={t('title')} />
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <SkeletonBase className="h-9 w-full rounded-md" />
