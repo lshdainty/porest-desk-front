@@ -1218,6 +1218,21 @@ expense,filter.countSelected,{{count}}개 선택,{{count}} selected
 expense,filter.amountRange,금액 범위,Amount range
 expense,filter.minAmount,최소 금액,Min amount
 expense,filter.maxAmount,최대 금액,Max amount
+expense,subtitle,모든 거래 내역,All transactions
+expense,chip.all,전체,All
+expense,dayCount,{{count}}건,{{count}} items
+expense,emptyDay,이 날의 거래가 없어요,No transactions on this day
+expense,emptyList,내역이 없어요,No transactions
+expense,viewList,목록,List
+expense,viewCalendar,달력,Calendar
+expense,listViewLabel,목록 보기,List view
+expense,calendarViewLabel,달력 보기,Calendar view
+expense,clearFilter,필터 해제,Clear filter
+expense,export,내보내기,Export
+expense,assetFilterBadge,{{name}} 필터 중,Filtering by {{name}}
+expense,filterAppliedBadge,필터 {{count}}개 적용 중,{{count}} filters applied
+expense,prevMonth,이전 달,Previous month
+expense,nextMonth,다음 달,Next month
 export,export,내보내기,Export
 export,fileFormat,파일 형식,File format
 export,preview,미리보기,Preview

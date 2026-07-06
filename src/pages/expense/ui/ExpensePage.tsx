@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
@@ -30,10 +31,10 @@ import { TxDetailDialog } from '@/features/porest/dialogs/TxDetailDialog'
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 type Filter = 'all' | 'income' | 'expense'
 
-const CHIPS: { id: Filter; label: string }[] = [
-  { id: 'all', label: '전체' },
-  { id: 'expense', label: '지출' },
-  { id: 'income', label: '수입' },
+const CHIPS: { id: Filter; labelKey: string }[] = [
+  { id: 'all', labelKey: 'chip.all' },
+  { id: 'expense', labelKey: 'expense' },
+  { id: 'income', labelKey: 'income' },
 ]
 
 function notifyComing(): void {
@@ -195,6 +196,7 @@ function ExpenseCalendarSkeleton() {
  *  ExpenseMobile/Desktop 와 동일한 viewport fit 패턴 — AppLayout scroll wrapper 가
  *  flex-col 이므로 페이지 wrapper 는 flex-1 + min-h-0 으로 부모 전체 height 차지. */
 function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('expense')
   if (mobile) {
     return (
       <div
@@ -213,8 +215,8 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
     <div className="page flex flex-col flex-1 min-h-0" style={{ paddingBottom: 24 }}>
       <div className="page__head">
         <div>
-          <h1>가계부</h1>
-          <div className="sub">모든 거래 내역</div>
+          <h1>{t('title')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
@@ -255,6 +257,7 @@ function Summary({
   /** month header row 우측 슬롯 (예: ViewModeToggle). 클로드 디자인 정합. */
   headerRight?: React.ReactNode
 }) {
+  const { t } = useTranslation('expense')
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
   return (
@@ -274,7 +277,7 @@ function Summary({
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>수입</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('income')}</div>
           <div
             className="num"
             style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-brand)' }}
@@ -283,13 +286,13 @@ function Summary({
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>지출</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('expense')}</div>
           <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-expense)' }}>
             {isLoading ? '—' : <MaskAmount>−{KRW(monthOut)}</MaskAmount>}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>합계</div>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('txDetail.sumLabel')}</div>
           <div
             className="num"
             style={{
@@ -419,6 +422,7 @@ function DayDetailDialog({
   onItemClick?: (e: Expense) => void
   onAddForDay?: () => void
 }) {
+  const { t } = useTranslation('expense')
   const dows = ['일', '월', '화', '수', '목', '금', '토']
   const dow = dows[date.getDay()] ?? ''
   const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dow}요일`
@@ -433,7 +437,7 @@ function DayDetailDialog({
       mobileMinHeight="85dvh"
       footer={
         <Button size="md" className="w-full" onClick={onAddForDay}>
-          <Plus size={16} /> 거래 추가
+          <Plus size={16} /> {t('addTransaction')}
         </Button>
       }
     >
@@ -441,13 +445,13 @@ function DayDetailDialog({
       <Card variant="muted" className="mb-[var(--spacing-md)]">
         <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">
           <div className="flex-1 text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
-            {items.length}건
+            {t('dayCount', { count: items.length })}
           </div>
           {/* 수입+지출 같이 있을 때 두 column horizontal (모바일 정합). 단독은 1 column. */}
           <div className="flex items-end gap-[var(--spacing-lg)]">
             {incomeSum > 0 && (
               <div className="flex flex-col items-end">
-                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">수입</span>
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('income')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
                   <MaskAmount>+{KRW(incomeSum)}</MaskAmount><HideUnit>원</HideUnit>
                 </span>
@@ -455,7 +459,7 @@ function DayDetailDialog({
             )}
             {expenseSum > 0 && (
               <div className="flex flex-col items-end">
-                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">지출</span>
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('expense')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
                   <MaskAmount>−{KRW(expenseSum)}</MaskAmount><HideUnit>원</HideUnit>
                 </span>
@@ -467,7 +471,7 @@ function DayDetailDialog({
       {/* 거래 row 들 — item 사이 border 없이 자연 spacing (모바일 정합) */}
       {items.length === 0 ? (
         <div className="py-[var(--spacing-xl)] text-center text-[length:var(--text-label-sm)] text-[var(--fg-tertiary)]">
-          이 날의 거래가 없어요
+          {t('emptyDay')}
         </div>
       ) : (
         // card 없이 깔끔한 리스트 — 앱 _DayDetailBody 정합(TxDetail/AssetDetail 와 동일 패턴)
@@ -483,22 +487,24 @@ function DayDetailDialog({
 
 function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
   // 단일 toggle button — 현재 mode 의 반대를 보여줌 (calendar 모드면 "목록" 버튼).
+  const { t } = useTranslation('expense')
   const isCalendar = value === 'calendar'
   return (
     <Button
       variant="ghost"
       size="sm"
       onClick={() => onChange(isCalendar ? 'list' : 'calendar')}
-      aria-label={isCalendar ? '목록 보기' : '달력 보기'}
+      aria-label={isCalendar ? t('listViewLabel') : t('calendarViewLabel')}
     >
       {isCalendar ? <List size={14} /> : <Calendar size={14} />}
-      <span style={{ marginLeft: 4 }}>{isCalendar ? '목록' : '달력'}</span>
+      <span style={{ marginLeft: 4 }}>{isCalendar ? t('viewList') : t('viewCalendar')}</span>
     </Button>
   )
 }
 
 
 function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
+  const { t } = useTranslation('expense')
   return (
     <Tabs
       value={filter}
@@ -508,7 +514,7 @@ function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => 
       <TabsList variant="pills" size="sm">
         {CHIPS.map(c => (
           <TabsTrigger key={c.id} variant="pills" size="sm" value={c.id}>
-            {c.label}
+            {t(c.labelKey)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -529,6 +535,7 @@ function ExpenseList({
   onItemClick?: (expense: Expense) => void
   focusTxId?: number | null
 }) {
+  const { t } = useTranslation('expense')
   const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
   const focusRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -551,7 +558,7 @@ function ExpenseList({
       <Card>
         <CardContent style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-            내역이 없어요
+            {t('emptyList')}
           </div>
         </CardContent>
       </Card>
@@ -728,6 +735,7 @@ function useAssetFilter() {
 }
 
 function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void }) {
+  const { t } = useTranslation('expense')
   return (
     <div
       style={{
@@ -746,7 +754,7 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
       <button
         type="button"
         onClick={onClear}
-        aria-label="필터 해제"
+        aria-label={t('clearFilter')}
         style={{
           background: 'transparent', border: 0, padding: 2, cursor: 'pointer',
           color: 'var(--fg-brand)', display: 'inline-flex',
@@ -818,6 +826,7 @@ function EditableList({
 }
 
 function ExpenseDesktop() {
+  const { t } = useTranslation('expense')
   const [searchParams] = useSearchParams()
   const initialMonth = searchParams.get('month') || currentMonthKey()
   const focusTxId = Number(searchParams.get('txId')) || null
@@ -849,21 +858,21 @@ function ExpenseDesktop() {
     >
       <div className="page__head">
         <div>
-          <h1>가계부</h1>
-          <div className="sub">모든 거래 내역</div>
+          <h1>{t('title')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">
           <Button variant="secondary" size="sm" onClick={() => setFilterOpen(true)}>
-            <Filter size={13} /> 필터{activeCount > 0 && ` · ${activeCount}`}
+            <Filter size={13} /> {t('filter.title')}{activeCount > 0 && ` · ${activeCount}`}
           </Button>
           <Button variant="secondary" size="sm" onClick={notifyComing}>
-            <Download size={13} /> 내보내기
+            <Download size={13} /> {t('export')}
           </Button>
         </div>
       </div>
-      {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
+      {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
       {activeCount > 0 && (
-        <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
+        <AssetFilterBadge name={t('filterAppliedBadge', { count: activeCount })} onClear={() => setFilterValue(null)} />
       )}
       <Summary
         month={month}
@@ -907,6 +916,7 @@ function ExpenseDesktop() {
 }
 
 function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
+  const { t } = useTranslation('expense')
   const [searchParams] = useSearchParams()
   const initialMonth = searchParams.get('month') || currentMonthKey()
   const focusTxId = Number(searchParams.get('txId')) || null
@@ -935,9 +945,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : undefined}
       style={{ padding: 'var(--spacing-xl) 20px' }}
     >
-      {asset && <AssetFilterBadge name={`${asset.assetName} 필터 중`} onClear={clear} />}
+      {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
       {activeCount > 0 && (
-        <AssetFilterBadge name={`필터 ${activeCount}개 적용 중`} onClear={() => setFilterValue(null)} />
+        <AssetFilterBadge name={t('filterAppliedBadge', { count: activeCount })} onClear={() => setFilterValue(null)} />
       )}
       <Summary
         month={month}
@@ -962,7 +972,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               variant="outline"
               size="icon"
               onClick={() => setFilterOpen(true)}
-              aria-label="필터"
+              aria-label={t('filter.title')}
               // 앱 정합 — 가계부 필터/추가 버튼은 radius-sm(4px). icon size 기본 rounded-md(8px) override.
               className="relative shrink-0 rounded-[var(--radius-sm)]"
             >
@@ -979,7 +989,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             <Button
               size="icon"
               onClick={onAddTx}
-              aria-label="거래 추가"
+              aria-label={t('addTransaction')}
               className="shrink-0 rounded-[var(--radius-sm)]"
             >
               <Plus size={18} />
@@ -1025,6 +1035,7 @@ function MonthArrowButton({
   month: string
   onChange: (m: string) => void
 }) {
+  const { t } = useTranslation('expense')
   const handle = () => {
     const [yStr, mStr] = month.split('-')
     let y = Number(yStr)
@@ -1037,7 +1048,7 @@ function MonthArrowButton({
     <Button
       variant="ghost"
       size="icon"
-      aria-label={dir === 'prev' ? '이전 달' : '다음 달'}
+      aria-label={dir === 'prev' ? t('prevMonth') : t('nextMonth')}
       onClick={handle}
       className="h-7 w-7 text-text-secondary"
     >
