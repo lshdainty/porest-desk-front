@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Plus,
   Check,
@@ -49,22 +50,22 @@ const DEFAULT_TAG = '개인'
 //  low  = fg-tertiary + bg-sunken.
 const PRIO: Record<
   TodoPriority,
-  { label: string; color: string; bg: string; order: number }
+  { labelKey: string; color: string; bg: string; order: number }
 > = {
   HIGH: {
-    label: '중요',
+    labelKey: 'prio.HIGH',
     color: 'var(--color-chart-red)',
     bg: 'color-mix(in oklab, var(--color-chart-red) 14%, var(--bg-surface))',
     order: 0,
   },
   MEDIUM: {
-    label: '보통',
+    labelKey: 'prio.MEDIUM',
     color: 'var(--color-chart-orange)',
     bg: 'color-mix(in oklab, var(--color-chart-orange) 14%, var(--bg-surface))',
     order: 1,
   },
   LOW: {
-    label: '여유',
+    labelKey: 'prio.LOW',
     color: 'var(--fg-tertiary)',
     bg: 'var(--bg-sunken)',
     order: 2,
@@ -138,6 +139,8 @@ export const TodoPage = () => {
 }
 
 const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
+  const { t } = useTranslation('todo')
+  const { t: tc } = useTranslation('common')
   const todosQ = useTodos()
   const createTodo = useCreateTodo()
   const updateTodo = useUpdateTodo()
@@ -246,7 +249,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       }}
     >
       <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>오늘</div>
+        <div style={statLabel}>{t('today')}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span
             className="num"
@@ -257,20 +260,20 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           >
             {counts.today}
           </span>
-          <span style={statUnit}>건</span>
+          <span style={statUnit}>{t('count')}</span>
         </div>
       </Card>
       <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>이번 주</div>
+        <div style={statLabel}>{t('thisWeek')}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span className="num" style={statNum(mobile)}>
             {counts.week}
           </span>
-          <span style={statUnit}>건</span>
+          <span style={statUnit}>{t('count')}</span>
         </div>
       </Card>
       <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>완료율</div>
+        <div style={statLabel}>{t('completionRate')}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span
             className="num"
@@ -315,8 +318,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         onKeyDown={e => {
           if (e.key === 'Enter') handleQuickAdd()
         }}
-        placeholder="할 일을 입력하고 Enter"
-        aria-label="할 일 빠른 추가"
+        placeholder={t('quickAddPlaceholder')}
+        aria-label={t('quickAddLabel')}
         style={{
           flex: 1,
           minWidth: 0,
@@ -335,7 +338,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         loading={createTodo.isPending}
         style={{ flexShrink: 0 }}
       >
-        추가
+        {tc('add')}
       </Button>
       <Button
         variant="outline"
@@ -343,7 +346,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         onClick={() => setEditing({ _new: true })}
         style={{ flexShrink: 0 }}
       >
-        <Settings2 size={13} /> 자세히
+        <Settings2 size={13} /> {t('detail')}
       </Button>
     </Card>
   )
@@ -354,10 +357,10 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       <TabsList variant="pills" size="sm">
         {(
           [
-            { id: 'today', label: '오늘', count: counts.today },
-            { id: 'week', label: '이번 주', count: counts.week },
-            { id: 'all', label: '전체', count: counts.all },
-            { id: 'done', label: '완료', count: counts.done },
+            { id: 'today', label: t('today'), count: counts.today },
+            { id: 'week', label: t('thisWeek'), count: counts.week },
+            { id: 'all', label: t('status.ALL'), count: counts.all },
+            { id: 'done', label: t('status.COMPLETED'), count: counts.done },
           ] as const
         ).map(f => {
           const active = filter === f.id
@@ -410,7 +413,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             e.stopPropagation()
             toggleStatus.mutate(t.rowId)
           }}
-          aria-label={done ? '완료 취소' : '완료'}
+          aria-label={done ? t('uncomplete') : t('status.COMPLETED')}
           aria-pressed={done}
           style={{
             width: 22,
@@ -461,7 +464,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                 fontWeight: overdue ? '600' : '500',
               }}
             >
-              {key ? relativeDate(key, today) : '마감일 없음'}
+              {key ? relativeDate(key, today) : t('noDueDate')}
             </span>
             <span style={dot} />
             <span style={{ color: 'var(--fg-tertiary)' }}>{todoTag(t)}</span>
@@ -484,7 +487,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             flexShrink: 0,
           }}
         >
-          {prio.label}
+          {t(prio.labelKey)}
         </span>
       </div>
     )
@@ -517,17 +520,17 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         }}
       >
         {filter === 'today'
-          ? '오늘 할 일이 없어요'
+          ? t('empty.today')
           : filter === 'week'
-            ? '이번 주는 한가해요'
+            ? t('empty.week')
             : filter === 'done'
-              ? '아직 완료된 일이 없어요'
-              : '할 일이 없어요'}
+              ? t('empty.done')
+              : t('empty.all')}
       </div>
       <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>
         {filter === 'done'
-          ? '할 일을 완료하면 여기에 모입니다.'
-          : '위 입력칸으로 빠르게 추가해보세요.'}
+          ? t('emptyDesc.done')
+          : t('emptyDesc.default')}
       </div>
     </div>
   )
@@ -550,7 +553,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                   marginBottom: 4,
                 }}
               >
-                {k === NO_DUE_KEY ? '마감일 없음' : kDate(k).full} · {items.length}건
+                {k === NO_DUE_KEY ? t('noDueDate') : kDate(k).full} · {t('kanban.count', { count: items.length })}
               </div>
               {items.map((t, i) => (
                 <Row key={t.rowId} t={t} last={i === items.length - 1} />
@@ -563,7 +566,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
   const TagDistribution = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>태그별 분포</h2>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{t('tagDistribution')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {TAG_OPTIONS.map(tag => {
           const tagged = todos.filter(t => todoTag(t) === tag)
@@ -622,7 +625,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 우측: 우선순위 ───────────────────────────────────────────────
   const PriorityCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>우선순위</h2>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>{t('form.priority')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {PRIO_ORDER.map(k => {
           const p = PRIO[k]
@@ -645,7 +648,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               >
                 <PIcon size={14} />
               </span>
-              <span style={{ fontSize: 13.5, fontWeight: '600' }}>{p.label}</span>
+              <span style={{ fontSize: 13.5, fontWeight: '600' }}>{t(p.labelKey)}</span>
               <span
                 className="num"
                 style={{
@@ -682,7 +685,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="할 일" />
+        <MobileBackHeader title={t('pageTitle')} />
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {StatCards}
@@ -692,7 +695,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
         <button
           type="button"
-          aria-label="할 일 추가"
+          aria-label={t('addTodoLabel')}
           onClick={() => setEditing({ _new: true })}
           style={{
             position: 'fixed',
@@ -726,12 +729,12 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     <div style={{ padding: 0 }}>
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
-          <h1>할 일</h1>
-          <div className="sub">오늘 챙길 거, 한눈에 정리</div>
+          <h1>{t('pageTitle')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">
           <Button size="sm" onClick={() => setEditing({ _new: true })}>
-            <Plus size={14} /> 새 할 일
+            <Plus size={14} /> {t('newTodo')}
           </Button>
         </div>
       </div>
@@ -805,6 +808,8 @@ function TodoEditDialog({
   submitting?: boolean
   deleting?: boolean
 }) {
+  const { t } = useTranslation('todo')
+  const { t: tc } = useTranslation('common')
   const isNew = !todo
   const [title, setTitle] = useState(todo?.title ?? '')
   const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today)
@@ -833,7 +838,7 @@ function TodoEditDialog({
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel="저장"
+      saveLabel={tc('save')}
       saving={submitting}
       onCancel={onClose}
       onDelete={todo ? () => onDelete(todo.rowId) : undefined}
@@ -843,7 +848,7 @@ function TodoEditDialog({
 
   return (
     <ModalShell
-      title={isNew ? '새 할 일' : '할 일 수정'}
+      title={isNew ? t('newTodo') : t('editTodoTitle')}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -856,7 +861,7 @@ function TodoEditDialog({
             setTitle(e.target.value)
             if (error) setError(false)
           }}
-          placeholder="할 일을 적어주세요"
+          placeholder={t('editTitlePlaceholder')}
           aria-invalid={error}
           autoFocus
         />
@@ -871,7 +876,7 @@ function TodoEditDialog({
               fontSize: 13,
             }}
           >
-            제목을 입력해주세요
+            {t('form.titleRequired')}
           </div>
         )}
       </Field>
@@ -885,19 +890,19 @@ function TodoEditDialog({
         }}
       >
         <Field>
-          <FieldLabel>마감일</FieldLabel>
+          <FieldLabel>{t('form.dueDate')}</FieldLabel>
           <InputDatePicker value={due} onValueChange={setDue} placeholder="yyyy-mm-dd" />
         </Field>
         <Field>
-          <FieldLabel>태그</FieldLabel>
+          <FieldLabel>{t('tag')}</FieldLabel>
           <Select value={tag} onValueChange={setTag}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TAG_OPTIONS.map(t => (
-                <SelectItem key={t} value={t}>
-                  {t}
+              {TAG_OPTIONS.map(opt => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -906,7 +911,7 @@ function TodoEditDialog({
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>우선순위</FieldLabel>
+        <FieldLabel>{t('form.priority')}</FieldLabel>
         <div
           style={{
             display: 'inline-flex',
@@ -937,7 +942,7 @@ function TodoEditDialog({
                   fontFamily: 'inherit',
                 }}
               >
-                {p.label}
+                {t(p.labelKey)}
               </button>
             )
           })}
@@ -945,11 +950,11 @@ function TodoEditDialog({
       </Field>
 
       <Field>
-        <FieldLabel>메모</FieldLabel>
+        <FieldLabel>{t('form.memo')}</FieldLabel>
         <Textarea
           value={note}
           onChange={e => setNote(e.target.value)}
-          placeholder="추가 메모 (선택)"
+          placeholder={t('form.memoPlaceholder')}
           rows={3}
         />
       </Field>
@@ -1019,6 +1024,8 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
  * 서버 쿼리(useTodos) 의존 데이터 영역(통계 숫자 / 리스트 / 분포)만 skeleton.
  */
 function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('todo')
+  const { t: tc } = useTranslation('common')
   // ── 통계 3카드 (데이터: 숫자/완료율) ──
   const Stats = (
     <div
@@ -1052,8 +1059,8 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
       </span>
       <input
         disabled
-        placeholder="할 일을 입력하고 Enter"
-        aria-label="할 일 빠른 추가"
+        placeholder={t('quickAddPlaceholder')}
+        aria-label={t('quickAddLabel')}
         style={{
           flex: 1,
           minWidth: 0,
@@ -1067,19 +1074,19 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
         }}
       />
       <Button size="sm" disabled style={{ flexShrink: 0 }}>
-        추가
+        {tc('add')}
       </Button>
       <Button variant="outline" size="sm" disabled style={{ flexShrink: 0 }}>
-        <Settings2 size={13} /> 자세히
+        <Settings2 size={13} /> {t('detail')}
       </Button>
     </Card>
   )
 
   // ── 필터 칩 (정적 틀 — 실제 렌더, 카운트만 skeleton) ──
   const Chips = (
-    <Tabs value="오늘">
+    <Tabs value={t('today')}>
       <TabsList variant="pills" size="sm">
-        {['오늘', '이번 주', '전체', '완료'].map(label => (
+        {[t('today'), t('thisWeek'), t('status.ALL'), t('status.COMPLETED')].map(label => (
           <TabsTrigger
             key={label}
             variant="pills"
@@ -1125,7 +1132,7 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="할 일" />
+        <MobileBackHeader title={t('pageTitle')} />
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Stats}
@@ -1142,12 +1149,12 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
       {/* 정적 페이지 헤더 — 실제 렌더 */}
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
-          <h1>할 일</h1>
-          <div className="sub">오늘 챙길 거, 한눈에 정리</div>
+          <h1>{t('pageTitle')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">
           <Button size="sm" disabled>
-            <Plus size={14} /> 새 할 일
+            <Plus size={14} /> {t('newTodo')}
           </Button>
         </div>
       </div>
@@ -1162,8 +1169,8 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
         >
           {Left}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <RatioCardSkeleton title="태그별 분포" rows={4} />
-            <RatioCardSkeleton title="우선순위" rows={3} />
+            <RatioCardSkeleton title={t('tagDistribution')} rows={4} />
+            <RatioCardSkeleton title={t('form.priority')} rows={3} />
           </div>
         </div>
       </div>
