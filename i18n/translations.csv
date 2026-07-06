@@ -1232,3 +1232,96 @@ settings,account.sub.perMonth,/ 월,/ mo
 settings,account.toast.linked,{{name}} 계정이 연결되었어요,{{name}} account connected
 settings,account.toast.linkError,계정 연결에 실패했어요,Failed to connect the account
 settings,account.toast.unlinked,Google 연결을 해제했어요,Google account disconnected
+stocks,nav.title,증권,Stocks
+stocks,detail.selectPrompt,왼쪽에서 종목을 선택하세요,Select a stock on the left
+stocks,detail.sheetTitle,종목 상세,Stock details
+stocks,summary.title,내 투자 평가금액,My portfolio value
+stocks,summary.connectPrompt,증권 계정을 연결하면 보유자산이 보여요,Connect a brokerage account to see your holdings
+stocks,summary.holdingsCount,보유 종목,Holdings
+stocks,summary.fxRate,환율(USD),FX rate (USD)
+stocks,segments.holdings,보유 {{count}},Holdings {{count}}
+stocks,segments.watch,관심 {{count}},Watchlist {{count}}
+stocks,segments.discover,발견,Discover
+stocks,holdings.empty,보유 중인 종목이 없어요.,You have no holdings.
+stocks,watch.empty,관심 종목이 없어요. 검색해서 별표를 눌러보세요.,No watchlist stocks. Search and tap the star to add.
+stocks,search.label,종목 검색,Search stocks
+stocks,search.placeholder,"종목명 · 티커로 검색 (예: 삼성전자, NVDA)","Search by name or ticker (e.g. Samsung, NVDA)"
+stocks,search.noResults,'{{query}}' 검색 결과가 없어요,No results for '{{query}}'
+stocks,connect.title,증권 계정을 연결해 주세요,Connect a brokerage account
+stocks,connect.holdingsDesc,토스증권 키를 연결하면 보유 종목과 평가손익을 실시간으로 볼 수 있어요.,Connect your Toss Securities key to see holdings and P&L in real time.
+stocks,connect.action,설정에서 연결하기,Connect in settings
+stocks,connect.gateDesc,토스증권 키를 연결하면 시세·보유 종목·평가손익을 실시간으로 볼 수 있어요.,"Connect your Toss Securities key to see prices, holdings, and P&L in real time."
+stocks,market.krShort,국내,Domestic
+stocks,market.krFull,국내 (KRX·NXT),Domestic (KRX·NXT)
+stocks,market.usShort,미국,US
+stocks,market.usFull,미국 (NASDAQ),US (NASDAQ)
+stocks,market.dataNotice,토스증권 Open API · 시세 지연 표시,Toss Securities Open API · delayed quotes
+stocks,market.holiday,휴장,Holiday
+stocks,market.live,장중 · {{time}},Open · {{time}}
+stocks,market.preopen,개장 {{time}},Opens {{time}}
+stocks,market.afterClose,장마감,Closed
+stocks,orderbook.bidVolume,매수 잔량,Bid volume
+stocks,orderbook.askVolume,매도 잔량,Ask volume
+stocks,quotes.orderbook,호가,Order book
+stocks,quotes.trades,체결,Trades
+stocks,quotes.orderbookLoading,호가를 불러오는 중이에요,Loading order book
+stocks,quotes.orderbookEmpty,호가 정보가 없어요,No order book data
+stocks,quotes.tradesLoading,체결 내역을 불러오는 중이에요,Loading trades
+stocks,quotes.tradesEmpty,체결 내역이 없어요,No trades
+stocks,quotes.tradeTime,체결시각,Time
+stocks,quotes.tradePrice,체결가,Price
+stocks,quotes.tradeVolume,체결량,Volume
+stocks,daily.title,일별 시세,Daily prices
+stocks,daily.loading,일별 시세를 불러오는 중이에요,Loading daily prices
+stocks,daily.empty,일별 시세가 없어요,No daily prices
+stocks,daily.date,일자,Date
+stocks,daily.close,종가,Close
+stocks,daily.changeRate,등락률,Change
+stocks,daily.volume,거래량,Volume
+stocks,discover.gainers,급상승,Top gainers
+stocks,discover.losers,급하락,Top losers
+stocks,discover.volume,거래량,Volume
+stocks,portfolio.title,포트폴리오 구성,Portfolio breakdown
+stocks,portfolio.stocksLabel,종목,Stocks
+stocks,unit.count,{{count}}개,{{count}}
+stocks,holding.title,내 보유,My holdings
+stocks,holding.marketValue,평가금액,Market value
+stocks,holding.profitLoss,평가손익,Profit/Loss
+stocks,holding.quantity,보유수량,Quantity
+stocks,holding.returnRate,수익률,Return
+stocks,holding.dailyPnl,일간 손익,Daily P&L
+stocks,holding.avgPrice,평균단가,Avg. price
+stocks,holding.purchaseAmount,매입금액,Purchase amount
+stocks,holding.feesTax,수수료·세금,Fees & tax
+stocks,holding.sellable,매도가능,Sellable
+stocks,holding.sharesUnit,{{count}}주,{{count}} shares
+stocks,holding.sharesHeld,{{count}}주 보유,{{count}} shares
+stocks,info.title,기본 정보,Basic info
+stocks,info.market,시장,Market
+stocks,info.securityType,종목 유형,Type
+stocks,info.stock,주식,Stock
+stocks,info.currency,통화,Currency
+stocks,info.marketCap,시가총액,Market cap
+stocks,info.upperLimit,상한가,Upper limit
+stocks,info.lowerLimit,하한가,Lower limit
+stocks,info.listDate,상장일,Listing date
+stocks,info.sharesOutstanding,발행주식수,Shares outstanding
+stocks,info.tradingStatus,거래상태,Trading status
+stocks,info.suspended,거래정지,Suspended
+stocks,info.normal,정상,Normal
+stocks,watch.add,관심 등록,Add to watchlist
+stocks,watch.remove,관심 해제,Remove from watchlist
+stocks,trade.sell,매도,Sell
+stocks,trade.buy,매수,Buy
+stocks,trade.sellToast,{{name}} 매도 주문 — Open API 연동 시 동작,{{name}} sell order — works when Open API is connected
+stocks,trade.buyToast,{{name}} 매수 주문 — Open API 연동 시 동작,{{name}} buy order — works when Open API is connected
+stocks,fee.us,미국주식 매매수수료 0.1% · 환전 수수료 별도 적용,US stocks: 0.1% trading fee · FX fee applies separately
+stocks,fee.kr,국내주식 매매수수료 무료 (2026.6까지) · 이후 KRX 0.015% / NXT 0.014%,Korean stocks: free trading (until Jun 2026) · then KRX 0.015% / NXT 0.014%
+stocks,disclaimer.line1,토스증권 Open API 연동 시 실시간 호가·체결가가 반영됩니다.,Real-time quotes and trades appear when Toss Securities Open API is connected.
+stocks,disclaimer.line2,시세는 투자 참고용이며 실제 주문은 약관 동의 후 가능합니다.,Quotes are for reference only; actual orders require agreeing to the terms.
+stocks,range.1d,1D,1D
+stocks,range.1w,1주,1W
+stocks,range.1m,1개월,1M
+stocks,range.3m,3개월,3M
+stocks,range.1y,1년,1Y
+stocks,embed.chartUnavailable,차트를 표시할 수 없어요,Chart unavailable
