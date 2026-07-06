@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
@@ -26,10 +27,6 @@ const currentMonthKey = () => {
   const n = new Date()
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`
 }
-
-const complianceChartConfig = {
-  percent: { label: '이행률', color: 'var(--bg-brand)' },
-} satisfies ChartConfig
 
 type ComplianceTickProps = {
   x?: string | number
@@ -62,6 +59,7 @@ type CompliancePayload = {
 }
 
 function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: CompliancePayload[] }) {
+  const { t } = useTranslation('budget')
   if (!active || !payload?.length) return null
   const d = payload[0]?.payload
   if (!d) return null
@@ -89,7 +87,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
             background: over ? 'var(--fg-expense)' : 'var(--bg-brand)',
           }}
         />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>한도 대비</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('vsLimit')}</span>
         <span
           className="num"
           style={{
@@ -105,14 +103,14 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         display: 'flex', flexDirection: 'column', gap: 3,
       }}>
         <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
-          <span>지출</span>
+          <span>{t('spent')}</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
             <MaskAmount mask="••••">{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <HideUnit>원</HideUnit>
           </span>
         </div>
         <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
-          <span>한도</span>
+          <span>{t('limit')}</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
             <MaskAmount mask="••••">{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <HideUnit>원</HideUnit>
@@ -125,6 +123,7 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('budget')
   const HeaderCardSkeleton = (
     <Card>
       <CardContent>
@@ -283,8 +282,8 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>예산</h1>
-          <div className="sub">카테고리별 한도 관리</div>
+          <h1>{t('pageTitle')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20, alignItems: 'start' }}>
@@ -304,6 +303,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
 export const BudgetPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
+  const { t } = useTranslation('budget')
   const navigate = useNavigate()
   const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
   const [year, month] = monthKey.split('-').map(Number) as [number, number]
@@ -405,7 +405,7 @@ export const BudgetPage = () => {
           marginBottom: 2,
         }}
       >
-        {month}월 전체 상한
+        {t('monthlyCap', { month })}
       </div>
       <div
         style={{
@@ -415,7 +415,7 @@ export const BudgetPage = () => {
           marginBottom: 10,
         }}
       >
-        이번 달 전체 지출의 상한이에요 (카테고리 예산이 없는 지출도 포함).
+        {t('capHint')}
       </div>
       {overallBudget ? (
         <>
@@ -446,11 +446,11 @@ export const BudgetPage = () => {
               marginTop: 8,
             }}
           >
-            <span>{pct.toFixed(0)}% 사용</span>
+            <span>{pct.toFixed(0)}% {t('manager.spent')}</span>
             <span style={{ color: totalLimit - totalSpent < 0 ? 'var(--fg-expense)' : undefined }}>
               {totalLimit - totalSpent >= 0
-                ? <>남은 예산 <MaskAmount mask="••••">{KRW(totalLimit - totalSpent)}</MaskAmount><HideUnit>원</HideUnit></>
-                : <>한도 <MaskAmount mask="••••">{KRW(totalSpent - totalLimit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>}
+                ? <>{t('manager.remaining')} <MaskAmount mask="••••">{KRW(totalLimit - totalSpent)}</MaskAmount><HideUnit>원</HideUnit></>
+                : <>{t('limit')} <MaskAmount mask="••••">{KRW(totalSpent - totalLimit)}</MaskAmount><HideUnit>원</HideUnit> {t('over')}</>}
             </span>
           </div>
           <div
@@ -465,7 +465,7 @@ export const BudgetPage = () => {
           >
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                전체 상한
+                {t('totalCap')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(overallLimit)}</MaskAmount>
@@ -474,7 +474,7 @@ export const BudgetPage = () => {
             </div>
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                카테고리 할당
+                {t('categoryAllocated')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount>
@@ -483,7 +483,7 @@ export const BudgetPage = () => {
             </div>
             <div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                할당 가능
+                {t('manager.assignable')}
               </div>
               <div
                 className="num"
@@ -518,8 +518,7 @@ export const BudgetPage = () => {
             >
               <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                카테고리 한도 합이 전체 상한을 <MaskAmount mask="••••">{KRW(categoryLimitSum - overallLimit)}</MaskAmount><HideUnit>원</HideUnit> 초과했어요.
-                전체 상한을 올리거나 카테고리 한도를 줄여주세요.
+                {t('manager.overCapPre')} <MaskAmount mask="••••">{KRW(categoryLimitSum - overallLimit)}</MaskAmount><HideUnit>원</HideUnit> {t('manager.overCapPost')}
               </span>
             </div>
           )}
@@ -533,10 +532,10 @@ export const BudgetPage = () => {
             lineHeight: '1.7',
           }}
         >
-          전체 상한이 아직 설정되지 않았어요. 우측 상단 <strong>예산 설정</strong> 버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.
+          {t('capUnsetPre')} <strong>{t('manager.setBudget')}</strong> {t('capUnsetPost')}
           {categoryLimitSum > 0 && (
             <div style={{ marginTop: 8, fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-              현재 카테고리 한도 합계: <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount><HideUnit>원</HideUnit>
+              {t('currentCategorySum')}: <MaskAmount mask="••••">{KRW(categoryLimitSum)}</MaskAmount><HideUnit>원</HideUnit>
             </div>
           )}
         </div>
@@ -548,7 +547,7 @@ export const BudgetPage = () => {
   const PaceCard = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>지출 페이스</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('spendingPace')}</CardTitle>
         <Badge
           variant={onTrack ? 'success' : 'warning'}
           // 색은 앱 정합 — 다크에서 -fg(light variant)·-subtle 로 (text-warning 고정 base 대신)
@@ -556,7 +555,7 @@ export const BudgetPage = () => {
             ? 'bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]'
             : 'bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]'}
         >
-          {onTrack ? '정상 속도' : '빠른 속도'}
+          {onTrack ? t('paceNormal') : t('paceFast')}
         </Badge>
       </CardHeader>
       <CardContent>
@@ -602,8 +601,8 @@ export const BudgetPage = () => {
           marginBottom: 16,
         }}
       >
-        <span>{pct.toFixed(0)}% 사용</span>
-        <span>이번 달 {daysElapsedPct.toFixed(0)}% 경과 ↑</span>
+        <span>{pct.toFixed(0)}% {t('manager.spent')}</span>
+        <span>{t('monthElapsed', { percent: daysElapsedPct.toFixed(0) })}</span>
       </div>
       <div
         style={{
@@ -616,7 +615,7 @@ export const BudgetPage = () => {
       >
         <div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>
-            일평균 지출
+            {t('dailyAvg')}
           </div>
           <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', letterSpacing: '-0.022em' }}>
             <MaskAmount mask="••••">{KRW(dailyActual)}</MaskAmount>
@@ -627,7 +626,7 @@ export const BudgetPage = () => {
         </div>
         <div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>
-            남은 일 권장 지출
+            {t('recommendedDaily')}
           </div>
           <div
             className="num"
@@ -652,7 +651,7 @@ export const BudgetPage = () => {
   const StatusTiles = (
     <Card>
       <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산 현황</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('status')}</CardTitle>
       </CardHeader>
       <CardContent>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -675,7 +674,7 @@ export const BudgetPage = () => {
               marginBottom: 4,
             }}
           >
-            <AlertTriangle size={13} /> 초과
+            <AlertTriangle size={13} /> {t('over')}
           </div>
           <div
             className="num"
@@ -688,7 +687,7 @@ export const BudgetPage = () => {
           >
             {overList.length}
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
-              카테고리
+              {t('edit.categoryLabel')}
             </span>
           </div>
         </div>
@@ -711,12 +710,12 @@ export const BudgetPage = () => {
               marginBottom: 4,
             }}
           >
-            <CheckCircle2 size={13} /> 여유
+            <CheckCircle2 size={13} /> {t('healthy')}
           </div>
           <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', letterSpacing: '-0.022em' }}>
             {healthyList.length}
             <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
-              카테고리
+              {t('edit.categoryLabel')}
             </span>
           </div>
         </div>
@@ -727,6 +726,9 @@ export const BudgetPage = () => {
 
   const ComplianceCard = (() => {
     const rows = complianceQ.data ?? []
+    const complianceChartConfig = {
+      percent: { label: t('complianceRate'), color: 'var(--bg-brand)' },
+    } satisfies ChartConfig
     const data = rows.map(b => ({
       label: `${b.month}월`,
       percent: b.compliancePercent,
@@ -739,9 +741,9 @@ export const BudgetPage = () => {
     return (
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>최근 6개월 예산 이행률</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('complianceTitle')}</CardTitle>
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            한도 대비 지출 %
+            {t('vsLimitSpending')}
           </span>
         </CardHeader>
         <CardContent>
@@ -757,7 +759,7 @@ export const BudgetPage = () => {
           </div>
         ) : data.length === 0 ? (
           <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-            아직 이행률 데이터가 없어요
+            {t('noComplianceData')}
           </div>
         ) : (
           <ChartContainer
@@ -810,9 +812,9 @@ export const BudgetPage = () => {
   const ListCard = (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>카테고리별 예산</CardTitle>
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('categoryBudgets')}</CardTitle>
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          {categoryBudgets.length}개 설정됨
+          {t('countSet', { count: categoryBudgets.length })}
         </span>
       </CardHeader>
       <CardContent>
@@ -837,7 +839,7 @@ export const BudgetPage = () => {
         </div>
       ) : categoryBudgets.length === 0 ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-          <div>카테고리별 예산이 없어요</div>
+          <div>{t('noCategoryBudgets')}</div>
           <Button
             type="button"
             variant="ghost"
@@ -845,7 +847,7 @@ export const BudgetPage = () => {
             style={{ marginTop: 10, color: 'var(--fg-brand-strong)' }}
             onClick={goToSettings}
           >
-            예산 설정하러 가기 →
+            {t('goSetBudget')}
           </Button>
         </div>
       ) : (
@@ -854,7 +856,7 @@ export const BudgetPage = () => {
             const catId = b.categoryRowId as number
             const cat = categoryMap.get(catId)
             const palette = getPaletteByColor(cat?.color)
-            const name = cat?.categoryName ?? b.categoryName ?? `카테고리 #${catId}`
+            const name = cat?.categoryName ?? b.categoryName ?? t('manager.categoryFallback', { id: catId })
             const spent = spentByCategory.get(catId) ?? 0
             const limit = b.budgetAmount
             const p = limit > 0 ? (spent / limit) * 100 : 0
@@ -883,8 +885,8 @@ export const BudgetPage = () => {
                     <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{name}</div>
                     <div style={{ fontSize: 'var(--text-caption)', color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
-                        ? <>한도 <MaskAmount mask="••••">{KRW(spent - limit)}</MaskAmount><HideUnit>원</HideUnit> 초과</>
-                        : <>남은 예산 <MaskAmount mask="••••">{KRW(Math.max(0, limit - spent))}</MaskAmount><HideUnit>원</HideUnit></>}
+                        ? <>{t('limit')} <MaskAmount mask="••••">{KRW(spent - limit)}</MaskAmount><HideUnit>원</HideUnit> {t('over')}</>
+                        : <>{t('manager.remaining')} <MaskAmount mask="••••">{KRW(Math.max(0, limit - spent))}</MaskAmount><HideUnit>원</HideUnit></>}
                     </div>
                   </div>
                   <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
@@ -927,11 +929,11 @@ export const BudgetPage = () => {
   }
   const PageControls = (
     <>
-      <Button variant="ghost" size="icon" type="button" aria-label="이전 달" onClick={() => adjustMonth(-1)}>
+      <Button variant="ghost" size="icon" type="button" aria-label={t('prevMonth')} onClick={() => adjustMonth(-1)}>
         <ChevronLeft size={16} />
       </Button>
       <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
-      <Button variant="ghost" size="icon" type="button" aria-label="다음 달" onClick={() => adjustMonth(1)}>
+      <Button variant="ghost" size="icon" type="button" aria-label={t('nextMonth')} onClick={() => adjustMonth(1)}>
         <ChevronRight size={16} />
       </Button>
       <Button
@@ -941,7 +943,7 @@ export const BudgetPage = () => {
         onClick={goToSettings}
         style={{ marginLeft: 'auto' }}
       >
-        <Settings size={14} /> 설정
+        <Settings size={14} /> {t('settings')}
       </Button>
     </>
   )
@@ -969,8 +971,8 @@ export const BudgetPage = () => {
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>예산</h1>
-          <div className="sub">카테고리별 한도 관리</div>
+          <h1>{t('pageTitle')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">{PageControls}</div>
       </div>
