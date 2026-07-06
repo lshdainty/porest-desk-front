@@ -8,6 +8,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import type { ApiResponse } from '@/shared/types'
 import {
@@ -76,6 +77,7 @@ function isRange(v: string | null): v is Range {
 export function EmbedStockChartPage() {
   const { symbol = '' } = useParams<{ symbol: string }>()
   const [params] = useSearchParams()
+  const { t } = useTranslation('stocks')
   const token = params.get('token') ?? ''
   const isUs = params.get('isUs') === '1' || params.get('market')?.toUpperCase() === 'US'
 
@@ -105,8 +107,8 @@ export function EmbedStockChartPage() {
   useEffect(() => {
     window.__themeBridge = (mode: Theme) => setTheme(mode === 'dark' ? 'dark' : 'light')
     window.__rangeBridge = (r: Range) => setRange(isRange(r) ? r : '1D')
-    window.__tokenBridge = (t: string) => {
-      if (t) tokenRef.current = t // 다음 요청부터 새 토큰 — 차트 리로드 없음
+    window.__tokenBridge = (tok: string) => {
+      if (tok) tokenRef.current = tok // 다음 요청부터 새 토큰 — 차트 리로드 없음
     }
     postBridge({ type: 'ready', v: '1.0' })
     return () => {
@@ -134,7 +136,7 @@ export function EmbedStockChartPage() {
   if (!symbol || !token) {
     return (
       <div style={fillCenter}>
-        <span style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>차트를 표시할 수 없어요</span>
+        <span style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>{t('embed.chartUnavailable')}</span>
       </div>
     )
   }
