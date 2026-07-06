@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   Plus,
@@ -116,6 +117,7 @@ export const DutchPayPage = () => {
 }
 
 const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
+  const { t } = useTranslation('dutchPay')
   const dutchPaysQ = useDutchPays()
   const createDutchPay = useCreateDutchPay()
   const markPaid = useMarkParticipantPaid()
@@ -196,15 +198,15 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   }
   // 요청/일괄 요청 = UI-only.
   const onRequest = (name: string) => {
-    toast.success(`${name}님에게 송금 요청을 보냈어요`, {
-      description: '추후 카카오톡·문자 연동 예정',
+    toast.success(t('toast.requestSent', { name }), {
+      description: t('toast.requestSentDesc'),
     })
   }
   const onRequestAll = (d: DutchPay) => {
     const pending = d.participants.filter(p => !isPayer(d, p) && !p.isPaid)
     if (pending.length === 0) return
-    toast.success(`${pending.length}명에게 송금 요청을 보냈어요`, {
-      description: '추후 카카오톡·문자 연동 예정',
+    toast.success(t('toast.requestSentBulk', { count: pending.length }), {
+      description: t('toast.requestSentDesc'),
     })
   }
 
@@ -220,16 +222,16 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       <SummaryCard
         mobile={mobile}
         tone="receive"
-        label="받을 돈"
+        label={t('receivable')}
         amount={receivable.amount}
-        sub={receivable.people > 0 ? `${receivable.people}명에게서` : '받을 돈 없음'}
+        sub={receivable.people > 0 ? t('receivableFrom', { count: receivable.people }) : t('receivableNone')}
       />
       <SummaryCard
         mobile={mobile}
         tone="send"
-        label="보낼 돈"
+        label={t('payable')}
         amount={payable.amount}
-        sub={payable.people > 0 ? `${payable.people}명에게` : '0명에게'}
+        sub={t('payableTo', { count: payable.people })}
       />
     </div>
   )
@@ -240,9 +242,9 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       <TabsList variant="pill" size="sm">
         {(
           [
-            { id: 'active', label: `진행 중 · ${active.length}` },
-            { id: 'past', label: `완료 · ${past.length}` },
-            { id: 'friends', label: '친구' },
+            { id: 'active', label: `${t('filter.active')} · ${active.length}` },
+            { id: 'past', label: `${t('done')} · ${past.length}` },
+            { id: 'friends', label: t('friends') },
           ] as const
         ).map(t => (
           <TabsTrigger key={t.id} value={t.id}>
@@ -260,8 +262,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       active.length === 0 ? (
         <EmptyState
           icon={<Users size={24} />}
-          title="진행 중인 정산이 없어요"
-          desc="새 정산을 만들어 함께 쓴 돈을 나눠보세요."
+          title={t('emptyActive.title')}
+          desc={t('emptyActive.desc')}
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
@@ -275,8 +277,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       past.length === 0 ? (
         <EmptyState
           icon={<CheckCheck size={24} />}
-          title="완료된 정산이 없어요"
-          desc="정산을 마치면 여기에 모입니다."
+          title={t('emptyPast.title')}
+          desc={t('emptyPast.desc')}
         />
       ) : (
         <Card style={{ padding: '8px 18px' }}>
@@ -290,8 +292,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       friends.length === 0 ? (
         <EmptyState
           icon={<Users size={24} />}
-          title="함께 정산한 친구가 없어요"
-          desc="정산에 친구를 추가하면 여기에 모입니다."
+          title={t('emptyFriends.title')}
+          desc={t('emptyFriends.desc')}
         />
       ) : (
         <Card style={{ padding: '8px 18px' }}>
@@ -305,9 +307,9 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 우측 사이드 ────────────────────────────────────────────────────
   const TopFriendsCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>자주 정산하는 친구</h2>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{t('topFriends.title')}</h2>
       {topFriends.length === 0 ? (
-        <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>아직 정산 함께한 친구가 없어요.</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>{t('topFriends.empty')}</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {topFriends.map(f => (
@@ -315,7 +317,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
               <Avatar name={f.name} size={32} />
               <span style={{ fontSize: 13.5, fontWeight: '600', flex: 1, minWidth: 0 }}>{f.name}</span>
               <span className="num" style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: '600' }}>
-                {f.sessions}회
+                {t('sessionsCount', { count: f.sessions })}
               </span>
             </div>
           ))}
@@ -326,11 +328,11 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
 
   const MonthStatsCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>이번 달 정산 통계</h2>
+      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>{t('monthStats.title')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <StatRow label="만든 정산" value={<><span className="num">{monthStats.count}</span>건</>} />
+        <StatRow label={t('monthStats.created')} value={<><span className="num">{monthStats.count}</span>{t('count')}</>} />
         <StatRow
-          label="총 정산 금액"
+          label={t('monthStats.totalAmount')}
           value={
             <>
               <MaskAmount mask="••••">
@@ -341,8 +343,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           }
         />
         <StatRow
-          label="평균 인원"
-          value={<><span className="num">{monthStats.avg.toFixed(1)}</span>명</>}
+          label={t('monthStats.avgPeople')}
+          value={<><span className="num">{monthStats.avg.toFixed(1)}</span>{t('participants')}</>}
         />
       </div>
     </Card>
@@ -383,7 +385,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="더치페이" />
+        <MobileBackHeader title={t('title')} />
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {Summary}
@@ -392,7 +394,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
         <button
           type="button"
-          aria-label="정산 만들기"
+          aria-label={t('fromTx.createSettlement')}
           onClick={() => setCreating(true)}
           className="m-fab"
           style={{
@@ -427,12 +429,12 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
     <div style={{ padding: 0 }}>
       <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
         <div>
-          <h1>더치페이</h1>
-          <div className="sub">함께 쓴 돈, 깔끔하게 정산</div>
+          <h1>{t('title')}</h1>
+          <div className="sub">{t('subtitle')}</div>
         </div>
         <div className="right">
           <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={14} /> 정산 만들기
+            <Plus size={14} /> {t('fromTx.createSettlement')}
           </Button>
         </div>
       </div>
@@ -569,6 +571,7 @@ function SessionCard({
   mobile: boolean
   onClick: () => void
 }) {
+  const { t } = useTranslation('dutchPay')
   const total = d.participants.length
   const paid = paidCountOf(d)
   const per = perPersonOf(d)
@@ -609,7 +612,7 @@ function SessionCard({
             </HideUnit>
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            1인 <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
+            {t('perOne')} <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
             <HideUnit>원</HideUnit>
           </div>
         </div>
@@ -682,6 +685,7 @@ function SessionCard({
 
 /** 완료 탭 행. */
 function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: () => void }) {
+  const { t } = useTranslation('dutchPay')
   return (
     <div
       onClick={onClick}
@@ -723,7 +727,7 @@ function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: 
           {d.title}
         </div>
         <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {kDateMd(d.dutchPayDate)} · {d.participants.length}명
+          {kDateMd(d.dutchPayDate)} · {d.participants.length}{t('participants')}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
@@ -748,6 +752,7 @@ function FriendRow({
   f: { name: string; sessions: number; net: number }
   first: boolean
 }) {
+  const { t } = useTranslation('dutchPay')
   return (
     <div
       style={{
@@ -762,7 +767,7 @@ function FriendRow({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: '600', color: 'var(--fg-primary)' }}>{f.name}</div>
         <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {f.sessions}회 정산 함께
+          {t('settledTogether', { count: f.sessions })}
         </div>
       </div>
       {f.net > 0 ? (
@@ -777,7 +782,7 @@ function FriendRow({
           </HideUnit>
         </div>
       ) : (
-        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', flexShrink: 0 }}>정산 완료</span>
+        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', flexShrink: 0 }}>{t('settled')}</span>
       )}
     </div>
   )
@@ -856,6 +861,8 @@ function DutchCreateWizard({
   onCreate: (values: DutchPayFormValues) => void
   submitting?: boolean
 }) {
+  const { t } = useTranslation('dutchPay')
+  const { t: tc } = useTranslation('common')
   const [step, setStep] = useState<1 | 2>(1)
   const [title, setTitle] = useState('')
   const [place, setPlace] = useState('')
@@ -938,26 +945,26 @@ function DutchCreateWizard({
     step === 1 ? (
       <>
         <Button variant="outline" onClick={onClose}>
-          취소
+          {tc('cancel')}
         </Button>
         <Button onClick={goNext} disabled={!title.trim() || totalNum <= 0}>
-          다음
+          {tc('next')}
         </Button>
       </>
     ) : (
       <>
         <Button variant="outline" onClick={() => setStep(1)} disabled={submitting}>
-          <ChevronLeft size={14} /> 이전
+          <ChevronLeft size={14} /> {tc('prev')}
         </Button>
         <Button onClick={submit} disabled={picked.size < 2} loading={submitting}>
-          <Check size={14} /> 정산 만들기
+          <Check size={14} /> {t('fromTx.createSettlement')}
         </Button>
       </>
     )
 
   return (
     <ModalShell
-      title={step === 1 ? '정산 만들기 (1/2)' : '참여자 선택 (2/2)'}
+      title={step === 1 ? `${t('fromTx.createSettlement')} (1/2)` : `${t('pickParticipants')} (2/2)`}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -966,14 +973,14 @@ function DutchCreateWizard({
       {step === 1 ? (
         <>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>정산 이름</FieldLabel>
+            <FieldLabel>{t('nameLabel')}</FieldLabel>
             <Input
               value={title}
               onChange={e => {
                 setTitle(e.target.value)
                 if (titleError) setTitleError(false)
               }}
-              placeholder="예: 팀 저녁 회식"
+              placeholder={t('namePlaceholder')}
               aria-invalid={titleError}
               autoFocus
             />
@@ -988,23 +995,23 @@ function DutchCreateWizard({
                   fontSize: 13,
                 }}
               >
-                정산 이름을 입력해주세요
+                {t('nameRequired')}
               </div>
             )}
           </Field>
 
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>장소</FieldLabel>
+            <FieldLabel>{t('placeLabel')}</FieldLabel>
             <Input
               value={place}
               onChange={e => setPlace(e.target.value)}
-              placeholder="장소 또는 상호명 (선택)"
+              placeholder={t('placePlaceholder')}
             />
           </Field>
 
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
             <Field>
-              <FieldLabel>총 금액</FieldLabel>
+              <FieldLabel>{t('form.totalAmount')}</FieldLabel>
               <div style={{ position: 'relative' }}>
                 <Input
                   value={totalNum > 0 ? totalNum.toLocaleString('ko-KR') : totalStr}
@@ -1029,7 +1036,7 @@ function DutchCreateWizard({
               </div>
             </Field>
             <Field>
-              <FieldLabel>날짜</FieldLabel>
+              <FieldLabel>{t('form.date')}</FieldLabel>
               <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
             </Field>
           </div>
@@ -1044,7 +1051,7 @@ function DutchCreateWizard({
               fontWeight: '600',
             }}
           >
-            {picked.size}명 선택 · 1인당{' '}
+            {t('selectedCount', { count: picked.size })} · {t('fromTx.perPerson')}{' '}
             <MaskAmount mask="••••">
               <span className="num">{KRW(perPerson)}</span>
             </MaskAmount>
@@ -1052,12 +1059,12 @@ function DutchCreateWizard({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-            <ParticipantPick name={MY_NAME} note="결제자" checked locked onToggle={() => {}} />
+            <ParticipantPick name={MY_NAME} note={t('payer')} checked locked onToggle={() => {}} />
             {candidates.map(name => (
               <ParticipantPick
                 key={name}
                 name={name}
-                note={friendNames.includes(name) ? '추천' : undefined}
+                note={friendNames.includes(name) ? t('recommended') : undefined}
                 checked={picked.has(name)}
                 onToggle={() => toggle(name)}
               />
@@ -1074,10 +1081,10 @@ function DutchCreateWizard({
                   addName()
                 }
               }}
-              placeholder="이름 입력 후 추가"
+              placeholder={t('fromTx.addNamePlaceholder')}
             />
             <Button variant="outline" onClick={addName} style={{ flexShrink: 0 }}>
-              <Plus size={14} /> 추가
+              <Plus size={14} /> {tc('add')}
             </Button>
           </div>
         </>
@@ -1167,6 +1174,8 @@ function DutchDetailDialog({
   settleAllPending?: boolean
   deleting?: boolean
 }) {
+  const { t } = useTranslation('dutchPay')
+  const { t: tc } = useTranslation('common')
   const active = isActiveSession(d)
   const per = perPersonOf(d)
   const place = d.description?.trim()
@@ -1181,13 +1190,13 @@ function DutchDetailDialog({
         style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
         loading={deleting}
       >
-        <Trash2 size={14} /> 삭제
+        <Trash2 size={14} /> {tc('delete')}
       </Button>
       <Button variant="outline" onClick={onClose}>
-        닫기
+        {tc('close')}
       </Button>
       <Button onClick={() => onRequestAll(d)}>
-        <Send size={14} /> 일괄 요청
+        <Send size={14} /> {t('requestAll')}
       </Button>
     </>
   ) : (
@@ -1199,10 +1208,10 @@ function DutchDetailDialog({
         style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
         loading={deleting}
       >
-        <Trash2 size={14} /> 삭제
+        <Trash2 size={14} /> {tc('delete')}
       </Button>
       <Button variant="outline" onClick={onClose}>
-        닫기
+        {tc('close')}
       </Button>
     </>
   )
@@ -1238,7 +1247,7 @@ function DutchDetailDialog({
           </HideUnit>
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--fg-secondary)', marginTop: 4 }}>
-          1인당 <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
+          {t('fromTx.perPerson')} <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
           <HideUnit>원</HideUnit>
         </div>
       </div>
@@ -1252,7 +1261,7 @@ function DutchDetailDialog({
             loading={settleAllPending}
             onClick={() => onSettleAll(d.rowId)}
           >
-            전체 정산 완료
+            {t('settleAllDone')}
           </Button>
         </div>
       )}
@@ -1266,16 +1275,16 @@ function DutchDetailDialog({
           marginBottom: 8,
         }}
       >
-        참여자 · {d.participants.length}명
+        {t('fromTx.participants')} · {d.participants.length}{t('participants')}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {d.participants.map(p => {
           const payer = isPayer(d, p)
           const statusText = payer
-            ? '결제자'
+            ? t('payer')
             : p.isPaid
-              ? '정산 완료'
+              ? t('settled')
               : null
           return (
             <div key={p.rowId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0' }}>
@@ -1296,7 +1305,7 @@ function DutchDetailDialog({
                         color: 'var(--fg-brand-strong)',
                       }}
                     >
-                      결제자
+                      {t('payer')}
                     </span>
                   )}
                 </div>
@@ -1304,7 +1313,7 @@ function DutchDetailDialog({
                   {statusText ?? (
                     <>
                       <MaskAmount mask="••••">{KRW(p.amount)}</MaskAmount>
-                      <HideUnit>원</HideUnit> 송금 필요
+                      <HideUnit>원</HideUnit> {t('transferNeeded')}
                     </>
                   )}
                 </div>
@@ -1333,17 +1342,17 @@ function DutchDetailDialog({
                       background: 'currentColor',
                     }}
                   />
-                  완료
+                  {t('done')}
                 </span>
               ) : (
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                   <Button variant="outline" size="sm" onClick={() => onRequest(p.participantName)}>
-                    요청
+                    {t('request')}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="송금 완료 처리"
+                    aria-label={t('markPaidLabel')}
                     loading={markPaidPending}
                     onClick={() => onMarkPaid(d.rowId, p.rowId)}
                   >
@@ -1398,6 +1407,7 @@ function SessionCardSkeleton({ mobile }: { mobile: boolean }) {
 
 /** DutchPay 페이지 구조 일치 skeleton — 요약 2카드 + 탭 + 세션 카드. */
 function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('dutchPay')
   const Summary = (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: mobile ? 8 : 12 }}>
       <SummaryCardSkeleton mobile={mobile} />
@@ -1415,7 +1425,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="더치페이" />
+        <MobileBackHeader title={t('title')} />
         <div style={{ padding: '16px 16px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Summary}

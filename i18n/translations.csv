@@ -11,6 +11,9 @@ common,loading,로딩 중...,Loading...
 common,noData,데이터가 없습니다,No data
 common,error,오류가 발생했습니다,An error occurred
 common,close,닫기,Close
+common,add,추가,Add
+common,next,다음,Next
+common,prev,이전,Previous
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
 layout,calendar,캘린더,Calendar
@@ -983,6 +986,46 @@ dutchPay,fromTx.requestMessage,요청 메시지 (선택),Request message (option
 dutchPay,fromTx.requestMessagePlaceholder,참여자에게 함께 보낼 한마디를 적어주세요,Write a note to send to participants
 dutchPay,fromTx.shortfall,합계가 총액보다 {{amount}}원 부족합니다.,The total is {{amount}}원 short of the amount.
 dutchPay,fromTx.excess,합계가 총액보다 {{amount}}원 초과합니다.,The total exceeds the amount by {{amount}}원.
+dutchPay,subtitle,"함께 쓴 돈, 깔끔하게 정산",Split shared expenses cleanly
+dutchPay,receivable,받을 돈,To receive
+dutchPay,receivableFrom,{{count}}명에게서,From {{count}} people
+dutchPay,receivableNone,받을 돈 없음,Nothing to receive
+dutchPay,payable,보낼 돈,To send
+dutchPay,payableTo,{{count}}명에게,To {{count}} people
+dutchPay,done,완료,Done
+dutchPay,friends,친구,Friends
+dutchPay,emptyActive.title,진행 중인 정산이 없어요,No active settlements
+dutchPay,emptyActive.desc,새 정산을 만들어 함께 쓴 돈을 나눠보세요.,Create a settlement to split shared expenses.
+dutchPay,emptyPast.title,완료된 정산이 없어요,No completed settlements
+dutchPay,emptyPast.desc,정산을 마치면 여기에 모입니다.,Completed settlements appear here.
+dutchPay,emptyFriends.title,함께 정산한 친구가 없어요,No friends yet
+dutchPay,emptyFriends.desc,정산에 친구를 추가하면 여기에 모입니다.,Friends you settle with appear here.
+dutchPay,topFriends.title,자주 정산하는 친구,Frequent friends
+dutchPay,topFriends.empty,아직 정산 함께한 친구가 없어요.,No friends you've settled with yet.
+dutchPay,sessionsCount,{{count}}회,{{count}} times
+dutchPay,settledTogether,{{count}}회 정산 함께,Settled together {{count}} times
+dutchPay,monthStats.title,이번 달 정산 통계,This month's stats
+dutchPay,monthStats.created,만든 정산,Settlements created
+dutchPay,monthStats.totalAmount,총 정산 금액,Total amount
+dutchPay,monthStats.avgPeople,평균 인원,Avg. people
+dutchPay,perOne,1인,Per person
+dutchPay,nameLabel,정산 이름,Settlement name
+dutchPay,namePlaceholder,예: 팀 저녁 회식,e.g. Team dinner
+dutchPay,nameRequired,정산 이름을 입력해주세요,Please enter a settlement name
+dutchPay,placeLabel,장소,Place
+dutchPay,placePlaceholder,장소 또는 상호명 (선택),Place or venue (optional)
+dutchPay,selectedCount,{{count}}명 선택,{{count}} selected
+dutchPay,payer,결제자,Payer
+dutchPay,recommended,추천,Suggested
+dutchPay,pickParticipants,참여자 선택,Select participants
+dutchPay,requestAll,일괄 요청,Request all
+dutchPay,settleAllDone,전체 정산 완료,Mark all as settled
+dutchPay,transferNeeded,송금 필요,Transfer needed
+dutchPay,request,요청,Request
+dutchPay,markPaidLabel,송금 완료 처리,Mark as paid
+dutchPay,toast.requestSent,{{name}}님에게 송금 요청을 보냈어요,Payment request sent to {{name}}
+dutchPay,toast.requestSentBulk,{{count}}명에게 송금 요청을 보냈어요,Payment request sent to {{count}} people
+dutchPay,toast.requestSentDesc,추후 카카오톡·문자 연동 예정,KakaoTalk / SMS integration coming soon
 expense,accountCard,계좌·카드,Account · Card
 expense,paymentMethodLabel,결제 수단,Payment method
 expense,paymentTransferFull,계좌이체,Bank transfer
