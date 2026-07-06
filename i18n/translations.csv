@@ -428,6 +428,35 @@ asset,editDialog.memoOptional,메모 (선택),Memo (optional)
 asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
 asset,editDialog.includeInTotalDesc,순자산·총자산 계산에 반영됩니다,Counts toward net worth and total assets
+asset,netWorth,순자산,Net worth
+asset,noTrendData,추이 데이터가 없어요,No trend data
+asset,group.cashDeposit,현금·예금,Cash & Deposits
+asset,composition,자산 구성,Asset composition
+asset,noItems,등록된 항목이 없어요,No items registered
+asset,noAssetData,자산 데이터가 없어요,No asset data
+asset,viewSubAssets,클릭하여 하위 자산 보기,Click to view sub-assets
+asset,upcomingBills,예정된 결제 · 고정지출,Upcoming payments · Fixed expenses
+asset,viewAll,전체 보기,View all
+asset,noUpcomingBills,예정된 결제가 없어요,No upcoming payments
+asset,anytime,상시,Anytime
+asset,achieved,달성,Achieved
+asset,savingGoals,저축 목표,Saving goals
+asset,addGoal,목표 추가,Add goal
+asset,addSavingGoalPrompt,저축 목표를 추가해보세요,Add a saving goal
+asset,addFirstGoal,첫 목표 추가하기,Add your first goal
+asset,subtitle,모든 계좌·카드·투자를 한 곳에서,"All accounts, cards, and investments in one place"
+asset,paymentDayLabel,{{day}}일 결제,Billed on day {{day}}
+asset,totalNetWorth,총 순자산,Total net worth
+asset,showAmount,금액 보기,Show amounts
+asset,hideAmount,금액 가리기,Hide amounts
+asset,vsLastMonth,지난달 대비,vs last month
+asset,cardBalance,카드값,Card balance
+asset,show,보이기,Show
+asset,hide,가리기,Hide
+asset,refresh,새로고침,Refresh
+asset,emptyTitle,아직 등록된 자산이 없어요,No assets yet
+asset,emptyDesc,설정 → 카드·계좌 관리에서 추가할 수 있어요,Add them in Settings → Card & Account management
+asset,accountDepositTitle,계좌 · 예금,Accounts & Deposits
 dashboard,title,대시보드,Dashboard
 dashboard,welcome,환영합니다,Welcome
 dashboard,overview,개요,Overview
