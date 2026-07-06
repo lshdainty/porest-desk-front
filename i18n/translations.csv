@@ -92,6 +92,32 @@ todo,kanban.inProgress,진행중,In Progress
 todo,kanban.completed,완료,Completed
 todo,kanban.empty,여기에 드래그하세요,Drag here
 todo,kanban.count,{{count}}건,{{count}} items
+todo,prio.HIGH,중요,High
+todo,prio.MEDIUM,보통,Medium
+todo,prio.LOW,여유,Low
+todo,pageTitle,할 일,To-do
+todo,subtitle,"오늘 챙길 거, 한눈에 정리",Everything for today at a glance
+todo,newTodo,새 할 일,New to-do
+todo,editTodoTitle,할 일 수정,Edit to-do
+todo,today,오늘,Today
+todo,thisWeek,이번 주,This week
+todo,count,건,
+todo,quickAddPlaceholder,할 일을 입력하고 Enter,Type a to-do and press Enter
+todo,quickAddLabel,할 일 빠른 추가,Quick add to-do
+todo,detail,자세히,Details
+todo,addTodoLabel,할 일 추가,Add to-do
+todo,uncomplete,완료 취소,Mark incomplete
+todo,noDueDate,마감일 없음,No due date
+todo,empty.today,오늘 할 일이 없어요,No to-dos for today
+todo,empty.week,이번 주는 한가해요,A light week ahead
+todo,empty.done,아직 완료된 일이 없어요,Nothing completed yet
+todo,empty.all,할 일이 없어요,No to-dos
+todo,emptyDesc.done,할 일을 완료하면 여기에 모입니다.,Completed to-dos gather here.
+todo,emptyDesc.default,위 입력칸으로 빠르게 추가해보세요.,Quickly add one in the field above.
+todo,tagDistribution,태그별 분포,Tag distribution
+todo,editTitlePlaceholder,할 일을 적어주세요,Write a to-do
+todo,form.memo,메모,Note
+todo,form.memoPlaceholder,추가 메모 (선택),Additional note (optional)
 calendar,title,캘린더,Calendar
 calendar,addEvent,일정 추가,Add Event
 calendar,editEvent,일정 수정,Edit Event
