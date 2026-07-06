@@ -1413,3 +1413,33 @@ stats,picker.last30d,최근 30일,Last 30 days
 stats,picker.last3m,최근 3개월,Last 3 months
 stats,picker.last6m,최근 6개월,Last 6 months
 stats,picker.last1y,최근 1년,Last 1 year
+dashboard,chart.savings,저축,Savings
+dashboard,all,전체,All
+dashboard,manage,관리,Manage
+dashboard,detail,자세히,Details
+dashboard,manageBudget,예산 관리,Manage Budget
+dashboard,balance,잔액,Balance
+dashboard,showAmount,금액 표시,Show amount
+dashboard,hideAmount,금액 가리기,Hide amount
+dashboard,vsLastMonth,지난달 대비,vs. last month
+dashboard,categoryTitle,카테고리,Category
+dashboard,categoryEmpty,카테고리 데이터가 없습니다,No category data
+dashboard,categoryEmptyMobile,카테고리 데이터가 없어요,No category data
+dashboard,budget.empty,등록된 예산이 없어요,No budget set
+dashboard,expense.todaySpent,오늘 쓴 돈,Today's Spending
+dashboard,expense.noTodaySpent,오늘은 아직 쓴 돈이 없어요,No spending today yet
+dashboard,payment.upcoming,예정된 결제,Upcoming Payments
+dashboard,payment.empty,예정된 결제가 없어요,No upcoming payments
+dashboard,todo.label,할 일,Todo
+dashboard,todo.empty,할 일이 없어요,No tasks
+dashboard,todo.recent,최근 할 일,Recent Todos
+dashboard,calendar.scheduled,예정된 일정,Upcoming Events
+dashboard,calendar.empty,예정 일정이 없어요,No upcoming events
+dashboard,summary.monthExpenseBook,{{month}}월 가계부,Monthly Expenses
+dashboard,summary.monthIncomeExpense,{{month}}월 수입·지출,Monthly Income & Expense
+dashboard,avg.dailyAverage,하루 평균,Daily avg.
+dashboard,avg.spent,썼어요.,spent.
+dashboard,avg.vsPrev,전월 대비,vs. last month
+dashboard,avg.saving,절약 중이에요.,saved.
+dashboard,avg.spentMore,더 썼어요.,spent more.
+dashboard,avg.same,동일해요.,no change.

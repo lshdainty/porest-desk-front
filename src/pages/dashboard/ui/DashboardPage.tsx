@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react'
@@ -37,16 +38,14 @@ import { useRecurringTransactions } from '@/features/recurring-transaction'
 import type { Expense } from '@/entities/expense'
 import { aggregateByParent } from '@/entities/expense'
 
-const barChartConfig = {
-  income:  { label: '수입', color: 'var(--status-info-fg)' },
-  expense: { label: '지출', color: 'var(--fg-expense)' },
-} satisfies ChartConfig
+// income/expense bar 색상·라벨은 IncomeExpenseBarChart 내부에서 t() 로 구성.
 
 
 type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<string, unknown> }
 type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
 
 function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
+  const { t } = useTranslation('dashboard')
   if (!active || !payload || payload.length === 0) return null
   const income = Number(payload.find(p => p.dataKey === 'income')?.value ?? 0)
   const expense = Number(payload.find(p => p.dataKey === 'expense')?.value ?? 0)
@@ -68,7 +67,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.income')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(income)}</MaskAmount>
           <HideUnit>원</HideUnit>
@@ -76,7 +75,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.expense')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
           <MaskAmount>{KRW(expense)}</MaskAmount>
           <HideUnit>원</HideUnit>
@@ -86,7 +85,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         display: 'flex', alignItems: 'center', gap: 6,
         marginTop: 5, paddingTop: 5, borderTop: '1px solid var(--border-subtle)',
       }}>
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>저축</span>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.savings')}</span>
         <span
           className="num"
           style={{
@@ -106,7 +105,12 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
   data: { label: string; income: number; expense: number }[]
   height?: number
 }) {
+  const { t } = useTranslation('dashboard')
   const hidden = useHideAmounts()
+  const barChartConfig = {
+    income:  { label: t('chart.income'), color: 'var(--status-info-fg)' },
+    expense: { label: t('chart.expense'), color: 'var(--fg-expense)' },
+  } satisfies ChartConfig
   // Y축: 0기준 nice 눈금 (수입·지출 둘 다 포함, 앱 niceAxis 정합).
   const yAxis = useMemo(() => {
     const vals = data.flatMap(d => [d.income, d.expense])
@@ -210,6 +214,7 @@ function useDashboardPageData(year: number, month: number, opts?: { includePrevM
  */
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
   const { key: initialKey, year, month } = useCurrentMonthKey()
   const [period, setPeriod] = useState(initialKey)
   if (mobile) {
@@ -219,7 +224,7 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
         <DashboardSummaryCardSkeleton mobile month={month} period={period} onPeriodChange={setPeriod} />
         <DashboardCategoryCardSkeleton mobile onDetail={() => navigate('/desk/stats')} />
         <DashboardBudgetCardSkeleton mobile onManage={() => navigate('/desk/budget')} />
-        <DashboardListCardSkeleton title="오늘 쓴 돈" allLabel="전체" onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
+        <DashboardListCardSkeleton title={t('expense.todaySpent')} allLabel={t('all')} onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
       </div>
     )
   }
@@ -228,14 +233,14 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
       <div className="dash-grid__left">
         <DashboardHeroSkeleton mobile={false} year={year} month={month} />
         <DashboardSummaryCardSkeleton mobile={false} month={month} period={period} onPeriodChange={setPeriod} />
-        <DashboardListCardSkeleton title="오늘 쓴 돈" allLabel="전체 보기" onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
+        <DashboardListCardSkeleton title={t('expense.todaySpent')} allLabel={t('viewAll')} onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
       </div>
       <div className="dash-grid__right">
         <DashboardCategoryCardSkeleton mobile={false} onDetail={() => navigate('/desk/stats')} />
         <DashboardBudgetCardSkeleton mobile={false} onManage={() => navigate('/desk/budget')} />
-        <DashboardListCardSkeleton title="예정된 결제" rows={3} variant="badge" amount />
-        <DashboardListCardSkeleton title="할 일" allLabel="관리" onAll={() => navigate('/desk/todo')} rows={4} variant="dot" />
-        <DashboardListCardSkeleton title="예정된 일정" allLabel="캘린더" onAll={() => navigate('/desk/calendar')} rows={3} variant="badge" />
+        <DashboardListCardSkeleton title={t('payment.upcoming')} rows={3} variant="badge" amount />
+        <DashboardListCardSkeleton title={t('todo.label')} allLabel={t('manage')} onAll={() => navigate('/desk/todo')} rows={4} variant="dot" />
+        <DashboardListCardSkeleton title={t('calendar.scheduled')} allLabel={t('calendar.title')} onAll={() => navigate('/desk/calendar')} rows={3} variant="badge" />
       </div>
     </div>
   )
@@ -243,10 +248,11 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
 
 function DashboardHeroSkeleton({ mobile, year, month }: { mobile: boolean; year: number; month: number }) {
   // 정적 틀(eyebrow 라벨 + 자산/부채 라벨)은 실제 렌더, 금액(데이터)만 스켈레톤.
+  const { t } = useTranslation('dashboard')
   return (
     <div className="balance-hero" style={mobile ? undefined : { padding: '28px 32px 24px' }}>
       <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-        <Wallet size={mobile ? 13 : 14} /> {mobile ? '순자산' : <>순자산 · {year}년 {month}월</>}
+        <Wallet size={mobile ? 13 : 14} /> {mobile ? t('asset.netAsset') : <>{t('asset.netAsset')} · {year}년 {month}월</>}
       </div>
       <div className="balance-hero__amount num">
         <SkeletonBase className={mobile ? 'h-8 w-40 bg-white/15' : 'h-10 w-56 bg-white/15'} />
@@ -256,11 +262,11 @@ function DashboardHeroSkeleton({ mobile, year, month }: { mobile: boolean; year:
       </div>
       <div className="balance-hero__split">
         <div>
-          <div className="l">{mobile ? '자산' : '총 자산'}</div>
+          <div className="l">{mobile ? t('asset.assetTab') : t('asset.totalAsset')}</div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
         <div>
-          <div className="l">{mobile ? '부채' : '총 부채'}</div>
+          <div className="l">{mobile ? t('asset.debtTab') : t('asset.totalDebt')}</div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
       </div>
@@ -274,16 +280,17 @@ function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }:
   period: string
   onPeriodChange: (v: string) => void
 }) {
+  const { t } = useTranslation('dashboard')
   if (mobile) {
-    // 모바일 "{month}월 가계부" 카드 — 헤더 텍스트(정적) + 2col 라벨(정적) + 금액(데이터) + 요약 라인.
+    // 모바일 "{t('summary.monthExpenseBook', { month })}" 카드 — 헤더 텍스트(정적) + 2col 라벨(정적) + 금액(데이터) + 요약 라인.
     return (
       <Card>
         <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{month}월 가계부</div>
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{t('summary.monthExpenseBook', { month })}</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            {['수입', '지출'].map(lbl => (
+            {[t('chart.income'), t('chart.expense')].map(lbl => (
               <div key={lbl}>
                 <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{lbl}</div>
                 <SkeletonBase className="h-6 w-24" />
@@ -301,12 +308,12 @@ function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }:
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>{month}월 수입·지출</CardTitle>
+        <CardTitle>{t('summary.monthIncomeExpense', { month })}</CardTitle>
         <MonthPicker value={period} onChange={onPeriodChange} />
       </CardHeader>
       <CardContent>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
-          {['수입', '지출', '잔액'].map(lbl => (
+          {[t('chart.income'), t('chart.expense'), t('balance')].map(lbl => (
             <div key={lbl}>
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{lbl}</div>
               <SkeletonBase className="h-7 w-24" />
@@ -324,14 +331,15 @@ function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }:
 
 function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; onDetail: () => void }) {
   // 타이틀 + '자세히' 링크(정적 틀)는 실제 렌더, 도넛+범례(데이터)만 스켈레톤.
+  const { t } = useTranslation('dashboard')
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>카테고리</CardTitle>
+        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>{t('categoryTitle')}</CardTitle>
         {mobile ? (
-          <button className="all" onClick={onDetail}>자세히 <ChevronRight size={14} /></button>
+          <button className="all" onClick={onDetail}>{t('detail')} <ChevronRight size={14} /></button>
         ) : (
-          <Button variant="link" className="all h-auto p-0" onClick={onDetail}>자세히 <ChevronRight size={14} /></Button>
+          <Button variant="link" className="all h-auto p-0" onClick={onDetail}>{t('detail')} <ChevronRight size={14} /></Button>
         )}
       </CardHeader>
       <CardContent>
@@ -363,14 +371,15 @@ function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; 
 
 function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; onManage: () => void }) {
   // 타이틀 + 링크(정적 틀)는 실제 렌더, 예산 항목(데이터)만 스켈레톤.
+  const { t } = useTranslation('dashboard')
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>예산</CardTitle>
+        <CardTitle style={mobile ? { fontSize: 'var(--text-body-lg)' } : undefined}>{t('expense.budget')}</CardTitle>
         {mobile ? (
-          <button className="all" onClick={onManage}>전체 <ChevronRight size={14} /></button>
+          <button className="all" onClick={onManage}>{t('all')} <ChevronRight size={14} /></button>
         ) : (
-          <Button variant="link" className="all h-auto p-0" onClick={onManage}>예산 관리 <ChevronRight size={14} /></Button>
+          <Button variant="link" className="all h-auto p-0" onClick={onManage}>{t('manageBudget')} <ChevronRight size={14} /></Button>
         )}
       </CardHeader>
       <CardContent>
@@ -461,6 +470,8 @@ function useCurrentMonthKey() {
 }
 
 function HomeDesktop() {
+  const { t } = useTranslation('dashboard')
+  const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
   const [unlockOpen, setUnlockOpen] = useState(false)
@@ -593,7 +604,7 @@ function HomeDesktop() {
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
-        categoryName: cat?.categoryName ?? b.categoryName ?? '전체',
+        categoryName: cat?.categoryName ?? b.categoryName ?? t('all'),
         icon: cat?.icon ?? 'tag',
         color: cat?.color,
         budgetAmount: b.budgetAmount,
@@ -632,10 +643,10 @@ function HomeDesktop() {
       <div className="dash-grid__left">
         <div className="balance-hero" style={{ padding: '28px 32px 24px' }}>
           <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-            <Wallet size={14} /> 순자산 · {periodY}년 {periodM}월
+            <Wallet size={14} /> {t('asset.netAsset')} · {periodY}년 {periodM}월
             <button
               onClick={handleHideToggle}
-              title={hidden ? '금액 표시' : '금액 가리기'}
+              title={hidden ? t('showAmount') : t('hideAmount')}
               style={{
                 marginLeft: 'auto',
                 background: 'oklch(1 0 0 / 0.12)',
@@ -658,7 +669,7 @@ function HomeDesktop() {
             <HideUnit><span className="unit">원</span></HideUnit>
           </div>
           <div className="balance-hero__sub">
-            지난달 대비
+            {t('vsLastMonth')}
             <span className={`chg ${isUp ? 'up' : 'down'}`}>
               {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               {' '}
@@ -672,14 +683,14 @@ function HomeDesktop() {
           </div>
           <div className="balance-hero__split">
             <div>
-              <div className="l">총 자산</div>
+              <div className="l">{t('asset.totalAsset')}</div>
               <div className="v num">
                 <MaskAmount>{KRW(totalAssets)}</MaskAmount>
                 <HideUnit>원</HideUnit>
               </div>
             </div>
             <div>
-              <div className="l">총 부채</div>
+              <div className="l">{t('asset.totalDebt')}</div>
               <div className="v num">
                 <MaskAmount>−{KRW(totalDebt)}</MaskAmount>
                 <HideUnit>원</HideUnit>
@@ -690,13 +701,13 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{periodM}월 수입·지출</CardTitle>
+            <CardTitle>{t('summary.monthIncomeExpense', { month: periodM })}</CardTitle>
             <MonthPicker value={period} onChange={setPeriod} />
           </CardHeader>
           <CardContent>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>수입</div>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('chart.income')}</div>
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
@@ -704,7 +715,7 @@ function HomeDesktop() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>지출</div>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('chart.expense')}</div>
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
@@ -712,7 +723,7 @@ function HomeDesktop() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>잔액</div>
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('balance')}</div>
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
@@ -729,7 +740,7 @@ function HomeDesktop() {
             <SkeletonBase className="h-[280px] w-full rounded-lg" />
           ) : (
             <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-              데이터가 없습니다
+              {tc('noData')}
             </div>
           )}
           <div style={{
@@ -740,22 +751,22 @@ function HomeDesktop() {
             color: 'var(--fg-secondary)',
             lineHeight: '1.5',
           }}>
-            하루 평균{' '}
+            {t('avg.dailyAverage')}{' '}
             <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
               <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
             </span>
             <HideUnit>원</HideUnit>
-            {' 썼어요.'}
+            {' '}{t('avg.spent')}
             {prevExpense > 0 && (
               <>
-                {' 전월 대비 '}
+                {' '}{t('avg.vsPrev')}{' '}
                 <span style={{
                   color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
                   fontWeight: '700',
                 }}>
                   {Math.abs(savingsPct).toFixed(0)}%
                 </span>
-                {savingsPct > 0 ? ' 절약 중이에요.' : savingsPct < 0 ? ' 더 썼어요.' : ' 동일해요.'}
+                {' '}{savingsPct > 0 ? t('avg.saving') : savingsPct < 0 ? t('avg.spentMore') : t('avg.same')}
               </>
             )}
           </div>
@@ -765,7 +776,7 @@ function HomeDesktop() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-              <CardTitle>오늘 쓴 돈</CardTitle>
+              <CardTitle>{t('expense.todaySpent')}</CardTitle>
               {todayTotal > 0 && (
                 <span className="num" style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
                   <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
@@ -774,7 +785,7 @@ function HomeDesktop() {
               )}
             </div>
             <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/expense')}>
-              전체 보기 <ChevronRight size={14} />
+              {t('viewAll')} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
@@ -795,7 +806,7 @@ function HomeDesktop() {
             )}
             {!recentQ.isLoading && todayTx.length === 0 && (
               <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-                오늘은 아직 쓴 돈이 없어요
+                {t('expense.noTodaySpent')}
               </div>
             )}
             {todayTx.map(t => (
@@ -819,9 +830,9 @@ function HomeDesktop() {
       <div className="dash-grid__right">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>카테고리</CardTitle>
+            <CardTitle>{t('categoryTitle')}</CardTitle>
             <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/stats')}>
-              자세히 <ChevronRight size={14} />
+              {t('detail')} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
@@ -841,13 +852,13 @@ function HomeDesktop() {
               </div>
             ) : (
               <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-                카테고리 데이터가 없습니다
+                {t('categoryEmpty')}
               </div>
             )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Donut segments={donutSegs} size={160} stroke={22}>
-                <div className="lbl">이번 달 지출</div>
+                <div className="lbl">{t('summary.monthlyExpense')}</div>
                 <div className="val num">
                   <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
                 </div>
@@ -871,9 +882,9 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>예산</CardTitle>
+            <CardTitle>{t('expense.budget')}</CardTitle>
             <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/budget')}>
-              예산 관리 <ChevronRight size={14} />
+              {t('manageBudget')} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
@@ -893,7 +904,7 @@ function HomeDesktop() {
               </div>
             ) : (
               <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                등록된 예산이 없어요
+                {t('budget.empty')}
               </div>
             )
           ) : (
@@ -913,7 +924,7 @@ function HomeDesktop() {
                     >
                       <Icon name={b.icon} size={16} strokeWidth={1.9} />
                     </span>
-                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600' }}>{b.categoryName ?? '전체'}</span>
+                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600' }}>{b.categoryName ?? t('all')}</span>
                     <span
                       className="num"
                       style={{
@@ -941,7 +952,7 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader>
-            <CardTitle>예정된 결제</CardTitle>
+            <CardTitle>{t('payment.upcoming')}</CardTitle>
           </CardHeader>
           <CardContent>
           {upcomingPayments.length === 0 ? (
@@ -960,7 +971,7 @@ function HomeDesktop() {
               </div>
             ) : (
               <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                예정된 결제가 없어요
+                {t('payment.empty')}
               </div>
             )
           ) : (
@@ -1004,9 +1015,9 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>할 일</CardTitle>
+            <CardTitle>{t('todo.label')}</CardTitle>
             <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/todo')}>
-              관리 <ChevronRight size={14} />
+              {t('manage')} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
@@ -1047,7 +1058,7 @@ function HomeDesktop() {
             ))}
             {(!summary?.recentTodos || summary.recentTodos.length === 0) && (
               <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                할 일이 없어요
+                {t('todo.empty')}
               </div>
             )}
           </div>
@@ -1056,9 +1067,9 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>예정된 일정</CardTitle>
+            <CardTitle>{t('calendar.scheduled')}</CardTitle>
             <button className="all" onClick={() => navigate('/desk/calendar')}>
-              캘린더 <ChevronRight size={14} />
+              {t('calendar.title')} <ChevronRight size={14} />
             </button>
           </CardHeader>
           <CardContent>
@@ -1093,7 +1104,7 @@ function HomeDesktop() {
             ))}
             {(!summary?.upcomingEvents || summary.upcomingEvents.length === 0) && (
               <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                예정 일정이 없어요
+                {t('calendar.empty')}
               </div>
             )}
           </div>
@@ -1110,6 +1121,7 @@ function HomeDesktop() {
 }
 
 function HomeMobile() {
+  const { t } = useTranslation('dashboard')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
   const [unlockOpen, setUnlockOpen] = useState(false)
@@ -1222,7 +1234,7 @@ function HomeMobile() {
       const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
       return {
         rowId: b.rowId,
-        categoryName: cat?.categoryName ?? b.categoryName ?? '전체',
+        categoryName: cat?.categoryName ?? b.categoryName ?? t('all'),
         icon: cat?.icon ?? 'tag',
         color: cat?.color,
         budgetAmount: b.budgetAmount,
@@ -1237,10 +1249,10 @@ function HomeMobile() {
     <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-          <Wallet size={13} /> 순자산
+          <Wallet size={13} /> {t('asset.netAsset')}
           <button
             onClick={handleHideToggle}
-            title={hidden ? '금액 표시' : '금액 가리기'}
+            title={hidden ? t('showAmount') : t('hideAmount')}
             style={{
               marginLeft: 'auto',
               background: 'oklch(1 0 0 / 0.12)',
@@ -1263,7 +1275,7 @@ function HomeMobile() {
           <HideUnit><span className="unit">원</span></HideUnit>
         </div>
         <div className="balance-hero__sub">
-          지난달 대비
+          {t('vsLastMonth')}
           <span className={`chg ${isUp ? 'up' : 'down'}`}>
             {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
             {' '}
@@ -1272,13 +1284,13 @@ function HomeMobile() {
         </div>
         <div className="balance-hero__split">
           <div>
-            <div className="l">자산</div>
+            <div className="l">{t('asset.assetTab')}</div>
             <div className="v num">
               <MaskAmount mask="••••">{KRW(totalAssets)}</MaskAmount>
             </div>
           </div>
           <div>
-            <div className="l">부채</div>
+            <div className="l">{t('asset.debtTab')}</div>
             <div className="v num">
               <MaskAmount mask="••••">−{KRW(totalDebt)}</MaskAmount>
             </div>
@@ -1289,17 +1301,17 @@ function HomeMobile() {
       <Card>
         <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{month}월 가계부</div>
+          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>{t('summary.monthExpenseBook', { month })}</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>수입</div>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.income')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
               <MaskAmount>+{KRW(income)}</MaskAmount>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>지출</div>
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.expense')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-expense)' }}>
               <MaskAmount>−{KRW(expense)}</MaskAmount>
             </div>
@@ -1313,22 +1325,22 @@ function HomeMobile() {
           color: 'var(--fg-secondary)',
           lineHeight: '1.5',
         }}>
-          하루 평균{' '}
+          {t('avg.dailyAverage')}{' '}
           <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
             <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
           </span>
           <HideUnit>원</HideUnit>
-          {' 썼어요.'}
+          {' '}{t('avg.spent')}
           {prevExpense > 0 && (
             <>
-              {' 전월 대비 '}
+              {' '}{t('avg.vsPrev')}{' '}
               <span style={{
                 color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
                 fontWeight: '700',
               }}>
                 {Math.abs(savingsPct).toFixed(0)}%
               </span>
-              {savingsPct > 0 ? ' 절약 중이에요.' : savingsPct < 0 ? ' 더 썼어요.' : ' 동일해요.'}
+              {' '}{savingsPct > 0 ? t('avg.saving') : savingsPct < 0 ? t('avg.spentMore') : t('avg.same')}
             </>
           )}
         </div>
@@ -1337,9 +1349,9 @@ function HomeMobile() {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>카테고리</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('categoryTitle')}</CardTitle>
           <button className="all" onClick={() => navigate('/desk/stats')}>
-            자세히 <ChevronRight size={14} />
+            {t('detail')} <ChevronRight size={14} />
           </button>
         </CardHeader>
         <CardContent>
@@ -1359,13 +1371,13 @@ function HomeMobile() {
             </div>
           ) : (
             <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              카테고리 데이터가 없어요
+              {t('categoryEmptyMobile')}
             </div>
           )
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
-              <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>지출</div>
+              <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>{t('chart.expense')}</div>
               <div className="val num" style={{ fontSize: 'var(--text-caption)' }}>
                 <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
               </div>
@@ -1390,9 +1402,9 @@ function HomeMobile() {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>예산</CardTitle>
+          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('expense.budget')}</CardTitle>
           <button className="all" onClick={() => navigate('/desk/budget')}>
-            전체 <ChevronRight size={14} />
+            {t('all')} <ChevronRight size={14} />
           </button>
         </CardHeader>
         <CardContent>
@@ -1412,7 +1424,7 @@ function HomeMobile() {
             </div>
           ) : (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              등록된 예산이 없어요
+              {t('budget.empty')}
             </div>
           )
         ) : (
@@ -1454,7 +1466,7 @@ function HomeMobile() {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>오늘 쓴 돈</CardTitle>
+            <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('expense.todaySpent')}</CardTitle>
             {todayTotal > 0 && (
               <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
@@ -1462,7 +1474,7 @@ function HomeMobile() {
               </span>
             )}
           </div>
-          <button className="all" onClick={() => navigate('/desk/expense')}>전체</button>
+          <button className="all" onClick={() => navigate('/desk/expense')}>{t('all')}</button>
         </CardHeader>
         <CardContent>
         <div>
@@ -1481,7 +1493,7 @@ function HomeMobile() {
           ))}
           {todayTx.length === 0 && (
             <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              오늘은 아직 쓴 돈이 없어요
+              {t('expense.noTodaySpent')}
             </div>
           )}
         </div>
@@ -1509,6 +1521,7 @@ function UpcomingMobileCard({
   onCalendar: () => void
   onTodos: () => void
 }) {
+  const { t } = useTranslation('dashboard')
   if (!summary) return null
   const events = summary.upcomingEvents.slice(0, 3)
   const todos = summary.recentTodos.slice(0, 3)
@@ -1522,7 +1535,7 @@ function UpcomingMobileCard({
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />
             <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              다가오는 일정
+              {t('schedule.title')}
             </span>
             <Button
               variant="ghost"
@@ -1540,7 +1553,7 @@ function UpcomingMobileCard({
                 {ev.title}
               </span>
               <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-                {ev.daysUntil === 0 ? '오늘' : ev.daysUntil === 1 ? '내일' : `D-${ev.daysUntil}`}
+                {ev.daysUntil === 0 ? t('schedule.today') : ev.daysUntil === 1 ? t('schedule.tomorrow') : `D-${ev.daysUntil}`}
               </span>
             </div>
           ))}
@@ -1552,7 +1565,7 @@ function UpcomingMobileCard({
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />
             <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              최근 할 일
+              {t('todo.recent')}
             </span>
             <Button
               variant="ghost"
