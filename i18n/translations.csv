@@ -1704,3 +1704,72 @@ dashboard,avg.vsPrev,전월 대비,vs. last month
 dashboard,avg.saving,절약 중이에요.,saved.
 dashboard,avg.spentMore,더 썼어요.,spent more.
 dashboard,avg.same,동일해요.,no change.
+recurring,freq.DAILY,매일,Daily
+recurring,freq.WEEKLY,매주,Weekly
+recurring,freq.MONTHLY,매월,Monthly
+recurring,freq.YEARLY,매년,Yearly
+recurring,dow.sun,일,Sun
+recurring,dow.mon,월,Mon
+recurring,dow.tue,화,Tue
+recurring,dow.wed,수,Wed
+recurring,dow.thu,목,Thu
+recurring,dow.fri,금,Fri
+recurring,dow.sat,토,Sat
+recurring,frequencyTitle,반복 주기,Frequency
+recurring,dowTitle,요일,Day of week
+recurring,dayOfMonthTitle,반복 일자,Day of month
+recurring,monthDayPrefix,매월,Day
+recurring,monthDaySuffix,일,of each month
+recurring,monthDayHint,해당 일이 없는 달은 말일에 처리됩니다,Months without that day use the last day
+recurring,endTitle,종료,End
+recurring,endNone,무기한,Indefinite
+recurring,endNoneSub,중지할 때까지 계속 반복,Repeats until you stop
+recurring,endCountTitle,횟수 지정,Set count
+recurring,totalPrefix,총,Total
+recurring,timesSuffix,회,times
+recurring,endDateTitle,종료일 지정,Set end date
+recurring,optionsTitle,옵션,Options
+recurring,autoLog,자동 기록,Auto-record
+recurring,autoLogSub,해당 일자에 거래를 자동으로 추가합니다,Automatically adds the transaction on that date
+recurring,notifyDayBefore,하루 전 알림,Day-before alert
+recurring,notifyDayBeforeSub,결제·이체 예정일 전날 알림을 보냅니다,Sends an alert the day before the scheduled date
+recurring,nextDatesTitle,다음 예정일,Upcoming dates
+recurring,intro,이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.,"Automatically repeats this transaction on a set schedule. Use it for subscriptions, rent, regular donations, etc."
+recurring,addTitle,반복 거래 추가,Add recurring transaction
+recurring,typeTitle,유형,Type
+recurring,startDateLabel,반복 시작일,Start date
+recurring,merchantPlaceholderExpense,예: 넷플릭스,e.g. Netflix
+recurring,merchantPlaceholderIncome,예: (주)포레스트,e.g. Porest Inc.
+recurring,settingsTitle,반복 설정,Recurring settings
+recurring,saveLabel,반복 저장,Save recurring
+recurring,defaultTitle,반복 거래,Recurring
+recurring,transaction,거래,Transaction
+recurring,startsOn,{{date}} 시작,Starts {{date}}
+recurring,filterAll,전체,All
+recurring,paused,일시정지,Paused
+recurring,pause,일시정지,Pause
+recurring,start,시작,Start
+recurring,resume,재개,Resume
+recurring,editAction,편집,Edit
+recurring,statActive,활성 반복,Active
+recurring,statMonthlyExpense,매월 고정 지출,Fixed monthly expense
+recurring,statMonthlyIncome,매월 고정 수입,Fixed monthly income
+recurring,countItems,{{count}}개,{{count}}
+recurring,next7Days,다가오는 7일,Next 7 days
+recurring,scheduledCount,{{count}}건 예정,{{count}} scheduled
+recurring,today,오늘,Today
+recurring,noAccount,계좌 없음,No account
+recurring,occurrencesBadge,{{done}}/{{total}}회,{{done}}/{{total}}
+recurring,listTitle,전체 목록,All
+recurring,empty,해당하는 반복 거래가 없어요,No matching recurring transactions
+recurring,nextDate,다음 {{date}},Next {{date}}
+recurring,deleteTitle,반복 거래 삭제,Delete recurring transaction
+recurring,deleteConfirmMessage,“{{name}}” 반복 설정을 삭제할까요? 이미 기록된 거래는 그대로 남아요.,Delete the “{{name}}” recurring setting? Already-recorded transactions remain.
+recurring,toastPaused,{{name}} 일시정지,{{name}} paused
+recurring,toastResumed,{{name}} 재개됨,{{name}} resumed
+recurring,toastDeleted,{{name}} 삭제됨,{{name}} deleted
+recurring,toastSaved,변경사항이 저장됐어요,Changes saved
+recurring,toastAdded,반복 거래가 추가됐어요,Recurring transaction added
+recurring,alarmTag,알림,Alert
+recurring,summaryWeekly,매주 {{day}},Weekly {{day}}
+recurring,summaryMonthly,매월 {{day}}일,Day {{day}} monthly

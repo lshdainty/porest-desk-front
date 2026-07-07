@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Bell, Zap, Calendar } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -36,20 +37,20 @@ import {
   formatKoreanMonthDay,
 } from './recurring-date'
 
-const FREQS: { v: RecurringFrequency; l: string }[] = [
-  { v: 'DAILY', l: '매일' },
-  { v: 'WEEKLY', l: '매주' },
-  { v: 'MONTHLY', l: '매월' },
-  { v: 'YEARLY', l: '매년' },
+const FREQS: { v: RecurringFrequency; lKey: string }[] = [
+  { v: 'DAILY', lKey: 'freq.DAILY' },
+  { v: 'WEEKLY', lKey: 'freq.WEEKLY' },
+  { v: 'MONTHLY', lKey: 'freq.MONTHLY' },
+  { v: 'YEARLY', lKey: 'freq.YEARLY' },
 ]
 
-const DOW_LABEL = ['일', '월', '화', '수', '목', '금', '토']
+const DOW_LABEL = ['dow.sun', 'dow.mon', 'dow.tue', 'dow.wed', 'dow.thu', 'dow.fri', 'dow.sat']
 
-const PAYMENT_METHODS: { v: string; l: string }[] = [
-  { v: 'CASH', l: '현금' },
-  { v: 'CARD', l: '카드' },
-  { v: 'TRANSFER', l: '계좌이체' },
-  { v: 'OTHER', l: '기타' },
+const PAYMENT_METHODS: { v: string; lKey: string }[] = [
+  { v: 'CASH', lKey: 'form.paymentMethod.CASH' },
+  { v: 'CARD', lKey: 'form.paymentMethod.CARD' },
+  { v: 'TRANSFER', lKey: 'paymentTransferFull' },
+  { v: 'OTHER', lKey: 'form.paymentMethod.OTHER' },
 ]
 
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. (AddTxSheet와 동일) */
@@ -76,6 +77,9 @@ type Props = {
  * ModalShell로 모바일=Drawer / 태블릿·데스크톱=Dialog 자동 분기.
  */
 export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
+  const { t } = useTranslation('recurring')
+  const { t: tExpense } = useTranslation('expense')
+  const { t: tCommon } = useTranslation('common')
   const createMut = useCreateRecurringTransaction()
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
@@ -202,7 +206,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   const Footer = (
     <ModalFooter
       onSave={handleSave}
-      saveLabel="추가"
+      saveLabel={tCommon('add')}
       saving={submitting}
       saveDisabled={!ready}
       onCancel={onClose}
@@ -210,24 +214,24 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   )
 
   return (
-    <ModalShell title="반복 거래 추가" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('addTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
+        {t('intro')}
       </p>
 
       {/* 유형 */}
-      <Section title="유형">
+      <Section title={t('typeTitle')}>
         <Tabs value={type} onValueChange={(v) => v && setType(v as TxType)}>
           <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
-            <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+            <TabsTrigger value="EXPENSE" className="flex-1">{tExpense('expense')}</TabsTrigger>
+            <TabsTrigger value="INCOME" className="flex-1">{tExpense('income')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </Section>
 
       {/* 금액 */}
       <Field style={{ marginBottom: 16 }}>
-        <FieldLabel>금액</FieldLabel>
+        <FieldLabel>{tExpense('form.amount')}</FieldLabel>
         <Input
           className="num"
           value={amount}
@@ -251,7 +255,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
               marginBottom: 'var(--spacing-sm)',
             }}
           >
-            카테고리
+            {tExpense('category')}
           </div>
           <CategoryGrid>
             {topCategories.map(c => (
@@ -276,18 +280,18 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
                 onValueChange={(v) => setCategoryRowId(Number(v))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="세부 카테고리" />
+                  <SelectValue placeholder={tExpense('addTx.subCategoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>상위</SelectLabel>
+                    <SelectLabel>{tExpense('addTx.parent')}</SelectLabel>
                     <SelectItem value={String(selectedParentId)}>
-                      {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? '상위'}
+                      {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? tExpense('addTx.parent')}
                     </SelectItem>
                   </SelectGroup>
                   <SelectSeparator />
                   <SelectGroup>
-                    <SelectLabel>세부</SelectLabel>
+                    <SelectLabel>{tExpense('addTx.detail')}</SelectLabel>
                     {(childrenByParent.get(selectedParentId) ?? []).map(child => (
                       <SelectItem key={child.rowId} value={String(child.rowId)}>
                         {child.categoryName}
@@ -303,28 +307,28 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 거래처 */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{type === 'INCOME' ? '수입처' : '거래처'}</FieldLabel>
+        <FieldLabel>{type === 'INCOME' ? tExpense('addTx.incomeSource') : tExpense('form.merchant')}</FieldLabel>
         <Input
           value={merchant}
           onChange={e => setMerchant(e.target.value)}
-          placeholder={type === 'INCOME' ? '예: (주)포레스트' : '예: 넷플릭스'}
+          placeholder={type === 'INCOME' ? t('merchantPlaceholderIncome') : t('merchantPlaceholderExpense')}
         />
       </Field>
 
       {/* 결제 수단 */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{type === 'INCOME' ? '수입 방식' : '결제 수단'}</FieldLabel>
+        <FieldLabel>{type === 'INCOME' ? tExpense('addTx.incomeMethod') : tExpense('paymentMethodLabel')}</FieldLabel>
         <Select
           value={paymentMethod || '__none__'}
           onValueChange={(v) => setPaymentMethod(v === '__none__' ? '' : v)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="선택 안 함" />
+            <SelectValue placeholder={tExpense('selectNone')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">선택 안 함</SelectItem>
+            <SelectItem value="__none__">{tExpense('selectNone')}</SelectItem>
             {PAYMENT_METHODS.map(pm => (
-              <SelectItem key={pm.v} value={pm.v}>{pm.l}</SelectItem>
+              <SelectItem key={pm.v} value={pm.v}>{tExpense(pm.lKey)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -332,16 +336,16 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 계좌·카드 */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{type === 'INCOME' ? '입금 계좌' : '계좌·카드'}</FieldLabel>
+        <FieldLabel>{type === 'INCOME' ? tExpense('addTx.depositAccount') : tExpense('accountCard')}</FieldLabel>
         <Select
           value={assetRowId != null ? String(assetRowId) : '__none__'}
           onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="선택 안 함" />
+            <SelectValue placeholder={tExpense('selectNone')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">선택 안 함</SelectItem>
+            <SelectItem value="__none__">{tExpense('selectNone')}</SelectItem>
             {filteredAssets.map(a => (
               <SelectItem key={a.rowId} value={String(a.rowId)}>
                 {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
@@ -353,28 +357,28 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 반복 시작일 */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>반복 시작일</FieldLabel>
+        <FieldLabel>{t('startDateLabel')}</FieldLabel>
         <InputDatePicker value={startDate} onValueChange={setStartDate} />
       </Field>
 
       {/* 메모 */}
       <Field style={{ marginBottom: 18 }}>
-        <FieldLabel>메모</FieldLabel>
+        <FieldLabel>{tExpense('memo')}</FieldLabel>
         <Textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="선택 사항"
+          placeholder={tExpense('addTx.optional')}
           style={{ minHeight: 56 }}
         />
       </Field>
 
       {/* 반복 주기 */}
-      <Section title="반복 주기">
+      <Section title={t('frequencyTitle')}>
         <Tabs value={frequency} onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}>
           <TabsList variant="pill" size="sm" className="w-full">
             {FREQS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
-                {o.l}
+                {t(o.lKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -383,7 +387,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 요일 (매주) */}
       {frequency === 'WEEKLY' && (
-        <Section title="요일">
+        <Section title={t('dowTitle')}>
           <ToggleGroup
             type="single"
             size="sm"
@@ -393,7 +397,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
           >
             {DOW_LABEL.map((label, i) => (
               <ToggleGroupItem key={i} value={String(i)} className="rounded-full">
-                {label}
+                {t(label)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -402,9 +406,9 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
       {/* 반복 일자 (매월) */}
       {frequency === 'MONTHLY' && (
-        <Section title="반복 일자">
+        <Section title={t('dayOfMonthTitle')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>매월</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDayPrefix')}</span>
             <Input
               className="num"
               value={dayOfMonth}
@@ -415,30 +419,30 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
               inputMode="numeric"
               style={{ width: 64, textAlign: 'center' }}
             />
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>일</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDaySuffix')}</span>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
-              해당 일이 없는 달은 말일에 처리됩니다
+              {t('monthDayHint')}
             </span>
           </div>
         </Section>
       )}
 
       {/* 종료 */}
-      <Section title="종료">
+      <Section title={t('endTitle')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <RadioCard
             selected={endMode === 'NONE'}
             onSelect={() => setEndMode('NONE')}
-            title="무기한"
-            sub="중지할 때까지 계속 반복"
+            title={t('endNone')}
+            sub={t('endNoneSub')}
           />
           <RadioCard
             selected={endMode === 'COUNT'}
             onSelect={() => setEndMode('COUNT')}
-            title="횟수 지정"
+            title={t('endCountTitle')}
             sub={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                총
+                {t('totalPrefix')}
                 <Input
                   className="num"
                   value={endCount}
@@ -447,14 +451,14 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
                   inputMode="numeric"
                   style={{ width: 64, textAlign: 'center', padding: '4px 8px' }}
                 />
-                회
+                {t('timesSuffix')}
               </span>
             }
           />
           <RadioCard
             selected={endMode === 'DATE'}
             onSelect={() => setEndMode('DATE')}
-            title="종료일 지정"
+            title={t('endDateTitle')}
             sub={
               <div onClick={e => { e.stopPropagation(); setEndMode('DATE') }} style={{ marginTop: 6 }}>
                 <InputDatePicker value={endDate} onValueChange={setEndDate} />
@@ -465,19 +469,19 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
       </Section>
 
       {/* 옵션 */}
-      <Section title="옵션">
+      <Section title={t('optionsTitle')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ToggleRow
             Icon={Zap}
-            title="자동 기록"
-            sub="해당 일자에 거래를 자동으로 추가합니다"
+            title={t('autoLog')}
+            sub={t('autoLogSub')}
             value={autoLog}
             onChange={setAutoLog}
           />
           <ToggleRow
             Icon={Bell}
-            title="하루 전 알림"
-            sub="결제·이체 예정일 전날 알림을 보냅니다"
+            title={t('notifyDayBefore')}
+            sub={t('notifyDayBeforeSub')}
             value={notifyDayBefore}
             onChange={setNotifyDayBefore}
           />
@@ -497,7 +501,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>{t('nextDatesTitle')}</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (

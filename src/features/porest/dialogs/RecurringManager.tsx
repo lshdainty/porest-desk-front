@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   Bell,
   MoreVertical,
@@ -43,6 +45,9 @@ const DROP_ITEM_STYLE = {
 }
 
 export function RecurringManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('recurring')
+  const { t: tExpense } = useTranslation('expense')
+  const { t: tCommon } = useTranslation('common')
   const recurringsQ = useRecurringTransactions()
   const categoriesQ = useExpenseCategories()
   const toggleMut = useToggleRecurringTransaction()
@@ -113,7 +118,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
     if (pendingToggleId !== null) return
     setPendingToggleId(it.rowId)
     toggleMut.mutate(it.rowId, {
-      onSuccess: () => showToast(it.isActive === 'Y' ? `${displayTitle(it)} 일시정지` : `${displayTitle(it)} 재개됨`),
+      onSuccess: () => showToast(it.isActive === 'Y' ? t('toastPaused', { name: displayTitle(it, t) }) : t('toastResumed', { name: displayTitle(it, t) })),
       onSettled: () => setPendingToggleId(null),
     })
   }
@@ -124,17 +129,17 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
     deleteMut.mutate(id, {
       onSuccess: () => {
         setConfirmDeleteId(null)
-        if (it) showToast(`${displayTitle(it)} 삭제됨`)
+        if (it) showToast(t('toastDeleted', { name: displayTitle(it, t) }))
       },
       onSettled: () => setPendingDeleteId(null),
     })
   }
 
   const FILTERS: { k: FilterKey; label: string; count: number }[] = [
-    { k: 'all', label: '전체', count: counts.all },
-    { k: 'expense', label: '지출', count: counts.expense },
-    { k: 'income', label: '수입', count: counts.income },
-    { k: 'paused', label: '일시정지', count: counts.paused },
+    { k: 'all', label: t('filterAll'), count: counts.all },
+    { k: 'expense', label: tExpense('expense'), count: counts.expense },
+    { k: 'income', label: tExpense('income'), count: counts.income },
+    { k: 'paused', label: t('paused'), count: counts.paused },
   ]
 
   if (isLoading) {
@@ -149,21 +154,21 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           {mobile ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
-                <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
+                <RecStat label={t('statActive')} value={t('countItems', { count: stats.count })} Icon={Repeat} />
+                <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
               </div>
               <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
-                <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+                <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+                <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               </div>
             </>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-              <RecStat label="활성 반복" value={`${stats.count}개`} Icon={Repeat} />
-              <RecStat label="매월 고정 지출" value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
-              <RecStat label="매월 고정 수입" value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
-              <RecStat label="일시정지" value={`${stats.paused}개`} Icon={PauseCircle} tone="muted" />
+              <RecStat label={t('statActive')} value={t('countItems', { count: stats.count })} Icon={Repeat} />
+              <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+              <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+              <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
             </div>
           )}
         </CardContent>
@@ -174,8 +179,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>다가오는 7일</h3>
-            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{stats.next7.length}건 예정</span>
+            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('next7Days')}</h3>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('scheduledCount', { count: stats.next7.length })}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {stats.next7.map(it => {
@@ -212,7 +217,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       color: isToday ? 'var(--fg-on-danger)' : 'var(--fg-secondary)',
                     }}
                   >
-                    {isToday ? '오늘' : `D-${days}`}
+                    {isToday ? t('today') : `D-${days}`}
                   </span>
                   <span
                     style={{
@@ -234,7 +239,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       {displayTitle(it)}
                     </div>
                     <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                      {it.assetName ?? '계좌 없음'} · {recurringSummary(it)}
+                      {it.assetName ?? t('noAccount')} · {recurringSummary(it, t)}
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
@@ -253,10 +258,10 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         <div style={{ padding: mobile ? '14px 16px 0' : '16px 20px 0' }}>
           {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>전체 목록</h3>
+            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
             <div style={{ flex: 1 }} />
             <Button variant="accent" size="sm" onClick={() => setAdding(true)}>
-              <Plus size={14} /> 추가
+              <Plus size={14} /> {tCommon('add')}
             </Button>
           </div>
           {/* 2행: 필터 개별 single toggle (배경 없음 — 앱 PToggle row 정합, active=surface-input pill) */}
@@ -305,7 +310,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           )}
           {!recurringsQ.isLoading && filtered.length === 0 && (
             <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-              해당하는 반복 거래가 없어요
+              {t('empty')}
             </div>
           )}
           {filtered.map((it, idx) => {
@@ -367,7 +372,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        일시정지
+                        {t('paused')}
                       </span>
                     )}
                     {it.maxOccurrences != null && (
@@ -384,22 +389,22 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {it.executedCount}/{it.maxOccurrences}회
+                        {t('occurrencesBadge', { done: it.executedCount, total: it.maxOccurrences })}
                       </span>
                     )}
                     {it.autoLog && (
-                      <span title="자동 기록" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-brand-strong)', flexShrink: 0 }}>
+                      <span title={t('autoLog')} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-brand-strong)', flexShrink: 0 }}>
                         <Zap size={11} strokeWidth={2.4} />
                       </span>
                     )}
                     {it.notifyDayBefore && (
-                      <span title="하루 전 알림" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-tertiary)', flexShrink: 0 }}>
+                      <span title={t('notifyDayBefore')} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--fg-tertiary)', flexShrink: 0 }}>
                         <Bell size={11} strokeWidth={2} />
                       </span>
                     )}
                   </div>
                   <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                    {recurringSummary(it)} · {it.assetName ?? '계좌 없음'} · 다음 {it.nextExecutionDate.slice(5).replace('-', '/')}
+                    {recurringSummary(it, t)} · {it.assetName ?? t('noAccount')} · {t('nextDate', { date: it.nextExecutionDate.slice(5).replace('-', '/') })}
                   </div>
                 </div>
                 {!mobile && (
@@ -466,7 +471,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                             >
                               {isActive ? <Pause size={14} strokeWidth={1.9} /> : <Play size={14} strokeWidth={1.9} />}
-                              <span>{isActive ? '일시정지' : '시작'}</span>
+                              <span>{isActive ? t('pause') : t('start')}</span>
                             </button>
                             <button
                               type="button"
@@ -476,7 +481,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                             >
                               <Pencil size={14} strokeWidth={1.9} />
-                              <span>수정</span>
+                              <span>{tCommon('edit')}</span>
                             </button>
                             <div style={{ height: 1, background: 'var(--border-subtle)' }} />
                             <button
@@ -487,7 +492,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                             >
                               <Trash2 size={14} strokeWidth={1.9} />
-                              <span>삭제</span>
+                              <span>{tCommon('delete')}</span>
                             </button>
                           </div>
                         )}
@@ -497,20 +502,20 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     <>
                       <RecAction
                         Icon={isActive ? Pause : Play}
-                        title={isActive ? '일시정지' : '재개'}
+                        title={isActive ? t('pause') : t('resume')}
                         onClick={() => togglePause(it)}
                         loading={pendingToggleId === it.rowId}
                         disabled={pendingToggleId !== null && pendingToggleId !== it.rowId}
                       />
                       <RecAction
                         Icon={Pencil}
-                        title="편집"
+                        title={t('editAction')}
                         onClick={() => setEditing(it)}
                         disabled={pendingToggleId === it.rowId || pendingDeleteId === it.rowId}
                       />
                       <RecAction
                         Icon={Trash2}
-                        title="삭제"
+                        title={tCommon('delete')}
                         tone="danger"
                         onClick={() => setConfirmDeleteId(it.rowId)}
                         loading={pendingDeleteId === it.rowId}
@@ -530,7 +535,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           recurring={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
-          onSaved={() => showToast('변경사항이 저장됐어요')}
+          onSaved={() => showToast(t('toastSaved'))}
         />
       )}
 
@@ -538,15 +543,15 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         <RecurringAddDialog
           mobile={mobile}
           onClose={() => setAdding(false)}
-          onCreated={() => showToast('반복 거래가 추가됐어요')}
+          onCreated={() => showToast(t('toastAdded'))}
         />
       )}
 
       {confirmDeleteId !== null && (
         <ConfirmDialog
-          title="반복 거래 삭제"
-          message={`"${displayTitle(items.find(i => i.rowId === confirmDeleteId)!)}" 반복 설정을 삭제할까요? 이미 기록된 거래는 그대로 남아요.`}
-          confirmLabel="삭제"
+          title={t('deleteTitle')}
+          message={t('deleteConfirmMessage', { name: displayTitle(items.find(i => i.rowId === confirmDeleteId)!, t) })}
+          confirmLabel={tCommon('delete')}
           danger
           loading={deleteMut.isPending}
           onConfirm={() => removeItem(confirmDeleteId)}
@@ -748,8 +753,8 @@ function RecAction({
   )
 }
 
-function displayTitle(it: RecurringTransaction): string {
-  return it.merchant || it.description || it.categoryName || '반복 거래'
+function displayTitle(it: RecurringTransaction, t: TFunction): string {
+  return it.merchant || it.description || it.categoryName || t('defaultTitle')
 }
 
 function startOfDay(d: Date): Date {
@@ -758,20 +763,16 @@ function startOfDay(d: Date): Date {
   return c
 }
 
-function recurringSummary(it: RecurringTransaction): string {
-  const freqLabel: Record<string, string> = {
-    DAILY: '매일',
-    WEEKLY: '매주',
-    MONTHLY: '매월',
-    YEARLY: '매년',
-  }
-  let core = freqLabel[it.frequency] ?? it.frequency
+function recurringSummary(it: RecurringTransaction, t: TFunction): string {
+  let core = t(`freq.${it.frequency}`)
   if (it.frequency === 'WEEKLY' && it.dayOfWeek != null) {
-    const days = ['', '월', '화', '수', '목', '금', '토', '일']
-    core = `매주 ${days[it.dayOfWeek] ?? ''}`
+    // 백엔드 ISO 1=월~7=일 → recurring dow 키 매핑
+    const isoToDow = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    const dowKey = isoToDow[it.dayOfWeek]
+    core = t('summaryWeekly', { day: dowKey ? t(`dow.${dowKey}`) : '' })
   } else if (it.frequency === 'MONTHLY' && it.dayOfMonth != null) {
-    core = `매월 ${it.dayOfMonth}일`
+    core = t('summaryMonthly', { day: it.dayOfMonth })
   }
-  const end = it.endDate ? `~${it.endDate}` : '무기한'
-  return `${core} · ${end}${it.notifyDayBefore ? ' · 알림' : ''}`
+  const end = it.endDate ? `~${it.endDate}` : t('endNone')
+  return `${core} · ${end}${it.notifyDayBefore ? ` · ${t('alarmTag')}` : ''}`
 }
