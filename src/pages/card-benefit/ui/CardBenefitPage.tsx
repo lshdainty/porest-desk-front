@@ -38,12 +38,12 @@ const PAGE_SIZE = 60
 type TypeKey = 'all' | 'CREDIT' | 'CHECK'
 
 /** 혜택 필터 — UI 라벨 5개, benefitType 매핑. 적립·캐시백 둘 다 POINT 전송. */
-const BENEFIT_FILTERS: { key: string; label: string; type: CardBenefitType | undefined }[] = [
-  { key: 'all', label: '혜택 전체', type: undefined },
-  { key: 'discount', label: '할인', type: 'DISCOUNT' },
-  { key: 'point', label: '적립', type: 'POINT' },
-  { key: 'cashback', label: '캐시백', type: 'POINT' },
-  { key: 'mileage', label: '마일리지', type: 'MILEAGE' },
+const BENEFIT_FILTERS: { key: string; labelKey: string; type: CardBenefitType | undefined }[] = [
+  { key: 'all', labelKey: 'benefitType.all', type: undefined },
+  { key: 'discount', labelKey: 'benefitType.discount', type: 'DISCOUNT' },
+  { key: 'point', labelKey: 'benefitType.point', type: 'POINT' },
+  { key: 'cashback', labelKey: 'benefitType.cashback', type: 'POINT' },
+  { key: 'mileage', labelKey: 'benefitType.mileage', type: 'MILEAGE' },
 ]
 
 function useDebounced<T>(value: T, delay: number): T {
@@ -617,7 +617,7 @@ export const CardBenefitPage = () => {
     return () => observer.disconnect()
   }, [mobile, hasNextPage, isFetchingNextPage, fetchNextPage, cards.length])
 
-  const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: f.label }))
+  const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: t(f.labelKey) }))
   const typeOptions: { key: TypeKey; label: string }[] = [
     { key: 'all', label: t('benefit.typeAll') },
     { key: 'CREDIT', label: tAsset('cardTypeShort.credit') },

@@ -1101,6 +1101,11 @@ card,benefit.loadFail,카드 정보를 불러오지 못했어요,Couldn't load c
 card,cardDetail.invalidAssetId,잘못된 자산 ID,Invalid asset ID
 card,cardDetail.back,뒤로,Back
 card,cardDetail.noCardCatalog,이 자산에는 연결된 카드 카탈로그가 없습니다. 자산 편집에서 카드를 선택해주세요.,This asset has no linked card catalog. Please select a card in asset edit.
+card,benefitType.all,혜택 전체,All
+card,benefitType.discount,할인,Discount
+card,benefitType.point,적립,Points
+card,benefitType.cashback,캐시백,Cashback
+card,benefitType.mileage,마일리지,Mileage
 category,add,추가,Add
 category,manager.description,"지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요.","Manage categories to classify your spending and income. Drag to reorder, and nest detailed categories under a parent row."
 category,searchPlaceholder,카테고리 검색,Search categories
