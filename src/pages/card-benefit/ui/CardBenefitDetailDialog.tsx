@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
@@ -28,20 +30,20 @@ function formatKRW(n: number) {
 }
 
 /** 연회비 표기: amount>0 → "국내전용 N원", 0/null → label ?? "없음". */
-function annualFeeText(s: CardCatalogSummary) {
-  if (s.annualFee.amount > 0) return `국내전용 ${formatKRW(s.annualFee.amount)}원`
-  return s.annualFee.label ?? '없음'
+function annualFeeText(s: CardCatalogSummary, t: TFunction) {
+  if (s.annualFee.amount > 0) return t('benefit.annualFeeDomestic', { amount: formatKRW(s.annualFee.amount) })
+  return s.annualFee.label ?? t('benefit.feeNone')
 }
 
 /** 전월 실적 표기: isRequired==='Y' → requiredText ?? "N원 이상", 아니면 "실적 무관". */
-function performanceText(s: CardCatalogSummary) {
+function performanceText(s: CardCatalogSummary, t: TFunction) {
   if (s.performance.isRequired === 'Y') {
     if (s.performance.requiredAmount > 0) {
-      return `${formatKRW(s.performance.requiredAmount)}원 이상`
+      return t('benefit.performanceAtLeast', { amount: formatKRW(s.performance.requiredAmount) })
     }
-    return s.performance.requiredText ?? '실적 무관'
+    return s.performance.requiredText ?? t('benefit.performanceNone')
   }
-  return '실적 무관'
+  return t('benefit.performanceNone')
 }
 
 /** topBenefits[].tags 를 flatten 해 중복 제거한 주요 혜택 태그. */
@@ -61,6 +63,7 @@ function flattenTopTags(detail: CardCatalogDetail): string[] {
 }
 
 function CardHero({ summary }: { summary: CardCatalogSummary }) {
+  const { t: tAsset } = useTranslation('asset')
   const cardName = decodeHtml(summary.cardName)
   const companyName = decodeHtml(summary.company?.name ?? '')
   const discontinued = summary.isDiscontinued === 'Y'
@@ -105,7 +108,7 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
               color: 'var(--fg-on-brand)',
             }}
           >
-            단종
+            {tAsset('editDialog.discontinued')}
           </span>
         )}
       </div>
@@ -152,7 +155,7 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
           {companyName}
         </span>
         <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.6 }}>
-          {summary.cardType === 'CREDIT' ? '신용' : '체크'}
+          {summary.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')}
         </span>
       </div>
       <div style={{ position: 'relative' }}>
@@ -179,7 +182,7 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
               color: 'var(--fg-on-brand)',
             }}
           >
-            단종
+            {tAsset('editDialog.discontinued')}
           </span>
         )}
       </div>
@@ -221,6 +224,7 @@ function StatCell({ label, value }: { label: string; value: string }) {
 }
 
 function DetailContent({ detail }: { detail: CardCatalogDetail }) {
+  const { t } = useTranslation('card')
   const summary = detail.summary
   const tags = flattenTopTags(detail)
   const benefits = detail.benefits
@@ -250,8 +254,8 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
           marginBottom: 18,
         }}
       >
-        <StatCell label="연회비" value={annualFeeText(summary)} />
-        <StatCell label="전월 실적" value={performanceText(summary)} />
+        <StatCell label={t('benefit.statAnnualFee')} value={annualFeeText(summary, t)} />
+        <StatCell label={t('benefit.statPerformance')} value={performanceText(summary, t)} />
       </div>
 
       {/* 주요 혜택 태그 */}
@@ -265,12 +269,12 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
               marginBottom: 8,
             }}
           >
-            주요 혜택 태그
+            {t('benefit.topTagsTitle')}
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {tags.map(t => (
+            {tags.map(tag => (
               <span
-                key={t}
+                key={tag}
                 style={{
                   padding: '4px 10px',
                   background: 'var(--bg-brand-subtle)',
@@ -281,7 +285,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                   letterSpacing: '-0.005em',
                 }}
               >
-                {t}
+                {tag}
               </span>
             ))}
           </div>
@@ -292,7 +296,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-primary)' }}>
-            혜택 상세 · {benefits.length}건
+            {t('benefit.detailCount', { count: benefits.length })}
           </span>
           {benefits.length > 0 && (
             <Button
@@ -302,7 +306,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
               style={{ marginLeft: 'auto' }}
             >
               {allOpen ? <ChevronsDownUp size={12} /> : <ChevronsUpDown size={12} />}
-              {allOpen ? '모두 접기' : '모두 펼치기'}
+              {allOpen ? t('benefit.collapseAll') : t('benefit.expandAll')}
             </Button>
           )}
         </div>
@@ -318,7 +322,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
               borderRadius: 'var(--radius-md)',
             }}
           >
-            등록된 혜택이 없어요
+            {t('benefit.noBenefits')}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -328,7 +332,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
               const value = decodeHtml(b.summary ?? b.title ?? '')
               const condition =
                 summary.performance.requiredText ??
-                (summary.performance.isRequired === 'Y' ? undefined : '실적 무관')
+                (summary.performance.isRequired === 'Y' ? undefined : t('benefit.performanceNone'))
               const body = decodeHtml(b.detail ?? '')
               return (
                 <div
@@ -447,14 +451,16 @@ export function CardBenefitDetailDialog({
   onClose: () => void
   mobile: boolean
 }) {
+  const { t } = useTranslation('card')
+  const { t: tCommon } = useTranslation('common')
   const { data: detail, isLoading, isError } = useCardCatalogDetail(rowId)
 
   const footer = (
-    <ModalViewFooter confirmLabel="닫기" confirmVariant="ghost" onConfirm={onClose} />
+    <ModalViewFooter confirmLabel={tCommon('close')} confirmVariant="ghost" onConfirm={onClose} />
   )
 
   return (
-    <ModalShell title="카드 상세" onClose={onClose} size="md" footer={footer} mobile={mobile}>
+    <ModalShell title={t('benefit.detailTitle')} onClose={onClose} size="md" footer={footer} mobile={mobile}>
       {isLoading ? (
         <div
           style={{
@@ -475,7 +481,7 @@ export function CardBenefitDetailDialog({
             color: 'var(--fg-tertiary)',
           }}
         >
-          카드 정보를 불러오지 못했어요
+          {t('benefit.loadFail')}
         </div>
       ) : (
         <DetailContent detail={detail} />
