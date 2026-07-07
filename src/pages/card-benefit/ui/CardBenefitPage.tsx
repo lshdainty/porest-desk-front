@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ChevronLeft, ChevronRight, CreditCard, Search, SearchX, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -36,12 +38,12 @@ const PAGE_SIZE = 60
 type TypeKey = 'all' | 'CREDIT' | 'CHECK'
 
 /** 혜택 필터 — UI 라벨 5개, benefitType 매핑. 적립·캐시백 둘 다 POINT 전송. */
-const BENEFIT_FILTERS: { key: string; label: string; type: CardBenefitType | undefined }[] = [
-  { key: 'all', label: '혜택 전체', type: undefined },
-  { key: 'discount', label: '할인', type: 'DISCOUNT' },
-  { key: 'point', label: '적립', type: 'POINT' },
-  { key: 'cashback', label: '캐시백', type: 'POINT' },
-  { key: 'mileage', label: '마일리지', type: 'MILEAGE' },
+const BENEFIT_FILTERS: { key: string; labelKey: string; type: CardBenefitType | undefined }[] = [
+  { key: 'all', labelKey: 'benefitType.all', type: undefined },
+  { key: 'discount', labelKey: 'benefitType.discount', type: 'DISCOUNT' },
+  { key: 'point', labelKey: 'benefitType.point', type: 'POINT' },
+  { key: 'cashback', labelKey: 'benefitType.cashback', type: 'POINT' },
+  { key: 'mileage', labelKey: 'benefitType.mileage', type: 'MILEAGE' },
 ]
 
 function useDebounced<T>(value: T, delay: number): T {
@@ -58,20 +60,20 @@ function formatKRW(n: number) {
 }
 
 /** 연회비 표기: amount>0 → "N원", 0/null → label ?? "없음". */
-function annualFeeText(s: CardCatalogSummary) {
-  if (s.annualFee.amount > 0) return `연회비 ${formatKRW(s.annualFee.amount)}원`
-  return `연회비 ${s.annualFee.label ?? '없음'}`
+function annualFeeText(s: CardCatalogSummary, t: TFunction) {
+  if (s.annualFee.amount > 0) return t('benefit.annualFeeAmount', { amount: formatKRW(s.annualFee.amount) })
+  return t('benefit.annualFeeLabel', { label: s.annualFee.label ?? t('benefit.feeNone') })
 }
 
 /** 전월 실적 표기: isRequired==='Y' → "실적 N원/월", 아니면 "실적 무관". */
-function performanceText(s: CardCatalogSummary) {
+function performanceText(s: CardCatalogSummary, t: TFunction) {
   if (s.performance.isRequired === 'Y' && s.performance.requiredAmount > 0) {
-    return `실적 ${formatKRW(s.performance.requiredAmount)}원/월`
+    return t('benefit.performanceAmount', { amount: formatKRW(s.performance.requiredAmount) })
   }
   if (s.performance.isRequired === 'Y' && s.performance.requiredText) {
     return s.performance.requiredText
   }
-  return '실적 무관'
+  return t('benefit.performanceNone')
 }
 
 /** 필터 pill 1행 — 단일 선택. Tabs(pills/sm) 사용. */
@@ -108,6 +110,8 @@ function FilterPills<T extends string>({
 
 /** 데스크탑 카드 아트워크 타일. */
 function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick: () => void }) {
+  const { t } = useTranslation('card')
+  const { t: tAsset } = useTranslation('asset')
   const cardName = decodeHtml(card.cardName)
   const companyName = decodeHtml(card.company?.name ?? '')
   const discontinued = card.isDiscontinued === 'Y'
@@ -177,7 +181,7 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
                 color: 'var(--fg-on-brand)',
               }}
             >
-              단종
+              {tAsset('editDialog.discontinued')}
             </span>
           )}
         </div>
@@ -227,7 +231,7 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
                   color: 'var(--fg-on-brand)',
                 }}
               >
-                단종
+                {tAsset('editDialog.discontinued')}
               </span>
             )}
           </div>
@@ -283,10 +287,10 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
               borderRadius: 'var(--radius-pill)',
             }}
           >
-            {card.cardType === 'CREDIT' ? '신용' : '체크'}
+            {card.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')}
           </span>
           <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
-            {annualFeeText(card)}
+            {annualFeeText(card, t)}
           </span>
           <span
             style={{
@@ -303,7 +307,7 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {performanceText(card)}
+            {performanceText(card, t)}
           </span>
         </div>
       </div>
@@ -313,6 +317,8 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
 
 /** 모바일 가로형 리스트 타일. */
 function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: () => void }) {
+  const { t } = useTranslation('card')
+  const { t: tAsset } = useTranslation('asset')
   const cardName = decodeHtml(card.cardName)
   const companyName = decodeHtml(card.company?.name ?? '')
   const discontinued = card.isDiscontinued === 'Y'
@@ -418,7 +424,7 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
                 flexShrink: 0,
               }}
             >
-              단종
+              {tAsset('editDialog.discontinued')}
             </span>
           )}
         </div>
@@ -431,7 +437,7 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
             textOverflow: 'ellipsis',
           }}
         >
-          {companyName} · {card.cardType === 'CREDIT' ? '신용' : '체크'} · {annualFeeText(card)}
+          {companyName} · {card.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')} · {annualFeeText(card, t)}
         </div>
         <div
           style={{
@@ -443,7 +449,7 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
             textOverflow: 'ellipsis',
           }}
         >
-          {performanceText(card)}
+          {performanceText(card, t)}
         </div>
       </div>
       <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
@@ -508,6 +514,7 @@ function GridSkeleton({ mobile }: { mobile: boolean }) {
 }
 
 function EmptyState() {
+  const { t } = useTranslation('card')
   return (
     <Card>
       <CardContent style={{ padding: '60px 20px', textAlign: 'center' }}>
@@ -534,10 +541,10 @@ function EmptyState() {
             marginBottom: 4,
           }}
         >
-          결과가 없어요
+          {t('benefit.emptyTitle')}
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>
-          다른 검색어나 필터를 시도해보세요
+          {t('benefit.emptyDesc')}
         </div>
       </CardContent>
     </Card>
@@ -545,6 +552,9 @@ function EmptyState() {
 }
 
 export const CardBenefitPage = () => {
+  const { t } = useTranslation('card')
+  const { t: tAsset } = useTranslation('asset')
+  const { t: tCommon } = useTranslation('common')
   const { mobile } = useOutletContext<OutletCtx>()
 
   const [query, setQuery] = useState('')
@@ -607,11 +617,11 @@ export const CardBenefitPage = () => {
     return () => observer.disconnect()
   }, [mobile, hasNextPage, isFetchingNextPage, fetchNextPage, cards.length])
 
-  const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: f.label }))
+  const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: t(f.labelKey) }))
   const typeOptions: { key: TypeKey; label: string }[] = [
-    { key: 'all', label: '전체' },
-    { key: 'CREDIT', label: '신용' },
-    { key: 'CHECK', label: '체크' },
+    { key: 'all', label: t('benefit.typeAll') },
+    { key: 'CREDIT', label: tAsset('cardTypeShort.credit') },
+    { key: 'CHECK', label: tAsset('cardTypeShort.check') },
   ]
 
   const Body = isLoading ? (
@@ -668,7 +678,7 @@ export const CardBenefitPage = () => {
             }}
           >
             <ChevronLeft size={14} />
-            이전
+            {tCommon('prev')}
           </Button>
           <span
             style={{
@@ -691,7 +701,7 @@ export const CardBenefitPage = () => {
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           >
-            다음
+            {tCommon('next')}
             <ChevronRight size={14} />
           </Button>
         </div>
@@ -724,7 +734,7 @@ export const CardBenefitPage = () => {
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)' }}>
-                카드 혜택 라이브러리
+                {t('benefit.heroTitle')}
               </div>
               <div
                 style={{
@@ -733,7 +743,7 @@ export const CardBenefitPage = () => {
                   marginTop: 2,
                 }}
               >
-                신용·체크 카드의 혜택을 한 번에 비교하세요
+                {t('benefit.heroDesc')}
               </div>
             </div>
           </CardContent>
@@ -757,7 +767,7 @@ export const CardBenefitPage = () => {
           search
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="카드명, 발급사로 검색"
+          placeholder={t('benefit.searchPlaceholder')}
           className="pl-9 pr-9"
         />
         {query && (
@@ -765,7 +775,7 @@ export const CardBenefitPage = () => {
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="지우기"
+            aria-label={t('benefit.clearAria')}
             onClick={() => setQuery('')}
             className="absolute right-1.5 top-1/2 h-7 w-7 -translate-y-1/2"
           >
@@ -790,7 +800,7 @@ export const CardBenefitPage = () => {
             opacity: isFetching ? 0.6 : 1,
           }}
         >
-          총 {formatKRW(total)}건
+          {t('benefit.resultCount', { count: formatKRW(total) })}
         </span>
         <label
           style={{
@@ -808,7 +818,7 @@ export const CardBenefitPage = () => {
             checked={includeDiscontinued}
             onCheckedChange={v => setIncludeDiscontinued(v === true)}
           />
-          단종 카드 포함
+          {t('benefit.includeDiscontinued')}
         </label>
       </div>
 
@@ -820,15 +830,15 @@ export const CardBenefitPage = () => {
     <>
       {mobile ? (
         <>
-          <MobileBackHeader title="카드 혜택" />
+          <MobileBackHeader title={t('benefit.headerTitle')} />
           <div style={{ padding: '16px 16px 24px' }}>{Controls}</div>
         </>
       ) : (
         <div style={{ padding: 0 }}>
           <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
             <div>
-              <h1>카드 혜택</h1>
-              <div className="sub">신용·체크 카드의 혜택을 한 번에</div>
+              <h1>{t('benefit.headerTitle')}</h1>
+              <div className="sub">{t('benefit.headerSub')}</div>
             </div>
           </div>
           <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>{Controls}</div>
