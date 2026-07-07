@@ -4,7 +4,7 @@ import { AlertTriangle, ChevronDown, ChevronUp, Info, LineChart, Search, Star } 
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { tileRadius } from '@/shared/lib'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -53,7 +53,7 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 function fmtPrice(s: Stock): string {
   if (s.market === 'US') return `$${s.price.toFixed(2)}`
-  return `${KRW(s.price)}원`
+  return money(s.price)
 }
 
 /** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary). */
@@ -608,8 +608,8 @@ function StockInfoCard({ s, info, isUs }: { s: Stock; info: TossStockInfo | unde
     { k: t('info.securityType'), v: info?.securityType === 'ETF' ? 'ETF' : t('info.stock') },
     { k: t('info.currency'), v: info?.currency ?? (isUs ? 'USD' : 'KRW') },
     ...(shares > 0 ? [{ k: t('info.marketCap'), v: fmtCapKRW(mcKRW) }] : []),
-    ...(isKr && upper != null ? [{ k: t('info.upperLimit'), v: `${KRW(upper)}원`, c: 'var(--status-danger-fg)' }] : []),
-    ...(isKr && lower != null ? [{ k: t('info.lowerLimit'), v: `${KRW(lower)}원`, c: 'var(--fg-brand)' }] : []),
+    ...(isKr && upper != null ? [{ k: t('info.upperLimit'), v: money(upper), c: 'var(--status-danger-fg)' }] : []),
+    ...(isKr && lower != null ? [{ k: t('info.lowerLimit'), v: money(lower), c: 'var(--fg-brand)' }] : []),
     ...(info?.listDate ? [{ k: t('info.listDate'), v: info.listDate }] : []),
     ...(shares > 0 ? [{ k: t('info.sharesOutstanding'), v: fmtShares(shares) }] : []),
     {
@@ -700,7 +700,7 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
         <div className="num" style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)' }}>{fmtPrice(s)}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
           <PctBadge pct={changePct} size={14} />
-          {isUs && <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>≈ {KRW(priceKRW(s))}원</span>}
+          {isUs && <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>≈ {money(priceKRW(s))}</span>}
         </div>
       </div>
 
@@ -759,14 +759,14 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
           const fees = num(holding.cost.commission) + num(holding.cost.tax ?? '0')
           const heldUs = holding.marketCountry.toUpperCase() === 'US' || holding.currency.toUpperCase() === 'USD'
           const rows: Array<[string, React.ReactNode, string]> = [
-            [t('holding.marketValue'), <MaskAmount key="ev">{`${KRW(ev)}원`}</MaskAmount>, 'var(--fg-primary)'],
-            [t('holding.profitLoss'), <MaskAmount key="pnl">{`${pnl >= 0 ? '+' : '−'}${KRW(pnl, { abs: true })}원`}</MaskAmount>, trendColor(pnl)],
+            [t('holding.marketValue'), <MaskAmount key="ev">{money(ev)}</MaskAmount>, 'var(--fg-primary)'],
+            [t('holding.profitLoss'), <MaskAmount key="pnl">{`${pnl >= 0 ? '+' : '−'}${money(pnl, { abs: true })}`}</MaskAmount>, trendColor(pnl)],
             [t('holding.quantity'), t('holding.sharesUnit', { count: holding.quantity }), 'var(--fg-primary)'],
             [t('holding.returnRate'), `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`, trendColor(pnl)],
-            [t('holding.dailyPnl'), <MaskAmount key="day">{`${dayPnl >= 0 ? '+' : '−'}${KRW(dayPnl, { abs: true })}원`}</MaskAmount>, trendColor(dayPnl)],
-            [t('holding.avgPrice'), heldUs ? `$${avg.toFixed(2)}` : `${KRW(Math.round(avg))}원`, 'var(--fg-secondary)'],
-            [t('holding.purchaseAmount'), <MaskAmount key="cost">{`${KRW(purchase)}원`}</MaskAmount>, 'var(--fg-secondary)'],
-            [t('holding.feesTax'), `${KRW(fees)}원`, 'var(--fg-secondary)'],
+            [t('holding.dailyPnl'), <MaskAmount key="day">{`${dayPnl >= 0 ? '+' : '−'}${money(dayPnl, { abs: true })}`}</MaskAmount>, trendColor(dayPnl)],
+            [t('holding.avgPrice'), heldUs ? `$${avg.toFixed(2)}` : money(Math.round(avg)), 'var(--fg-secondary)'],
+            [t('holding.purchaseAmount'), <MaskAmount key="cost">{money(purchase)}</MaskAmount>, 'var(--fg-secondary)'],
+            [t('holding.feesTax'), money(fees), 'var(--fg-secondary)'],
             [t('holding.sellable'), t('holding.sharesUnit', { count: holding.quantity }), 'var(--fg-secondary)'],
           ]
           return (
@@ -917,14 +917,14 @@ export function StocksPage() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
         <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: trendColor(totalPnl), whiteSpace: 'nowrap' }}>
-          <MaskAmount>{`${totalPnl >= 0 ? '+' : '−'}${KRW(totalPnl, { abs: true })}원`}</MaskAmount>
+          <MaskAmount>{`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })}`}</MaskAmount>
         </span>
         <PctBadge pct={totalPnlPct} size={13} />
       </div>
       <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
         {(
           [
-            [t('holding.purchaseAmount'), <MaskAmount key="c">{`${KRW(totalCost)}원`}</MaskAmount>],
+            [t('holding.purchaseAmount'), <MaskAmount key="c">{money(totalCost)}</MaskAmount>],
             [t('summary.holdingsCount'), t('unit.count', { count: holdingItems.length })],
             [t('summary.fxRate'), `₩${FX_USDKRW.toLocaleString()}`],
           ] as Array<[string, React.ReactNode]>
@@ -978,7 +978,7 @@ export function StocksPage() {
                   right={
                     <>
                       <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                        <MaskAmount>{`${KRW(ev)}원`}</MaskAmount>
+                        <MaskAmount>{money(ev)}</MaskAmount>
                       </div>
                       <div className="num" style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: trendColor(pnl), marginTop: 1 }}>
                         {pnl >= 0 ? '+' : ''}

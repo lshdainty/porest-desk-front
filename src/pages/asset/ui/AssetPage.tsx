@@ -9,7 +9,7 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
-import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
   disablePdHideAmounts,
@@ -1183,7 +1183,7 @@ function SummaryCard({
           {changeAmount !== 0 && (
             <HideUnit>
               <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
-                ({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)
+                ({isUp ? '+' : '−'}{money(Math.abs(changeAmount))})
               </span>
             </HideUnit>
           )}
