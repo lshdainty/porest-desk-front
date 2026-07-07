@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Cell, Pie, PieChart } from 'recharts'
 import { ChartContainer, type ChartConfig } from '@/shared/ui/chart'
-import { KRW } from '@/shared/lib/porest/format'
+import { money } from '@/shared/lib/porest/format'
 
 export function Sparkline({
   values,
@@ -80,7 +80,7 @@ export function LineChart({
   const yTicks = 4
   const tickVals = Array.from({ length: yTicks + 1 }, (_, i) => min + (range * i) / yTicks)
 
-  const fmt = yFormat || ((v: number) => (v >= 10000 ? `${KRW(v)}원` : `${v.toLocaleString('ko-KR')}원`))
+  const fmt = yFormat || ((v: number) => money(v))
   const fmtAxis = (v: number) =>
     v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)
 
@@ -369,14 +369,14 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
                 <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-                  {KRW(d.income)}원
+                  {money(d.income)}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
                 <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-                  {KRW(d.expense)}원
+                  {money(d.expense)}
                 </span>
               </div>
               <div
@@ -400,7 +400,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   }}
                 >
                   {d.income - d.expense >= 0 ? '+' : '−'}
-                  {KRW(Math.abs(d.income - d.expense))}원
+                  {money(Math.abs(d.income - d.expense))}
                 </span>
               </div>
             </div>

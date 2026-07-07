@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Repeat, Scissors, Split, Users } from 'lucide-react'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
@@ -340,7 +340,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             >
               <Split size={16} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{t('splitTitle')} {t('txDetail.countItems', { count: splitCount })}</span>
-              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('txDetail.sumLabel')} {KRW(Math.abs(expense.amount))}원</span>
+              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}</span>
               <span style={{ marginLeft: 'auto', color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
                 {splitExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </span>
@@ -373,7 +373,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
                         </div>
                         <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: isIncome ? 'var(--fg-income)' : 'var(--fg-expense)' }}>
-                          {isIncome ? '+' : '−'}{KRW(s.amount)}원
+                          {isIncome ? '+' : '−'}{money(s.amount)}
                         </div>
                       </div>
                     )

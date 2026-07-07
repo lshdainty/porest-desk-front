@@ -1,4 +1,5 @@
 import { MaskAmount } from "@/shared/lib/porest/hide-amounts"
+import { money } from "@/shared/lib/porest/format"
 
 /**
  * 일자별 그룹 헤더 — 날짜·요일·합계 (지출 빨강 / 수입 브랜드).
@@ -16,8 +17,6 @@ export interface DateGroupHeaderProps {
   /** 일자 합계 — 수입 (양수). */
   income?: number
 }
-
-const KRW = (n: number): string => `${n.toLocaleString()}원`
 
 export function DateGroupHeader({
   date,
@@ -45,12 +44,12 @@ export function DateGroupHeader({
       >
         {expense > 0 && (
           <span style={{ color: "var(--fg-expense)", fontWeight: '600' }}>
-            <MaskAmount>{`−${KRW(expense)}`}</MaskAmount>
+            <MaskAmount>{`−${money(expense)}`}</MaskAmount>
           </span>
         )}
         {income > 0 && (
           <span style={{ color: "var(--fg-income)", fontWeight: '600' }}>
-            <MaskAmount>{`+${KRW(income)}`}</MaskAmount>
+            <MaskAmount>{`+${money(income)}`}</MaskAmount>
           </span>
         )}
       </span>
