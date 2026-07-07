@@ -508,6 +508,31 @@ asset,savingGoals,저축 목표,Saving goals
 asset,addGoal,목표 추가,Add goal
 asset,addSavingGoalPrompt,저축 목표를 추가해보세요,Add a saving goal
 asset,addFirstGoal,첫 목표 추가하기,Add your first goal
+asset,savingGoal.iconTravel,여행,Travel
+asset,savingGoal.iconEmergency,비상금,Emergency fund
+asset,savingGoal.iconElectronics,전자기기,Electronics
+asset,savingGoal.iconHousing,주거,Housing
+asset,savingGoal.iconEducation,교육,Education
+asset,savingGoal.iconGift,선물,Gift
+asset,savingGoal.iconCar,자동차,Car
+asset,savingGoal.iconHealth,건강,Health
+asset,savingGoal.iconSaving,저축,Saving
+asset,savingGoal.iconWallet,지갑,Wallet
+asset,savingGoal.noDeadline,기한 없음,No deadline
+asset,savingGoal.name,목표 이름,Goal name
+asset,savingGoal.namePlaceholder,예: 유럽 여행,e.g. Europe trip
+asset,savingGoal.targetAmount,목표 금액,Target amount
+asset,savingGoal.currentAmount,현재 모은 금액,Amount saved
+asset,savingGoal.deadline,목표일,Target date
+asset,savingGoal.optional,(선택),(optional)
+asset,savingGoal.titleEdit,목표 편집,Edit goal
+asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
+asset,savingGoal.colorSwatch,색상 {{n}},Color {{n}}
+asset,savingGoal.deleteTitle,저축 목표 삭제,Delete saving goal
+asset,savingGoal.deleteConfirm,'{{title}}' 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.,Delete the '{{title}}' goal? This can't be undone.
+asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
+asset,savingGoal.errAmount,목표 금액을 입력해주세요,Enter a goal amount
+asset,savingGoal.errCurrentExceeds,현재 금액이 목표보다 클 수 없어요,Current amount can't exceed the target
 asset,subtitle,모든 계좌·카드·투자를 한 곳에서,"All accounts, cards, and investments in one place"
 asset,paymentDayLabel,{{day}}일 결제,Billed on day {{day}}
 asset,totalNetWorth,총 순자산,Total net worth
