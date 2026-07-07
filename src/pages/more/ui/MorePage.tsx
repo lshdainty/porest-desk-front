@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/shared/ui/input'
 import { useHasSecurities } from '@/features/subscription/model/useSubscription'
 import {
@@ -28,61 +29,62 @@ import {
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 interface NavItem {
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   path: string
-  desc: string
+  descKey: string
 }
 
 interface NavGroup {
-  label: string
+  labelKey: string
   items: NavItem[]
 }
 
 const GROUPS: NavGroup[] = [
   {
-    label: '돈 관리',
+    labelKey: 'group.money',
     items: [
-      { label: '가계부', icon: ReceiptText, path: '/desk/expense', desc: '지출 · 수입 · 이체' },
-      { label: '자산', icon: Wallet, path: '/desk/asset', desc: '계좌 · 카드 · 투자 · 부채' },
-      { label: '증권', icon: TrendingUp, path: '/desk/stocks', desc: '시세 · 보유 · 관심 · 호가' },
-      { label: '예산', icon: FilePen, path: '/desk/budget', desc: '월간 · 카테고리별' },
-      { label: '통계·분석', icon: ChartPie, path: '/desk/stats', desc: '카테고리 · 트렌드 · 비교' },
-      { label: '반복 거래', icon: Repeat, path: '/desk/settings?section=recurring', desc: '구독 · 고정비' },
-      { label: '계좌·카드 관리', icon: CreditCard, path: '/desk/settings?section=accounts', desc: '연결된 계좌 · 카드 관리' },
+      { labelKey: 'item.expense', icon: ReceiptText, path: '/desk/expense', descKey: 'desc.expense' },
+      { labelKey: 'item.asset', icon: Wallet, path: '/desk/asset', descKey: 'desc.asset' },
+      { labelKey: 'item.stocks', icon: TrendingUp, path: '/desk/stocks', descKey: 'desc.stocks' },
+      { labelKey: 'item.budget', icon: FilePen, path: '/desk/budget', descKey: 'desc.budget' },
+      { labelKey: 'item.stats', icon: ChartPie, path: '/desk/stats', descKey: 'desc.stats' },
+      { labelKey: 'item.recurring', icon: Repeat, path: '/desk/settings?section=recurring', descKey: 'desc.recurring' },
+      { labelKey: 'item.accounts', icon: CreditCard, path: '/desk/settings?section=accounts', descKey: 'desc.accounts' },
     ],
   },
   {
-    label: '일상',
+    labelKey: 'group.daily',
     items: [
-      { label: '캘린더', icon: Calendar1, path: '/desk/calendar', desc: '일정 · 반복 · 알림' },
-      { label: '할 일', icon: SquareCheckBig, path: '/desk/todo', desc: '마감 · 우선순위 · 태그' },
-      { label: '메모', icon: FileText, path: '/desk/memo', desc: '분류 · 고정 · 검색' },
-      { label: '더치페이', icon: Users, path: '/desk/dutch-pay', desc: '정산 · 친구 · 송금 요청' },
-      { label: '카드 혜택', icon: CreditCard, path: '/desk/card-benefit', desc: '신용·체크 카드 검색' },
+      { labelKey: 'item.calendar', icon: Calendar1, path: '/desk/calendar', descKey: 'desc.calendar' },
+      { labelKey: 'item.todo', icon: SquareCheckBig, path: '/desk/todo', descKey: 'desc.todo' },
+      { labelKey: 'item.memo', icon: FileText, path: '/desk/memo', descKey: 'desc.memo' },
+      { labelKey: 'item.dutchPay', icon: Users, path: '/desk/dutch-pay', descKey: 'desc.dutchPay' },
+      { labelKey: 'item.cardBenefit', icon: CreditCard, path: '/desk/card-benefit', descKey: 'desc.cardBenefit' },
     ],
   },
   {
-    label: '개인화',
+    labelKey: 'group.personal',
     items: [
-      { label: '카테고리', icon: Tag, path: '/desk/settings?section=categories', desc: '지출 · 수입' },
-      { label: '프리셋', icon: Bookmark, path: '/desk/settings?section=presets', desc: '자주 쓰는 내역' },
-      { label: '표시 설정', icon: Palette, path: '/desk/settings?section=appearance', desc: '테마 · 밀도 · 통화' },
+      { labelKey: 'item.categories', icon: Tag, path: '/desk/settings?section=categories', descKey: 'desc.categories' },
+      { labelKey: 'item.presets', icon: Bookmark, path: '/desk/settings?section=presets', descKey: 'desc.presets' },
+      { labelKey: 'item.appearance', icon: Palette, path: '/desk/settings?section=appearance', descKey: 'desc.appearance' },
     ],
   },
   {
-    label: '계정·시스템',
+    labelKey: 'group.system',
     items: [
-      { label: '설정', icon: Settings, path: '/desk/settings', desc: '전체 설정 메뉴' },
-      { label: '알림', icon: Bell, path: '/desk/notifications', desc: '푸시 · 이메일 · 방해 금지' },
-      { label: '데이터 내보내기', icon: Download, path: '/desk/settings?section=data', desc: 'CSV · Excel · PDF · 자동 백업' },
-      { label: '계정', icon: User, path: '/desk/settings?section=account', desc: '프로필 · 보안 · 구독' },
+      { labelKey: 'item.settings', icon: Settings, path: '/desk/settings', descKey: 'desc.settings' },
+      { labelKey: 'item.notifications', icon: Bell, path: '/desk/notifications', descKey: 'desc.notifications' },
+      { labelKey: 'item.dataExport', icon: Download, path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
+      { labelKey: 'item.account', icon: User, path: '/desk/settings?section=account', descKey: 'desc.account' },
     ],
   },
 ]
 
 export const MorePage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('more')
   useOutletContext<OutletCtx>()
   const [query, setQuery] = useState('')
   const hasSecurities = useHasSecurities()
@@ -96,8 +98,8 @@ export const MorePage = () => {
 
   const filteredItems = query.trim()
     ? allItems.filter(item =>
-        item.label.toLowerCase().includes(query.toLowerCase()) ||
-        item.desc.toLowerCase().includes(query.toLowerCase()),
+        t(item.labelKey).toLowerCase().includes(query.toLowerCase()) ||
+        t(item.descKey).toLowerCase().includes(query.toLowerCase()),
       )
     : null
 
@@ -123,7 +125,7 @@ export const MorePage = () => {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="메뉴 검색"
+          placeholder={t('search')}
           className="w-full pl-9"
         />
       </div>
@@ -140,7 +142,7 @@ export const MorePage = () => {
                 color: 'var(--fg-tertiary)',
               }}
             >
-              검색 결과가 없습니다
+              {t('noResults')}
             </div>
           ) : (
             <div
@@ -190,10 +192,10 @@ export const MorePage = () => {
                         letterSpacing: '-0.01em',
                       }}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                     <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
-                      {item.desc}
+                      {t(item.descKey)}
                     </span>
                     <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
                   </button>
@@ -208,7 +210,7 @@ export const MorePage = () => {
       {!isSearching && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {visibleGroups.map(group => (
-            <div key={group.label}>
+            <div key={group.labelKey}>
               <div
                 style={{
                   fontSize: 13,
@@ -218,7 +220,7 @@ export const MorePage = () => {
                   paddingLeft: 2,
                 }}
               >
-                {group.label}
+                {t(group.labelKey)}
               </div>
               <div
                 style={{
