@@ -3,7 +3,7 @@ import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, Trending
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
 import { TX_ROW } from './tx-row-tokens'
@@ -140,7 +140,7 @@ export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: 
       {amt != null && (
         <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
           ({up ? '+' : '−'}
-          {KRW(amt, { abs: true })}원)
+          {money(amt, { abs: true })})
         </span>
       )}
     </span>

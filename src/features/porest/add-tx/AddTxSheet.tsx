@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Textarea } from '@/shared/ui/textarea'
 import { renderIcon } from '@/shared/lib'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import {
   Select,
   SelectContent,
@@ -652,9 +652,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               {t('addTx.splitMismatchTitle')}
             </div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 3, lineHeight: '1.5' }}>
-              {t('addTx.newTotal')} <b className="num">{KRW(amountNumber)}원</b> · {t('addTx.splitSum')} <b className="num">{KRW(splitSum)}원</b> ·{' '}
+              {t('addTx.newTotal')} <b className="num">{money(amountNumber)}</b> · {t('addTx.splitSum')} <b className="num">{money(splitSum)}</b> ·{' '}
               <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
-                {amountNumber - splitSum > 0 ? '+' : '−'}{KRW(Math.abs(amountNumber - splitSum))}원
+                {amountNumber - splitSum > 0 ? '+' : '−'}{money(Math.abs(amountNumber - splitSum))}
               </b>{' '}
               {t('addTx.difference')}
             </div>

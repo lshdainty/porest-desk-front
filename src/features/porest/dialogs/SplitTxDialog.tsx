@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import {
   useExpenseSplits,
   useReplaceExpenseSplits,
@@ -349,7 +349,7 @@ export function SplitTxDialog({
                 className="num"
                 style={{ fontWeight: '800', fontSize: 'var(--text-title-md)', color: 'var(--status-warning-fg)' }}
               >
-                {isIncome ? '+' : '−'}{KRW(targetTotal)}원
+                {isIncome ? '+' : '−'}{money(targetTotal)}
               </span>
             </div>
           ) : (
@@ -361,7 +361,7 @@ export function SplitTxDialog({
                 color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)',
               }}
             >
-              {isIncome ? '+' : '−'}{KRW(targetTotal)}원
+              {isIncome ? '+' : '−'}{money(targetTotal)}
             </div>
           )}
         </div>
@@ -385,7 +385,7 @@ export function SplitTxDialog({
             </span>
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
-            {t('splitTx.splitSum')} <b className="num">{KRW(sumAmount)}원</b> · {t('splitTx.total')} <b className="num">{KRW(targetTotal)}원</b>
+            {t('splitTx.splitSum')} <b className="num">{money(sumAmount)}</b> · {t('splitTx.total')} <b className="num">{money(targetTotal)}</b>
           </div>
         </div>
       ) : (
@@ -407,12 +407,12 @@ export function SplitTxDialog({
             </span>
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
-            {t('splitTx.splitSum')} <b className="num">{KRW(sumAmount)}원</b> · {t('splitTx.total')} <b className="num">{KRW(targetTotal)}원</b>
+            {t('splitTx.splitSum')} <b className="num">{money(sumAmount)}</b> · {t('splitTx.total')} <b className="num">{money(targetTotal)}</b>
             {!balanced && (
               <>
                 {' · '}
                 <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
-                  {remainder > 0 ? t('splitTx.short') : t('splitTx.over')} {KRW(Math.abs(remainder))}원
+                  {remainder > 0 ? t('splitTx.short') : t('splitTx.over')} {money(Math.abs(remainder))}
                 </b>
               </>
             )}
