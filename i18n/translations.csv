@@ -30,6 +30,50 @@ layout,more,더보기,More
 layout,menu,메뉴,Menu
 layout,logout,로그아웃,Log out
 layout,changePassword,비밀번호 변경,Change Password
+more,search,메뉴 검색,Search menu
+more,noResults,검색 결과가 없습니다,No search results
+more,group.money,돈 관리,Money
+more,group.daily,일상,Daily
+more,group.personal,개인화,Personalization
+more,group.system,계정·시스템,Account & System
+more,item.expense,가계부,Expense
+more,item.asset,자산,Assets
+more,item.stocks,증권,Stocks
+more,item.budget,예산,Budget
+more,item.stats,통계·분석,Stats & Analysis
+more,item.recurring,반복 거래,Recurring
+more,item.accounts,계좌·카드 관리,Account & Card Management
+more,item.calendar,캘린더,Calendar
+more,item.todo,할 일,To-do
+more,item.memo,메모,Memo
+more,item.dutchPay,더치페이,Dutch Pay
+more,item.cardBenefit,카드 혜택,Card Benefits
+more,item.categories,카테고리,Categories
+more,item.presets,프리셋,Presets
+more,item.appearance,표시 설정,Display
+more,item.settings,설정,Settings
+more,item.notifications,알림,Notifications
+more,item.dataExport,데이터 내보내기,Data Export
+more,item.account,계정,Account
+more,desc.expense,지출 · 수입 · 이체,Spending · income · transfers
+more,desc.asset,계좌 · 카드 · 투자 · 부채,Accounts · cards · investments · debt
+more,desc.stocks,시세 · 보유 · 관심 · 호가,Quotes · holdings · watchlist · order book
+more,desc.budget,월간 · 카테고리별,Monthly · by category
+more,desc.stats,카테고리 · 트렌드 · 비교,Category · trends · comparison
+more,desc.recurring,구독 · 고정비,Subscriptions · fixed costs
+more,desc.accounts,연결된 계좌 · 카드 관리,Manage linked accounts and cards
+more,desc.calendar,일정 · 반복 · 알림,Events · recurring · alerts
+more,desc.todo,마감 · 우선순위 · 태그,Due dates · priority · tags
+more,desc.memo,분류 · 고정 · 검색,Tags · pin · search
+more,desc.dutchPay,정산 · 친구 · 송금 요청,Settle · friends · requests
+more,desc.cardBenefit,신용·체크 카드 검색,Search credit and check cards
+more,desc.categories,지출 · 수입,Expense · income
+more,desc.presets,자주 쓰는 내역,Frequently used entries
+more,desc.appearance,테마 · 밀도 · 통화,Theme · density · currency
+more,desc.settings,전체 설정 메뉴,All settings
+more,desc.notifications,푸시 · 이메일 · 방해 금지,Push · email · do not disturb
+more,desc.dataExport,CSV · Excel · PDF · 자동 백업,CSV · Excel · PDF · auto backup
+more,desc.account,프로필 · 보안 · 구독,Profile · security · subscription
 todo,title,할일,Todo
 todo,createTodo,할일 추가,Add Todo
 todo,editTodo,할일 수정,Edit Todo
