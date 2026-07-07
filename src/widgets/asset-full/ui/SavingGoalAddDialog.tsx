@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertCircle } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
@@ -27,25 +28,27 @@ import type { SavingGoal } from '@/entities/savingGoal'
 import { tileRadius } from '@/shared/lib'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
+import { i18n } from '@/shared/i18n/config'
 
-const GOAL_ICONS: { k: IconName; label: string }[] = [
-  { k: 'plane', label: '여행' },
-  { k: 'shield', label: '비상금' },
-  { k: 'laptop', label: '전자기기' },
-  { k: 'home', label: '주거' },
-  { k: 'graduation-cap', label: '교육' },
-  { k: 'gift', label: '선물' },
-  { k: 'car', label: '자동차' },
-  { k: 'heart', label: '건강' },
-  { k: 'piggy-bank', label: '저축' },
-  { k: 'wallet', label: '지갑' },
+const GOAL_ICONS: { k: IconName; labelKey: string }[] = [
+  { k: 'plane', labelKey: 'savingGoal.iconTravel' },
+  { k: 'shield', labelKey: 'savingGoal.iconEmergency' },
+  { k: 'laptop', labelKey: 'savingGoal.iconElectronics' },
+  { k: 'home', labelKey: 'savingGoal.iconHousing' },
+  { k: 'graduation-cap', labelKey: 'savingGoal.iconEducation' },
+  { k: 'gift', labelKey: 'savingGoal.iconGift' },
+  { k: 'car', labelKey: 'savingGoal.iconCar' },
+  { k: 'heart', labelKey: 'savingGoal.iconHealth' },
+  { k: 'piggy-bank', labelKey: 'savingGoal.iconSaving' },
+  { k: 'wallet', labelKey: 'savingGoal.iconWallet' },
 ]
 
+// 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.
 function formatDeadlineLabel(iso: string): string {
-  if (!iso) return '기한 없음'
+  if (!iso) return i18n.t('asset:savingGoal.noDeadline')
   const d = new Date(iso)
-  if (isNaN(d.getTime())) return '기한 없음'
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
+  if (isNaN(d.getTime())) return i18n.t('asset:savingGoal.noDeadline')
+  return new Intl.DateTimeFormat(i18n.language, { year: 'numeric', month: 'long' }).format(d)
 }
 
 function fmtNum(n: number): string {
@@ -66,6 +69,8 @@ interface SavingGoalAddDialogProps {
 }
 
 export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDialogProps) {
+  const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const isEdit = !!goal
 
   const [title, setTitle] = useState<string>(goal?.title ?? '')
@@ -91,17 +96,17 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const pct = target > 0 ? (current / target) * 100 : 0
 
   const handleSubmit = () => {
-    const t = title.trim()
-    if (!t) {
-      setErr('목표 이름을 입력해주세요')
+    const trimmed = title.trim()
+    if (!trimmed) {
+      setErr(t('savingGoal.errName'))
       return
     }
     if (target <= 0) {
-      setErr('목표 금액을 입력해주세요')
+      setErr(t('savingGoal.errAmount'))
       return
     }
     if (current > target) {
-      setErr('현재 금액이 목표보다 클 수 없어요')
+      setErr(t('savingGoal.errCurrentExceeds'))
       return
     }
     setErr('')
@@ -111,7 +116,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         {
           id: goal.rowId,
           data: {
-            title: t,
+            title: trimmed,
             targetAmount: target,
             deadlineDate: deadlineDate || null,
             icon,
@@ -176,7 +181,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const Footer = (
     <ModalFooter
       onSave={handleSubmit}
-      saveLabel={isEdit ? '저장' : '추가'}
+      saveLabel={isEdit ? tc('save') : tc('add')}
       saving={createMut.isPending || updateMut.isPending || contributeMut.isPending}
       onCancel={onClose}
       onDelete={isEdit ? handleDelete : undefined}
@@ -186,7 +191,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
   return (
     <ModalShell
-      title={isEdit ? '목표 편집' : '저축 목표 추가'}
+      title={isEdit ? t('savingGoal.titleEdit') : t('savingGoal.titleAdd')}
       onClose={onClose}
       mobile={mobile}
       size="md"
@@ -228,7 +233,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
                 whiteSpace: 'nowrap',
               }}
             >
-              {title || '목표 이름'}
+              {title || t('savingGoal.name')}
             </div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
               {formatDeadlineLabel(deadlineDate)}
@@ -263,14 +268,14 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>목표 이름</FieldLabel>
+        <FieldLabel>{t('savingGoal.name')}</FieldLabel>
         <Input
           value={title}
           onChange={e => {
             setTitle(e.target.value)
             setErr('')
           }}
-          placeholder="예: 유럽 여행"
+          placeholder={t('savingGoal.namePlaceholder')}
           autoFocus
         />
       </Field>
@@ -284,7 +289,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
         }}
       >
         <Field>
-          <FieldLabel>목표 금액</FieldLabel>
+          <FieldLabel>{t('savingGoal.targetAmount')}</FieldLabel>
           <div style={{ position: 'relative' }}>
             <Input
               className="num"
@@ -313,7 +318,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           </div>
         </Field>
         <Field>
-          <FieldLabel>현재 모은 금액</FieldLabel>
+          <FieldLabel>{t('savingGoal.currentAmount')}</FieldLabel>
           <div style={{ position: 'relative' }}>
             <Input
               className="num"
@@ -345,7 +350,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>
-          목표일 <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400' }}>(선택)</span>
+          {t('savingGoal.deadline')} <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400' }}>{t('savingGoal.optional')}</span>
         </FieldLabel>
         <InputDatePicker
           value={deadlineDate}
@@ -354,7 +359,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>아이콘</FieldLabel>
+        <FieldLabel>{t('form.icon')}</FieldLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
           {GOAL_ICONS.map(g => {
             const active = icon === g.k
@@ -362,7 +367,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
               <button
                 key={g.k}
                 type="button"
-                title={g.label}
+                title={t(g.labelKey)}
                 onClick={() => setIcon(g.k)}
                 style={{
                   aspectRatio: '1 / 1',
@@ -389,7 +394,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
       </Field>
 
       <Field>
-        <FieldLabel>색상</FieldLabel>
+        <FieldLabel>{t('form.color')}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={color}
@@ -398,7 +403,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             value: p.baseHex,
             bg: p.bg,
             fg: p.color,
-            label: `색상 ${i + 1}`,
+            label: t('savingGoal.colorSwatch', { n: i + 1 }),
           }))}
         />
       </Field>
@@ -430,19 +435,19 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>저축 목표 삭제</AlertDialogTitle>
+            <AlertDialogTitle>{t('savingGoal.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {goal ? `'${goal.title}' 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.` : ''}
+              {goal ? t('savingGoal.deleteConfirm', { title: goal.title }) : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               loading={deleteMut.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              삭제
+              {tc('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
