@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
@@ -23,11 +24,11 @@ import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { ExpenseTemplate, ExpenseTemplateFormValues } from '@/entities/expense-template'
 import type { ExpenseType } from '@/entities/expense'
 
-const PAYMENT_METHODS: { v: string; l: string }[] = [
-  { v: 'CASH', l: '현금' },
-  { v: 'CARD', l: '카드' },
-  { v: 'TRANSFER', l: '계좌이체' },
-  { v: 'OTHER', l: '기타' },
+const PAYMENT_METHODS: { v: string; lKey: string }[] = [
+  { v: 'CASH', lKey: 'form.paymentMethod.CASH' },
+  { v: 'CARD', lKey: 'form.paymentMethod.CARD' },
+  { v: 'TRANSFER', lKey: 'paymentTransferFull' },
+  { v: 'OTHER', lKey: 'form.paymentMethod.OTHER' },
 ]
 
 export function PresetEditDialog({
@@ -39,6 +40,8 @@ export function PresetEditDialog({
   mobile: boolean
   onClose: () => void
 }) {
+  const { t } = useTranslation('expense')
+  const { t: tCommon } = useTranslation('common')
   const isNew = !preset
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
@@ -112,7 +115,7 @@ export function PresetEditDialog({
   const Footer = (
     <ModalFooter
       onSave={submit}
-      saveLabel={isNew ? '추가' : '저장'}
+      saveLabel={isNew ? tCommon('add') : tCommon('save')}
       saving={submitting}
       saveDisabled={!canSave}
       onCancel={onClose}
@@ -121,7 +124,7 @@ export function PresetEditDialog({
 
   return (
     <ModalShell
-      title={isNew ? '프리셋 추가' : '프리셋 수정'}
+      title={isNew ? t('preset.add') : t('preset.edit')}
       onClose={onClose}
       mobile={mobile}
       size="md"
@@ -134,23 +137,23 @@ export function PresetEditDialog({
         className="mb-4"
       >
         <TabsList variant="pill" size="sm" className="w-full">
-          <TabsTrigger value="EXPENSE" className="flex-1">지출</TabsTrigger>
-          <TabsTrigger value="INCOME" className="flex-1">수입</TabsTrigger>
+          <TabsTrigger value="EXPENSE" className="flex-1">{t('expense')}</TabsTrigger>
+          <TabsTrigger value="INCOME" className="flex-1">{t('income')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>프리셋 이름</FieldLabel>
+        <FieldLabel>{t('savePreset.name')}</FieldLabel>
         <Input
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="예: 점심 도시락"
+          placeholder={t('preset.namePlaceholder')}
           autoFocus
         />
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>카테고리</FieldLabel>
+        <FieldLabel>{t('category')}</FieldLabel>
         {categoriesQ.isLoading ? (
           <CategoryGrid>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -181,28 +184,28 @@ export function PresetEditDialog({
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>기본 내역</FieldLabel>
+        <FieldLabel>{t('preset.defaultMerchant')}</FieldLabel>
         <Input
           value={merchant}
           onChange={e => setMerchant(e.target.value)}
-          placeholder="예: 한솥 도시락"
+          placeholder={t('preset.merchantPlaceholder')}
         />
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>결제 수단</FieldLabel>
+        <FieldLabel>{t('paymentMethodLabel')}</FieldLabel>
         <Select
           value={paymentMethod || '__none__'}
           onValueChange={(v) => setPaymentMethod(v === '__none__' ? '' : v)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="선택 안 함" />
+            <SelectValue placeholder={t('selectNone')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">선택 안 함</SelectItem>
+            <SelectItem value="__none__">{t('selectNone')}</SelectItem>
             {PAYMENT_METHODS.map(pm => (
               <SelectItem key={pm.v} value={pm.v}>
-                {pm.l}
+                {t(pm.lKey)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -210,7 +213,7 @@ export function PresetEditDialog({
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>계좌·카드</FieldLabel>
+        <FieldLabel>{t('accountCard')}</FieldLabel>
         {assetsQ.isLoading ? (
           <SkeletonBase className="h-9 w-full rounded-md" />
         ) : (
@@ -219,10 +222,10 @@ export function PresetEditDialog({
             onValueChange={(v) => setAssetRowId(v === '__none__' ? null : Number(v))}
           >
             <SelectTrigger>
-              <SelectValue placeholder="선택 안 함" />
+              <SelectValue placeholder={t('selectNone')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">선택 안 함</SelectItem>
+              <SelectItem value="__none__">{t('selectNone')}</SelectItem>
               {assets.map(a => (
                 <SelectItem key={a.rowId} value={String(a.rowId)}>
                   {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
@@ -241,9 +244,9 @@ export function PresetEditDialog({
             onCheckedChange={(c) => setLockAmount(c === true)}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>고정 금액 사용</div>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{t('preset.lockAmountTitle')}</div>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-              꺼두면 불러올 때 금액이 비어있어요. 매번 다른 금액일 때 편해요.
+              {t('preset.lockAmountDesc')}
             </div>
           </div>
         </label>
@@ -251,7 +254,7 @@ export function PresetEditDialog({
         {lockAmount && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
             <FieldLabel style={{ marginBottom: 4 }}>
-              고정 금액
+              {t('preset.lockAmountLabel')}
             </FieldLabel>
             <div style={{ position: 'relative' }}>
               <Input

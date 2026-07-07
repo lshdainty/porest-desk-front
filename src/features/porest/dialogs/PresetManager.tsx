@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -15,6 +16,8 @@ import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 type SortKey = 'used' | 'recent' | 'name'
 
 export function PresetManager({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation('expense')
+  const { t: tCommon } = useTranslation('common')
   const templatesQ = useExpenseTemplates()
   const categoriesQ = useExpenseCategories()
   const deleteMut = useDeleteExpenseTemplate()
@@ -85,10 +88,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', marginBottom: 3 }}>
-            프리셋이란?
+            {t('preset.introTitle')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', lineHeight: '1.5' }}>
-            자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.
+            {t('preset.introDesc')}
           </div>
         </div>
       </div>
@@ -104,9 +107,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           ))
         ) : (
           <>
-            <PMStat label="저장된 프리셋" value={String(items.length)} />
-            <PMStat label="누적 사용" value={`${totalUses}회`} />
-            <PMStat label="지출 / 수입" value={`${expenseCount} / ${incomeCount}`} />
+            <PMStat label={t('preset.statSaved')} value={String(items.length)} />
+            <PMStat label={t('preset.statUses')} value={t('txDetail.countTimes', { count: totalUses })} />
+            <PMStat label={`${t('expense')} / ${t('income')}`} value={`${expenseCount} / ${incomeCount}`} />
           </>
         )}
       </div>
@@ -129,9 +132,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           <TabsList variant="pill" size="sm">
             {(
               [
-                { k: 'used', l: '사용 많은 순' },
-                { k: 'recent', l: '최근 사용' },
-                { k: 'name', l: '이름순' },
+                { k: 'used', l: t('preset.sortUsed') },
+                { k: 'recent', l: t('preset.sortRecent') },
+                { k: 'name', l: t('preset.sortName') },
               ] as { k: SortKey; l: string }[]
             ).map((o) => (
               <TabsTrigger key={o.k} value={o.k}>
@@ -146,7 +149,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
           onClick={() => setEditing('new')}
         >
-          <Plus size={14} /> 프리셋 추가
+          <Plus size={14} /> {t('preset.add')}
         </Button>
       </div>
 
@@ -171,10 +174,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
               <Bookmark size={22} />
             </div>
             <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', marginBottom: 4 }}>
-              저장된 프리셋이 없어요
+              {t('preset.emptyTitle')}
             </div>
             <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
-              자주 쓰는 내역을 추가해 매번 입력하는 수고를 줄여보세요.
+              {t('preset.emptyDesc')}
             </div>
           </div>
         ) : (
@@ -236,7 +239,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           borderRadius: 'var(--radius-xs)',
                         }}
                       >
-                        수입
+                        {t('income')}
                       </span>
                     )}
                     {!lock && (
@@ -250,7 +253,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                           borderRadius: 'var(--radius-xs)',
                         }}
                       >
-                        금액 비움
+                        {t('preset.amountEmpty')}
                       </span>
                     )}
                   </div>
@@ -264,7 +267,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       overflow: 'hidden',
                     }}
                   >
-                    <span style={{ flexShrink: 0 }}>{p.categoryName ?? '카테고리 없음'}</span>
+                    <span style={{ flexShrink: 0 }}>{p.categoryName ?? t('preset.noCategory')}</span>
                     {p.merchant && (
                       <>
                         <span style={{ flexShrink: 0 }}>·</span>
@@ -301,12 +304,14 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       : '—'}
                   </div>
                   <div style={{ fontSize: mobile ? 10 : 10.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                    {p.useCount}회{mobile ? '' : ' 사용'}
+                    {mobile
+                      ? t('txDetail.countTimes', { count: p.useCount })
+                      : t('preset.usedTimes', { count: p.useCount })}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                  <PMIconBtn icon="pencil" onClick={() => setEditing(p)} title="수정" />
-                  <PMIconBtn icon="trash" tone="danger" onClick={() => setConfirmDelete(p)} title="삭제" />
+                  <PMIconBtn icon="pencil" onClick={() => setEditing(p)} title={tCommon('edit')} />
+                  <PMIconBtn icon="trash" tone="danger" onClick={() => setConfirmDelete(p)} title={tCommon('delete')} />
                 </div>
               </div>
             )
@@ -323,14 +328,16 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title="프리셋 삭제"
+          title={t('preset.deleteTitle')}
           message={
-            <>
-              "<strong>{confirmDelete.templateName}</strong>" 프리셋을 삭제할까요?
-              이미 저장된 거래 내역에는 영향이 없습니다.
-            </>
+            <Trans
+              t={t}
+              i18nKey="preset.deleteConfirmMessage"
+              values={{ name: confirmDelete.templateName }}
+              components={{ strong: <strong /> }}
+            />
           }
-          confirmLabel="삭제"
+          confirmLabel={tCommon('delete')}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
