@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Bell, Zap, Calendar } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -19,14 +20,14 @@ import type {
 import { getPaletteByColor } from './CategoryEditDialog'
 import { previewNextDates, addYears, todayIso, formatKoreanMonthDay } from './recurring-date'
 
-const FREQS: { v: RecurringFrequency; l: string }[] = [
-  { v: 'DAILY', l: '매일' },
-  { v: 'WEEKLY', l: '매주' },
-  { v: 'MONTHLY', l: '매월' },
-  { v: 'YEARLY', l: '매년' },
+const FREQS: { v: RecurringFrequency; lKey: string }[] = [
+  { v: 'DAILY', lKey: 'freq.DAILY' },
+  { v: 'WEEKLY', lKey: 'freq.WEEKLY' },
+  { v: 'MONTHLY', lKey: 'freq.MONTHLY' },
+  { v: 'YEARLY', lKey: 'freq.YEARLY' },
 ]
 
-const DOW_LABEL = ['일', '월', '화', '수', '목', '금', '토']
+const DOW_LABEL = ['dow.sun', 'dow.mon', 'dow.tue', 'dow.wed', 'dow.thu', 'dow.fri', 'dow.sat']
 
 type EndMode = 'NONE' | 'COUNT' | 'DATE'
 
@@ -38,6 +39,7 @@ type Props = {
 }
 
 export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: Props) {
+  const { t } = useTranslation('recurring')
   const createMut = useCreateRecurringTransaction()
   const categoriesQ = useExpenseCategories()
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
@@ -102,7 +104,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   const Footer = (
     <ModalFooter
       onSave={handleSave}
-      saveLabel="반복 저장"
+      saveLabel={t('saveLabel')}
       saving={submitting}
       saveDisabled={!ready}
       onCancel={onClose}
@@ -110,9 +112,9 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   )
 
   return (
-    <ModalShell title="반복 설정" onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('settingsTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.
+        {t('intro')}
       </p>
 
       {/* Source card */}
@@ -144,10 +146,10 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-            {expense.merchant || expense.description || '거래'}
+            {expense.merchant || expense.description || t('transaction')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {expenseDay} 시작
+            {t('startsOn', { date: expenseDay })}
           </div>
         </div>
         <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
@@ -157,7 +159,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       </div>
 
       {/* 반복 주기 */}
-      <Section title="반복 주기">
+      <Section title={t('frequencyTitle')}>
         <Tabs
           value={frequency}
           onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}
@@ -165,7 +167,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
           <TabsList variant="pill" size="sm" className="w-full">
             {FREQS.map(o => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
-                {o.l}
+                {t(o.lKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -174,7 +176,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
       {/* 요일 (매주) */}
       {frequency === 'WEEKLY' && (
-        <Section title="요일">
+        <Section title={t('dowTitle')}>
           <ToggleGroup
             type="single"
             size="sm"
@@ -184,7 +186,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
           >
             {DOW_LABEL.map((label, i) => (
               <ToggleGroupItem key={i} value={String(i)} className="rounded-full">
-                {label}
+                {t(label)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -193,9 +195,9 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
       {/* 반복 일자 (매월) */}
       {frequency === 'MONTHLY' && (
-        <Section title="반복 일자">
+        <Section title={t('dayOfMonthTitle')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>매월</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDayPrefix')}</span>
             <Input
               className="num"
               value={dayOfMonth}
@@ -206,30 +208,30 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
               inputMode="numeric"
               style={{ width: 64, textAlign: 'center' }}
             />
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>일</span>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDaySuffix')}</span>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
-              해당 일이 없는 달은 말일에 처리됩니다
+              {t('monthDayHint')}
             </span>
           </div>
         </Section>
       )}
 
       {/* 종료 */}
-      <Section title="종료">
+      <Section title={t('endTitle')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <RadioCard
             selected={endMode === 'NONE'}
             onSelect={() => setEndMode('NONE')}
-            title="무기한"
-            sub="중지할 때까지 계속 반복"
+            title={t('endNone')}
+            sub={t('endNoneSub')}
           />
           <RadioCard
             selected={endMode === 'COUNT'}
             onSelect={() => setEndMode('COUNT')}
-            title="횟수 지정"
+            title={t('endCountTitle')}
             sub={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                총
+                {t('totalPrefix')}
                 <Input
                   className="num"
                   value={endCount}
@@ -238,14 +240,14 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
                   inputMode="numeric"
                   style={{ width: 64, textAlign: 'center', padding: '4px 8px' }}
                 />
-                회
+                {t('timesSuffix')}
               </span>
             }
           />
           <RadioCard
             selected={endMode === 'DATE'}
             onSelect={() => setEndMode('DATE')}
-            title="종료일 지정"
+            title={t('endDateTitle')}
             sub={
               <div
                 onClick={e => { e.stopPropagation(); setEndMode('DATE') }}
@@ -262,19 +264,19 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       </Section>
 
       {/* 옵션 */}
-      <Section title="옵션">
+      <Section title={t('optionsTitle')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ToggleRow
             Icon={Zap}
-            title="자동 기록"
-            sub="해당 일자에 거래를 자동으로 추가합니다"
+            title={t('autoLog')}
+            sub={t('autoLogSub')}
             value={autoLog}
             onChange={setAutoLog}
           />
           <ToggleRow
             Icon={Bell}
-            title="하루 전 알림"
-            sub="결제·이체 예정일 전날 알림을 보냅니다"
+            title={t('notifyDayBefore')}
+            sub={t('notifyDayBeforeSub')}
             value={notifyDayBefore}
             onChange={setNotifyDayBefore}
           />
@@ -294,7 +296,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Calendar size={13} />
-            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>다음 예정일</span>
+            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>{t('nextDatesTitle')}</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
