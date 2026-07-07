@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCardCatalogDetail } from '@/features/card-catalog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function CardDetailWidget({ cardCatalogRowId, assetRowId }: Props) {
+  const { t } = useTranslation('card')
   const { data: detail, isLoading, error } = useCardCatalogDetail(cardCatalogRowId)
 
   if (isLoading) {
@@ -65,7 +67,7 @@ export function CardDetailWidget({ cardCatalogRowId, assetRowId }: Props) {
   }
 
   if (error || !detail) {
-    return <div className="text-sm text-destructive">카드 정보를 불러올 수 없습니다</div>
+    return <div className="text-sm text-destructive">{t('detail.loadError')}</div>
   }
 
   return (
@@ -74,7 +76,7 @@ export function CardDetailWidget({ cardCatalogRowId, assetRowId }: Props) {
       {assetRowId != null && <CardPerformanceSection assetRowId={assetRowId} />}
       <AvailableBenefitsList benefits={detail.benefits} />
       {detail.searchBenefits.length > 0 && (
-        <CardSearchTagsSection groups={detail.searchBenefits} title="검색 태그" />
+        <CardSearchTagsSection groups={detail.searchBenefits} title={t('detail.searchTagsTitle')} />
       )}
       <CardCautionList cautions={detail.cautions} />
     </div>

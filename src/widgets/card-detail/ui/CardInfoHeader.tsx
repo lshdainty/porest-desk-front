@@ -1,19 +1,18 @@
 import { ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
 import { decodeHtml } from '@/shared/lib'
+import { money } from '@/shared/lib/porest/format'
 import type { CardCatalogDetail } from '@/entities/card'
 
 interface Props {
   detail: CardCatalogDetail
 }
 
-function formatKRW(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(n)
-}
-
 export function CardInfoHeader({ detail }: Props) {
+  const { t } = useTranslation('card')
   const s = detail.summary
   const cardName = decodeHtml(s.cardName)
   const companyName = decodeHtml(s.company?.name ?? '')
@@ -45,7 +44,7 @@ export function CardInfoHeader({ detail }: Props) {
               </span>
               {s.isDiscontinued === 'Y' && (
                 <Badge variant="destructive" className="ml-auto">
-                  단종
+                  {t('detail.discontinued')}
                 </Badge>
               )}
             </div>
@@ -54,14 +53,14 @@ export function CardInfoHeader({ detail }: Props) {
             </h2>
             <div className="flex flex-wrap gap-1.5">
               <Badge variant="secondary">
-                {s.cardType === 'CREDIT' ? '신용' : '체크'}
+                {s.cardType === 'CREDIT' ? t('detail.credit') : t('detail.check')}
               </Badge>
               <Badge variant="outline">
                 {s.benefitType === 'DISCOUNT'
-                  ? '할인형'
+                  ? t('detail.benefitTypeDiscount')
                   : s.benefitType === 'MILEAGE'
-                    ? '마일리지형'
-                    : '포인트형'}
+                    ? t('detail.benefitTypeMileage')
+                    : t('detail.benefitTypePoint')}
               </Badge>
               {detail.brands.map((b) => (
                 <Badge key={b} variant="outline" className="font-normal">
@@ -74,19 +73,19 @@ export function CardInfoHeader({ detail }: Props) {
             <Separator className="mb-3" />
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-0.5">
-                <dt className="text-xs text-muted-foreground">연회비</dt>
+                <dt className="text-xs text-muted-foreground">{t('benefit.statAnnualFee')}</dt>
                 <dd className="font-semibold tabular-nums">
                   {s.annualFee.amount > 0
-                    ? `${formatKRW(s.annualFee.amount)}원`
-                    : '없음'}
+                    ? money(s.annualFee.amount)
+                    : t('benefit.feeNone')}
                 </dd>
               </div>
               <div className="space-y-0.5">
-                <dt className="text-xs text-muted-foreground">전월 실적</dt>
+                <dt className="text-xs text-muted-foreground">{t('benefit.statPerformance')}</dt>
                 <dd className="font-semibold tabular-nums">
                   {s.performance.isRequired === 'Y'
-                    ? `${formatKRW(s.performance.requiredAmount)}원 이상`
-                    : '실적 무관'}
+                    ? t('detail.performanceAtLeast', { amount: money(s.performance.requiredAmount) })
+                    : t('benefit.performanceNone')}
                 </dd>
               </div>
             </dl>
@@ -97,7 +96,7 @@ export function CardInfoHeader({ detail }: Props) {
                 rel="noreferrer"
                 className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                카드고릴라 원문
+                {t('detail.sourceLink')}
                 <ExternalLink className="h-3 w-3" />
               </a>
             )}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -16,13 +17,14 @@ function currentYearMonth(): string {
 }
 
 export function CardPerformanceSection({ assetRowId }: Props) {
+  const { t } = useTranslation('card')
   const [ym, setYm] = useState(currentYearMonth())
   const { data: performance, isLoading } = useCardPerformance(assetRowId, ym)
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">전월 실적</CardTitle>
+        <CardTitle className="text-base">{t('benefit.statPerformance')}</CardTitle>
         <Input
           type="month"
           value={ym}
@@ -43,7 +45,7 @@ export function CardPerformanceSection({ assetRowId }: Props) {
         ) : performance ? (
           <CardPerformanceBar performance={performance} />
         ) : (
-          <div className="text-sm text-muted-foreground">실적 정보를 불러올 수 없습니다</div>
+          <div className="text-sm text-muted-foreground">{t('detail.performanceLoadError')}</div>
         )}
       </CardContent>
     </Card>

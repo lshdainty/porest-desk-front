@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { decodeHtml } from '@/shared/lib'
@@ -8,13 +9,14 @@ interface Props {
   title?: string
 }
 
-export function CardSearchTagsSection({ groups, title = '혜택 태그' }: Props) {
+export function CardSearchTagsSection({ groups, title }: Props) {
+  const { t } = useTranslation('card')
   if (groups.length === 0) return null
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="text-base">{title ?? t('detail.benefitTagsTitle')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {groups.map((g) => (
