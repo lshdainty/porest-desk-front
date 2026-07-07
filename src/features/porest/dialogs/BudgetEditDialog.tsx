@@ -7,7 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { KRW } from '@/shared/lib/porest/format'
+import { money } from '@/shared/lib/porest/format'
 import { tileRadius } from '@/shared/lib'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { getPaletteByColor } from './CategoryEditDialog'
@@ -138,7 +138,7 @@ export function BudgetEditDialog({
             {selectedCat?.categoryName ?? t('edit.selectCategory')}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('edit.monthlyLimitPreview')} {KRW(parseInt(limit) || 0)}원
+            {t('edit.monthlyLimitPreview')} {money(parseInt(limit) || 0)}
           </div>
         </div>
       </div>

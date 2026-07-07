@@ -6,7 +6,7 @@ import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
 import { useExpenseCategories } from '@/features/expense'
@@ -185,7 +185,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
           {t('fromTx.perPerson')}{' '}
           <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
-            {KRW(perPersonAmount)}원
+            {money(perPersonAmount)}
           </b>
         </span>
       }
@@ -246,7 +246,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           </div>
         </div>
         <div className="num" style={{ fontWeight: '800' }}>
-          {KRW(totalAbs)}원
+          {money(totalAbs)}
         </div>
       </div>
 
@@ -426,7 +426,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
               {splitMethod === 'CUSTOM' && p.isMe && (
                 <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
-                  {KRW(amt)}원
+                  {money(amt)}
                 </span>
               )}
 
@@ -458,13 +458,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
               {splitMethod === 'RATIO' && (
                 <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)', minWidth: 80, textAlign: 'right' }}>
-                  {KRW(amt)}원
+                  {money(amt)}
                 </span>
               )}
 
               {splitMethod === 'EQUAL' && (
                 <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
-                  {KRW(amt)}원
+                  {money(amt)}
                 </span>
               )}
 

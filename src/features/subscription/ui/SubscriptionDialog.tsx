@@ -7,6 +7,7 @@ import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Badge } from '@/shared/ui/badge'
 import { Card } from '@/shared/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { KRW, money } from '@/shared/lib/porest/format'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,8 +43,6 @@ const SUB_FEATURES: SubFeature[] = [
   { labelKey: 'feature.multiCalendar', free: false, pro: true },
   { labelKey: 'feature.cardBenefit', free: false, pro: true },
 ]
-
-const won = (n: number) => n.toLocaleString('ko-KR')
 
 function FeatureCell({ val, accent }: { val: boolean | string; accent?: boolean }) {
   if (val === true) return <Check size={15} style={{ color: accent ? 'var(--fg-brand)' : 'var(--status-success-fg)' }} />
@@ -152,7 +151,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2 }}>
             {isPro
-              ? (nextBill ? `${t('nextBill', { date: nextBill })} · ${won(proMonthly)}원` : `${won(proMonthly)}원`)
+              ? (nextBill ? `${t('nextBill', { date: nextBill })} · ${money(proMonthly)}` : `${money(proMonthly)}`)
               : t('freeLocked')}
           </div>
         </div>
@@ -241,12 +240,12 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
             <span className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
-              {won(proPrice)}원
+              {money(proPrice)}
             </span>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>/ {cycle === 'monthly' ? t('perMonth') : t('perYear')}</span>
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {cycle === 'yearly' ? t('pricePerMonthNote', { price: won(proPerMonth), pct: savePct }) : t('monthlyBilling')}
+            {cycle === 'yearly' ? t('pricePerMonthNote', { price: KRW(proPerMonth), pct: savePct }) : t('monthlyBilling')}
           </div>
         </Card>
       </div>
