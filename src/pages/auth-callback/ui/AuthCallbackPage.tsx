@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/features/auth'
 import { getCodeVerifier, getSavedState, clearPkce } from '@/features/auth/lib/pkce'
 import { Spinner } from '@/shared/ui/spinner'
 
 export const AuthCallbackPage = () => {
+  const { t } = useTranslation('login')
   const navigate = useNavigate()
   const { exchangeCode } = useAuth()
   // StrictMode/재렌더로 effect 가 2번 돌아도 일회용 code 를 단 한 번만 교환하도록 가드
@@ -46,7 +48,7 @@ export const AuthCallbackPage = () => {
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-3">
       <Spinner size="lg" />
-      <p className="text-sm text-muted-foreground">인증 중…</p>
+      <p className="text-sm text-muted-foreground">{t('authenticating')}</p>
     </div>
   )
 }
