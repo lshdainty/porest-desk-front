@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CreditCard, Search } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -21,6 +22,8 @@ interface CardAddDialogProps {
 }
 
 export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
+  const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const isMobile = useIsMobile()
   const [cardType, setCardType] = useState<CardType>('CREDIT')
   const [keyword, setKeyword] = useState('')
@@ -44,7 +47,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
     [selected],
   )
 
-  const previewName = nickname.trim() || selected?.cardName || '새 카드'
+  const previewName = nickname.trim() || selected?.cardName || t('cardAdd.newCard')
   const previewCompany = selected?.company?.name ?? ''
 
   const reset = () => {
@@ -117,13 +120,13 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 {previewName}
               </div>
               <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">
-                {previewCompany ? `${previewCompany} · ` : ''}{cardType === 'CREDIT' ? '신용카드' : '체크카드'}
+                {previewCompany ? `${previewCompany} · ` : ''}{cardType === 'CREDIT' ? t('assetType.creditcard') : t('assetType.checkcard')}
               </div>
             </div>
           </div>
 
           <div>
-            <Label className="text-[13px] font-medium mb-2 block">카드 종류</Label>
+            <Label className="text-[13px] font-medium mb-2 block">{t('cardAdd.cardType')}</Label>
             <Tabs
               value={cardType}
               onValueChange={v => {
@@ -132,9 +135,9 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               }}
             >
               <TabsList variant="pill" size="sm" className="w-full">
-                {(['CREDIT', 'CHECK'] as CardType[]).map(t => (
-                  <TabsTrigger key={t} value={t} className="flex-1">
-                    {t === 'CREDIT' ? '신용카드' : '체크카드'}
+                {(['CREDIT', 'CHECK'] as CardType[]).map(ct => (
+                  <TabsTrigger key={ct} value={ct} className="flex-1">
+                    {ct === 'CREDIT' ? t('assetType.creditcard') : t('assetType.checkcard')}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -143,22 +146,22 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-[13px] font-medium">카드 상품</Label>
+              <Label className="text-[13px] font-medium">{t('cardAdd.cardProduct')}</Label>
               <div className="flex items-center gap-3">
                 <label
                   className="inline-flex items-center cursor-pointer select-none"
                   style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', gap: 6 }}
-                  title="단종된 카드 상품도 검색 결과에 포함합니다"
+                  title={t('cardAdd.includeDiscontinuedTitle')}
                 >
                   <Switch
                     checked={includeDiscontinued}
                     onCheckedChange={setIncludeDiscontinued}
                   />
-                  단종 포함
+                  {t('cardAdd.includeDiscontinued')}
                 </label>
                 {catalogQ.data?.meta?.totalElements != null && (
                   <span className="text-[11px] text-[var(--fg-tertiary)]">
-                    총 {catalogQ.data.meta.totalElements}건
+                    {t('cardAdd.resultCount', { count: catalogQ.data.meta.totalElements })}
                   </span>
                 )}
               </div>
@@ -172,7 +175,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                 search
                 value={keyword}
                 onChange={e => setKeyword(e.target.value)}
-                placeholder="카드명 또는 발급사 검색"
+                placeholder={t('cardAdd.searchPlaceholder')}
                 className="pl-9"
               />
             </div>
@@ -193,7 +196,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                   ))}
                 </div>
               ) : items.length === 0 ? (
-                <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">검색 결과가 없어요</div>
+                <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">{t('cardAdd.noResults')}</div>
               ) : (
                 items.map(c => {
                   const active = selected?.rowId === c.rowId
@@ -246,14 +249,14 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                                 letterSpacing: '0.04em',
                               }}
                             >
-                              단종
+                              {t('editDialog.discontinued')}
                             </span>
                           )}
                         </div>
                         <div className="truncate text-[11.5px] text-[var(--fg-tertiary)] mt-0.5">
-                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? '신용' : '체크'}
+                          {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? t('cardTypeShort.credit') : t('cardTypeShort.check')}
                           {c.annualFee.amount > 0 && (
-                            <> · 연회비 {c.annualFee.amount.toLocaleString('ko-KR')}원</>
+                            <> · {t('editDialog.annualFeeValue', { amount: KRW(c.annualFee.amount) })}</>
                           )}
                         </div>
                       </div>
@@ -265,18 +268,18 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
           </div>
 
           <div>
-            <Label htmlFor="card-nickname" className="text-[13px] font-medium mb-2 block">별칭 (선택)</Label>
+            <Label htmlFor="card-nickname" className="text-[13px] font-medium mb-2 block">{t('cardAdd.nicknameOptional')}</Label>
             <Input
               id="card-nickname"
               value={nickname}
               onChange={e => setNickname(e.target.value)}
-              placeholder={selected?.cardName ?? '예: 신한 Deep Dream'}
+              placeholder={selected?.cardName ?? t('cardAdd.nicknamePlaceholder')}
             />
           </div>
 
           <div>
             <Label htmlFor="card-outstanding" className="text-[13px] font-medium mb-2 block">
-              현재 사용액 (원)
+              {t('cardAdd.outstanding')}
             </Label>
             <Input
               id="card-outstanding"
@@ -290,7 +293,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
               onFocus={() => setOutstandingStr(prev => prev.replace(/,/g, ''))}
             />
             <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              청구될 금액을 입력하세요. 총 부채에 반영됩니다.
+              {t('cardAdd.outstandingHint')}
             </p>
           </div>
     </div>
@@ -300,7 +303,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
     <ModalFooter
       onCancel={handleClose}
       onSave={handleSubmit}
-      saveLabel={selected ? '추가' : '카드 선택 필요'}
+      saveLabel={selected ? tc('add') : t('cardAdd.selectRequired')}
       saving={createMut.isPending}
       saveDisabled={!selected}
     />
@@ -308,7 +311,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
 
   return (
     <ModalShell
-      title="카드 추가"
+      title={t('cardAdd.title')}
       onClose={handleClose}
       mobile={isMobile}
       size="md"
