@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { CircleCheck, Eye, EyeOff, Link2 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
@@ -18,6 +19,7 @@ import {
  * client_secret 은 서버에 암호화 저장되며 응답으로 반환되지 않는다(연결 여부만 표시).
  */
 export function TossConnectCard() {
+  const { t } = useTranslation('subscription')
   const credQ = useTossCredentialStatus()
   const register = useRegisterTossCredential()
   const disconnect = useDisconnectTossCredential()
@@ -36,18 +38,18 @@ export function TossConnectCard() {
       { clientId: clientId.trim(), clientSecret: clientSecret.trim() },
       {
         onSuccess: () => {
-          toast('토스증권이 연결되었어요')
+          toast(t('toss.toastConnected'))
           setClientId('')
           setClientSecret('')
         },
-        onError: () => toast.error('인증정보가 올바르지 않아요'),
+        onError: () => toast.error(t('toss.toastInvalid')),
       },
     )
   }
   const onDisconnect = () =>
     disconnect.mutate(undefined, {
-      onSuccess: () => toast('토스증권 연결을 해제했어요'),
-      onError: () => toast.error('해제에 실패했어요'),
+      onSuccess: () => toast(t('toss.toastDisconnected')),
+      onError: () => toast.error(t('toss.toastDisconnectFailed')),
     })
 
   return (
@@ -61,7 +63,7 @@ export function TossConnectCard() {
           paddingLeft: 2,
         }}
       >
-        증권 데이터 연동
+        {t('toss.title')}
       </div>
       <Card variant="bordered" style={{ padding: 0, overflow: 'hidden' }}>
         {/* 헤더 */}
@@ -83,15 +85,15 @@ export function TossConnectCard() {
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>
-              토스증권 연결
+              {t('toss.connectTitle')}
             </div>
             <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 3, lineHeight: 1.5 }}>
-              본인 API 키를 등록하면 보유 주식·시세를 자동으로 가져와요
+              {t('toss.connectDesc')}
             </div>
           </div>
           {connected && (
             <Badge variant="success" style={{ flexShrink: 0 }}>
-              연결됨
+              {t('toss.connected')}
             </Badge>
           )}
         </div>
@@ -110,13 +112,13 @@ export function TossConnectCard() {
             >
               <CircleCheck size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>토스증권 API 키 연결됨</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>{t('toss.keyConnected')}</div>
                 <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                  {verifiedAt ? `마지막 검증 · ${verifiedAt.slice(0, 10)}` : '보유 주식·시세 자동 수집 중'}
+                  {verifiedAt ? t('toss.lastVerified', { date: verifiedAt.slice(0, 10) }) : t('toss.autoCollecting')}
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={onDisconnect} loading={disconnect.isPending}>
-                연결 해제
+                {t('toss.disconnect')}
               </Button>
             </div>
           </div>
@@ -127,7 +129,7 @@ export function TossConnectCard() {
               <Input
                 value={clientId}
                 onChange={e => setClientId(e.target.value)}
-                placeholder="토스증권 개발자센터 발급 Client ID"
+                placeholder={t('toss.clientIdPlaceholder')}
                 autoComplete="off"
                 spellCheck={false}
                 className="w-full"
@@ -151,7 +153,7 @@ export function TossConnectCard() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSecret(v => !v)}
-                  aria-label="비밀 표시 전환"
+                  aria-label={t('toss.toggleSecret')}
                   style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32 }}
                 >
                   {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -165,10 +167,10 @@ export function TossConnectCard() {
               disabled={!canConnect}
               style={{ width: '100%' }}
             >
-              연결하기
+              {t('toss.connect')}
             </Button>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-              키는 서버에 암호화되어 저장되며, 본인만 사용합니다. 발급은 토스증권 개발자센터에서 받을 수 있어요.
+              {t('toss.keyHint')}
             </div>
           </div>
         )}

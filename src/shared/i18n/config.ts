@@ -25,6 +25,7 @@ import koStocks from '@/locales/ko/stocks.json'
 import koStats from '@/locales/ko/stats.json'
 import koMore from '@/locales/ko/more.json'
 import koRecurring from '@/locales/ko/recurring.json'
+import koSubscription from '@/locales/ko/subscription.json'
 
 import enCommon from '@/locales/en/common.json'
 import enLayout from '@/locales/en/layout.json'
@@ -48,6 +49,7 @@ import enStocks from '@/locales/en/stocks.json'
 import enStats from '@/locales/en/stats.json'
 import enMore from '@/locales/en/more.json'
 import enRecurring from '@/locales/en/recurring.json'
+import enSubscription from '@/locales/en/subscription.json'
 
 // 지원하는 언어 목록
 export const SUPPORTED_LANGUAGES = ['ko', 'en'] as const
@@ -57,7 +59,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo',
   'timer', 'expense', 'budget', 'card', 'category', 'asset', 'dashboard', 'dutchPay',
-  'notification', 'login', 'user', 'export', 'settings', 'stocks', 'stats', 'more', 'recurring'
+  'notification', 'login', 'user', 'export', 'settings', 'stocks', 'stats', 'more', 'recurring', 'subscription'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
 
@@ -86,6 +88,7 @@ const resources = {
     stats: koStats,
     more: koMore,
     recurring: koRecurring,
+    subscription: koSubscription,
   },
   en: {
     common: enCommon,
@@ -110,6 +113,7 @@ const resources = {
     stats: enStats,
     more: enMore,
     recurring: enRecurring,
+    subscription: enSubscription,
   },
 }
 
