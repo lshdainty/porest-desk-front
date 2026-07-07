@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
 import {
@@ -15,14 +16,15 @@ interface Props {
 }
 
 export function AvailableBenefitsList({ benefits }: Props) {
+  const { t } = useTranslation('card')
   if (benefits.length === 0) {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">혜택</CardTitle>
+          <CardTitle className="text-base">{t('detail.benefitsTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="pb-6 text-sm text-muted-foreground">
-          등록된 혜택이 없습니다
+          {t('detail.noBenefits')}
         </CardContent>
       </Card>
     )
@@ -31,7 +33,7 @@ export function AvailableBenefitsList({ benefits }: Props) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-base">혜택</CardTitle>
+        <CardTitle className="text-base">{t('detail.benefitsTitle')}</CardTitle>
         <Badge variant="secondary" className="rounded-full">
           {benefits.length}
         </Badge>

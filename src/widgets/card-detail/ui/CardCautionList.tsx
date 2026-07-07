@@ -1,4 +1,5 @@
 import { AlertTriangle, ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import {
   Collapsible,
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function CardCautionList({ cautions }: Props) {
+  const { t } = useTranslation('card')
   if (cautions.length === 0) return null
 
   return (
@@ -21,7 +23,7 @@ export function CardCautionList({ cautions }: Props) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
-          유의사항
+          {t('detail.cautionsTitle')}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
@@ -39,7 +41,7 @@ export function CardCautionList({ cautions }: Props) {
                     className="group flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40 disabled:cursor-default disabled:hover:bg-transparent"
                   >
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                      {summary || '세부 사항'}
+                      {summary || t('detail.detailsFallback')}
                     </span>
                     {hasDetail && (
                       <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
