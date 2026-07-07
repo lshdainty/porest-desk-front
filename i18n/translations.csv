@@ -14,6 +14,8 @@ common,close,닫기,Close
 common,add,추가,Add
 common,next,다음,Next
 common,prev,이전,Previous
+common,searchComingSoon,검색 기능 준비 중,Search coming soon
+common,searchComingSoonDesc,v0.7 에 추가 예정,Coming in v0.7
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
 layout,calendar,캘린더,Calendar
@@ -638,6 +640,7 @@ login,sso.description,로그인하려면 아래 버튼을 클릭하세요.,Click
 login,sso.login,로그인,Log in
 login,sso.redirecting,로그인 페이지로 이동 중...,Redirecting to login...
 login,sso.notice,통합 인증 시스템(SSO)을 통해 로그인합니다.,Log in through the Single Sign-On (SSO) system.
+login,authenticating,인증 중…,Authenticating…
 expense,budget.save,저장,Save
 expense,budget.deleteConfirm.title,예산 삭제,Delete Budget
 expense,budget.deleteConfirm.message,"이 예산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this budget? This action cannot be undone."

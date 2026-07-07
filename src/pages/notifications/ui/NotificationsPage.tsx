@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ChevronRight, X } from 'lucide-react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
@@ -44,6 +45,8 @@ function NotificationsPageSkeleton() {
  *       unreadCount 는 별도 useUnreadCount 쿼리.
  */
 export function NotificationsPage() {
+  const { t } = useTranslation('notification')
+  const { t: tCommon } = useTranslation('common')
   const navigate = useNavigate()
   const { mobile } = useOutletContext<OutletCtx>()
   const { data: notifications = [], isLoading } = useNotifications()
@@ -65,7 +68,7 @@ export function NotificationsPage() {
         onClick={() => markAllRead.mutate()}
         className="text-[var(--fg-primary)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-primary)]"
       >
-        모두 읽음
+        {t('markAllRead')}
       </Button>
     ) : null
 
@@ -76,7 +79,7 @@ export function NotificationsPage() {
   } else if (notifications.length === 0) {
     body = (
       <div className="px-5 py-10 text-center text-sm text-[var(--fg-tertiary)]">
-        아직 알림이 없어요
+        {t('popover.empty')}
       </div>
     )
   } else {
@@ -97,7 +100,7 @@ export function NotificationsPage() {
                   deleteNotif.mutate(n.rowId)
                 }}
                 className="h-7 w-7 text-[var(--fg-tertiary)]"
-                aria-label="삭제"
+                aria-label={tCommon('delete')}
               >
                 <X size={12} />
               </Button>
@@ -122,8 +125,12 @@ export function NotificationsPage() {
         }}
       >
         <span>
-          읽지 않은 알림{' '}
-          <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }}>{unreadCount}</b>개
+          <Trans
+            t={t}
+            i18nKey="popover.unread"
+            values={{ count: unreadCount }}
+            components={{ b: <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }} /> }}
+          />
         </span>
         {!mobile && <div className="ml-auto">{markAllButton}</div>}
       </div>
@@ -145,7 +152,7 @@ export function NotificationsPage() {
         onClick={() => navigate('/desk/settings?section=notifications')}
         className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
       >
-        알림 설정 <ChevronRight size={12} />
+        {t('prefs.title')} <ChevronRight size={12} />
       </Button>
     </div>
   )
@@ -154,7 +161,7 @@ export function NotificationsPage() {
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title="알림" trailing={markAllButton} />
+        <MobileBackHeader title={t('title')} trailing={markAllButton} />
         <div className="m-scroll" style={{ padding: 0 }}>
           {unreadSub}
           {body}
