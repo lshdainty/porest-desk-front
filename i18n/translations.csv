@@ -465,6 +465,20 @@ asset,editDialog.includeDiscontinued,단종 포함,Include discontinued
 asset,editDialog.discontinued,단종,Discontinued
 asset,cardTypeShort.credit,신용,Credit
 asset,cardTypeShort.check,체크,Check
+asset,cardAdd.newCard,새 카드,New card
+asset,cardAdd.cardType,카드 종류,Card type
+asset,cardAdd.cardProduct,카드 상품,Card product
+asset,cardAdd.includeDiscontinuedTitle,단종된 카드 상품도 검색 결과에 포함합니다,Include discontinued cards in search results
+asset,cardAdd.includeDiscontinued,단종 포함,Include discontinued
+asset,cardAdd.resultCount,총 {{count}}건,{{count}} total
+asset,cardAdd.searchPlaceholder,카드명 또는 발급사 검색,Search card name or issuer
+asset,cardAdd.noResults,검색 결과가 없어요,No results
+asset,cardAdd.nicknameOptional,별칭 (선택),Nickname (optional)
+asset,cardAdd.nicknamePlaceholder,예: 신한 Deep Dream,e.g. Shinhan Deep Dream
+asset,cardAdd.outstanding,현재 사용액 (원),Current balance (KRW)
+asset,cardAdd.outstandingHint,청구될 금액을 입력하세요. 총 부채에 반영됩니다.,Enter the billed amount. It counts toward total debt.
+asset,cardAdd.selectRequired,카드 선택 필요,Select a card
+asset,cardAdd.title,카드 추가,Add card
 asset,editDialog.annualFeeValue,연회비 {{amount}}원,Annual fee {{amount}} KRW
 asset,editDialog.billingCycle,청구 사이클 (선택),Billing Cycle (optional)
 asset,editDialog.creditLimit,신용한도 (원),Credit Limit (KRW)
