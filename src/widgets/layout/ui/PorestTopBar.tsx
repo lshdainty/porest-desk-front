@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
 import {
   disablePdHideAmounts,
@@ -14,6 +15,7 @@ import { Button } from '@/shared/ui/button'
 import { ModeToggle } from '@/shared/ui/mode-toggle'
 
 export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
+  const { t } = useTranslation('layout')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
   const { data: unreadCount = 0 } = useUnreadCount()
@@ -33,15 +35,15 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
       <SidebarTrigger className="h-8 w-8" />
       <div className="top__search">
         <Search size={15} />
-        <input placeholder="거래, 카테고리, 계좌 검색" />
+        <input placeholder={t('searchPlaceholder')} />
       </div>
       <div className="top__actions">
         <Button
           variant="ghost"
           size="icon"
           onClick={handleHideToggle}
-          title={hidden ? '금액 표시' : '금액 가리기'}
-          aria-label={hidden ? '금액 표시' : '금액 가리기'}
+          title={hidden ? t('showAmounts') : t('hideAmounts')}
+          aria-label={hidden ? t('showAmounts') : t('hideAmounts')}
         >
           {hidden ? <EyeOff size={18} /> : <Eye size={18} />}
         </Button>
@@ -49,7 +51,7 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="알림"
+          aria-label={t('notifications')}
           onClick={() => setNotifOpen(v => !v)}
           className="relative"
         >
@@ -64,14 +66,14 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="설정"
+          aria-label={t('settings')}
           onClick={() => navigate('/desk/settings')}
         >
           <Settings size={18} />
         </Button>
         <Button size="sm" style={{ marginLeft: 6 }} onClick={onOpenAdd}>
           <Plus size={14} strokeWidth={2.4} />
-          내역 추가
+          {t('addRecord')}
         </Button>
       </div>
       {notifOpen && (

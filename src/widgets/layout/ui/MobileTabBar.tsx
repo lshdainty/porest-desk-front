@@ -1,19 +1,21 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Calendar1, Home, Menu, Plus, ReceiptText } from 'lucide-react'
 
 type TabItem =
-  | { id: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string; isFab?: false }
-  | { id: string; label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; isFab: true }
+  | { id: string; labelKey: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; path: string; isFab?: false }
+  | { id: string; labelKey: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; isFab: true }
 
 const TABS: TabItem[] = [
-  { id: 'home', label: '홈', icon: Home, path: '/desk' },
-  { id: 'tx', label: '가계부', icon: ReceiptText, path: '/desk/expense' },
-  { id: 'add', label: '', icon: Plus, isFab: true },
-  { id: 'calendar', label: '캘린더', icon: Calendar1, path: '/desk/calendar' },
-  { id: 'more', label: '전체', icon: Menu, path: '/desk/more' },
+  { id: 'home', labelKey: 'home', icon: Home, path: '/desk' },
+  { id: 'tx', labelKey: 'expense', icon: ReceiptText, path: '/desk/expense' },
+  { id: 'add', labelKey: '', icon: Plus, isFab: true },
+  { id: 'calendar', labelKey: 'calendar', icon: Calendar1, path: '/desk/calendar' },
+  { id: 'more', labelKey: 'all', icon: Menu, path: '/desk/more' },
 ]
 
 export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
+  const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -22,11 +24,11 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
 
   return (
     <nav className="m-tabbar">
-      {TABS.map(t => {
-        const IconComp = t.icon
-        if (t.isFab) {
+      {TABS.map(tab => {
+        const IconComp = tab.icon
+        if (tab.isFab) {
           return (
-            <button key={t.id} className="m-tab" onClick={onAdd} style={{ position: 'relative' }}>
+            <button key={tab.id} className="m-tab" onClick={onAdd} style={{ position: 'relative' }}>
               <span
                 style={{
                   width: 44,
@@ -48,15 +50,15 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
             </button>
           )
         }
-        const active = isActive(t.path)
+        const active = isActive(tab.path)
         return (
           <button
-            key={t.id}
+            key={tab.id}
             className={`m-tab ${active ? 'active' : ''}`}
-            onClick={() => navigate(t.path)}
+            onClick={() => navigate(tab.path)}
           >
             <IconComp size={22} strokeWidth={active ? 2.2 : 1.9} />
-            <span>{t.label}</span>
+            <span>{t(tab.labelKey)}</span>
           </button>
         )
       })}
