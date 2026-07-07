@@ -1,26 +1,28 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Bell, Search } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { useUnreadCount } from '@/features/notification'
 import { NAV } from './PorestSidebar'
 
-const MTITLE: Record<string, string> = {
-  '/desk': '홈',
-  '/desk/asset': '자산',
-  '/desk/expense': '가계부',
-  '/desk/stats': '통계·분석',
-  '/desk/budget': '예산',
-  '/desk/calendar': '캘린더',
+// 값은 layout ns i18n 키 — 렌더 시 t(titleKey(pathname)) 로 해석.
+const MTITLE_KEY: Record<string, string> = {
+  '/desk': 'home',
+  '/desk/asset': 'asset',
+  '/desk/expense': 'expense',
+  '/desk/stats': 'statsAnalysis',
+  '/desk/budget': 'budget',
+  '/desk/calendar': 'calendar',
   // '/desk/todo' · '/desk/dutch-pay' · '/desk/memo' · '/desk/card-benefit' · '/desk/notifications'
   // — 풀스크린 페이지(자체 ← 헤더)라 전역 헤더 미사용 (AppLayout FULLSCREEN_PATHS)
-  '/desk/more': '전체',
-  '/desk/search': '검색',
+  '/desk/more': 'all',
+  '/desk/search': 'search',
 }
 
-function title(pathname: string) {
-  if (MTITLE[pathname]) return MTITLE[pathname]
+function titleKey(pathname: string): string {
+  if (MTITLE_KEY[pathname]) return MTITLE_KEY[pathname]
   const nav = NAV.find(n => pathname.startsWith(n.path) && n.path !== '/desk')
-  return nav?.label ?? '홈'
+  return nav?.labelKey ?? 'home'
 }
 
 /**
@@ -30,6 +32,7 @@ function title(pathname: string) {
  * 테마 전환은 설정>표시 설정, 금액 가리기는 홈·자산 순자산 카드 눈 버튼으로 이동.
  */
 export function MobileHeader() {
+  const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
   const { data: unreadCount = 0 } = useUnreadCount()
@@ -37,12 +40,12 @@ export function MobileHeader() {
 
   return (
     <div className="m-header">
-      <h1>{title(location.pathname)}</h1>
+      <h1>{t(titleKey(location.pathname))}</h1>
       {isHome ? (
         <Button
           variant="ghost"
           size="iconLg"
-          aria-label="알림"
+          aria-label={t('notifications')}
           onClick={() => navigate('/desk/notifications')}
           className="relative"
         >
@@ -58,7 +61,7 @@ export function MobileHeader() {
         <Button
           variant="ghost"
           size="iconLg"
-          aria-label="검색"
+          aria-label={t('search')}
           onClick={() => navigate('/desk/search')}
         >
           <Search />

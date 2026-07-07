@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, SquareCheckBig,
   FileText, ReceiptText, FilePen, TrendingUp, Users, Wallet,
@@ -20,29 +21,31 @@ import { useHasSecurities } from '@/features/subscription/model/useSubscription'
 
 export interface NavItem {
   id: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>
   path: string
 }
 
 // NAV 는 MobileHeader/MorePage 가 import 하는 공용 상수 — 컴포넌트 파일에서 함께 export.
+// label 은 layout ns i18n 키(labelKey) — 렌더 시 t(labelKey) 로 해석.
 // (Fast Refresh 경고는 의도된 것이라 이 줄만 예외 처리. button.tsx buttonVariants 와 동일 관례.)
 // eslint-disable-next-line react-refresh/only-export-components
 export const NAV: NavItem[] = [
-  { id: 'home',     label: '홈',        icon: LayoutDashboard, path: '/desk' },
-  { id: 'assets',   label: '자산',      icon: Wallet,          path: '/desk/asset' },
-  { id: 'stocks',   label: '증권',      icon: TrendingUp,      path: '/desk/stocks' },
-  { id: 'tx',       label: '가계부',    icon: ReceiptText,         path: '/desk/expense' },
-  { id: 'stats',    label: '통계·분석', icon: ChartPie,        path: '/desk/stats' },
-  { id: 'budget',   label: '예산',      icon: FilePen,          path: '/desk/budget' },
-  { id: 'calendar', label: '캘린더',    icon: Calendar1,    path: '/desk/calendar' },
-  { id: 'todo',     label: '할 일',     icon: SquareCheckBig,      path: '/desk/todo' },
-  { id: 'dutch',    label: '더치페이',  icon: Users,      path: '/desk/dutch-pay' },
-  { id: 'memo',     label: '메모',      icon: FileText,     path: '/desk/memo' },
-  { id: 'card-benefit', label: '카드 혜택', icon: CreditCard,   path: '/desk/card-benefit' },
+  { id: 'home',     labelKey: 'home',          icon: LayoutDashboard, path: '/desk' },
+  { id: 'assets',   labelKey: 'asset',         icon: Wallet,          path: '/desk/asset' },
+  { id: 'stocks',   labelKey: 'stocks',        icon: TrendingUp,      path: '/desk/stocks' },
+  { id: 'tx',       labelKey: 'expense',       icon: ReceiptText,         path: '/desk/expense' },
+  { id: 'stats',    labelKey: 'statsAnalysis', icon: ChartPie,        path: '/desk/stats' },
+  { id: 'budget',   labelKey: 'budget',        icon: FilePen,          path: '/desk/budget' },
+  { id: 'calendar', labelKey: 'calendar',      icon: Calendar1,    path: '/desk/calendar' },
+  { id: 'todo',     labelKey: 'todoNav',       icon: SquareCheckBig,      path: '/desk/todo' },
+  { id: 'dutch',    labelKey: 'dutchPay',      icon: Users,      path: '/desk/dutch-pay' },
+  { id: 'memo',     labelKey: 'memo',          icon: FileText,     path: '/desk/memo' },
+  { id: 'card-benefit', labelKey: 'cardBenefit', icon: CreditCard,   path: '/desk/card-benefit' },
 ]
 
 export function PorestSidebar() {
+  const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
   const hasSecurities = useHasSecurities()
@@ -65,12 +68,12 @@ export function PorestSidebar() {
           return (
             <SidebarMenuItem key={it.id}>
               <SidebarMenuButton
-                tooltip={it.label}
+                tooltip={t(it.labelKey)}
                 isActive={isActive(it.path)}
                 onClick={() => navigate(it.path)}
               >
                 <IconComp />
-                <span>{it.label}</span>
+                <span>{t(it.labelKey)}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
@@ -105,8 +108,8 @@ export function PorestSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {renderGroup('워크스페이스', gate(NAV.slice(0, 6)))}
-        {renderGroup('기록', gate(NAV.slice(6)))}
+        {renderGroup(t('workspace'), gate(NAV.slice(0, 6)))}
+        {renderGroup(t('records'), gate(NAV.slice(6)))}
       </SidebarContent>
 
       <SidebarFooter>
@@ -120,7 +123,7 @@ export function PorestSidebar() {
                 {userInitial}
               </span>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold" style={{ fontSize: 'var(--text-body-sm)' }}>{userName || '사용자'}</span>
+                <span className="truncate font-semibold" style={{ fontSize: 'var(--text-body-sm)' }}>{userName || t('userFallback')}</span>
                 <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
                   {userEmail || '—'}
                 </span>

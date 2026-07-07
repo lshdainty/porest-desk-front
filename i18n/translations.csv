@@ -32,6 +32,24 @@ layout,more,더보기,More
 layout,menu,메뉴,Menu
 layout,logout,로그아웃,Log out
 layout,changePassword,비밀번호 변경,Change Password
+layout,home,홈,Home
+layout,stocks,증권,Stocks
+layout,statsAnalysis,통계·분석,Stats & Analysis
+layout,budget,예산,Budget
+layout,stats,통계,Stats
+layout,cardBenefit,카드 혜택,Card Benefits
+layout,todoNav,할 일,Todo
+layout,all,전체,All
+layout,search,검색,Search
+layout,searchPlaceholder,"거래, 카테고리, 계좌 검색","Search transactions, categories, accounts"
+layout,back,뒤로,Back
+layout,notifications,알림,Notifications
+layout,showAmounts,금액 표시,Show amounts
+layout,hideAmounts,금액 가리기,Hide amounts
+layout,addRecord,내역 추가,Add Transaction
+layout,workspace,워크스페이스,Workspace
+layout,records,기록,Records
+layout,userFallback,사용자,User
 more,search,메뉴 검색,Search menu
 more,noResults,검색 결과가 없습니다,No search results
 more,group.money,돈 관리,Money
