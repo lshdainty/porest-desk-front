@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
-import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
   disablePdHideAmounts,
@@ -676,7 +676,7 @@ function HomeDesktop() {
               {isUp ? '+' : ''}{changePercent.toFixed(1)}%
               {changeAmount !== 0 && (
                 <HideUnit>
-                  <>{' '}({isUp ? '+' : '−'}{KRW(Math.abs(changeAmount))}원)</>
+                  <>{' '}({isUp ? '+' : '−'}{money(Math.abs(changeAmount))})</>
                 </HideUnit>
               )}
             </span>

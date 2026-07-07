@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW } from '@/shared/lib/porest/format'
+import { KRW, money } from '@/shared/lib/porest/format'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -1093,7 +1093,7 @@ export const StatsPage = () => {
                   return (
                     <div
                       key={`${row.labelKey}-${col.dow}`}
-                      title={hidden ? `${t(row.labelKey)}·${t(col.labelKey)}` : `${t(row.labelKey)}·${t(col.labelKey)} ${KRW(value)}원`}
+                      title={hidden ? `${t(row.labelKey)}·${t(col.labelKey)}` : `${t(row.labelKey)}·${t(col.labelKey)} ${money(value)}`}
                       style={{
                         aspectRatio: '1', // 앱 AspectRatio(1) 정합 — 정사각형
                         borderRadius: 'var(--radius-sm)',
@@ -1583,7 +1583,7 @@ export const StatsPage = () => {
                       dataKey: 'savings',
                       label: t('trend.savings'),
                       color: (v) => (v < 0 ? 'var(--fg-expense)' : 'var(--status-info-fg)'),
-                      format: (v) => `${v >= 0 ? '+' : '−'}${KRW(Math.abs(v))}원`,
+                      format: (v) => `${v >= 0 ? '+' : '−'}${money(Math.abs(v))}`,
                     },
                   ]}
                 />
