@@ -8,7 +8,7 @@ import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
-import { KRW } from '@/shared/lib/porest/format'
+import { money } from '@/shared/lib/porest/format'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { useUpdateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
@@ -161,7 +161,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
         </div>
         <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
           {isExpense ? '−' : '+'}
-          {KRW(Math.abs(recurring.amount))}원
+          {money(Math.abs(recurring.amount))}
         </div>
       </div>
 
