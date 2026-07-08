@@ -404,6 +404,26 @@ asset,assetType.cash,현금,Cash
 asset,assetType.savings,적금,Savings
 asset,assetType.loan,대출,Loan
 asset,assetType.investment,투자,Investment
+asset,assetType.checking,입출금,Checking
+asset,assetType.deposit,예금,Deposit
+asset,assetForm.noResults,검색 결과가 없어요,No results
+asset,assetForm.preview,미리보기,Preview
+asset,assetForm.entryCount,총 {{count}}개,{{count}} total
+asset,assetAdd.title,계좌 추가,Add account
+asset,assetAdd.newAccount,새 계좌,New account
+asset,assetAdd.institutionBrand,기관·브랜드,Institution / Brand
+asset,assetAdd.searchPlaceholder,은행명 또는 증권사 검색,Search bank or brokerage
+asset,assetAdd.nickname,별칭,Nickname
+asset,assetAdd.nicknamePlaceholder,예: 신한 주거래,e.g. Shinhan main account
+asset,assetAdd.accountType,계좌 종류,Account type
+asset,assetAdd.accountNumber,계좌번호,Account number
+asset,assetAdd.balance,잔액 (원),Balance (KRW)
+asset,investAdd.title,투자 추가,Add investment
+asset,investAdd.newProduct,새 투자 상품,New investment
+asset,investAdd.searchPlaceholder,증권사·가상자산거래소·상품거래소 검색,Search brokerage/crypto/commodity exchange
+asset,investAdd.productName,상품·종목명,Product / Symbol name
+asset,investAdd.productPlaceholder,"예: KODEX 200, 해외 ETF 포트폴리오","e.g. KODEX 200, overseas ETF portfolio"
+asset,investAdd.valuation,평가액 (원),Valuation (KRW)
 asset,form.assetName,자산명,Asset Name
 asset,form.assetNamePlaceholder,자산명을 입력하세요,Enter asset name
 asset,form.assetType,자산 유형,Asset Type
