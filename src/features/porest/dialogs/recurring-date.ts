@@ -1,4 +1,5 @@
 import type { RecurringFrequency } from '@/entities/recurring-transaction'
+import { formatMonthDay } from '@/shared/lib/date'
 
 // 반복 거래 다이얼로그 공용 date helpers — RecurringFromTxDialog / RecurringAddDialog 공유.
 // (컴포넌트 파일이 함수도 export하면 react-refresh 룰 위반이라 별도 .ts 로 분리)
@@ -17,7 +18,7 @@ export function addYears(iso: string, years: number): string {
 export function formatKoreanMonthDay(iso: string): string {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso
-  return `${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`
+  return formatMonthDay(d, { pad: true })
 }
 
 export function previewNextDates(

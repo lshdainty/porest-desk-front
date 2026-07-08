@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { formatMonthDayWeekday } from '@/shared/lib/date'
 import type { IEvent } from '@/features/calendar/model/interfaces'
 
 /**
@@ -30,8 +31,7 @@ export function DayEventsDialog({
   onTapEvent: (event: IEvent) => void
 }) {
   const { t } = useTranslation('calendar')
-  const dows = ['일', '월', '화', '수', '목', '금', '토']
-  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dows[date.getDay()] ?? ''}요일`
+  const title = formatMonthDayWeekday(date)
 
   const hhmm = (iso: string) => {
     const d = parseISO(iso)
