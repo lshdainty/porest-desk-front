@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { KRW } from '@/shared/lib/porest/format'
+import { formatMonthShort } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Badge } from '@/shared/ui/badge'
@@ -730,7 +731,7 @@ export const BudgetPage = () => {
       percent: { label: t('complianceRate'), color: 'var(--bg-brand)' },
     } satisfies ChartConfig
     const data = rows.map(b => ({
-      label: `${b.month}월`,
+      label: formatMonthShort(b.month),
       percent: b.compliancePercent,
       limit: b.totalLimit,
       spent: b.totalSpent,

@@ -2,6 +2,7 @@ import { CalendarRange, Columns, Grid2x2, Grid3x3, List, ChevronLeft, ChevronRig
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, ko } from 'date-fns/locale'
+import { formatYear, formatMonthShort } from '@/shared/lib/date'
 import { useMemo, useState } from 'react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
@@ -46,7 +47,7 @@ const MonthYearPickerContent = ({
         >
           <ChevronLeft size={16} />
         </Button>
-        <span className="text-sm font-semibold">{pickerYear}년</span>
+        <span className="text-sm font-semibold">{formatYear(pickerYear)}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -77,7 +78,7 @@ const MonthYearPickerContent = ({
                   : 'hover:bg-accent text-foreground',
               )}
             >
-              {i + 1}월
+              {formatMonthShort(i + 1)}
             </button>
           )
         })}
