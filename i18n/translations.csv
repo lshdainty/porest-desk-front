@@ -1975,3 +1975,12 @@ subscription,toss.toastConnected,토스증권이 연결되었어요,Toss Securit
 subscription,toss.toastInvalid,인증정보가 올바르지 않아요,Invalid credentials
 subscription,toss.toastDisconnected,토스증권 연결을 해제했어요,Toss Securities disconnected
 subscription,toss.toastDisconnectFailed,해제에 실패했어요,Disconnect failed
+date,justNow,방금,Just now
+date,minutesAgo,{{count}}분 전,{{count}} min ago
+date,hoursAgo,{{count}}시간 전,{{count}} hr ago
+date,daysAgo,{{count}}일 전,{{count}} days ago
+date,yesterday,어제,Yesterday
+date,today,오늘,Today
+date,tomorrow,내일,Tomorrow
+date,daysLater,{{count}}일 후,in {{count}} days
+date,dday,D-{{count}},D-{{count}}

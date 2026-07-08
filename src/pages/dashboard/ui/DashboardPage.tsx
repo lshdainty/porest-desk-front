@@ -988,7 +988,7 @@ function HomeDesktop() {
                       flexShrink: 0,
                     }}
                   >
-                    D-{p.d}
+                    {t('date:dday', { count: p.d })}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
@@ -1092,7 +1092,7 @@ function HomeDesktop() {
                     flexShrink: 0,
                   }}
                 >
-                  D-{ev.daysUntil}
+                  {t('date:dday', { count: ev.daysUntil })}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{ev.title}</div>
@@ -1553,7 +1553,7 @@ function UpcomingMobileCard({
                 {ev.title}
               </span>
               <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-                {ev.daysUntil === 0 ? t('schedule.today') : ev.daysUntil === 1 ? t('schedule.tomorrow') : `D-${ev.daysUntil}`}
+                {ev.daysUntil === 0 ? t('schedule.today') : ev.daysUntil === 1 ? t('schedule.tomorrow') : t('date:dday', { count: ev.daysUntil })}
               </span>
             </div>
           ))}

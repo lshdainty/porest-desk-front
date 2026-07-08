@@ -472,7 +472,7 @@ function UpcomingBillsCard() {
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
                   }}
                 >
-                  {it.daysLeft <= 0 ? '오늘' : `${it.daysLeft}일 후`} · {it.dateLabel}
+                  {it.daysLeft <= 0 ? t('date:today') : t('date:daysLater', { count: it.daysLeft })} · {it.dateLabel}
                 </span>
                 <span className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', flexShrink: 0 }}>
                   <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
