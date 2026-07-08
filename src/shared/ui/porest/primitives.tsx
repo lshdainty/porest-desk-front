@@ -4,6 +4,7 @@ import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
 import { KRW, money } from '@/shared/lib/porest/format'
+import { formatYearMonth, formatYear, formatMonthShort } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
 import { TX_ROW } from './tx-row-tokens'
@@ -221,7 +222,7 @@ export function MonthPicker({
   const curY = now.getFullYear()
   const curM = now.getMonth() + 1
 
-  const label = `${y}년 ${m}월`
+  const label = formatYearMonth(new Date(y, m - 1))
 
   const pick = (nm: number) => {
     onChange(`${viewY}-${String(nm).padStart(2, '0')}`)
@@ -266,7 +267,7 @@ export function MonthPicker({
         <ChevronLeft size={16} />
       </button>
       <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
-        {viewY}년
+        {formatYear(viewY)}
       </div>
       <button
         onClick={() => setViewY(viewY + 1)}
@@ -301,7 +302,7 @@ export function MonthPicker({
               fontFamily: 'inherit',
             }}
           >
-            {mm}월
+            {formatMonthShort(mm)}
           </button>
         )
       })}

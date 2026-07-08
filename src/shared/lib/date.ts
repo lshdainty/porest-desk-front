@@ -57,6 +57,36 @@ export const formatMonthDayWeekday = (input: Date | string): string => {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 ${DOW_KO[d.getDay()]}요일`
 }
 
+/** ko "Y년 M월" / en "MMM yyyy"(예: "Jul 2026"). */
+export const formatYearMonth = (input: Date | string): string => {
+  const d = toDate(input)
+  if (isEnLocale()) return format(d, 'MMM yyyy', { locale: enUS })
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
+}
+
+/** ko "Y년" / en "Y". 연도 number 직접 허용. */
+export const formatYear = (input: Date | string | number): string => {
+  const y = typeof input === 'number' ? input : toDate(input).getFullYear()
+  return isEnLocale() ? String(y) : `${y}년`
+}
+
+/** ko "Y년 Q분기" / en "Q{q} yyyy"(예: "Q3 2026"). */
+export const formatYearQuarter = (input: Date | string): string => {
+  const d = toDate(input)
+  const q = Math.floor(d.getMonth() / 3) + 1
+  return isEnLocale() ? `Q${q} ${d.getFullYear()}` : `${d.getFullYear()}년 ${q}분기`
+}
+
+/** 단월 라벨 — ko "M월"(pad 시 "07월") / en "MMM"(Jul). 월 number(1~12) 직접 허용. */
+export const formatMonthShort = (input: Date | string | number, opts: { pad?: boolean } = {}): string => {
+  if (isEnLocale()) {
+    const d = typeof input === 'number' ? new Date(2000, input - 1, 1) : toDate(input)
+    return format(d, 'MMM', { locale: enUS })
+  }
+  const m = typeof input === 'number' ? input : toDate(input).getMonth() + 1
+  return opts.pad ? `${String(m).padStart(2, '0')}월` : `${m}월`
+}
+
 export {
   format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,

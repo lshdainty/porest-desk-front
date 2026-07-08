@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
 import { KRW, money } from '@/shared/lib/porest/format'
+import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -96,9 +97,9 @@ const previousRange = ({ from, to, segMode }: RangeState): { from: Date; to: Dat
 }
 
 const periodLabel = ({ from, to, segMode }: RangeState): string => {
-  if (segMode === 'm') return `${from.getFullYear()}년 ${from.getMonth() + 1}월`
-  if (segMode === 'q') return `${from.getFullYear()}년 ${Math.floor(from.getMonth() / 3) + 1}분기`
-  if (segMode === 'y') return `${from.getFullYear()}년`
+  if (segMode === 'm') return formatYearMonth(from)
+  if (segMode === 'q') return formatYearQuarter(from)
+  if (segMode === 'y') return formatYear(from)
   const sameYear = from.getFullYear() === to.getFullYear()
   return sameYear
     ? `${from.getMonth() + 1}/${from.getDate()} ~ ${to.getMonth() + 1}/${to.getDate()}`

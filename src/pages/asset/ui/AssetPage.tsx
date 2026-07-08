@@ -10,6 +10,7 @@ import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
+import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
   disablePdHideAmounts,
@@ -84,7 +85,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
   const data = useMemo(
     () =>
       (trendQ.data ?? []).map(p => ({
-        monthLabel: `${String(p.month).padStart(2, '0')}월`,
+        monthLabel: formatMonthShort(p.month, { pad: true }),
         netWorth: p.netWorth,
       })),
     [trendQ.data],
@@ -261,7 +262,7 @@ function AssetCompositionCard({
     : `${(centerVal / 10_000).toFixed(0)}만`
 
   const today = new Date()
-  const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일 기준`
+  const dateLabel = t('date:asOf', { date: formatMonthDay(today) })
 
   return (
     <Card>
@@ -491,7 +492,7 @@ function formatDeadline(deadline: string | null): string | null {
   if (!deadline) return null
   const d = new Date(deadline)
   if (isNaN(d.getTime())) return null
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
+  return formatYearMonth(d)
 }
 
 function SavingGoalItem({

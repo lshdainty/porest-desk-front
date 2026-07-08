@@ -7,6 +7,7 @@ import {
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
+import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
   disablePdHideAmounts,
@@ -252,7 +253,7 @@ function DashboardHeroSkeleton({ mobile, year, month }: { mobile: boolean; year:
   return (
     <div className="balance-hero" style={mobile ? undefined : { padding: '28px 32px 24px' }}>
       <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-        <Wallet size={mobile ? 13 : 14} /> {mobile ? t('asset.netAsset') : <>{t('asset.netAsset')} · {year}년 {month}월</>}
+        <Wallet size={mobile ? 13 : 14} /> {mobile ? t('asset.netAsset') : <>{t('asset.netAsset')} · {formatYearMonth(new Date(year, month - 1))}</>}
       </div>
       <div className="balance-hero__amount num">
         <SkeletonBase className={mobile ? 'h-8 w-40 bg-white/15' : 'h-10 w-56 bg-white/15'} />
@@ -630,7 +631,7 @@ function HomeDesktop() {
           title: r.description || r.merchant || r.categoryName,
           amount: r.amount,
           d,
-          dateLabel: `${String(mm).padStart(2, '0')}월 ${String(dd).padStart(2, '0')}일`,
+          dateLabel: formatMonthDay(next, { pad: true }),
           nextIso: r.nextExecutionDate as string,
         }
       })
@@ -643,7 +644,7 @@ function HomeDesktop() {
       <div className="dash-grid__left">
         <div className="balance-hero" style={{ padding: '28px 32px 24px' }}>
           <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-            <Wallet size={14} /> {t('asset.netAsset')} · {periodY}년 {periodM}월
+            <Wallet size={14} /> {t('asset.netAsset')} · {formatYearMonth(new Date(periodY, periodM - 1))}
             <button
               onClick={handleHideToggle}
               title={hidden ? t('showAmount') : t('hideAmount')}
