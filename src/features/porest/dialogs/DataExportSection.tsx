@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { formatMonthDay } from '@/shared/lib/date'
 import {
   Braces,
   Calendar,
@@ -66,10 +67,7 @@ const TYPE_SLUG: Record<ExportDataType, string> = {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-const krLabel = (s: string) => {
-  const [, m, d] = s.split('-')
-  return `${Number(m)}월 ${Number(d)}일`
-}
+const krLabel = (s: string) => formatMonthDay(s)
 
 interface Range { start: string; end: string }
 

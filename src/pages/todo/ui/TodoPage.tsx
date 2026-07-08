@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
 import {
   Plus,
   Check,
@@ -76,8 +77,6 @@ const PRIO_ORDER: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
 type FilterKey = 'today' | 'week' | 'all' | 'done'
 
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
-const DOW = ['일', '월', '화', '수', '목', '금', '토']
-
 /** 로컬 오늘 'YYYY-MM-DD'. */
 function todayISO(): string {
   const d = new Date()
@@ -99,9 +98,7 @@ function dayDiff(a: string, b: string): number {
 
 /** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
 function kDate(s: string): { md: string; full: string } {
-  const [y, m, d] = s.split('-').map(Number)
-  const dow = DOW[new Date(y!, m! - 1, d!).getDay()]
-  return { md: `${m}월 ${d}일`, full: `${m}월 ${d}일 (${dow})` }
+  return { md: formatMonthDay(s), full: formatMonthDayDow(s) }
 }
 
 /** 상대 시간: 오늘/내일/어제/N일 후/N일 전(±7) · 그 외 'M월 D일'. */

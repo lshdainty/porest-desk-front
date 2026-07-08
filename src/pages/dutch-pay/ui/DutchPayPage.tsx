@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
 import {
   Plus,
   Check,
@@ -74,8 +75,6 @@ function perPersonOf(d: DutchPay): number {
 }
 
 // ── 날짜 유틸 ────────────────────────────────────────────────────────────────
-const DOW = ['일', '월', '화', '수', '목', '금', '토']
-
 function todayISO(): string {
   const d = new Date()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -86,14 +85,13 @@ function todayISO(): string {
 function kDateMd(s: string): string {
   const [y, m, d] = s.slice(0, 10).split('-').map(Number)
   if (!y || !m || !d) return s
-  return `${m}월 ${d}일`
+  return formatMonthDay(s)
 }
 /** 'YYYY-MM-DD' → 'M월 D일 (요일)'. */
 function kDateFull(s: string): string {
   const [y, m, d] = s.slice(0, 10).split('-').map(Number)
   if (!y || !m || !d) return s
-  const dow = DOW[new Date(y, m - 1, d).getDay()]
-  return `${m}월 ${d}일 (${dow})`
+  return formatMonthDayDow(s)
 }
 
 // '진행/완료' = isSettled.

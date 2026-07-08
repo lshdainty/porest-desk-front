@@ -3,6 +3,7 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
+import { formatMonthDayWeekday } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -423,9 +424,7 @@ function DayDetailDialog({
   onAddForDay?: () => void
 }) {
   const { t } = useTranslation('expense')
-  const dows = ['일', '월', '화', '수', '목', '금', '토']
-  const dow = dows[date.getDay()] ?? ''
-  const title = `${date.getMonth() + 1}월 ${date.getDate()}일 ${dow}요일`
+  const title = formatMonthDayWeekday(date)
   const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
   const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
   return (

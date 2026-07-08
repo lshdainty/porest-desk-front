@@ -1,4 +1,5 @@
 import { i18n } from '@/shared/i18n/config'
+import { formatMonthDay, weekdayShort } from '@/shared/lib/date'
 
 /** 현재 로케일이 영어인지. 순수 함수라 React 밖에서도 i18n.language 직접 참조. */
 const isEn = (): boolean => (i18n.language ?? '').startsWith('en')
@@ -47,8 +48,7 @@ export const formatDay = (dStr: string) => {
   const m = parts[1] ?? 1
   const d = parts[2] ?? 1
   const dt = new Date(y, m - 1, d)
-  const days = ['일', '월', '화', '수', '목', '금', '토']
-  return { md: `${m}월 ${d}일`, dow: days[dt.getDay()] ?? '', dt }
+  return { md: formatMonthDay(dt), dow: weekdayShort(dt), dt }
 }
 
 /**

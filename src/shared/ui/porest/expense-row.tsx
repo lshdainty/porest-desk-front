@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { KRW } from '@/shared/lib/porest/format'
+import { formatMonthDayDow } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
@@ -20,13 +21,10 @@ function formatExpenseTimeLabel(raw: string): string | null {
 /**
  * "M월 D일 (요일)" — 홈 최근 거래처럼 day-head 가 없는 컨텍스트에서 사용.
  */
-const DOW = ['일', '월', '화', '수', '목', '금', '토']
 function formatExpenseDateFull(raw: string): string {
   const day = raw.slice(0, 10)
   if (day.length !== 10) return day
-  const [, m, d] = day.split('-').map(Number)
-  const dow = DOW[new Date(`${day}T00:00:00`).getDay()]
-  return `${m}월 ${d}일 (${dow})`
+  return formatMonthDayDow(day)
 }
 
 export function CategoryChip({
