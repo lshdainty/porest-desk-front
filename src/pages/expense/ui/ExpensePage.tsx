@@ -3,7 +3,7 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
-import { formatMonthDayWeekday } from '@/shared/lib/date'
+import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -271,7 +271,7 @@ function Summary({
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
         <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.022em' }}>
-          {y}년 {Number(m)}월
+          {formatYearMonth(new Date(Number(y), Number(m) - 1))}
         </div>
         <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
         {headerRight && <div style={{ marginLeft: 'auto' }}>{headerRight}</div>}
