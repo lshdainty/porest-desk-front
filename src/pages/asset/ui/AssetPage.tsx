@@ -259,9 +259,11 @@ function AssetCompositionCard({
     ? activeTotal
     : netWorth
 
-  const totalLabel = Math.abs(centerVal) >= 10_000_000
-    ? `${(centerVal / 10_000_000).toFixed(2)}천만`
-    : `${(centerVal / 10_000).toFixed(0)}만`
+  const totalLabel = isEn()
+    ? formatChartAxis(centerVal)
+    : Math.abs(centerVal) >= 10_000_000
+      ? `${(centerVal / 10_000_000).toFixed(2)}천만`
+      : `${(centerVal / 10_000).toFixed(0)}만`
 
   const today = new Date()
   const dateLabel = t('date:asOf', { date: formatMonthDay(today) })
@@ -557,7 +559,7 @@ function SavingGoalItem({
         <div className="num" style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{pct.toFixed(0)}%</div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-            {KRW(goal.currentAmount)} / {(goal.targetAmount / 10_000).toFixed(0)}만
+            {KRW(goal.currentAmount)} / {isEn() ? formatChartAxis(goal.targetAmount) : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
           </div>
         </div>
       </div>

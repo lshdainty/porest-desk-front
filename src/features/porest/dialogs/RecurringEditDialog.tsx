@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { money } from '@/shared/lib/porest/format'
+import { formatMonthDay } from '@/shared/lib/date'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { useUpdateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
@@ -449,7 +450,8 @@ function addYears(iso: string, years: number): string {
 function formatKoreanMonthDay(iso: string): string {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso
-  return `${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`
+  // ko "03월 15일"(pad) 유지 / en "Mar 15" — 중앙 formatMonthDay 로케일 위임
+  return formatMonthDay(d, { pad: true })
 }
 
 function previewNextDates(
