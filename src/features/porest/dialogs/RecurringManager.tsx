@@ -217,7 +217,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       color: isToday ? 'var(--fg-on-danger)' : 'var(--fg-secondary)',
                     }}
                   >
-                    {isToday ? t('today') : `D-${days}`}
+                    {isToday ? t('today') : t('date:dday', { count: days })}
                   </span>
                   <span
                     style={{

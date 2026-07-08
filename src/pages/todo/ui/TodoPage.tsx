@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
+import { i18n } from '@/shared/i18n/config'
 import {
   Plus,
   Check,
@@ -104,11 +105,11 @@ function kDate(s: string): { md: string; full: string } {
 /** 상대 시간: 오늘/내일/어제/N일 후/N일 전(±7) · 그 외 'M월 D일'. */
 function relativeDate(due: string, today: string): string {
   const diff = dayDiff(today, due)
-  if (diff === 0) return '오늘'
-  if (diff === 1) return '내일'
-  if (diff === -1) return '어제'
-  if (diff > 0 && diff <= 7) return `${diff}일 후`
-  if (diff < 0 && diff >= -7) return `${-diff}일 전`
+  if (diff === 0) return i18n.t('date:today')
+  if (diff === 1) return i18n.t('date:tomorrow')
+  if (diff === -1) return i18n.t('date:yesterday')
+  if (diff > 0 && diff <= 7) return i18n.t('date:daysLater', { count: diff })
+  if (diff < 0 && diff >= -7) return i18n.t('date:daysAgo', { count: -diff })
   return kDate(due).md
 }
 
