@@ -28,6 +28,7 @@ import {
 } from 'date-fns'
 
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+import { money } from '@/shared/lib/porest/format'
 import type { CalendarEvent, Holiday } from '@/entities/calendar'
 import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
@@ -304,11 +305,11 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
   const isIncome = expense.expenseType === 'INCOME'
   const color = isIncome ? '#0147ad' : '#c73838'
   const sign = isIncome ? '+' : '-'
-  const formattedAmount = new Intl.NumberFormat('ko-KR').format(expense.amount)
+  const amount = money(expense.amount, { abs: true })
   const categoryName = expense.categoryName || ''
   const title = categoryName
-    ? `${categoryName} ${sign}${formattedAmount}원`
-    : `${sign}${formattedAmount}원`
+    ? `${categoryName} ${sign}${amount}`
+    : `${sign}${amount}`
 
   return {
     id: expense.rowId,
