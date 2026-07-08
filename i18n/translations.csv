@@ -16,6 +16,31 @@ common,next,다음,Next
 common,prev,이전,Previous
 common,searchComingSoon,검색 기능 준비 중,Search coming soon
 common,searchComingSoonDesc,v0.7 에 추가 예정,Coming in v0.7
+common,editAction,편집,Edit
+common,searchPlaceholder,검색...,Search...
+common,searchEmpty,검색 결과가 없어요,No results found
+common,totalCount,총 {{count}}건,{{count}} total
+common,selectMonth,월 선택,Select month
+common,back,뒤로,Back
+common,themeToggle,테마 전환,Toggle theme
+common,loadingShort,로딩 중,Loading
+common,income,수입,Income
+common,expenseLabel,지출,Expense
+common,savings,저축,Savings
+common,others,기타,Others
+common,transaction,거래,Transaction
+common,iconSearchPlaceholder,아이콘 검색...,Search icons...
+common,iconResultCount,{{count}}개 결과,{{count}} results
+common,iconTotalHint,전체 {{count}}개 · 스크롤해서 더 보기,{{count}} total · scroll for more
+common,selectTime,시간 선택,Select time
+common,hourLabel,시,Hour
+common,minuteLabel,분,Minute
+common,themeLight,라이트,Light
+common,themeDark,다크,Dark
+common,themeSystem,시스템,System
+common,goToday,오늘로,Today
+common,none,없음,None
+common,noSearchResults,검색 결과가 없습니다,No results found
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
 layout,calendar,캘린더,Calendar

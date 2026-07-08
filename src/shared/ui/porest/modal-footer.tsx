@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 
 /**
@@ -60,12 +61,13 @@ export function ModalFooter({
   saveDisabled = false,
   saveIcon,
   onCancel,
-  cancelLabel = '취소',
+  cancelLabel,
   onDelete,
-  deleteLabel = '삭제',
+  deleteLabel,
   deleting = false,
   leftSlot,
 }: ModalFooterProps) {
+  const { t } = useTranslation('common')
   const busy = saving || deleting
   return (
     <>
@@ -80,7 +82,7 @@ export function ModalFooter({
           loading={deleting}
           disabled={saving}
         >
-          <Trash2 size={16} /> {deleteLabel}
+          <Trash2 size={16} /> {deleteLabel ?? t('delete')}
         </Button>
       )}
       {!onDelete && leftSlot && <div style={{ marginRight: 'auto' }}>{leftSlot}</div>}
@@ -92,7 +94,7 @@ export function ModalFooter({
         disabled={busy}
         style={fullWidth ? { flex: 1 } : undefined}
       >
-        {cancelLabel}
+        {cancelLabel ?? t('cancel')}
       </Button>
       <Button
         type="button"
@@ -134,15 +136,16 @@ type ModalViewFooterProps = {
 
 export function ModalViewFooter({
   onConfirm,
-  confirmLabel = '확인',
+  confirmLabel,
   confirmVariant = 'default',
   onEdit,
-  editLabel = '편집',
+  editLabel,
   onDelete,
-  deleteLabel = '삭제',
+  deleteLabel,
   deleting = false,
   leftSlot,
 }: ModalViewFooterProps) {
+  const { t } = useTranslation('common')
   return (
     <>
       {onDelete ? (
@@ -155,14 +158,14 @@ export function ModalViewFooter({
           onClick={onDelete}
           loading={deleting}
         >
-          <Trash2 size={16} /> {deleteLabel}
+          <Trash2 size={16} /> {deleteLabel ?? t('delete')}
         </Button>
       ) : leftSlot ? (
         <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center' }}>{leftSlot}</div>
       ) : null}
       {onEdit && (
         <Button type="button" variant="ghost" size="md" onClick={onEdit} disabled={deleting}>
-          <Pencil size={16} /> {editLabel}
+          <Pencil size={16} /> {editLabel ?? t('editAction')}
         </Button>
       )}
       <Button
@@ -172,7 +175,7 @@ export function ModalViewFooter({
         onClick={onConfirm}
         disabled={deleting}
       >
-        {confirmLabel}
+        {confirmLabel ?? t('confirm')}
       </Button>
     </>
   )

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Clock } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/shared/lib"
 import { Button } from "@/shared/ui/button"
@@ -32,6 +33,7 @@ export function InputTimePicker({
   disabled = false,
   id,
 }: InputTimePickerProps) {
+  const { t } = useTranslation("common")
   const [open, setOpen] = React.useState(false)
   const hourListRef = React.useRef<HTMLDivElement>(null)
   const minuteListRef = React.useRef<HTMLDivElement>(null)
@@ -100,7 +102,7 @@ export function InputTimePicker({
             className="absolute top-1/2 right-1 size-7 -translate-y-1/2 p-0 active:enabled:translate-y-[calc(-50%+0.5px)]"
           >
             <Clock className="size-3.5" />
-            <span className="sr-only">시간 선택</span>
+            <span className="sr-only">{t("selectTime")}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -112,7 +114,7 @@ export function InputTimePicker({
           <div className="flex items-stretch gap-1">
             <TimeColumn
               ref={hourListRef}
-              label="시"
+              label={t("hourLabel")}
               items={hours}
               active={currentHour}
               onSelect={setHour}
@@ -120,7 +122,7 @@ export function InputTimePicker({
             <div className="self-center text-sm text-text-secondary">:</div>
             <TimeColumn
               ref={minuteListRef}
-              label="분"
+              label={t("minuteLabel")}
               items={minutes}
               active={currentMin}
               onSelect={setMinute}

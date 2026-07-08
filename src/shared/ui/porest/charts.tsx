@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Cell, Pie, PieChart } from 'recharts'
 import { ChartContainer, type ChartConfig } from '@/shared/ui/chart'
 import { money } from '@/shared/lib/porest/format'
@@ -246,6 +247,7 @@ export interface BarPoint {
 }
 
 export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: number }) {
+  const { t } = useTranslation('common')
   const w = 600
   const h = height
   const padL = 40, padR = 16, padT = 16, padB = 28
@@ -367,14 +369,14 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
-                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>수입</span>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('income')}</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {money(d.income)}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
-                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>지출</span>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('expenseLabel')}</span>
                 <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
                   {money(d.expense)}
                 </span>
@@ -389,7 +391,7 @@ export function BarChart({ data, height = 200 }: { data: BarPoint[]; height?: nu
                   borderTop: '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>저축</span>
+                <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('savings')}</span>
                 <span
                   className="num"
                   style={{

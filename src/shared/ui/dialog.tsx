@@ -2,6 +2,7 @@ import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/shared/lib/index"
 
@@ -79,7 +80,9 @@ type DialogContentProps = React.ComponentPropsWithoutRef<
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, size, hideClose = true, children, style, ...props }, ref) => (
+>(({ className, size, hideClose = true, children, style, ...props }, ref) => {
+  const { t } = useTranslation("common")
+  return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -93,12 +96,13 @@ const DialogContent = React.forwardRef<
       {!hideClose && (
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
-          <span className="sr-only">닫기</span>
+          <span className="sr-only">{t("close")}</span>
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
   </DialogPortal>
-))
+  )
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 // .modal__head — padding 18 22 + flex + flex-shrink-0

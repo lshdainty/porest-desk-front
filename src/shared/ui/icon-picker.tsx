@@ -3,6 +3,7 @@ import type { UIEvent, WheelEvent } from 'react'
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/lib/cn'
 import { Input } from '@/shared/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -18,6 +19,7 @@ interface IconPickerProps {
 }
 
 export const IconPicker = ({ value, onChange, className, icons }: IconPickerProps) => {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(STEP)
@@ -117,7 +119,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
           <Input
             search
             ref={searchRef}
-            placeholder="아이콘 검색..."
+            placeholder={t('iconSearchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8"
@@ -133,7 +135,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
             !value && 'bg-surface-input',
           )}
         >
-          없음
+          {t('none')}
         </button>
 
         <div className="h-px bg-border-default mb-2" />
@@ -163,7 +165,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
             </div>
           ) : (
             <p className="py-6 text-center text-xs text-text-secondary">
-              검색 결과가 없습니다
+              {t('noSearchResults')}
             </p>
           )}
         </div>
@@ -171,8 +173,8 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
         {/* 결과 카운트 */}
         <p className="mt-2 text-[10px] text-text-secondary text-center">
           {search
-            ? `${matched.length}개 결과`
-            : `전체 ${iconNames.length}개 · 스크롤해서 더 보기`}
+            ? t('iconResultCount', { count: matched.length })
+            : t('iconTotalHint', { count: iconNames.length })}
         </p>
       </PopoverContent>
     </Popover>

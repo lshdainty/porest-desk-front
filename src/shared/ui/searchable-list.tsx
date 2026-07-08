@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/shared/lib/index'
 import { Input } from '@/shared/ui/input'
@@ -30,8 +31,8 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
       totalCount,
       searchValue,
       onSearchChange,
-      placeholder = '검색...',
-      emptyText = '검색 결과가 없어요',
+      placeholder,
+      emptyText,
       isLoading,
       loadingSkeleton,
       maxHeight = 260,
@@ -42,6 +43,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
     },
     ref,
   ) => {
+    const { t } = useTranslation('common')
     const hasChildren = React.Children.count(children) > 0
     const showHeader = label != null || typeof totalCount === 'number' || headerExtras != null
     return (
@@ -56,7 +58,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
             <div className="flex items-center gap-3">
               {headerExtras}
               {typeof totalCount === 'number' && (
-                <span className="text-[11px] text-text-tertiary">총 {totalCount}건</span>
+                <span className="text-[11px] text-text-tertiary">{t('totalCount', { count: totalCount })}</span>
               )}
             </div>
           </div>
@@ -70,7 +72,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
             search
             value={searchValue}
             onChange={e => onSearchChange(e.target.value)}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t('searchPlaceholder')}
             className="pl-9"
           />
         </div>
@@ -87,7 +89,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
               ? children
               : (
                   <div className="py-6 text-center text-[12px] text-text-tertiary">
-                    {emptyText}
+                    {emptyText ?? t('searchEmpty')}
                   </div>
                 )}
         </div>
