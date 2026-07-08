@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Search } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -37,6 +38,8 @@ interface InvestmentAddDialogProps {
 }
 
 export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps) {
+  const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const isMobile = useIsMobile()
   const [brand, setBrand] = useState<string>(INVEST_BRANDS[0]?.name ?? '삼성증권')
   const [query, setQuery] = useState('')
@@ -64,7 +67,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
   const filteredCount = filteredByCategory.reduce((sum, [, list]) => sum + list.length, 0)
 
   const brandColor = useMemo(() => getBrandColor(brand), [brand])
-  const previewName = productName.trim() || '새 투자 상품'
+  const previewName = productName.trim() || t('investAdd.newProduct')
   const previewLetter = (brand[0] ?? '?').trim()
   const previewBg = brandColor?.bg ?? 'var(--border-brand)'
   const previewFg = brandColor?.fg ?? '#fff'
@@ -116,14 +119,14 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
             </span>
             <div className="min-w-0">
               <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">{previewName}</div>
-              <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">{brand} · 미리보기</div>
+              <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">{brand} · {t('assetForm.preview')}</div>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-[13px] font-medium">증권사·거래소</Label>
-              <span className="text-[11px] text-[var(--fg-tertiary)]">총 {INVEST_BRANDS.length}개</span>
+              <Label className="text-[13px] font-medium">{t('editDialog.brokerExchange')}</Label>
+              <span className="text-[11px] text-[var(--fg-tertiary)]">{t('assetForm.entryCount', { count: INVEST_BRANDS.length })}</span>
             </div>
             <div className="relative mb-2">
               <Search
@@ -134,7 +137,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
                 search
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="증권사·가상자산거래소·상품거래소 검색"
+                placeholder={t('investAdd.searchPlaceholder')}
                 className="pl-9"
               />
             </div>
@@ -144,7 +147,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
             >
               {filteredCount === 0 ? (
                 <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                  검색 결과가 없어요
+                  {t('assetForm.noResults')}
                 </div>
               ) : (
                 filteredByCategory.map(([cat, list]) => (
@@ -188,19 +191,19 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
 
           <div>
             <Label htmlFor="investment-product" className="text-[13px] font-medium mb-2 block">
-              상품·종목명
+              {t('investAdd.productName')}
             </Label>
             <Input
               id="investment-product"
               value={productName}
               onChange={e => setProductName(e.target.value)}
-              placeholder="예: KODEX 200, 해외 ETF 포트폴리오"
+              placeholder={t('investAdd.productPlaceholder')}
             />
           </div>
 
           <div>
             <Label htmlFor="investment-balance" className="text-[13px] font-medium mb-2 block">
-              평가액 (원)
+              {t('investAdd.valuation')}
             </Label>
             <Input
               id="investment-balance"
@@ -220,7 +223,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
   const footerButtons = (
     <ModalFooter
       onSave={handleSubmit}
-      saveLabel="추가"
+      saveLabel={tc('add')}
       saving={createMut.isPending}
       onCancel={handleClose}
     />
@@ -228,7 +231,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
 
   return (
     <ModalShell
-      title="투자 추가"
+      title={t('investAdd.title')}
       onClose={handleClose}
       mobile={isMobile}
       size="md"

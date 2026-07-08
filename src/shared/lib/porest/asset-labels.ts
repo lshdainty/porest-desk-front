@@ -1,14 +1,17 @@
+import { i18n } from '@/shared/i18n/config'
 import type { AssetType } from '@/entities/asset'
 
-/** assetType → 한글 라벨 (프리뷰 메타 표시용) */
-export const ASSET_TYPE_LABEL: Record<AssetType, string> = {
-  BANK_ACCOUNT: '입출금',
-  SAVINGS: '적금',
-  CASH: '현금',
-  CREDIT_CARD: '신용카드',
-  CHECK_CARD: '체크카드',
-  INVESTMENT: '투자',
-  LOAN: '대출',
+/** assetType → asset ns i18n 키. 계좌유형 enum 라벨은 번역 대상(#17 은 은행/브랜드명만 한글 유지). */
+const ASSET_TYPE_KEY: Record<AssetType, string> = {
+  BANK_ACCOUNT: 'assetType.checking',
+  SAVINGS: 'assetType.savings',
+  CASH: 'assetType.cash',
+  CREDIT_CARD: 'assetType.creditcard',
+  CHECK_CARD: 'assetType.checkcard',
+  INVESTMENT: 'assetType.investment',
+  LOAN: 'assetType.loan',
 }
 
-export const assetTypeLabel = (type: AssetType): string => ASSET_TYPE_LABEL[type] ?? String(type)
+/** assetType → 로케일 라벨 (프리뷰 메타 표시용). ko 는 기존과 동일(입출금/적금/현금/…). */
+export const assetTypeLabel = (type: AssetType): string =>
+  ASSET_TYPE_KEY[type] ? i18n.t(`asset:${ASSET_TYPE_KEY[type]}`) : String(type)
