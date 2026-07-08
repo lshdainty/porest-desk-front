@@ -270,10 +270,10 @@ export const MorePage = () => {
                           letterSpacing: '-0.01em',
                         }}
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </span>
                       <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
-                        {item.desc}
+                        {t(item.descKey)}
                       </span>
                       <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
                     </button>
