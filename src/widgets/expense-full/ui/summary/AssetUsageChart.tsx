@@ -8,6 +8,7 @@ import {
   type ChartConfig,
 } from '@/shared/ui/chart'
 import { formatCurrency } from '@/shared/lib'
+import { isEn, formatChartAxis } from '@/shared/lib/porest/format'
 import type { AssetExpenseSummary } from '@/entities/expense'
 
 // porest chart palette 10색 의미 기반(red/orange/yellow/green/blue/indigo/violet/pink/brown/gray)
@@ -21,6 +22,7 @@ const COLORS = [
 const RADIAN = Math.PI / 180
 
 const formatCompactAmount = (value: number): string => {
+  if (isEn()) return formatChartAxis(value)
   if (value >= 1000000) {
     return `${Math.round(value / 10000)}만`
   }

@@ -43,7 +43,7 @@ export const BudgetVsActualChart = ({
         const actual = categoryBreakdown.find(
           (c) => c.categoryRowId === b.categoryRowId
         )
-        const name = categoryNames[b.categoryRowId!] || `카테고리 ${b.categoryRowId}`
+        const name = categoryNames[b.categoryRowId!] || t('categoryN', { n: b.categoryRowId })
         return {
           name: name.length > 8 ? name.slice(0, 8) + '…' : name,
           budget: b.budgetAmount,
@@ -51,7 +51,7 @@ export const BudgetVsActualChart = ({
         }
       })
       .filter((d) => d.budget > 0)
-  }, [budgets, categoryBreakdown, categoryNames])
+  }, [budgets, categoryBreakdown, categoryNames, t])
 
   if (budgets.length === 0 || chartData.length === 0) {
     return (
