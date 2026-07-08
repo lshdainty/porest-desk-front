@@ -1984,3 +1984,5 @@ date,today,오늘,Today
 date,tomorrow,내일,Tomorrow
 date,daysLater,{{count}}일 후,in {{count}} days
 date,dday,D-{{count}},D-{{count}}
+
+date,asOf,{{date}} 기준,As of {{date}}
