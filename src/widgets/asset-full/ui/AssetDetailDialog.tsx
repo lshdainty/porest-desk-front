@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import { ChevronRight, Eye, EyeOff, TrendingUp, Wallet } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
@@ -18,7 +19,7 @@ import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { KRW, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
@@ -82,11 +83,11 @@ const groupOf = (asset: Asset): AssetGroup => {
 }
 
 // 청구 상태 배지 — app _StatusBadge 미러: COMPLETED=success / PENDING=warning / FAILED=error / SKIPPED=neutral
-const BILLING_STATUS_META: Record<BillingStatus, { label: string; variant: 'success' | 'secondary' | 'warning' | 'error' }> = {
-  COMPLETED: { label: '완료', variant: 'success' },
-  PENDING: { label: '대기', variant: 'warning' },
-  FAILED: { label: '실패', variant: 'error' },
-  SKIPPED: { label: '건너뜀', variant: 'secondary' },
+const BILLING_STATUS_META: Record<BillingStatus, { labelKey: string; variant: 'success' | 'secondary' | 'warning' | 'error' }> = {
+  COMPLETED: { labelKey: 'assetDetail.statusCompleted', variant: 'success' },
+  PENDING: { labelKey: 'assetDetail.statusPending', variant: 'warning' },
+  FAILED: { labelKey: 'assetDetail.statusFailed', variant: 'error' },
+  SKIPPED: { labelKey: 'assetDetail.statusSkipped', variant: 'secondary' },
 }
 
 /** 'yyyy-MM-dd' → 'M.d' 표기 — app _fmtDate 미러. */
@@ -108,6 +109,7 @@ function currentYearMonth(): string {
 // 헤더('YYYY-MM 실적' + pct%) / progress 8px / 사용·필요액 + 남은/달성 / requiredText.
 // 실적 무관 카드면 숨김. 달성(100%↑) 시 bar·% status-success, 미만은 fg-brand(다크 primary-light).
 function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
+  const { t } = useTranslation('asset')
   const ym = currentYearMonth()
   const { data: p, isLoading } = useCardPerformance(assetRowId, ym)
   // 서버 실적 로딩 중 — 실제 바 레이아웃(헤더/진행바/금액 행) 그대로 스켈레톤 (앱 CardPerformanceBar 정합).
@@ -152,7 +154,7 @@ function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <TrendingUp size={14} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
         <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-          {ym} 실적
+          {t('assetDetail.perfMonth', { ym })}
         </span>
         <span
           className="num"
@@ -188,11 +190,11 @@ function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
         </span>
         {!p.isAchieved && p.remainingAmount != null ? (
           <span className="num" style={{ marginLeft: 'auto' }}>
-            남은 <MaskAmount mask="•••">{KRW(p.remainingAmount)}</MaskAmount>
+            {t('assetDetail.remainingLabel')} <MaskAmount mask="•••">{KRW(p.remainingAmount)}</MaskAmount>
             <HideUnit>원</HideUnit>
           </span>
         ) : (
-          <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>달성</span>
+          <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>{t('assetDetail.achieved')}</span>
         )}
       </div>
       {p.requiredText && (
@@ -207,6 +209,7 @@ function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
 // 신용카드 청구 사이클 — app _CardBillingSection 미러.
 // 단일 bordered 카드 안에 [결제 예정 + 예정일 M.d] / [금액 + 지금 결제] / 매월 N일 결제 / divider / 청구 이력.
 function CardBillingSection({ asset }: { asset: Asset }) {
+  const { t } = useTranslation('asset')
   const { data: billing, isLoading, isError } = useCardBilling(asset.rowId)
   const payCard = usePayCard()
   const [confirmPay, setConfirmPay] = useState(false)
@@ -215,11 +218,11 @@ function CardBillingSection({ asset }: { asset: Asset }) {
     payCard.mutate(asset.rowId, {
       onSuccess: () => {
         setConfirmPay(false)
-        toast.success('결제가 기록되었어요')
+        toast.success(t('assetDetail.toastPaid'))
       },
       onError: () => {
         setConfirmPay(false)
-        toast.error('결제 처리에 실패했어요')
+        toast.error(t('assetDetail.toastPayFail'))
       },
     })
   }
@@ -258,7 +261,7 @@ function CardBillingSection({ asset }: { asset: Asset }) {
     return (
       <div style={cardStyle}>
         <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
-          청구 정보를 불러오지 못했어요
+          {t('assetDetail.billingLoadError')}
         </span>
       </div>
     )
@@ -269,7 +272,7 @@ function CardBillingSection({ asset }: { asset: Asset }) {
       {/* 헤더: 결제 예정 + 다음 결제일 M.d */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-          결제 예정
+          {t('assetDetail.paymentDue')}
         </span>
         {nextPaymentDate && (
           <span
@@ -306,13 +309,13 @@ function CardBillingSection({ asset }: { asset: Asset }) {
           onClick={() => setConfirmPay(true)}
         >
           <Wallet size={14} />
-          지금 결제
+          {t('assetDetail.payNow')}
         </Button>
       </div>
 
       {paymentDay != null && (
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-          매월 {paymentDay}일 결제
+          {t('assetDetail.billedMonthly', { day: paymentDay })}
         </div>
       )}
 
@@ -321,7 +324,7 @@ function CardBillingSection({ asset }: { asset: Asset }) {
         <>
           <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '12px 0 8px' }} />
           <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>
-            청구 이력
+            {t('assetDetail.billingHistory')}
           </div>
           <div style={{ marginTop: 4 }}>
             {history.map(b => {
@@ -336,13 +339,13 @@ function CardBillingSection({ asset }: { asset: Asset }) {
                       <MaskAmount>{KRW(b.billingAmount)}</MaskAmount>
                       <HideUnit>원</HideUnit>
                     </span>
-                    <Badge variant={meta.variant}>{meta.label}</Badge>
+                    <Badge variant={meta.variant}>{t(meta.labelKey)}</Badge>
                   </div>
                   <div
                     className="num"
                     style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}
                   >
-                    {fmtBillingDate(b.periodStart)} ~ {fmtBillingDate(b.periodEnd)} · 결제일 {fmtBillingDate(b.paymentDate)}
+                    {fmtBillingDate(b.periodStart)} ~ {fmtBillingDate(b.periodEnd)} · {t('assetDetail.paymentDateLabel')} {fmtBillingDate(b.paymentDate)}
                   </div>
                   {b.failureReason && (
                     <div style={{ fontSize: 'var(--text-badge)', color: 'var(--status-danger-fg)', marginTop: 2 }}>
@@ -358,14 +361,19 @@ function CardBillingSection({ asset }: { asset: Asset }) {
 
       {confirmPay && (
         <ConfirmDialog
-          title="지금 결제"
+          title={t('assetDetail.payNow')}
           message={
             <>
-              결제 예정액 <strong>{KRW(upcomingAmount)}원</strong>을 지금 결제 처리할까요?
-              {nextPaymentDate ? ` 결제일은 ${nextPaymentDate} 입니다.` : ''}
+              <Trans
+                i18nKey="assetDetail.payConfirm"
+                ns="asset"
+                values={{ amount: money(upcomingAmount) }}
+                components={{ strong: <strong /> }}
+              />
+              {nextPaymentDate ? ` ${t('assetDetail.paymentDateNote', { date: nextPaymentDate })}` : ''}
             </>
           }
-          confirmLabel="결제하기"
+          confirmLabel={t('assetDetail.payAction')}
           loading={payCard.isPending}
           onCancel={() => { if (!payCard.isPending) setConfirmPay(false) }}
           onConfirm={handlePay}
@@ -392,6 +400,8 @@ const tossListBtn: React.CSSProperties = {
  * 토스 계좌 보유분과 무관 — 시세만 빌려 타 증권사 보유 주식도 평가.
  */
 function TossLinkSection({ asset }: { asset: Asset }) {
+  const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const { data: features } = useMyFeatures()
   const enabled =
     (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
@@ -455,9 +465,9 @@ function TossLinkSection({ asset }: { asset: Asset }) {
     return (
       <section style={box}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <Badge variant="info">토스 연동 중</Badge>
+          <Badge variant="info">{t('assetDetail.tossLinked')}</Badge>
           <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
-            {resolvedName ?? linked.symbol} · {linked.quantity.toLocaleString()}주
+            {resolvedName ?? linked.symbol} · {t('assetDetail.sharesUnit', { n: linked.quantity.toLocaleString() })}
           </span>
         </div>
         {editingQty ? (
@@ -466,7 +476,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
               inputMode="numeric"
               value={editQty}
               onChange={e => setEditQty(e.target.value.replace(/[^\d]/g, ''))}
-              placeholder="보유 수량"
+              placeholder={t('assetDetail.holdingsQty')}
               style={{ flex: 1 }}
             />
             <Button
@@ -479,23 +489,23 @@ function TossLinkSection({ asset }: { asset: Asset }) {
                     onSuccess: () => {
                       setLinked({ symbol: linked.symbol, quantity: editQtyNum })
                       setEditingQty(false)
-                      toast.success('보유 수량을 수정했어요')
+                      toast.success(t('assetDetail.toastQtyUpdated'))
                     },
-                    onError: () => toast.error('수량 수정에 실패했어요'),
+                    onError: () => toast.error(t('assetDetail.toastQtyFail')),
                   },
                 )
               }
             >
-              저장
+              {tc('save')}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setEditingQty(false)}>
-              취소
+              {tc('cancel')}
             </Button>
           </div>
         ) : (
           <>
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-              평가액 = 토스 현재가 × {linked.quantity.toLocaleString()}주 로 실시간 계산됩니다.
+              {t('assetDetail.valuationFormula', { n: linked.quantity.toLocaleString() })}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Button
@@ -506,7 +516,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
                   setEditingQty(true)
                 }}
               >
-                수량 수정
+                {t('assetDetail.editQty')}
               </Button>
               <Button
                 variant="secondary"
@@ -520,13 +530,13 @@ function TossLinkSection({ asset }: { asset: Asset }) {
                       setSelName('')
                       setQty('')
                       setQuery('')
-                      toast.success('토스 연결을 해제했어요')
+                      toast.success(t('assetDetail.toastUnlinked'))
                     },
-                    onError: () => toast.error('연결 해제에 실패했어요'),
+                    onError: () => toast.error(t('assetDetail.toastUnlinkFail')),
                   })
                 }
               >
-                연결 해제
+                {t('assetDetail.unlink')}
               </Button>
             </div>
           </>
@@ -549,10 +559,10 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   return (
     <section style={box}>
       <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, marginBottom: 6 }}>
-        토스 시세로 실시간 평가
+        {t('assetDetail.tossRealtimeTitle')}
       </div>
       <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-        보유 종목과 수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 반영됩니다.
+        {t('assetDetail.tossRealtimeDesc')}
       </div>
 
       {selSymbol ? (
@@ -565,7 +575,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
             onClick={() => { setSelSymbol(''); setSelName('') }}
             style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            변경
+            {t('assetDetail.change')}
           </button>
         </div>
       ) : (
@@ -574,7 +584,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
             search
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930)"
+            placeholder={t('assetDetail.symbolSearchPlaceholder')}
           />
           {(matches.length > 0 || codeFallback) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, marginBottom: 4 }}>
@@ -585,7 +595,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
               ))}
               {codeFallback && (
                 <button type="button" onClick={() => pick(codeFallback, '')} style={tossListBtn}>
-                  「{codeFallback}」 종목코드로 연결
+                  {t('assetDetail.linkByCode', { code: codeFallback })}
                 </button>
               )}
             </div>
@@ -598,7 +608,7 @@ function TossLinkSection({ asset }: { asset: Asset }) {
           inputMode="numeric"
           value={qty}
           onChange={e => setQty(e.target.value.replace(/[^\d]/g, ''))}
-          placeholder="보유 수량"
+          placeholder={t('assetDetail.holdingsQty')}
           style={{ flex: 1 }}
         />
         <Button
@@ -610,14 +620,14 @@ function TossLinkSection({ asset }: { asset: Asset }) {
               {
                 onSuccess: () => {
                   setLinked({ symbol: selSymbol, quantity: qtyNum })
-                  toast.success('토스 시세 연동을 시작했어요')
+                  toast.success(t('assetDetail.toastLinkStarted'))
                 },
-                onError: () => toast.error('연결에 실패했어요'),
+                onError: () => toast.error(t('assetDetail.toastLinkFail')),
               },
             )
           }
         >
-          연결
+          {t('assetDetail.link')}
         </Button>
       </div>
     </section>
@@ -635,6 +645,7 @@ export function AssetDetailDialog({
   onEdit?: (asset: Asset) => void
   mobile: boolean
 }) {
+  const { t } = useTranslation('asset')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
   const [unlockOpen, setUnlockOpen] = useState(false)
@@ -656,16 +667,16 @@ export function AssetDetailDialog({
   const weeks = period === '3m' ? 12 : period === '6m' ? 24 : 52
   const { data: trendData, isLoading: trendLoading } = useAssetBalanceTrend(asset.rowId, weeks)
   const chartData = useMemo(
-    () => (trendData ?? []).map((p, i) => ({ label: `${i + 1}주`, weekStart: p.weekStart, balance: p.balance })),
-    [trendData],
+    () => (trendData ?? []).map((p, i) => ({ label: t('assetDetail.weekLabel', { n: i + 1 }), weekStart: p.weekStart, balance: p.balance })),
+    [trendData, t],
   )
   // Y축: 0기준 nice 눈금 (앱 asset_detail niceAxis 정합). 음수 잔액(대출)도 0 아래로 확장.
   const yAxis = useMemo(() => {
     const vals = chartData.map(d => d.balance)
     return niceAxis(Math.min(0, ...vals), Math.max(0, ...vals))
   }, [chartData])
-  const periodLabel = period === '3m' ? '12주' : period === '6m' ? '24주' : '52주'
-  const seriesLabel = isCard ? '사용' : isInv ? '평가액' : '잔액'
+  const periodLabel = period === '3m' ? t('assetDetail.weekLabel', { n: 12 }) : period === '6m' ? t('assetDetail.weekLabel', { n: 24 }) : t('assetDetail.weekLabel', { n: 52 })
+  const seriesLabel = isCard ? t('assetDetail.seriesUsage') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
 
   const color = getPaletteByColor(asset.color).color
   const chartConfig: ChartConfig = {
@@ -677,8 +688,8 @@ export function AssetDetailDialog({
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = (relatedAll ?? []).slice(0, 12)
 
-  const title = isCard ? '카드 상세' : isInv ? '투자 상세' : '계좌 상세'
-  const valueLabel = isCard ? '이번 달 결제 예정' : isInv ? '평가액' : '잔액'
+  const title = isCard ? t('assetDetail.titleCard') : isInv ? t('assetDetail.titleInvest') : t('assetDetail.titleAccount')
+  const valueLabel = isCard ? t('assetDetail.valueCard') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
 
   const viewAll = () => {
     onClose()
@@ -690,7 +701,7 @@ export function AssetDetailDialog({
       leftSlot={
         <Button variant="ghost" size="md" flush="left" onClick={handleHideToggle} type="button">
           {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-          {hidden ? '금액 표시' : '금액 가리기'}
+          {hidden ? t('assetDetail.showAmounts') : t('assetDetail.hideAmounts')}
         </Button>
       }
       onEdit={onEdit ? () => onEdit(asset) : undefined}
@@ -767,7 +778,7 @@ export function AssetDetailDialog({
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-            최근 {periodLabel} {isCard ? '사용 추이' : isInv ? '평가액 추이' : '잔액 추이'}
+            {t('assetDetail.recentTrend', { period: periodLabel, label: isCard ? t('assetDetail.trendUsage') : isInv ? t('assetDetail.trendValuation') : t('assetDetail.trendBalance') })}
           </h4>
           <Tabs
             value={period}
@@ -775,9 +786,9 @@ export function AssetDetailDialog({
             className="ml-auto"
           >
             <TabsList variant="pill" size="sm">
-              <TabsTrigger value="3m">3개월</TabsTrigger>
-              <TabsTrigger value="6m">6개월</TabsTrigger>
-              <TabsTrigger value="1y">1년</TabsTrigger>
+              <TabsTrigger value="3m">{t('assetDetail.period3m')}</TabsTrigger>
+              <TabsTrigger value="6m">{t('assetDetail.period6m')}</TabsTrigger>
+              <TabsTrigger value="1y">{t('assetDetail.period1y')}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -789,7 +800,7 @@ export function AssetDetailDialog({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)',
           }}>
-            표시할 데이터가 없어요
+            {t('assetDetail.noData')}
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto w-full" style={{ height: 160 }}>
@@ -842,7 +853,7 @@ export function AssetDetailDialog({
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-            최근 거래{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
+            {t('assetDetail.recentTx')}{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
           </h4>
           <button
             type="button"
@@ -861,7 +872,7 @@ export function AssetDetailDialog({
             }}
             onClick={viewAll}
           >
-            전체 보기 <ChevronRight size={12} />
+            {t('assetDetail.viewAll')} <ChevronRight size={12} />
           </button>
         </div>
         <div
@@ -894,7 +905,7 @@ export function AssetDetailDialog({
                 fontSize: 'var(--text-label-sm)',
               }}
             >
-              연결된 거래 내역이 없어요.
+              {t('assetDetail.noLinkedTx')}
             </div>
           ) : (
             relatedTx.map(t => <ExpenseRow key={t.rowId} expense={t} />)

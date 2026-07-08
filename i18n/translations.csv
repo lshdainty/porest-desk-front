@@ -560,6 +560,63 @@ asset,refresh,새로고침,Refresh
 asset,emptyTitle,아직 등록된 자산이 없어요,No assets yet
 asset,emptyDesc,설정 → 카드·계좌 관리에서 추가할 수 있어요,Add them in Settings → Card & Account management
 asset,accountDepositTitle,계좌 · 예금,Accounts & Deposits
+asset,assetDetail.statusCompleted,완료,Completed
+asset,assetDetail.statusPending,대기,Pending
+asset,assetDetail.statusFailed,실패,Failed
+asset,assetDetail.statusSkipped,건너뜀,Skipped
+asset,assetDetail.perfMonth,{{ym}} 실적,{{ym}} spending
+asset,assetDetail.achieved,달성,Achieved
+asset,assetDetail.remainingLabel,남은,Remaining
+asset,assetDetail.toastPaid,결제가 기록되었어요,Payment recorded
+asset,assetDetail.toastPayFail,결제 처리에 실패했어요,Failed to process payment
+asset,assetDetail.billingLoadError,청구 정보를 불러오지 못했어요,Couldn't load billing info
+asset,assetDetail.paymentDue,결제 예정,Payment due
+asset,assetDetail.payNow,지금 결제,Pay now
+asset,assetDetail.billedMonthly,매월 {{day}}일 결제,Billed on day {{day}} each month
+asset,assetDetail.billingHistory,청구 이력,Billing history
+asset,assetDetail.paymentDateLabel,결제일,Payment date
+asset,assetDetail.payConfirm,결제 예정액 <strong>{{amount}}</strong>을 지금 결제 처리할까요?,Pay <strong>{{amount}}</strong> now?
+asset,assetDetail.paymentDateNote,결제일은 {{date}} 입니다.,The payment date is {{date}}.
+asset,assetDetail.payAction,결제하기,Pay
+asset,assetDetail.tossLinked,토스 연동 중,Linked with Toss
+asset,assetDetail.sharesUnit,{{n}}주,{{n}} shares
+asset,assetDetail.holdingsQty,보유 수량,Quantity held
+asset,assetDetail.toastQtyUpdated,보유 수량을 수정했어요,Quantity updated
+asset,assetDetail.toastQtyFail,수량 수정에 실패했어요,Failed to update quantity
+asset,assetDetail.valuationFormula,평가액 = 토스 현재가 × {{n}}주 로 실시간 계산됩니다.,"Valuation = Toss price × {{n}} shares, updated in real time."
+asset,assetDetail.editQty,수량 수정,Edit quantity
+asset,assetDetail.toastUnlinked,토스 연결을 해제했어요,Toss link removed
+asset,assetDetail.toastUnlinkFail,연결 해제에 실패했어요,Failed to remove link
+asset,assetDetail.unlink,연결 해제,Unlink
+asset,assetDetail.tossRealtimeTitle,토스 시세로 실시간 평가,Real-time valuation via Toss
+asset,assetDetail.tossRealtimeDesc,보유 종목과 수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 반영됩니다.,Register your holdings and quantity for real-time valuation using Toss prices.
+asset,assetDetail.change,변경,Change
+asset,assetDetail.symbolSearchPlaceholder,"종목명 또는 코드 검색 (예: 삼성전자, 005930)","Search by name or code (e.g. Samsung, 005930)"
+asset,assetDetail.linkByCode,「{{code}}」 종목코드로 연결,Link by code 「{{code}}」
+asset,assetDetail.toastLinkStarted,토스 시세 연동을 시작했어요,Toss price link started
+asset,assetDetail.toastLinkFail,연결에 실패했어요,Failed to link
+asset,assetDetail.link,연결,Link
+asset,assetDetail.weekLabel,{{n}}주,{{n}}w
+asset,assetDetail.seriesUsage,사용,Usage
+asset,assetDetail.seriesValuation,평가액,Valuation
+asset,assetDetail.seriesBalance,잔액,Balance
+asset,assetDetail.titleCard,카드 상세,Card details
+asset,assetDetail.titleInvest,투자 상세,Investment details
+asset,assetDetail.titleAccount,계좌 상세,Account details
+asset,assetDetail.valueCard,이번 달 결제 예정,Due this month
+asset,assetDetail.showAmounts,금액 표시,Show amounts
+asset,assetDetail.hideAmounts,금액 가리기,Hide amounts
+asset,assetDetail.trendUsage,사용 추이,Usage trend
+asset,assetDetail.trendValuation,평가액 추이,Valuation trend
+asset,assetDetail.trendBalance,잔액 추이,Balance trend
+asset,assetDetail.recentTrend,최근 {{period}} {{label}},Last {{period}} {{label}}
+asset,assetDetail.period3m,3개월,3 months
+asset,assetDetail.period6m,6개월,6 months
+asset,assetDetail.period1y,1년,1 year
+asset,assetDetail.noData,표시할 데이터가 없어요,No data to display
+asset,assetDetail.recentTx,최근 거래,Recent transactions
+asset,assetDetail.viewAll,전체 보기,View all
+asset,assetDetail.noLinkedTx,연결된 거래 내역이 없어요.,No linked transactions.
 dashboard,title,대시보드,Dashboard
 dashboard,welcome,환영합니다,Welcome
 dashboard,overview,개요,Overview
