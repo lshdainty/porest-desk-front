@@ -1,14 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import type { CardPerformance } from '@/entities/card'
 import { cn } from '@/shared/lib'
+import { money } from '@/shared/lib/porest/format'
 
 interface Props {
   performance: CardPerformance
   className?: string
-}
-
-function formatKRW(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(n) + '원'
 }
 
 export function CardPerformanceBar({ performance, className }: Props) {
@@ -28,8 +25,8 @@ export function CardPerformanceBar({ performance, className }: Props) {
     <div className={cn('space-y-1.5', className)}>
       <div className="flex items-baseline justify-between text-sm">
         <span className="font-medium">
-          {formatKRW(performance.currentAmount)}
-          <span className="text-muted-foreground"> / {formatKRW(performance.requiredAmount)}</span>
+          {money(performance.currentAmount)}
+          <span className="text-muted-foreground"> / {money(performance.requiredAmount)}</span>
         </span>
         <span className={performance.isAchieved ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
           {pct}% {performance.isAchieved ? t('achieved') : ''}
@@ -43,7 +40,7 @@ export function CardPerformanceBar({ performance, className }: Props) {
       </div>
       {!performance.isAchieved && performance.remainingAmount != null && (
         <div className="text-xs text-muted-foreground">
-          {t('spendMoreForBenefit', { amount: formatKRW(performance.remainingAmount) })}
+          {t('spendMoreForBenefit', { amount: money(performance.remainingAmount) })}
         </div>
       )}
     </div>
