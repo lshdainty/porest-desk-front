@@ -97,7 +97,7 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                    title="카드 상세"
+                    title={t('assetDetail.titleCard')}
                     onClick={(e) => { e.stopPropagation(); navigate(`/desk/card/${asset.rowId}`) }}
                   >
                     <CreditCard size={14} />
