@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay } from '@/shared/lib/porest/format'
 import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
-import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { MaskAmount, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -452,7 +452,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('income')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
-                  <MaskAmount>+{KRW(incomeSum)}</MaskAmount><HideUnit>원</HideUnit>
+                  <MaskAmount>+{wonPre()}{KRW(incomeSum)}</MaskAmount><WonUnit />
                 </span>
               </div>
             )}
@@ -460,7 +460,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('expense')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  <MaskAmount>−{KRW(expenseSum)}</MaskAmount><HideUnit>원</HideUnit>
+                  <MaskAmount>−{wonPre()}{KRW(expenseSum)}</MaskAmount><WonUnit />
                 </span>
               </div>
             )}

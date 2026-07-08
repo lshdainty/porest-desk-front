@@ -2,10 +2,10 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW, money } from '@/shared/lib/porest/format'
+import { KRW, money, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
-import { HideUnit, MaskAmount, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { MaskAmount, WonUnit, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -244,8 +244,8 @@ function PorestChartTooltip({
                 <MaskAmount>{row.format(v)}</MaskAmount>
               ) : (
                 <>
-                  <MaskAmount>{KRW(v)}</MaskAmount>
-                  <HideUnit>원</HideUnit>
+                  <MaskAmount>{wonPre()}{KRW(v)}</MaskAmount>
+                  <WonUnit />
                 </>
               )}
             </span>
@@ -778,8 +778,8 @@ export const StatsPage = () => {
           >
             <div className="lbl">{donutCenterLbl}</div>
             <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
-              <MaskAmount>{KRW(donutTotal)}</MaskAmount>
-              <HideUnit>원</HideUnit>
+              <MaskAmount>{wonPre()}{KRW(donutTotal)}</MaskAmount>
+              <WonUnit />
             </div>
           </Donut>
           <div className="cat-legend" style={{ width: '100%' }}>
@@ -901,8 +901,8 @@ export const StatsPage = () => {
                     {t('unit.times', { count: m.count })}
                   </span>
                   <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                    <MaskAmount>{KRW(m.totalAmount)}</MaskAmount>
-                    <HideUnit>원</HideUnit>
+                    <MaskAmount>{wonPre()}{KRW(m.totalAmount)}</MaskAmount>
+                    <WonUnit />
                   </span>
                 </div>
                 <div
@@ -1149,8 +1149,8 @@ export const StatsPage = () => {
             </div>
             <span>{t('heatmap.more')}</span>
             <span style={{ marginLeft: 'auto' }}>
-              {t('heatmap.total')} <MaskAmount>{KRW(heatmapTotal)}</MaskAmount>
-              <HideUnit>원</HideUnit>
+              {t('heatmap.total')} <MaskAmount>{wonPre()}{KRW(heatmapTotal)}</MaskAmount>
+              <WonUnit />
             </span>
           </div>
         </>
@@ -1201,7 +1201,7 @@ export const StatsPage = () => {
     : 0
   // 증감 색상: 지출 증가=fg-expense / 감소=fg-income (compare 탭 동일 컨벤션)
   const avgSub: React.ReactNode = period.segMode !== 'm'
-    ? <>{t('avgSub.rangeTotal', { days: rangeDays })} <MaskAmount>{KRW(periodTotalExpense)}</MaskAmount><HideUnit>원</HideUnit></>
+    ? <>{t('avgSub.rangeTotal', { days: rangeDays })} <MaskAmount>{wonPre()}{KRW(periodTotalExpense)}</MaskAmount><WonUnit /></>
     : prevTotalExpense > 0
       ? <>{t(labels.mom)} <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
       : prevRangeQ.isLoading
@@ -1220,7 +1220,7 @@ export const StatsPage = () => {
       lbl: t('highlight.topCategory'),
       val: categoryTop?.name ?? '—',
       sub: categoryTop
-        ? <><MaskAmount>{KRW(categoryTop.amount)}</MaskAmount><HideUnit>원</HideUnit></>
+        ? <><MaskAmount>{wonPre()}{KRW(categoryTop.amount)}</MaskAmount><WonUnit /></>
         : t('highlight.noData'),
       icon: categoryTop?.icon ?? null,
       color: categoryTop?.color ?? null,
@@ -1230,7 +1230,7 @@ export const StatsPage = () => {
       lbl: t('highlight.topMerchant'),
       val: topMerchant?.merchant ?? '—',
       sub: topMerchant
-        ? <>{t('unit.times', { count: topMerchant.count })} · <MaskAmount>{KRW(topMerchant.totalAmount)}</MaskAmount><HideUnit>원</HideUnit></>
+        ? <>{t('unit.times', { count: topMerchant.count })} · <MaskAmount>{wonPre()}{KRW(topMerchant.totalAmount)}</MaskAmount><WonUnit /></>
         : t('highlight.noData'),
       // 가맹점이 속한 대표 카테고리 아이콘(역산), 없으면 상점 아이콘 + brand-subtle 타일
       icon: topMerchantCat?.icon ?? 'store',
@@ -1239,7 +1239,7 @@ export const StatsPage = () => {
     },
     {
       lbl: avgLabel,
-      val: <><MaskAmount>{KRW(avgValue)}</MaskAmount><HideUnit>원</HideUnit></>,
+      val: <><MaskAmount>{wonPre()}{KRW(avgValue)}</MaskAmount><WonUnit /></>,
       sub: avgSub,
       icon: 'calendar-days',
       color: null,
@@ -1513,9 +1513,9 @@ export const StatsPage = () => {
       }}
     >
       {([
-        { lbl: statLabelIn, val: <><MaskAmount>{KRW(Math.round(avgIn))}</MaskAmount><HideUnit>원</HideUnit></> },
-        { lbl: statLabelOut, val: <><MaskAmount>{KRW(Math.round(avgOut))}</MaskAmount><HideUnit>원</HideUnit></> },
-        { lbl: statLabelSave, val: <><MaskAmount>{KRW(Math.round(avgSave))}</MaskAmount><HideUnit>원</HideUnit></> },
+        { lbl: statLabelIn, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgIn))}</MaskAmount><WonUnit /></> },
+        { lbl: statLabelOut, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgOut))}</MaskAmount><WonUnit /></> },
+        { lbl: statLabelSave, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgSave))}</MaskAmount><WonUnit /></> },
         { lbl: t('trend.savingsRate'), val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         <Card key={i}>
@@ -1689,8 +1689,8 @@ export const StatsPage = () => {
               color: 'var(--fg-primary)',
             }}
           >
-            <MaskAmount>{KRW(totalNow)}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            <MaskAmount>{wonPre()}{KRW(totalNow)}</MaskAmount>
+            <WonUnit />
           </div>
         </CardContent>
       </Card>
@@ -1709,8 +1709,8 @@ export const StatsPage = () => {
               color: 'var(--fg-secondary)',
             }}
           >
-            <MaskAmount>{KRW(totalPrev)}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            <MaskAmount>{wonPre()}{KRW(totalPrev)}</MaskAmount>
+            <WonUnit />
           </div>
         </CardContent>
       </Card>
@@ -1741,9 +1741,9 @@ export const StatsPage = () => {
           {totalPrev > 0 && (
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
               <MaskAmount>
-                {momUp ? '+' : '−'}{KRW(Math.abs(totalNow - totalPrev))}
+                {momUp ? '+' : '−'}{wonPre()}{KRW(Math.abs(totalNow - totalPrev))}
               </MaskAmount>
-              <HideUnit>원</HideUnit>
+              <WonUnit />
             </div>
           )}
           {totalPrev === 0 && (
@@ -1830,8 +1830,8 @@ export const StatsPage = () => {
                     <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{r.name}</div>
                   </div>
                   <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                    <MaskAmount>{KRW(r.now)}</MaskAmount>
-                    <HideUnit>원</HideUnit>
+                    <MaskAmount>{wonPre()}{KRW(r.now)}</MaskAmount>
+                    <WonUnit />
                   </span>
                   <span
                     style={{

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
-import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
@@ -14,6 +14,8 @@ import {
   enablePdHideAmounts,
   HideUnit,
   MaskAmount,
+  WonUnit,
+  wonPre,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
@@ -70,16 +72,16 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.income')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{KRW(income)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{wonPre()}{KRW(income)}</MaskAmount>
+          <WonUnit />
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.expense')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{KRW(expense)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{wonPre()}{KRW(expense)}</MaskAmount>
+          <WonUnit />
         </span>
       </div>
       <div style={{
@@ -94,8 +96,8 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
           }}
         >
-          <MaskAmount>{saving >= 0 ? '+' : '−'}{KRW(Math.abs(saving))}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
+          <WonUnit />
         </span>
       </div>
     </div>
@@ -666,8 +668,8 @@ function HomeDesktop() {
             </button>
           </div>
           <div className="balance-hero__amount num">
-            {assetSummaryQ.isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
-            <HideUnit><span className="unit">원</span></HideUnit>
+            {assetSummaryQ.isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+            {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
           </div>
           <div className="balance-hero__sub">
             {t('vsLastMonth')}
@@ -686,15 +688,15 @@ function HomeDesktop() {
             <div>
               <div className="l">{t('asset.totalAsset')}</div>
               <div className="v num">
-                <MaskAmount>{KRW(totalAssets)}</MaskAmount>
-                <HideUnit>원</HideUnit>
+                <MaskAmount>{wonPre()}{KRW(totalAssets)}</MaskAmount>
+                <WonUnit />
               </div>
             </div>
             <div>
               <div className="l">{t('asset.totalDebt')}</div>
               <div className="v num">
-                <MaskAmount>−{KRW(totalDebt)}</MaskAmount>
-                <HideUnit>원</HideUnit>
+                <MaskAmount>−{wonPre()}{KRW(totalDebt)}</MaskAmount>
+                <WonUnit />
               </div>
             </div>
           </div>
@@ -712,7 +714,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount>+{KRW(income)}</MaskAmount><HideUnit>원</HideUnit></>}
+                  : <><MaskAmount>+{wonPre()}{KRW(income)}</MaskAmount><WonUnit /></>}
               </div>
             </div>
             <div>
@@ -720,7 +722,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount>−{KRW(expense)}</MaskAmount><HideUnit>원</HideUnit></>}
+                  : <><MaskAmount>−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit /></>}
               </div>
             </div>
             <div>
@@ -729,8 +731,8 @@ function HomeDesktop() {
                 {monthlyQ.isLoading
                   ? '—'
                   : <>
-                      <MaskAmount>{balance >= 0 ? '+' : '-'}{KRW(Math.abs(balance))}</MaskAmount>
-                      <HideUnit>원</HideUnit>
+                      <MaskAmount>{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
+                      <WonUnit />
                     </>}
               </div>
             </div>
@@ -754,9 +756,9 @@ function HomeDesktop() {
           }}>
             {t('avg.dailyAverage')}{' '}
             <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-              <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
+              <MaskAmount>{wonPre()}{KRW(dailyAvg)}</MaskAmount>
             </span>
-            <HideUnit>원</HideUnit>
+            <WonUnit />
             {' '}{t('avg.spent')}
             {prevExpense > 0 && (
               <>
@@ -780,8 +782,8 @@ function HomeDesktop() {
               <CardTitle>{t('expense.todaySpent')}</CardTitle>
               {todayTotal > 0 && (
                 <span className="num" style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-                  <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
-                  <HideUnit>원</HideUnit>
+                  <MaskAmount mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+                  <WonUnit />
                 </span>
               )}
             </div>
@@ -1272,8 +1274,8 @@ function HomeMobile() {
           </button>
         </div>
         <div className="balance-hero__amount num">
-          {assetSummaryQ.isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
-          <HideUnit><span className="unit">원</span></HideUnit>
+          {assetSummaryQ.isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+          {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
         </div>
         <div className="balance-hero__sub">
           {t('vsLastMonth')}
@@ -1328,9 +1330,9 @@ function HomeMobile() {
         }}>
           {t('avg.dailyAverage')}{' '}
           <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-            <MaskAmount>{KRW(dailyAvg)}</MaskAmount>
+            <MaskAmount>{wonPre()}{KRW(dailyAvg)}</MaskAmount>
           </span>
-          <HideUnit>원</HideUnit>
+          <WonUnit />
           {' '}{t('avg.spent')}
           {prevExpense > 0 && (
             <>
@@ -1470,8 +1472,8 @@ function HomeMobile() {
             <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('expense.todaySpent')}</CardTitle>
             {todayTotal > 0 && (
               <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-                <MaskAmount mask="••••">−{KRW(todayTotal)}</MaskAmount>
-                <HideUnit>원</HideUnit>
+                <MaskAmount mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+                <WonUnit />
               </span>
             )}
           </div>
