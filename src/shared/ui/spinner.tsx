@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/shared/lib/index"
 
@@ -44,7 +45,8 @@ export interface SpinnerProps
 }
 
 const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(
-  ({ className, size, label = "로딩 중", ...props }, ref) => {
+  ({ className, size, label, ...props }, ref) => {
+    const { t } = useTranslation("common")
     return (
       <span
         ref={ref}
@@ -53,7 +55,7 @@ const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(
         className={cn(spinnerVariants({ size, className }))}
         {...props}
       >
-        <span className="sr-only">{label}</span>
+        <span className="sr-only">{label ?? t("loadingShort")}</span>
       </span>
     )
   },

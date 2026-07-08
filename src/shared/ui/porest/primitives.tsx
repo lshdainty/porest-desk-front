@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
 import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
-import { KRW, money } from '@/shared/lib/porest/format'
+import { KRW, money, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatMonthShort } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
@@ -111,8 +112,8 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
       </div>
       <div>
         <div style={TX_ROW.amtStyle(isIncome)}>
-          <MaskAmount>{isIncome ? '+' : '-'}{KRW(tx.amt, { abs: true })}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
+          <HideUnit>{isEn() ? '' : '원'}</HideUnit>
         </div>
       </div>
     </div>
@@ -184,6 +185,7 @@ export function MonthPicker({
   /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만. */
   variant?: 'outline' | 'borderless'
 }) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -315,14 +317,14 @@ export function MonthPicker({
         onClick={() => { onChange(`${curY}-${String(curM).padStart(2, '0')}`); setOpen(false) }}
         style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-brand-strong)', display: 'inline-flex', alignItems: 'center', gap: 4 }}
       >
-        <LocateFixed size={12} /> 오늘로
+        <LocateFixed size={12} /> {t('goToday')}
       </button>
       <div style={{ flex: 1 }} />
       <button
         onClick={() => setOpen(false)}
         style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-secondary)' }}
       >
-        닫기
+        {t('close')}
       </button>
     </>
   )
@@ -334,11 +336,11 @@ export function MonthPicker({
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle className="flex-1">월 선택</DrawerTitle>
+              <DrawerTitle className="flex-1">{t('selectMonth')}</DrawerTitle>
               <DrawerClose asChild>
                 <button
                   type="button"
-                  aria-label="닫기"
+                  aria-label={t('close')}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                 >
                   <X size={18} />

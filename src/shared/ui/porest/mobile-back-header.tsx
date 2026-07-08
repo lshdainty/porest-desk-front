@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft } from 'lucide-react'
 
 /**
@@ -19,6 +20,7 @@ export function MobileBackHeader({
   trailing?: ReactNode
 }) {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   return (
     <div
       style={{
@@ -35,7 +37,7 @@ export function MobileBackHeader({
     >
       <button
         type="button"
-        aria-label="뒤로"
+        aria-label={t('back')}
         onClick={() => navigate(to)}
         style={{
           border: 0,

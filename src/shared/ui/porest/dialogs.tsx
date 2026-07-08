@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogBody,
@@ -46,6 +47,7 @@ export function ModalShell({
    *  미지정 시 기존처럼 content 높이. */
   mobileMinHeight?: string
 }) {
+  const { t } = useTranslation('common')
   if (mobile) {
     return (
       <Drawer
@@ -63,7 +65,7 @@ export function ModalShell({
             <button
               type="button"
               onClick={onClose}
-              aria-label="닫기"
+              aria-label={t('close')}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
             >
               <X size={18} />
@@ -93,7 +95,7 @@ export function ModalShell({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogClose
-            aria-label="닫기"
+            aria-label={t('close')}
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
           >
             <X size={18} />
@@ -109,8 +111,8 @@ export function ModalShell({
 export function ConfirmDialog({
   title,
   message,
-  confirmLabel = '확인',
-  cancelLabel = '취소',
+  confirmLabel,
+  cancelLabel,
   danger,
   loading,
   onCancel,
@@ -125,6 +127,7 @@ export function ConfirmDialog({
   onCancel: () => void
   onConfirm: () => void
 }) {
+  const { t } = useTranslation('common')
   return (
     <Dialog
       open={true}
@@ -151,14 +154,14 @@ export function ConfirmDialog({
         <DialogFooter>
           {/* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */}
           <Button variant="ghost" onClick={onCancel}>
-            {cancelLabel}
+            {cancelLabel ?? t('cancel')}
           </Button>
           <Button
             variant={danger ? 'destructive' : 'default'}
             onClick={onConfirm}
             loading={loading}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

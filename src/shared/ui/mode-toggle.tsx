@@ -1,4 +1,5 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
@@ -15,26 +16,27 @@ import { useTheme } from '@/shared/ui/theme-provider'
  */
 export function ModeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme()
+  const { t } = useTranslation('common')
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="테마 전환" title="테마 전환">
+        <Button variant="ghost" size="icon" aria-label={t('themeToggle')} title={t('themeToggle')}>
           {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')} data-active={theme === 'light'}>
           <Sun className="mr-2 h-4 w-4" />
-          라이트
+          {t('themeLight')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')} data-active={theme === 'dark'}>
           <Moon className="mr-2 h-4 w-4" />
-          다크
+          {t('themeDark')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('system')} data-active={theme === 'system'}>
           <Monitor className="mr-2 h-4 w-4" />
-          시스템
+          {t('themeSystem')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

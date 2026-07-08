@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { KRW } from '@/shared/lib/porest/format'
+import { useTranslation } from 'react-i18next'
+import { KRW, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayDow } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
@@ -72,18 +73,19 @@ export function ExpenseRow({
   /** true 면 day-head 가 없는 컨텍스트(홈 최근거래 등)에서 시각 대신 "M월 D일 (요일)" 표시 */
   showDate?: boolean
 }) {
+  const { t } = useTranslation('common')
   const isIncome = expense.expenseType === 'INCOME'
   return (
     <div className={TX_ROW.className} onClick={() => onClick?.(expense)}>
       <CategoryChip
-        name={expense.categoryName ?? '기타'}
+        name={expense.categoryName ?? t('others')}
         color={expense.categoryColor ?? null}
         icon={expense.categoryIcon ?? null}
       />
       <div style={TX_ROW.metaStyle}>
         <div style={{ ...TX_ROW.titleStyle, display: 'flex', alignItems: 'center', gap: 5, overflow: 'visible' }}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-            {expense.merchant ?? expense.description ?? expense.categoryName ?? '거래'}
+            {expense.merchant ?? expense.description ?? expense.categoryName ?? t('transaction')}
           </span>
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, color: 'var(--fg-brand)' }}>
@@ -95,7 +97,7 @@ export function ExpenseRow({
           )}
         </div>
         <div style={TX_ROW.subStyle}>
-          <span>{expense.categoryName ?? '기타'}</span>
+          <span>{expense.categoryName ?? t('others')}</span>
           {expense.assetName && (
             <>
               <span style={TX_ROW.sepStyle} />
@@ -120,8 +122,8 @@ export function ExpenseRow({
       <div>
         {right ?? (
           <div style={TX_ROW.amtStyle(isIncome)}>
-            <MaskAmount>{isIncome ? '+' : '-'}{KRW(expense.amount, { abs: true })}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
+            <HideUnit>{isEn() ? '' : '원'}</HideUnit>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import { i18n } from '@/shared/i18n/config'
 import { formatMonthDay, weekdayShort } from '@/shared/lib/date'
 
 /** 현재 로케일이 영어인지. 순수 함수라 React 밖에서도 i18n.language 직접 참조. */
-const isEn = (): boolean => (i18n.language ?? '').startsWith('en')
+export const isEn = (): boolean => (i18n.language ?? '').startsWith('en')
 
 export const KRW = (n: number, { sign = false, abs = false }: { sign?: boolean; abs?: boolean } = {}): string => {
   const v = abs ? Math.abs(n) : n
