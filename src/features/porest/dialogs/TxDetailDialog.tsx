@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Repeat, Scissors, Split, Users } from 'lucide-react'
-import { KRW, money } from '@/shared/lib/porest/format'
-import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { KRW, money, isEn } from '@/shared/lib/porest/format'
+import { HideUnit, MaskAmount, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
 import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
@@ -209,11 +209,14 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           >
             <MaskAmount>
               {isIncome ? '+' : '−'}
+              {wonPre()}
               {KRW(expense.amount, { abs: true })}
             </MaskAmount>
-            <HideUnit>
-              <span style={{ fontSize: 'var(--text-title-md)', marginLeft: 2 }}>원</span>
-            </HideUnit>
+            {!isEn() && (
+              <HideUnit>
+                <span style={{ fontSize: 'var(--text-title-md)', marginLeft: 2 }}>원</span>
+              </HideUnit>
+            )}
           </div>
           {(day || time) && (
             <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
@@ -258,9 +261,10 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               <span className="num" style={{ fontWeight: '700' }}>
                 <MaskAmount>
                   {isIncome ? '+' : '−'}
+                  {wonPre()}
                   {KRW(expense.amount, { abs: true })}
                 </MaskAmount>
-                <HideUnit>원</HideUnit>
+                <WonUnit />
               </span>
             }
           />
@@ -394,8 +398,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
               <span style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                 {t('txDetail.thisMonth')}{' '}
                 <b className="num" style={{ color: 'var(--fg-secondary)' }}>
-                  {t('txDetail.countTimes', { count: merchantMonthCount })} · <MaskAmount>{KRW(merchantMonthTotal)}</MaskAmount>
-                  <HideUnit>원</HideUnit>
+                  {t('txDetail.countTimes', { count: merchantMonthCount })} · <MaskAmount>{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
+                  <WonUnit />
                 </b>
               </span>
             </div>

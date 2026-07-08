@@ -10,7 +10,7 @@ import {
   useUpdateAsset,
 } from '@/features/asset'
 import { KRW } from '@/shared/lib/porest/format'
-import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { MaskAmount, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -140,8 +140,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            {t('manager.totalPrefix')} <MaskAmount>{KRW(totalInTab)}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            {t('manager.totalPrefix')} <MaskAmount>{wonPre()}{KRW(totalInTab)}</MaskAmount>
+            <WonUnit />
           </div>
           <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
             <Plus size={14} strokeWidth={2.4} />
@@ -206,9 +206,10 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                       >
                         <MaskAmount mask="••••">
                           {neg ? '−' : ''}
+                          {wonPre()}
                           {KRW(amt)}
                         </MaskAmount>
-                        <HideUnit>원</HideUnit>
+                        <WonUnit />
                       </div>
                       {asset.isIncludedInTotal === 'N' && (
                         <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>

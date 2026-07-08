@@ -9,7 +9,7 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
-import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import {
@@ -17,6 +17,8 @@ import {
   enablePdHideAmounts,
   HideUnit,
   MaskAmount,
+  WonUnit,
+  wonPre,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
@@ -67,8 +69,8 @@ function NetWorthTooltip({
           className="num"
           style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}
         >
-          <MaskAmount>{KRW(v)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{wonPre()}{KRW(v)}</MaskAmount>
+          <WonUnit />
         </span>
       </div>
     </div>
@@ -913,8 +915,8 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
         }}
       >
         <span className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-          <MaskAmount mask="••• / •••">{KRW(used)} / {KRW(asset.creditLimit)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount mask="••• / •••">{wonPre()}{KRW(used)} / {wonPre()}{KRW(asset.creditLimit)}</MaskAmount>
+          <WonUnit />
         </span>
         <span
           className="num"
@@ -1020,9 +1022,9 @@ function AssetCard({
           }}
         >
           <MaskAmount>
-            {neg ? '−' : ''}{KRW(Math.abs(asset.balance))}
+            {neg ? '−' : ''}{wonPre()}{KRW(Math.abs(asset.balance))}
           </MaskAmount>
-          <HideUnit>원</HideUnit>
+          <WonUnit />
         </div>
         {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
         {asset.isIncludedInTotal === 'N' && (
@@ -1061,9 +1063,9 @@ function TypeGroup({
           style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: total === 0 ? undefined : totalColor }}
         >
           <MaskAmount>
-            {negativeTotal && total !== 0 ? `−${KRW(total)}` : KRW(total)}
+            {negativeTotal && total !== 0 ? `−${wonPre()}${KRW(total)}` : `${wonPre()}${KRW(total)}`}
           </MaskAmount>
-          <HideUnit>원</HideUnit>
+          <WonUnit />
         </span>
       </CardHeader>
       <CardContent>
@@ -1154,10 +1156,12 @@ function SummaryCard({
           marginBottom: 6,
         }}
       >
-        {isLoading ? '—' : <MaskAmount>{KRW(netWorth)}</MaskAmount>}
-        <HideUnit>
-          <span style={{ fontSize: mobile ? 16 : 20, fontWeight: '700', marginLeft: 4 }}>원</span>
-        </HideUnit>
+        {isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+        {!isEn() && (
+          <HideUnit>
+            <span style={{ fontSize: mobile ? 16 : 20, fontWeight: '700', marginLeft: 4 }}>원</span>
+          </HideUnit>
+        )}
       </div>
       <div
         style={{

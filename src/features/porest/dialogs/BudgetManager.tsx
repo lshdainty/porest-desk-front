@@ -10,8 +10,8 @@ import {
   useDeleteExpenseBudget,
 } from '@/features/expense'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
-import { KRW } from '@/shared/lib/porest/format'
-import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { KRW, isEn } from '@/shared/lib/porest/format'
+import { HideUnit, MaskAmount, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
@@ -291,10 +291,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
               {monthlyBudget ? (
                 <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.022em' }}>
-                  <MaskAmount>{KRW(monthlyLimit)}</MaskAmount>
-                  <HideUnit>
-                    <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
-                  </HideUnit>
+                  <MaskAmount>{wonPre()}{KRW(monthlyLimit)}</MaskAmount>
+                  {!isEn() && (
+                    <HideUnit>
+                      <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
+                    </HideUnit>
+                  )}
                 </div>
               ) : (
                 <div style={{ fontSize: 'var(--text-body-lg)', color: 'var(--fg-tertiary)', fontWeight: '600' }}>
@@ -391,7 +393,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               }}
             >
               <AlertTriangle size={13} />
-              {t('manager.overCapPre')} <MaskAmount mask="••••">{KRW(Math.abs(remaining))}</MaskAmount><HideUnit>원</HideUnit> {t('manager.overCapPost')}
+              {t('manager.overCapPre')} <MaskAmount mask="••••">{wonPre()}{KRW(Math.abs(remaining))}</MaskAmount><WonUnit /> {t('manager.overCapPost')}
             </div>
           )}
           </CardContent>
@@ -469,13 +471,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       >
                         {state === 'over' ? (
                           <>
-                            {t('manager.overLimit')} <MaskAmount mask="••••">{KRW(spent - limitAmt)}</MaskAmount>
-                            <HideUnit>원</HideUnit>
+                            {t('manager.overLimit')} <MaskAmount mask="••••">{wonPre()}{KRW(spent - limitAmt)}</MaskAmount>
+                            <WonUnit />
                           </>
                         ) : (
                           <>
-                            {t('manager.remaining')} <MaskAmount mask="••••">{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
-                            <HideUnit>원</HideUnit>
+                            {t('manager.remaining')} <MaskAmount mask="••••">{wonPre()}{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                            <WonUnit />
                           </>
                         )}
                       </div>

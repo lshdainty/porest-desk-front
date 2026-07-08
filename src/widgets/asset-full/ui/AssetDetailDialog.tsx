@@ -19,7 +19,7 @@ import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { KRW, money, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
@@ -28,6 +28,8 @@ import {
   enablePdHideAmounts,
   HideUnit,
   MaskAmount,
+  WonUnit,
+  wonPre,
   useHideAmounts,
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
@@ -66,8 +68,8 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{KRW(val)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount>{wonPre()}{KRW(val)}</MaskAmount>
+          <WonUnit />
         </span>
       </div>
     </div>
@@ -183,15 +185,15 @@ function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
         }}
       >
         <span className="num">
-          <MaskAmount mask="•••">{KRW(p.currentAmount)}</MaskAmount>
+          <MaskAmount mask="•••">{wonPre()}{KRW(p.currentAmount)}</MaskAmount>
           {' / '}
-          <MaskAmount mask="•••">{KRW(p.requiredAmount)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          <MaskAmount mask="•••">{wonPre()}{KRW(p.requiredAmount)}</MaskAmount>
+          <WonUnit />
         </span>
         {!p.isAchieved && p.remainingAmount != null ? (
           <span className="num" style={{ marginLeft: 'auto' }}>
-            {t('assetDetail.remainingLabel')} <MaskAmount mask="•••">{KRW(p.remainingAmount)}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            {t('assetDetail.remainingLabel')} <MaskAmount mask="•••">{wonPre()}{KRW(p.remainingAmount)}</MaskAmount>
+            <WonUnit />
           </span>
         ) : (
           <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>{t('assetDetail.achieved')}</span>
@@ -295,11 +297,13 @@ function CardBillingSection({ asset }: { asset: Asset }) {
           }}
         >
           <MaskAmount>
-            <span style={{ fontSize: 'var(--text-display-sm)' }}>{KRW(upcomingAmount)}</span>
+            <span style={{ fontSize: 'var(--text-display-sm)' }}>{wonPre()}{KRW(upcomingAmount)}</span>
           </MaskAmount>
-          <HideUnit>
-            <span style={{ fontSize: 'var(--text-body-sm)' }}>원</span>
-          </HideUnit>
+          {!isEn() && (
+            <HideUnit>
+              <span style={{ fontSize: 'var(--text-body-sm)' }}>원</span>
+            </HideUnit>
+          )}
         </div>
         <Button
           variant="default"
@@ -336,8 +340,8 @@ function CardBillingSection({ asset }: { asset: Asset }) {
                       className="num"
                       style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}
                     >
-                      <MaskAmount>{KRW(b.billingAmount)}</MaskAmount>
-                      <HideUnit>원</HideUnit>
+                      <MaskAmount>{wonPre()}{KRW(b.billingAmount)}</MaskAmount>
+                      <WonUnit />
                     </span>
                     <Badge variant={meta.variant}>{t(meta.labelKey)}</Badge>
                   </div>
@@ -757,11 +761,14 @@ export function AssetDetailDialog({
         >
           <MaskAmount>
             {isCard ? '−' : ''}
+            {wonPre()}
             {KRW(absBalance)}
           </MaskAmount>
-          <HideUnit>
-            <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
-          </HideUnit>
+          {!isEn() && (
+            <HideUnit>
+              <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
+            </HideUnit>
+          )}
         </div>
       </div>
 

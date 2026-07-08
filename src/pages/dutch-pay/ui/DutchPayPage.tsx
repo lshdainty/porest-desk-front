@@ -30,8 +30,8 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { KRW } from '@/shared/lib/porest/format'
-import { MaskAmount, HideUnit } from '@/shared/lib/porest/hide-amounts'
+import { KRW, isEn } from '@/shared/lib/porest/format'
+import { MaskAmount, HideUnit, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -334,9 +334,9 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           value={
             <>
               <MaskAmount mask="••••">
-                <span className="num">{KRW(monthStats.totalAmount)}</span>
+                <span className="num">{wonPre()}{KRW(monthStats.totalAmount)}</span>
               </MaskAmount>
-              <HideUnit>원</HideUnit>
+              <WonUnit />
             </>
           }
         />
@@ -547,12 +547,14 @@ function SummaryCard({
               color: fg,
             }}
           >
-            {KRW(amount)}
+            {wonPre()}{KRW(amount)}
           </span>
         </MaskAmount>
-        <HideUnit>
-          <span style={{ fontSize: 13, fontWeight: '600', color: fg }}>원</span>
-        </HideUnit>
+        {!isEn() && (
+          <HideUnit>
+            <span style={{ fontSize: 13, fontWeight: '600', color: fg }}>원</span>
+          </HideUnit>
+        )}
       </div>
       <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>{sub}</div>
     </Card>
@@ -602,16 +604,18 @@ function SessionCard({
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, justifyContent: 'flex-end' }}>
             <MaskAmount mask="••••">
               <span className="num" style={{ fontSize: 17, fontWeight: '800', letterSpacing: '-0.02em' }}>
-                {KRW(d.totalAmount)}
+                {wonPre()}{KRW(d.totalAmount)}
               </span>
             </MaskAmount>
-            <HideUnit>
-              <span style={{ fontSize: 12, fontWeight: '600' }}>원</span>
-            </HideUnit>
+            {!isEn() && (
+              <HideUnit>
+                <span style={{ fontSize: 12, fontWeight: '600' }}>원</span>
+              </HideUnit>
+            )}
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('perOne')} <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
-            <HideUnit>원</HideUnit>
+            {t('perOne')} <MaskAmount mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+            <WonUnit />
           </div>
         </div>
       </div>
@@ -731,12 +735,14 @@ function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
         <MaskAmount mask="••••">
           <span className="num" style={{ fontSize: 14, fontWeight: '700' }}>
-            {KRW(d.totalAmount)}
+            {wonPre()}{KRW(d.totalAmount)}
           </span>
         </MaskAmount>
-        <HideUnit>
-          <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--fg-tertiary)' }}>원</span>
-        </HideUnit>
+        {!isEn() && (
+          <HideUnit>
+            <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--fg-tertiary)' }}>원</span>
+          </HideUnit>
+        )}
       </div>
     </div>
   )
@@ -772,12 +778,14 @@ function FriendRow({
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
           <MaskAmount mask="••••">
             <span className="num" style={{ fontSize: 14, fontWeight: '700', color: 'var(--status-success-fg)' }}>
-              +{KRW(f.net)}
+              +{wonPre()}{KRW(f.net)}
             </span>
           </MaskAmount>
-          <HideUnit>
-            <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--status-success-fg)' }}>원</span>
-          </HideUnit>
+          {!isEn() && (
+            <HideUnit>
+              <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--status-success-fg)' }}>원</span>
+            </HideUnit>
+          )}
         </div>
       ) : (
         <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', flexShrink: 0 }}>{t('settled')}</span>
@@ -1051,9 +1059,9 @@ function DutchCreateWizard({
           >
             {t('selectedCount', { count: picked.size })} · {t('fromTx.perPerson')}{' '}
             <MaskAmount mask="••••">
-              <span className="num">{KRW(perPerson)}</span>
+              <span className="num">{wonPre()}{KRW(perPerson)}</span>
             </MaskAmount>
-            <HideUnit>원</HideUnit>
+            <WonUnit />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
@@ -1237,16 +1245,18 @@ function DutchDetailDialog({
                 color: 'var(--color-primary)',
               }}
             >
-              {KRW(d.totalAmount)}
+              {wonPre()}{KRW(d.totalAmount)}
             </span>
           </MaskAmount>
-          <HideUnit>
-            <span style={{ fontSize: 15, fontWeight: '700', color: 'var(--color-primary)' }}>원</span>
-          </HideUnit>
+          {!isEn() && (
+            <HideUnit>
+              <span style={{ fontSize: 15, fontWeight: '700', color: 'var(--color-primary)' }}>원</span>
+            </HideUnit>
+          )}
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--fg-secondary)', marginTop: 4 }}>
-          {t('fromTx.perPerson')} <MaskAmount mask="••••">{KRW(per)}</MaskAmount>
-          <HideUnit>원</HideUnit>
+          {t('fromTx.perPerson')} <MaskAmount mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+          <WonUnit />
         </div>
       </div>
 
@@ -1310,8 +1320,8 @@ function DutchDetailDialog({
                 <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
                   {statusText ?? (
                     <>
-                      <MaskAmount mask="••••">{KRW(p.amount)}</MaskAmount>
-                      <HideUnit>원</HideUnit> {t('transferNeeded')}
+                      <MaskAmount mask="••••">{wonPre()}{KRW(p.amount)}</MaskAmount>
+                      <WonUnit /> {t('transferNeeded')}
                     </>
                   )}
                 </div>

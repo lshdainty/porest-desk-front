@@ -1,6 +1,23 @@
 import { Activity, useEffect, useState, type ReactNode } from 'react'
+import { isEn } from '@/shared/lib/porest/format'
 
 export const HIDE_AMOUNTS_MASK = '••••••'
+
+/**
+ * 통화 접두 기호 — 마스킹 금액의 `<MaskAmount>` 안, 숫자(부호 뒤) 바로 앞에 삽입.
+ * ko: '' (단위는 접미사 `원`이 `<WonUnit/>` 로 렌더) / en: '₩' (접두사).
+ * 예 ko `<MaskAmount>{wonPre()}{KRW(x)}</MaskAmount><WonUnit/>` → "10,000원"
+ *    en 동일 코드 → "₩10,000"
+ */
+export const wonPre = (): string => (isEn() ? '₩' : '')
+
+/**
+ * 통화 접미 단위 — 기존 `<HideUnit>원</HideUnit>` 대체.
+ * ko: `원`(마스킹 시 숨김, 기존 동일) / en: 없음(접두 ₩ 로 대체됨).
+ */
+export function WonUnit() {
+  return <HideUnit>{isEn() ? '' : '원'}</HideUnit>
+}
 
 declare global {
   interface Window { __pdHideAmounts?: boolean }
