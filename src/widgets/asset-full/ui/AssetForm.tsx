@@ -152,14 +152,14 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
 
         {isCardAsset && (
           <div>
-            <Label>카드 카탈로그</Label>
+            <Label>{t('form.cardCatalog')}</Label>
             <CardCatalogCombobox
               value={cardCatalogRowId}
               onChange={(rowId) => setCardCatalogRowId(rowId)}
               cardTypeFilter={cardTypeFilter}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              카드를 선택하면 전월 실적 트래킹과 혜택 자동 매칭이 활성화됩니다.
+              {t('form.cardCatalogHint')}
             </p>
           </div>
         )}
@@ -167,29 +167,29 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
         {isCreditCard && (
           <>
             <div>
-              <Label>신용한도</Label>
+              <Label>{t('form.creditLimit')}</Label>
               <Input
                 type="number"
                 inputMode="numeric"
                 value={creditLimit}
                 onChange={(e) => setCreditLimit(e.target.value)}
-                placeholder="예: 3000000"
+                placeholder={t('form.creditLimitPlaceholder')}
               />
             </div>
 
             <div>
-              <Label>결제일</Label>
+              <Label>{t('form.paymentDay')}</Label>
               <Select
                 value={paymentDay || undefined}
                 onValueChange={(v) => setPaymentDay(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="결제일 선택" />
+                  <SelectValue placeholder={t('form.paymentDaySelect')} />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                     <SelectItem key={d} value={String(d)}>
-                      {d}일
+                      {t('form.dayN', { d })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -197,14 +197,14 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
             </div>
 
             <div>
-              <Label>결제계좌</Label>
+              <Label>{t('form.paymentAccount')}</Label>
               <Select
                 value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
                 onValueChange={(v) => setPaymentAssetRowId(v ? Number(v) : null)}
                 disabled={bankAccounts.length === 0}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={bankAccounts.length === 0 ? '입출금 계좌가 없어요' : '결제 출금계좌 선택'} />
+                  <SelectValue placeholder={bankAccounts.length === 0 ? t('form.noBankAccount') : t('form.paymentAccountSelect')} />
                 </SelectTrigger>
                 <SelectContent>
                   {bankAccounts.map((a) => (
@@ -249,7 +249,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
               value: String(i),
               bg: p.bg,
               fg: p.color,
-              label: `색상 ${i + 1}`,
+              label: t('form.colorN', { n: i + 1 }),
             }))}
           />
         </div>
@@ -269,8 +269,8 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
             <Wallet size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-[var(--fg-primary)]">전체 자산 합계에 포함</div>
-            <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">순자산·총자산 계산에 반영됩니다</div>
+            <div className="text-[13px] font-semibold text-[var(--fg-primary)]">{t('form.includeInTotal')}</div>
+            <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">{t('form.includeInTotalDesc')}</div>
           </div>
           <Switch
             checked={isIncludedInTotal === 'Y'}
