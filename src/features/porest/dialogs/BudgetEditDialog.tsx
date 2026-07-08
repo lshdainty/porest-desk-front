@@ -7,7 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { money } from '@/shared/lib/porest/format'
+import { money, isEn } from '@/shared/lib/porest/format'
 import { tileRadius } from '@/shared/lib'
 import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
 import { getPaletteByColor } from './CategoryEditDialog'
@@ -196,7 +196,7 @@ export function BudgetEditDialog({
       >
         {PRESETS.map((p) => (
           <ToggleGroupItem key={p} value={String(p)} className="rounded-full">
-            {(p / 10_000).toFixed(0)}만원
+            {isEn() ? money(p) : `${(p / 10_000).toFixed(0)}만원`}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -254,7 +254,7 @@ export function MonthlyBudgetDialog({
       >
         {presets.map((p) => (
           <ToggleGroupItem key={p} value={String(p)} className="rounded-full">
-            {(p / 10_000).toFixed(0)}만원
+            {isEn() ? money(p) : `${(p / 10_000).toFixed(0)}만원`}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

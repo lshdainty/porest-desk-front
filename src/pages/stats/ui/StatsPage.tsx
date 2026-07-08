@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW, money, isEn } from '@/shared/lib/porest/format'
+import { KRW, money, isEn, formatChartAxis } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { MaskAmount, WonUnit, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
@@ -974,6 +974,7 @@ export const StatsPage = () => {
    */
   const shortAmount = (v: number): string => {
     if (v <= 0) return '—'
+    if (isEn()) return formatChartAxis(v)
     if (v < 10_000) return `${Math.round(v / 1000)}천`
     return `${(v / 10_000).toFixed(1)}만`
   }
@@ -1360,6 +1361,7 @@ export const StatsPage = () => {
   // app stats _fmtTick 정합 — 만 단위 round. 공용 formatChartAxis(100만 단위 round)는
   // 지출 우축처럼 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져서 stats 엔 부적합.
   const fmtTick = (v: number): string => {
+    if (isEn()) return formatChartAxis(v)
     const sign = v < 0 ? '-' : ''
     const n = Math.abs(v)
     if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
