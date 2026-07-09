@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { todoKeys } from '@/shared/config'
+import { constellationKeys, todoKeys } from '@/shared/config'
 import { todoApi } from '../api/todoApi'
 import type { TodoListParams } from '../api/todoApi'
 import type { Todo, TodoFormValues } from '@/entities/todo'
@@ -80,6 +80,8 @@ export const useToggleTodoStatus = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: todoKeys.all })
+      // 별자리 게이미피케이션 — 완료 토글은 별빛 적립/회수의 부수효과를 가지므로 함께 갱신
+      queryClient.invalidateQueries({ queryKey: constellationKeys.all })
     },
   })
 }
