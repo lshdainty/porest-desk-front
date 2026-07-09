@@ -5,11 +5,6 @@
 
 .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; letter-spacing: -0.012em; }
 
-/* Density */
-:root { --row-py: 12px; --card-pad: 20px; }
-:root[data-density="compact"] { --row-py: 10px; --card-pad: 16px; }
-:root[data-density="cozy"] { --row-py: 14px; --card-pad: 20px; }
-
 /* =============================================================================
  * Layout chrome
  * ========================================================================== */
