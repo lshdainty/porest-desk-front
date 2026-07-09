@@ -65,7 +65,7 @@ function readCurrency(): CurrencyKey {
 }
 
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('settings')
+  const { t, i18n } = useTranslation('settings')
   const { theme, setTheme } = useTheme()
   const [density, setDensityState] = useState<DensityKey>(readDensity)
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
@@ -141,6 +141,23 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
             )
           })}
         </TileGroup>
+      </section>
+
+      <section>
+        <SectionLabel>{t('language.label')}</SectionLabel>
+        <Tabs
+          value={i18n.language?.startsWith('en') ? 'en' : 'ko'}
+          onValueChange={(v) => v && i18n.changeLanguage(v)}
+        >
+          <TabsList variant="pill" size="sm" className="w-full">
+            <TabsTrigger value="ko" className="flex-1">
+              {t('language.ko')}
+            </TabsTrigger>
+            <TabsTrigger value="en" className="flex-1">
+              {t('language.en')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </section>
 
       <section>

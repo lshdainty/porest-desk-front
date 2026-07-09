@@ -1591,6 +1591,9 @@ export,section.format.csv.desc,엑셀·구글시트,Excel · Google Sheets
 export,section.format.excel.desc,Microsoft Excel,Microsoft Excel
 export,section.format.json.desc,개발자·백업,Developer · Backup
 settings,theme.label,테마,Theme
+settings,language.label,언어,Language
+settings,language.ko,한국어,한국어
+settings,language.en,English,English
 settings,theme.light,라이트,Light
 settings,theme.lightDesc,밝은 배경,Light background
 settings,theme.dark,다크,Dark
