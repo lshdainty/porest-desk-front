@@ -11,7 +11,7 @@ import type { CSSProperties } from 'react'
 const TX_ROW_CLS =
   'flex items-center gap-3 cursor-pointer rounded-lg ' +
   'pl-1 pr-1 -ml-1 -mr-1 ' +
-  'py-[var(--row-py,12px)] ' +
+  'py-3 ' +
   'transition-[background] duration-[var(--motion-duration-fast)] ' +
   'hover:bg-[var(--bg-muted)]'
 

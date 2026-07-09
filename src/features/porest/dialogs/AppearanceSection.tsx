@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
@@ -14,10 +14,8 @@ import {
 } from '@/shared/lib/porest/hide-amounts'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 
-type DensityKey = 'compact' | 'comfortable' | 'spacious'
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
 
-const DENSITY_STORAGE_KEY = 'pd-density'
 const CURRENCY_STORAGE_KEY = 'pd-currency'
 
 const THEME_OPTIONS: {
@@ -31,28 +29,12 @@ const THEME_OPTIONS: {
   { k: 'system', labelKey: 'theme.system', descKey: 'theme.systemDesc', Icon: Monitor },
 ]
 
-const DENSITY_OPTIONS: { k: DensityKey; labelKey: string }[] = [
-  { k: 'compact', labelKey: 'density.compact' },
-  { k: 'comfortable', labelKey: 'density.comfortable' },
-  { k: 'spacious', labelKey: 'density.spacious' },
-]
-
 const CURRENCY_OPTIONS: { k: CurrencyKey; labelKey: string; symbol: string }[] = [
   { k: 'KRW', labelKey: 'currency.KRW', symbol: '₩' },
   { k: 'USD', labelKey: 'currency.USD', symbol: '$' },
   { k: 'EUR', labelKey: 'currency.EUR', symbol: '€' },
   { k: 'JPY', labelKey: 'currency.JPY', symbol: '¥' },
 ]
-
-function readDensity(): DensityKey {
-  try {
-    const v = localStorage.getItem(DENSITY_STORAGE_KEY)
-    if (v === 'compact' || v === 'comfortable' || v === 'spacious') return v
-  } catch {
-    /* ignore */
-  }
-  return 'comfortable'
-}
 
 function readCurrency(): CurrencyKey {
   try {
@@ -67,7 +49,6 @@ function readCurrency(): CurrencyKey {
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { t, i18n } = useTranslation('settings')
   const { theme, setTheme } = useTheme()
-  const [density, setDensityState] = useState<DensityKey>(readDensity)
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
   const hidden = useHideAmounts()
   const [unlockOpen, setUnlockOpen] = useState(false)
@@ -81,18 +62,6 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     }
   }
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-density', density)
-  }, [density])
-
-  const setDensity = (d: DensityKey) => {
-    setDensityState(d)
-    try {
-      localStorage.setItem(DENSITY_STORAGE_KEY, d)
-    } catch {
-      /* ignore */
-    }
-  }
 
   const setCurrency = (c: CurrencyKey) => {
     setCurrencyState(c)
@@ -194,22 +163,6 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           onOpenChange={setUnlockOpen}
           onVerified={disablePdHideAmounts}
         />
-      </section>
-
-      <section>
-        <SectionLabel>{t('density.label')}</SectionLabel>
-        <Tabs
-          value={density}
-          onValueChange={(v) => v && setDensity(v as DensityKey)}
-        >
-          <TabsList variant="pill" size="sm" className="w-full">
-            {DENSITY_OPTIONS.map((opt) => (
-              <TabsTrigger key={opt.k} value={opt.k} className="flex-1">
-                {t(opt.labelKey)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
       </section>
 
       <section>
