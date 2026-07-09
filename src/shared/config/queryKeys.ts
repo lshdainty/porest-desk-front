@@ -162,3 +162,10 @@ export const stockKeys = {
   candles: (symbol: string, interval: string) => [...stockKeys.all, 'candles', symbol, interval] as const,
   warnings: (symbol: string) => [...stockKeys.all, 'warnings', symbol] as const,
 }
+
+export const constellationKeys = {
+  all: ['constellation'] as const,
+  today: () => [...constellationKeys.all, 'today'] as const,
+  sky: (days: number) => [...constellationKeys.all, 'sky', days] as const,
+  collection: () => [...constellationKeys.all, 'collection'] as const,
+}

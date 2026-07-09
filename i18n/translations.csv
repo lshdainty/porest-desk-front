@@ -2025,3 +2025,43 @@ date,daysLater,{{count}}일 후,in {{count}} days
 date,dday,D-{{count}},D-{{count}}
 
 date,asOf,{{date}} 기준,As of {{date}}
+constellation,name.dipper,북두칠성,Big Dipper
+constellation,name.cass,카시오페이아,Cassiopeia
+constellation,name.orion,오리온자리,Orion
+constellation,name.cygnus,백조자리,Cygnus
+constellation,name.lyra,거문고자리,Lyra
+constellation,name.crux,남십자자리,Crux
+constellation,name.scorpius,전갈자리,Scorpius
+constellation,name.pegasus,페가수스 사각형,Square of Pegasus
+constellation,desc.dipper,북쪽 하늘의 국자 모양 일곱 별,Seven stars shaping the northern ladle
+constellation,desc.cass,W자를 그리는 북쪽 하늘의 여왕,The queen tracing a W in the northern sky
+constellation,desc.orion,겨울 밤하늘의 사냥꾼,The hunter of winter night skies
+constellation,desc.cygnus,"은하수를 나는 백조, 북십자성","The swan over the Milky Way, the Northern Cross"
+constellation,desc.lyra,직녀성 베가가 빛나는 거문고,The lyre where Vega shines
+constellation,desc.crux,"남반구의 길잡이, 남십자성","The southern guidepost, the Southern Cross"
+constellation,desc.scorpius,여름 남쪽 하늘의 전갈,The scorpion of summer southern skies
+constellation,desc.pegasus,가을 하늘의 큰 사각형,The great square of autumn skies
+constellation,hero.todayTarget,오늘의 목표 별자리,Today's constellation
+constellation,hero.collectedBang,{{name}} 수집!,{{name}} collected!
+constellation,hero.starlightCount,{{lit}}/{{goal}} 별빛,{{lit}}/{{goal}} starlight
+constellation,hero.captionDone,도감에 새겨졌어요 · 완료할수록 더 반짝여요,Etched in your collection · shines brighter as you complete more
+constellation,hero.captionProgress,오늘 {{count}}건 완료,{{count}} done today
+constellation,hero.captionMemo,메모 별빛 +{{count}},Memo starlight +{{count}}
+constellation,hero.captionRemain,{{count}}별 남음,{{count}} stars to go
+constellation,hero.captionEmpty,할 일을 완료하면 별이 켜져요,Complete todos to light up the stars
+constellation,hero.streak,연속 관측 {{count}}일,{{count}}-day streak
+constellation,hero.guardInfo,보호 {{count}} · 중요 +3 · 보통 +2 · 여유 +1,Guard {{count}} · High +3 · Medium +2 · Low +1
+constellation,mySky.title,나의 밤하늘,My Night Sky
+constellation,mySky.total,누적 {{count}}개,{{count}} collected
+constellation,mySky.subtitle,최근 2주 · 흐린 밤도 기록에 남아요,Last 2 weeks · cloudy nights count too
+constellation,collection.title,별자리 도감,Constellation Collection
+constellation,collection.progress,{{collected}}/{{total}} 수집,{{collected}}/{{total}} collected
+constellation,collection.subtitle,별 개수만큼 별빛을 모으면 수집돼요,Gather starlight equal to the stars to collect
+constellation,collection.todayBadge,오늘의 목표,Today's goal
+constellation,collection.starCount,별 {{count}}개,{{count}} stars
+constellation,collection.timesCollected,{{count}}회,{{count}}×
+constellation,collection.notCollected,미수집,Not yet
+constellation,detail.title,별자리 도감,Constellation Collection
+constellation,detail.notMet,아직 만나지 못한 별자리예요,A constellation you haven't met yet
+constellation,detail.collectedTimes,지금까지 {{count}}번 수집했어요,Collected {{count}} times so far
+constellation,detail.hint,하루에 별빛 {{count}}개를 모으면 수집돼요 · 매일 새 목표 별자리가 떠요,Gather {{count}} starlight in a day to collect · a new target rises daily

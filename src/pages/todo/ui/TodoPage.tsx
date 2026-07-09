@@ -21,6 +21,12 @@ import {
   useToggleTodoStatus,
   useDeleteTodo,
 } from '@/features/todo'
+import {
+  useConstellationCollection,
+  useConstellationSky,
+  useConstellationToday,
+} from '@/features/constellation'
+import { CollectionCard, MySkyCard, NightSkyHero } from '@/widgets/constellation'
 import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -148,6 +154,16 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data])
   const today = useMemo(() => todayISO(), [])
 
+  // ── 별자리 게이미피케이션 (밤하늘 히어로 · 나의 밤하늘 · 도감) ────────────
+  const constellationTodayQ = useConstellationToday()
+  const skyQ = useConstellationSky(14)
+  const collectionQ = useConstellationCollection()
+  // 오늘 완료 건수 — 완료 이벤트(completedAt) 기준 (히어로 캡션용)
+  const doneToday = useMemo(
+    () => todos.filter(td => isDone(td) && (td.completedAt ?? '').slice(0, 10) === today).length,
+    [todos, today],
+  )
+
   const [filter, setFilter] = useState<FilterKey>('today')
   const [quickAdd, setQuickAdd] = useState('')
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
@@ -178,11 +194,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     return { today: t, week: w, all: a, done: d }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todos, today])
-
-  const completedPct =
-    todos.length > 0
-      ? Math.round((counts.done / todos.length) * 100)
-      : 0
 
   // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
   const groups = useMemo(() => {
@@ -237,59 +248,27 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     deleteTodo.mutate(id, { onSuccess: () => setEditing(null) })
   }
 
-  // ── 통계 3카드 ────────────────────────────────────────────────────────────
-  const StatCards = (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: mobile ? 8 : 12,
-      }}
-    >
-      <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>{t('today')}</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span
-            className="num"
-            style={{
-              ...statNum(mobile),
-              color: counts.today > 0 ? 'var(--color-primary)' : 'var(--fg-primary)',
-            }}
-          >
-            {counts.today}
-          </span>
-          <span style={statUnit}>{t('count')}</span>
-        </div>
-      </Card>
-      <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>{t('thisWeek')}</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span className="num" style={statNum(mobile)}>
-            {counts.week}
-          </span>
-          <span style={statUnit}>{t('count')}</span>
-        </div>
-      </Card>
-      <Card style={{ padding: mobile ? 14 : 18 }}>
-        <div style={statLabel}>{t('completionRate')}</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span
-            className="num"
-            style={{ ...statNum(mobile), color: 'var(--status-success-fg)' }}
-          >
-            {completedPct}
-          </span>
-          <span style={{ ...statUnit, fontSize: 14 }}>%</span>
-        </div>
-        <div className="budget-bar" style={{ marginTop: 8, height: 6 }}>
-          <div
-            className="budget-bar__fill"
-            style={{ width: `${completedPct}%`, background: 'var(--status-success)' }}
-          />
-        </div>
-      </Card>
-    </div>
-  )
+  // ── 밤하늘 히어로 / 나의 밤하늘 / 도감 (별자리 게이미피케이션) ─────────────
+  const SkyHero = constellationTodayQ.data ? (
+    <NightSkyHero today={constellationTodayQ.data} doneToday={doneToday} mobile={mobile} />
+  ) : null
+  const MySky =
+    skyQ.data && constellationTodayQ.data && collectionQ.data ? (
+      <MySkyCard
+        sky={skyQ.data}
+        today={constellationTodayQ.data}
+        entries={collectionQ.data.entries}
+        mobile={mobile}
+      />
+    ) : null
+  const Collection =
+    collectionQ.data && constellationTodayQ.data ? (
+      <CollectionCard
+        collection={collectionQ.data}
+        todayKey={constellationTodayQ.data.constellation.constellationKey}
+        mobile={mobile}
+      />
+    ) : null
 
   // ── 퀵추가 ────────────────────────────────────────────────────────────────
   const QuickAdd = (
@@ -686,10 +665,12 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <MobileBackHeader title={t('pageTitle')} />
         <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {StatCards}
+          {SkyHero}
           {QuickAdd}
           {FilterChips}
           {ListCard}
+          {MySky}
+          {Collection}
         </div>
         <button
           type="button"
@@ -737,21 +718,24 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
       </div>
       <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+        {SkyHero}
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: '1.4fr 1fr',
             gap: 20,
             alignItems: 'flex-start',
+            marginTop: 20,
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {StatCards}
             {QuickAdd}
             {FilterChips}
             {ListCard}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {MySky}
+            {Collection}
             {TagDistribution}
             {PriorityCard}
           </div>
@@ -762,21 +746,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 }
 
-// 공통 인라인 스타일 (통계 카드).
-const statLabel = {
-  fontSize: 11,
-  fontWeight: '600' as const,
-  color: 'var(--fg-tertiary)',
-  letterSpacing: '0.04em',
-  textTransform: 'uppercase' as const,
-  marginBottom: 6,
-}
-const statNum = (mobile: boolean) => ({
-  fontSize: mobile ? 22 : 26,
-  fontWeight: '800' as const,
-  letterSpacing: '-0.025em',
-})
-const statUnit = { fontSize: 12, color: 'var(--fg-tertiary)' }
 const dot = {
   width: 2,
   height: 2,
