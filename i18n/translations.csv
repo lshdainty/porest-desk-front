@@ -859,6 +859,7 @@ dashboard,inUse,사용 중,In Use
 dashboard,layoutReset,레이아웃 초기화,Reset Layout
 dashboard,todo.notes,메모,Notes
 dashboard,todo.overdue,기한 초과,Overdue
+dashboard,todo.overdueBadge,연체 {{count}},Overdue {{count}}
 dashboard,calendar.noToday,오늘 일정 없음,No events today
 dashboard,expense.todayLabel,오늘,Today
 dashboard,expense.budget,예산,Budget
