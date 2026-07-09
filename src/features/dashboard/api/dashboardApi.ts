@@ -31,6 +31,7 @@ export interface DashboardSummary {
     inProgressCount: number
     completedCount: number
     todayDueCount: number
+    overDueCount: number
     noteCount: number
   }
   calendarSummary: {

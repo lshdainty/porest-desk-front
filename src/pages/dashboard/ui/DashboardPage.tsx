@@ -1018,7 +1018,14 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{t('todo.label')}</CardTitle>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CardTitle>{t('todo.label')}</CardTitle>
+              {(summary?.todoSummary.overDueCount ?? 0) > 0 && (
+                <span style={{ padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-badge)', fontWeight: 600, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)' }}>
+                  {t('todo.overdueBadge', { count: summary!.todoSummary.overDueCount })}
+                </span>
+              )}
+            </div>
             <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/todo')}>
               {t('manage')} <ChevronRight size={14} />
             </Button>
@@ -1570,6 +1577,11 @@ function UpcomingMobileCard({
             <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
               {t('todo.recent')}
             </span>
+            {summary.todoSummary.overDueCount > 0 && (
+              <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-badge)', fontWeight: 600, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)' }}>
+                {t('todo.overdueBadge', { count: summary.todoSummary.overDueCount })}
+              </span>
+            )}
             <Button
               variant="ghost"
               size="icon"
