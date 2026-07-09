@@ -113,23 +113,6 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
       </section>
 
       <section>
-        <SectionLabel>{t('language.label')}</SectionLabel>
-        <Tabs
-          value={i18n.language?.startsWith('en') ? 'en' : 'ko'}
-          onValueChange={(v) => v && i18n.changeLanguage(v)}
-        >
-          <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="ko" className="flex-1">
-              {t('language.ko')}
-            </TabsTrigger>
-            <TabsTrigger value="en" className="flex-1">
-              {t('language.en')}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </section>
-
-      <section>
         <SectionLabel>{t('privacy.label')}</SectionLabel>
         {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치) */}
         <Card style={{ padding: '14px 16px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -163,6 +146,23 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           onOpenChange={setUnlockOpen}
           onVerified={disablePdHideAmounts}
         />
+      </section>
+
+      <section>
+        <SectionLabel>{t('language.label')}</SectionLabel>
+        <Tabs
+          value={i18n.language?.startsWith('en') ? 'en' : 'ko'}
+          onValueChange={(v) => v && i18n.changeLanguage(v)}
+        >
+          <TabsList variant="pill" size="sm" className="w-full">
+            <TabsTrigger value="ko" className="flex-1">
+              {t('language.ko')}
+            </TabsTrigger>
+            <TabsTrigger value="en" className="flex-1">
+              {t('language.en')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </section>
 
       <section>
