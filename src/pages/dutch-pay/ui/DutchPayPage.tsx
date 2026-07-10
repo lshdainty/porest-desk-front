@@ -278,6 +278,13 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           title={t('emptyPast.title')}
           desc={t('emptyPast.desc')}
         />
+      ) : mobile ? (
+        // 모바일 카드 다이어트 — 리스트 카드 벗김.
+        <div>
+          {past.map((d, i) => (
+            <PastRow key={d.rowId} d={d} first={i === 0} onClick={() => setDetailId(d.rowId)} />
+          ))}
+        </div>
       ) : (
         <Card style={{ padding: '8px 18px' }}>
           {past.map((d, i) => (
@@ -293,6 +300,13 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           title={t('emptyFriends.title')}
           desc={t('emptyFriends.desc')}
         />
+      ) : mobile ? (
+        // 모바일 카드 다이어트 — 리스트 카드 벗김.
+        <div>
+          {friends.map((f, i) => (
+            <FriendRow key={f.name} f={f} first={i === 0} />
+          ))}
+        </div>
       ) : (
         <Card style={{ padding: '8px 18px' }}>
           {friends.map((f, i) => (
@@ -517,7 +531,8 @@ function SummaryCard({
   const chipVar = receive ? '--color-chart-green' : '--color-chart-orange'
   const fg = receive ? 'var(--status-success-fg)' : 'var(--status-warning-fg)'
   return (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    // 모바일 = keep 카드(raised) — 카드 다이어트에서 유지되는 정산 요약 (design Dutch Hero keep).
+    <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mobile ? 10 : 12 }}>
         <span
           style={{
@@ -579,9 +594,14 @@ function SessionCard({
   const place = d.description?.trim()
   const meta = place ? `${place} · ${kDateMd(d.dutchPayDate)}` : kDateMd(d.dutchPayDate)
   return (
+    // 모바일 카드 다이어트 — 항목 카드 벗김(gap 이 구분), 클릭 영역·hover 유지.
     <Card
       onClick={onClick}
-      style={{ padding: mobile ? 18 : 22, cursor: 'pointer' }}
+      variant={mobile ? 'muted' : undefined}
+      style={mobile
+        ? { padding: 14, cursor: 'pointer', background: 'transparent' }
+        : { padding: 22, cursor: 'pointer' }}
+      className={mobile ? 'hover:bg-[var(--bg-muted)] transition-colors rounded-[10px]' : undefined}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>

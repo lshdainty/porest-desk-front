@@ -27,8 +27,10 @@ export function CollectionCard({
   const { t, i18n } = useTranslation('constellation')
   const [detail, setDetail] = useState<CollectionEntry | null>(null)
 
+  // 모바일 카드 다이어트 — 카드 벗기고 콘텐츠만 (design .m-scroll .p-card 플랫).
+  const Wrap = mobile ? 'section' : Card
   return (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    <Wrap style={mobile ? undefined : { padding: 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
         <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>
           {t('collection.title')}
@@ -138,6 +140,6 @@ export function CollectionCard({
         })}
       </div>
       {detail && <ConstellationDetailDialog entry={detail} onClose={() => setDetail(null)} mobile={mobile} />}
-    </Card>
+    </Wrap>
   )
 }

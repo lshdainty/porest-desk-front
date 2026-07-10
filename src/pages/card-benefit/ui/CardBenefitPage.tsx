@@ -329,15 +329,17 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
   const brand = getCardBrand(companyName)
 
   return (
+    // 모바일 카드 다이어트 — 카드 시각(배경+그림자) 벗기고 플랫 행 (hover 면이 구분).
     <button
       type="button"
       onClick={onClick}
+      className="hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)] transition-colors"
       style={{
-        background: 'var(--bg-surface)',
+        background: 'transparent',
         border: 0,
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
-        padding: 14,
+        borderRadius: 10,
+        padding: '12px 10px',
+        margin: '0 -2px',
         display: 'flex',
         alignItems: 'center',
         gap: 14,
@@ -462,13 +464,11 @@ function GridSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
         {Array.from({ length: 5 }).map((_, i) => (
+          // 카드 다이어트 — 실렌더 플랫 행과 동일.
           <div
             key={i}
             style={{
-              background: 'var(--bg-surface)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-sm)',
-              padding: 14,
+              padding: '12px 10px',
               display: 'flex',
               alignItems: 'center',
               gap: 14,
@@ -630,7 +630,7 @@ export const CardBenefitPage = () => {
     <EmptyState />
   ) : mobile ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
         {cards.map(c => (
           <CardListTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
         ))}

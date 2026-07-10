@@ -49,8 +49,10 @@ export function MySkyCard({
   const todayISO = sky[sky.length - 1]?.date ?? ''
   const StageIcon = stageIconOf(today.points)
 
+  // 모바일 카드 다이어트 — 카드 벗기고 콘텐츠만 (design .m-scroll .p-card 플랫).
+  const Wrap = mobile ? 'section' : Card
   return (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    <Wrap style={mobile ? undefined : { padding: 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
         <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>
           {t('mySky.title')}
@@ -124,6 +126,6 @@ export function MySkyCard({
           )
         })}
       </div>
-    </Card>
+    </Wrap>
   )
 }

@@ -273,7 +273,63 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     ) : null
 
   // ── 퀵추가 ────────────────────────────────────────────────────────────────
-  const QuickAdd = (
+  const QuickAdd = mobile ? (
+    // 모바일 카드 다이어트 — 인풋 그릇은 sunken 박스 (design 모바일 검색 인풋 패턴).
+    <div
+      className="focus-within:[outline:2px_solid_var(--border-focus)]"
+      style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}
+    >
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--fg-tertiary)',
+          flexShrink: 0,
+        }}
+      >
+        <Plus size={18} />
+      </span>
+      <input
+        value={quickAdd}
+        onChange={e => setQuickAdd(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') handleQuickAdd()
+        }}
+        placeholder={t('quickAddPlaceholder')}
+        aria-label={t('quickAddLabel')}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          border: 0,
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 14,
+          color: 'var(--fg-primary)',
+          padding: '8px 0',
+          fontFamily: 'inherit',
+        }}
+      />
+      <Button
+        size="sm"
+        onClick={handleQuickAdd}
+        loading={createTodo.isPending}
+        style={{ flexShrink: 0 }}
+      >
+        {tc('add')}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setEditing({ _new: true })}
+        style={{ flexShrink: 0 }}
+      >
+        <Settings2 size={13} /> {t('detail')}
+      </Button>
+    </div>
+  ) : (
     <Card
       className="focus-within:[outline:2px_solid_var(--border-focus)]"
       style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}
@@ -515,8 +571,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   // ── 그룹 리스트 ───────────────────────────────────────────────────────────
-  const ListCard = (
-    <Card style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
+  const listBody = (
+    <>
       {groups.length === 0
         ? EmptyState
         : groups.map(([k, items]) => (
@@ -539,7 +595,13 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               ))}
             </div>
           ))}
-    </Card>
+    </>
+  )
+  // 모바일 카드 다이어트 — 리스트 카드 벗김(날짜 라벨+행이 배경 위에 바로).
+  const ListCard = mobile ? (
+    <div>{listBody}</div>
+  ) : (
+    <Card style={{ padding: '8px 20px' }}>{listBody}</Card>
   )
 
   // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
