@@ -7,18 +7,16 @@ import type { CardTagGroup } from '@/entities/card'
 interface Props {
   groups: CardTagGroup[]
   title?: string
+  /** 모바일 카드 다이어트 — 셸 카드 벗기고 flat-group 헤드 + 태그 그룹 */
+  mobile?: boolean
 }
 
-export function CardSearchTagsSection({ groups, title }: Props) {
+export function CardSearchTagsSection({ groups, title, mobile = false }: Props) {
   const { t } = useTranslation('card')
   if (groups.length === 0) return null
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title ?? t('detail.benefitTagsTitle')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+  const body = (
+    <div className="space-y-4">
         {groups.map((g) => (
           <div key={g.category} className="space-y-2">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -37,7 +35,22 @@ export function CardSearchTagsSection({ groups, title }: Props) {
             </div>
           </div>
         ))}
-      </CardContent>
+    </div>
+  )
+  if (mobile) {
+    return (
+      <section>
+        <div className="flat-group__head"><h2>{title ?? t('detail.benefitTagsTitle')}</h2></div>
+        {body}
+      </section>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">{title ?? t('detail.benefitTagsTitle')}</CardTitle>
+      </CardHeader>
+      <CardContent>{body}</CardContent>
     </Card>
   )
 }

@@ -9,17 +9,18 @@ import type { CardCatalogDetail } from '@/entities/card'
 
 interface Props {
   detail: CardCatalogDetail
+  /** 모바일 카드 다이어트 — 셸 카드 벗기고 플랫 섹션 (아트워크·배지·연회비 dl 은 유지) */
+  mobile?: boolean
 }
 
-export function CardInfoHeader({ detail }: Props) {
+export function CardInfoHeader({ detail, mobile = false }: Props) {
   const { t } = useTranslation('card')
   const s = detail.summary
   const cardName = decodeHtml(s.cardName)
   const companyName = decodeHtml(s.company?.name ?? '')
 
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="flex flex-col gap-5 p-5 sm:flex-row">
+  const body = (
+    <div className="flex flex-col gap-5 sm:flex-row">
         {s.imgUrl && (
           <div className="relative shrink-0 self-center sm:self-start">
             <img
@@ -102,7 +103,12 @@ export function CardInfoHeader({ detail }: Props) {
             )}
           </div>
         </div>
-      </CardContent>
+    </div>
+  )
+  if (mobile) return <section>{body}</section>
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-5">{body}</CardContent>
     </Card>
   )
 }

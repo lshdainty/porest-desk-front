@@ -13,11 +13,21 @@ import type { CardBenefit } from '@/entities/card'
 
 interface Props {
   benefits: CardBenefit[]
+  /** 모바일 카드 다이어트 — 셸 카드 벗기고 flat-group 헤드 + 아코디언 리스트(divide-y 유지) */
+  mobile?: boolean
 }
 
-export function AvailableBenefitsList({ benefits }: Props) {
+export function AvailableBenefitsList({ benefits, mobile = false }: Props) {
   const { t } = useTranslation('card')
   if (benefits.length === 0) {
+    if (mobile) {
+      return (
+        <section>
+          <div className="flat-group__head"><h2>{t('detail.benefitsTitle')}</h2></div>
+          <div className="text-sm text-muted-foreground">{t('detail.noBenefits')}</div>
+        </section>
+      )
+    }
     return (
       <Card>
         <CardHeader className="pb-3">
@@ -30,15 +40,7 @@ export function AvailableBenefitsList({ benefits }: Props) {
     )
   }
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-base">{t('detail.benefitsTitle')}</CardTitle>
-        <Badge variant="secondary" className="rounded-full">
-          {benefits.length}
-        </Badge>
-      </CardHeader>
-      <CardContent className="p-0">
+  const list = (
         <ul className="divide-y">
           {benefits.map((b) => {
             const summary = decodeHtml(b.summary ?? b.title ?? '')
@@ -84,7 +86,29 @@ export function AvailableBenefitsList({ benefits }: Props) {
             )
           })}
         </ul>
-      </CardContent>
+  )
+  if (mobile) {
+    return (
+      <section>
+        <div className="flat-group__head">
+          <h2>{t('detail.benefitsTitle')}</h2>
+          <Badge variant="secondary" className="ml-auto rounded-full">
+            {benefits.length}
+          </Badge>
+        </div>
+        {list}
+      </section>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+        <CardTitle className="text-base">{t('detail.benefitsTitle')}</CardTitle>
+        <Badge variant="secondary" className="rounded-full">
+          {benefits.length}
+        </Badge>
+      </CardHeader>
+      <CardContent className="p-0">{list}</CardContent>
     </Card>
   )
 }

@@ -7,6 +7,8 @@ import { CardPerformanceBar, useCardPerformance } from '@/features/card-performa
 
 interface Props {
   assetRowId: number
+  /** 모바일 카드 다이어트 — 셸 카드 벗기고 flat-group 헤드 + 본문 */
+  mobile?: boolean
 }
 
 function currentYearMonth(): string {
@@ -16,23 +18,21 @@ function currentYearMonth(): string {
   return `${y}-${m}`
 }
 
-export function CardPerformanceSection({ assetRowId }: Props) {
+export function CardPerformanceSection({ assetRowId, mobile = false }: Props) {
   const { t } = useTranslation('card')
   const [ym, setYm] = useState(currentYearMonth())
   const { data: performance, isLoading } = useCardPerformance(assetRowId, ym)
 
-  return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">{t('benefit.statPerformance')}</CardTitle>
-        <Input
-          type="month"
-          value={ym}
-          onChange={(e) => setYm(e.target.value)}
-          className="h-8 w-[140px]"
-        />
-      </CardHeader>
-      <CardContent>
+  const monthInput = (
+    <Input
+      type="month"
+      value={ym}
+      onChange={(e) => setYm(e.target.value)}
+      className="ml-auto h-8 w-[140px]"
+    />
+  )
+  const body = (
+    <>
         {isLoading ? (
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
@@ -47,7 +47,26 @@ export function CardPerformanceSection({ assetRowId }: Props) {
         ) : (
           <div className="text-sm text-muted-foreground">{t('detail.performanceLoadError')}</div>
         )}
-      </CardContent>
+    </>
+  )
+  if (mobile) {
+    return (
+      <section>
+        <div className="flat-group__head" style={{ alignItems: 'center' }}>
+          <h2>{t('benefit.statPerformance')}</h2>
+          {monthInput}
+        </div>
+        {body}
+      </section>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-base">{t('benefit.statPerformance')}</CardTitle>
+        {monthInput}
+      </CardHeader>
+      <CardContent>{body}</CardContent>
     </Card>
   )
 }

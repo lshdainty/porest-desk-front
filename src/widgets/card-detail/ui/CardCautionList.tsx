@@ -12,21 +12,15 @@ import type { CardBenefit } from '@/entities/card'
 
 interface Props {
   cautions: CardBenefit[]
+  /** 모바일 카드 다이어트 — 셸 카드 벗기고 flat-group 헤드 + 아코디언 리스트(divide-y 유지) */
+  mobile?: boolean
 }
 
-export function CardCautionList({ cautions }: Props) {
+export function CardCautionList({ cautions, mobile = false }: Props) {
   const { t } = useTranslation('card')
   if (cautions.length === 0) return null
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
-          {t('detail.cautionsTitle')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
+  const list = (
         <ul className="divide-y">
           {cautions.map((c) => {
             const summary = decodeHtml(c.summary ?? '')
@@ -62,7 +56,29 @@ export function CardCautionList({ cautions }: Props) {
             )
           })}
         </ul>
-      </CardContent>
+  )
+  if (mobile) {
+    return (
+      <section>
+        <div className="flat-group__head">
+          <h2 className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            {t('detail.cautionsTitle')}
+          </h2>
+        </div>
+        {list}
+      </section>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          {t('detail.cautionsTitle')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">{list}</CardContent>
     </Card>
   )
 }
