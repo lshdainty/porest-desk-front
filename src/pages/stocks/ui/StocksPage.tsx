@@ -491,19 +491,26 @@ const DONUT_PALETTE = [
   'var(--color-cat-brown)',
 ]
 
-function HoldingsEmpty() {
+/** 종목 리스트 래퍼 — 모바일 카드 다이어트(플랫: 행 hover 가 구분 담당) / 데스크톱 Card(padding 6). */
+function ListWrap({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  if (mobile) return <div>{children}</div>
+  return <Card style={{ padding: 6 }}>{children}</Card>
+}
+
+function HoldingsEmpty({ mobile = false }: { mobile?: boolean }) {
   const { t } = useTranslation('stocks')
-  return (
-    <Card style={{ padding: '32px 20px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
-        <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
-        <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>{t('connect.holdingsDesc')}</div>
-        <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-          <Link to="/desk/settings">{t('connect.action')}</Link>
-        </Button>
-      </div>
-    </Card>
+  const body = (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
+      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
+      <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>{t('connect.holdingsDesc')}</div>
+      <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
+        <Link to="/desk/settings">{t('connect.action')}</Link>
+      </Button>
+    </div>
   )
+  // 모바일 카드 다이어트 — 빈 상태도 배경 위 플랫.
+  if (mobile) return <div style={{ padding: '32px 20px' }}>{body}</div>
+  return <Card style={{ padding: '32px 20px' }}>{body}</Card>
 }
 
 function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
@@ -545,7 +552,7 @@ function volNum(vol: string): number {
   return parseFloat(raw)
 }
 
-function DiscoverPanel({ onPick, selected }: { onPick: (t: string) => void; selected: string | null }) {
+function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: string) => void; selected: string | null; mobile?: boolean }) {
   const { t } = useTranslation('stocks')
   const [tab, setTab] = useState<'gainers' | 'losers' | 'volume'>('gainers')
   const list = useMemo(() => {
@@ -555,6 +562,16 @@ function DiscoverPanel({ onPick, selected }: { onPick: (t: string) => void; sele
     else arr.sort((a, b) => volNum(b.vol) - volNum(a.vol))
     return arr.slice(0, 6)
   }, [tab])
+  const rows = list.map((s, i) => (
+    <div key={s.ticker} style={{ display: 'flex', alignItems: 'center' }}>
+      <span className="num" style={{ width: 22, textAlign: 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: i < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
+        {i + 1}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <StockRow ticker={s.ticker} active={selected === s.ticker} onClick={() => onPick(s.ticker)} />
+      </div>
+    </div>
+  ))
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <Tabs value={tab} onValueChange={v => setTab(v as 'gainers' | 'losers' | 'volume')}>
@@ -564,18 +581,8 @@ function DiscoverPanel({ onPick, selected }: { onPick: (t: string) => void; sele
           <TabsTrigger variant="pill" value="volume">{t('discover.volume')}</TabsTrigger>
         </TabsList>
       </Tabs>
-      <Card style={{ padding: 6 }}>
-        {list.map((s, i) => (
-          <div key={s.ticker} style={{ display: 'flex', alignItems: 'center' }}>
-            <span className="num" style={{ width: 22, textAlign: 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: i < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
-              {i + 1}
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <StockRow ticker={s.ticker} active={selected === s.ticker} onClick={() => onPick(s.ticker)} />
-            </div>
-          </div>
-        ))}
-      </Card>
+      {/* 모바일 카드 다이어트 — 리스트 카드 벗김 (행 hover 가 구분 담당) */}
+      {mobile ? <div>{rows}</div> : <Card style={{ padding: 6 }}>{rows}</Card>}
     </div>
   )
 }
@@ -904,13 +911,14 @@ export function StocksPage() {
   const curGroup = watchGroups.find(g => g.id === activeGroup) ?? watchGroups[0]!
   const selHolding = selected ? holdingItems.find(h => h.symbol === selected) ?? null : null
 
+  // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 투자 요약 (design StocksScreen).
   const summary = !holdings ? (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('summary.title')}</div>
       <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', marginTop: 8 }}>{t('summary.connectPrompt')}</div>
     </Card>
   ) : (
-    <Card style={{ padding: mobile ? 18 : 22 }}>
+    <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('summary.title')}</div>
       <div className="num" style={{ fontSize: mobile ? 28 : 32, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)', marginTop: 4 }}>
         <MaskAmount>{KRW(totalEval)}</MaskAmount>원
@@ -954,16 +962,16 @@ export function StocksPage() {
       </Tabs>
 
       {seg === 'discover' ? (
-        <DiscoverPanel onPick={setSelected} selected={selected} />
+        <DiscoverPanel onPick={setSelected} selected={selected} mobile={mobile} />
       ) : seg === 'holdings' ? (
         !holdings ? (
-          <HoldingsEmpty />
+          <HoldingsEmpty mobile={mobile} />
         ) : holdingItems.length === 0 ? (
-          <Card style={{ padding: 6 }}>
+          <ListWrap mobile={mobile}>
             <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('holdings.empty')}</div>
-          </Card>
+          </ListWrap>
         ) : (
-          <Card style={{ padding: 6 }}>
+          <ListWrap mobile={mobile}>
             {holdingItems.map(h => {
               const ev = num(h.marketValue.amount)
               const pnl = num(h.profitLoss.amount)
@@ -989,7 +997,7 @@ export function StocksPage() {
                 />
               )
             })}
-          </Card>
+          </ListWrap>
         )
       ) : (
         <>
@@ -1002,13 +1010,13 @@ export function StocksPage() {
               ))}
             </TabsList>
           </Tabs>
-          <Card style={{ padding: 6 }}>
+          <ListWrap mobile={mobile}>
             {curGroup.tickers.length === 0 ? (
               <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('watch.empty')}</div>
             ) : (
               curGroup.tickers.map(t => <StockRow key={t} ticker={t} active={selected === t} onClick={() => setSelected(t)} />)
             )}
-          </Card>
+          </ListWrap>
         </>
       )}
     </div>
@@ -1016,18 +1024,22 @@ export function StocksPage() {
 
   // ---- 개인키 미연결: 전 화면 연결 유도 (mock 노출 금지) ----
   if (!credLoading && !connected) {
-    const gate = (
-      <Card style={{ padding: '40px 24px', maxWidth: 430, margin: mobile ? undefined : '0 auto' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
-          <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
-          <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-            {t('connect.gateDesc')}
-          </div>
-          <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-            <Link to="/desk/settings">{t('connect.action')}</Link>
-          </Button>
+    const gateBody = (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
+        <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
+          {t('connect.gateDesc')}
         </div>
-      </Card>
+        <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
+          <Link to="/desk/settings">{t('connect.action')}</Link>
+        </Button>
+      </div>
+    )
+    // 모바일 카드 다이어트 — 안내도 배경 위 플랫.
+    const gate = mobile ? (
+      <div style={{ padding: '40px 24px' }}>{gateBody}</div>
+    ) : (
+      <Card style={{ padding: '40px 24px', maxWidth: 430, margin: '0 auto' }}>{gateBody}</Card>
     )
     return mobile ? (
       <>
