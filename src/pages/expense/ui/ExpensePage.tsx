@@ -95,10 +95,11 @@ function useExpensePageData(month: string) {
 }
 
 function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
-  // 실제 Summary(<Card> shadow) 구조 정합: 헤더는 [이전화살표][년 월 텍스트][다음화살표]
-  // + marginLeft auto[ViewModeToggle], 본문은 3-col(수입/지출/합계) 라벨+금액.
+  // 실제 Summary(모바일 keep raised / 데스크톱 shadow) 구조 정합: 헤더는 [이전화살표][년 월 텍스트]
+  // [다음화살표] + marginLeft auto[ViewModeToggle], 본문은 3-col(수입/지출/합계) 라벨+금액.
   return (
     <Card
+      variant={mobile ? 'raised' : undefined}
       style={{
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
@@ -122,10 +123,29 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
-  // 날짜 헤더 = DateGroupHeader 정합: padding '0 4px 8px', [날짜 bold][요일]
-  // + marginLeft auto[합계 금액]. row = ExpenseRow 정합: CategoryChip 40px(md) +
-  // gap-3(12px) + title 14px / sub 12px + 우측 금액. wrapper padding '0 14px'.
+function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobile?: boolean }) {
+  // 날짜 헤더 = DateGroupHeader 정합. row = ExpenseRow 정합: CategoryChip 40px(md) +
+  // gap-3(12px) + title 14px / sub 12px + 우측 금액.
+  // 모바일 = 카드 다이어트(행만 나열) / 데스크톱 = 카드 + divider.
+  const rowNodes = Array.from({ length: rows }).map((_, i) => (
+    <div
+      key={i}
+      style={{
+        borderTop: mobile || i === 0 ? 'none' : '1px solid var(--border-subtle)',
+        padding: mobile ? '12px 4px' : '12px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+      }}
+    >
+      <SkeletonBase className="h-10 w-10 rounded-[12px] shrink-0" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <SkeletonBase className="h-3.5 w-3/4 mb-2" />
+        <SkeletonBase className="h-3 w-1/3" />
+      </div>
+      <SkeletonBase className="h-3.5 w-20 shrink-0" />
+    </div>
+  ))
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 8px' }}>
@@ -133,27 +153,7 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
         <SkeletonBase className="h-4 w-5" />
         <SkeletonBase className="h-3.5 w-16 ml-auto" />
       </div>
-      <Card style={{ overflow: 'hidden' }}>
-        {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-              padding: '12px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-            }}
-          >
-            <SkeletonBase className="h-10 w-10 rounded-[12px] shrink-0" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <SkeletonBase className="h-3.5 w-3/4 mb-2" />
-              <SkeletonBase className="h-3 w-1/3" />
-            </div>
-            <SkeletonBase className="h-3.5 w-20 shrink-0" />
-          </div>
-        ))}
-      </Card>
+      {mobile ? rowNodes : <Card style={{ overflow: 'hidden' }}>{rowNodes}</Card>}
     </div>
   )
 }
@@ -202,7 +202,7 @@ function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <div
         className="flex flex-col flex-1 min-h-0"
-        style={{ padding: 'var(--spacing-xl) 20px' }}
+        style={{ padding: '16px 20px 24px' }}
       >
         <ExpenseSummarySkeleton mobile />
         <div className="flex-1 min-h-0 flex flex-col">
@@ -262,7 +262,9 @@ function Summary({
   const balance = monthIn - monthOut
   const [y, m] = month.split('-')
   return (
+    // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 월 네비+요약 (design TxScreen).
     <Card
+      variant={mobile ? 'raised' : undefined}
       style={{
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 12 : 16,
@@ -545,14 +547,22 @@ function ExpenseList({
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <ExpenseDayGroupSkeleton rows={3} />
-        <ExpenseDayGroupSkeleton rows={2} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 24 : 18 }}>
+        <ExpenseDayGroupSkeleton rows={3} mobile={mobile} />
+        <ExpenseDayGroupSkeleton rows={2} mobile={mobile} />
       </div>
     )
   }
 
   if (grouped.length === 0) {
+    if (mobile) {
+      // 카드 다이어트 — 빈 상태도 배경 위 플랫.
+      return (
+        <div style={{ padding: '32px 0', textAlign: 'center', fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: 500 }}>
+          {t('emptyList')}
+        </div>
+      )
+    }
     return (
       <Card>
         <CardContent style={{ textAlign: 'center' }}>
@@ -565,7 +575,8 @@ function ExpenseList({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 14 : 18 }}>
+    // 모바일 — 카드 다이어트: 날짜 그룹은 카드 없이 헤더+행, 그룹 사이 24px (design .tx-list).
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 24 : 18 }}>
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d)
         const out = items
@@ -574,30 +585,34 @@ function ExpenseList({
         const inn = items
           .filter(t => t.expenseType === 'INCOME')
           .reduce((s, t) => s + Math.abs(t.amount), 0)
+        const rows = items.map(e => {
+          const isFocus = focusTxId === e.rowId
+          return (
+            <div
+              key={e.rowId}
+              ref={isFocus ? focusRef : undefined}
+              style={{
+                borderTop: mobile || items.indexOf(e) === 0 ? 'none' : '1px solid var(--border-subtle)',
+                background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
+                transition: 'background 0.4s',
+                padding: mobile ? undefined : '0 14px',
+                borderRadius: mobile ? 10 : undefined,
+              }}
+            >
+              <ExpenseRow expense={e} onClick={onItemClick} />
+            </div>
+          )
+        })
         return (
           <div key={d}>
             {/* 날짜 헤더 — 카드 밖 평문 */}
             <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
-            {/* 거래 카드 — divider 로 구분 */}
-            <Card style={{ overflow: 'hidden' }}>
-              {items.map((e, i) => {
-                const isFocus = focusTxId === e.rowId
-                return (
-                  <div
-                    key={e.rowId}
-                    ref={isFocus ? focusRef : undefined}
-                    style={{
-                      borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-                      background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
-                      transition: 'background 0.4s',
-                      padding: '0 14px',
-                    }}
-                  >
-                    <ExpenseRow expense={e} onClick={onItemClick} />
-                  </div>
-                )
-              })}
-            </Card>
+            {mobile ? (
+              rows
+            ) : (
+              /* 데스크톱 — 거래 카드, divider 로 구분 */
+              <Card style={{ overflow: 'hidden' }}>{rows}</Card>
+            )}
           </div>
         )
       })}
@@ -942,7 +957,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   return (
     <div
       className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : undefined}
-      style={{ padding: 'var(--spacing-xl) 20px' }}
+      // 카드 다이어트 — design TxScreen 모바일 컨테이너 정합.
+      style={{ padding: '16px 20px 24px' }}
     >
       {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
       {activeCount > 0 && (

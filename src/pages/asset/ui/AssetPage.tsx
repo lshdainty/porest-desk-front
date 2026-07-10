@@ -26,6 +26,7 @@ import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
 import { useAssets, useAssetSummary, useNetWorthTrend, useTossValuationMap } from '@/features/asset'
@@ -703,11 +704,11 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
   if (mobile) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
+      <div style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
         <AssetSummarySkeleton mobile />
-        <AssetCompositionSkeleton />
-        <TypeGroupSkeleton rows={3} />
-        <TypeGroupSkeleton rows={2} />
+        <TypeGroupSkeleton mobile rows={3} />
+        <TypeGroupSkeleton mobile rows={2} />
       </div>
     )
   }
@@ -737,7 +738,7 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
 
 function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <Card>
+    <Card variant={mobile ? 'raised' : undefined}>
       <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <SkeletonBase className="h-3 w-16" />
@@ -822,34 +823,47 @@ function UpcomingBillsSkeleton() {
   )
 }
 
-function TypeGroupSkeleton({ rows = 3 }: { rows?: number }) {
+function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile?: boolean }) {
+  const list = (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div
+          key={i}
+          // design .acc-card flat row 리듬 — 실렌더(AssetCard)와 동일.
+          style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '12px 10px', margin: '0 -2px', borderRadius: 10,
+          }}
+        >
+          <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+            <SkeletonBase className="h-3 w-1/3" />
+          </div>
+          <SkeletonBase className="h-5 w-24 shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
+  if (mobile) {
+    // 카드 다이어트 — flat-group 헤드 + 리스트.
+    return (
+      <section>
+        <div className="flat-group__head">
+          <SkeletonBase className="h-5 w-20" />
+          <SkeletonBase className="h-4 w-16 ml-auto" />
+        </div>
+        {list}
+      </section>
+    )
+  }
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <SkeletonBase className="h-5 w-20" />
         <SkeletonBase className="h-4 w-16 ml-auto" />
       </CardHeader>
-      <CardContent>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {Array.from({ length: rows }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '14px 4px',
-                borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
-              }}
-            >
-              <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/3" />
-              </div>
-              <SkeletonBase className="h-5 w-24 shrink-0" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
+      <CardContent>{list}</CardContent>
     </Card>
   )
 }
@@ -946,12 +960,10 @@ function AssetCard({
   asset,
   negativeAmount = false,
   onOpenDetail,
-  showTopBorder = false,
 }: {
   asset: Asset
   negativeAmount?: boolean
   onOpenDetail: (asset: Asset) => void
-  showTopBorder?: boolean
 }) {
   const { t } = useTranslation('asset')
   // 음수(빚)만 fg-expense 빨강 + 부호(−), 0 은 부호·강조 없이 '0원' (−0원 방지)
@@ -966,9 +978,11 @@ function AssetCard({
         'transition-colors duration-[var(--motion-duration-fast)]',
         'hover:bg-[var(--bg-muted)]',
       ].join(' ')}
+      // design .acc-card flat row 리듬 — 구분선 없이 hover 면으로 행 구분.
       style={{
-        padding: '14px 4px',
-        borderTop: showTopBorder ? '1px solid var(--border-subtle)' : 'none',
+        padding: '12px 10px',
+        margin: '0 -2px',
+        borderRadius: 10,
       }}
       onClick={() => onOpenDetail(asset)}
       onKeyDown={(e) => {
@@ -1053,6 +1067,7 @@ function TypeGroup({
   assets,
   total,
   totalColor,
+  mobile,
   onOpenDetail,
   negativeTotal = false,
 }: {
@@ -1066,20 +1081,20 @@ function TypeGroup({
 }) {
   const { t } = useTranslation('asset')
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{title}</CardTitle>
-        <span
-          className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: total === 0 ? undefined : totalColor }}
-        >
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card — design Section SoT.
+    <Section
+      mobile={mobile}
+      title={title}
+      totalColor={total === 0 ? undefined : totalColor}
+      total={
+        <>
           <MaskAmount>
             {negativeTotal && total !== 0 ? `−${wonPre()}${KRW(total)}` : `${wonPre()}${KRW(total)}`}
           </MaskAmount>
           <WonUnit />
-        </span>
-      </CardHeader>
-      <CardContent>
+        </>
+      }
+    >
       {assets.length === 0 ? (
         <div
           style={{
@@ -1093,19 +1108,17 @@ function TypeGroup({
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {assets.map((a, i) => (
+          {assets.map(a => (
             <AssetCard
               key={a.rowId}
               asset={a}
               negativeAmount={negativeTotal}
               onOpenDetail={onOpenDetail}
-              showTopBorder={i > 0}
             />
           ))}
         </div>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 }
 
@@ -1138,7 +1151,9 @@ function SummaryCard({
   }
 
   return (
-    <Card style={{ marginBottom: mobile ? 16 : 20 }}>
+    // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 강조 요약 (design p-card--keep).
+    // 간격은 부모 flex gap 이 담당하므로 모바일 marginBottom 제거.
+    <Card variant={mobile ? 'raised' : undefined} style={mobile ? undefined : { marginBottom: 20 }}>
       <CardContent>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>{t('totalNetWorth')}</span>
@@ -1475,30 +1490,30 @@ function AssetMobile() {
 
   if (isEmpty) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
-        <Card>
-          <CardContent style={{ padding: '48px 20px', textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: 'var(--text-body-sm)',
-                color: 'var(--fg-tertiary)',
-                fontWeight: '500',
-                marginBottom: 12,
-              }}
-            >
-              {t('emptyTitle')}
-            </div>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-              {t('emptyDesc')}
-            </div>
-          </CardContent>
-        </Card>
+      // 카드 다이어트 — 빈 상태도 카드 없이 배경 위 플랫.
+      <div style={{ padding: '16px 20px 24px' }}>
+        <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+          <div
+            style={{
+              fontSize: 'var(--text-body-sm)',
+              color: 'var(--fg-tertiary)',
+              fontWeight: '500',
+              marginBottom: 12,
+            }}
+          >
+            {t('emptyTitle')}
+          </div>
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+            {t('emptyDesc')}
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+    // 모바일 카드 다이어트 — keep 요약 + flat 그룹, 섹션 gap 36 (design AssetsScreen).
+    <div style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
       <SummaryCard
         mobile
         netWorth={g.netWorth}
@@ -1509,7 +1524,7 @@ function AssetMobile() {
         cardsTotal={g.cardsTotal}
         isLoading={g.isLoading}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
         <TypeGroup
           title={t('accountDepositTitle')}
           assets={g.accounts}

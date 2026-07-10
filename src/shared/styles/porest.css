@@ -352,8 +352,30 @@
   color: var(--fg-primary);
 }
 
-/* CardHeader / .sec-head 우측 액션 링크. <button className="all"> 패턴. */
-:is([data-slot="card-header"], .sec-head) .all {
+/* 플랫 섹션 그룹 헤드 — 모바일 카드 다이어트의 리스트 섹션 (design app.css .flat-group 미러).
+   라벨(15/700) + 우측 합계/액션, 아래 12px 로 리스트에 바짝. 섹션 간 간격은 부모 flex gap 담당. */
+.flat-group__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 0 12px;
+}
+.flat-group__head h2 {
+  font-size: var(--text-body-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg-primary);
+}
+.flat-group__total {
+  margin-left: auto;
+  font-size: var(--text-label-sm);
+  font-weight: 700;
+  color: var(--fg-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* CardHeader / .sec-head / .flat-group__head 우측 액션 링크. <button className="all"> 패턴. */
+:is([data-slot="card-header"], .sec-head, .flat-group__head) .all {
   margin-left: auto;
   font-size: var(--text-label-sm);
   color: var(--fg-tertiary);
@@ -366,7 +388,7 @@
   padding: 0;
   font-family: inherit;
 }
-:is([data-slot="card-header"], .sec-head) .all:hover { color: var(--fg-primary); }
+:is([data-slot="card-header"], .sec-head, .flat-group__head) .all:hover { color: var(--fg-primary); }
 
 /* .cat-ico, .cat-ico--sm/--lg, .cat-ico[data-cat="..."]
  *   → CatIcon 컴포넌트(@/shared/ui/porest/primitives.tsx) 의 CAT_ICO_PALETTE 룩업 + inline style 로 이동.
