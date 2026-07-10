@@ -33,6 +33,7 @@ import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
+import { SavingGoalDetailDialog } from '@/widgets/asset-full/ui/SavingGoalDetailDialog'
 import { AssetLogo, type Asset, type AssetType } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
 
@@ -501,10 +502,10 @@ function formatDeadline(deadline: string | null): string | null {
 
 function SavingGoalItem({
   goal,
-  onEdit,
+  onOpen,
 }: {
   goal: SavingGoal
-  onEdit: (g: SavingGoal) => void
+  onOpen: (g: SavingGoal) => void
 }) {
   const { t } = useTranslation('asset')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
@@ -513,7 +514,7 @@ function SavingGoalItem({
 
   return (
     <div
-      onClick={() => onEdit(goal)}
+      onClick={() => onOpen(goal)}
       style={{ cursor: 'pointer' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -584,7 +585,7 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
   const goalsQ = useSavingGoals()
   const [dialogState, setDialogState] = useState<
-    { mode: 'add' } | { mode: 'edit'; goal: SavingGoal } | null
+    { mode: 'add' } | { mode: 'edit'; goal: SavingGoal } | { mode: 'view'; goal: SavingGoal } | null
   >(null)
 
   const goals = goalsQ.data?.goals ?? []
@@ -648,14 +649,22 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
             <SavingGoalItem
               key={g.rowId}
               goal={g}
-              onEdit={goal => setDialogState({ mode: 'edit', goal })}
+              onOpen={goal => setDialogState({ mode: 'view', goal })}
             />
           ))}
         </div>
       )}
       </CardContent>
 
-      {dialogState && (
+      {dialogState?.mode === 'view' && (
+        <SavingGoalDetailDialog
+          goal={dialogState.goal}
+          mobile={mobile}
+          onClose={() => setDialogState(null)}
+          onEdit={goal => setDialogState({ mode: 'edit', goal })}
+        />
+      )}
+      {(dialogState?.mode === 'add' || dialogState?.mode === 'edit') && (
         <SavingGoalAddDialog
           goal={dialogState.mode === 'edit' ? dialogState.goal : null}
           mobile={mobile}

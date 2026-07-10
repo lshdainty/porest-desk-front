@@ -13,7 +13,7 @@ import type { IEvent } from '@/features/calendar/model/interfaces'
  *
  * 모바일 월간뷰에서 셀(날짜/칩) 탭 시 표시: 제목 'M월 d일 X요일' /
  * 'N건' + [+] 추가 / 행: [종일|HH:mm][색 바][제목 + 위치·라벨][>].
- * 행 탭 → 이벤트 편집(앱 정합), [+] → 해당 날짜로 이벤트 추가.
+ * 행 탭 → 이벤트 상세(EventDetailPopover, 앱 정합), [+] → 해당 날짜로 이벤트 추가.
  */
 export function DayEventsDialog({
   date,

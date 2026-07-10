@@ -311,7 +311,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           mobile
           onClose={() => setDayDate(null)}
           onAdd={() => { setCreatingDate(dayDate); setDayDate(null) }}
-          onTapEvent={(e) => { setDayDate(null); setEditingEvent(iEventToCalendarEvent(e)) }}
+          onTapEvent={(e) => { setDayDate(null); setSelectedEvent(e) }}
         />
       )}
 
