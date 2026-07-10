@@ -87,7 +87,7 @@ export function CollectionCard({
                   starMap={entry.constellation.starMap}
                   size={24}
                   dim={!collected}
-                  lit={collected ? undefined : 0}
+                  linesOnly
                 />
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>

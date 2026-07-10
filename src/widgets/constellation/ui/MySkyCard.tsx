@@ -94,7 +94,7 @@ export function MySkyCard({
                 {isToday ? (
                   <StageIcon size={16} strokeWidth={2} />
                 ) : day.status === 'GROWN' && entry ? (
-                  <ConstellationSVG starMap={entry.constellation.starMap} size={22} />
+                  <ConstellationSVG starMap={entry.constellation.starMap} size={22} linesOnly />
                 ) : day.status === 'WITHERED' ? (
                   <Cloudy size={15} strokeWidth={1.6} />
                 ) : (

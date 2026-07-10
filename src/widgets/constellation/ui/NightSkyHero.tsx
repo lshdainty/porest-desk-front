@@ -149,6 +149,10 @@ export function NightSkyHero({
         </svg>
         {map.pts.map(([x, y], i) => {
           const on = i < lit
+          // 별 수 적응형 점 크기 — 실좌표 별자리(최대 27별)의 밀집 구간 겹침 방지
+          const dense = map.pts.length > 15
+          const onSize = dense ? (mobile ? 5 : 6) : mobile ? 7 : 8
+          const offSize = dense ? 3.5 : 5
           return (
             <span
               key={i}
@@ -157,8 +161,8 @@ export function NightSkyHero({
                 position: 'absolute',
                 left: `${x}%`,
                 top: `${y}%`,
-                width: on ? (mobile ? 7 : 8) : 5,
-                height: on ? (mobile ? 7 : 8) : 5,
+                width: on ? onSize : offSize,
+                height: on ? onSize : offSize,
                 borderRadius: 999,
                 transform: 'translate(-50%, -50%)',
                 background: on ? '#e8eeff' : 'transparent',
