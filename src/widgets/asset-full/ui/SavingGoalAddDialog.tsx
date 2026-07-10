@@ -140,7 +140,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
     } else {
       createMut.mutate(
         {
-          title: t,
+          title: trimmed,
           targetAmount: target,
           deadlineDate: deadlineDate || null,
           icon,
