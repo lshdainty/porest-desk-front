@@ -3,34 +3,12 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/shared/ui/input'
 import { useHasSecurities } from '@/features/subscription/model/useSubscription'
-import {
-  Bookmark,
-  Calendar1,
-  ChartPie,
-  ChevronRight,
-  CreditCard,
-  Download,
-  SquareCheckBig,
-  FileText,
-  Palette,
-  ReceiptText,
-  Repeat,
-  Search,
-  Settings,
-  Tag,
-  FilePen,
-  TrendingUp,
-  Users,
-  Wallet,
-  Bell,
-  User,
-} from 'lucide-react'
+import { Search, SearchX } from 'lucide-react'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 interface NavItem {
   labelKey: string
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   path: string
   descKey: string
 }
@@ -40,44 +18,46 @@ interface NavGroup {
   items: NavItem[]
 }
 
+// K뱅크 톤 전체 메뉴 — 카드·아이콘·설명 행 없이 그룹 라벨 + 2열 텍스트 링크
+// (design chrome.jsx MoreScreen SoT — 모바일 카드 다이어트).
 const GROUPS: NavGroup[] = [
   {
     labelKey: 'group.money',
     items: [
-      { labelKey: 'item.expense', icon: ReceiptText, path: '/desk/expense', descKey: 'desc.expense' },
-      { labelKey: 'item.asset', icon: Wallet, path: '/desk/asset', descKey: 'desc.asset' },
-      { labelKey: 'item.stocks', icon: TrendingUp, path: '/desk/stocks', descKey: 'desc.stocks' },
-      { labelKey: 'item.budget', icon: FilePen, path: '/desk/budget', descKey: 'desc.budget' },
-      { labelKey: 'item.stats', icon: ChartPie, path: '/desk/stats', descKey: 'desc.stats' },
-      { labelKey: 'item.recurring', icon: Repeat, path: '/desk/settings?section=recurring', descKey: 'desc.recurring' },
-      { labelKey: 'item.accounts', icon: CreditCard, path: '/desk/settings?section=accounts', descKey: 'desc.accounts' },
+      { labelKey: 'item.expense', path: '/desk/expense', descKey: 'desc.expense' },
+      { labelKey: 'item.asset', path: '/desk/asset', descKey: 'desc.asset' },
+      { labelKey: 'item.stocks', path: '/desk/stocks', descKey: 'desc.stocks' },
+      { labelKey: 'item.budget', path: '/desk/budget', descKey: 'desc.budget' },
+      { labelKey: 'item.stats', path: '/desk/stats', descKey: 'desc.stats' },
+      { labelKey: 'item.recurring', path: '/desk/settings?section=recurring', descKey: 'desc.recurring' },
+      { labelKey: 'item.accounts', path: '/desk/settings?section=accounts', descKey: 'desc.accounts' },
     ],
   },
   {
     labelKey: 'group.daily',
     items: [
-      { labelKey: 'item.calendar', icon: Calendar1, path: '/desk/calendar', descKey: 'desc.calendar' },
-      { labelKey: 'item.todo', icon: SquareCheckBig, path: '/desk/todo', descKey: 'desc.todo' },
-      { labelKey: 'item.memo', icon: FileText, path: '/desk/memo', descKey: 'desc.memo' },
-      { labelKey: 'item.dutchPay', icon: Users, path: '/desk/dutch-pay', descKey: 'desc.dutchPay' },
-      { labelKey: 'item.cardBenefit', icon: CreditCard, path: '/desk/card-benefit', descKey: 'desc.cardBenefit' },
+      { labelKey: 'item.calendar', path: '/desk/calendar', descKey: 'desc.calendar' },
+      { labelKey: 'item.todo', path: '/desk/todo', descKey: 'desc.todo' },
+      { labelKey: 'item.memo', path: '/desk/memo', descKey: 'desc.memo' },
+      { labelKey: 'item.dutchPay', path: '/desk/dutch-pay', descKey: 'desc.dutchPay' },
+      { labelKey: 'item.cardBenefit', path: '/desk/card-benefit', descKey: 'desc.cardBenefit' },
     ],
   },
   {
     labelKey: 'group.personal',
     items: [
-      { labelKey: 'item.categories', icon: Tag, path: '/desk/settings?section=categories', descKey: 'desc.categories' },
-      { labelKey: 'item.presets', icon: Bookmark, path: '/desk/settings?section=presets', descKey: 'desc.presets' },
-      { labelKey: 'item.appearance', icon: Palette, path: '/desk/settings?section=appearance', descKey: 'desc.appearance' },
+      { labelKey: 'item.categories', path: '/desk/settings?section=categories', descKey: 'desc.categories' },
+      { labelKey: 'item.presets', path: '/desk/settings?section=presets', descKey: 'desc.presets' },
+      { labelKey: 'item.appearance', path: '/desk/settings?section=appearance', descKey: 'desc.appearance' },
     ],
   },
   {
     labelKey: 'group.system',
     items: [
-      { labelKey: 'item.settings', icon: Settings, path: '/desk/settings', descKey: 'desc.settings' },
-      { labelKey: 'item.notifications', icon: Bell, path: '/desk/notifications', descKey: 'desc.notifications' },
-      { labelKey: 'item.dataExport', icon: Download, path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
-      { labelKey: 'item.account', icon: User, path: '/desk/settings?section=account', descKey: 'desc.account' },
+      { labelKey: 'item.settings', path: '/desk/settings', descKey: 'desc.settings' },
+      { labelKey: 'item.notifications', path: '/desk/notifications', descKey: 'desc.notifications' },
+      { labelKey: 'item.dataExport', path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
+      { labelKey: 'item.account', path: '/desk/settings?section=account', descKey: 'desc.account' },
     ],
   },
 ]
@@ -94,26 +74,30 @@ export const MorePage = () => {
     ? GROUPS
     : GROUPS.map(g => ({ ...g, items: g.items.filter(i => i.path !== '/desk/stocks') }))
 
-  const allItems: NavItem[] = visibleGroups.flatMap(g => g.items)
-
-  const filteredItems = query.trim()
-    ? allItems.filter(item =>
-        t(item.labelKey).toLowerCase().includes(query.toLowerCase()) ||
-        t(item.descKey).toLowerCase().includes(query.toLowerCase()),
-      )
-    : null
-
-  const isSearching = query.trim().length > 0
+  // 검색 — 그룹 구조를 유지한 채 항목 필터 (design MoreScreen 정합)
+  const q = query.trim().toLowerCase()
+  const filtered = q
+    ? visibleGroups
+        .map(g => ({
+          ...g,
+          items: g.items.filter(
+            item =>
+              t(item.labelKey).toLowerCase().includes(q) ||
+              t(item.descKey).toLowerCase().includes(q),
+          ),
+        }))
+        .filter(g => g.items.length > 0)
+    : visibleGroups
 
   return (
-    <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
+    <div style={{ padding: '20px 0 32px' }}>
       {/* 검색바 */}
-      <div className="relative mb-5">
+      <div className="relative" style={{ padding: '0 20px', marginBottom: 4 }}>
         <Search
           size={16}
           style={{
             position: 'absolute',
-            left: 12,
+            left: 32,
             top: '50%',
             transform: 'translateY(-50%)',
             color: 'var(--fg-tertiary)',
@@ -130,159 +114,83 @@ export const MorePage = () => {
         />
       </div>
 
-      {/* 검색 결과 */}
-      {isSearching && (
-        <div>
-          {filteredItems && filteredItems.length === 0 ? (
+      {filtered.length === 0 ? (
+        <div
+          style={{
+            padding: '60px 20px',
+            textAlign: 'center',
+            color: 'var(--fg-tertiary)',
+          }}
+        >
+          <SearchX size={28} style={{ display: 'inline-block' }} />
+          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, marginTop: 8 }}>{t('noResults')}</div>
+        </div>
+      ) : (
+        filtered.map((group, gi) => (
+          <div key={group.labelKey}>
+            {/* 그룹 사이 헤어라인 (design .flat-div) */}
+            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 20px' }} />}
             <div
               style={{
-                textAlign: 'center',
-                padding: '40px 0',
-                fontSize: 14,
-                color: 'var(--fg-tertiary)',
+                fontSize: 'var(--text-body-lg)',
+                fontWeight: 700,
+                color: 'var(--fg-primary)',
+                letterSpacing: '-0.01em',
+                padding: '14px 20px 2px',
               }}
             >
-              {t('noResults')}
+              {t(group.labelKey)}
             </div>
-          ) : (
+            {/* K뱅크 스타일 — 카드 없이 2열 텍스트 링크 */}
             <div
               style={{
-                background: 'var(--bg-surface)',
-                boxShadow: 'var(--shadow-sm)',
-                borderRadius: 'var(--radius-card)',
-                overflow: 'hidden',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                padding: '6px 20px 4px',
+                columnGap: 16,
               }}
             >
-              {filteredItems?.map((item, idx) => {
-                const IconComp = item.icon
-                const isLast = idx === (filteredItems?.length ?? 0) - 1
-                return (
-                  <button
-                    key={`${item.path}-${idx}`}
-                    onClick={() => navigate(item.path)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      width: '100%',
-                      padding: '14px 16px',
-                      border: 0,
-                      borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
-                    }}
-                    onMouseEnter={e => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
-                    }}
-                    onMouseLeave={e => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                    }}
-                  >
-                    <span style={{ flexShrink: 0, display: 'inline-flex' }}>
-                      <IconComp size={18} strokeWidth={1.8} color="var(--fg-secondary)" />
-                    </span>
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: 'var(--fg-primary)',
-                        letterSpacing: '-0.01em',
-                      }}
-                    >
-                      {t(item.labelKey)}
-                    </span>
-                    <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
-                      {t(item.descKey)}
-                    </span>
-                    <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-                  </button>
-                )
-              })}
+              {group.items.map(item => (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '13px 0',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: 'var(--text-body-md)',
+                    fontWeight: 500,
+                    letterSpacing: '-0.01em',
+                    color: 'var(--fg-primary)',
+                    fontFamily: 'inherit',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onTouchStart={e => {
+                    e.currentTarget.style.opacity = '0.55'
+                  }}
+                  onTouchEnd={e => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.opacity = '0.7'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                >
+                  {t(item.labelKey)}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-      )}
-
-      {/* 그룹 리스트 — 검색 비활성일 때만 */}
-      {!isSearching && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {visibleGroups.map(group => (
-            <div key={group.labelKey}>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--fg-primary)',
-                  paddingBottom: 8,
-                  paddingLeft: 2,
-                }}
-              >
-                {t(group.labelKey)}
-              </div>
-              <div
-                style={{
-                  background: 'var(--bg-surface)',
-                  boxShadow: 'var(--shadow-sm)',
-                  borderRadius: 'var(--radius-card)',
-                  overflow: 'hidden',
-                }}
-              >
-                {group.items.map((item, idx) => {
-                  const IconComp = item.icon
-                  const isLast = idx === group.items.length - 1
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => navigate(item.path)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        width: '100%',
-                        padding: '14px 16px',
-                        border: 0,
-                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontFamily: 'inherit',
-                        transition: 'background 0.12s',
-                      }}
-                      onMouseEnter={e => {
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
-                      }}
-                      onMouseLeave={e => {
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                      }}
-                    >
-                      <span style={{ flexShrink: 0, display: 'inline-flex' }}>
-                        <IconComp size={18} strokeWidth={1.8} color="var(--fg-secondary)" />
-                      </span>
-                      <span
-                        style={{
-                          flex: 1,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: 'var(--fg-primary)',
-                          letterSpacing: '-0.01em',
-                        }}
-                      >
-                        {t(item.labelKey)}
-                      </span>
-                      <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: 4 }}>
-                        {t(item.descKey)}
-                      </span>
-                      <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        ))
       )}
     </div>
   )
