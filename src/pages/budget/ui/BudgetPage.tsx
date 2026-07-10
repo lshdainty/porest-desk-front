@@ -124,21 +124,24 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 }
 
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
+// 모바일 = 카드 다이어트(flat-group 헤드) / 데스크톱 = Card — 실렌더 Section 정합.
+// (렌더 중 컴포넌트 생성 금지 — React Compiler 룰 — 로 모듈 레벨 정의.)
+function SkelSection({ mobile, head, children }: { mobile: boolean; head: React.ReactNode; children: React.ReactNode }) {
+  return mobile ? (
+    <section>
+      <div className="flat-group__head">{head}</div>
+      {children}
+    </section>
+  ) : (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">{head}</CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
+
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('budget')
-  // 모바일 = 카드 다이어트(flat-group 헤드) / 데스크톱 = Card — 실렌더 Section 정합.
-  const SkelSection = ({ head, children }: { head: React.ReactNode; children: React.ReactNode }) =>
-    mobile ? (
-      <section>
-        <div className="flat-group__head">{head}</div>
-        {children}
-      </section>
-    ) : (
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">{head}</CardHeader>
-        <CardContent>{children}</CardContent>
-      </Card>
-    )
   const HeaderCardSkeleton = (
     <Card>
       <CardContent>
@@ -173,6 +176,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   const PaceCardSkeleton = (
     <SkelSection
+      mobile={mobile}
       head={<>
         <SkeletonBase className="h-5 w-24" />
         <SkeletonBase className="h-6 w-16 rounded-full ml-auto" />
@@ -200,7 +204,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   )
 
   const StatusTilesSkeleton = (
-    <SkelSection head={<SkeletonBase className="h-5 w-20" />}>
+    <SkelSection mobile={mobile} head={<SkeletonBase className="h-5 w-20" />}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {[0, 1].map(i => (
           <div
@@ -222,6 +226,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   const ListCardSkeleton = (
     <SkelSection
+      mobile={mobile}
       head={<>
         <SkeletonBase className="h-5 w-28" />
         <SkeletonBase className="h-3 w-16 ml-auto" />
@@ -250,6 +255,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   const ComplianceCardSkeleton = (
     <SkelSection
+      mobile={mobile}
       head={<>
         <SkeletonBase className="h-5 w-44" />
         <SkeletonBase className="h-3 w-24 ml-auto" />

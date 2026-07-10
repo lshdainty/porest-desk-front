@@ -260,6 +260,18 @@ function PorestChartTooltip({
 /** Stats 페이지 구조에 맞춘 skeleton — 탭별로 다른 컨텐츠. */
 // 콘텐츠 전용 스켈레톤 — 탭/헤더 같은 정적 틀은 실제 페이지가 항상 렌더한다(스켈레톤 X).
 // 여기선 서버 데이터(카테고리/추이/비교) 자리만 채운다.
+// 모바일 카드 다이어트 — 소형 스탯/KPI 타일: 카드 벗기고 콘텐츠만 (design Stats p-card 플랫).
+// (렌더 중 컴포넌트 생성 금지 — React Compiler 룰 — 로 모듈 레벨 정의.)
+function MTile({ mobile, children, style }: { mobile: boolean; children: React.ReactNode; style?: React.CSSProperties }) {
+  return mobile ? (
+    <div style={style}>{children}</div>
+  ) : (
+    <Card style={style}>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
+
 function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const CategorySkeleton = (
     <>
@@ -682,16 +694,6 @@ export const StatsPage = () => {
       )}
     </>
   )
-
-  // 모바일 카드 다이어트 — 소형 스탯/KPI 타일: 카드 벗기고 콘텐츠만 (design Stats p-card 플랫).
-  const MTile = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) =>
-    mobile ? (
-      <div style={style}>{children}</div>
-    ) : (
-      <Card style={style}>
-        <CardContent>{children}</CardContent>
-      </Card>
-    )
 
   // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
   // ---------- LOADING / EMPTY HELPERS ----------
@@ -1264,7 +1266,7 @@ export const StatsPage = () => {
         const iconFg = pal.color
         return (
           // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
-          <MTile key={i}>
+          <MTile key={i} mobile={mobile}>
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
                 {h.lbl}
               </div>
@@ -1515,7 +1517,7 @@ export const StatsPage = () => {
         { lbl: t('trend.savingsRate'), val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
         // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
-        <MTile key={i}>
+        <MTile key={i} mobile={mobile}>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 6 }}>
               {s.lbl}
             </div>
@@ -1669,7 +1671,7 @@ export const StatsPage = () => {
     >
       {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold).
           모바일 카드 다이어트 — 타일 카드 벗김. */}
-      <MTile>
+      <MTile mobile={mobile}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {t('compare.periodExpense', { period: periodNow })}
           </div>
@@ -1687,7 +1689,7 @@ export const StatsPage = () => {
             <WonUnit />
           </div>
       </MTile>
-      <MTile>
+      <MTile mobile={mobile}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {t('compare.periodExpense', { period: periodPrev })}
           </div>
@@ -1705,7 +1707,7 @@ export const StatsPage = () => {
             <WonUnit />
           </div>
       </MTile>
-      <MTile>
+      <MTile mobile={mobile}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {momLabel}
           </div>
