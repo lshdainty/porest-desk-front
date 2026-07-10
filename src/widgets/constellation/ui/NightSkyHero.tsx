@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Cloud, Moon, Sparkles } from 'lucide-react'
-import { parseStarMap, type ConstellationToday } from '@/features/constellation'
+import { constellationName, parseStarMap, type ConstellationToday } from '@/features/constellation'
 
 /**
  * 밤하늘 히어로 — 오늘의 목표 별자리가 별빛만큼 점등된다.
@@ -23,11 +23,11 @@ export function NightSkyHero({
   doneToday: number
   mobile: boolean
 }) {
-  const { t } = useTranslation('constellation')
+  const { t, i18n } = useTranslation('constellation')
   const map = useMemo(() => parseStarMap(today.constellation.starMap), [today.constellation.starMap])
   const lit = Math.min(today.points, today.goal)
   const done = today.collected
-  const name = t(`name.${today.constellation.constellationKey}`, { defaultValue: today.constellation.name })
+  const name = constellationName(today.constellation, i18n.language)
   const lineColor = done ? 'rgba(178, 197, 255, 0.85)' : 'rgba(148, 168, 235, 0.5)'
 
   const caption = done

@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
 import {
   constellationColorVar,
+  constellationName,
   type CollectionEntry,
   type ConstellationCollection,
 } from '@/features/constellation'
@@ -23,7 +24,7 @@ export function CollectionCard({
   todayKey: string
   mobile: boolean
 }) {
-  const { t } = useTranslation('constellation')
+  const { t, i18n } = useTranslation('constellation')
   const [detail, setDetail] = useState<CollectionEntry | null>(null)
 
   return (
@@ -45,7 +46,7 @@ export function CollectionCard({
           const collected = entry.collectCount > 0
           const isToday = key === todayKey
           const color = constellationColorVar(entry.constellation.colorKey)
-          const name = t(`name.${key}`, { defaultValue: entry.constellation.name })
+          const name = constellationName(entry.constellation, i18n.language)
           return (
             <button
               key={key}

@@ -6,6 +6,8 @@ export {
 export {
   parseStarMap,
   constellationColorVar,
+  constellationName,
+  constellationDesc,
 } from './api/constellationApi'
 export type {
   StarMap,

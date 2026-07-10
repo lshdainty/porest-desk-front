@@ -12,7 +12,9 @@ export interface ConstellationInfo {
   rowId: number
   constellationKey: string
   name: string
+  nameEn: string
   description: string | null
+  descriptionEn: string | null
   colorKey: string
   starCount: number
   starMap: string
@@ -62,6 +64,16 @@ export function parseStarMap(raw: string): StarMap {
     /* ignore */
   }
   return { pts: [], edges: [] }
+}
+
+/** 로케일별 별자리 이름 — en 로케일은 nameEn(빈값이면 ko 마스터 fallback). */
+export function constellationName(info: ConstellationInfo, lang: string): string {
+  return lang.startsWith('ko') ? info.name : info.nameEn || info.name
+}
+
+/** 로케일별 별자리 설명 — en 로케일은 descriptionEn(빈값이면 ko 마스터 fallback). */
+export function constellationDesc(info: ConstellationInfo, lang: string): string {
+  return (lang.startsWith('ko') ? info.description : info.descriptionEn || info.description) ?? ''
 }
 
 /** color_key → 카테고리 팔레트 CSS 변수(라이트/다크 자동 swap — cat-* 별칭). */
