@@ -9,7 +9,8 @@ import { HideUnit, MaskAmount, WonUnit, wonPre } from '@/shared/lib/porest/hide-
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader } from '@/shared/ui/card'
+import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import {
@@ -125,6 +126,19 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('budget')
+  // 모바일 = 카드 다이어트(flat-group 헤드) / 데스크톱 = Card — 실렌더 Section 정합.
+  const SkelSection = ({ head, children }: { head: React.ReactNode; children: React.ReactNode }) =>
+    mobile ? (
+      <section>
+        <div className="flat-group__head">{head}</div>
+        {children}
+      </section>
+    ) : (
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">{head}</CardHeader>
+        <CardContent>{children}</CardContent>
+      </Card>
+    )
   const HeaderCardSkeleton = (
     <Card>
       <CardContent>
@@ -158,117 +172,110 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   )
 
   const PaceCardSkeleton = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
+    <SkelSection
+      head={<>
         <SkeletonBase className="h-5 w-24" />
-        <SkeletonBase className="h-6 w-16 rounded-full" />
-      </CardHeader>
-      <CardContent>
-        <SkeletonBase className="h-3 w-full rounded-full mb-3" />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-          <SkeletonBase className="h-3 w-16" />
-          <SkeletonBase className="h-3 w-24" />
-        </div>
-        <div
-          style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
-            paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
-          }}
-        >
-          {[0, 1].map(i => (
-            <div key={i}>
-              <SkeletonBase className="h-3 w-20 mb-2" />
-              <SkeletonBase className="h-6 w-28" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+        <SkeletonBase className="h-6 w-16 rounded-full ml-auto" />
+      </>}
+    >
+      <SkeletonBase className="h-3 w-full rounded-full mb-3" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+        <SkeletonBase className="h-3 w-16" />
+        <SkeletonBase className="h-3 w-24" />
+      </div>
+      <div
+        style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+          paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
+        }}
+      >
+        {[0, 1].map(i => (
+          <div key={i}>
+            <SkeletonBase className="h-3 w-20 mb-2" />
+            <SkeletonBase className="h-6 w-28" />
+          </div>
+        ))}
+      </div>
+    </SkelSection>
   )
 
   const StatusTilesSkeleton = (
-    <Card>
-      <CardHeader>
-        <SkeletonBase className="h-5 w-20" />
-      </CardHeader>
-      <CardContent>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {[0, 1].map(i => (
-            <div
-              key={i}
-              style={{
-                padding: 12,
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-              }}
-            >
-              <SkeletonBase className="h-3 w-10 mb-2" />
-              <SkeletonBase className="h-7 w-16" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <SkelSection head={<SkeletonBase className="h-5 w-20" />}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {[0, 1].map(i => (
+          <div
+            key={i}
+            style={{
+              padding: 12,
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            <SkeletonBase className="h-3 w-10 mb-2" />
+            <SkeletonBase className="h-7 w-16" />
+          </div>
+        ))}
+      </div>
+    </SkelSection>
   )
 
   const ListCardSkeleton = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
+    <SkelSection
+      head={<>
         <SkeletonBase className="h-5 w-28" />
-        <SkeletonBase className="h-3 w-16" />
-      </CardHeader>
-      <CardContent>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {[0, 1, 2, 3].map(i => (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-                  <SkeletonBase className="h-3 w-1/3" />
-                </div>
-                <div style={{ textAlign: 'right', minWidth: 90 }}>
-                  <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
-                  <SkeletonBase className="h-3 w-16 ml-auto" />
-                </div>
+        <SkeletonBase className="h-3 w-16 ml-auto" />
+      </>}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {[0, 1, 2, 3].map(i => (
+          <div key={i}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                <SkeletonBase className="h-3 w-1/3" />
               </div>
-              <SkeletonBase className="h-2 w-full rounded-full" />
+              <div style={{ textAlign: 'right', minWidth: 90 }}>
+                <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
+                <SkeletonBase className="h-3 w-16 ml-auto" />
+              </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <SkeletonBase className="h-2 w-full rounded-full" />
+          </div>
+        ))}
+      </div>
+    </SkelSection>
   )
 
   const ComplianceCardSkeleton = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
+    <SkelSection
+      head={<>
         <SkeletonBase className="h-5 w-44" />
-        <SkeletonBase className="h-3 w-24" />
-      </CardHeader>
-      <CardContent>
-        <div style={{ height: 180, display: 'flex', alignItems: 'flex-end', gap: 12, paddingTop: 24 }}>
-          {[0.6, 0.8, 0.5, 0.9, 0.7, 1.0].map((h, i) => (
-            <SkeletonBase
-              key={i}
-              className="flex-1 rounded-t"
-              style={{ height: `${h * 80}%` }}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+        <SkeletonBase className="h-3 w-24 ml-auto" />
+      </>}
+    >
+      <div style={{ height: 180, display: 'flex', alignItems: 'flex-end', gap: 12, paddingTop: 24 }}>
+        {[0.6, 0.8, 0.5, 0.9, 0.7, 1.0].map((h, i) => (
+          <SkeletonBase
+            key={i}
+            className="flex-1 rounded-t"
+            style={{ height: `${h * 80}%` }}
+          />
+        ))}
+      </div>
+    </SkelSection>
   )
 
   if (mobile) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+      // 카드 다이어트 — 실렌더(브랜드 헤더 카드 + flat 섹션, gap 36)와 동일 구조.
+      <div style={{ padding: '16px 20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
           {HeaderCardSkeleton}
           {PaceCardSkeleton}
           {StatusTilesSkeleton}
@@ -547,9 +554,11 @@ export const BudgetPage = () => {
   )
 
   const PaceCard = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('spendingPace')}</CardTitle>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={t('spendingPace')}
+      action={
         <Badge
           variant={onTrack ? 'success' : 'warning'}
           // 색은 앱 정합 — 다크에서 -fg(light variant)·-subtle 로 (text-warning 고정 base 대신)
@@ -559,8 +568,8 @@ export const BudgetPage = () => {
         >
           {onTrack ? t('paceNormal') : t('paceFast')}
         </Badge>
-      </CardHeader>
-      <CardContent>
+      }
+    >
       <div
         style={{
           position: 'relative',
@@ -650,16 +659,12 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const StatusTiles = (
-    <Card>
-      <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('status')}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    // 모바일 = 카드 다이어트(flat Section) — 내부 상태 타일(bordered 미니 타일)은 유지.
+    <Section mobile={mobile} title={t('status')}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         <div
           style={{
@@ -726,8 +731,7 @@ export const BudgetPage = () => {
           </div>
         </div>
       </div>
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const ComplianceCard = (() => {
@@ -745,14 +749,16 @@ export const BudgetPage = () => {
       active: b.year === year && b.month === month,
     }))
     return (
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('complianceTitle')}</CardTitle>
+      // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+      <Section
+        mobile={mobile}
+        title={t('complianceTitle')}
+        action={
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             {t('vsLimitSpending')}
           </span>
-        </CardHeader>
-        <CardContent>
+        }
+      >
         {complianceQ.isLoading ? (
           <div style={{ height: 180, display: 'flex', alignItems: 'end', justifyContent: 'space-around', padding: '24px 8px 8px', gap: 12 }}>
             {[60, 80, 45, 70, 90, 55].map((h, i) => (
@@ -810,20 +816,21 @@ export const BudgetPage = () => {
             </BarChart>
           </ChartContainer>
         )}
-        </CardContent>
-      </Card>
+      </Section>
     )
   })()
 
   const ListCard = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('categoryBudgets')}</CardTitle>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={t('categoryBudgets')}
+      action={
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
           {t('countSet', { count: categoryBudgets.length })}
         </span>
-      </CardHeader>
-      <CardContent>
+      }
+    >
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[0, 1, 2, 3].map(i => (
@@ -921,8 +928,7 @@ export const BudgetPage = () => {
           })}
         </div>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const adjustMonth = (delta: number) => {
@@ -958,11 +964,12 @@ export const BudgetPage = () => {
 
   if (mobile) {
     return (
-      <div style={{ padding: 'var(--spacing-xl) 20px' }}>
+      // 카드 다이어트 — 브랜드 헤더만 카드 유지, 나머지 flat 섹션 + gap 36 (design BudgetScreen).
+      <div style={{ padding: '16px 20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {PageControls}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
           {HeaderCard}
           {PaceCard}
           {StatusTiles}

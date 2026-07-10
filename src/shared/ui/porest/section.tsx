@@ -37,7 +37,12 @@ export function Section({
               {total}
             </span>
           )}
-          {action}
+          {action != null && (
+            // total 이 없으면 action 이 우측 정렬을 담당 (.all 버튼은 자체 margin-left:auto).
+            <span style={{ marginLeft: total == null ? 'auto' : undefined, display: 'inline-flex', alignItems: 'center' }}>
+              {action}
+            </span>
+          )}
         </div>
         <div>{children}</div>
       </section>

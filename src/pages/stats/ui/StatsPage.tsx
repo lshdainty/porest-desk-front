@@ -8,7 +8,8 @@ import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { MaskAmount, WonUnit, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader } from '@/shared/ui/card'
+import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { CalendarClock, ChevronDown, ChevronRight, X } from 'lucide-react'
@@ -682,6 +683,16 @@ export const StatsPage = () => {
     </>
   )
 
+  // 모바일 카드 다이어트 — 소형 스탯/KPI 타일: 카드 벗기고 콘텐츠만 (design Stats p-card 플랫).
+  const MTile = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) =>
+    mobile ? (
+      <div style={style}>{children}</div>
+    ) : (
+      <Card style={style}>
+        <CardContent>{children}</CardContent>
+      </Card>
+    )
+
   // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
   // ---------- LOADING / EMPTY HELPERS ----------
   const EmptyBox = ({ text }: { text: string }) => (
@@ -706,37 +717,37 @@ export const StatsPage = () => {
     : t('compare.periodExpense', { period: centerPeriodLbl })
 
   const DonutCard = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          {isDrilled ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveParentId(null)}
-                style={{
-                  background: 'transparent',
-                  border: 0,
-                  color: 'var(--fg-secondary)',
-                  cursor: 'pointer',
-                  fontSize: 'var(--text-body-sm)',
-                  fontWeight: '500',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                }}
-              >
-                {t('category.title')}
-              </button>
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
-              <span>{activeParent?.name}</span>
-            </>
-          ) : (
-            t('category.title')
-          )}
-        </CardTitle>
-        {PeriodSeg}
-      </CardHeader>
-      <CardContent>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={
+        isDrilled ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setActiveParentId(null)}
+              style={{
+                background: 'transparent',
+                border: 0,
+                color: 'var(--fg-secondary)',
+                cursor: 'pointer',
+                fontSize: 'var(--text-body-sm)',
+                fontWeight: '500',
+                padding: 0,
+                fontFamily: 'inherit',
+              }}
+            >
+              {t('category.title')}
+            </button>
+            <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
+            <span>{activeParent?.name}</span>
+          </>
+        ) : (
+          t('category.title')
+        )
+      }
+      action={PeriodSeg}
+    >
       {donutLoading ? (
         <div
           style={{
@@ -834,8 +845,7 @@ export const StatsPage = () => {
           </div>
         </div>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const merchants = merchantQ.data?.merchants ?? []
@@ -843,17 +853,12 @@ export const StatsPage = () => {
   const maxMerchantAmt = Math.max(1, ...topMerchants.map(m => m.totalAmount))
 
   const TopMerchantsCard = (
-    <Card
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={t('merchant.title')}
+      cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
-      <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('merchant.title')}</CardTitle>
-      </CardHeader>
-      <CardContent>
       {merchantQ.isLoading ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
           {[0, 1, 2, 3, 4].map(i => (
@@ -927,8 +932,7 @@ export const StatsPage = () => {
           ))}
         </div>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   // ---------- HEATMAP (요일 × 시간대 구간) ----------
@@ -980,11 +984,8 @@ export const StatsPage = () => {
   }
 
   const HeatmapCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('heatmap.title')}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section mobile={mobile} title={t('heatmap.title')}>
       <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         {t('heatmap.subtitle')}
       </div>
@@ -1156,8 +1157,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const topMerchant = topMerchants[0]
@@ -1263,8 +1263,8 @@ export const StatsPage = () => {
         const iconBg = pal.bg
         const iconFg = pal.color
         return (
-          <Card key={i}>
-            <CardContent>
+          // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
+          <MTile key={i}>
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
                 {h.lbl}
               </div>
@@ -1289,8 +1289,7 @@ export const StatsPage = () => {
                   <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </MTile>
         )
       })}
     </div>
@@ -1389,12 +1388,8 @@ export const StatsPage = () => {
   )
 
   const TrendBig = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('trend.title')}</CardTitle>
-        {PeriodSeg}
-      </CardHeader>
-      <CardContent>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section mobile={mobile} title={t('trend.title')} action={PeriodSeg}>
       {rangeQ.isLoading ? (
         <>
           <SkeletonBase
@@ -1502,8 +1497,7 @@ export const StatsPage = () => {
           </div>
         </>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const TrendStats = (
@@ -1520,8 +1514,8 @@ export const StatsPage = () => {
         { lbl: statLabelSave, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgSave))}</MaskAmount><WonUnit /></> },
         { lbl: t('trend.savingsRate'), val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
       ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
-        <Card key={i}>
-          <CardContent>
+        // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
+        <MTile key={i}>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 6 }}>
               {s.lbl}
             </div>
@@ -1531,19 +1525,18 @@ export const StatsPage = () => {
             >
               {s.val}
             </div>
-          </CardContent>
-        </Card>
+        </MTile>
       ))}
     </div>
   )
 
   const SavingsBars = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{useDailyTrend ? t('trend.dailySavings') : t('trend.monthlySavings')}</CardTitle>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.savingsFormula')}</span>
-      </CardHeader>
-      <CardContent>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={useDailyTrend ? t('trend.dailySavings') : t('trend.monthlySavings')}
+      action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.savingsFormula')}</span>}
+    >
       {rangeQ.isLoading ? (
         <SkeletonBase
           className="w-full rounded-lg"
@@ -1608,8 +1601,7 @@ export const StatsPage = () => {
           </BarChart>
         </ChartContainer>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   // ---------- COMPARE TAB ----------
@@ -1675,9 +1667,9 @@ export const StatsPage = () => {
         gap: 12,
       }}
     >
-      {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold). */}
-      <Card>
-        <CardContent>
+      {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold).
+          모바일 카드 다이어트 — 타일 카드 벗김. */}
+      <MTile>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {t('compare.periodExpense', { period: periodNow })}
           </div>
@@ -1694,10 +1686,8 @@ export const StatsPage = () => {
             <MaskAmount>{wonPre()}{KRW(totalNow)}</MaskAmount>
             <WonUnit />
           </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
+      </MTile>
+      <MTile>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {t('compare.periodExpense', { period: periodPrev })}
           </div>
@@ -1714,10 +1704,8 @@ export const StatsPage = () => {
             <MaskAmount>{wonPre()}{KRW(totalPrev)}</MaskAmount>
             <WonUnit />
           </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
+      </MTile>
+      <MTile>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
             {momLabel}
           </div>
@@ -1753,15 +1741,16 @@ export const StatsPage = () => {
               {noPrevText}
             </div>
           )}
-        </CardContent>
-      </Card>
+      </MTile>
     </div>
   )
 
   const CompareCategory = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('compare.categoryTitle', { mom: momLabel })}</CardTitle>
+    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    <Section
+      mobile={mobile}
+      title={t('compare.categoryTitle', { mom: momLabel })}
+      action={
         <div
           style={{
             display: 'flex',
@@ -1779,8 +1768,8 @@ export const StatsPage = () => {
             {periodPrev}
           </span>
         </div>
-      </CardHeader>
-      <CardContent>
+      }
+    >
       {compareLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[0, 1, 2, 3].map(i => (
@@ -1882,8 +1871,7 @@ export const StatsPage = () => {
           })}
         </div>
       )}
-      </CardContent>
-    </Card>
+    </Section>
   )
 
   const Content =
@@ -1894,24 +1882,24 @@ export const StatsPage = () => {
             display: mobile ? 'flex' : 'grid',
             flexDirection: 'column',
             gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
-            gap: mobile ? 12 : 20,
-            marginBottom: 20,
+            gap: mobile ? 36 : 20,
+            marginBottom: mobile ? 36 : 20,
           }}
         >
           {DonutCard}
           {TopMerchantsCard}
         </div>
-        <div style={{ marginBottom: 20 }}>{HeatmapCard}</div>
+        <div style={{ marginBottom: mobile ? 36 : 20 }}>{HeatmapCard}</div>
         {HighlightsGrid}
       </>
     ) : tab === 'trend' ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
         {TrendBig}
         {TrendStats}
         {SavingsBars}
       </div>
     ) : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
         {CompareSummary}
         {CompareCategory}
       </div>
@@ -1933,7 +1921,7 @@ export const StatsPage = () => {
         <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
           {StatsTabs}
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 'var(--spacing-xl) 20px' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: '20px 20px 24px' }}>
           {content}
         </div>
       </div>
