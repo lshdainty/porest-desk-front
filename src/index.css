@@ -231,7 +231,9 @@
   --swatch-check:     #1a1f2e; /* 다크: fill 이 light variant → 어두운 체크로 대비 */
   --bg-canvas:        var(--color-bg-page);
   --bg-surface:       var(--color-surface-default);
-  --bg-surface-raised: var(--color-surface-default);
+  /* 다크 raised = #2d3346 — surface(#242938) 한 단계 위 패널 (design tokens.css 정합).
+     모바일 카드 다이어트 keep 카드(raised + shadow-lg)가 surface 배경 위에서 떠 보이게. */
+  --bg-surface-raised: #2d3346;
   --bg-sunken:        var(--color-surface-input);
   --bg-muted:         var(--color-surface-input);
   --bg-section-warm:  var(--color-surface-input);

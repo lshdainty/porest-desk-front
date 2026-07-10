@@ -34,6 +34,11 @@ const cardVariants = cva(
         bordered: "bg-surface-default border border-border-subtle",
         muted: "bg-[var(--bg-muted)]",
         brand: "bg-[var(--bg-brand-subtle)] border border-[var(--border-brand)]",
+        // v7 raised: 모바일 카드 다이어트의 keep(강조 요약/히어로) 카드 — 페이지 배경이
+        // surface 로 올라와 일반 카드는 플랫으로 벗겨지고, 유지가 필요한 요약만
+        // surface-raised(다크 #2d3346 패널 / 라이트 흰 카드) + shadow-lg 로 확실히 띄운다.
+        // (design app.css `.m-scroll .p-card--keep` SoT — porest-design card.md 미러 필요)
+        raised: "bg-[var(--bg-surface-raised)]",
       },
     },
     defaultVariants: {
@@ -52,8 +57,13 @@ const Card = React.forwardRef<
     style={{
       // shadow variant(또는 미지정=default)만 inline boxShadow 적용 (Tailwind v4 다크 모드
       // override 우회). bordered(border-only)·muted(fill-only)·brand 는 shadow 없음.
+      // raised 는 keep 카드 — shadow-lg 로 surface 배경 위에서 띄운다.
       boxShadow:
-        variant && variant !== "shadow" ? undefined : "var(--shadow-sm)",
+        variant === "raised"
+          ? "var(--shadow-lg)"
+          : variant && variant !== "shadow"
+            ? undefined
+            : "var(--shadow-sm)",
       ...style,
     }}
     {...props}

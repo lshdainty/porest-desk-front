@@ -199,7 +199,9 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-canvas);
+  /* 모바일 카드 다이어트 — 콘텐츠가 카드 없이 배경 위에 바로 놓이므로
+     페이지 배경 = surface (design app.css .m-app 정합). */
+  background: var(--bg-surface);
   position: relative;
   overflow: hidden;
 }
@@ -335,8 +337,23 @@
 .balance-hero__split .l { font-size: var(--text-caption); opacity: 0.7; margin-bottom: 4px; }
 .balance-hero__split .v { font-size: var(--text-body-lg); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.012em; }
 
-/* CardHeader 우측 액션 링크. <button className="all"> 패턴 — sec-head 흡수 후 잔존. */
-[data-slot="card-header"] .all {
+/* 플랫 섹션 헤드 — 모바일 카드 다이어트 (design app.css .sec-head 미러).
+   카드 없이 배경 위에 [라벨 + 우측 액션] 헤드를 얹고, 아래 12px 로 콘텐츠와 한 덩어리. */
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sec-head h2 {
+  font-size: var(--text-body-lg);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--fg-primary);
+}
+
+/* CardHeader / .sec-head 우측 액션 링크. <button className="all"> 패턴. */
+:is([data-slot="card-header"], .sec-head) .all {
   margin-left: auto;
   font-size: var(--text-label-sm);
   color: var(--fg-tertiary);
@@ -349,7 +366,7 @@
   padding: 0;
   font-family: inherit;
 }
-[data-slot="card-header"] .all:hover { color: var(--fg-primary); }
+:is([data-slot="card-header"], .sec-head) .all:hover { color: var(--fg-primary); }
 
 /* .cat-ico, .cat-ico--sm/--lg, .cat-ico[data-cat="..."]
  *   → CatIcon 컴포넌트(@/shared/ui/porest/primitives.tsx) 의 CAT_ICO_PALETTE 룩업 + inline style 로 이동.
