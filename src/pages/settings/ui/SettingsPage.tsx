@@ -213,7 +213,8 @@ export const SettingsPage = () => {
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         zIndex: 100,
-        background: 'var(--bg-canvas)',
+        // 카드 다이어트 — 서브페이지도 surface 배경 위 플랫 콘텐츠 (design .m-subpage).
+        background: 'var(--bg-surface)',
         display: 'flex', flexDirection: 'column',
       }}>
         <div
@@ -338,37 +339,34 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
     <>
       {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
       <MobileBackHeader title={t('page.title')} />
-      <div className="px-5 pb-8" style={{ paddingTop: 20 }}>
-      {/* 프로필 카드 */}
+      <div style={{ padding: '8px 0 32px' }}>
+      {/* 내 정보 — K뱅크 톤: 카드 없이 이름 헤더 행 (design MobileSettingsList) */}
       <button
         onClick={() => changeSection('account')}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
+          gap: 14,
           width: '100%',
-          padding: 16,
-          background: 'var(--bg-surface)',
-          boxShadow: 'var(--shadow-sm)',
-          borderRadius: 'var(--radius-card)',
+          padding: '14px 20px 18px',
+          background: 'transparent',
           border: 0,
           cursor: 'pointer',
           textAlign: 'left',
           fontFamily: 'inherit',
-          marginBottom: 16,
         }}
       >
         <div
           style={{
-            width: 48,
-            height: 48,
+            width: 46,
+            height: 46,
             borderRadius: '50%',
             background: 'var(--bg-brand)',
             color: 'var(--fg-on-brand)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 700,
             flexShrink: 0,
           }}
@@ -376,95 +374,85 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
           {user?.userName ? user.userName.charAt(0) : '?'}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.015em' }}>
             {user?.userName ?? t('account.defaultName')}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {t('account.profileMeta')}
           </div>
         </div>
         <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
       </button>
+      <div style={{ height: 1, background: 'var(--border-subtle)', margin: '0 20px 4px' }} />
 
-      {/* 그룹 카드 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {MENU_GROUPS.map(group => {
-          const groupSections = group.sectionIds
-            .map(id => SECTIONS.find(s => s.id === id))
-            .filter((s): s is SectionDef => s !== undefined)
+      {/* 그룹 — 카드 없이 라벨 + 텍스트 행 (터치 dim), 그룹 사이 헤어라인 */}
+      {MENU_GROUPS.map((group, gi) => {
+        const groupSections = group.sectionIds
+          .map(id => SECTIONS.find(s => s.id === id))
+          .filter((s): s is SectionDef => s !== undefined)
 
-          return (
-            <div key={group.labelKey}>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--fg-primary)',
-                  paddingBottom: 8,
-                  paddingLeft: 2,
-                }}
-              >
-                {t(group.labelKey)}
-              </div>
-              <div
-                style={{
-                  background: 'var(--bg-surface)',
-                  boxShadow: 'var(--shadow-sm)',
-                  borderRadius: 'var(--radius-card)',
-                  overflow: 'hidden',
-                }}
-              >
-                {groupSections.map((s, idx) => {
-                  const IconComp = s.icon
-                  const isLast = idx === groupSections.length - 1
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => changeSection(s.id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        width: '100%',
-                        padding: '14px 16px',
-                        border: 0,
-                        borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontFamily: 'inherit',
-                      }}
-                      onMouseEnter={e => {
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-muted)'
-                      }}
-                      onMouseLeave={e => {
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                      }}
-                    >
-                      {/* 아이콘 네모 배경 제거 — 아이콘만 (앱 동일 처리) */}
-                      <span style={{ display: 'inline-flex', flexShrink: 0 }}>
-                        <IconComp size={16} strokeWidth={1.8} color="var(--fg-secondary)" />
-                      </span>
-                      <span
-                        style={{
-                          flex: 1,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: 'var(--fg-primary)',
-                          letterSpacing: '-0.01em',
-                        }}
-                      >
-                        {t(s.labelKey)}
-                      </span>
-                      <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-                    </button>
-                  )
-                })}
-              </div>
+        return (
+          <div key={group.labelKey}>
+            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 20px' }} />}
+            <div
+              style={{
+                fontSize: 'var(--text-body-lg)',
+                fontWeight: 700,
+                color: 'var(--fg-primary)',
+                letterSpacing: '-0.01em',
+                padding: '14px 20px 4px',
+              }}
+            >
+              {t(group.labelKey)}
             </div>
-          )
-        })}
-      </div>
+            <div>
+              {groupSections.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => changeSection(s.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '13px 20px',
+                    background: 'transparent',
+                    border: 0,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'inherit',
+                  }}
+                  onTouchStart={e => {
+                    e.currentTarget.style.opacity = '0.55'
+                  }}
+                  onTouchEnd={e => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.opacity = '0.7'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                >
+                  <span
+                    style={{
+                      flex: 1,
+                      fontSize: 'var(--text-body-md)',
+                      fontWeight: 500,
+                      color: 'var(--fg-primary)',
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    {t(s.labelKey)}
+                  </span>
+                  <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      })}
       </div>
     </>
   )
