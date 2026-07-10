@@ -225,6 +225,62 @@ const EMAIL_FREQ_OPTIONS: { value: EmailFrequency; labelKey: string }[] = [
   { value: 'MONTHLY', labelKey: 'email.frequency.MONTHLY' },
 ]
 
+// 모바일 카드 다이어트 — 알림 섹션 셸: 모바일은 플랫 헤드+본문(.m-subpage), 데스크톱은 기존 카드
+// 마크업(패딩 16 고정 · 앱 정합)을 그대로 일반화.
+function NotifSection({
+  mobile,
+  title,
+  subtitle,
+  action,
+  contentPad = true,
+  children,
+}: {
+  mobile: boolean
+  title: React.ReactNode
+  subtitle?: React.ReactNode
+  action?: React.ReactNode
+  /** false 면 CardContent p-0 (내부가 자체 패딩 보유 — quiet/email 카드) */
+  contentPad?: boolean
+  children: React.ReactNode
+}) {
+  if (mobile) {
+    return (
+      <section>
+        <div style={{ paddingBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h2 style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: 'var(--fg-primary)' }}>
+              {title}
+            </h2>
+            {action != null && <span style={{ marginLeft: 'auto' }}>{action}</span>}
+          </div>
+          {subtitle != null && (
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{subtitle}</div>
+          )}
+        </div>
+        {children}
+      </section>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader
+        className={
+          action != null
+            ? 'flex-row items-center justify-between p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[2px] md:pb-[2px]'
+            : 'gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]'
+        }
+      >
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{title}</CardTitle>
+        {action}
+        {subtitle != null && <CardSubtitle>{subtitle}</CardSubtitle>}
+      </CardHeader>
+      <CardContent className={contentPad ? 'p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]' : 'p-0 md:p-0'}>
+        {children}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('notification')
   const preferencesQ = useUserPreferences()
@@ -318,14 +374,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       </Card>
 
       {/* 2) 알림 종류 */}
-      <Card>
-        {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합.
-            데스크톱에서도 패딩 16 고정(앱 정합) — md:p-xl(24) override. */}
-        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('types.title')}</CardTitle>
-          <CardSubtitle>{t('types.subtitle')}</CardSubtitle>
-        </CardHeader>
-        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
+      {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합. 모바일 카드 다이어트 — 셸 벗김. */}
+      <NotifSection mobile={mobile} title={t('types.title')} subtitle={t('types.subtitle')}>
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (CardContent 패딩을
               음수 마진으로 뚫고 같은 만큼 안쪽 패딩 복원, 앱 정합).
               패딩이 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
@@ -333,7 +383,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             {NOTIFY_ROWS.map((row, i) => (
               <div
                 key={row.field}
-                className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]"
+                className={mobile ? undefined : '-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]'}
                 style={{
                   paddingTop: 12,
                   paddingBottom: i === NOTIFY_ROWS.length - 1 ? 0 : 12,
@@ -363,19 +413,18 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+      </NotifSection>
 
-      {/* 3) 예산 알림 임계값 (기존 슬라이더 카드 유지).
-          데스크톱에서도 패딩 16 고정(앱 정합). */}
-      <Card>
-        <CardHeader className="flex-row items-center justify-between p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[2px] md:pb-[2px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('threshold.title')}</CardTitle>
+      {/* 3) 예산 알림 임계값 — 모바일 카드 다이어트: 셸 벗김. */}
+      <NotifSection
+        mobile={mobile}
+        title={t('threshold.title')}
+        action={
           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             {t('threshold.current')} <strong style={{ color: 'var(--fg-brand-strong)' }}>{warnThreshold}%</strong>
           </span>
-        </CardHeader>
-        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
+        }
+      >
           <div
             style={{
               fontSize: 'var(--text-caption)',
@@ -427,19 +476,11 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             <span>90</span>
             <span>100</span>
           </div>
-        </CardContent>
-      </Card>
+      </NotifSection>
 
-      {/* 4) 방해 금지 시간 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
-      <Card>
-        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('quiet.title')}</CardTitle>
-          <CardSubtitle>{t('quiet.subtitle')}</CardSubtitle>
-        </CardHeader>
-        {/* 앱 _QuietHoursCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
-            extra top margin 없이 행 v-padding(12)만으로 분리. */}
-        <CardContent className="p-0 md:p-0">
-          <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
+      {/* 4) 방해 금지 시간 — 모바일 카드 다이어트: 셸 벗김(내부 16 패딩은 카드 기준이라 모바일 0). */}
+      <NotifSection mobile={mobile} title={t('quiet.title')} subtitle={t('quiet.subtitle')} contentPad={false}>
+          <div style={{ paddingLeft: mobile ? 0 : 16, paddingRight: mobile ? 0 : 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Moon size={18} strokeWidth={1.9} />}
             // 앱 _Tone.info 정합 — Moon 박스 info(파랑계) 톤.
@@ -461,8 +502,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: 12,
-                paddingLeft: 16,
-                paddingRight: 16,
+                paddingLeft: mobile ? 0 : 16,
+                paddingRight: mobile ? 0 : 16,
                 paddingBottom: 12,
               }}
             >
@@ -501,20 +542,15 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </NotifSection>
 
-      {/* 5) 소리·진동 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
-      <Card>
-        <CardHeader className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('sound.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
+      {/* 5) 소리·진동 — 모바일 카드 다이어트: 셸 벗김. */}
+      <NotifSection mobile={mobile} title={t('sound.title')}>
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합).
               패딩 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div
-              className="-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]"
+              className={mobile ? undefined : '-mx-[var(--spacing-lg)] px-[var(--spacing-lg)]'}
               style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-subtle)' }}
             >
             <SettingRow
@@ -561,19 +597,11 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
             />
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </NotifSection>
 
-      {/* 6) 이메일 알림 — 데스크톱에서도 패딩 16 고정(앱 정합). */}
-      <Card>
-        <CardHeader className="gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]">
-          <CardTitle style={{ fontSize: 'var(--text-body-lg)', lineHeight: '1.6', fontWeight: 700 }}>{t('email.title')}</CardTitle>
-          <CardSubtitle>{t('email.subtitle')}</CardSubtitle>
-        </CardHeader>
-        {/* 앱 _EmailCard: 토글 행(symmetric h16 v12) + 펼침 블록(fromLTRB 16,0,16,12).
-            extra top margin 없이 행 v-padding(12)만으로 분리. */}
-        <CardContent className="p-0 md:p-0">
-          <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
+      {/* 6) 이메일 알림 — 모바일 카드 다이어트: 셸 벗김(내부 16 패딩은 카드 기준이라 모바일 0). */}
+      <NotifSection mobile={mobile} title={t('email.title')} subtitle={t('email.subtitle')} contentPad={false}>
+          <div style={{ paddingLeft: mobile ? 0 : 16, paddingRight: mobile ? 0 : 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Mail size={18} strokeWidth={1.9} />}
             tone="info"
@@ -590,7 +618,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           />
           </div>
           {emailEnabled && (
-            <div style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 12 }}>
+            <div style={{ paddingLeft: mobile ? 0 : 16, paddingRight: mobile ? 0 : 16, paddingBottom: 12 }}>
               {/* 앱 PSectionLabel(label) = caption 12 / fgSecondary, 아래 gap 8. */}
               <div
                 style={{
@@ -622,8 +650,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               </Tabs>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </NotifSection>
 
       {updateMut.isError && (
         <div

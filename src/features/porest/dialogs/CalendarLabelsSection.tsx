@@ -21,6 +21,11 @@ import {
 
 type EditingState = EventLabel | { kind: 'new' } | null
 
+// 모바일 카드 다이어트 — 리스트 셸: 모바일은 카드 없이, 데스크톱은 Card (.m-subpage 정합).
+function ListShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  return mobile ? <div>{children}</div> : <Card><CardContent style={{ padding: 0 }}>{children}</CardContent></Card>
+}
+
 export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('calendar')
   const { data: labels, isLoading } = useEventLabels()
@@ -125,8 +130,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
           >
             {t('labelsSection.allLabels')} · {list.length}
           </div>
-          <Card>
-            <CardContent style={{ padding: 0 }}>
+          {/* 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */}
+          <ListShell mobile={mobile}>
               {isLoading ? (
                 <LabelListSkeleton />
               ) : list.length === 0 ? (
@@ -217,8 +222,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                   )
                 })
               )}
-            </CardContent>
-          </Card>
+          </ListShell>
         </div>
       </ManagerShell>
 

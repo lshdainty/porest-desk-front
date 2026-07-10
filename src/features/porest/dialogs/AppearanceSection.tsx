@@ -46,6 +46,14 @@ function readCurrency(): CurrencyKey {
   return 'KRW'
 }
 
+// 모바일 카드 다이어트 — 설정 행 셸: 모바일은 플랫 행, 데스크톱은 Card (.m-subpage 정합).
+function RowShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  const inner: React.CSSProperties = { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }
+  return mobile
+    ? <div style={{ ...inner, padding: '14px 4px' }}>{children}</div>
+    : <Card style={{ ...inner, padding: '14px 16px' }}>{children}</Card>
+}
+
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { t, i18n } = useTranslation('settings')
   const { theme, setTheme } = useTheme()
@@ -114,8 +122,9 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
       <section>
         <SectionLabel>{t('privacy.label')}</SectionLabel>
-        {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치) */}
-        <Card style={{ padding: '14px 16px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치).
+            모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행 (.m-subpage). */}
+        <RowShell mobile={mobile}>
           <span
             style={{
               width: 36,
@@ -140,7 +149,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
             </div>
           </div>
           <Switch checked={hidden} onCheckedChange={handleHideChange} aria-label={t('hideAmounts.label')} />
-        </Card>
+        </RowShell>
         <HideAmountsUnlockDialog
           open={unlockOpen}
           onOpenChange={setUnlockOpen}

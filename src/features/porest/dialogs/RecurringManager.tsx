@@ -44,6 +44,16 @@ const DROP_ITEM_STYLE = {
   fontSize: 'var(--text-body-sm)', color: 'var(--fg-primary)',
 }
 
+// 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
+function MaybeContent({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  return mobile ? <div>{children}</div> : <CardContent>{children}</CardContent>
+}
+
+// 모바일 카드 다이어트 — 섹션 셸: 모바일은 카드 없이(.m-subpage 플랫), 데스크톱은 Card.
+function FlatShell({ mobile, children, cardStyle }: { mobile: boolean; children: React.ReactNode; cardStyle?: React.CSSProperties }) {
+  return mobile ? <section>{children}</section> : <Card style={cardStyle}>{children}</Card>
+}
+
 export function RecurringManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('recurring')
   const { t: tExpense } = useTranslation('expense')
@@ -148,9 +158,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Summary stats */}
-      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <CardContent>
+      {/* Summary stats — 모바일 카드 다이어트: 셸 카드 벗김 */}
+      <FlatShell mobile={mobile} cardStyle={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+        <MaybeContent mobile={mobile}>
           {mobile ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -171,13 +181,13 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
             </div>
           )}
-        </CardContent>
-      </Card>
+        </MaybeContent>
+      </FlatShell>
 
-      {/* Next 7 days */}
+      {/* Next 7 days — 모바일 카드 다이어트: 셸 카드 벗김 (내부 sunken 타일 유지) */}
       {stats.next7.length > 0 && (
-        <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-          <CardContent>
+        <FlatShell mobile={mobile} cardStyle={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+          <MaybeContent mobile={mobile}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('next7Days')}</h3>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('scheduledCount', { count: stats.next7.length })}</span>
@@ -249,13 +259,13 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               )
             })}
           </div>
-          </CardContent>
-        </Card>
+          </MaybeContent>
+        </FlatShell>
       )}
 
-      {/* Filter chips + list */}
-      <Card style={{ overflow: mobile ? 'visible' : 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ padding: mobile ? '14px 16px 0' : '16px 20px 0' }}>
+      {/* Filter chips + list — 모바일 카드 다이어트: 셸 카드 벗김, 내부 패딩은 페이지 패딩에 맡김 */}
+      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+        <div style={{ padding: mobile ? 0 : '16px 20px 0' }}>
           {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
@@ -293,7 +303,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
                     alignItems: 'center',
                     gap: mobile ? 12 : 16,
-                    padding: mobile ? '14px 16px' : '14px 20px',
+                    padding: mobile ? '14px 4px' : '14px 20px',
                     borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                   }}
                 >
@@ -326,7 +336,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                   alignItems: 'center',
                   gap: mobile ? 12 : 16,
-                  padding: mobile ? '12px 12px' : '14px 20px',
+                  padding: mobile ? '12px 4px' : '14px 20px',
                   borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
                 }}
               >
@@ -528,7 +538,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             )
           })}
         </div>
-      </Card>
+      </FlatShell>
 
       {editing && (
         <RecurringEditDialog

@@ -15,6 +15,11 @@ import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 type SortKey = 'used' | 'recent' | 'name'
 
+// 모바일 카드 다이어트 — 리스트 셸: 모바일은 카드 없이, 데스크톱은 Card (.m-subpage 정합).
+function ListShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  return mobile ? <div>{children}</div> : <Card style={{ overflow: 'hidden' }}>{children}</Card>
+}
+
 export function PresetManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('expense')
   const { t: tCommon } = useTranslation('common')
@@ -153,8 +158,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
         </Button>
       </div>
 
-      {/* List */}
-      <Card style={{ overflow: 'hidden' }}>
+      {/* List — 모바일 카드 다이어트: 셸 카드 벗김 (.m-subpage) */}
+      <ListShell mobile={mobile}>
         {isLoading ? (
           <PresetManagerSkeleton mobile={mobile} />
         ) : sorted.length === 0 ? (
@@ -317,7 +322,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             )
           })
         )}
-      </Card>
+      </ListShell>
 
       {editing != null && (
         <PresetEditDialog

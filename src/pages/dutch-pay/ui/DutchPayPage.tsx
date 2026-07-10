@@ -577,6 +577,26 @@ function SummaryCard({
 }
 
 /** 진행 중 세션 카드. */
+// 모바일 카드 다이어트 — 정산 항목 셸: 모바일은 플랫(hover 면), 데스크톱은 Card.
+function SessionShell({ mobile, onClick, children }: { mobile: boolean; onClick?: () => void; children: React.ReactNode }) {
+  if (mobile) {
+    return (
+      <div
+        onClick={onClick}
+        className="hover:bg-[var(--bg-muted)] transition-colors"
+        style={{ padding: 14, cursor: 'pointer', borderRadius: 10 }}
+      >
+        {children}
+      </div>
+    )
+  }
+  return (
+    <Card onClick={onClick} style={{ padding: 22, cursor: 'pointer' }}>
+      {children}
+    </Card>
+  )
+}
+
 function SessionCard({
   d,
   mobile,
@@ -595,14 +615,7 @@ function SessionCard({
   const meta = place ? `${place} · ${kDateMd(d.dutchPayDate)}` : kDateMd(d.dutchPayDate)
   return (
     // 모바일 카드 다이어트 — 항목 카드 벗김(gap 이 구분), 클릭 영역·hover 유지.
-    <Card
-      onClick={onClick}
-      variant={mobile ? 'muted' : undefined}
-      style={mobile
-        ? { padding: 14, cursor: 'pointer', background: 'transparent' }
-        : { padding: 22, cursor: 'pointer' }}
-      className={mobile ? 'hover:bg-[var(--bg-muted)] transition-colors rounded-[10px]' : undefined}
-    >
+    <SessionShell mobile={mobile} onClick={onClick}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
@@ -701,7 +714,7 @@ function SessionCard({
           {paid}/{total}
         </span>
       </div>
-    </Card>
+    </SessionShell>
   )
 }
 

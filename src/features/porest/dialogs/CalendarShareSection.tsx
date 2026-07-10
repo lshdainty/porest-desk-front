@@ -67,6 +67,13 @@ const ROLE_AVATAR: Record<CalendarRole, { bg: string; fg: string }> = {
   READ: { bg: 'var(--bg-sunken)', fg: 'var(--fg-tertiary)' },
 }
 
+// 모바일 카드 다이어트 — 초대 코드 행 셸: 모바일은 플랫, 데스크톱은 Card (.m-subpage 정합).
+function JoinShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
+  return mobile
+    ? <div style={{ padding: '4px 0' }}>{children}</div>
+    : <Card><CardContent style={{ padding: 'var(--spacing-lg)' }}>{children}</CardContent></Card>
+}
+
 export function CalendarShareSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('calendar')
   const { data: calendars, isLoading } = useUserCalendars()
@@ -152,6 +159,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           isLoading={isLoading}
           emptyText={t('shareSection.emptyOwned')}
           onManage={setManagingId}
+          mobile={mobile}
         />
 
         <CalendarListSection
@@ -160,11 +168,12 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           isLoading={false}
           emptyText={t('shareSection.emptyShared')}
           onManage={setManagingId}
+          mobile={mobile}
         />
 
-        {/* 초대 코드로 참여 — 앱 정합: 컴팩트 카드 + 참여 버튼(다이얼로그) */}
-        <Card>
-          <CardContent style={{ padding: 'var(--spacing-lg)' }}>
+        {/* 초대 코드로 참여 — 앱 정합: 컴팩트 카드 + 참여 버튼(다이얼로그).
+            모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행. */}
+        <JoinShell mobile={mobile}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span
                 style={{
@@ -193,8 +202,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                 {t('join')}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+        </JoinShell>
       </ManagerShell>
 
       {managing && (
@@ -260,33 +268,39 @@ function CalendarListSection({
   isLoading,
   emptyText,
   onManage,
+  mobile = false,
 }: {
   title: string
   calendars: UserCalendar[]
   isLoading: boolean
   emptyText: string
   onManage: (id: number) => void
+  /** 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */
+  mobile?: boolean
 }) {
+  const list = isLoading ? (
+    <ShareListSkeleton />
+  ) : calendars.length === 0 ? (
+    <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-body-sm)' }}>
+      {emptyText}
+    </div>
+  ) : (
+    calendars.map((cal, i) => (
+      <CalendarRow key={cal.rowId} cal={cal} first={i === 0} onManage={onManage} />
+    ))
+  )
   return (
     <div>
       <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)', padding: '4px 4px 10px' }}>
         {title}
       </div>
-      <Card>
-        <CardContent style={{ padding: 0 }}>
-          {isLoading ? (
-            <ShareListSkeleton />
-          ) : calendars.length === 0 ? (
-            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-body-sm)' }}>
-              {emptyText}
-            </div>
-          ) : (
-            calendars.map((cal, i) => (
-              <CalendarRow key={cal.rowId} cal={cal} first={i === 0} onManage={onManage} />
-            ))
-          )}
-        </CardContent>
-      </Card>
+      {mobile ? (
+        <div>{list}</div>
+      ) : (
+        <Card>
+          <CardContent style={{ padding: 0 }}>{list}</CardContent>
+        </Card>
+      )}
     </div>
   )
 }
