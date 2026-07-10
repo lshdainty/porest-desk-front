@@ -2025,38 +2025,6 @@ date,daysLater,{{count}}일 후,in {{count}} days
 date,dday,D-{{count}},D-{{count}}
 
 date,asOf,{{date}} 기준,As of {{date}}
-constellation,name.dipper,북두칠성,Big Dipper
-constellation,name.cass,카시오페이아,Cassiopeia
-constellation,name.orion,오리온자리,Orion
-constellation,name.cygnus,백조자리,Cygnus
-constellation,name.lyra,거문고자리,Lyra
-constellation,name.crux,남십자자리,Crux
-constellation,name.scorpius,전갈자리,Scorpius
-constellation,name.pegasus,페가수스 사각형,Square of Pegasus
-constellation,name.ursaminor,작은곰자리,Ursa Minor
-constellation,name.leo,사자자리,Leo
-constellation,name.canismajor,큰개자리,Canis Major
-constellation,name.taurus,황소자리,Taurus
-constellation,name.gemini,쌍둥이자리,Gemini
-constellation,name.corona,왕관자리,Corona Borealis
-constellation,name.aquila,독수리자리,Aquila
-constellation,name.sagittarius,궁수자리,Sagittarius
-constellation,desc.dipper,북쪽 하늘의 국자 모양 일곱 별,Seven stars shaping the northern ladle
-constellation,desc.cass,W자를 그리는 북쪽 하늘의 여왕,The queen tracing a W in the northern sky
-constellation,desc.orion,겨울 밤하늘의 사냥꾼,The hunter of winter night skies
-constellation,desc.cygnus,"은하수를 나는 백조, 북십자성","The swan over the Milky Way, the Northern Cross"
-constellation,desc.lyra,직녀성 베가가 빛나는 거문고,The lyre where Vega shines
-constellation,desc.crux,"남반구의 길잡이, 남십자성","The southern guidepost, the Southern Cross"
-constellation,desc.scorpius,여름 남쪽 하늘의 전갈,The scorpion of summer southern skies
-constellation,desc.pegasus,가을 하늘의 큰 사각형,The great square of autumn skies
-constellation,desc.ursaminor,북극성이 손잡이 끝에 빛나는 작은 국자,The little ladle with Polaris at its tip
-constellation,desc.leo,"봄 밤하늘의 사자, 낫 모양 갈기",The lion of spring skies with a sickle mane
-constellation,desc.canismajor,"가장 밝은 별 시리우스를 품은 큰 개","The great dog bearing Sirius, the brightest star"
-constellation,desc.taurus,V자 얼굴에 긴 뿔을 세운 황소,The bull with a V face and long horns
-constellation,desc.gemini,나란히 선 쌍둥이 카스토르와 폴룩스,The twins Castor and Pollux side by side
-constellation,desc.corona,일곱 별이 그리는 반원 왕관,A crescent crown of seven stars
-constellation,desc.aquila,견우성 알타이르가 빛나는 독수리,The eagle where Altair shines
-constellation,desc.sagittarius,은하수 중심을 겨눈 찻주전자,The teapot aiming at the galactic heart
 constellation,hero.todayTarget,오늘의 목표 별자리,Today's constellation
 constellation,hero.collectedBang,{{name}} 수집!,{{name}} collected!
 constellation,hero.starlightCount,{{lit}}/{{goal}} 별빛,{{lit}}/{{goal}} starlight

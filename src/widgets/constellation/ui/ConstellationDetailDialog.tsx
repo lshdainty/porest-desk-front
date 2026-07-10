@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Lock } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { type CollectionEntry } from '@/features/constellation'
+import { constellationDesc, constellationName, type CollectionEntry } from '@/features/constellation'
 import { ConstellationSVG } from './ConstellationSVG'
 
 /**
@@ -22,11 +22,11 @@ export function ConstellationDetailDialog({
   onClose: () => void
   mobile: boolean
 }) {
-  const { t } = useTranslation('constellation')
+  const { t, i18n } = useTranslation('constellation')
   const collected = entry.collectCount > 0
   const key = entry.constellation.constellationKey
-  const name = t(`name.${key}`, { defaultValue: entry.constellation.name })
-  const description = t(`desc.${key}`, { defaultValue: entry.constellation.description ?? '' })
+  const name = constellationName(entry.constellation, i18n.language)
+  const description = constellationDesc(entry.constellation, i18n.language)
 
   return (
     <ModalShell title={t('detail.title')} onClose={onClose} size="sm" mobile={mobile}>
