@@ -24,7 +24,6 @@ export function ConstellationDetailDialog({
 }) {
   const { t, i18n } = useTranslation('constellation')
   const collected = entry.collectCount > 0
-  const key = entry.constellation.constellationKey
   const name = constellationName(entry.constellation, i18n.language)
   const description = constellationDesc(entry.constellation, i18n.language)
 

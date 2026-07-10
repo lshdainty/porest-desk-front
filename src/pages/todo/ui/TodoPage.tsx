@@ -363,14 +363,14 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   // ── 행 ────────────────────────────────────────────────────────────────────
-  const Row = ({ t, last }: { t: Todo; last: boolean }) => {
-    const prio = PRIO[t.priority]
-    const done = isDone(t)
-    const key = dueKey(t.dueDate)
+  const Row = ({ todo, last }: { todo: Todo; last: boolean }) => {
+    const prio = PRIO[todo.priority]
+    const done = isDone(todo)
+    const key = dueKey(todo.dueDate)
     const overdue = !done && !!key && key < today
     return (
       <div
-        onClick={() => setEditing(t)}
+        onClick={() => setEditing(todo)}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -388,7 +388,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           type="button"
           onClick={e => {
             e.stopPropagation()
-            toggleStatus.mutate(t.rowId)
+            toggleStatus.mutate(todo.rowId)
           }}
           aria-label={done ? t('uncomplete') : t('status.COMPLETED')}
           aria-pressed={done}
@@ -424,7 +424,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               whiteSpace: 'nowrap',
             }}
           >
-            {t.title}
+            {todo.title}
           </div>
           <div
             style={{
@@ -444,8 +444,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               {key ? relativeDate(key, today) : t('noDueDate')}
             </span>
             <span style={dot} />
-            <span style={{ color: 'var(--fg-tertiary)' }}>{todoTag(t)}</span>
-            {t.content && (
+            <span style={{ color: 'var(--fg-tertiary)' }}>{todoTag(todo)}</span>
+            {todo.content && (
               <>
                 <span style={dot} />
                 <AlignLeft size={11} color="var(--fg-tertiary)" />
@@ -532,8 +532,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               >
                 {k === NO_DUE_KEY ? t('noDueDate') : kDate(k).full} · {t('kanban.count', { count: items.length })}
               </div>
-              {items.map((t, i) => (
-                <Row key={t.rowId} t={t} last={i === items.length - 1} />
+              {items.map((td, i) => (
+                <Row key={td.rowId} todo={td} last={i === items.length - 1} />
               ))}
             </div>
           ))}
