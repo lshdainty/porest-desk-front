@@ -25,8 +25,8 @@ import { Switch } from '@/shared/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter, ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { MANAGER_LAYOUT } from '@/shared/ui/porest/manager-layout'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -135,6 +135,8 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const [tagFilter, setTagFilter] = useState<string>('all')
   // editing: Memo(기존 편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Memo | { _new: true } | null>(null)
+  // viewing: 카드 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
+  const [viewing, setViewing] = useState<Memo | null>(null)
 
   // 태그 칩: '전체' + 데이터에 존재하는 태그(카운트는 항상 전체 기준).
   const tagCounts = useMemo(() => {
@@ -253,7 +255,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <Card
         key={m.rowId}
-        onClick={() => setEditing(m)}
+        onClick={() => setViewing(m)}
         className="group/memo cursor-pointer transition-[transform,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:-translate-y-[2px] hover:shadow-[var(--shadow-md)]"
         style={{
           background: tone.bg,
@@ -431,18 +433,34 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       </div>
     )
 
-  const dialog =
-    editing != null ? (
-      <MemoEditDialog
-        memo={'_new' in editing ? null : editing}
-        mobile={mobile}
-        onClose={() => setEditing(null)}
-        onSave={onSave}
-        onDelete={onDelete}
-        submitting={createMemo.isPending || updateMemo.isPending}
-        deleting={deleteMemo.isPending}
-      />
-    ) : null
+  const dialog = (
+    <>
+      {viewing != null && (
+        <MemoDetailDialog
+          memo={viewing}
+          mobile={mobile}
+          onClose={() => setViewing(null)}
+          onEdit={mm => {
+            setViewing(null)
+            setEditing(mm)
+          }}
+          onDelete={id => deleteMemo.mutate(id, { onSuccess: () => setViewing(null) })}
+          deleting={deleteMemo.isPending}
+        />
+      )}
+      {editing != null && (
+        <MemoEditDialog
+          memo={'_new' in editing ? null : editing}
+          mobile={mobile}
+          onClose={() => setEditing(null)}
+          onSave={onSave}
+          onDelete={onDelete}
+          submitting={createMemo.isPending || updateMemo.isPending}
+          deleting={deleteMemo.isPending}
+        />
+      )}
+    </>
+  )
 
   if (mobile) {
     return (
@@ -516,6 +534,120 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
 }
 
 // ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
+
+/** 카드 클릭 → 읽기 전용 상세. TxDetailDialog 패턴 미러 (톤 hero + 본문 + 뷰 footer). */
+function MemoDetailDialog({
+  memo,
+  mobile,
+  onClose,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  memo: Memo
+  mobile: boolean
+  onClose: () => void
+  onEdit: (memo: Memo) => void
+  onDelete: (id: number) => void
+  deleting?: boolean
+}) {
+  const { t } = useTranslation('memo')
+  const { t: tc } = useTranslation('common')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const tone = resolveTone(memo.color)
+  const tag = memo.tag || DEFAULT_TAG
+
+  const Footer = (
+    <ModalViewFooter
+      onDelete={() => setConfirmDelete(true)}
+      deleting={deleting}
+      onEdit={() => onEdit(memo)}
+      onConfirm={onClose}
+    />
+  )
+
+  return (
+    <>
+      <ModalShell title={t('detailTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+        {/* Hero — 메모 카드와 동일 톤 */}
+        <div style={{ background: tone.bg, borderRadius: 'var(--radius-xl)', padding: 20, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: tone.swatch, flexShrink: 0 }} />
+            <span
+              style={{
+                fontSize: 'var(--text-badge)',
+                fontWeight: '600',
+                color: tone.fg,
+                letterSpacing: '0.02em',
+              }}
+            >
+              {tag}
+            </span>
+            {memo.isPinned && (
+              <span
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 'var(--text-badge)',
+                  fontWeight: '600',
+                  color: tone.fg,
+                }}
+              >
+                <Pin size={12} strokeWidth={2.5} style={{ color: tone.swatch }} /> {t('pinned')}
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              fontSize: 'var(--text-title-md)',
+              fontWeight: '700',
+              color: 'var(--fg-primary)',
+              letterSpacing: '-0.015em',
+              lineHeight: 1.3,
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {memo.title}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 8 }}>
+            {formatStamp(memo.modifyAt)}
+          </div>
+        </div>
+
+        {/* 본문 전문 */}
+        <div
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 16,
+            fontSize: 'var(--text-body-sm)',
+            lineHeight: 1.6,
+            color: memo.content ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {memo.content || t('detail.noContent')}
+        </div>
+      </ModalShell>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title={t('deleteConfirm.title')}
+          message={t('deleteConfirm.message')}
+          confirmLabel={tc('delete')}
+          danger
+          loading={deleting}
+          onCancel={() => !deleting && setConfirmDelete(false)}
+          onConfirm={() => onDelete(memo.rowId)}
+        />
+      )}
+    </>
+  )
+}
 
 function MemoEditDialog({
   memo,

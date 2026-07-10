@@ -42,8 +42,8 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { Card } from '@/shared/ui/card'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter, ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
@@ -168,6 +168,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const [quickAdd, setQuickAdd] = useState('')
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null)
+  // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
+  const [viewing, setViewing] = useState<Todo | null>(null)
 
   const inSevenDays = (key: string | null): boolean => {
     if (!key) return false
@@ -370,7 +372,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     const overdue = !done && !!key && key < today
     return (
       <div
-        onClick={() => setEditing(todo)}
+        onClick={() => setViewing(todo)}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -644,19 +646,36 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     </Card>
   )
 
-  const dialog =
-    editing != null ? (
-      <TodoEditDialog
-        todo={'_new' in editing ? null : editing}
-        mobile={mobile}
-        today={today}
-        onClose={() => setEditing(null)}
-        onSave={onSave}
-        onDelete={onDelete}
-        submitting={createTodo.isPending || updateTodo.isPending}
-        deleting={deleteTodo.isPending}
-      />
-    ) : null
+  const dialog = (
+    <>
+      {viewing != null && (
+        <TodoDetailDialog
+          todo={viewing}
+          mobile={mobile}
+          today={today}
+          onClose={() => setViewing(null)}
+          onEdit={td => {
+            setViewing(null)
+            setEditing(td)
+          }}
+          onDelete={id => deleteTodo.mutate(id, { onSuccess: () => setViewing(null) })}
+          deleting={deleteTodo.isPending}
+        />
+      )}
+      {editing != null && (
+        <TodoEditDialog
+          todo={'_new' in editing ? null : editing}
+          mobile={mobile}
+          today={today}
+          onClose={() => setEditing(null)}
+          onSave={onSave}
+          onDelete={onDelete}
+          submitting={createTodo.isPending || updateTodo.isPending}
+          deleting={deleteTodo.isPending}
+        />
+      )}
+    </>
+  )
 
   // ── 모바일 ────────────────────────────────────────────────────────────────
   if (mobile) {
@@ -753,6 +772,204 @@ const dot = {
   background: 'var(--border-strong)',
   flexShrink: 0,
 } as const
+
+// ───────────────────────────── 상세 다이얼로그 ─────────────────────────────
+
+/** 행 클릭 → 읽기 전용 상세. TxDetailDialog 패턴 미러 (hero + 필드 행 + 뷰 footer). */
+function TodoDetailDialog({
+  todo,
+  mobile,
+  today,
+  onClose,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  todo: Todo
+  mobile: boolean
+  today: string
+  onClose: () => void
+  onEdit: (todo: Todo) => void
+  onDelete: (id: number) => void
+  deleting?: boolean
+}) {
+  const { t } = useTranslation('todo')
+  const { t: tc } = useTranslation('common')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const prio = PRIO[todo.priority]
+  const done = isDone(todo)
+  const key = dueKey(todo.dueDate)
+  const overdue = !done && !!key && key < today
+
+  const Footer = (
+    <ModalViewFooter
+      onDelete={() => setConfirmDelete(true)}
+      deleting={deleting}
+      onEdit={() => onEdit(todo)}
+      onConfirm={onClose}
+    />
+  )
+
+  return (
+    <>
+      <ModalShell title={t('detailTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+        {/* Hero — 우선순위 틴트 */}
+        <div
+          style={{
+            background: `linear-gradient(135deg, ${prio.bg}, var(--bg-surface))`,
+            border: `1px solid color-mix(in oklch, ${prio.color} 20%, transparent)`,
+            borderRadius: 'var(--radius-xl)',
+            padding: 22,
+            marginBottom: 18,
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ display: 'inline-flex', marginBottom: 12 }}>
+            <span
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 'var(--radius-tile)',
+                background: prio.bg,
+                color: prio.color,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {done ? <CheckCheck size={20} /> : <CircleDot size={20} />}
+            </span>
+          </div>
+          <div
+            style={{
+              fontSize: 'var(--text-title-md)',
+              fontWeight: '800',
+              letterSpacing: '-0.015em',
+              color: 'var(--fg-primary)',
+              textDecoration: done ? 'line-through' : 'none',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {todo.title}
+          </div>
+          <div
+            style={{
+              fontSize: 'var(--text-caption)',
+              color: overdue ? 'var(--color-chart-red)' : 'var(--fg-tertiary)',
+              fontWeight: overdue ? '600' : '400',
+              marginTop: 6,
+            }}
+          >
+            {key ? relativeDate(key, today) : t('noDueDate')}
+          </div>
+        </div>
+
+        {/* Field rows */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+          }}
+        >
+          <DetailFieldRow
+            label={t('form.dueDate')}
+            value={<span style={{ fontWeight: '500' }}>{key ? kDate(key).full : t('noDueDate')}</span>}
+          />
+          <DetailFieldRow
+            label={t('tag')}
+            value={<span style={{ fontWeight: '500' }}>{todoTag(todo)}</span>}
+          />
+          <DetailFieldRow
+            label={t('form.priority')}
+            value={
+              <span
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: prio.bg,
+                  color: prio.color,
+                  fontSize: 11,
+                  fontWeight: '600',
+                }}
+              >
+                {t(prio.labelKey)}
+              </span>
+            }
+          />
+          <DetailFieldRow
+            label={t('detail.status')}
+            value={
+              <span style={{ fontWeight: '600', color: done ? 'var(--fg-brand)' : 'var(--fg-secondary)' }}>
+                {done ? t('status.COMPLETED') : t('status.PENDING')}
+              </span>
+            }
+          />
+          {done && todo.completedAt && (
+            <DetailFieldRow
+              label={t('detail.completedAt')}
+              value={
+                <span style={{ fontWeight: '500' }}>
+                  {todo.completedAt.replace('T', ' ').slice(0, 16)}
+                </span>
+              }
+            />
+          )}
+          <DetailFieldRow
+            label={t('form.memo')}
+            value={
+              <span
+                style={{
+                  fontWeight: '500',
+                  color: todo.content ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+                  whiteSpace: 'pre-wrap',
+                  overflowWrap: 'anywhere',
+                  textAlign: 'right',
+                }}
+              >
+                {todo.content || t('detail.none')}
+              </span>
+            }
+          />
+        </div>
+      </ModalShell>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title={t('deleteConfirm.title')}
+          message={t('deleteConfirm.message')}
+          confirmLabel={tc('delete')}
+          danger
+          loading={deleting}
+          onCancel={() => !deleting && setConfirmDelete(false)}
+          onConfirm={() => onDelete(todo.rowId)}
+        />
+      )}
+    </>
+  )
+}
+
+/** 상세 필드 행 — TxDetailDialog FieldRow 미러. */
+function DetailFieldRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '14px 16px',
+        background: 'var(--bg-surface)',
+        fontSize: 'var(--text-label-sm)',
+        gap: 12,
+      }}
+    >
+      <span style={{ color: 'var(--fg-tertiary)', minWidth: 72, flexShrink: 0 }}>{label}</span>
+      <div style={{ marginLeft: 'auto' }}>{value}</div>
+    </div>
+  )
+}
 
 // ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
 
