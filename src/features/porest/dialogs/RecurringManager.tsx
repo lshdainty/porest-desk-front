@@ -236,7 +236,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {displayTitle(it)}
+                      {displayTitle(it, t)}
                     </div>
                     <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                       {it.assetName ?? t('noAccount')} · {recurringSummary(it, t)}
@@ -357,7 +357,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                         textOverflow: 'ellipsis',
                       }}
                     >
-                      {displayTitle(it)}
+                      {displayTitle(it, t)}
                     </span>
                     {!isActive && (
                       <span

@@ -626,8 +626,6 @@ function HomeDesktop() {
       .map(r => {
         const next = new Date(r.nextExecutionDate as string)
         const d = Math.max(0, Math.round((next.getTime() - today.getTime()) / 86_400_000))
-        const mm = next.getMonth() + 1
-        const dd = next.getDate()
         return {
           rowId: r.rowId,
           title: r.description || r.merchant || r.categoryName,
