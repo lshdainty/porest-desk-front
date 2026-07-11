@@ -1640,6 +1640,79 @@ export const StatsPage = () => {
     </Section>
   )
 
+  // ---------- 주요 카테고리 월별 추이 (지출 TOP3 stacked) ----------
+  // TOP3 = 기간 전체 EXPENSE breakdown 상위 3. 월별 금액은 bucket.categoryExpenses(rowId 매칭).
+  const catTrendTop3 = useMemo(
+    () => [...periodBreakdown].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 3),
+    [periodBreakdown],
+  )
+  const catTrendData = useMemo(
+    () =>
+      monthlyBuckets.map((b, i) => {
+        const parts = catTrendTop3.map(
+          c => (b.categoryExpenses ?? []).find(ce => ce.categoryRowId === c.categoryRowId)?.amount ?? 0,
+        )
+        const label = isEn()
+          ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][b.month - 1]
+          : `${b.month}월`
+        return { label, parts, sum: parts.reduce((s, v) => s + v, 0), isCur: i === monthlyBuckets.length - 1 }
+      }),
+    [monthlyBuckets, catTrendTop3],
+  )
+  const catTrendMax = Math.max(1, ...catTrendData.map(d => d.sum))
+  // 여러 달 + TOP3 지출 데이터가 있을 때만 노출(단일 월은 카테고리 탭 도넛이 담당).
+  const showCatTrend = monthlyBuckets.length >= 2 && catTrendTop3.length > 0 && catTrendMax > 1
+  const CatTrend = showCatTrend ? (
+    <Section
+      mobile={mobile}
+      title={t('trend.catTrendTitle')}
+      action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.catTrendTop3')}</span>}
+    >
+      {/* 범례 */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', margin: '10px 0 4px' }}>
+        {catTrendTop3.map((c, i) => (
+          <span key={c.categoryRowId} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: segmentColor(i, categoryById.get(c.categoryRowId)?.color) }} />
+            {c.categoryName}
+          </span>
+        ))}
+      </div>
+      {/* 월별 stacked 막대 */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 10 : 20, height: mobile ? 150 : 180, padding: '16px 4px 6px' }}>
+        {catTrendData.map((d, i) => (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+            <span style={{ fontSize: mobile ? 10 : 11, fontWeight: 700, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
+              {money(d.sum)}
+            </span>
+            <div
+              style={{
+                width: '100%',
+                maxWidth: 44,
+                height: Math.max(8, (d.sum / catTrendMax) * (mobile ? 100 : 128)),
+                display: 'flex',
+                flexDirection: 'column-reverse',
+                borderRadius: 6,
+                overflow: 'hidden',
+                opacity: d.isCur ? 1 : 0.55,
+              }}
+            >
+              {d.parts.map((v, ci) => (
+                <div
+                  key={ci}
+                  style={{ height: d.sum > 0 ? `${(v / d.sum) * 100}%` : '0%', background: segmentColor(ci, categoryById.get(catTrendTop3[ci]!.categoryRowId)?.color) }}
+                  title={`${catTrendTop3[ci]!.categoryName} ${KRW(v)}`}
+                />
+              ))}
+            </div>
+            <span style={{ fontSize: mobile ? 10.5 : 11.5, fontWeight: d.isCur ? 700 : 500, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)' }}>
+              {d.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Section>
+  ) : null
+
   // ---------- COMPARE TAB ----------
   // 카테고리별 비교 (parent rowId로 그룹핑, 아이콘/색 동반)
   type CompareRow = {
@@ -2014,6 +2087,7 @@ export const StatsPage = () => {
         {TrendBig}
         {TrendStats}
         {SavingsBars}
+        {CatTrend}
       </div>
     ) : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
