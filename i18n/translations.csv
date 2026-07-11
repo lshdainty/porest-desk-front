@@ -1853,6 +1853,8 @@ stats,trend.avgSavings,평균 저축,Avg. savings
 stats,trend.savingsRate,저축률,Savings rate
 stats,trend.dailySavings,일별 순저축,Daily net savings
 stats,trend.monthlySavings,월별 순저축,Monthly net savings
+stats,trend.catTrendTitle,주요 카테고리 월별 추이,Top categories by month
+stats,trend.catTrendTop3,지출 TOP 3,Expense TOP 3
 stats,trend.savingsFormula,수입 − 지출,Income − Expense
 stats,highlight.topCategory,가장 많이 쓴 카테고리,Top spending category
 stats,highlight.topMerchant,가장 많이 쓴 가맹점,Top merchant

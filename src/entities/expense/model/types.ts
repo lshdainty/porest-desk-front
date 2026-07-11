@@ -111,6 +111,14 @@ export interface RangeMonthlyBucket {
   month: number
   totalIncome: number
   totalExpense: number
+  // 그 달의 카테고리별 지출(EXPENSE만, split-aware). 카테고리 월별 추이 차트용.
+  // 백엔드 배포 전이거나 데이터 없으면 undefined/빈 배열일 수 있음 — 소비 측에서 안전 처리.
+  categoryExpenses?: CategoryAmount[]
+}
+
+export interface CategoryAmount {
+  categoryRowId: number
+  amount: number
 }
 
 export interface MonthlyTrend {
