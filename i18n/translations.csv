@@ -2059,3 +2059,7 @@ constellation,detail.title,별자리 도감,Constellation Collection
 constellation,detail.notMet,아직 만나지 못한 별자리예요,A constellation you haven't met yet
 constellation,detail.collectedTimes,지금까지 {{count}}번 수집했어요,Collected {{count}} times so far
 constellation,detail.hint,하루에 별빛 {{count}}개를 모으면 수집돼요 · 매일 새 목표 별자리가 떠요,Gather {{count}} starlight in a day to collect · a new target rises daily
+stats,trend.savingsInsight,월 평균 수입의 {{pct}}%를 저축하고 있어요,You're saving {{pct}}% of your average income
+stats,compare.weekdayTitle,요일별 지출 비교,Spending by weekday
+stats,compare.weekdayInsightDown,{{dow}}요일 지출이 지난 달보다 {{amt}}원 줄었어요,{{dow}} spending fell {{amt}} vs last month
+stats,compare.weekdayInsightUp,{{dow}}요일 지출이 지난 달보다 {{amt}}원 늘었어요,{{dow}} spending rose {{amt}} vs last month

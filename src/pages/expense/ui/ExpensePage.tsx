@@ -353,20 +353,26 @@ function ExpenseCalendar({
     const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
     return expenses.filter(e => (e.expenseDate ?? '').slice(0, 10) === ymd)
   }, [selectedDate, expenses])
+  const calInner = (
+    <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+      <CalendarMonthView
+        singleDayEvents={events}
+        multiDayEvents={[]}
+        onDayClick={(date) => setSelectedDate(date)}
+      />
+    </CalendarProvider>
+  )
   return (
     <>
-      <Card
-        className="max-w-[430px] lg:max-w-none h-full min-h-0"
-        style={{ overflow: 'hidden' }}
-      >
-        <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
-          <CalendarMonthView
-            singleDayEvents={events}
-            multiDayEvents={[]}
-            onDayClick={(date) => setSelectedDate(date)}
-          />
-        </CalendarProvider>
-      </Card>
+      {mobile ? (
+        // 카드 다이어트 — 모바일 캘린더는 shadow 없는 플랫(design TxCalendar). 셀 구분선도 lg: 전용이라
+        // 모바일에선 시원한 무테 그리드가 된다. 월 네비+요약만 keep(raised) 카드로 유지.
+        <div className="max-w-[430px] h-full min-h-0 overflow-hidden">{calInner}</div>
+      ) : (
+        <Card className="lg:max-w-none h-full min-h-0" style={{ overflow: 'hidden' }}>
+          {calInner}
+        </Card>
+      )}
       {selectedDate && !detail && !editing && (
         <DayDetailDialog
           date={selectedDate}

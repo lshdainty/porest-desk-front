@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, ChevronDown, ChevronRight, X } from 'lucide-react'
+import { CalendarClock, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -516,6 +516,8 @@ export const StatsPage = () => {
   const merchantQ = useMerchantSummary(startDate, endDate)
   // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
   const monthExpensesQ = useExpenses({ startDate, endDate })
+  // 비교 탭 요일별 비교 — 이전 기간 raw 거래(요일 집계용).
+  const prevMonthExpensesQ = useExpenses({ startDate: prevStart, endDate: prevEnd })
   const heatmapQ = useExpenseHeatmap(startDate, endDate)
 
   // 첫 진입 시 모든 데이터가 도착할 때까지 한 번만 skeleton — 이후 기간/탭 변경은 부분 로딩 표시.
@@ -1502,34 +1504,66 @@ export const StatsPage = () => {
     </Section>
   )
 
+  // 추이 탭 — 저축률 도넛 게이지 + 구성 스택바 + 평균수입/지출/저축 3행 (design StatsScreen).
+  const saveRate = avgIn > 0 ? Math.max(0, Math.min(100, (avgSave / avgIn) * 100)) : 0
+  const spendRate = avgIn > 0 ? Math.max(0, Math.min(100, (avgOut / avgIn) * 100)) : 0
+  const RING_R = 48
+  const RING_C = 2 * Math.PI * RING_R
+  const savingsRows: { lbl: string; val: React.ReactNode; dot: string; pct: number | null }[] = [
+    { lbl: statLabelIn, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgIn))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-tertiary)', pct: null },
+    { lbl: statLabelOut, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgOut))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-expense)', pct: spendRate },
+    { lbl: statLabelSave, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgSave))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-brand)', pct: saveRate },
+  ]
   const TrendStats = (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-        gap: 12,
-      }}
-    >
-      {([
-        { lbl: statLabelIn, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgIn))}</MaskAmount><WonUnit /></> },
-        { lbl: statLabelOut, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgOut))}</MaskAmount><WonUnit /></> },
-        { lbl: statLabelSave, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgSave))}</MaskAmount><WonUnit /></> },
-        { lbl: t('trend.savingsRate'), val: avgIn > 0 ? ((avgSave / avgIn) * 100).toFixed(1) + '%' : '—' },
-      ] as { lbl: string; val: React.ReactNode }[]).map((s, i) => (
-        // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
-        <MTile key={i} mobile={mobile}>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 6 }}>
-              {s.lbl}
+    // 모바일 = 카드 다이어트(flat) / 데스크톱 = Card.
+    <MTile mobile={mobile}>
+      <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'center', gap: mobile ? 20 : 32 }}>
+        {/* 저축률 도넛 게이지 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: mobile ? 'center' : 'flex-start', flexShrink: 0 }}>
+          <div style={{ position: 'relative', width: 108, height: 108 }}>
+            <svg width="108" height="108" viewBox="0 0 108 108">
+              <circle cx="54" cy="54" r={RING_R} fill="none" stroke="var(--color-surface-input)" strokeWidth="10" />
+              <circle cx="54" cy="54" r={RING_R} fill="none" stroke="var(--fg-brand)" strokeWidth="10" strokeLinecap="round"
+                strokeDasharray={`${(RING_C * saveRate) / 100} ${RING_C}`} transform="rotate(-90 54 54)" />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('trend.savingsRate')}</span>
+              <span className="num" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{saveRate.toFixed(1)}%</span>
             </div>
-            <div
-              className="num"
-              style={{ fontSize: mobile ? 16 : 18, fontWeight: '800', letterSpacing: '-0.022em' }}
-            >
-              {s.val}
+          </div>
+          {mobile && (
+            <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>
+              {t('trend.savingsInsight', { pct: Math.round(saveRate) })}
             </div>
-        </MTile>
-      ))}
-    </div>
+          )}
+        </div>
+        {/* 구성 비율 + 항목 */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {!mobile && (
+            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, marginBottom: 14 }}>
+              {t('trend.savingsInsight', { pct: Math.round(saveRate) })}
+            </div>
+          )}
+          <div style={{ display: 'flex', height: 10, borderRadius: 999, overflow: 'hidden', gap: 2 }}>
+            <div style={{ width: `${spendRate}%`, background: 'var(--fg-expense)', borderRadius: 999 }} />
+            <div style={{ width: `${saveRate}%`, background: 'var(--fg-brand)', borderRadius: 999 }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, auto)', gap: mobile ? 10 : 28, marginTop: 14, justifyContent: mobile ? 'stretch' : 'start' }}>
+            {savingsRows.map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: mobile ? 'space-between' : 'flex-start' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: s.dot, flexShrink: 0 }} />
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
+                    {s.lbl}{s.pct != null ? ` ${Math.round(s.pct)}%` : ''}
+                  </span>
+                </span>
+                <span className="num" style={{ fontSize: 13, fontWeight: 700, marginLeft: mobile ? 0 : 8 }}>{s.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </MTile>
   )
 
   const SavingsBars = (
@@ -1876,6 +1910,82 @@ export const StatsPage = () => {
     </Section>
   )
 
+  // 비교 탭 — 요일별 지출 비교 (grouped bars). 이번 기간 vs 이전 기간, 월요일 시작.
+  const WK_KEYS = ['dow.mon', 'dow.tue', 'dow.wed', 'dow.thu', 'dow.fri', 'dow.sat', 'dow.sun'] as const
+  const wkAgg = (() => {
+    const now = new Array(7).fill(0) as number[]
+    const prev = new Array(7).fill(0) as number[]
+    const add = (
+      arr: number[],
+      list: ReadonlyArray<{ expenseType: string; amount: number; expenseDate?: string | null }> | undefined,
+    ) => {
+      for (const e of list ?? []) {
+        if (e.expenseType !== 'EXPENSE') continue
+        const ds = (e.expenseDate ?? '').slice(0, 10)
+        if (!ds) continue
+        const idx = (new Date(`${ds}T00:00:00`).getDay() + 6) % 7
+        arr[idx] = (arr[idx] ?? 0) + e.amount
+      }
+    }
+    add(now, monthExpensesQ.data)
+    add(prev, prevMonthExpensesQ.data)
+    return { now, prev }
+  })()
+  const wkMax = Math.max(1, ...wkAgg.now, ...wkAgg.prev)
+  const wkDelta = (() => {
+    let idx = -1
+    let delta = 0
+    for (let i = 0; i < 7; i++) {
+      const d = (wkAgg.now[i] ?? 0) - (wkAgg.prev[i] ?? 0)
+      if (Math.abs(d) > Math.abs(delta)) { delta = d; idx = i }
+    }
+    return { idx, delta }
+  })()
+  const wkDeltaKey = wkDelta.idx >= 0 ? WK_KEYS[wkDelta.idx] : undefined
+  const CompareWeekday = (
+    <Section
+      mobile={mobile}
+      title={t('compare.weekdayTitle')}
+      action={
+        <div style={{ display: 'flex', gap: 12, fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: 'var(--fg-brand)' }} />{periodNow}
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', boxSizing: 'border-box' }} />{periodPrev}
+          </span>
+        </div>
+      }
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
+        {WK_KEYS.map((k, i) => {
+          const isSat = i === 5
+          const isSun = i === 6
+          return (
+            <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
+                <div style={{ width: '42%', maxWidth: 16, height: `${((wkAgg.now[i] ?? 0) / wkMax) * 100}%`, background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
+                <div style={{ width: '42%', maxWidth: 16, height: `${((wkAgg.prev[i] ?? 0) / wkMax) * 100}%`, background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
+              </div>
+              <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: isSun ? 'var(--fg-expense)' : isSat ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>{t(k)}</span>
+            </div>
+          )
+        })}
+      </div>
+      {wkDeltaKey && wkDelta.delta !== 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
+          <Sparkles size={14} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
+          <span>
+            {t(wkDelta.delta < 0 ? 'compare.weekdayInsightDown' : 'compare.weekdayInsightUp', {
+              dow: t(wkDeltaKey),
+              amt: KRW(Math.abs(wkDelta.delta)),
+            })}
+          </span>
+        </div>
+      )}
+    </Section>
+  )
+
   const Content =
     tab === 'cat' ? (
       <>
@@ -1904,6 +2014,7 @@ export const StatsPage = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
         {CompareSummary}
         {CompareCategory}
+        {CompareWeekday}
       </div>
     )
 
