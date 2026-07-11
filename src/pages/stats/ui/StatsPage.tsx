@@ -1685,7 +1685,6 @@ export const StatsPage = () => {
 
   const totalNow = periodTotalExpense
   const totalPrev = prevRangeQ.data?.totalExpense ?? 0
-  const momUp = totalNow >= totalPrev
   const maxCompareAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
 
   const periodNow = t(labels.now)
@@ -1695,89 +1694,95 @@ export const StatsPage = () => {
 
   const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading
 
+  // 비교 탭 헤더/지표 (design StatsScreen). 감소=파랑(good)/증가=빨강(지출성).
+  const cmpDiff = totalNow - totalPrev
+  const cmpLess = cmpDiff <= 0
+  const cmpColor = cmpLess ? 'var(--fg-income)' : 'var(--fg-expense)'
+  const cmpPct = totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null
+  const cmpBarMax = Math.max(1, totalNow, totalPrev)
+  const prevDays = Math.round((startOfDay(prevR.to).getTime() - startOfDay(prevR.from).getTime()) / 86400000) + 1
+  const nowTxCount = (monthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
+  const prevTxCount = (prevMonthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
+
   const CompareSummary = (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
-        gap: 12,
-      }}
-    >
-      {/* App _CompareCard 미러: 좌측 정렬 + 라벨 위(caption+tertiary+medium) + 금액 아래(h3+bold).
-          모바일 카드 다이어트 — 타일 카드 벗김. */}
-      <MTile mobile={mobile}>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-            {t('compare.periodExpense', { period: periodNow })}
-          </div>
-          <div
-            className="num"
-            style={{
-              fontSize: 'var(--text-title-md)',
-              fontWeight: '700',
-              letterSpacing: '-0.02em',
-              lineHeight: 1.2,
-              color: 'var(--fg-primary)',
-            }}
-          >
-            <MaskAmount>{wonPre()}{KRW(totalNow)}</MaskAmount>
-            <WonUnit />
-          </div>
-      </MTile>
-      <MTile mobile={mobile}>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-            {t('compare.periodExpense', { period: periodPrev })}
-          </div>
-          <div
-            className="num"
-            style={{
-              fontSize: 'var(--text-title-md)',
-              fontWeight: '700',
-              letterSpacing: '-0.02em',
-              lineHeight: 1.2,
-              color: 'var(--fg-secondary)',
-            }}
-          >
-            <MaskAmount>{wonPre()}{KRW(totalPrev)}</MaskAmount>
-            <WonUnit />
-          </div>
-      </MTile>
-      <MTile mobile={mobile}>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 8 }}>
-            {momLabel}
-          </div>
-          <div
-            className="num"
-            style={{
-              fontSize: 'var(--text-title-md)',
-              fontWeight: '700',
-              letterSpacing: '-0.02em',
-              lineHeight: 1.2,
-              color: totalPrev > 0
-                ? (momUp ? 'var(--fg-expense)' : 'var(--fg-income)')
-                : 'var(--fg-primary)',
-            }}
-          >
-            {totalPrev > 0 ? (
-              <>
-                {momUp ? '+' : '−'}
-                {Math.abs(((totalNow - totalPrev) / totalPrev) * 100).toFixed(1)}%
-              </>
-            ) : '—'}
-          </div>
-          {totalPrev > 0 && (
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-              <MaskAmount>
-                {momUp ? '+' : '−'}{wonPre()}{KRW(Math.abs(totalNow - totalPrev))}
-              </MaskAmount>
-              <WonUnit />
+    // 모바일 = 카드 다이어트(flat) / 데스크톱 = Card.
+    <MTile mobile={mobile}>
+      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)', fontWeight: 500 }}>
+        {t('compare.periodExpense', { period: periodNow })}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+        <span className="num" style={{ fontSize: mobile ? 24 : 28, fontWeight: 800, letterSpacing: '-0.02em' }}>
+          <MaskAmount>{wonPre()}{KRW(totalNow)}</MaskAmount><WonUnit />
+        </span>
+        {cmpPct != null && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, color: cmpColor, background: `color-mix(in oklab, ${cmpColor} 12%, transparent)` }}>
+            {cmpLess ? '▼' : '▲'} {cmpPct}%
+          </span>
+        )}
+      </div>
+      {cmpPct != null ? (
+        <div style={{ fontSize: mobile ? 14 : 15, fontWeight: 700, marginTop: 10 }}>
+          {t('compare.vsLastPrefix')}{' '}
+          <span style={{ color: cmpColor }}>
+            <MaskAmount>{wonPre()}{KRW(Math.abs(cmpDiff))}</MaskAmount><WonUnit /> {cmpLess ? t('compare.dirLess') : t('compare.dirMore')}
+          </span>{' '}
+          {t('compare.spentSuffix')}
+        </div>
+      ) : (
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 10 }}>{noPrevText}</div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
+        {[
+          { lbl: periodNow, amt: totalNow, color: 'var(--fg-brand)', border: false },
+          { lbl: periodPrev, amt: totalPrev, color: 'var(--color-surface-input)', border: true },
+        ].map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, width: 44, flexShrink: 0 }}>{m.lbl}</span>
+            <div style={{ flex: 1, height: 14, borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ width: `${(m.amt / cmpBarMax) * 100}%`, height: '100%', borderRadius: 999, background: m.color, border: m.border ? '1px solid var(--border-default)' : 'none', boxSizing: 'border-box' }} />
             </div>
-          )}
-          {totalPrev === 0 && (
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-              {noPrevText}
+            <span className="num" style={{ fontSize: 12, fontWeight: 700, width: mobile ? 82 : 96, textAlign: 'right', flexShrink: 0 }}>
+              <MaskAmount>{wonPre()}{KRW(m.amt)}</MaskAmount><WonUnit />
+            </span>
+          </div>
+        ))}
+      </div>
+    </MTile>
+  )
+
+  // 비교 탭 — 하루 평균 / 거래 건수 / 건당 평균 (이번 기간 vs 이전 기간).
+  const cmpMetrics: { label: string; now: number; prev: number; count: boolean }[] = [
+    { label: t('compare.metricDailyAvg'), now: Math.round(totalNow / Math.max(1, rangeDays)), prev: Math.round(totalPrev / Math.max(1, prevDays)), count: false },
+    { label: t('compare.metricTxCount'), now: nowTxCount, prev: prevTxCount, count: true },
+    { label: t('compare.metricPerTx'), now: nowTxCount > 0 ? Math.round(totalNow / nowTxCount) : 0, prev: prevTxCount > 0 ? Math.round(totalPrev / prevTxCount) : 0, count: false },
+  ]
+  const cmpMetricVal = (v: number, count: boolean) =>
+    count ? <>{KRW(v)}{t('compare.unitCount')}</> : <><MaskAmount>{wonPre()}{KRW(v)}</MaskAmount><WonUnit /></>
+  const CompareMetrics = (
+    <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
+      {cmpMetrics.map((m, i) => {
+        const d = m.now - m.prev
+        const up = d > 0
+        const c = up ? 'var(--fg-expense)' : 'var(--fg-income)'
+        return (
+          <MTile key={i} mobile={mobile} style={mobile ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : undefined}>
+            <div>
+              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>{m.label}</div>
+              <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 800, letterSpacing: '-0.02em', marginTop: mobile ? 3 : 6 }}>{cmpMetricVal(m.now, m.count)}</div>
             </div>
-          )}
-      </MTile>
+            <div style={{ marginTop: mobile ? 0 : 6, textAlign: mobile ? 'right' : 'left' }}>
+              {d !== 0 && (
+                <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: c }}>
+                  {up ? '▲' : '▼'} {cmpMetricVal(Math.abs(d), m.count)}
+                </span>
+              )}
+              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+                {t('compare.lastMonthLabel')} {cmpMetricVal(m.prev, m.count)}
+              </span>
+            </div>
+          </MTile>
+        )
+      })}
     </div>
   )
 
@@ -2013,6 +2018,7 @@ export const StatsPage = () => {
     ) : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
         {CompareSummary}
+        {CompareMetrics}
         {CompareCategory}
         {CompareWeekday}
       </div>
