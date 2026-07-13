@@ -2142,7 +2142,7 @@ export const StatsPage = () => {
         <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
           {StatsTabs}
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: '20px 24px 24px' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide" style={{ padding: '20px 24px 24px' }}>
           {content}
         </div>
       </div>
