@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Circle, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
+  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react'
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
@@ -1500,7 +1500,8 @@ function HomeMobile() {
         )}
       </div>
 
-      <UpcomingMobileCard summary={summary} onCalendar={() => navigate('/desk/calendar')} onTodos={() => navigate('/desk/todo')} />
+      <HomeUpcomingSection summary={summary} onCalendar={() => navigate('/desk/calendar')} />
+      <HomeTodosSection summary={summary} onTodos={() => navigate('/desk/todo')} />
 
       {/* 오늘 쓴 돈 — 카드 벗김: sec-head(baseline) + tx 행 (design .tx-flat) */}
       <div>
@@ -1544,101 +1545,147 @@ function HomeMobile() {
   )
 }
 
+// 모바일 홈 위젯 항목 — design screens-home.jsx `.widget-row` 미러(button, full-width, 좌측정렬).
+const widgetRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  width: '100%',
+  padding: '10px 0',
+  background: 'transparent',
+  border: 0,
+  cursor: 'pointer',
+  textAlign: 'left',
+  fontFamily: 'inherit',
+} as const
+
+// 모바일 홈 위젯 섹션 헤더 — 아이콘16(fg-secondary) + 제목 + 우측 chevron16.
+function WidgetHead({
+  icon,
+  title,
+  onAll,
+  extra,
+}: {
+  icon: React.ReactNode
+  title: string
+  onAll: () => void
+  extra?: React.ReactNode
+}) {
+  return (
+    <div className="sec-head" style={{ marginBottom: 8 }}>
+      <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+        {icon}
+        {title}
+        {extra}
+      </h2>
+      <button className="all" onClick={onAll} type="button">
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  )
+}
+
 /**
- * 모바일 홈에 끼우는 카드 — 다가오는 일정 + 최근 할 일.
- * Flutter `_UpcomingCard` 미러 (events 3건 + todos 3건, 둘 다 비면 hidden).
+ * 모바일 홈 — 다가오는 일정 (design screens-home.jsx `HomeUpcoming` 미러).
+ * dot8 + 제목14/500 + D-day(임박 n≤3 빨강, 그 외 회색)/700.
  */
-function UpcomingMobileCard({
+function HomeUpcomingSection({
   summary,
   onCalendar,
-  onTodos,
 }: {
   summary: DashboardSummary | undefined
   onCalendar: () => void
-  onTodos: () => void
 }) {
   const { t } = useTranslation('dashboard')
   if (!summary) return null
   const events = summary.upcomingEvents.slice(0, 3)
-  const todos = summary.recentTodos.slice(0, 3)
-  if (events.length === 0 && todos.length === 0) return null
+  if (events.length === 0) return null
 
   return (
-    // 카드 벗김 — 일정/할일 두 서브블록을 한 섹션으로 (모바일 카드 다이어트)
     <div>
-      {events.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-            <CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />
-            <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              {t('schedule.title')}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onCalendar}
-              className="ml-auto size-6 text-text-tertiary"
-            >
-              <ChevronRight size={14} />
-            </Button>
-          </div>
-          {events.map(ev => (
-            <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color || 'var(--fg-brand)', marginRight: 8 }} />
-              <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <WidgetHead
+        icon={<CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />}
+        title={t('schedule.title')}
+        onAll={onCalendar}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {events.map(ev => {
+          const urgent = ev.daysUntil <= 3
+          return (
+            <button key={ev.rowId} onClick={onCalendar} style={widgetRowStyle}>
+              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color || 'var(--fg-brand)', flexShrink: 0 }} />
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
                 {ev.title}
               </span>
-              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
+              <span className="num" style={{ fontSize: 12.5, fontWeight: 700, color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)', flexShrink: 0 }}>
                 {ev.daysUntil === 0 ? t('schedule.today') : ev.daysUntil === 1 ? t('schedule.tomorrow') : t('date:dday', { count: ev.daysUntil })}
               </span>
-            </div>
-          ))}
-          {todos.length > 0 && <div style={{ height: 12 }} />}
-        </>
-      )}
-      {todos.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-            <CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />
-            <span style={{ marginLeft: 6, fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              {t('todo.recent')}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 모바일 홈 — 최근 할 일 (design screens-home.jsx `HomeTodos` 미러).
+ * 체크써클18(연체 빨강/평소 border-strong) + 제목14/500 + 날짜(연체 빨강)/600.
+ */
+function HomeTodosSection({
+  summary,
+  onTodos,
+}: {
+  summary: DashboardSummary | undefined
+  onTodos: () => void
+}) {
+  const { t } = useTranslation('dashboard')
+  if (!summary) return null
+  const todos = summary.recentTodos.slice(0, 3)
+  if (todos.length === 0) return null
+  const todayStr = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
+  const overdue = summary.todoSummary.overDueCount
+
+  return (
+    <div>
+      <WidgetHead
+        icon={<CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />}
+        title={t('todo.recent')}
+        onAll={onTodos}
+        extra={
+          overdue > 0 ? (
+            <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)', padding: '2px 8px', borderRadius: 'var(--radius-pill)', letterSpacing: '-0.01em' }}>
+              {t('todo.overdueBadge', { count: overdue })}
             </span>
-            {summary.todoSummary.overDueCount > 0 && (
-              <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-badge)', fontWeight: 600, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)' }}>
-                {t('todo.overdueBadge', { count: summary.todoSummary.overDueCount })}
+          ) : undefined
+        }
+      />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {todos.map(td => {
+          const done = td.status === 'COMPLETED'
+          const isOver = !done && !!td.dueDate && td.dueDate.slice(0, 10) < todayStr
+          return (
+            <button key={td.rowId} onClick={onTodos} style={widgetRowStyle}>
+              {done ? (
+                <CheckCircle2 size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
+              ) : (
+                <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, border: `2px solid ${isOver ? 'var(--color-chart-red)' : 'var(--border-strong)'}` }} />
+              )}
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', textDecoration: done ? 'line-through' : 'none' }}>
+                {td.title}
               </span>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onTodos}
-              className="ml-auto size-6 text-text-tertiary"
-            >
-              <ChevronRight size={14} />
-            </Button>
-          </div>
-          {todos.map(td => {
-            const done = td.status === 'COMPLETED'
-            return (
-              <div key={td.rowId} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-                {done ? (
-                  <CheckCircle2 size={14} style={{ color: 'var(--status-success-fg)', marginRight: 8 }} />
-                ) : (
-                  <Circle size={14} style={{ color: 'var(--fg-tertiary)', marginRight: 8 }} />
-                )}
-                <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {td.title}
+              {td.dueDate && (
+                <span className="num" style={{ fontSize: 12.5, fontWeight: 600, color: isOver ? 'var(--fg-expense)' : 'var(--fg-tertiary)', flexShrink: 0 }}>
+                  {td.dueDate.slice(5, 10)}
                 </span>
-                {td.dueDate && (
-                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-                    {td.dueDate.slice(5, 10)}
-                  </span>
-                )}
-              </div>
-            )
-          })}
-        </>
-      )}
+              )}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
