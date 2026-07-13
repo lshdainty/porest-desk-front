@@ -102,7 +102,7 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
       variant={mobile ? 'raised' : undefined}
       style={{
         padding: mobile ? 16 : 20,
-        marginBottom: mobile ? 12 : 16,
+        marginBottom: mobile ? 0 : 16,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -267,7 +267,7 @@ function Summary({
       variant={mobile ? 'raised' : undefined}
       style={{
         padding: mobile ? 16 : 20,
-        marginBottom: mobile ? 12 : 16,
+        marginBottom: mobile ? 0 : 16,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -962,9 +962,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const isCalendarMode = viewMode === 'calendar'
   return (
     <div
-      className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : undefined}
-      // 카드 다이어트 — design TxScreen 모바일 컨테이너 정합.
-      style={{ padding: '16px 20px 24px' }}
+      className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : 'flex flex-col'}
+      // 카드 다이어트 — design TxScreen 모바일 컨테이너 정합. 섹션 간격은 flex gap
+      // (캘린더형 0 = 요약카드-달력 붙임 / 목록형 36). Summary marginBottom 제거하고 여기로 일원화.
+      style={{ padding: '16px 20px 24px', gap: isCalendarMode ? 0 : 36 }}
     >
       {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
       {activeCount > 0 && (
@@ -984,7 +985,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={true} />}
         </div>
       ) : (
-        <>
+        <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <div style={{ flex: 1, overflow: 'hidden' }}>
               <Chips filter={filter} onChange={setFilter} />
@@ -1022,7 +1023,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             mobile
             focusTxId={focusTxId}
           />
-        </>
+        </div>
       )}
       {filterOpen && (
         <FilterDialog
