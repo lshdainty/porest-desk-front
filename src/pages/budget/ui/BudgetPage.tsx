@@ -276,7 +276,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(브랜드 헤더 카드 + flat 섹션, gap 36)와 동일 구조.
-      <div style={{ padding: '16px 20px 24px' }}>
+      <div style={{ padding: '16px 24px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
@@ -971,7 +971,7 @@ export const BudgetPage = () => {
   if (mobile) {
     return (
       // 카드 다이어트 — 브랜드 헤더만 카드 유지, 나머지 flat 섹션 + gap 36 (design BudgetScreen).
-      <div style={{ padding: '16px 20px 24px' }}>
+      <div style={{ padding: '16px 24px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {PageControls}
         </div>

@@ -705,7 +705,7 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
-      <div style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+      <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
         <AssetSummarySkeleton mobile />
         <TypeGroupSkeleton mobile rows={3} />
         <TypeGroupSkeleton mobile rows={2} />
@@ -1491,7 +1491,7 @@ function AssetMobile() {
   if (isEmpty) {
     return (
       // 카드 다이어트 — 빈 상태도 카드 없이 배경 위 플랫.
-      <div style={{ padding: '16px 20px 24px' }}>
+      <div style={{ padding: '16px 24px 24px' }}>
         <div style={{ padding: '48px 20px', textAlign: 'center' }}>
           <div
             style={{
@@ -1513,7 +1513,7 @@ function AssetMobile() {
 
   return (
     // 모바일 카드 다이어트 — keep 요약 + flat 그룹, 섹션 gap 36 (design AssetsScreen).
-    <div style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+    <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
       <SummaryCard
         mobile
         netWorth={g.netWorth}

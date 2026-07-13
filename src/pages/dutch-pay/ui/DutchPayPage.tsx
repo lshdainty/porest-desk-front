@@ -398,7 +398,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <>
         <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+        <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {Summary}
           {TabsSeg}
@@ -1467,7 +1467,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <>
         <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 16px 96px' }}>
+        <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Summary}
             {TabsSk}
