@@ -2072,25 +2072,25 @@ export const StatsPage = () => {
             display: mobile ? 'flex' : 'grid',
             flexDirection: 'column',
             gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
-            gap: mobile ? 36 : 20,
-            marginBottom: mobile ? 36 : 20,
+            gap: mobile ? 'var(--spacing-2xl)' : 20,
+            marginBottom: mobile ? 'var(--spacing-2xl)' : 20,
           }}
         >
           {DonutCard}
           {TopMerchantsCard}
         </div>
-        <div style={{ marginBottom: mobile ? 36 : 20 }}>{HeatmapCard}</div>
+        <div style={{ marginBottom: mobile ? 'var(--spacing-2xl)' : 20 }}>{HeatmapCard}</div>
         {HighlightsGrid}
       </>
     ) : tab === 'trend' ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
         {TrendBig}
         {TrendStats}
         {SavingsBars}
         {CatTrend}
       </div>
     ) : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 36 : 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
         {CompareSummary}
         {CompareMetrics}
         {CompareCategory}
