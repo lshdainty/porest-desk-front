@@ -132,7 +132,7 @@ function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobil
       key={i}
       style={{
         borderTop: mobile || i === 0 ? 'none' : '1px solid var(--border-subtle)',
-        padding: mobile ? '12px 4px' : '12px 14px',
+        padding: mobile ? '12px 10px' : '12px 14px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -148,7 +148,7 @@ function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobil
   ))
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 0 8px' }}>
         <SkeletonBase className="h-4 w-12" />
         <SkeletonBase className="h-4 w-5" />
         <SkeletonBase className="h-3.5 w-16 ml-auto" />
@@ -601,7 +601,7 @@ function ExpenseList({
                 borderTop: mobile || items.indexOf(e) === 0 ? 'none' : '1px solid var(--border-subtle)',
                 background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
                 transition: 'background 0.4s',
-                padding: mobile ? undefined : '0 14px',
+                padding: mobile ? '0 10px' : '0 14px',
                 borderRadius: mobile ? 10 : undefined,
               }}
             >
