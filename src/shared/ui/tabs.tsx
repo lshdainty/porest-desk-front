@@ -50,10 +50,10 @@ const tabsTriggerVariants = cva(
         underline:
           "rounded-none px-3.5 py-2.5 text-[13px] text-text-secondary border-b-2 border-transparent -mb-px hover:text-text-primary data-[state=active]:text-[var(--fg-brand)] data-[state=active]:border-[var(--border-brand)] data-[state=active]:font-semibold",
         // tabs.md pills — soft rectangle radius-md + active primary fill + on-accent 흰색.
-        // active fill = fg-brand(다크에서 primary-light swap, 앱 t.bgBrand 정합). 완전 둥근 chip 대신 토스 톤.
+        // active fill = bg-brand(=primary, 다크에서도 고정. 앱 t.bgBrandSolid 정합). fill 은 반전 아님 — 대비 필요한 fg/border(underline) 만 light. 완전 둥근 chip 대신 토스 톤.
         // 크기는 size(default/sm) compoundVariant 로 — sm 은 모바일용 얇은 pill.
         pills:
-          "leading-none rounded-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--fg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
+          "leading-none rounded-md text-text-secondary hover:text-text-primary data-[state=active]:bg-[var(--bg-brand)] data-[state=active]:text-[var(--fg-on-brand)] data-[state=active]:font-semibold data-[state=active]:hover:text-[var(--fg-on-brand)]",
       },
       size: { default: "", sm: "" },
     },
