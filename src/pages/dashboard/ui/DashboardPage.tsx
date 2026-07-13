@@ -223,7 +223,7 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 36)
-      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         <DashboardHeroSkeleton mobile year={year} month={month} />
         <DashboardSummaryCardSkeleton mobile month={month} period={period} onPeriodChange={setPeriod} />
         <DashboardCategoryCardSkeleton mobile onDetail={() => navigate('/desk/stats')} />
@@ -1288,7 +1288,7 @@ function HomeMobile() {
 
   return (
     // 모바일 카드 다이어트 — 카드 없이 섹션 gap(36)이 간격을 담당 (design HomeMobile).
-    <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+    <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
           <Wallet size={13} /> {t('asset.netAsset')}

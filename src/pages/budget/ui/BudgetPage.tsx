@@ -281,7 +281,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
           {HeaderCardSkeleton}
           {PaceCardSkeleton}
           {StatusTilesSkeleton}
@@ -975,7 +975,7 @@ export const BudgetPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {PageControls}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
           {HeaderCard}
           {PaceCard}
           {StatusTiles}

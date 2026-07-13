@@ -705,7 +705,7 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
-      <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+      <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         <AssetSummarySkeleton mobile />
         <TypeGroupSkeleton mobile rows={3} />
         <TypeGroupSkeleton mobile rows={2} />
@@ -1513,7 +1513,7 @@ function AssetMobile() {
 
   return (
     // 모바일 카드 다이어트 — keep 요약 + flat 그룹, 섹션 gap 36 (design AssetsScreen).
-    <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+    <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       <SummaryCard
         mobile
         netWorth={g.netWorth}
@@ -1524,7 +1524,7 @@ function AssetMobile() {
         cardsTotal={g.cardsTotal}
         isLoading={g.isLoading}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         <TypeGroup
           title={t('accountDepositTitle')}
           assets={g.accounts}
