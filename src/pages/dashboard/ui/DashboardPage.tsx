@@ -1672,7 +1672,7 @@ function HomeTodosSection({
               {done ? (
                 <CheckCircle2 size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
               ) : (
-                <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, border: `2px solid ${isOver ? 'var(--color-chart-red)' : 'var(--border-strong)'}` }} />
+                <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, border: `2px solid ${isOver ? 'var(--fg-expense)' : 'var(--border-strong)'}` }} />
               )}
               <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', textDecoration: done ? 'line-through' : 'none' }}>
                 {td.title}
