@@ -1613,7 +1613,7 @@ function HomeUpcomingSection({
           const urgent = ev.daysUntil <= 3
           return (
             <button key={ev.rowId} onClick={onCalendar} style={widgetRowStyle}>
-              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color || 'var(--fg-brand)', flexShrink: 0 }} />
+              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color ? getPaletteByColor(ev.color).color : 'var(--fg-brand)', flexShrink: 0 }} />
               <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
                 {ev.title}
               </span>
