@@ -294,9 +294,10 @@ export function MonthPicker({
             style={{
               padding: '10px 0',
               borderRadius: 'var(--radius-md)',
-              border: isSel ? '1px solid var(--border-brand)' : '1px solid transparent',
-              background: isSel ? 'var(--bg-brand-subtle)' : 'transparent',
-              color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
+              // 선택 월 = 채움(흰 글씨) 버튼 → primary 고정(--bg-brand, 다크에서도). 캘린더 월picker(bg-primary) 정합. bg-brand-subtle 틴트가 아닌 solid.
+              border: '1px solid transparent',
+              background: isSel ? 'var(--bg-brand)' : 'transparent',
+              color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-on-brand)' : 'var(--fg-primary)',
               fontSize: 'var(--text-label-sm)',
               fontWeight: isSel ? 700 : 500,
               cursor: isFuture ? 'not-allowed' : 'pointer',
