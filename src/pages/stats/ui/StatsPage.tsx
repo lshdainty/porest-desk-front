@@ -625,26 +625,48 @@ export const StatsPage = () => {
   const periodTotalExpense = totalExpense
   const donutLoading = rangeQ.isLoading
 
-  const StatsTabs = (
-    <Tabs
-      value={tab}
-      onValueChange={(v) => setTab(v as TabKey)}
-      style={{ marginBottom: mobile ? 0 : 20 }}
-    >
-      {/* 모바일에선 탭이 전체 폭을 균등 분할 — 플러터 앱과 매칭 */}
-      <TabsList variant="underline" className={mobile ? 'w-full' : undefined}>
-        {([
-          { v: 'cat', l: t('tab.category') },
-          { v: 'trend', l: t('tab.trend') },
-          { v: 'compare', l: t('tab.compare') },
-        ] as { v: TabKey; l: string }[]).map(t => (
-          <TabsTrigger
-            key={t.v}
-            value={t.v}
-            variant="underline"
-            className={mobile ? 'flex-1' : undefined}
+  const TAB_ITEMS: { v: TabKey; l: string }[] = [
+    { v: 'cat', l: t('tab.category') },
+    { v: 'trend', l: t('tab.trend') },
+    { v: 'compare', l: t('tab.compare') },
+  ]
+  // 모바일 = design .m-chip-tabs + .tg--pill (컴팩트 pill toggle, 선택=bg-brand 채움, 가로스크롤).
+  // 데스크톱 = underline 탭 유지.
+  const StatsTabs = mobile ? (
+    <div className="scrollbar-hide" style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '12px 20px' }}>
+      {TAB_ITEMS.map(({ v, l }) => {
+        const on = tab === v
+        return (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setTab(v)}
+            style={{
+              padding: '4px 12px',
+              minHeight: 32,
+              borderRadius: 'var(--radius-md)',
+              border: 0,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontFamily: 'inherit',
+              fontSize: 13,
+              fontWeight: on ? 600 : 500,
+              background: on ? 'var(--bg-brand)' : 'transparent',
+              color: on ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
+              transition: 'color var(--motion-duration-fast), background var(--motion-duration-fast)',
+            }}
           >
-            {t.l}
+            {l}
+          </button>
+        )
+      })}
+    </div>
+  ) : (
+    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} style={{ marginBottom: 20 }}>
+      <TabsList variant="underline">
+        {TAB_ITEMS.map(({ v, l }) => (
+          <TabsTrigger key={v} value={v} variant="underline">
+            {l}
           </TabsTrigger>
         ))}
       </TabsList>
