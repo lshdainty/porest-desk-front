@@ -965,7 +965,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       className={isCalendarMode ? 'flex flex-col flex-1 min-h-0' : 'flex flex-col'}
       // 카드 다이어트 — design TxScreen 모바일 컨테이너 정합. 섹션 간격은 flex gap
       // (캘린더형 0 = 요약카드-달력 붙임 / 목록형 36). Summary marginBottom 제거하고 여기로 일원화.
-      style={{ padding: '16px 24px 24px', gap: isCalendarMode ? 0 : 36 }}
+      style={{ padding: '16px 24px 24px', gap: isCalendarMode ? 'var(--spacing-sm)' : 'var(--spacing-2xl)' }}
     >
       {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
       {activeCount > 0 && (
