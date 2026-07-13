@@ -780,13 +780,16 @@ export const StatsPage = () => {
           style={{
             display: 'flex',
             flexDirection: mobile ? 'column' : 'row',
-            gap: mobile ? 20 : 32,
+            gap: mobile ? 14 : 32,
             alignItems: 'center',
           }}
         >
-          <SkeletonBase
-            className={mobile ? 'h-[180px] w-[180px] rounded-full shrink-0' : 'h-[200px] w-[200px] rounded-full shrink-0'}
-          />
+          {/* 도넛 스켈레톤도 200 박스 중앙 + 176 원 — 실제 렌더(앱 정합)와 동일 리듬(로딩 점프 방지). */}
+          <div style={{ height: mobile ? 200 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <SkeletonBase
+              className={mobile ? 'h-[176px] w-[176px] rounded-full' : 'h-[200px] w-[200px] rounded-full'}
+            />
+          </div>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[0, 1, 2, 3, 4].map(i => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -805,21 +808,24 @@ export const StatsPage = () => {
           style={{
             display: 'flex',
             flexDirection: mobile ? 'column' : 'row',
-            gap: mobile ? 20 : 32,
+            gap: mobile ? 14 : 32,
             alignItems: 'center',
           }}
         >
-          <Donut
-            segments={donutView.map((s, i) => ({ value: s.amount, color: segmentColor(i, s.color) }))}
-            size={mobile ? 180 : 200}
-            stroke={28}
-          >
-            <div className="lbl">{donutCenterLbl}</div>
-            <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
-              <MaskAmount>{wonPre()}{KRW(donutTotal)}</MaskAmount>
-              <WonUnit />
-            </div>
-          </Donut>
+          {/* 도넛을 200 높이 박스 중앙에 — 앱(_DonutCard SizedBox 200 + 도넛 176) 정합. 위·아래 12 여백 확보. */}
+          <div style={{ height: mobile ? 200 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Donut
+              segments={donutView.map((s, i) => ({ value: s.amount, color: segmentColor(i, s.color) }))}
+              size={mobile ? 176 : 200}
+              stroke={28}
+            >
+              <div className="lbl">{donutCenterLbl}</div>
+              <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
+                <MaskAmount>{wonPre()}{KRW(donutTotal)}</MaskAmount>
+                <WonUnit />
+              </div>
+            </Donut>
+          </div>
           <div className="cat-legend" style={{ width: '100%' }}>
             {donutView.map((s, i) => {
               const clickable = !isDrilled && s.hasChildren
