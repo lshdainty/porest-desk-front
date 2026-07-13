@@ -16,6 +16,7 @@ export function Section({
   action,
   children,
   cardStyle,
+  contentInset,
 }: {
   mobile: boolean
   title: ReactNode
@@ -26,6 +27,12 @@ export function Section({
   action?: ReactNode
   children: ReactNode
   cardStyle?: CSSProperties
+  /**
+   * 모바일에서 content 를 좌우로 살짝 들여쓴다 (label 은 page padding edge 0, content 는 안쪽).
+   * 자산 `.acc-card`(padding 10 − margin 2 = net 8) 리듬을 자체 행 padding 이 없는 섹션
+   * (통계 도넛/범례/차트 등)에 부여할 때 사용. label(flat-group__head)은 그대로 0 유지.
+   */
+  contentInset?: boolean
 }) {
   if (mobile) {
     return (
@@ -44,7 +51,9 @@ export function Section({
             </span>
           )}
         </div>
-        <div>{children}</div>
+        <div style={contentInset ? { paddingLeft: 'var(--spacing-sm)', paddingRight: 'var(--spacing-sm)' } : undefined}>
+          {children}
+        </div>
       </section>
     )
   }
