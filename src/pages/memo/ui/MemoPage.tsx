@@ -466,7 +466,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <>
         <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+        <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SearchCard}
           {/* 칩 행 우측 끝 + 추가 — PresetManager 정렬 토글 행의 accent 추가 버튼 패턴 */}
@@ -853,7 +853,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <>
         <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 16px 96px' }}>
+        <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <SkeletonBase className="h-9 w-full rounded-md" />
             {Chips}

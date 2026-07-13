@@ -1044,7 +1044,7 @@ export function StocksPage() {
     return mobile ? (
       <>
         <MobileBackHeader title={t('nav.title')} />
-        <div style={{ padding: '16px 16px 24px' }}>{gate}</div>
+        <div style={{ padding: '16px 24px 24px' }}>{gate}</div>
       </>
     ) : (
       <div style={{ padding: 24 }}>{gate}</div>
@@ -1056,7 +1056,7 @@ export function StocksPage() {
     return (
       <>
         <MobileBackHeader title={t('nav.title')} />
-        <div style={{ padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <MarketStatusBar mobile />
           {summary}
           {listPanel}

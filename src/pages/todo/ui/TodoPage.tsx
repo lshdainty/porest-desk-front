@@ -744,7 +744,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     return (
       <>
         <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ padding: '16px 16px 96px', position: 'relative' }}>
+        <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SkyHero}
           {QuickAdd}
@@ -1379,7 +1379,7 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <>
         <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ padding: '16px 16px 96px' }}>
+        <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Stats}
             {QuickAdd}
