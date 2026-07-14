@@ -339,7 +339,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       </div>
       {/* HeatmapCard 프레임(Section) — 부모 flex gap 이 섹션 간격 담당(실제 Content 정합) */}
       <div>
-        <Section mobile={mobile} contentInset title={<SkeletonBase className="h-5 w-40" />}>
+        <Section mobile={mobile} title={<SkeletonBase className="h-5 w-40" />}>
           {/* subtitle 자리 — 실제 heatmap.subtitle div(marginBottom:16) */}
           <SkeletonBase className="h-3 w-2/3 mb-4" />
           {/* 실제 heatmap grid 정합: 56px 라벨열 + 7 요일열, 헤더 행 + 6 데이터 행, 정사각형 셀 */}
@@ -400,7 +400,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* TrendBig 프레임(Section) + 차트 로딩 (실제 1424·1428~1437 미러) */}
       <Section
         mobile={mobile}
-        contentInset
         title={<SkeletonBase className="h-5 w-44" />}
         action={<SkeletonBase className="h-8 w-40" />}
       >
@@ -439,7 +438,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* SavingsBars 프레임(Section) + 차트 로딩 (실제 1599·1607~1611 미러) */}
       <Section
         mobile={mobile}
-        contentInset
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-24" />}
       >
@@ -487,7 +485,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* CompareCategory 프레임(Section) + 4행 로딩 (실제 1894·1920~1936 미러) */}
       <Section
         mobile={mobile}
-        contentInset
         title={<SkeletonBase className="h-5 w-44" />}
         action={<SkeletonBase className="h-3 w-40" />}
       >
@@ -511,7 +508,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* CompareWeekday 프레임(Section) + 7일 막대 차트 (실제 2061~2104 미러) */}
       <Section
         mobile={mobile}
-        contentInset
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-32" />}
       >
