@@ -1805,7 +1805,7 @@ export const StatsPage = () => {
             <span style={{ fontSize: mobile ? 10 : 11, fontWeight: 700, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
               {formatChartAmount(d.sum)}
             </span>
-            {/* 세그먼트 개별 캡슐 — 외곽 round/overflow 제거 + gap. 0값 세그먼트는 phantom gap 방지 위해 제외. */}
+            {/* 통짜 바 — 외곽(최상단·최하단)만 round + overflow hidden, 세그먼트는 각지고 사이 gap(배경 비침 = 구분선). 0값 세그먼트 제외. */}
             <div
               style={{
                 width: '100%',
@@ -1814,6 +1814,8 @@ export const StatsPage = () => {
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 gap: mobile ? 2 : 3,
+                borderRadius: 6,
+                overflow: 'hidden',
                 opacity: d.isCur ? 1 : 0.55,
               }}
             >
@@ -1825,7 +1827,6 @@ export const StatsPage = () => {
                     key={ci}
                     style={{
                       height: `${(v / d.sum) * 100}%`,
-                      borderRadius: 4,
                       background: segmentColor(ci, categoryById.get(catTrendTop3[ci]!.categoryRowId)?.color),
                     }}
                   />
