@@ -1730,7 +1730,7 @@ export const StatsPage = () => {
         )
         const label = isEn()
           ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][b.month - 1]
-          : `${b.month}월`
+          : String(b.month).padStart(2, '0') // "월" 글자 빼고 숫자만(앱 정합) — "10월" 줄바꿈으로 차트 밀림 방지
         return { label, parts, sum: parts.reduce((s, v) => s + v, 0), isCur: i === monthlyBuckets.length - 1 }
       }),
     [monthlyBuckets, catTrendTop3],
@@ -1812,7 +1812,6 @@ export const StatsPage = () => {
                 flexDirection: 'column-reverse',
                 borderRadius: 4,
                 overflow: 'hidden',
-                opacity: d.isCur ? 1 : 0.55,
               }}
             >
               {d.parts
