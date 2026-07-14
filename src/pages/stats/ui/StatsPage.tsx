@@ -274,15 +274,14 @@ function MTile({ mobile, children, style }: { mobile: boolean; children: React.R
 
 function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const CategorySkeleton = (
-    <>
-      {/* DonutCard + TopMerchantsCard — 실제 Content(2104~2115) 미러: mobile flex-col, gap/marginBottom = spacing-2xl(32) */}
+    // 실제 Content(2149~) 정합 — 한 덩어리(flex-col gap)에 4섹션 균일 gap.
+    // mobile 은 도넛/가맹점도 부모 gap 을 그대로 받게 display:contents, desktop 만 grid 2열.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
       <div
         style={{
-          display: mobile ? 'flex' : 'grid',
-          flexDirection: 'column',
+          display: mobile ? 'contents' : 'grid',
           gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
-          gap: mobile ? 'var(--spacing-2xl)' : 20,
-          marginBottom: mobile ? 'var(--spacing-2xl)' : 20,
+          gap: mobile ? undefined : 20,
         }}
       >
         {/* DonutCard 프레임(Section) + 도넛 로딩 (실제 745·778~803 미러) */}
@@ -338,8 +337,8 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           </div>
         </Section>
       </div>
-      {/* HeatmapCard 프레임(Section) + 히트맵 그리드 로딩 (실제 1020·1026~1060 미러) */}
-      <div style={{ marginBottom: mobile ? 'var(--spacing-2xl)' : 20 }}>
+      {/* HeatmapCard 프레임(Section) — 부모 flex gap 이 섹션 간격 담당(실제 Content 정합) */}
+      <div>
         <Section mobile={mobile} contentInset title={<SkeletonBase className="h-5 w-40" />}>
           {/* subtitle 자리 — 실제 heatmap.subtitle div(marginBottom:16) */}
           <SkeletonBase className="h-3 w-2/3 mb-4" />
@@ -393,7 +392,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           </MTile>
         ))}
       </div>
-    </>
+    </div>
   )
 
   const TrendSkeleton = (
@@ -2147,22 +2146,23 @@ export const StatsPage = () => {
 
   const Content =
     tab === 'cat' ? (
-      <>
-        <div
-          style={{
-            display: mobile ? 'flex' : 'grid',
-            flexDirection: 'column',
-            gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
-            gap: mobile ? 'var(--spacing-2xl)' : 20,
-            marginBottom: mobile ? 'var(--spacing-2xl)' : 20,
-          }}
-        >
-          {DonutCard}
-          {TopMerchantsCard}
-        </div>
-        <div style={{ marginBottom: mobile ? 'var(--spacing-2xl)' : 20 }}>{HeatmapCard}</div>
+      // 한 덩어리(flex-col gap) — 카테고리/가맹점/히트맵/통계 4섹션 균일 gap(앱·추이·비교 탭 정합).
+      // 데스크톱만 도넛|가맹점을 grid 2열로 나란히, 그 외엔 세로. margin-bottom 혼재 제거.
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+        {mobile ? (
+          <>
+            {DonutCard}
+            {TopMerchantsCard}
+          </>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20 }}>
+            {DonutCard}
+            {TopMerchantsCard}
+          </div>
+        )}
+        {HeatmapCard}
         {HighlightsGrid}
-      </>
+      </div>
     ) : tab === 'trend' ? (
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
         {TrendBig}
