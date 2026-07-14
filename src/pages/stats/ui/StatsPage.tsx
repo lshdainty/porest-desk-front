@@ -1802,10 +1802,7 @@ export const StatsPage = () => {
                 ))}
               </div>
             )}
-            <span style={{ fontSize: mobile ? 10 : 11, fontWeight: 700, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
-              {formatChartAmount(d.sum)}
-            </span>
-            {/* 통짜 바 — 외곽(최상단·최하단)만 round + overflow hidden, 세그먼트는 각지고 사이 gap(배경 비침 = 구분선). 0값 세그먼트 제외. */}
+            {/* 통짜 바 — 외곽(최상단·최하단)만 round + overflow hidden, 세그먼트는 붙여서 색상 경계만으로 구분. 0값 세그먼트 제외. 금액은 호버/터치 툴팁으로만 표시. */}
             <div
               style={{
                 width: '100%',
@@ -1813,7 +1810,6 @@ export const StatsPage = () => {
                 height: Math.max(8, (d.sum / catTrendMax) * (mobile ? 100 : 128)),
                 display: 'flex',
                 flexDirection: 'column-reverse',
-                gap: mobile ? 2 : 3,
                 borderRadius: 4,
                 overflow: 'hidden',
                 opacity: d.isCur ? 1 : 0.55,
