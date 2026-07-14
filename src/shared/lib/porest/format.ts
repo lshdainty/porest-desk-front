@@ -42,6 +42,22 @@ export const formatChartAxis = (v: number): string => {
   return `${sign}${n.toLocaleString('ko-KR')}`
 }
 
+/**
+ * 차트 값/틱 라벨 — 만 단위 축약. ko `457,400 → "46만"`·`120,000,000 → "1.2억"`,
+ * en 은 `formatChartAxis`(Intl compact, 457.4K). 음수 부호 prepend.
+ * `formatChartAxis` 는 100만 단위 round(대형 dual-axis 우축)라 소액(46만)이 "0만"으로
+ * 뭉개짐 → stats 추이(순저축 Y축·카테고리 값라벨)처럼 소액 스케일엔 이 만 단위 헬퍼 사용.
+ * App stats_screen `_fmtTick` 로직 미러.
+ */
+export const formatChartAmount = (v: number): string => {
+  if (isEn()) return formatChartAxis(v)
+  const sign = v < 0 ? '-' : ''
+  const n = Math.abs(v)
+  if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
+  if (n >= 10_000) return `${sign}${Math.round(n / 10_000).toLocaleString('ko-KR')}만`
+  return `${sign}${n.toLocaleString('ko-KR')}`
+}
+
 export const formatDay = (dStr: string) => {
   const parts = dStr.split('-').map(Number)
   const y = parts[0] ?? 1970
