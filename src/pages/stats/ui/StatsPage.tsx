@@ -482,24 +482,33 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           </MTile>
         ))}
       </div>
-      {/* CompareCategory 프레임(Section) + 4행 로딩 (실제 1894·1920~1936 미러) */}
+      {/* CompareCategory 프레임(Section) + 4행 증감 로딩 (실제 카테고리별 증감 행 미러) */}
       <Section
         mobile={mobile}
-        title={<SkeletonBase className="h-5 w-44" />}
-        action={<SkeletonBase className="h-3 w-40" />}
+        title={<SkeletonBase className="h-5 w-28" />}
+        action={<SkeletonBase className="h-3 w-16" />}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[0, 1, 2, 3].map(i => (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-                <SkeletonBase className="h-4 flex-1" />
-                <SkeletonBase className="h-4 w-20 shrink-0" />
-                <SkeletonBase className="h-3 w-12 shrink-0" />
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 0',
+                borderBottom: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <SkeletonBase className="h-3.5 w-24" />
+                <SkeletonBase className="h-3 w-32" />
               </div>
-              <div style={{ paddingLeft: 42, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <SkeletonBase className="h-2.5 w-full rounded-full" />
-                <SkeletonBase className="h-1.5 w-2/3 rounded-full" />
+              {!mobile && <SkeletonBase className="h-2 rounded-full shrink-0" style={{ width: 180 }} />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+                <SkeletonBase className="h-4 w-16" />
+                <SkeletonBase className="h-3 w-10" />
               </div>
             </div>
           ))}
@@ -1876,11 +1885,9 @@ export const StatsPage = () => {
 
   const totalNow = periodTotalExpense
   const totalPrev = prevRangeQ.data?.totalExpense ?? 0
-  const maxCompareAmt = Math.max(1, ...compareRows.flatMap(r => [r.now, r.prev]))
 
   const periodNow = t(labels.now)
   const periodPrev = t(labels.prev)
-  const momLabel = t(labels.mom)
   const noPrevText = t(labels.noPrev)
 
   const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading
@@ -1982,125 +1989,115 @@ export const StatsPage = () => {
     </div>
   )
 
+  // 카테고리별 증감 — compareRows(상위 10, now desc)를 증감액 절대값 큰 순으로 재정렬.
+  type DeltaRow = CompareRow & { diff: number; pct: number }
+  const deltaRows: DeltaRow[] = compareRows
+    .map(r => ({ ...r, diff: r.now - r.prev, pct: r.prev > 0 ? ((r.now - r.prev) / r.prev) * 100 : 0 }))
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+  const maxDelta = Math.max(1, ...deltaRows.map(r => Math.abs(r.diff)))
+
   const CompareCategory = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={t('compare.categoryTitle', { mom: momLabel })}
+      title={t('compare.categoryDeltaTitle')}
       action={
-        <div
-          style={{
-            display: 'flex',
-            gap: 12,
-            fontSize: 'var(--text-badge)',
-            color: 'var(--fg-tertiary)',
-          }}
-        >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--color-cat-blue)' }} />
-            {periodNow}
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: '#abc8ee' }} />
-            {periodPrev}
-          </span>
-        </div>
+        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
+          {t('compare.categoryDeltaSort')}
+        </span>
       }
     >
       {compareLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[0, 1, 2, 3].map(i => (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-                <SkeletonBase className="h-4 flex-1" />
-                <SkeletonBase className="h-4 w-20 shrink-0" />
-                <SkeletonBase className="h-3 w-12 shrink-0" />
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 0',
+                borderBottom: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <SkeletonBase className="h-3.5 w-24" />
+                <SkeletonBase className="h-3 w-32" />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
-                <SkeletonBase className="h-2.5 w-full rounded-full" />
-                <SkeletonBase className="h-1.5 w-2/3 rounded-full" />
+              {!mobile && <SkeletonBase className="h-2 rounded-full shrink-0" style={{ width: 180 }} />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+                <SkeletonBase className="h-4 w-16" />
+                <SkeletonBase className="h-3 w-10" />
               </div>
             </div>
           ))}
         </div>
-      ) : compareRows.length === 0 ? (
+      ) : deltaRows.length === 0 ? (
         <EmptyBox text={t('empty.compare')} />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {compareRows.map(r => {
-            const diff = r.now - r.prev
-            const pct = r.prev > 0 ? (diff / r.prev) * 100 : 0
-            const up = diff > 0
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {deltaRows.map((r, i) => {
+            const up = r.diff > 0
+            // 증가=지출성(빨강 --fg-expense) / 감소=good(파랑 --fg-income).
+            // design chart-line-expense / bg-brand 의 web 시맨틱 매핑(CompareSummary·CompareMetrics 정합).
+            const color = up ? 'var(--fg-expense)' : 'var(--fg-income)'
             // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
             const pal = getPaletteByColor(r.color)
-            const iconBg = pal.bg
-            const iconFg = pal.color
             return (
-              <div key={r.groupRowId}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: tileRadius(32),
-                      background: iconBg,
-                      color: iconFg,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{r.name}</div>
+              <div
+                key={r.groupRowId}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 0',
+                  borderBottom: i < deltaRows.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                }}
+              >
+                <span
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: tileRadius(32),
+                    background: pal.bg,
+                    color: pal.color,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 600 }}>{r.name}</div>
+                  <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                    <MaskAmount>{wonPre()}{KRW(r.prev)}</MaskAmount><WonUnit /> → <MaskAmount>{wonPre()}{KRW(r.now)}</MaskAmount><WonUnit />
                   </div>
-                  <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                    <MaskAmount>{wonPre()}{KRW(r.now)}</MaskAmount>
-                    <WonUnit />
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 'var(--text-caption)',
-                      fontWeight: '700',
-                      minWidth: 56,
-                      textAlign: 'right',
-                      color: r.prev === 0
-                        ? 'var(--fg-tertiary)'
-                        : up
-                          ? 'var(--fg-expense)'
-                          : 'var(--fg-income)',
-                    }}
-                  >
-                    {r.prev > 0 ? (
-                      <>{up ? '▲' : '▼'} {Math.abs(pct).toFixed(0)}%</>
-                    ) : '—'}
-                  </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 42 }}>
-                  <div style={{ position: 'relative', height: 10, background: 'var(--bg-subtle)', borderRadius: 'var(--radius-pill)' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: `${(r.now / maxCompareAmt) * 100}%`,
-                        background: 'var(--color-cat-blue)',
-                        borderRadius: 'var(--radius-pill)',
-                      }}
-                    />
+                {/* diverging bar — 데스크톱/태블릿만. 중앙 세로선 기준 감소=왼쪽/증가=오른쪽. */}
+                {!mobile && (
+                  <div style={{ width: 180, display: 'flex', flexShrink: 0 }}>
+                    <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                      {!up && (
+                        <div style={{ width: `${(Math.abs(r.diff) / maxDelta) * 100}%`, height: 8, borderRadius: '999px 0 0 999px', background: color, alignSelf: 'center' }} />
+                      )}
+                    </div>
+                    <div style={{ width: 1, background: 'var(--border-default)', flexShrink: 0 }} />
+                    <div style={{ flex: 1, display: 'flex' }}>
+                      {up && (
+                        <div style={{ width: `${(Math.abs(r.diff) / maxDelta) * 100}%`, height: 8, borderRadius: '0 999px 999px 0', background: color, alignSelf: 'center' }} />
+                      )}
+                    </div>
                   </div>
-                  <div style={{ position: 'relative', height: 6, background: 'var(--bg-subtle)', borderRadius: 'var(--radius-pill)' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: `${(r.prev / maxCompareAmt) * 100}%`,
-                        background: '#abc8ee',
-                        borderRadius: 'var(--radius-pill)',
-                      }}
-                    />
+                )}
+                <div style={{ textAlign: 'right', flexShrink: 0, minWidth: mobile ? 90 : 110 }}>
+                  <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, color }}>
+                    {up ? '+' : '−'}<MaskAmount>{wonPre()}{KRW(Math.abs(r.diff))}</MaskAmount><WonUnit />
+                  </div>
+                  <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                    {r.prev > 0 ? <>{up ? '▲' : '▼'} {Math.abs(r.pct).toFixed(0)}%</> : '—'}
                   </div>
                 </div>
               </div>
