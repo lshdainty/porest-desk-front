@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW, money, isEn, formatChartAxis } from '@/shared/lib/porest/format'
+import { KRW, money, isEn, formatChartAxis, formatChartAmount } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { MaskAmount, WonUnit, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
@@ -543,9 +543,14 @@ export const StatsPage = () => {
   const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
   const [activeParentId, setActiveParentId] = useState<number | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  // 카테고리 추이 막대 — 터치/호버 중인 월 index (상세 툴팁 노출용)
+  const [catActiveIdx, setCatActiveIdx] = useState<number | null>(null)
 
-  // 기간·탭 변경 시 드릴다운 해제
-  useEffect(() => setActiveParentId(null), [period.from, period.to, period.segMode, tab])
+  // 기간·탭 변경 시 드릴다운·툴팁 해제
+  useEffect(() => {
+    setActiveParentId(null)
+    setCatActiveIdx(null)
+  }, [period.from, period.to, period.segMode, tab])
 
   const startDate = fmt(period.from)
   const endDate = fmt(period.to)
@@ -1437,16 +1442,10 @@ export const StatsPage = () => {
     savings: { label: t('trend.savings'), color: 'var(--bg-brand)' },
   }
 
-  // app stats _fmtTick 정합 — 만 단위 round. 공용 formatChartAxis(100만 단위 round)는
-  // 지출 우축처럼 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져서 stats 엔 부적합.
-  const fmtTick = (v: number): string => {
-    if (isEn()) return formatChartAxis(v)
-    const sign = v < 0 ? '-' : ''
-    const n = Math.abs(v)
-    if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
-    if (n >= 10_000) return `${sign}${Math.round(n / 10_000).toLocaleString('ko-KR')}만`
-    return `${sign}${n.toLocaleString('ko-KR')}`
-  }
+  // app stats _fmtTick 정합 — 만 단위 round(formatChartAmount). 공용 formatChartAxis(100만
+  // 단위 round)는 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져 stats 엔 부적합.
+  // 카테고리 추이 값라벨(catTrendData)과 동일 헬퍼 공용 → 축약 통일.
+  const fmtTick = formatChartAmount
 
   // Y축 nice 눈금 (앱 stats_screen 정합). dual-axis 는 좌·우 각각 0기준 고정 5틱(niceCeil)
   // 으로 가로 그리드 정렬, 순저축 bar 는 음수 포함 niceAxis.
@@ -1699,7 +1698,7 @@ export const StatsPage = () => {
               }
             />
             {/* 월별 바 두께 24 로 통일(앱 카테고리 월별 추이 기준). 일별(>20개)만 얇게 4. */}
-            <Bar dataKey="savings" radius={[6, 6, 2, 2]} barSize={trendChartData.length > 20 ? 4 : 24}>
+            <Bar dataKey="savings" radius={[6, 6, 6, 6]} barSize={trendChartData.length > 20 ? 4 : 24}>
               {trendChartData.map((d, i) => (
                 <Cell
                   key={i}
@@ -1757,11 +1756,56 @@ export const StatsPage = () => {
       </div>
       {/* 월별 stacked 막대 */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 10 : 20, height: mobile ? 150 : 180, padding: '16px 4px 6px' }}>
-        {catTrendData.map((d, i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        {catTrendData.map((d, i) => {
+          // 카드 밖 가로 넘침 방지 — 좌반부는 col-left 기준 우측 전개, 우반부는 col-right 기준 좌측 전개.
+          const anchorRight = i >= catTrendData.length / 2
+          const active = catActiveIdx === i
+          return (
+          <div
+            key={i}
+            style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0, cursor: 'pointer' }}
+            onPointerEnter={e => { if (e.pointerType !== 'touch') setCatActiveIdx(i) }}
+            onPointerLeave={e => { if (e.pointerType !== 'touch') setCatActiveIdx(cur => (cur === i ? null : cur)) }}
+            onPointerDown={e => { if (e.pointerType === 'touch') setCatActiveIdx(cur => (cur === i ? null : i)) }}
+          >
+            {/* 터치/호버 상세 툴팁 — 월 + TOP3 카테고리별 금액 (순저축 recharts 툴팁 시각 정합) */}
+            {active && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 6px)',
+                  left: anchorRight ? 'auto' : 0,
+                  right: anchorRight ? 0 : 'auto',
+                  zIndex: 30,
+                  pointerEvents: 'none',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-tile)',
+                  boxShadow: 'var(--shadow-md)',
+                  padding: '10px 12px',
+                  minWidth: 150,
+                  maxWidth: 220,
+                }}
+              >
+                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 6 }}>
+                  {d.label}
+                </div>
+                {catTrendTop3.map((c, ci) => (
+                  <div key={c.categoryRowId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: segmentColor(ci, categoryById.get(c.categoryRowId)?.color), flexShrink: 0 }} />
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{c.categoryName}</span>
+                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+                      <MaskAmount>{wonPre()}{KRW(d.parts[ci] ?? 0)}</MaskAmount>
+                      <WonUnit />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
             <span style={{ fontSize: mobile ? 10 : 11, fontWeight: 700, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
-              {money(d.sum)}
+              {formatChartAmount(d.sum)}
             </span>
+            {/* 세그먼트 개별 캡슐 — 외곽 round/overflow 제거 + gap. 0값 세그먼트는 phantom gap 방지 위해 제외. */}
             <div
               style={{
                 width: '100%',
@@ -1769,24 +1813,30 @@ export const StatsPage = () => {
                 height: Math.max(8, (d.sum / catTrendMax) * (mobile ? 100 : 128)),
                 display: 'flex',
                 flexDirection: 'column-reverse',
-                borderRadius: 6,
-                overflow: 'hidden',
+                gap: mobile ? 2 : 3,
                 opacity: d.isCur ? 1 : 0.55,
               }}
             >
-              {d.parts.map((v, ci) => (
-                <div
-                  key={ci}
-                  style={{ height: d.sum > 0 ? `${(v / d.sum) * 100}%` : '0%', background: segmentColor(ci, categoryById.get(catTrendTop3[ci]!.categoryRowId)?.color) }}
-                  title={`${catTrendTop3[ci]!.categoryName} ${KRW(v)}`}
-                />
-              ))}
+              {d.parts
+                .map((v, ci) => ({ v, ci }))
+                .filter(s => s.v > 0)
+                .map(({ v, ci }) => (
+                  <div
+                    key={ci}
+                    style={{
+                      height: `${(v / d.sum) * 100}%`,
+                      borderRadius: 4,
+                      background: segmentColor(ci, categoryById.get(catTrendTop3[ci]!.categoryRowId)?.color),
+                    }}
+                  />
+                ))}
             </div>
             <span style={{ fontSize: mobile ? 10.5 : 11.5, fontWeight: d.isCur ? 700 : 500, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)' }}>
               {d.label}
             </span>
           </div>
-        ))}
+          )
+        })}
       </div>
     </Section>
   ) : null
