@@ -1698,7 +1698,7 @@ export const StatsPage = () => {
               }
             />
             {/* 월별 바 두께 24 로 통일(앱 카테고리 월별 추이 기준). 일별(>20개)만 얇게 4. */}
-            <Bar dataKey="savings" radius={[6, 6, 6, 6]} barSize={trendChartData.length > 20 ? 4 : 24}>
+            <Bar dataKey="savings" radius={[4, 4, 4, 4]} barSize={trendChartData.length > 20 ? 4 : 24}>
               {trendChartData.map((d, i) => (
                 <Cell
                   key={i}
@@ -1814,7 +1814,7 @@ export const StatsPage = () => {
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 gap: mobile ? 2 : 3,
-                borderRadius: 6,
+                borderRadius: 4,
                 overflow: 'hidden',
                 opacity: d.isCur ? 1 : 0.55,
               }}
