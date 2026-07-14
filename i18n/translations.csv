@@ -2063,14 +2063,13 @@ constellation,detail.collectedTimes,지금까지 {{count}}번 수집했어요,Co
 constellation,detail.hint,하루에 별빛 {{count}}개를 모으면 수집돼요 · 매일 새 목표 별자리가 떠요,Gather {{count}} starlight in a day to collect · a new target rises daily
 stats,trend.savingsInsight,월 평균 수입의 {{pct}}%를 저축하고 있어요,You're saving {{pct}}% of your average income
 stats,compare.weekdayTitle,요일별 지출 비교,Spending by weekday
-stats,compare.weekdayInsightDown,{{dow}}요일 지출이 지난 달보다 {{amt}}원 줄었어요,{{dow}} spending fell {{amt}} vs last month
-stats,compare.weekdayInsightUp,{{dow}}요일 지출이 지난 달보다 {{amt}}원 늘었어요,{{dow}} spending rose {{amt}} vs last month
-stats,compare.vsLastPrefix,지난 달보다,You spent
+stats,compare.weekdayInsightDown,{{dow}}요일 지출이 {{prev}}보다 {{amt}}원 줄었어요,{{dow}} spending fell {{amt}} vs {{prev}}
+stats,compare.weekdayInsightUp,{{dow}}요일 지출이 {{prev}}보다 {{amt}}원 늘었어요,{{dow}} spending rose {{amt}} vs {{prev}}
+stats,compare.vsLastPrefix,{{prev}}보다,You spent
 stats,compare.dirLess,덜,less
 stats,compare.dirMore,더,more
-stats,compare.spentSuffix,썼어요,than last month
+stats,compare.spentSuffix,썼어요,than {{prev}}
 stats,compare.metricDailyAvg,하루 평균,Daily avg
 stats,compare.metricTxCount,거래 건수,Transactions
 stats,compare.metricPerTx,건당 평균,Per transaction
 stats,compare.unitCount,건,
-stats,compare.lastMonthLabel,지난 달,Last month

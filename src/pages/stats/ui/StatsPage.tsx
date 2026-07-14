@@ -1892,6 +1892,11 @@ export const StatsPage = () => {
   const cmpPct = totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null
   const cmpBarMax = Math.max(1, totalNow, totalPrev)
   const prevDays = Math.round((startOfDay(prevR.to).getTime() - startOfDay(prevR.from).getTime()) / 86400000) + 1
+  // 하루 평균 분모 — 이번 기간은 '오늘까지 경과 일수'(design cmpMetrics now/20 · 앱 clamp-to-today),
+  // 이전 기간은 전체 일수(design prev/31). 진행 중인 기간이 미래 종료일까지 계산돼 분모가 과대해지는 것 방지.
+  const cmpToday = startOfDay(new Date())
+  const cmpNowEnd = startOfDay(period.to).getTime() > cmpToday.getTime() ? cmpToday : startOfDay(period.to)
+  const cmpNowDays = Math.max(1, Math.round((cmpNowEnd.getTime() - startOfDay(period.from).getTime()) / 86400000) + 1)
   const nowTxCount = (monthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
   const prevTxCount = (prevMonthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
 
@@ -1913,11 +1918,11 @@ export const StatsPage = () => {
       </div>
       {cmpPct != null ? (
         <div style={{ fontSize: mobile ? 14 : 15, fontWeight: 700, marginTop: 10 }}>
-          {t('compare.vsLastPrefix')}{' '}
+          {t('compare.vsLastPrefix', { prev: periodPrev })}{' '}
           <span style={{ color: cmpColor }}>
             <MaskAmount>{wonPre()}{KRW(Math.abs(cmpDiff))}</MaskAmount><WonUnit /> {cmpLess ? t('compare.dirLess') : t('compare.dirMore')}
           </span>{' '}
-          {t('compare.spentSuffix')}
+          {t('compare.spentSuffix', { prev: periodPrev })}
         </div>
       ) : (
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 10 }}>{noPrevText}</div>
@@ -1943,7 +1948,7 @@ export const StatsPage = () => {
 
   // 비교 탭 — 하루 평균 / 거래 건수 / 건당 평균 (이번 기간 vs 이전 기간).
   const cmpMetrics: { label: string; now: number; prev: number; count: boolean }[] = [
-    { label: t('compare.metricDailyAvg'), now: Math.round(totalNow / Math.max(1, rangeDays)), prev: Math.round(totalPrev / Math.max(1, prevDays)), count: false },
+    { label: t('compare.metricDailyAvg'), now: Math.round(totalNow / cmpNowDays), prev: Math.round(totalPrev / Math.max(1, prevDays)), count: false },
     { label: t('compare.metricTxCount'), now: nowTxCount, prev: prevTxCount, count: true },
     { label: t('compare.metricPerTx'), now: nowTxCount > 0 ? Math.round(totalNow / nowTxCount) : 0, prev: prevTxCount > 0 ? Math.round(totalPrev / prevTxCount) : 0, count: false },
   ]
@@ -1968,7 +1973,7 @@ export const StatsPage = () => {
                 </span>
               )}
               <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
-                {t('compare.lastMonthLabel')} {cmpMetricVal(m.prev, m.count)}
+                {periodPrev} {cmpMetricVal(m.prev, m.count)}
               </span>
             </div>
           </MTile>
@@ -2175,6 +2180,7 @@ export const StatsPage = () => {
             {t(wkDelta.delta < 0 ? 'compare.weekdayInsightDown' : 'compare.weekdayInsightUp', {
               dow: t(wkDeltaKey),
               amt: KRW(Math.abs(wkDelta.delta)),
+              prev: periodPrev,
             })}
           </span>
         </div>
