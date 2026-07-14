@@ -8,7 +8,7 @@ import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
 import { MaskAmount, WonUnit, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card, CardContent, CardHeader } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -275,108 +275,104 @@ function MTile({ mobile, children, style }: { mobile: boolean; children: React.R
 function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const CategorySkeleton = (
     <>
+      {/* DonutCard + TopMerchantsCard — 실제 Content(2104~2115) 미러: mobile flex-col, gap/marginBottom = spacing-2xl(32) */}
       <div
         style={{
           display: mobile ? 'flex' : 'grid',
           flexDirection: 'column',
           gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
-          gap: mobile ? 12 : 20,
-          marginBottom: 20,
+          gap: mobile ? 'var(--spacing-2xl)' : 20,
+          marginBottom: mobile ? 'var(--spacing-2xl)' : 20,
         }}
       >
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <SkeletonBase className="h-5 w-32" />
-            <SkeletonBase className="h-8 w-40" />
-          </CardHeader>
-          <CardContent>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: mobile ? 'column' : 'row',
-                gap: mobile ? 20 : 32,
-                alignItems: 'center',
-              }}
-            >
-              <SkeletonBase
-                className={
-                  mobile
-                    ? 'h-[180px] w-[180px] rounded-full shrink-0'
-                    : 'h-[200px] w-[200px] rounded-full shrink-0'
-                }
-              />
-              <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[0, 1, 2, 3, 4].map(i => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
-                    <SkeletonBase className="h-3 flex-1" />
-                    <SkeletonBase className="h-3 w-12 shrink-0" />
-                  </div>
-                ))}
-              </div>
+        {/* DonutCard 프레임(Section) + 도넛 로딩 (실제 745·778~803 미러) */}
+        <Section
+          mobile={mobile}
+          contentInset
+          title={<SkeletonBase className="h-5 w-32" />}
+          action={<SkeletonBase className="h-8 w-40" />}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: mobile ? 'column' : 'row',
+              gap: mobile ? 14 : 32,
+              alignItems: 'center',
+            }}
+          >
+            <div style={{ height: mobile ? 200 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <SkeletonBase className={mobile ? 'h-[176px] w-[176px] rounded-full' : 'h-[200px] w-[200px] rounded-full'} />
             </div>
-          </CardContent>
-        </Card>
-        <Card style={{ height: '100%' }}>
-          <CardHeader>
-            <SkeletonBase className="h-5 w-44" />
-          </CardHeader>
-          <CardContent>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[0, 1, 2, 3, 4].map(i => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <SkeletonBase className="h-6 w-6" />
-                  <div style={{ flex: 1 }}>
-                    <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-                    <SkeletonBase className="h-1 w-full rounded-full" />
-                  </div>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                  <SkeletonBase className="h-3 flex-1" />
+                  <SkeletonBase className="h-3 w-10 shrink-0" />
+                  <SkeletonBase className="h-3 w-16 shrink-0" />
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div style={{ marginBottom: 20 }}>
-        <Card>
-          <CardHeader>
-            <SkeletonBase className="h-5 w-40" />
-          </CardHeader>
-          <CardContent>
-            <SkeletonBase className="h-3 w-2/3 mb-4" />
-            {/* 실제 heatmap grid 정합: 56px 라벨열 + 7 요일열, 헤더 행 + 6 데이터 행, 정사각형 셀 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
-                gap: 6,
-                alignItems: 'center',
-              }}
-            >
-              <span />
-              {HEAT_COLS.map(col => (
-                <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
-                  <SkeletonBase className="h-3 w-3" />
-                </div>
-              ))}
-              {HEAT_ROWS.map((row, rIdx) => (
-                <Fragment key={row.labelKey}>
-                  <div style={{ paddingRight: 2 }}>
-                    <SkeletonBase className="h-3.5 w-8 mb-1" />
-                    <SkeletonBase className="h-2.5 w-12" />
+          </div>
+        </Section>
+        {/* TopMerchantsCard 프레임(Section) + 5행 로딩 (실제 888·897~909 미러) */}
+        <Section
+          mobile={mobile}
+          contentInset
+          title={<SkeletonBase className="h-5 w-44" />}
+          cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <SkeletonBase className="h-4 w-6 shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                    <SkeletonBase className="h-4 w-1/3" />
+                    <SkeletonBase className="h-3 w-10 ml-auto" />
                   </div>
-                  {HEAT_COLS.map(col => (
-                    <SkeletonBase
-                      key={`${rIdx}-${col.dow}`}
-                      className="w-full rounded-sm"
-                      style={{ aspectRatio: '1' }}
-                    />
-                  ))}
-                </Fragment>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                  <SkeletonBase className="h-1 w-full rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
       </div>
+      {/* HeatmapCard 프레임(Section) + 히트맵 그리드 로딩 (실제 1020·1026~1060 미러) */}
+      <div style={{ marginBottom: mobile ? 'var(--spacing-2xl)' : 20 }}>
+        <Section mobile={mobile} contentInset title={<SkeletonBase className="h-5 w-40" />}>
+          {/* subtitle 자리 — 실제 heatmap.subtitle div(marginBottom:16) */}
+          <SkeletonBase className="h-3 w-2/3 mb-4" />
+          {/* 실제 heatmap grid 정합: 56px 라벨열 + 7 요일열, 헤더 행 + 6 데이터 행, 정사각형 셀 */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
+              gap: 6,
+              alignItems: 'center',
+            }}
+          >
+            <span />
+            {HEAT_COLS.map(col => (
+              <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
+                <SkeletonBase className="h-3 w-3" />
+              </div>
+            ))}
+            {HEAT_ROWS.map((row, rIdx) => (
+              <Fragment key={row.labelKey}>
+                <div style={{ paddingRight: 2 }}>
+                  <SkeletonBase className="h-3.5 w-8 mb-1" />
+                  <SkeletonBase className="h-2.5 w-12" />
+                </div>
+                {HEAT_COLS.map(col => (
+                  <SkeletonBase key={`${rIdx}-${col.dow}`} className="w-full rounded-sm" style={{ aspectRatio: '1' }} />
+                ))}
+              </Fragment>
+            ))}
+          </div>
+        </Section>
+      </div>
+      {/* HighlightsGrid — MTile 3개 (실제 1285·1301~1326 미러: 라벨 + 40px 아이콘 + 값/서브) */}
       <div
         style={{
           display: 'grid',
@@ -385,103 +381,154 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         }}
       >
         {[0, 1, 2].map(i => (
-          <Card key={i}>
-            <CardContent>
-              <SkeletonBase className="h-3 w-24 mb-3" />
-              <SkeletonBase className="h-5 w-32 mb-1.5" />
-              <SkeletonBase className="h-3 w-20" />
-            </CardContent>
-          </Card>
+          <MTile key={i} mobile={mobile}>
+            <SkeletonBase className="h-3 w-24" style={{ marginBottom: 10 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <SkeletonBase className="shrink-0" style={{ width: 40, height: 40, borderRadius: 'var(--radius-tile)' }} />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <SkeletonBase className="h-5 w-24" />
+                <SkeletonBase className="h-3 w-16" style={{ marginTop: 2 }} />
+              </div>
+            </div>
+          </MTile>
         ))}
       </div>
     </>
   )
 
   const TrendSkeleton = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <SkeletonBase className="h-5 w-44" />
-          <SkeletonBase className="h-8 w-40" />
-        </CardHeader>
-        <CardContent>
-          <SkeletonBase className={mobile ? 'h-[200px] w-full' : 'h-[260px] w-full'} />
-          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-            <SkeletonBase className="h-3 w-12" />
-            <SkeletonBase className="h-3 w-12" />
-          </div>
-        </CardContent>
-      </Card>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-          gap: 12,
-        }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+      {/* TrendBig 프레임(Section) + 차트 로딩 (실제 1424·1428~1437 미러) */}
+      <Section
+        mobile={mobile}
+        contentInset
+        title={<SkeletonBase className="h-5 w-44" />}
+        action={<SkeletonBase className="h-8 w-40" />}
       >
-        {[0, 1, 2, 3].map(i => (
-          <Card key={i}>
-            <CardContent>
-              <SkeletonBase className="h-3 w-16 mb-2" />
-              <SkeletonBase className={mobile ? 'h-5 w-24' : 'h-6 w-28'} />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <SkeletonBase className="h-5 w-28" />
-          <SkeletonBase className="h-3 w-24" />
-        </CardHeader>
-        <CardContent>
-          <SkeletonBase className={mobile ? 'h-[180px] w-full' : 'h-[220px] w-full'} />
-        </CardContent>
-      </Card>
+        <SkeletonBase className="w-full rounded-lg" style={{ height: mobile ? 200 : 260 }} />
+        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+          <SkeletonBase className="h-3 w-12" />
+          <SkeletonBase className="h-3 w-12" />
+        </div>
+      </Section>
+      {/* TrendStats — 저축률 도넛 링 게이지(108px) + 구성 비율바 + 3행 (실제 1547~1596 미러). 이전 4칸 stat 타일 스켈레톤 교체. */}
+      <MTile mobile={mobile}>
+        <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'center', gap: mobile ? 20 : 32 }}>
+          {/* 저축률 도넛 게이지 자리 (108px 링) + (모바일) 인사이트 텍스트 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: mobile ? 'center' : 'flex-start', flexShrink: 0 }}>
+            <SkeletonBase className="rounded-full shrink-0" style={{ width: 108, height: 108 }} />
+            {mobile && <SkeletonBase className="h-6 flex-1" />}
+          </div>
+          {/* 구성 비율바 + 항목 3행 */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {!mobile && <SkeletonBase className="h-5 w-2/3 mb-3.5" />}
+            <SkeletonBase className="w-full rounded-full" style={{ height: 10 }} />
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, auto)', gap: mobile ? 10 : 28, marginTop: 14, justifyContent: mobile ? 'stretch' : 'start' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: mobile ? 'space-between' : 'flex-start' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
+                    <SkeletonBase className="h-3 w-16" />
+                  </span>
+                  <SkeletonBase className="h-3 w-14" style={{ marginLeft: mobile ? 0 : 8 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </MTile>
+      {/* SavingsBars 프레임(Section) + 차트 로딩 (실제 1599·1607~1611 미러) */}
+      <Section
+        mobile={mobile}
+        contentInset
+        title={<SkeletonBase className="h-5 w-28" />}
+        action={<SkeletonBase className="h-3 w-24" />}
+      >
+        <SkeletonBase className="w-full rounded-lg" style={{ height: mobile ? 180 : 220 }} />
+      </Section>
     </div>
   )
 
   const CompareSkeleton = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 12 : 20 }}>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
-          gap: 12,
-        }}
-      >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+      {/* CompareSummary — MTile 요약(기간 지출 + 증감칩 + vs 문구 + 이번/이전 막대 2행) (실제 1817~1860 미러) */}
+      <MTile mobile={mobile}>
+        {/* 기간 지출 라벨 */}
+        <SkeletonBase className="h-3 w-28" />
+        {/* 합계 금액 + 증감칩 */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+          <SkeletonBase className={mobile ? 'h-6 w-36' : 'h-7 w-44'} />
+          <SkeletonBase className="h-5 w-14 rounded-full" />
+        </div>
+        {/* vs 전기간 문구 */}
+        <SkeletonBase className="h-4 w-1/2" style={{ marginTop: 10 }} />
+        {/* 이번/이전 막대 2행 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
+          {[0, 1].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <SkeletonBase className="h-3 shrink-0" style={{ width: 44 }} />
+              <SkeletonBase className="flex-1 rounded-full" style={{ height: 14 }} />
+              <SkeletonBase className="h-3 shrink-0" style={{ width: mobile ? 82 : 96 }} />
+            </div>
+          ))}
+        </div>
+      </MTile>
+      {/* CompareMetrics — MTile 3개 그리드 (실제 1866~1891 미러: 라벨+값 / 증감) */}
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
         {[0, 1, 2].map(i => (
-          <Card key={i}>
-            <CardContent>
-              {/* 라벨 위 / 금액 아래 — App _CompareCard 미러 정합 */}
-              <SkeletonBase className="h-3 w-20 mb-2" />
-              <SkeletonBase className={mobile ? 'h-7 w-32' : 'h-9 w-40'} />
-            </CardContent>
-          </Card>
+          <MTile key={i} mobile={mobile} style={mobile ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : undefined}>
+            <div>
+              <SkeletonBase className="h-3 w-16 mb-2" />
+              <SkeletonBase className={mobile ? 'h-4 w-24' : 'h-5 w-28'} />
+            </div>
+            <SkeletonBase className="h-3 w-20" style={{ marginTop: mobile ? 0 : 6 }} />
+          </MTile>
         ))}
       </div>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <SkeletonBase className="h-5 w-44" />
-          <SkeletonBase className="h-3 w-40" />
-        </CardHeader>
-        <CardContent>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {[0, 1, 2, 3, 4].map(i => (
-              <div key={i}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-                  <SkeletonBase className="h-4 flex-1" />
-                  <SkeletonBase className="h-4 w-20 shrink-0" />
-                </div>
-                <div style={{ paddingLeft: 42, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <SkeletonBase className="h-2.5 w-full rounded-full" />
-                  <SkeletonBase className="h-1.5 w-full rounded-full" />
-                </div>
+      {/* CompareCategory 프레임(Section) + 4행 로딩 (실제 1894·1920~1936 미러) */}
+      <Section
+        mobile={mobile}
+        contentInset
+        title={<SkeletonBase className="h-5 w-44" />}
+        action={<SkeletonBase className="h-3 w-40" />}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                <SkeletonBase className="h-4 flex-1" />
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+                <SkeletonBase className="h-3 w-12 shrink-0" />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div style={{ paddingLeft: 42, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <SkeletonBase className="h-2.5 w-full rounded-full" />
+                <SkeletonBase className="h-1.5 w-2/3 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+      {/* CompareWeekday 프레임(Section) + 7일 막대 차트 (실제 2061~2104 미러) */}
+      <Section
+        mobile={mobile}
+        contentInset
+        title={<SkeletonBase className="h-5 w-28" />}
+        action={<SkeletonBase className="h-3 w-32" />}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+              {/* now/prev 막대 쌍 자리 — height 는 데이터 대체 placeholder (실제 2084~2085 미러) */}
+              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
+                <SkeletonBase style={{ width: '42%', maxWidth: 16, height: '62%', borderRadius: '3px 3px 0 0' }} />
+                <SkeletonBase style={{ width: '42%', maxWidth: 16, height: '44%', borderRadius: '3px 3px 0 0' }} />
+              </div>
+              <SkeletonBase className="h-3 w-6" />
+            </div>
+          ))}
+        </div>
+      </Section>
     </div>
   )
 

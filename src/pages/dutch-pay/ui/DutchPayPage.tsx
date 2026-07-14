@@ -107,6 +107,46 @@ function useDutchPayPageData() {
   return { isLoading: q.isLoading }
 }
 
+/**
+ * 정적 탭 세그먼트 — 로딩 스켈레톤과 로드 완료 화면이 공용하는 SoT.
+ * 탭바는 데이터에 의존하지 않는 정적 UI 틀이므로 로딩 중에도 실제 렌더한다.
+ * 카운트(active/past)는 데이터라 로드 후에만 붙인다(미지정 시 라벨만 표시).
+ */
+function DutchPayTabs({
+  value,
+  onValueChange,
+  activeCount,
+  pastCount,
+}: {
+  value: TabKey
+  onValueChange: (v: TabKey) => void
+  activeCount?: number
+  pastCount?: number
+}) {
+  const { t } = useTranslation('dutchPay')
+  return (
+    <Tabs value={value} onValueChange={v => onValueChange(v as TabKey)} className="w-fit">
+      <TabsList variant="pill" size="sm">
+        {(
+          [
+            {
+              id: 'active',
+              label:
+                activeCount != null ? `${t('filter.active')} · ${activeCount}` : t('filter.active'),
+            },
+            { id: 'past', label: pastCount != null ? `${t('done')} · ${pastCount}` : t('done') },
+            { id: 'friends', label: t('friends') },
+          ] as const
+        ).map(x => (
+          <TabsTrigger key={x.id} value={x.id}>
+            {x.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  )
+}
+
 export const DutchPayPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const { isLoading } = useDutchPayPageData()
@@ -235,22 +275,14 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   // ── seg 탭 3종 ─────────────────────────────────────────────────────────────
+  // 정적 프레임이라 로딩 스켈레톤과 공용(DutchPayTabs, SoT 단일화). 카운트만 데이터.
   const TabsSeg = (
-    <Tabs value={tab} onValueChange={v => setTab(v as TabKey)} className="w-fit">
-      <TabsList variant="pill" size="sm">
-        {(
-          [
-            { id: 'active', label: `${t('filter.active')} · ${active.length}` },
-            { id: 'past', label: `${t('done')} · ${past.length}` },
-            { id: 'friends', label: t('friends') },
-          ] as const
-        ).map(t => (
-          <TabsTrigger key={t.id} value={t.id}>
-            {t.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+    <DutchPayTabs
+      value={tab}
+      onValueChange={setTab}
+      activeCount={active.length}
+      pastCount={past.length}
+    />
   )
 
   // ── 콘텐츠 (탭별) ──────────────────────────────────────────────────────────
@@ -1455,7 +1487,8 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
       <SummaryCardSkeleton mobile={mobile} />
     </div>
   )
-  const TabsSk = <SkeletonBase className="h-9 w-56 rounded-[var(--radius-md)]" />
+  // 정적 탭바 — 데이터 무관 UI 틀이라 로딩 중에도 실제 렌더(카운트는 로드 후 표시). 전환은 no-op.
+  const TabsBar = <DutchPayTabs value="active" onValueChange={() => {}} />
   const Cards = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
       <SessionCardSkeleton mobile={mobile} />
@@ -1470,7 +1503,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Summary}
-            {TabsSk}
+            {TabsBar}
             {Cards}
           </div>
         </div>
@@ -1499,7 +1532,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {Summary}
-            {TabsSk}
+            {TabsBar}
             {Cards}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
