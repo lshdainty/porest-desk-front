@@ -113,6 +113,57 @@ function useMemoPageData() {
   return { isLoading: memosQ.isLoading }
 }
 
+/**
+ * 정적 검색 바 — 로딩 스켈레톤과 로드 완료 화면이 공용하는 SoT.
+ * 검색바는 데이터에 의존하지 않는 정적 UI 틀이므로 로딩 중에도 실제 렌더한다.
+ * (header/매니저 검색과 동일 Input search 톤 · MANAGER_LAYOUT 정합)
+ */
+function MemoSearchBar({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const { t } = useTranslation('memo')
+  return (
+    <div style={MANAGER_LAYOUT.searchWrapStyle}>
+      <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+      <Input
+        search
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={t('search')}
+        aria-label={t('search')}
+        className="w-full min-w-0 pl-9 pr-8"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          aria-label={t('clearSearch')}
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 0,
+            background: 'transparent',
+            color: 'var(--fg-tertiary)',
+            cursor: 'pointer',
+            padding: 2,
+          }}
+        >
+          <X size={14} />
+        </button>
+      )}
+    </div>
+  )
+}
+
 export const MemoPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const { isLoading } = useMemoPageData()
@@ -183,43 +234,8 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     </Button>
   )
 
-  // ── 검색 바 — 전 검색 input canonical 통일 (header/매니저 검색과 동일 Input search 톤)
-  const SearchCard = (
-    <div style={MANAGER_LAYOUT.searchWrapStyle}>
-      <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-      <Input
-        search
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        placeholder={t('search')}
-        aria-label={t('search')}
-        className="w-full min-w-0 pl-9 pr-8"
-      />
-      {query && (
-        <button
-          type="button"
-          onClick={() => setQuery('')}
-          aria-label={t('clearSearch')}
-          style={{
-            position: 'absolute',
-            right: 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: 0,
-            background: 'transparent',
-            color: 'var(--fg-tertiary)',
-            cursor: 'pointer',
-            padding: 2,
-          }}
-        >
-          <X size={14} />
-        </button>
-      )}
-    </div>
-  )
+  // ── 검색 바 — 정적 프레임이라 로딩 스켈레톤과 공용(MemoSearchBar, SoT 단일화)
+  const SearchCard = <MemoSearchBar value={query} onChange={setQuery} />
 
   // ── 태그 칩 (단일선택 리스트 필터 — Tabs pills sm) ──
   const TagChips = (
@@ -828,6 +844,7 @@ function MemoCardSkeleton() {
 /** Memo 페이지 구조 일치 skeleton — 검색카드 + 태그칩 + 카드 grid. */
 function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('memo')
+  const { t: tc } = useTranslation('common')
   const Chips = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {Array.from({ length: 4 }).map((_, i) => (
@@ -855,8 +872,27 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
         <MobileBackHeader title={t('title')} />
         <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <SkeletonBase className="h-9 w-full rounded-md" />
-            {Chips}
+            {/* 정적 검색바 — 데이터 무관 UI 틀이라 로딩 중에도 실제 렌더. */}
+            <MemoSearchBar value="" onChange={() => {}} />
+            {/* 칩 행 우측 끝 + 추가 — 칩 카운트만 스켈레톤, 정적 추가 버튼은 실제 렌더(로딩 중 disabled). */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
+              }}
+            >
+              {Chips}
+              <Button
+                type="button"
+                variant="accent"
+                disabled
+                style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)', flexShrink: 0 }}
+              >
+                <Plus size={14} /> {tc('add')}
+              </Button>
+            </div>
             {Grid}
           </div>
         </div>
@@ -884,7 +920,8 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
         }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 16, alignItems: 'center' }}>
-          <SkeletonBase className="h-9 w-full rounded-md" />
+          {/* 정적 검색바 — 데이터 무관 UI 틀이라 로딩 중에도 실제 렌더. */}
+          <MemoSearchBar value="" onChange={() => {}} />
           {Chips}
         </div>
         {Grid}

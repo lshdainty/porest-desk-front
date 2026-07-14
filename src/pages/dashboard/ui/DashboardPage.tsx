@@ -222,12 +222,14 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   const [period, setPeriod] = useState(initialKey)
   if (mobile) {
     return (
-      // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 36)
+      // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 32)
       <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         <DashboardHeroSkeleton mobile year={year} month={month} />
         <DashboardSummaryCardSkeleton mobile month={month} period={period} onPeriodChange={setPeriod} />
         <DashboardCategoryCardSkeleton mobile onDetail={() => navigate('/desk/stats')} />
         <DashboardBudgetCardSkeleton mobile onManage={() => navigate('/desk/budget')} />
+        <DashboardWidgetSectionSkeleton icon={<CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />} title={t('schedule.title')} onAll={() => navigate('/desk/calendar')} marker="dot" rows={3} />
+        <DashboardWidgetSectionSkeleton icon={<CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />} title={t('todo.recent')} onAll={() => navigate('/desk/todo')} marker="check" rows={3} />
         <DashboardListCardSkeleton mobile title={t('expense.todaySpent')} allLabel={t('all')} onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
       </div>
     )
@@ -484,6 +486,39 @@ function DashboardListCardSkeleton({
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>
+  )
+}
+
+/**
+ * 모바일 홈 위젯 섹션 스켈레톤 — WidgetHead(아이콘+타이틀+chevron)는 실제 렌더,
+ * widget-row(padding 10px 0 · gap 12)만 데이터 placeholder. HomeUpcomingSection/HomeTodosSection 미러.
+ *  - 'dot'   : 8px 점 + title + D-day       — 다가오는 일정
+ *  - 'check' : 18px 체크써클 + title + date  — 최근 할 일
+ */
+function DashboardWidgetSectionSkeleton({
+  icon, title, onAll, marker, rows = 3,
+}: {
+  icon: React.ReactNode
+  title: string
+  onAll: () => void
+  marker: 'dot' | 'check'
+  rows?: number
+}) {
+  return (
+    <div>
+      <WidgetHead icon={icon} title={title} onAll={onAll} />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
+            <SkeletonBase className={marker === 'dot' ? 'h-2 w-2 rounded-full shrink-0' : 'h-[18px] w-[18px] rounded-full shrink-0'} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SkeletonBase className="h-4 w-1/2" />
+            </div>
+            <SkeletonBase className="h-3 w-10 shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -1287,7 +1322,7 @@ function HomeMobile() {
   }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold, t])
 
   return (
-    // 모바일 카드 다이어트 — 카드 없이 섹션 gap(36)이 간격을 담당 (design HomeMobile).
+    // 모바일 카드 다이어트 — 카드 없이 섹션 gap(32)이 간격을 담당 (design HomeMobile).
     <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       <div className="balance-hero">
         <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
