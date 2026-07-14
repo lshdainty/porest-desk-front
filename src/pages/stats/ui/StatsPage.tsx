@@ -1070,7 +1070,7 @@ export const StatsPage = () => {
 
   const HeatmapCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
-    <Section mobile={mobile} contentInset title={t('heatmap.title')}>
+    <Section mobile={mobile} title={t('heatmap.title')}>
       <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
         {t('heatmap.subtitle')}
       </div>
@@ -1468,7 +1468,7 @@ export const StatsPage = () => {
 
   const TrendBig = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
-    <Section mobile={mobile} contentInset title={t('trend.title')} action={PeriodSeg}>
+    <Section mobile={mobile} title={t('trend.title')} action={PeriodSeg}>
       {rangeQ.isLoading ? (
         <>
           <SkeletonBase
@@ -1645,7 +1645,6 @@ export const StatsPage = () => {
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      contentInset
       title={useDailyTrend ? t('trend.dailySavings') : t('trend.monthlySavings')}
       action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.savingsFormula')}</span>}
     >
@@ -1741,7 +1740,6 @@ export const StatsPage = () => {
   const CatTrend = showCatTrend ? (
     <Section
       mobile={mobile}
-      contentInset
       title={t('trend.catTrendTitle')}
       action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.catTrendTop3')}</span>}
     >
@@ -1987,7 +1985,6 @@ export const StatsPage = () => {
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      contentInset
       title={t('compare.categoryTitle', { mom: momLabel })}
       action={
         <div
@@ -2148,7 +2145,6 @@ export const StatsPage = () => {
   const CompareWeekday = (
     <Section
       mobile={mobile}
-      contentInset
       title={t('compare.weekdayTitle')}
       action={
         <div style={{ display: 'flex', gap: 12, fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
