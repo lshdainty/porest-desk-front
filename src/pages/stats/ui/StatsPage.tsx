@@ -470,15 +470,18 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           ))}
         </div>
       </MTile>
-      {/* CompareMetrics — MTile 3개 그리드 (실제 1866~1891 미러: 라벨+값 / 증감) */}
+      {/* CompareMetrics — MTile 3개 그리드 (실제 미러: 라벨+값 / 증감(윗줄)+지난기간(아랫줄) 2줄) */}
       <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
         {[0, 1, 2].map(i => (
-          <MTile key={i} mobile={mobile} style={mobile ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : undefined}>
+          <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
             <div>
               <SkeletonBase className="h-3 w-16 mb-2" />
               <SkeletonBase className={mobile ? 'h-4 w-24' : 'h-5 w-28'} />
             </div>
-            <SkeletonBase className="h-3 w-20" style={{ marginTop: mobile ? 0 : 6 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+              <SkeletonBase className="h-3 w-12" />
+              <SkeletonBase className="h-3 w-20" />
+            </div>
           </MTile>
         ))}
       </div>
@@ -1968,18 +1971,17 @@ export const StatsPage = () => {
         const up = d > 0
         const c = up ? 'var(--fg-expense)' : 'var(--fg-income)'
         return (
-          <MTile key={i} mobile={mobile} style={mobile ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : undefined}>
-            <div>
+          // 앱 _CompareMetricsCard 미러: 라벨+값(좌) / 증감(윗줄)+지난기간(아랫줄) 2줄(우, 우측·하단 정렬)
+          <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>{m.label}</div>
               <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 800, letterSpacing: '-0.02em', marginTop: mobile ? 3 : 6 }}>{cmpMetricVal(m.now, m.count)}</div>
             </div>
-            <div style={{ marginTop: mobile ? 0 : 6, textAlign: mobile ? 'right' : 'left' }}>
-              {d !== 0 && (
-                <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: c }}>
-                  {up ? '▲' : '▼'} {cmpMetricVal(Math.abs(d), m.count)}
-                </span>
-              )}
-              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, textAlign: 'right' }}>
+              <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: d === 0 ? 'var(--fg-tertiary)' : c }}>
+                {d === 0 ? '—' : <>{up ? '▲' : '▼'} {cmpMetricVal(Math.abs(d), m.count)}</>}
+              </span>
+              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
                 {periodPrev} {cmpMetricVal(m.prev, m.count)}
               </span>
             </div>
