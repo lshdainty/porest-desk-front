@@ -1864,6 +1864,8 @@ stats,avgSub.momCalculating,전월 대비 계산 중…,Calculating vs. last mon
 stats,avgSub.momUnavailable,전월 비교 불가,No prior-month comparison
 stats,compare.periodExpense,{{period}} 지출,{{period}} spending
 stats,compare.categoryTitle,카테고리별 {{mom}},By category · {{mom}}
+stats,compare.categoryDeltaTitle,카테고리별 증감,Category changes
+stats,compare.categoryDeltaSort,변화 큰 순,Largest change
 stats,picker.title,기간 선택,Select period
 stats,picker.apply,적용,Apply
 stats,picker.segMonth,월,Month
