@@ -2164,9 +2164,9 @@ export const StatsPage = () => {
           const isSun = i === 6
           return (
             <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
-              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
-                <div style={{ width: '42%', maxWidth: 16, height: `${((wkAgg.now[i] ?? 0) / wkMax) * 100}%`, background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
-                <div style={{ width: '42%', maxWidth: 16, height: `${((wkAgg.prev[i] ?? 0) / wkMax) * 100}%`, background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
+              <div style={{ height: mobile ? 96 : 124, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
+                <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.now[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
+                <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.prev[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
               </div>
               <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: isSun ? 'var(--fg-expense)' : isSat ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>{t(k)}</span>
             </div>
