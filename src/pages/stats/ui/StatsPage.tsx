@@ -1932,9 +1932,10 @@ export const StatsPage = () => {
         )}
       </div>
       {cmpPct != null ? (
-        <div style={{ fontSize: mobile ? 14 : 15, fontWeight: 700, marginTop: 10 }}>
+        // 강조는 "{금액} 더/덜"만 색+bold — 앞뒤("…보다"/"썼어요")는 일반 굵기.
+        <div style={{ fontSize: mobile ? 14 : 15, marginTop: 10 }}>
           {t('compare.vsLastPrefix', { prev: periodPrev })}{' '}
-          <span style={{ color: cmpColor }}>
+          <span style={{ color: cmpColor, fontWeight: 700 }}>
             <MaskAmount>{wonPre()}{KRW(Math.abs(cmpDiff))}</MaskAmount><WonUnit /> {cmpLess ? t('compare.dirLess') : t('compare.dirMore')}
           </span>{' '}
           {t('compare.spentSuffix', { prev: periodPrev })}
