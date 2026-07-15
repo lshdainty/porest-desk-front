@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
@@ -187,7 +187,7 @@ function PorestChartTooltip({
   label,
   rows,
 }: TrendTooltipProps & {
-  rows: { dataKey: string; label: string; color: string | ((v: number) => string); format?: (v: number) => string }[]
+  rows: { dataKey: string; label: string; color: string | ((v: number) => string); border?: string; format?: (v: number) => string }[]
 }) {
   if (!active || !payload || payload.length === 0) return null
   return (
@@ -228,6 +228,9 @@ function PorestChartTooltip({
                 height: 10,
                 borderRadius: 'var(--radius-xs)',
                 background: swatch,
+                // 트랙(회색)처럼 배경과 비슷한 시리즈 구분용 — 범례와 동일 시각.
+                border: row.border ? `1px solid ${row.border}` : undefined,
+                boxSizing: 'border-box',
                 flexShrink: 0,
               }}
             />
@@ -553,6 +556,8 @@ export const StatsPage = () => {
   const [pickerOpen, setPickerOpen] = useState(false)
   // 카테고리 추이 막대 — 터치/호버 중인 월 index (상세 툴팁 노출용)
   const [catActiveIdx, setCatActiveIdx] = useState<number | null>(null)
+  // 비교 탭 요일별 지출 비교 — 수제 grouped bar 위 커스텀 툴팁(hover/터치 좌표 + 인덱스).
+  const [wkTip, setWkTip] = useState<{ i: number; x: number; y: number; w: number } | null>(null)
 
   // 기간·탭 변경 시 드릴다운·툴팁 해제
   useEffect(() => {
@@ -2142,6 +2147,15 @@ export const StatsPage = () => {
     return { idx, delta }
   })()
   const wkDeltaKey = wkDelta.idx >= 0 ? WK_KEYS[wkDelta.idx] : undefined
+  // 컬럼이 flex:1 등폭이라 슬롯폭 = 전체폭/7 로 인덱스 산출 (앱 커스텀 바 터치 계산 정합).
+  const onWkPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    if (rect.width <= 0) return
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const i = Math.max(0, Math.min(6, Math.floor((x / rect.width) * 7)))
+    setWkTip({ i, x, y, w: rect.width })
+  }
   const CompareWeekday = (
     <Section
       mobile={mobile}
@@ -2157,20 +2171,56 @@ export const StatsPage = () => {
         </div>
       }
     >
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
-        {WK_KEYS.map((k, i) => {
-          const isSat = i === 5
-          const isSun = i === 6
-          return (
-            <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
-              <div style={{ height: mobile ? 96 : 124, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
-                <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.now[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
-                <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.prev[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
+      <div
+        style={{ position: 'relative', touchAction: 'pan-y' }}
+        onPointerDown={onWkPointer}
+        onPointerMove={onWkPointer}
+        onPointerLeave={() => setWkTip(null)}
+        onPointerUp={e => { if (e.pointerType !== 'mouse') setWkTip(null) }}
+        onPointerCancel={() => setWkTip(null)}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
+          {WK_KEYS.map((k, i) => {
+            const isSat = i === 5
+            const isSun = i === 6
+            return (
+              <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                <div style={{ height: mobile ? 96 : 124, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
+                  <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.now[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
+                  <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.prev[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
+                </div>
+                <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: isSun ? 'var(--fg-expense)' : isSat ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>{t(k)}</span>
               </div>
-              <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: isSun ? 'var(--fg-expense)' : isSat ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>{t(k)}</span>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
+        {wkTip && (
+          <div
+            style={{
+              position: 'absolute',
+              top: Math.max(0, Math.min(wkTip.y - 38, (mobile ? 140 : 170) - 84)),
+              // 포인터 우측 우선, 우측 절반에선 좌측으로 flip (recharts 동작 정합).
+              ...(wkTip.x < wkTip.w / 2
+                ? { left: wkTip.x + 12 }
+                : { right: wkTip.w - wkTip.x + 12 }),
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          >
+            <PorestChartTooltip
+              active
+              label={t(WK_KEYS[wkTip.i])}
+              payload={[
+                { dataKey: 'now', value: wkAgg.now[wkTip.i] ?? 0 },
+                { dataKey: 'prev', value: wkAgg.prev[wkTip.i] ?? 0 },
+              ]}
+              rows={[
+                { dataKey: 'now', label: periodNow, color: 'var(--fg-brand)' },
+                { dataKey: 'prev', label: periodPrev, color: 'var(--color-surface-input)', border: 'var(--border-default)' },
+              ]}
+            />
+          </div>
+        )}
       </div>
       {wkDeltaKey && wkDelta.delta !== 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
