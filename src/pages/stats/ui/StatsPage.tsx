@@ -2085,7 +2085,9 @@ export const StatsPage = () => {
                   {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 600 }}>{r.name}</div>
+                  {/* 클로드 디자인(이름 13.5/서브 11.5) 정수 스냅 — 이름 label-sm(13)/서브 badge(11).
+                      앱 bodySm(13)/micro(11)와 동값 토큰이라 크로스클라이언트 1px 불일치 해소. */}
+                  <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600 }}>{r.name}</div>
                   <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
                     <MaskAmount>{wonPre()}{KRW(r.prev)}</MaskAmount><WonUnit /> → <MaskAmount>{wonPre()}{KRW(r.now)}</MaskAmount><WonUnit />
                   </div>
@@ -2110,7 +2112,8 @@ export const StatsPage = () => {
                   <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, color }}>
                     {up ? '+' : '−'}<MaskAmount>{wonPre()}{KRW(Math.abs(r.diff))}</MaskAmount><WonUnit />
                   </div>
-                  <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                  {/* 증감률 11 — 클로드 디자인 원본(11)·앱 micro(11) 정합, badge 토큰과 동값. */}
+                  <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
                     {r.prev > 0 ? <>{up ? '▲' : '▼'} {Math.abs(r.pct).toFixed(0)}%</> : '—'}
                   </div>
                 </div>
