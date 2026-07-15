@@ -2075,3 +2075,52 @@ stats,compare.metricDailyAvg,하루 평균,Daily avg
 stats,compare.metricTxCount,거래 건수,Transactions
 stats,compare.metricPerTx,건당 평균,Per transaction
 stats,compare.unitCount,건,
+export,import.tab,가져오기,Import
+export,import.sourceTitle,어떤 앱에서 가져오나요?,Which app are you importing from?
+export,import.sourceDesc,기존에 쓰던 가계부를 고르면 열 구조를 자동으로 맞춰드려요,Pick your previous app and we'll auto-map the columns
+export,import.source.porest,Porest 백업,Porest backup
+export,import.source.porestDesc,내보내기 파일 다시 가져오기,Re-import an export file
+export,import.source.easybudget,편한가계부·머니매니저,EasyBudget · Money Manager
+export,import.source.easybudgetDesc,Excel 백업,Excel backup
+export,import.source.banksalad,뱅크샐러드,Banksalad
+export,import.source.banksaladDesc,가계부 내역 파일,Ledger export file
+export,import.source.toss,토스,Toss
+export,import.source.tossDesc,거래내역 파일,Transaction history
+export,import.source.custom,직접 매핑,Custom
+export,import.source.customDesc,CSV·Excel 직접 연결,Map CSV/Excel yourself
+export,import.uploadTitle,파일 업로드,Upload file
+export,import.uploadDesc,"CSV(.csv) 또는 Excel(.xlsx, .xls) 파일을 올려주세요. 최대 10MB.","Upload a CSV (.csv) or Excel (.xlsx, .xls) file. Up to 10MB."
+export,import.dropTitle,파일을 끌어다 놓거나 클릭해서 선택,Drag & drop or click to choose a file
+export,import.dropHint,.csv · .xlsx · .xls 지원,.csv · .xlsx · .xls supported
+export,import.analyzing,파일 분석 중…,Analyzing file…
+export,import.notice,가져온 데이터는 기존 거래에 추가되며 덮어쓰지 않아요. 미리보기에서 중복·오류를 확인할 수 있어요.,Imported data is added to existing transactions without overwriting. Check duplicates and errors in the preview.
+export,import.fileTitle,가져올 파일,File to import
+export,import.rowsDetected,{{total}}개 행 · 유효 {{valid}}건,{{total}} rows · {{valid}} valid
+export,import.change,변경,Change
+export,import.mapTitle,열 매핑,Column mapping
+export,import.mapDesc,파일의 열을 가계부 항목에 연결하세요. 자동 감지값을 확인하고 바꿀 수 있어요.,Connect file columns to ledger fields. Review auto-detected values and adjust.
+export,import.notMapped,— 가져오지 않음 —,— Don't import —
+export,import.field.date,날짜,Date
+export,import.field.type,수입/지출,Income/Expense
+export,import.field.amount,금액,Amount
+export,import.field.category,카테고리,Category
+export,import.field.asset,자산·결제수단,Asset/Method
+export,import.field.memo,메모,Memo
+export,import.previewDesc,처음 몇 행 미리보기 · 중복 의심 {{dup}}건,Preview of first rows · {{dup}} possible duplicates
+export,import.income,수입,Income
+export,import.expense,지출,Expense
+export,import.dupBadge,중복?,Dup?
+export,import.optionsTitle,가져오기 옵션,Import options
+export,import.optDupSkip,중복 거래 건너뛰기,Skip duplicate transactions
+export,import.optDupSkipDesc,날짜·금액·내용이 같은 {{dup}}건을 제외해요,"Excludes {{dup}} rows with same date, amount & content"
+export,import.optAutoCat,새 카테고리 자동 생성,Auto-create new categories
+export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요,Missing categories are created automatically
+export,import.prev,이전,Back
+export,import.doImport,{{count}}건 가져오기,Import {{count}}
+export,import.doneTitle,가져오기 완료,Import complete
+export,import.doneCount,{{count}}건을 가져왔어요,Imported {{count}} transactions
+export,import.doneDetail,건너뜀 {{skipped}} · 실패 {{failed}},{{skipped}} skipped · {{failed}} failed
+export,import.another,다른 파일 가져오기,Import another file
+export,import.stepUpload,파일 선택,Choose file
+export,import.stepMapping,열 매핑,Map columns
+export,import.stepDone,완료,Done
