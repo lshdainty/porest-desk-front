@@ -20,6 +20,8 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { Input } from '@/shared/ui/input'
 import { Switch } from '@/shared/ui/switch'
 import { downloadBlob } from '@/shared/lib/download'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { DataImportSection } from './DataImportSection'
 import {
   downloadExport,
   fetchExportCounts,
@@ -98,6 +100,7 @@ function buildFilename(format: ExportFormat, types: ExportDataType[], range: Ran
 
 export function DataExportSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('export')
+  const [mode, setMode] = useState<'export' | 'import'>('export')
   const [format, setFormat] = useState<ExportFormat>('CSV')
   const [period, setPeriod] = useState<ExportPeriod>('THIS_MONTH')
   const [customFrom, setCustomFrom] = useState(iso(new Date(new Date().getFullYear(), new Date().getMonth(), 1)))
@@ -167,8 +170,30 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
   const activeTab = preview?.find(tb => tb.type === previewTab) ?? preview?.[0] ?? null
 
+  const modeSeg = (
+    <ToggleGroup
+      type="single"
+      variant="segmented"
+      value={mode}
+      onValueChange={v => v && setMode(v as 'export' | 'import')}
+    >
+      <ToggleGroupItem value="export" className="flex-1">{t('export')}</ToggleGroupItem>
+      <ToggleGroupItem value="import" className="flex-1">{t('import.tab')}</ToggleGroupItem>
+    </ToggleGroup>
+  )
+
+  if (mode === 'import') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {modeSeg}
+        <DataImportSection mobile={mobile} />
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {modeSeg}
       {/* 1. 기간 선택 */}
       <SectionCard title={t('section.periodSelect')}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 8 }}>
