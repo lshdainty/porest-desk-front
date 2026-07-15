@@ -479,7 +479,8 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
             <div>
               <SkeletonBase className="h-3 w-16 mb-2" />
-              <SkeletonBase className={mobile ? 'h-4 w-24' : 'h-5 w-28'} />
+              {/* 값 title-lg(20) 정합 */}
+              <SkeletonBase className="h-5 w-28" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
               <SkeletonBase className="h-3 w-12" />
@@ -491,6 +492,7 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* CompareCategory 프레임(Section) + 4행 증감 로딩 (실제 카테고리별 증감 행 미러) */}
       <Section
         mobile={mobile}
+        contentInset
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-16" />}
       >
@@ -1945,15 +1947,16 @@ export const StatsPage = () => {
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
         {[
-          { lbl: periodNow, amt: totalNow, color: 'var(--fg-brand)', border: false },
-          { lbl: periodPrev, amt: totalPrev, color: 'var(--color-surface-input)', border: true },
+          { lbl: periodNow, amt: totalNow, color: 'var(--fg-brand)', border: false, muted: false },
+          { lbl: periodPrev, amt: totalPrev, color: 'var(--color-surface-input)', border: true, muted: true },
         ].map((m, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, width: 44, flexShrink: 0 }}>{m.lbl}</span>
             <div style={{ flex: 1, height: 14, borderRadius: 999, overflow: 'hidden' }}>
               <div style={{ width: `${(m.amt / cmpBarMax) * 100}%`, height: '100%', borderRadius: 999, background: m.color, border: m.border ? '1px solid var(--border-default)' : 'none', boxSizing: 'border-box' }} />
             </div>
-            <span className="num" style={{ fontSize: 12, fontWeight: 700, width: mobile ? 82 : 96, textAlign: 'right', flexShrink: 0 }}>
+            {/* 지난 기간 금액은 muted(fg-secondary) — 앱 cmpBar 정합, 이번 기간만 primary 강조. */}
+            <span className="num" style={{ fontSize: 12, fontWeight: 700, width: mobile ? 82 : 96, textAlign: 'right', flexShrink: 0, color: m.muted ? 'var(--fg-secondary)' : 'var(--fg-primary)' }}>
               <MaskAmount>{wonPre()}{KRW(m.amt)}</MaskAmount><WonUnit />
             </span>
           </div>
@@ -1980,11 +1983,12 @@ export const StatsPage = () => {
           // 앱 _CompareMetricsCard 미러: 라벨+값(좌) / 증감(윗줄)+지난기간(아랫줄) 2줄(우, 우측·하단 정렬)
           <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>{m.label}</div>
-              <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: 800, letterSpacing: '-0.02em', marginTop: mobile ? 3 : 6 }}>{cmpMetricVal(m.now, m.count)}</div>
+              {/* 앱 크기 정합 — 라벨 caption(12)/값 title-lg(20)/증감 caption(12). */}
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>{m.label}</div>
+              <div className="num" style={{ fontSize: 'var(--text-title-lg)', fontWeight: 800, letterSpacing: '-0.02em', marginTop: mobile ? 3 : 6 }}>{cmpMetricVal(m.now, m.count)}</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, textAlign: 'right' }}>
-              <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: d === 0 ? 'var(--fg-tertiary)' : c }}>
+              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 700, color: d === 0 ? 'var(--fg-tertiary)' : c }}>
                 {d === 0 ? '—' : <>{up ? '▲' : '▼'} {cmpMetricVal(Math.abs(d), m.count)}</>}
               </span>
               <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
@@ -2006,8 +2010,10 @@ export const StatsPage = () => {
 
   const CompareCategory = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
+    // contentInset — 리스트 좌우 살짝 inset(spacing-sm), 다른 리스트(가맹점 등)·앱 정합.
     <Section
       mobile={mobile}
+      contentInset
       title={t('compare.categoryDeltaTitle')}
       action={
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
