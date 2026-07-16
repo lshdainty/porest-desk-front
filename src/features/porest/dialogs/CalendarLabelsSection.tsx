@@ -56,7 +56,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
 
   return (
     <>
-      <ManagerShell>
+      {/* 설정 서브페이지 섹션 간격 spacing-2xl(32) 통일 — 기본 gap-4(16) override */}
+      <ManagerShell className="!gap-[var(--spacing-2xl)]">
         {!mobile && (
           <ManagerHead
             title={t('labelsSection.title')}

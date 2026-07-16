@@ -81,7 +81,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       <section>
         <SectionLabel>{t('theme.label')}</SectionLabel>
         <TileGroup columns={mobile ? 1 : 3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>

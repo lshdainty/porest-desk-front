@@ -520,7 +520,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       {/* 프로필 헤더 */}
       <div
         style={{

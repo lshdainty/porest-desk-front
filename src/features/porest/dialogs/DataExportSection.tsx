@@ -184,7 +184,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
   if (mode === 'import') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         {modeSeg}
         <DataImportSection mobile={mobile} />
       </div>
@@ -192,7 +192,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       {modeSeg}
       {/* 1. 기간 선택 */}
       <SectionCard title={t('section.periodSelect')}>
