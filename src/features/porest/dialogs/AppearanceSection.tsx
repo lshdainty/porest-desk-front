@@ -194,7 +194,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
         letterSpacing: '0.04em',
-        marginBottom: 10,
+        // 라벨↔콘텐츠 간격 앱(PSpace.x8) 정합.
+        marginBottom: 8,
       }}
     >
       {children}
