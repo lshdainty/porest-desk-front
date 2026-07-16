@@ -273,7 +273,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           <BudgetManagerSkeleton mobile={mobile} />
         ) : (
         <>
-        <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
+        <Card>
           <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
@@ -604,11 +604,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   )
 }
 
-/** BudgetManager skeleton — 월 총 예산 카드(brand-tint) + 카테고리별 예산 row 리스트. */
+/** BudgetManager skeleton — 월 총 예산 카드(기본 카드) + 카테고리별 예산 row 리스트. */
 function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
-      <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
+      <Card>
         <CardContent>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div>
