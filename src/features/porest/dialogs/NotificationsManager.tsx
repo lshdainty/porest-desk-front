@@ -326,9 +326,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    // 앱 카드 간 간격(PSpace.x20) 정합 — ManagerShell(gap 16) 대신 gap 20.
+    // 설정 서브페이지 섹션 간격 spacing-2xl(32) 통일(사용자 결정) — 앱 x32 정합.
     // 앱 _Content 하단 SizedBox(x32) 정합 — 최하단 여백 32.
-    <div className="flex flex-col" style={{ gap: 20, paddingBottom: 32 }}>
+    <div className="flex flex-col" style={{ gap: 'var(--spacing-2xl)', paddingBottom: 32 }}>
       {!mobile && (
         <ManagerHead
           title={t('prefs.title')}
