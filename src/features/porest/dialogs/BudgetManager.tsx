@@ -346,7 +346,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
                 {t('manager.spent')}
               </div>
-              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
+              {/* 앱(13)·웹(16) 중간 → 토큰 스냅 14(body-sm) — 앱 body(14)와 동값(사용자 결정). */}
+              <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
               </div>
             </div>
@@ -354,7 +355,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
                 {t('manager.assigned')}
               </div>
-              <div className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700' }}>
+              <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
                 <MaskAmount mask="••••">{KRW(totalAssigned)}</MaskAmount>
               </div>
             </div>
@@ -365,7 +366,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               <div
                 className="num"
                 style={{
-                  fontSize: 'var(--text-body-lg)',
+                  fontSize: 'var(--text-body-sm)',
                   fontWeight: '700',
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
