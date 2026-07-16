@@ -84,7 +84,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       <section>
         <SectionLabel>{t('theme.label')}</SectionLabel>
-        <TileGroup columns={mobile ? 1 : 3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
+        {/* 클로드 디자인 정합(사용자 결정) — 모바일도 3열 세로 스택 타일. */}
+        <TileGroup columns={3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
           {THEME_OPTIONS.map(opt => {
             const swatchBg =
               opt.k === 'dark'
