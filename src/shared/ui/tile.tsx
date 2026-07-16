@@ -59,16 +59,17 @@ const TileItem = React.forwardRef<
         'group/tile relative flex flex-col items-center text-center',
         s.padding,
         s.gap,
-        // shadow 카드 — border 대신 elevation. 선택 시에만 브랜드 보더(레이아웃 안정 위해 항상 border-transparent).
-        'rounded-[var(--radius-lg)] border border-transparent bg-surface-default',
-        'data-[state=checked]:border-[1.5px] data-[state=checked]:border-primary',
-        'data-[state=checked]:bg-[color-mix(in_oklch,var(--color-primary)_8%,transparent)]',
+        // 카드 다이어트(사용자 결정) — 미선택은 투명(카드/그림자 없음), 선택만 brand 보더+subtle 틴트.
+        // 보더 색은 앱 PTile(borderBrand — 다크 light swap) 정합.
+        'rounded-[var(--radius-lg)] border border-transparent bg-transparent',
+        'data-[state=checked]:border-[1.5px] data-[state=checked]:border-[var(--border-brand)]',
+        'data-[state=checked]:bg-[var(--bg-brand-subtle)]',
         'transition-[border-color,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className,
       )}
-      style={{ boxShadow: 'var(--shadow-sm)', ...style }}
+      style={style}
       {...props}
     >
       {swatch != null && (
