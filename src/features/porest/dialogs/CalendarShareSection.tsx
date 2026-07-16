@@ -138,7 +138,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                 <Users size={18} strokeWidth={1.9} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+                <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
                   {t('shareSection.infoTitle')}
                 </div>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
@@ -192,7 +192,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                 <Link size={18} strokeWidth={1.9} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+                <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
                   {t('joinByCode')}
                 </div>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
@@ -282,7 +282,7 @@ function CalendarListSection({
   const list = isLoading ? (
     <ShareListSkeleton />
   ) : calendars.length === 0 ? (
-    <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-body-sm)' }}>
+    <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
       {emptyText}
     </div>
   ) : (
@@ -292,7 +292,7 @@ function CalendarListSection({
   )
   return (
     <div>
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)', padding: '4px 4px 10px' }}>
+      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)', padding: '4px 4px 10px' }}>
         {title}
       </div>
       {mobile ? (
@@ -588,7 +588,7 @@ function CalendarManageDialog({
                   <RoleIcon size={16} strokeWidth={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-body-md)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {member.userName}
                     {isSelf && <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> {t('shareSection.you')}</span>}
                   </div>
