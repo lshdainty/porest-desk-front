@@ -192,7 +192,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('next7Days')}</h3>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('scheduledCount', { count: stats.next7.length })}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* 라벨은 inset 0, 타일만 좌우 살짝 inset(10) — 전체 목록·가계부 패턴 정합 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: mobile ? '0 10px' : undefined }}>
             {stats.next7.map(it => {
               const today = startOfDay(new Date())
               const due = startOfDay(new Date(it.nextExecutionDate))
@@ -619,14 +620,14 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
         </CardContent>
       </Card>
 
-      {/* Next 7 days */}
-      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <CardContent>
+      {/* Next 7 days — 실제와 동일: 모바일 플랫(라벨 0 + 타일 inset 10) / 데스크톱 카드 */}
+      <FlatShell mobile={mobile} cardStyle={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+        <MaybeContent mobile={mobile}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <SkeletonBase className="h-4 w-24" />
             <SkeletonBase className="h-3 w-16" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: mobile ? '0 10px' : undefined }}>
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
@@ -649,11 +650,11 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </MaybeContent>
+      </FlatShell>
 
-      {/* Filter chips + list */}
-      <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+      {/* Filter chips + list — 실제와 동일: 모바일 플랫(라벨 0 + 행 inset 10) */}
+      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -688,7 +689,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
             </div>
           ))}
         </div>
-      </Card>
+      </FlatShell>
     </div>
   )
 }
