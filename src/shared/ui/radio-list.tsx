@@ -17,12 +17,12 @@ const RadioList = React.forwardRef<
   <RadioGroupPrimitive.Root
     ref={ref}
     className={cn(
-      // shadow 카드 — border 대신 elevation. 내부 행 구분은 divide-y 유지.
-      'rounded-[var(--radius-lg)] bg-surface-default overflow-hidden',
+      // 카드 다이어트(사용자 결정) — 카드 셸(shadow/radius/bg) 벗기고 순수 리스트(divide-y 만).
+      // 앱 PRadioList 동일 수정과 세트.
       'divide-y divide-[var(--border-subtle)]',
       className,
     )}
-    style={{ boxShadow: 'var(--shadow-sm)', ...style }}
+    style={style}
     {...props}
   />
 ))
