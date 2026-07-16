@@ -303,7 +303,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
                     alignItems: 'center',
                     gap: mobile ? 12 : 16,
-                    padding: mobile ? '14px 4px' : '14px 20px',
+                    padding: mobile ? '14px 10px' : '14px 20px',
                     borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                   }}
                 >
@@ -336,7 +336,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                   alignItems: 'center',
                   gap: mobile ? 12 : 16,
-                  padding: mobile ? '12px 4px' : '14px 20px',
+                  // 행 좌우 살짝 inset(10) — 가계부 목록 뷰 패턴 정합(라벨·토글은 inset 0).
+                  padding: mobile ? '12px 10px' : '14px 20px',
                   borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
                 }}
               >
@@ -653,7 +654,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
 
       {/* Filter chips + list */}
       <Card style={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 16px 0' : '16px 20px 0', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
@@ -668,7 +669,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
                 gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
                 alignItems: 'center',
                 gap: mobile ? 12 : 16,
-                padding: mobile ? '14px 16px' : '14px 20px',
+                padding: mobile ? '14px 10px' : '14px 20px',
                 borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
               }}
             >
