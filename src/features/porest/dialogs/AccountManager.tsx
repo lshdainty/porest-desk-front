@@ -149,7 +149,13 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           </Button>
         </div>
 
-        <div className="cat-list" style={{ marginTop: -12, borderRadius: 'var(--radius-lg)' }}>
+        {/* 카드 다이어트 — 모바일은 카드(.cat-list) 벗기고 플랫 리스트(앱·카테고리 관리 정합). */}
+        <div
+          className={mobile ? undefined : 'cat-list'}
+          style={mobile
+            ? { display: 'flex', flexDirection: 'column', marginTop: -12 }
+            : { marginTop: -12, borderRadius: 'var(--radius-lg)' }}
+        >
           {isLoading ? (
             <AccountManagerSkeleton mobile={mobile} />
           ) : (
