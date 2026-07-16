@@ -70,7 +70,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
         )}
 
         {/* 안내 카드 */}
-        <Card style={{ background: 'var(--bg-brand-subtle)' }}>
+        {/* 앱 PCard brand 정합(사용자 결정) — subtle 채움 + border-brand 테두리 */}
+        <Card variant="brand">
           <CardContent>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span
@@ -122,7 +123,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
         <div>
           <div
             style={{
-              fontSize: 'var(--text-body-md)',
+              // 섹션 라벨 크기 — 다른 페이지(전체 목록 등) body-sm(14)/700 정합.
+              fontSize: 'var(--text-body-sm)',
               fontWeight: '700',
               color: 'var(--fg-primary)',
               padding: '4px 4px 10px',
