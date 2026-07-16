@@ -54,7 +54,9 @@ const TileItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        'group/tile relative flex items-center text-left',
+        // 세로 스택 타일(사용자 결정, 클로드 디자인) — swatch 위 중앙 + 라벨/설명 중앙, 체크 우상단.
+        // 앱 PTile 동일 수정과 세트.
+        'group/tile relative flex flex-col items-center text-center',
         s.padding,
         s.gap,
         // shadow 카드 — border 대신 elevation. 선택 시에만 브랜드 보더(레이아웃 안정 위해 항상 border-transparent).
@@ -81,13 +83,13 @@ const TileItem = React.forwardRef<
           {swatch}
         </span>
       )}
-      <span className="flex-1 min-w-0">
-        <span className="block text-body font-semibold text-text-primary">{label}</span>
+      <span className="w-full min-w-0">
+        <span className="block text-body font-semibold text-text-primary truncate">{label}</span>
         {description != null && (
-          <span className="block mt-0.5 text-caption text-text-tertiary">{description}</span>
+          <span className="block mt-0.5 text-caption text-text-tertiary truncate">{description}</span>
         )}
       </span>
-      <RadioGroupPrimitive.Indicator className="flex-shrink-0 text-primary">
+      <RadioGroupPrimitive.Indicator className="absolute top-2 right-2 text-primary">
         <Check size={s.check} strokeWidth={2.2} />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
