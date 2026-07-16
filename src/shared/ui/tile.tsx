@@ -90,7 +90,8 @@ const TileItem = React.forwardRef<
           <span className="block mt-0.5 text-caption text-text-tertiary truncate">{description}</span>
         )}
       </span>
-      <RadioGroupPrimitive.Indicator className="absolute top-2 right-2 text-primary">
+      {/* 체크 색은 앱 fgBrand(다크 light swap) 정합 — primary(다크 진파랑)는 어두움. */}
+      <RadioGroupPrimitive.Indicator className="absolute top-2 right-2 text-[var(--fg-brand)]">
         <Check size={s.check} strokeWidth={2.2} />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
