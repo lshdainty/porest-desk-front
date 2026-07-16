@@ -93,7 +93,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 'var(--text-body-md)',
+                    fontSize: 'var(--text-label-sm)',
                     fontWeight: '700',
                     color: 'var(--fg-primary)',
                   }}
@@ -197,7 +197,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
-                            fontSize: 'var(--text-body-md)',
+                            fontSize: 'var(--text-body-sm)',
                             fontWeight: '600',
                             color: 'var(--fg-primary)',
                             letterSpacing: '-0.01em',
