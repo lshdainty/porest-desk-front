@@ -417,7 +417,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             </Button>
           </div>
 
-          <div className="cat-list">
+          {/* 카드 다이어트 — 모바일은 카드(.cat-list) 벗기고 플랫 리스트(앱·카테고리/계좌 관리 정합). */}
+          <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
           {categoryBudgets.length === 0 ? (
             <div className="cat-list__empty">
               <span>{t('manager.emptyCategory')}</span>
@@ -641,7 +642,7 @@ function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
         <SkeletonBase className="h-4 w-36" />
       </div>
 
-      <div className="cat-list">
+      <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
