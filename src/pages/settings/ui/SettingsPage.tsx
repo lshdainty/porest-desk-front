@@ -133,7 +133,10 @@ const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: 'Google' }
 
 export const SettingsPage = () => {
   const { t } = useTranslation('settings')
+  const { t: tCat } = useTranslation('category')
   const { mobile } = useOutletContext<OutletCtx>()
+  // 카테고리 순서 편집 모드 — 디자인 m-subhead 우측 '편집/완료' 토글(모바일 전용).
+  const [catReorder, setCatReorder] = useState(false)
   const { resolvedTheme } = useTheme()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()
@@ -178,6 +181,7 @@ export const SettingsPage = () => {
   // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
   const changeSection = (next: SectionId | 'menu') => {
     setSection(next)
+    setCatReorder(false)
     const p = new URLSearchParams(searchParams)
     if (next === 'menu') p.delete('section')
     else p.set('section', next)
@@ -189,7 +193,7 @@ export const SettingsPage = () => {
   const renderBody = (m: boolean) => {
     if (!activeSection) return null
     switch (activeSection.id) {
-      case 'categories':    return <CategoryManager mobile={m} />
+      case 'categories':    return <CategoryManager mobile={m} reorderMode={m && catReorder} />
       case 'accounts':      return <AccountManager mobile={m} />
       case 'budget':        return <BudgetManager mobile={m} />
       case 'recurring':     return <RecurringManager mobile={m} />
@@ -244,6 +248,17 @@ export const SettingsPage = () => {
           <h2 style={{ flex: 1, margin: 0, fontSize: 'var(--text-title-md)', fontWeight: '600', letterSpacing: '-0.012em' }}>
             {activeSection ? t(activeSection.labelKey) : ''}
           </h2>
+          {/* 카테고리 순서 편집 토글 — 디자인 m-subhead__action-btn ('편집'↔'완료') */}
+          {section === 'categories' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCatReorder(v => !v)}
+              style={{ color: 'var(--fg-brand)', fontWeight: 700, flexShrink: 0 }}
+            >
+              {catReorder ? tCat('reorderDone') : tCat('reorderEdit')}
+            </Button>
+          )}
         </div>
         {/* 모바일 섹션 본문 스크롤 — scrollbar 숨김(스크롤 기능 유지). 데스크톱/태블릿은 별도 분기라 무관. */}
         {/* 앱 설정 계열 화면(ListView x20/x24) 정합 — 상하 24 / 좌우 20 */}

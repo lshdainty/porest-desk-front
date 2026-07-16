@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight, GripVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import {
@@ -45,7 +45,8 @@ import { CategoryEditDialog, getPaletteByColor } from './CategoryEditDialog'
 
 type EditingState = ExpenseCategory | { kind: 'new'; parentRowId?: number | null } | null
 
-export function CategoryManager({ mobile }: { mobile: boolean }) {
+/** reorderMode — 모바일 순서 편집(디자인 editMode): 켜야만 grip 노출·드래그 가능, 하위 강제 표시. */
+export function CategoryManager({ mobile, reorderMode = false }: { mobile: boolean; reorderMode?: boolean }) {
   const { t } = useTranslation('category')
   const { t: tc } = useTranslation('common')
   const { t: te } = useTranslation('expense')
@@ -125,6 +126,11 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
   }, [list, tab, query])
 
   const submitting = createMut.isPending || updateMut.isPending
+
+  // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
+  useEffect(() => {
+    if (reorderMode) setQuery('')
+  }, [reorderMode])
 
   const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
     updateMut.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
@@ -228,22 +234,29 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                 </TabsList>
               </Tabs>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
-                <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-                <Input
-                  search
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder={t('searchPlaceholder')}
-                  className="w-full min-w-0 pl-9"
-                />
+            {reorderMode ? (
+              // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
+              <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
+                {t('reorderHint')}
               </div>
-              <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                <Plus size={14} strokeWidth={2.4} />
-                {t('add')}
-              </Button>
-            </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
+                  <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+                  <Input
+                    search
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder={t('searchPlaceholder')}
+                    className="w-full min-w-0 pl-9"
+                  />
+                </div>
+                <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
+                  <Plus size={14} strokeWidth={2.4} />
+                  {t('add')}
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <div style={MANAGER_LAYOUT.toolbarStyle}>
@@ -268,7 +281,8 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
           </div>
         )}
 
-        <div className="cat-list">
+        {/* 카드 다이어트 — 모바일은 카드(.cat-list: surface+shadow+radius) 벗기고 플랫 리스트(앱 정합). */}
+        <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
           {isLoading ? (
             <CategoryManagerSkeleton mobile={mobile} />
           ) : list.length === 0 ? (
@@ -291,6 +305,7 @@ export function CategoryManager({ mobile }: { mobile: boolean }) {
                     parent={parent}
                     children_={children}
                     mobile={mobile}
+                    reorderMode={reorderMode}
                     isCollapsed={collapsed.has(parent.rowId)}
                     onToggle={() => toggleCollapse(parent.rowId)}
                     onEdit={(c) => setEditing(c)}
@@ -376,7 +391,8 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
         // eslint-disable-next-line react/no-array-index-key
         <div key={i}>
           <div className={MANAGE_ROW.className}>
-            <SkeletonBase className="h-4 w-4 shrink-0" />
+            {/* grip 은 모바일 평시엔 없음(편집 모드 전용) — 스켈레톤도 미러 */}
+            {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
             <SkeletonBase className="h-4 w-4 shrink-0" />
             <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
             <div style={MANAGE_ROW.textStyle}>
@@ -398,7 +414,7 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
               {Array.from({ length: e.childCount }).map((_, j) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <div key={j} className={MANAGE_ROW.className}>
-                  <SkeletonBase className="h-4 w-4 shrink-0" />
+                  {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
                   <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
                   <div style={MANAGE_ROW.textStyle}>
                     <SkeletonBase className="h-4 w-24" />
@@ -425,6 +441,7 @@ function ParentBlock({
   parent,
   children_,
   mobile,
+  reorderMode = false,
   isCollapsed,
   onToggle,
   onEdit,
@@ -436,6 +453,7 @@ function ParentBlock({
   parent: ExpenseCategory
   children_: ExpenseCategory[]
   mobile: boolean
+  reorderMode?: boolean
   isCollapsed: boolean
   onToggle: () => void
   onEdit: (c: ExpenseCategory) => void
@@ -449,6 +467,7 @@ function ParentBlock({
       <SortableRow
         cat={parent}
         mobile={mobile}
+        reorderMode={reorderMode}
         isParent
         hasChildren={children_.length > 0}
         isCollapsed={isCollapsed}
@@ -457,7 +476,8 @@ function ParentBlock({
         onDelete={() => onDelete(parent)}
         onAddChild={onAddChild}
       />
-      {!isCollapsed && children_.length > 0 && (
+      {/* 편집 모드는 하위 강제 표시(디자인 editMode || expanded) — 접힘 상태 무시. */}
+      {(reorderMode || !isCollapsed) && children_.length > 0 && (
         <div style={{ paddingLeft: 28 }}>
           <DndContext
             sensors={dndSensors}
@@ -470,6 +490,7 @@ function ParentBlock({
                   key={c.rowId}
                   cat={c}
                   mobile={mobile}
+                  reorderMode={reorderMode}
                   onEdit={() => onEdit(c)}
                   onDelete={() => onDelete(c)}
                 />
@@ -485,6 +506,7 @@ function ParentBlock({
 function SortableRow({
   cat,
   mobile,
+  reorderMode = false,
   isParent,
   hasChildren,
   isCollapsed,
@@ -495,6 +517,7 @@ function SortableRow({
 }: {
   cat: ExpenseCategory
   mobile: boolean
+  reorderMode?: boolean
   isParent?: boolean
   hasChildren?: boolean
   isCollapsed?: boolean
@@ -514,27 +537,31 @@ function SortableRow({
     transition,
     opacity: isDragging ? 0.6 : 1,
   }
+  // 모바일은 편집 모드에서만 grip·드래그(디자인 editMode). 데스크톱은 항상.
+  const showGrip = !mobile || reorderMode
 
   return (
     <div ref={setNodeRef} style={style} className={MANAGE_ROW.className}>
-      <button
-        type="button"
-        aria-label={t('dragReorder')}
-        {...attributes}
-        {...listeners}
-        style={{
-          cursor: 'grab',
-          touchAction: 'none',
-          background: 'transparent',
-          border: 0,
-          color: 'var(--fg-tertiary)',
-          padding: 0,
-          display: 'inline-flex',
-        }}
-      >
-        <GripVertical size={16} />
-      </button>
-      {isParent && hasChildren && (
+      {showGrip && (
+        <button
+          type="button"
+          aria-label={t('dragReorder')}
+          {...attributes}
+          {...listeners}
+          style={{
+            cursor: 'grab',
+            touchAction: 'none',
+            background: 'transparent',
+            border: 0,
+            color: 'var(--fg-tertiary)',
+            padding: 0,
+            display: 'inline-flex',
+          }}
+        >
+          <GripVertical size={16} />
+        </button>
+      )}
+      {isParent && hasChildren && !reorderMode && (
         <button
           type="button"
           onClick={onToggle}
@@ -587,7 +614,7 @@ function SortableRow({
             <Trash2 size={13} />
           </Button>
         </div>
-      ) : (
+      ) : reorderMode ? null : (
         <button style={MANAGE_ROW.moreStyle} onClick={onEdit}>
           <ChevronRight size={18} />
         </button>
