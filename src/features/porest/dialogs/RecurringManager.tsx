@@ -158,9 +158,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Summary stats — 모바일 카드 다이어트: 셸 카드 벗김 */}
-      <FlatShell mobile={mobile} cardStyle={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <MaybeContent mobile={mobile}>
+      {/* Summary stats — raised 카드(가계부 취합·예산 히어로 정합, 사용자 결정) */}
+      <Card variant="raised">
+        <CardContent>
           {mobile ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -181,8 +181,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
             </div>
           )}
-        </MaybeContent>
-      </FlatShell>
+        </CardContent>
+      </Card>
 
       {/* Next 7 days — 모바일 카드 다이어트: 셸 카드 벗김 (내부 sunken 타일 유지) */}
       {stats.next7.length > 0 && (
@@ -604,8 +604,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Summary stats */}
-      <Card style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
+      {/* Summary stats — raised(실제와 동일) */}
+      <Card variant="raised">
         <CardContent>
           <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: mobile ? 12 : 20 }}>
             {Array.from({ length: 4 }).map((_, i) => (
