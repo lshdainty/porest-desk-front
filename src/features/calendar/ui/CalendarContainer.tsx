@@ -291,7 +291,8 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           <PopoverAnchor asChild>
             <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
           </PopoverAnchor>
-          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
+          {/* 새 상세(시간블록·D-day) 레이아웃 폭 확보 — 디자인 dialog(md) 근사 */}
+          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
             {selectedEvent && (
               <EventDetailPopover
                 event={selectedEvent}

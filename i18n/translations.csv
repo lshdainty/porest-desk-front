@@ -2124,3 +2124,12 @@ export,import.another,다른 파일 가져오기,Import another file
 export,import.stepUpload,파일 선택,Choose file
 export,import.stepMapping,열 매핑,Map columns
 export,import.stepDone,완료,Done
+calendar,detail.start,시작,Start
+calendar,detail.end,종료,End
+calendar,detail.dday,D-DAY,D-DAY
+calendar,detail.ddayLeft,D-{{n}},D-{{n}}
+calendar,detail.ddayPast,{{n}}일 지남,{{n}}d ago
+calendar,detail.durationH,{{h}}시간,{{h}}h
+calendar,detail.durationHM,{{h}}시간 {{m}}분,{{h}}h {{m}}m
+calendar,detail.durationM,{{m}}분,{{m}}m
+calendar,detail.memo,메모,Memo
