@@ -408,8 +408,8 @@ export const BudgetPage = () => {
 
   // ---- Cards ----
   const HeaderCard = (
-    // brand 틴트 제거(사용자 결정) — 캘린더 월 헤더 카드와 동일한 기본 카드.
-    <Card>
+    // 가계부 취합 카드 정합(사용자 결정) — raised(surface-raised + shadow-lg) 히어로.
+    <Card variant="raised">
       <CardContent>
       <div
         style={{
