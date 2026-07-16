@@ -124,8 +124,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
         <div>
           <div
             style={{
-              // 섹션 라벨 크기 — 다른 페이지(전체 목록 등) body-sm(14)/700 정합.
-              fontSize: 'var(--text-body-sm)',
+              // 섹션 라벨 — 캘린더 관리·공유("내 캘린더 · N")와 동일: label-sm(13, 앱 bodySm)/700.
+              fontSize: 'var(--text-label-sm)',
               fontWeight: '700',
               color: 'var(--fg-primary)',
               padding: '4px 4px 10px',
