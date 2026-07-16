@@ -2133,3 +2133,6 @@ calendar,detail.durationH,{{h}}시간,{{h}}h
 calendar,detail.durationHM,{{h}}시간 {{m}}분,{{h}}h {{m}}m
 calendar,detail.durationM,{{m}}분,{{m}}m
 calendar,detail.memo,메모,Memo
+category,reorderEdit,편집,Edit
+category,reorderDone,완료,Done
+category,reorderHint,핸들을 잡고 위·아래로 끌어 순서를 바꿔요. 상위 카테고리끼리·하위 카테고리끼리 이동돼요.,Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
