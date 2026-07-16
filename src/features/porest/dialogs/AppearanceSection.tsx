@@ -86,38 +86,30 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         <SectionLabel>{t('theme.label')}</SectionLabel>
         {/* 클로드 디자인 정합(사용자 결정) — 모바일도 3열 세로 스택 타일. */}
         <TileGroup columns={3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
-          {THEME_OPTIONS.map(opt => {
-            const swatchBg =
-              opt.k === 'dark'
-                ? 'oklch(0.205 0.022 110)'
-                : opt.k === 'light'
-                ? '#ffffff'
-                : 'linear-gradient(135deg, #fff 50%, oklch(0.205 0.022 110) 50%)'
-            const swatchColor = opt.k === 'dark' ? '#fff' : 'var(--fg-primary)'
-            return (
-              <TileItem
-                key={opt.k}
-                value={opt.k}
-                label={t(opt.labelKey)}
-                description={t(opt.descKey)}
-                swatch={
-                  <span
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      background: swatchBg,
-                      color: swatchColor,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <opt.Icon size={18} strokeWidth={1.9} />
-                  </span>
-                }
-              />
-            )
-          })}
+          {THEME_OPTIONS.map(opt => (
+            // 스와치 배경 앱 정합(사용자 결정) — 테마 실색 미리보기 대신 bg-muted + fg-secondary 아이콘.
+            <TileItem
+              key={opt.k}
+              value={opt.k}
+              label={t(opt.labelKey)}
+              description={t(opt.descKey)}
+              swatch={
+                <span
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'var(--bg-muted)',
+                    color: 'var(--fg-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <opt.Icon size={18} strokeWidth={1.9} />
+                </span>
+              }
+            />
+          ))}
         </TileGroup>
       </section>
 
