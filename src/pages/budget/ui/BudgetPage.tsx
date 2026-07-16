@@ -408,7 +408,8 @@ export const BudgetPage = () => {
 
   // ---- Cards ----
   const HeaderCard = (
-    <Card style={{ background: 'linear-gradient(var(--bg-brand-tint), var(--bg-brand-tint)), var(--bg-surface)' }}>
+    // brand 틴트 제거(사용자 결정) — 캘린더 월 헤더 카드와 동일한 기본 카드.
+    <Card>
       <CardContent>
       <div
         style={{
