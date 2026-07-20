@@ -139,6 +139,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           />
         )}
 
+        {/* 총금액 label + list = 항상 한 div 묶음, 사이 gap 0(사용자 결정). */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             {t('manager.totalPrefix')} <MaskAmount>{wonPre()}{KRW(totalInTab)}</MaskAmount>
@@ -154,8 +156,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <div
           className={mobile ? undefined : 'cat-list'}
           style={mobile
-            ? { display: 'flex', flexDirection: 'column', marginTop: -12 }
-            : { marginTop: -12, borderRadius: 'var(--radius-lg)' }}
+            ? { display: 'flex', flexDirection: 'column' }
+            : { borderRadius: 'var(--radius-lg)' }}
         >
           {isLoading ? (
             <AccountManagerSkeleton mobile={mobile} />
@@ -265,6 +267,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
               )}
             </>
           )}
+        </div>
         </div>
 
       </ManagerShell>
