@@ -192,8 +192,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('next7Days')}</h3>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('scheduledCount', { count: stats.next7.length })}</span>
           </div>
-          {/* 라벨은 inset 0, 타일만 좌우 살짝 inset(10) — 전체 목록·가계부 패턴 정합 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: mobile ? '0 10px' : undefined }}>
+          {/* 다가오는 7일 타일은 헤더와 좌우 정렬(inset 0) — 추가 좌우 inset 제거(사용자 결정) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {stats.next7.map(it => {
               const today = startOfDay(new Date())
               const due = startOfDay(new Date(it.nextExecutionDate))
@@ -627,7 +627,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
             <SkeletonBase className="h-4 w-24" />
             <SkeletonBase className="h-3 w-16" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: mobile ? '0 10px' : undefined }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
