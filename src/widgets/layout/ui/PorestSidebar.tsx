@@ -18,6 +18,10 @@ import {
 } from '@/shared/ui/sidebar'
 import { useCurrentUser } from '@/features/user'
 import { useHasSecurities } from '@/features/subscription/model/useSubscription'
+import { useTheme } from '@/shared/ui/theme-provider'
+import Logo from '@/shared/assets/img/porest.svg'
+import LogoDark from '@/shared/assets/img/porest_dark.svg'
+import LogoIcon from '@/shared/assets/img/porest_logo.svg'
 
 export interface NavItem {
   id: string
@@ -45,6 +49,7 @@ export const NAV: NavItem[] = [
 ]
 
 export function PorestSidebar() {
+  const { theme } = useTheme()
   const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
@@ -87,21 +92,18 @@ export function PorestSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
+            {/* 새 로고 — 확장: 풀 로고(porest desk, 라이트/다크), 접힘: 마크만 */}
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-              <div
-                className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg text-white"
-                style={{ background: 'linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong))' }}
-              >
-                <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '800', letterSpacing: '-0.022em' }}>P</span>
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold" style={{ color: 'var(--fg-brand-strong)', letterSpacing: '-0.022em' }}>
-                  POREST
-                </span>
-                <span className="truncate text-xs" style={{ color: 'var(--fg-tertiary)' }}>
-                  DESK
-                </span>
-              </div>
+              <img
+                src={LogoIcon}
+                alt="POREST Desk"
+                className="hidden size-8 shrink-0 group-data-[collapsible=icon]:block"
+              />
+              <img
+                src={theme === 'light' ? Logo : LogoDark}
+                alt="POREST Desk"
+                className="h-7 group-data-[collapsible=icon]:hidden"
+              />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
