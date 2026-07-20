@@ -5,13 +5,22 @@ import { Spinner } from '@/shared/ui/spinner'
 import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
 import { generateCodeVerifier, codeChallenge, generateState, savePkce } from '@/features/auth/lib/pkce'
-import { useTheme } from '@/shared/ui/theme-provider'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { cn } from '@/shared/lib'
 import loginBG from '@/shared/assets/img/login_bg.png'
-import Logo from '@/shared/assets/img/porest.svg'
-import LogoDark from '@/shared/assets/img/porest_dark.svg'
+
+/** 브랜드 마크(rect 4단 나무) — 인라인 svg 라 fg-brand 토큰으로 다크 자동 전환. */
+function BrandMark({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="var(--fg-brand)" aria-hidden>
+      <rect x="39" y="18" width="22" height="12" rx="6" />
+      <rect x="30" y="36" width="40" height="12" rx="6" />
+      <rect x="21" y="54" width="58" height="12" rx="6" />
+      <rect x="44.5" y="72" width="11" height="10" rx="5" />
+    </svg>
+  )
+}
 
 export const LoginPage = () => {
   if (hasToken()) {
@@ -46,7 +55,6 @@ export const LoginPage = () => {
 
 const LoginForm = () => {
   const { t } = useTranslation('login')
-  const { theme } = useTheme()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   const handleSsoRedirect = async () => {
@@ -70,8 +78,19 @@ const LoginForm = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col justify-center gap-6">
-        <div className="flex flex-col items-center text-center">
-          <img src={theme === 'light' ? Logo : LogoDark} alt="POREST Desk" />
+        {/* 앱 로그인 레이아웃 정합 — 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지). */}
+        <div className="flex items-center justify-center gap-3">
+          <BrandMark size={40} />
+          <span
+            style={{
+              fontSize: 'var(--text-display-md)',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: 'var(--fg-primary)',
+            }}
+          >
+            Porest Desk
+          </span>
         </div>
         <div className="text-center">
           <p className="text-muted-foreground mb-6">
