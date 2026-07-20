@@ -819,10 +819,9 @@ group,editComment,댓글 수정,Edit Comment
 group,noComments,댓글이 없습니다,No comments yet
 group,commentPlaceholder,댓글을 입력하세요,Enter a comment
 group,reply,답글,Reply
-login,sso.description,로그인하려면 아래 버튼을 클릭하세요.,Click the button below to log in.
-login,sso.login,로그인,Log in
+login,sso.description,SSO 계정으로 로그인하세요,Sign in with your SSO account
+login,sso.login,SSO 로그인,SSO login
 login,sso.redirecting,로그인 페이지로 이동 중...,Redirecting to login...
-login,sso.notice,통합 인증 시스템(SSO)을 통해 로그인합니다.,Log in through the Single Sign-On (SSO) system.
 login,authenticating,인증 중…,Authenticating…
 expense,budget.save,저장,Save
 expense,budget.deleteConfirm.title,예산 삭제,Delete Budget

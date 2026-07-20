@@ -78,9 +78,10 @@ const LoginForm = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col justify-center gap-6">
-        {/* 앱 로그인 레이아웃 정합 — 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지). */}
-        <div className="flex items-center justify-center gap-3">
-          <BrandMark size={40} />
+        {/* 앱 로그인 레이아웃 정합 — 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지).
+            마크 48 / gap 8 — 아이콘 확대·간격 축소(사용자 결정). */}
+        <div className="flex items-center justify-center gap-2">
+          <BrandMark size={48} />
           <span
             style={{
               fontSize: 'var(--text-display-md)',
@@ -106,9 +107,6 @@ const LoginForm = () => {
             {isRedirecting && <Spinner size="sm" className="mr-2" />}
             {isRedirecting ? t('sso.redirecting') : t('sso.login')}
           </Button>
-        </div>
-        <div className="text-center text-sm text-muted-foreground">
-          <p>{t('sso.notice')}</p>
         </div>
       </div>
     </div>
