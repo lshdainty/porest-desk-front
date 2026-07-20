@@ -134,7 +134,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           onValueChange={(v) => v && setSortBy(v as SortKey)}
           className="w-auto"
         >
-          <TabsList variant="pill" size="sm">
+          <TabsList variant="pills" size="sm">
             {(
               [
                 { k: 'used', l: t('preset.sortUsed') },
