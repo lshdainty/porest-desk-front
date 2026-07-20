@@ -91,7 +91,8 @@ export function PorestSidebar() {
             {/* 로그인 로고 미러(마크 svg + 실제 폰트 텍스트, gap 0) 축소판 — 합성 이미지 금지.
                 확장: 마크+텍스트 중앙정렬, 접힘: 마크만. fg-brand 토큰이라 다크 자동 전환. */}
             <SidebarMenuButton size="lg" className="justify-center gap-0 data-[state=open]:bg-sidebar-accent">
-              <BrandMark size={32} className="shrink-0" />
+              {/* 펼침 56(사용자 결정) / 접힘은 아이콘 레일 폭에 맞춰 CSS 로 32 강제. */}
+              <BrandMark size={56} className="shrink-0 group-data-[collapsible=icon]:size-8" />
               <span
                 className="group-data-[collapsible=icon]:hidden"
                 style={{
