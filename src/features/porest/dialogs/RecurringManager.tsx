@@ -37,7 +37,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
 const DROP_ITEM_STYLE = {
-  display: 'flex', alignItems: 'center', gap: 8,
+  display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)',
   width: '100%', padding: '10px 14px',
   border: 'none', background: 'transparent',
   cursor: 'pointer', textAlign: 'left' as const, fontFamily: 'inherit',
@@ -157,24 +157,24 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
       {/* Summary stats — raised 카드(가계부 취합·예산 히어로 정합, 사용자 결정) */}
       <Card variant="raised">
         <CardContent>
           {mobile ? (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)' }}>
                 <RecStat label={t('statActive')} value={t('countItems', { count: stats.count })} Icon={Repeat} />
                 <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
               </div>
               <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)' }}>
                 <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
                 <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               </div>
             </>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-xl)' }}>
               <RecStat label={t('statActive')} value={t('countItems', { count: stats.count })} Icon={Repeat} />
               <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
               <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
@@ -193,7 +193,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('scheduledCount', { count: stats.next7.length })}</span>
           </div>
           {/* 다가오는 7일 타일은 헤더와 좌우 정렬(inset 0) — 추가 좌우 inset 제거(사용자 결정) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
             {stats.next7.map(it => {
               const today = startOfDay(new Date())
               const due = startOfDay(new Date(it.nextExecutionDate))
@@ -208,7 +208,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    gap: 'var(--spacing-md)',
                     padding: '10px 12px',
                     borderRadius: 'var(--radius-sm)',
                     background: isToday ? 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' : 'var(--bg-sunken)',
@@ -268,7 +268,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ padding: mobile ? 0 : '16px 20px 0' }}>
           {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
             <div style={{ flex: 1 }} />
             <Button variant="accent" size="sm" onClick={() => setAdding(true)}>
@@ -358,7 +358,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 18)}
                 </span>
                 <div style={{ minWidth: 0, opacity: isActive ? 1 : 0.55 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 2 }}>
                     <span
                       style={{
                         fontSize: 'var(--text-body-sm)',
@@ -434,7 +434,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
                   {mobile ? (
                     <>
                       <span
@@ -605,7 +605,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 /** RecurringManager skeleton — summary 4 stat 카드 + 다가오는 7일 + 전체 목록. */
 function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
       {/* Summary stats — raised(실제와 동일) */}
       <Card variant="raised">
         <CardContent>
@@ -627,14 +627,14 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
             <SkeletonBase className="h-4 w-24" />
             <SkeletonBase className="h-3 w-16" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 12,
+                  gap: 'var(--spacing-md)',
                   padding: '10px 12px',
                   borderRadius: 'var(--radius-tile)',
                   background: 'var(--bg-sunken)',
@@ -655,7 +655,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
 
       {/* Filter chips + list — 실제와 동일: 모바일 플랫(라벨 0 + 행 inset 10) */}
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
@@ -680,7 +680,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
                 <SkeletonBase className="h-3 w-2/3" />
               </div>
               {!mobile && <SkeletonBase className="h-4 w-24 ml-auto" />}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
                 {mobile && <SkeletonBase className="h-4 w-20 mr-1" />}
                 <SkeletonBase className="h-8 w-8 rounded-md" />
                 <SkeletonBase className="h-8 w-8 rounded-md" />
