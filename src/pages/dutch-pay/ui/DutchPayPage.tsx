@@ -31,7 +31,8 @@ import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { KRW, isEn } from '@/shared/lib/porest/format'
-import { MaskAmount, HideUnit, WonUnit, wonPre } from '@/shared/lib/porest/hide-amounts'
+import { MaskAmount, HideUnit, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 

@@ -2,11 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
+import { disablePdHideAmounts, enablePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'

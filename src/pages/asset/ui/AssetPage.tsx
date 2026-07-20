@@ -12,15 +12,8 @@ import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-  wonPre,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
