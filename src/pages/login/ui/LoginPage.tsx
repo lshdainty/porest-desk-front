@@ -30,7 +30,8 @@ export const LoginPage = () => {
       className="flex min-h-svh flex-col items-center justify-center p-6"
       style={{ background: 'var(--bg-surface)' }}
     >
-      <div className="w-full max-w-sm">
+      {/* max-w-sm 금지 — porest --spacing-sm(8px) 이 Tailwind 스케일을 가려 8px 로 컴파일됨. */}
+      <div className="w-full max-w-[24rem]">
         <LoginForm />
       </div>
     </div>
