@@ -18,10 +18,7 @@ import {
 } from '@/shared/ui/sidebar'
 import { useCurrentUser } from '@/features/user'
 import { useHasSecurities } from '@/features/subscription/model/useSubscription'
-import { useTheme } from '@/shared/ui/theme-provider'
 import { BrandMark } from '@/shared/ui/brand-mark'
-import Logo from '@/shared/assets/img/porest.svg'
-import LogoDark from '@/shared/assets/img/porest_dark.svg'
 
 export interface NavItem {
   id: string
@@ -49,7 +46,6 @@ export const NAV: NavItem[] = [
 ]
 
 export function PorestSidebar() {
-  const { resolvedTheme } = useTheme()
   const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
@@ -92,17 +88,21 @@ export function PorestSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            {/* 새 로고 — 확장: 풀 로고(porest desk, 라이트/다크) 중앙정렬, 접힘: 마크만
-                (BrandMark 는 fg-brand 토큰이라 다크에서 자동으로 밝게). */}
-            <SidebarMenuButton size="lg" className="justify-center data-[state=open]:bg-sidebar-accent">
-              <span className="hidden shrink-0 items-center justify-center group-data-[collapsible=icon]:flex">
-                <BrandMark size={32} />
+            {/* 로그인 로고 미러(마크 svg + 실제 폰트 텍스트, gap 0) 축소판 — 합성 이미지 금지.
+                확장: 마크+텍스트 중앙정렬, 접힘: 마크만. fg-brand 토큰이라 다크 자동 전환. */}
+            <SidebarMenuButton size="lg" className="justify-center gap-0 data-[state=open]:bg-sidebar-accent">
+              <BrandMark size={32} className="shrink-0" />
+              <span
+                className="group-data-[collapsible=icon]:hidden"
+                style={{
+                  fontSize: 'var(--text-title-lg)',
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  color: 'var(--fg-primary)',
+                }}
+              >
+                Porest Desk
               </span>
-              <img
-                src={resolvedTheme === 'light' ? Logo : LogoDark}
-                alt="POREST Desk"
-                className="h-7 group-data-[collapsible=icon]:hidden"
-              />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
