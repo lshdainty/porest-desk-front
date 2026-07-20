@@ -3,6 +3,7 @@ import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { renderIcon } from '@/shared/lib'
 import { KRW } from '@/shared/lib/porest/format'
@@ -254,18 +255,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       </span>
                     )}
                     {!lock && (
-                      <span
-                        style={{
-                          fontSize: 'var(--text-badge)',
-                          fontWeight: '600',
-                          padding: '1px 5px',
-                          background: 'var(--bg-sunken)',
-                          color: 'var(--fg-tertiary)',
-                          borderRadius: 'var(--radius-xs)',
-                        }}
-                      >
-                        {t('preset.amountEmpty')}
-                      </span>
+                      // badge.md secondary(neutral) — surface-input bg + text-primary. raw span→Badge(사용자 결정).
+                      <Badge variant="secondary">{t('preset.amountEmpty')}</Badge>
                     )}
                   </div>
                   <div
