@@ -64,7 +64,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
       {/* 묶음 1 — 배너 + 취합카드(상단 정보 블록). 내부 gap md, 최상위 16 으로 묶음 2 와 분리(사용자 결정). */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
       {/* Intro */}
