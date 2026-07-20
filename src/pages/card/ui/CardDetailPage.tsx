@@ -23,7 +23,8 @@ export const CardDetailPage = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4 px-5 py-6 md:p-6">
+    // max-w-3xl 금지 — porest --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
+    <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 md:p-6">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1">
         <ChevronLeft className="h-4 w-4" />
         {t('cardDetail.back')}
