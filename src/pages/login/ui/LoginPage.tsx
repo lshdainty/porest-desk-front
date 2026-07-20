@@ -6,18 +6,7 @@ import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
 import { generateCodeVerifier, codeChallenge, generateState, savePkce } from '@/features/auth/lib/pkce'
 import { Button } from '@/shared/ui/button'
-
-/** 브랜드 마크(rect 4단 나무) — 인라인 svg 라 fg-brand 토큰으로 다크 자동 전환. */
-function BrandMark({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="var(--fg-brand)" aria-hidden>
-      <rect x="39" y="18" width="22" height="12" rx="6" />
-      <rect x="30" y="36" width="40" height="12" rx="6" />
-      <rect x="21" y="54" width="58" height="12" rx="6" />
-      <rect x="44.5" y="72" width="11" height="10" rx="5" />
-    </svg>
-  )
-}
+import { BrandMark } from '@/shared/ui/brand-mark'
 
 export const LoginPage = () => {
   if (hasToken()) {

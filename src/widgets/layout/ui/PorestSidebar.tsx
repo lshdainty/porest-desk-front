@@ -19,9 +19,9 @@ import {
 import { useCurrentUser } from '@/features/user'
 import { useHasSecurities } from '@/features/subscription/model/useSubscription'
 import { useTheme } from '@/shared/ui/theme-provider'
+import { BrandMark } from '@/shared/ui/brand-mark'
 import Logo from '@/shared/assets/img/porest.svg'
 import LogoDark from '@/shared/assets/img/porest_dark.svg'
-import LogoIcon from '@/shared/assets/img/porest_logo.svg'
 
 export interface NavItem {
   id: string
@@ -49,7 +49,7 @@ export const NAV: NavItem[] = [
 ]
 
 export function PorestSidebar() {
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
   const { t } = useTranslation('layout')
   const location = useLocation()
   const navigate = useNavigate()
@@ -92,15 +92,14 @@ export function PorestSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            {/* 새 로고 — 확장: 풀 로고(porest desk, 라이트/다크), 접힘: 마크만 */}
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+            {/* 새 로고 — 확장: 풀 로고(porest desk, 라이트/다크) 중앙정렬, 접힘: 마크만
+                (BrandMark 는 fg-brand 토큰이라 다크에서 자동으로 밝게). */}
+            <SidebarMenuButton size="lg" className="justify-center data-[state=open]:bg-sidebar-accent">
+              <span className="hidden shrink-0 items-center justify-center group-data-[collapsible=icon]:flex">
+                <BrandMark size={32} />
+              </span>
               <img
-                src={LogoIcon}
-                alt="POREST Desk"
-                className="hidden size-8 shrink-0 group-data-[collapsible=icon]:block"
-              />
-              <img
-                src={theme === 'light' ? Logo : LogoDark}
+                src={resolvedTheme === 'light' ? Logo : LogoDark}
                 alt="POREST Desk"
                 className="h-7 group-data-[collapsible=icon]:hidden"
               />
