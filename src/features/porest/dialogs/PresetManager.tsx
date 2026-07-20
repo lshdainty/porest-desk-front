@@ -122,9 +122,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       </div>
       </div>
 
-      {/* 묶음 2 — Toolbar(정렬 toggle) + List 를 한 그룹으로. toggle 이 list 헤더처럼
-          붙도록 내부 gap 은 md, 다른 묶음과는 최상위 gap(16)으로 분리(사용자 결정). */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+      {/* 묶음 2 — Toolbar(정렬 toggle) + List. toggle 이 list 바로 위에 붙도록 내부 gap 0
+          (사용자 결정), 다른 묶음과는 최상위 gap(xl)으로 분리. */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
       <div
         style={{
