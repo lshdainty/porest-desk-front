@@ -200,6 +200,47 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
     reorderMut.mutate(items)
   }
 
+  // 검색바(label)+list 를 한 묶음으로 쓰기 위해 list 를 변수 추출(mobile/desktop 공유).
+  const listBlock = (
+    <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
+      {isLoading ? (
+        <CategoryManagerSkeleton mobile={mobile} />
+      ) : list.length === 0 ? (
+        <div className="cat-list__empty"><span>{t('empty')}</span></div>
+      ) : tree.length === 0 ? (
+        <div className="cat-list__empty"><span>{t('noSearchResults')}</span></div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(ev) => handleDragEnd(ev, tree.map(t => t.parent.rowId))}
+        >
+          <SortableContext
+            items={tree.map(t => t.parent.rowId)}
+            strategy={verticalListSortingStrategy}
+          >
+            {tree.map(({ parent, children }) => (
+              <ParentBlock
+                key={parent.rowId}
+                parent={parent}
+                children_={children}
+                mobile={mobile}
+                reorderMode={reorderMode}
+                isCollapsed={collapsed.has(parent.rowId)}
+                onToggle={() => toggleCollapse(parent.rowId)}
+                onEdit={(c) => setEditing(c)}
+                onDelete={(c) => setConfirmDelete(c)}
+                onAddChild={() => setEditing({ kind: 'new', parentRowId: parent.rowId })}
+                onChildrenDragEnd={(ev) => handleDragEnd(ev, children.map(c => c.rowId))}
+                dndSensors={sensors}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      )}
+    </div>
+  )
+
   return (
     <>
       <ManagerShell>
@@ -234,29 +275,33 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
                 </TabsList>
               </Tabs>
             </div>
-            {reorderMode ? (
-              // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
-              <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-                {t('reorderHint')}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
-                  <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-                  <Input
-                    search
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    placeholder={t('searchPlaceholder')}
-                    className="w-full min-w-0 pl-9"
-                  />
+            {/* 검색바(label) + list = 한 묶음, 사이 gap 0 (label·list 는 한 div, 사용자 결정). */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {reorderMode ? (
+                // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
+                <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
+                  {t('reorderHint')}
                 </div>
-                <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                  <Plus size={14} strokeWidth={2.4} />
-                  {t('add')}
-                </Button>
-              </div>
-            )}
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
+                    <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
+                    <Input
+                      search
+                      value={query}
+                      onChange={e => setQuery(e.target.value)}
+                      placeholder={t('searchPlaceholder')}
+                      className="w-full min-w-0 pl-9"
+                    />
+                  </div>
+                  <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
+                    <Plus size={14} strokeWidth={2.4} />
+                    {t('add')}
+                  </Button>
+                </div>
+              )}
+              {listBlock}
+            </div>
           </>
         ) : (
           <div style={MANAGER_LAYOUT.toolbarStyle}>
@@ -281,44 +326,9 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
           </div>
         )}
 
-        {/* 카드 다이어트 — 모바일은 카드(.cat-list: surface+shadow+radius) 벗기고 플랫 리스트(앱 정합). */}
-        <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
-          {isLoading ? (
-            <CategoryManagerSkeleton mobile={mobile} />
-          ) : list.length === 0 ? (
-            <div className="cat-list__empty"><span>{t('empty')}</span></div>
-          ) : tree.length === 0 ? (
-            <div className="cat-list__empty"><span>{t('noSearchResults')}</span></div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={(ev) => handleDragEnd(ev, tree.map(t => t.parent.rowId))}
-            >
-              <SortableContext
-                items={tree.map(t => t.parent.rowId)}
-                strategy={verticalListSortingStrategy}
-              >
-                {tree.map(({ parent, children }) => (
-                  <ParentBlock
-                    key={parent.rowId}
-                    parent={parent}
-                    children_={children}
-                    mobile={mobile}
-                    reorderMode={reorderMode}
-                    isCollapsed={collapsed.has(parent.rowId)}
-                    onToggle={() => toggleCollapse(parent.rowId)}
-                    onEdit={(c) => setEditing(c)}
-                    onDelete={(c) => setConfirmDelete(c)}
-                    onAddChild={() => setEditing({ kind: 'new', parentRowId: parent.rowId })}
-                    onChildrenDragEnd={(ev) => handleDragEnd(ev, children.map(c => c.rowId))}
-                    dndSensors={sensors}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
+        {/* desktop 은 toolbar(탭+검색)과 list 를 부모 gap 으로 분리(기존 유지).
+            mobile 은 검색바(label) 묶음 안에서 list 렌더 — label·list 는 한 div. */}
+        {!mobile && listBlock}
 
       </ManagerShell>
 
