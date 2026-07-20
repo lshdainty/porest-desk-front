@@ -65,6 +65,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* 묶음 1 — 배너 + 취합카드(상단 정보 블록). 내부 gap md, 최상위 16 으로 묶음 2 와 분리(사용자 결정). */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
       {/* Intro */}
       <div
         style={{
@@ -118,8 +120,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
           </>
         )}
       </div>
+      </div>
 
-      {/* 묶음 3 — Toolbar(정렬 toggle) + List 를 한 그룹으로. toggle 이 list 헤더처럼
+      {/* 묶음 2 — Toolbar(정렬 toggle) + List 를 한 그룹으로. toggle 이 list 헤더처럼
           붙도록 내부 gap 은 md, 다른 묶음과는 최상위 gap(16)으로 분리(사용자 결정). */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
       {/* Toolbar */}
