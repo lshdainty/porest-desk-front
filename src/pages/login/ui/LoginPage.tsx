@@ -79,9 +79,9 @@ const LoginForm = () => {
     <div className="w-full">
       <div className="flex flex-col justify-center gap-6">
         {/* 앱 로그인 레이아웃 정합 — 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지).
-            마크 48 / gap 8 — 아이콘 확대·간격 축소(사용자 결정). */}
-        <div className="flex items-center justify-center gap-2">
-          <BrandMark size={48} />
+            마크 56 / gap 0 — 아이콘 확대·간격 축소(사용자 결정). */}
+        <div className="flex items-center justify-center">
+          <BrandMark size={56} />
           <span
             style={{
               fontSize: 'var(--text-display-md)',
