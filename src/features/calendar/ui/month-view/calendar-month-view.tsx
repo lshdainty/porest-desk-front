@@ -7,7 +7,7 @@ import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { useDragSelect, DragSelectProvider } from '@/features/calendar/model/drag-select-context'
 import { calculateMonthEventPositions, eventBadgeColor, getCalendarCells, getMonthCellEvents } from '@/features/calendar/lib/helpers'
 import { cn, formatNumber } from '@/shared/lib'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { useIsMobile } from '@/shared/hooks/use-mobile'
 
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'

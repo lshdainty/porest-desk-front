@@ -9,15 +9,8 @@ import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-  wonPre,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'

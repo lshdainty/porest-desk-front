@@ -3,7 +3,7 @@ import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 import { type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
-import { toggleVariants } from "@/shared/ui/toggle"
+import { toggleVariants } from "@/shared/ui/toggle-variants"
 
 /*
  * Porest ToggleGroup — porest-design specs/components/toggle-group.md SoT 기반.

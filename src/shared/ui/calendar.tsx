@@ -9,7 +9,8 @@ import {
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
 
 import { cn } from "@/shared/lib"
-import { Button, buttonVariants } from "@/shared/ui/button"
+import { Button } from "@/shared/ui/button"
+import { buttonVariants } from "@/shared/ui/button-variants"
 
 /*
  * Porest Calendar — porest-design specs/components/calendar.md SoT 기반.

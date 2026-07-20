@@ -23,15 +23,8 @@ import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-  wonPre,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
+import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 

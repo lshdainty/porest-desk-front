@@ -7,11 +7,7 @@ import { Switch } from '@/shared/ui/switch'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import {
-  disablePdHideAmounts,
-  enablePdHideAmounts,
-  useHideAmounts,
-} from '@/shared/lib/porest/hide-amounts'
+import { disablePdHideAmounts, enablePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'

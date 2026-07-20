@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/index"
-import { buttonVariants } from "@/shared/ui/button"
+import { buttonVariants } from "@/shared/ui/button-variants"
 import { Spinner } from "@/shared/ui/spinner"
 
 /*
@@ -193,5 +193,4 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
-  alertDialogContentVariants,
 }
