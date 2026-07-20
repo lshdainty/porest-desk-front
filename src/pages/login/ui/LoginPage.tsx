@@ -6,9 +6,6 @@ import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
 import { generateCodeVerifier, codeChallenge, generateState, savePkce } from '@/features/auth/lib/pkce'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent } from '@/shared/ui/card'
-import { cn } from '@/shared/lib'
-import loginBG from '@/shared/assets/img/login_bg.png'
 
 /** 브랜드 마크(rect 4단 나무) — 인라인 svg 라 fg-brand 토큰으로 다크 자동 전환. */
 function BrandMark({ size = 40 }: { size?: number }) {
@@ -28,26 +25,13 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full md:max-w-6xl">
-        <div className={cn('flex flex-col gap-6 h-[700px]')}>
-          <Card className="overflow-hidden p-0 h-full">
-            <CardContent className="grid p-0 md:p-0 md:grid-cols-[2fr_1fr] h-full">
-              <div className="bg-muted relative hidden md:block">
-                <img
-                  src={loginBG}
-                  alt="Desk workspace"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </div>
-              <div className="p-6 md:p-8 h-full flex justify-center">
-                <div className="flex flex-col justify-center gap-6 w-full">
-                  <LoginForm />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    // 앱 로그인 정합(사용자 결정) — 카드/이미지 패널 없이 통일 배경(bg-surface) 중앙 콘텐츠만.
+    <div
+      className="flex min-h-svh flex-col items-center justify-center p-6"
+      style={{ background: 'var(--bg-surface)' }}
+    >
+      <div className="w-full max-w-sm">
+        <LoginForm />
       </div>
     </div>
   )
@@ -76,10 +60,11 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="w-full">
-      <div className="flex flex-col justify-center gap-6">
-        {/* 앱 로그인 레이아웃 정합 — 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지).
-            마크 56 / gap 0 — 아이콘 확대·간격 축소(사용자 결정). */}
+    // 묶음 구조(사용자 결정) — [로고+타이틀+안내문] 한 묶음(내부 gap 8, 앱 x8) ↔ 버튼을
+    // gap 32(앱 x32)로 분리.
+    <div className="flex w-full flex-col gap-8">
+      <div className="flex flex-col items-center gap-2 text-center">
+        {/* 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지). 마크 56 / gap 0. */}
         <div className="flex items-center justify-center">
           <BrandMark size={56} />
           <span
@@ -93,22 +78,18 @@ const LoginForm = () => {
             Porest Desk
           </span>
         </div>
-        <div className="text-center">
-          <p className="text-muted-foreground mb-6">
-            {t('sso.description')}
-          </p>
-          <Button
-            type="button"
-            className="w-full"
-            size="lg"
-            onClick={handleSsoRedirect}
-            disabled={isRedirecting}
-          >
-            {isRedirecting && <Spinner size="sm" className="mr-2" />}
-            {isRedirecting ? t('sso.redirecting') : t('sso.login')}
-          </Button>
-        </div>
+        <p className="text-muted-foreground">{t('sso.description')}</p>
       </div>
+      <Button
+        type="button"
+        className="w-full"
+        size="lg"
+        onClick={handleSsoRedirect}
+        disabled={isRedirecting}
+      >
+        {isRedirecting && <Spinner size="sm" className="mr-2" />}
+        {isRedirecting ? t('sso.redirecting') : t('sso.login')}
+      </Button>
     </div>
   )
 }
