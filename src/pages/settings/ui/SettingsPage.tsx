@@ -254,7 +254,8 @@ export const SettingsPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => setCatReorder(v => !v)}
-              style={{ color: 'var(--fg-brand)', fontWeight: 700, flexShrink: 0 }}
+              // 편집 글씨 흰색(fg-primary) — 앱 PButton ghost(fgPrimary) 정합. brand(파랑) 아님.
+              style={{ color: 'var(--fg-primary)', fontWeight: 700, flexShrink: 0 }}
             >
               {catReorder ? tCat('reorderDone') : tCat('reorderEdit')}
             </Button>
