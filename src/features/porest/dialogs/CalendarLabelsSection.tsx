@@ -171,7 +171,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 14,
-                        padding: '14px 4px',
+                        padding: '14px 8px',
                         borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
                         cursor: 'pointer',
                         transition:
@@ -262,7 +262,7 @@ function LabelListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 4px',
+            padding: '14px 8px',
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
