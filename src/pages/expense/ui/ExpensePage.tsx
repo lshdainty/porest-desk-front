@@ -1183,7 +1183,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     }
   }, [focusTxId, expenses.length])
 
-  const monthNum = Number(month.split('-')[1])
+  // 필터 활성 시 — 월선택/총액/캘린더/divider 숨기고 온전히 리스트만(사용자 결정).
+  const filterActive = activeCount > 0 || !!asset
 
   return (
     <div ref={rootRef} style={{ padding: '0 0 28px' }}>
@@ -1191,13 +1192,17 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       <div ref={pinRef} className={`txm-pin ${compact ? 'txm-pin--compact' : ''}`}>
       {/* 월 네비 + 필터/추가 */}
       <div className="txm-monthnav">
-        <button className="txm-monthnav__btn" onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
-          <ChevronLeft size={19} />
-        </button>
-        <span className="txm-monthnav__label">{txmMonthLabel(month)}</span>
-        <button className="txm-monthnav__btn" onClick={() => goMonth(1)} aria-label={t('nextMonth')}>
-          <ChevronRight size={19} />
-        </button>
+        {!filterActive && (
+          <>
+            <button className="txm-monthnav__btn" onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
+              <ChevronLeft size={19} />
+            </button>
+            <span className="txm-monthnav__label">{txmMonthLabel(month)}</span>
+            <button className="txm-monthnav__btn" onClick={() => goMonth(1)} aria-label={t('nextMonth')}>
+              <ChevronRight size={19} />
+            </button>
+          </>
+        )}
         <button
           className="txm-monthnav__btn"
           onClick={() => setFilterOpen(true)}
@@ -1233,7 +1238,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </div>
       )}
 
-      {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘 (design txm-collapse) */}
+      {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
+      {!filterActive && (
       <div className="txm-collapse">
       <div className="txm-head">
         <div style={{ minWidth: 0 }}>
@@ -1274,9 +1280,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </Card>
       )}
       </div>
+      )}
 
       {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
-      {!(activeCount > 0 || asset) && (
+      {!filterActive && (
       <div className="txm-cal">
         <div className="txm-dow">
           {dowLabels.map((d, i) => (
@@ -1329,7 +1336,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       </div>
       )}
 
-      <div className="txm-divider" />
+      {!filterActive && <div className="txm-divider" />}
       </div>
 
       {/* 거래 리스트 — 날짜 그룹 */}
