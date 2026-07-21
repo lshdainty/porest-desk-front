@@ -2135,3 +2135,14 @@ calendar,detail.memo,메모,Memo
 category,reorderEdit,편집,Edit
 category,reorderDone,완료,Done
 category,reorderHint,핸들을 잡고 위·아래로 끌어 순서를 바꿔요. 상위 카테고리끼리·하위 카테고리끼리 이동돼요.,Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
+expense,txm.spendSummary,소비 요약,Spending summary
+expense,txm.insightLess,지난달보다 <hl>{{amount}} 덜</hl> 쓰는 중,Spending <hl>{{amount}} less</hl> than last month
+expense,txm.insightMore,지난달보다 <hl>{{amount}} 더</hl> 쓰는 중,Spending <hl>{{amount}} more</hl> than last month
+expense,txm.insightSame,지난달과 비슷하게 쓰고 있어요,Spending about the same as last month
+expense,txm.insightNone,이 달에는 거래 내역이 없어요,No transactions this month
+expense,txm.insightTopCat,이번 달 <hl>{{cat}}</hl>에 가장 많이 썼어요,Spent the most on <hl>{{cat}}</hl> this month
+expense,txm.prevMonthBtn,{{month}} 이용 내역 보기,View {{month}} history
+expense,txm.emptyMonth,{{month}} 거래가 없어요,No transactions in {{month}}
+expense,txm.emptyMonthDesc,다른 달을 살펴보거나 첫 거래를 추가해보세요.,Browse another month or add your first transaction.
+expense,txm.today,오늘,Today
+expense,txm.yesterday,어제,Yesterday
