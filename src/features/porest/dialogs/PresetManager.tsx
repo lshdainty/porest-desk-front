@@ -205,7 +205,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: mobile ? '12px 14px' : '14px 16px',
+                  padding: mobile ? '12px 4px' : '14px 16px',
                   borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
                 }}
               >
@@ -362,7 +362,7 @@ function PresetManagerSkeleton({ mobile }: { mobile: boolean }) {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            padding: mobile ? '12px 14px' : '14px 16px',
+            padding: mobile ? '12px 4px' : '14px 16px',
             borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
           }}
         >
