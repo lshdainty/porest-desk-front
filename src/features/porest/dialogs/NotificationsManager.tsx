@@ -233,6 +233,7 @@ function NotifSection({
   subtitle,
   action,
   contentPad = true,
+  gap = 'var(--spacing-sm)',
   children,
 }: {
   mobile: boolean
@@ -241,12 +242,14 @@ function NotifSection({
   action?: React.ReactNode
   /** false 면 CardContent p-0 (내부가 자체 패딩 보유 — quiet/email 카드) */
   contentPad?: boolean
+  /** 모바일 섹션 label↔content gap (기본 sm). 섹션별 조정용. */
+  gap?: string
   children: React.ReactNode
 }) {
   if (mobile) {
     return (
       // 섹션 label↔content 간격 padding → gap(sm) 으로(사용자 결정) — 앱 Column spacing 정합.
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <h2 style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: 'var(--fg-primary)' }}>
@@ -376,7 +379,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
 
       {/* 2) 알림 종류 */}
       {/* 앱 _SectionCard 헤더(LTRB 16,16,16,8 + 제목↔서브 2) 정합. 모바일 카드 다이어트 — 셸 벗김. */}
-      <NotifSection mobile={mobile} title={t('types.title')} subtitle={t('types.subtitle')}>
+      <NotifSection mobile={mobile} gap="0" title={t('types.title')} subtitle={t('types.subtitle')}>
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (CardContent 패딩을
               음수 마진으로 뚫고 같은 만큼 안쪽 패딩 복원, 앱 정합).
               패딩이 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
@@ -480,7 +483,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       </NotifSection>
 
       {/* 4) 방해 금지 시간 — 모바일 카드 다이어트: 셸 벗김(내부 16 패딩은 카드 기준이라 모바일 0). */}
-      <NotifSection mobile={mobile} title={t('quiet.title')} subtitle={t('quiet.subtitle')} contentPad={false}>
+      <NotifSection mobile={mobile} gap="0" title={t('quiet.title')} subtitle={t('quiet.subtitle')} contentPad={false}>
           <div style={{ paddingLeft: mobile ? 0 : 16, paddingRight: mobile ? 0 : 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Moon size={18} strokeWidth={1.9} />}
@@ -546,7 +549,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       </NotifSection>
 
       {/* 5) 소리·진동 — 모바일 카드 다이어트: 셸 벗김. */}
-      <NotifSection mobile={mobile} title={t('sound.title')}>
+      <NotifSection mobile={mobile} gap="var(--spacing-md)" title={t('sound.title')}>
           {/* 행 사이 구분선 — 카드 가장자리까지 full-bleed (앱 정합).
               패딩 16 고정이므로 full-bleed 인셋도 lg(16) 고정. */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -601,7 +604,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
       </NotifSection>
 
       {/* 6) 이메일 알림 — 모바일 카드 다이어트: 셸 벗김(내부 16 패딩은 카드 기준이라 모바일 0). */}
-      <NotifSection mobile={mobile} title={t('email.title')} subtitle={t('email.subtitle')} contentPad={false}>
+      <NotifSection mobile={mobile} gap="0" title={t('email.title')} subtitle={t('email.subtitle')} contentPad={false}>
           <div style={{ paddingLeft: mobile ? 0 : 16, paddingRight: mobile ? 0 : 16, paddingTop: 12, paddingBottom: 12 }}>
           <SettingRow
             icon={<Mail size={18} strokeWidth={1.9} />}
