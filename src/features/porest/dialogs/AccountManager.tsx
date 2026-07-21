@@ -156,7 +156,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <div
           className={mobile ? undefined : 'cat-list'}
           style={mobile
-            ? { display: 'flex', flexDirection: 'column' }
+            ? { display: 'flex', flexDirection: 'column', marginTop: -8 }
             : { borderRadius: 'var(--radius-lg)' }}
         >
           {isLoading ? (
