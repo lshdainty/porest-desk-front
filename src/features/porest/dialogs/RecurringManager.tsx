@@ -655,7 +655,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
 
       {/* Filter chips + list — 실제와 동일: 모바일 플랫(라벨 0 + 행 inset 10) */}
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
