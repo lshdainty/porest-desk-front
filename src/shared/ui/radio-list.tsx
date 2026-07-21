@@ -38,7 +38,7 @@ type RadioListItemProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimit
 
 const SIZE_STYLES = {
   sm: { padding: 'px-3 py-[10px]', pill: 'h-7 w-7', gap: 'gap-2.5', check: 14 },
-  md: { padding: 'px-4 py-[14px]', pill: 'h-8 w-8', gap: 'gap-3', check: 16 },
+  md: { padding: 'px-2 py-[14px]', pill: 'h-8 w-8', gap: 'gap-3', check: 16 },
   lg: { padding: 'px-5 py-4', pill: 'h-10 w-10', gap: 'gap-[14px]', check: 18 },
 }
 
