@@ -282,7 +282,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             size="sm"
             value={filter}
             onValueChange={(v) => v && setFilter(v as FilterKey)}
-            style={{ marginTop: 10 }}
+            style={{ marginTop: 4 }}
             className="justify-start gap-1"
           >
             {FILTERS.map((f) => (
@@ -304,7 +304,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
                     alignItems: 'center',
                     gap: mobile ? 12 : 16,
-                    padding: mobile ? '14px 10px' : '14px 20px',
+                    padding: mobile ? '14px 4px' : '14px 20px',
                     borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                   }}
                 >
@@ -337,8 +337,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                   alignItems: 'center',
                   gap: mobile ? 12 : 16,
-                  // 행 좌우 살짝 inset(10) — 가계부 목록 뷰 패턴 정합(라벨·토글은 inset 0).
-                  padding: mobile ? '12px 10px' : '14px 20px',
+                  // 행 좌우 inset 4(사용자 결정) — 라벨·토글은 inset 0.
+                  padding: mobile ? '12px 4px' : '14px 20px',
                   borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
                 }}
               >
