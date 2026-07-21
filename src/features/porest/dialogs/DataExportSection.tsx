@@ -228,6 +228,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
       {/* 2. 데이터 종류 */}
       <SectionCard
         mobile={mobile}
+        flushContent
         title={t('section.dataTypeTitle', { count: selected.length })}
         desc={t('section.dataTypeDesc')}
       >
@@ -368,13 +369,12 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
 // ─── 보조 컴포넌트/스타일 ──────────────────────────────────────
 
-function SectionCard({ title, desc, children, mobile }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean }) {
+function SectionCard({ title, desc, children, mobile, flushContent }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean; flushContent?: boolean }) {
   const inner = (
     <>
       <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
       {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
-      {/* label↔content gap 0(사용자 결정) */}
-      <div>{children}</div>
+      <div style={{ marginTop: flushContent ? 0 : 12 }}>{children}</div>
     </>
   )
   // 모바일 카드 다이어트(사용자 결정) — 셸 없이 [label+content] 플랫 묶음.
