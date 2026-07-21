@@ -8,7 +8,7 @@ import { tileRadius } from '@/shared/lib'
  */
 const ROW_BASE_CLS =
   'group flex items-center gap-3 ' +
-  'px-4 py-3 ' +
+  'px-2 py-3 ' +
   'border-b border-solid border-[var(--border-subtle)] ' +
   'last:border-b-0 ' +
   'hover:bg-[var(--bg-muted)]'
