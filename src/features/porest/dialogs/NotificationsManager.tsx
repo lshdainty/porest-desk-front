@@ -245,8 +245,9 @@ function NotifSection({
 }) {
   if (mobile) {
     return (
-      <section>
-        <div style={{ paddingBottom: 8 }}>
+      // 섹션 label↔content 간격 padding → gap(sm) 으로(사용자 결정) — 앱 Column spacing 정합.
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+        <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <h2 style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: 'var(--fg-primary)' }}>
               {title}
