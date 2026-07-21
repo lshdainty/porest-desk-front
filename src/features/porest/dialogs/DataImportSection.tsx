@@ -117,7 +117,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
 
       {step === 'upload' && (
         <>
-          <SectionCard title={t('import.sourceTitle')} desc={t('import.sourceDesc')}>
+          <SectionCard mobile={mobile} title={t('import.sourceTitle')} desc={t('import.sourceDesc')}>
             <Select value={source} onValueChange={v => setSource(v as ImportSource)}>
               <SelectTrigger>
                 <SelectValue />
@@ -132,7 +132,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </Select>
           </SectionCard>
 
-          <SectionCard title={t('import.uploadTitle')} desc={t('import.uploadDesc')}>
+          <SectionCard mobile={mobile} title={t('import.uploadTitle')} desc={t('import.uploadDesc')}>
             <input
               ref={fileRef}
               type="file"
@@ -215,7 +215,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
 
       {step === 'mapping' && analysis && (
         <>
-          <SectionCard title={t('import.fileTitle')}>
+          <SectionCard mobile={mobile} title={t('import.fileTitle')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span style={fileIconStyle}>
                 <FileSpreadsheet size={17} />
@@ -234,7 +234,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </div>
           </SectionCard>
 
-          <SectionCard title={t('import.mapTitle')} desc={t('import.mapDesc')}>
+          <SectionCard mobile={mobile} title={t('import.mapTitle')} desc={t('import.mapDesc')}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {MAP_FIELDS.map((mf, idx) => (
                 <div
@@ -326,7 +326,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </div>
           </SectionCard>
 
-          <SectionCard title={t('import.optionsTitle')}>
+          <SectionCard mobile={mobile} title={t('import.optionsTitle')}>
             <label style={optionRow}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
@@ -364,7 +364,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
       )}
 
       {step === 'done' && result && (
-        <SectionCard title={t('import.doneTitle')}>
+        <SectionCard mobile={mobile} title={t('import.doneTitle')}>
           <div style={{ padding: '24px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14 }}>
             <span
               style={{
@@ -448,7 +448,16 @@ function Stepper({ step, t, mobile }: { step: Step; t: (k: string) => string; mo
 
 // ─── 보조 컴포넌트/스타일 ──────────────────────────────────────
 
-function SectionCard({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
+function SectionCard({ title, desc, children, mobile }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean }) {
+  const inner = (
+    <>
+      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
+      {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
+      <div style={{ marginTop: 12 }}>{children}</div>
+    </>
+  )
+  // 모바일 카드 다이어트(사용자 결정) — 셸 없이 [label+content] 플랫 묶음(내보내기 탭 정합).
+  if (mobile) return <section>{inner}</section>
   return (
     <div
       style={{
@@ -458,9 +467,7 @@ function SectionCard({ title, desc, children }: { title: string; desc?: string; 
         padding: 'var(--spacing-lg)',
       }}
     >
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
-      {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{desc}</div>}
-      <div style={{ marginTop: 12 }}>{children}</div>
+      {inner}
     </div>
   )
 }
