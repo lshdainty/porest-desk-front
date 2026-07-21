@@ -78,7 +78,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
-      <section>
+      {/* label + content = 한 세트(flex 묶음, 내부 gap sm=8). 세트끼리는 최상위 gap-2xl(32). */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
         <SectionLabel>{t('theme.label')}</SectionLabel>
         {/* 클로드 디자인 정합(사용자 결정) — 모바일도 3열 세로 스택 타일. */}
         <TileGroup columns={3} value={theme} onValueChange={v => setTheme(v as typeof theme)}>
@@ -109,7 +110,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         </TileGroup>
       </section>
 
-      <section>
+      {/* label + content = 한 세트(flex 묶음, 내부 gap sm=8). 세트끼리는 최상위 gap-2xl(32). */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
         <SectionLabel>{t('privacy.label')}</SectionLabel>
         {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치).
             모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행 (.m-subpage). */}
@@ -146,7 +148,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         />
       </section>
 
-      <section>
+      {/* label + content = 한 세트(flex 묶음, 내부 gap sm=8). 세트끼리는 최상위 gap-2xl(32). */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
         <SectionLabel>{t('language.label')}</SectionLabel>
         <Tabs
           value={i18n.language?.startsWith('en') ? 'en' : 'ko'}
@@ -163,7 +166,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         </Tabs>
       </section>
 
-      <section>
+      {/* label + content = 한 세트(flex 묶음, 내부 gap sm=8). 세트끼리는 최상위 gap-2xl(32). */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
         <SectionLabel>{t('currency.label')}</SectionLabel>
         <RadioList value={currency} onValueChange={v => setCurrency(v as CurrencyKey)}>
           {CURRENCY_OPTIONS.map(c => (
@@ -190,8 +194,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         color: 'var(--fg-tertiary)',
         textTransform: 'uppercase',
         letterSpacing: '0.04em',
-        // 라벨↔콘텐츠 간격 앱(PSpace.x8) 정합.
-        marginBottom: 8,
       }}
     >
       {children}
