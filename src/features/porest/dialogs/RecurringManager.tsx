@@ -293,7 +293,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           </ToggleGroup>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {recurringsQ.isLoading && (
             <>
               {[0, 1, 2, 3].map(i => (
@@ -661,7 +661,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
             <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
           ))}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {Array.from({ length: 4 }).map((_, idx) => (
             <div
               key={idx}
