@@ -668,6 +668,9 @@
 }
 
 /* ---------- 모바일 가계부 (txm) — 캘린더 스트립 + 리스트 통합 (design tx-mobile.jsx SoT) ---------- */
+.txm-pin { position: sticky; top: 0; z-index: 5; background: var(--bg-surface); padding-top: 10px; }
+.txm-collapse { overflow: hidden; max-height: 340px; opacity: 1; transition: max-height 0.22s var(--motion-ease-out), opacity 0.18s var(--motion-ease-out); }
+.txm-pin--compact .txm-collapse { max-height: 0; opacity: 0; pointer-events: none; }
 .txm-monthnav { display: flex; align-items: center; gap: 2px; padding: 0 12px; }
 .txm-monthnav__btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--fg-secondary); cursor: pointer; border-radius: 10px; }
 .txm-monthnav__btn:disabled { opacity: 0.3; cursor: default; }
@@ -695,7 +698,7 @@
 .txm-cell__num { width: 33px; height: 33px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-body-md); font-weight: 600; font-variant-numeric: tabular-nums; }
 .txm-cell--sel .txm-cell__num { background: var(--bg-brand); color: var(--fg-on-brand); font-weight: 700; }
 .txm-cell__amt { font-size: 10px; font-weight: 600; color: var(--fg-tertiary); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; min-height: 12px; }
-.txm-cell--sel .txm-cell__amt { color: var(--fg-primary); font-weight: 700; }
+.txm-cell--sel .txm-cell__amt { font-weight: 700; }
 .txm-expand { width: 100%; border: 0; background: transparent; color: var(--fg-tertiary); padding: 2px 0 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .txm-divider { height: 1px; background: var(--border-default); }
 .txm-list { padding: 0 20px; }
