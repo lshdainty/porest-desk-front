@@ -825,7 +825,7 @@ function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile
           // design .acc-card flat row 리듬 — 실렌더(AssetCard)와 동일.
           style={{
             display: 'flex', alignItems: 'center', gap: 14,
-            padding: '12px 10px', margin: '0 -2px', borderRadius: 10,
+            padding: '12px 8px', margin: '0 -2px', borderRadius: 10,
           }}
         >
           <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
@@ -973,7 +973,7 @@ function AssetCard({
       ].join(' ')}
       // design .acc-card flat row 리듬 — 구분선 없이 hover 면으로 행 구분.
       style={{
-        padding: '12px 10px',
+        padding: '12px 8px',
         margin: '0 -2px',
         borderRadius: 10,
       }}

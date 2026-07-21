@@ -358,7 +358,7 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 0 0 12px;
+  padding: 0 0 8px;
 }
 .flat-group__head h2 {
   font-size: var(--text-body-lg);
