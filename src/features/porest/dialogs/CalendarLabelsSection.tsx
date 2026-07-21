@@ -128,7 +128,6 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
               fontSize: 'var(--text-label-sm)',
               fontWeight: '700',
               color: 'var(--fg-primary)',
-              padding: '4px 4px 10px',
             }}
           >
             {t('labelsSection.allLabels')} · {list.length}
@@ -172,7 +171,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 14,
-                        padding: '14px 16px',
+                        padding: '14px 4px',
                         borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
                         cursor: 'pointer',
                         transition:
@@ -263,7 +262,7 @@ function LabelListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 16px',
+            padding: '14px 4px',
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
