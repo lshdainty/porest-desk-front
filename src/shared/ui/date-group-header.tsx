@@ -30,7 +30,6 @@ export function DateGroupHeader({
         display: "flex",
         alignItems: "center",
         gap: 8,
-        padding: "0 0 8px",
         fontSize: 'var(--text-label-sm)',
       }}
     >

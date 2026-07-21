@@ -149,7 +149,7 @@ function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobil
   ))
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 0 8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <SkeletonBase className="h-4 w-12" />
         <SkeletonBase className="h-4 w-5" />
         <SkeletonBase className="h-3.5 w-16 ml-auto" />
@@ -602,7 +602,8 @@ function ExpenseList({
                 borderTop: mobile || items.indexOf(e) === 0 ? 'none' : '1px solid var(--border-subtle)',
                 background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
                 transition: 'background 0.4s',
-                padding: mobile ? '0 10px' : '0 14px',
+                // 모바일 행 wrapper 좌우 inset 삭제(사용자 결정) — 데스크톱 14 유지.
+                padding: mobile ? undefined : '0 14px',
                 borderRadius: mobile ? 10 : undefined,
               }}
             >
