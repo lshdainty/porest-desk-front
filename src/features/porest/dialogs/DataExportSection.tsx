@@ -373,7 +373,8 @@ function SectionCard({ title, desc, children, mobile }: { title: string; desc?: 
     <>
       <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
       {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
-      <div style={{ marginTop: 12 }}>{children}</div>
+      {/* label↔content gap 0(사용자 결정) */}
+      <div>{children}</div>
     </>
   )
   // 모바일 카드 다이어트(사용자 결정) — 셸 없이 [label+content] 플랫 묶음.
