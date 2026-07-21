@@ -402,7 +402,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </Card>
 
         {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* 카테고리별 예산 label↔list gap 0(사용자 결정, label·list 는 한 묶음). */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
               {t('manager.categoryBudgets', { count: categoryBudgets.length })}
