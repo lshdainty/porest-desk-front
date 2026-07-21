@@ -372,7 +372,8 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 function SectionCard({ title, desc, children, mobile, flushContent }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean; flushContent?: boolean }) {
   const inner = (
     <>
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
+      {/* 앱 PTypo.body(14) 정합(사용자 결정) — body-md(15) 아님. */}
+      <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
       {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
       <div style={{ marginTop: flushContent ? 0 : 12 }}>{children}</div>
     </>
