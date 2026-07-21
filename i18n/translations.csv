@@ -2146,3 +2146,5 @@ expense,txm.emptyMonth,{{month}} 거래가 없어요,No transactions in {{month}
 expense,txm.emptyMonthDesc,다른 달을 살펴보거나 첫 거래를 추가해보세요.,Browse another month or add your first transaction.
 expense,txm.today,오늘,Today
 expense,txm.yesterday,어제,Yesterday
+expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
+expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
