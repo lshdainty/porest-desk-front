@@ -386,7 +386,7 @@ function ShareListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 16px',
+            padding: '14px 8px',
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
