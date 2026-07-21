@@ -804,6 +804,101 @@ function useAssetFilter() {
   return { assetId: enabled ? assetId : undefined, asset: enabled ? asset : undefined, clear }
 }
 
+/** 필터 활성 시 — 적용 항목별 칩 가로 스크롤(스크롤바 숨김), 개별 ✕ 제거 (사용자 결정). */
+function FilterChipsRow({
+  filterValue,
+  onChange,
+  assetName,
+  onClearAsset,
+  categories,
+  assets,
+}: {
+  filterValue: FilterValue | null
+  onChange: (v: FilterValue | null) => void
+  assetName?: string
+  onClearAsset: () => void
+  categories: ExpenseCategory[]
+  assets: { rowId: number; assetName: string }[]
+}) {
+  const { t } = useTranslation('expense')
+  const { t: tStats } = useTranslation('expense')
+  const v = filterValue
+  const chips: { key: string; label: string; onRemove: () => void }[] = []
+  if (assetName) {
+    chips.push({ key: 'assetQ', label: t('assetFilterBadge', { name: assetName }), onRemove: onClearAsset })
+  }
+  if (v) {
+    if (v.period !== DEFAULT_FILTER.period) {
+      const label =
+        v.period === 'week' ? t('filter.period.week')
+        : v.period === 'month' ? t('filter.period.month')
+        : tStats('stats.period3m')
+      chips.push({ key: 'period', label, onRemove: () => onChange({ ...v, period: 'custom', startDate: '', endDate: '' }) })
+    } else if (v.startDate && v.endDate) {
+      chips.push({
+        key: 'range',
+        label: `${v.startDate.slice(5).replace('-', '.')}~${v.endDate.slice(5).replace('-', '.')}`,
+        onRemove: () => onChange({ ...v, startDate: '', endDate: '' }),
+      })
+    }
+    if (v.types.length !== DEFAULT_FILTER.types.length) {
+      const only = v.types[0]
+      chips.push({
+        key: 'type',
+        label: only === 'EXPENSE' ? t('expense') : t('income'),
+        onRemove: () => onChange({ ...v, types: ['EXPENSE', 'INCOME'] }),
+      })
+    }
+    for (const id of v.categoryIds) {
+      const name = categories.find(c => c.rowId === id)?.categoryName ?? String(id)
+      chips.push({ key: `cat${id}`, label: name, onRemove: () => onChange({ ...v, categoryIds: v.categoryIds.filter(x => x !== id) }) })
+    }
+    for (const id of v.assetIds) {
+      const name = assets.find(a => a.rowId === id)?.assetName ?? String(id)
+      chips.push({ key: `asset${id}`, label: name, onRemove: () => onChange({ ...v, assetIds: v.assetIds.filter(x => x !== id) }) })
+    }
+    if (v.min) {
+      chips.push({ key: 'min', label: t('filter.chipMin', { amount: `${wonPre()}${KRW(Number(v.min))}${isEn() ? '' : '원'}` }), onRemove: () => onChange({ ...v, min: '' }) })
+    }
+    if (v.max) {
+      chips.push({ key: 'max', label: t('filter.chipMax', { amount: `${wonPre()}${KRW(Number(v.max))}${isEn() ? '' : '원'}` }), onRemove: () => onChange({ ...v, max: '' }) })
+    }
+  }
+  if (chips.length === 0) return null
+  return (
+    <div
+      className="scrollbar-hide"
+      style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 20px 0', alignItems: 'center' }}
+    >
+      {chips.map(c => (
+        <span
+          key={c.key}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
+            padding: '6px 8px 6px 12px',
+            background: 'var(--bg-brand-subtle)',
+            color: 'var(--fg-brand-strong)',
+            border: '1px solid var(--border-brand)',
+            borderRadius: 'var(--radius-pill)',
+            fontSize: 'var(--text-label-sm)',
+            fontWeight: '600',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span>{c.label}</span>
+          <button
+            onClick={c.onRemove}
+            aria-label={t('filter.reset')}
+            style={{ border: 0, background: 'transparent', color: 'var(--fg-brand)', cursor: 'pointer', display: 'inline-flex', padding: 0 }}
+          >
+            <X size={14} />
+          </button>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void }) {
   const { t } = useTranslation('expense')
   return (
@@ -1229,13 +1324,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </button>
       </div>
 
-      {(asset || activeCount > 0) && (
-        <div style={{ padding: '8px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
-          {activeCount > 0 && (
-            <AssetFilterBadge name={t('filterAppliedBadge', { count: activeCount })} onClear={() => setFilterValue(null)} />
-          )}
-        </div>
+      {filterActive && (
+        <FilterChipsRow
+          filterValue={filterValue}
+          onChange={(v) => setFilterValue(v && filterActiveCount(v) > 0 ? v : null)}
+          assetName={asset?.assetName}
+          onClearAsset={clear}
+          categories={categoriesQ.data ?? []}
+          assets={assetsQ.data?.assets ?? []}
+        />
       )}
 
       {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
@@ -1301,7 +1398,6 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               if (!c) return <div key={`e${i}`} className="txm-cell" style={{ cursor: 'default' }} />
               const isSel = c.ds === selected
               const data = byDay[c.ds]
-              const amt = data ? (data.out > 0 ? `-${KRW(data.out)}` : `+${KRW(data.inn)}`) : ''
               return (
                 <button
                   key={c.ds}
@@ -1314,13 +1410,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   >
                     {c.d}
                   </span>
-                  <span
-                    className="txm-cell__amt num"
-                    // 지출 빨강·수입 파랑 — 아래 리스트와 동일(사용자 결정).
-                    style={!data ? undefined : { color: data.out > 0 ? 'var(--fg-expense)' : 'var(--fg-brand)' }}
-                  >
-                    {amt}
-                  </span>
+                  {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
+                  {data && data.out > 0 && (
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</span>
+                  )}
+                  {data && data.inn > 0 && (
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</span>
+                  )}
+                  {!data && <span className="txm-cell__amt num" />}
                 </button>
               )
             })}
@@ -1398,9 +1495,11 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         )}
       </div>
 
-      <button className="txm-prevbtn" onClick={() => goMonth(-1)}>
-        {t('txm.prevMonthBtn', { month: txmMonthLabel(shiftMonthKey(month, -1)) })}
-      </button>
+      {!filterActive && (
+        <button className="txm-prevbtn" onClick={() => goMonth(-1)}>
+          {t('txm.prevMonthBtn', { month: txmMonthLabel(shiftMonthKey(month, -1)) })}
+        </button>
+      )}
 
       {detail && !editing && (
         <TxDetailDialog
