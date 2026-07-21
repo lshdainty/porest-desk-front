@@ -292,7 +292,7 @@ function CalendarListSection({
   )
   return (
     <div>
-      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)', padding: '4px 4px 0px' }}>
+      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
         {title}
       </div>
       {mobile ? (
@@ -317,7 +317,7 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        padding: '12px 8px',
+        padding: '14px 8px',
         borderTop: first ? 'none' : '1px solid var(--border-subtle)',
         cursor: 'pointer',
         transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
