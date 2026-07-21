@@ -1207,7 +1207,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </Card>
       )}
 
-      {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체 */}
+      {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
+      {!(activeCount > 0 || asset) && (
       <div className="txm-cal">
         <div className="txm-dow">
           {dowLabels.map((d, i) => (
@@ -1240,7 +1241,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   </span>
                   <span
                     className="txm-cell__amt num"
-                    style={!data || data.out > 0 ? undefined : { color: 'var(--fg-brand)' }}
+                    // 지출 빨강·수입 파랑 — 아래 리스트와 동일(사용자 결정).
+                    style={!data ? undefined : { color: data.out > 0 ? 'var(--fg-expense)' : 'var(--fg-brand)' }}
                   >
                     {amt}
                   </span>
@@ -1257,6 +1259,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
       </div>
+      )}
 
       <div className="txm-divider" />
 
