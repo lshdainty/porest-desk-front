@@ -185,7 +185,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 {analyzing ? <Loader2 size={24} className="animate-spin" /> : <UploadCloud size={24} />}
               </span>
               <div>
-                <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+                <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
                   {analyzing ? t('import.analyzing') : t('import.dropTitle')}
                 </div>
                 <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 3 }}>
@@ -431,7 +431,7 @@ function Stepper({ step, t, mobile }: { step: Step; t: (k: string) => string; mo
             </span>
             <span
               style={{
-                fontSize: 'var(--text-body-sm)',
+                fontSize: 'var(--text-label-sm)', // 앱 bodySm(13) 정합(사용자 결정)
                 fontWeight: i === idx ? 700 : 500,
                 color: i <= idx ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
               }}
@@ -451,7 +451,8 @@ function Stepper({ step, t, mobile }: { step: Step; t: (k: string) => string; mo
 function SectionCard({ title, desc, children, mobile, flushContent }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean; flushContent?: boolean }) {
   const inner = (
     <>
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
+      {/* 앱 PTypo.body(14) 정합(사용자 결정) — body-md(15) 아님. */}
+      <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
       {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
       <div style={{ marginTop: flushContent ? 0 : 12 }}>{children}</div>
     </>
