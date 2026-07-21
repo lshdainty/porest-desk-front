@@ -197,43 +197,62 @@ function ExpenseCalendarSkeleton() {
 /** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + Calendar grid (default mode).
  *  ExpenseMobile/Desktop 와 동일한 viewport fit 패턴 — AppLayout scroll wrapper 가
  *  flex-col 이므로 페이지 wrapper 는 flex-1 + min-h-0 으로 부모 전체 height 차지. */
-function ExpensePageSkeleton({ mobile }: { mobile: boolean }) {
+function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: string }) {
   const { t } = useTranslation('expense')
   if (mobile) {
-    // 새 통합 뷰(txm) 정합 — 월네비 + 총액/인사이트 + 캘린더 1주 + 리스트.
+    // 정적 틀(월네비/소비요약 버튼/요일/expand)은 실제 렌더 — 스켈레톤은 서버 데이터만
+    // (총액·인사이트·셀 금액·리스트). feedback_skeleton_server_data_only.
+    const mk = month ?? currentMonthKey()
+    const now = new Date()
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now)
+      d.setDate(now.getDate() - (now.getDay() - i))
+      return d
+    })
+    const [y, m] = mk.split('-').map(Number)
+    const inMonth = (d: Date) => d.getFullYear() === y && d.getMonth() + 1 === m
+    const dowLabels = Array.from({ length: 7 }, (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow)
     return (
-      <div style={{ padding: '10px 0 28px' }}>
-        <div className="txm-monthnav">
-          <SkeletonBase className="h-9 w-9 rounded-[10px]" />
-          <SkeletonBase className="mx-1 h-5 w-10" />
-          <SkeletonBase className="h-9 w-9 rounded-[10px]" />
-          <SkeletonBase className="ml-auto h-9 w-9 rounded-[10px]" />
-          <SkeletonBase className="h-9 w-9 rounded-[10px]" />
-        </div>
-        <div className="txm-head">
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <SkeletonBase className="h-8 w-40" />
-            <SkeletonBase className="mt-2 h-4 w-52" />
+      <div style={{ padding: '0 0 28px' }}>
+        <div className="txm-pin">
+          <div className="txm-monthnav">
+            <button className="txm-monthnav__btn" aria-label={t('prevMonth')}><ChevronLeft size={19} /></button>
+            <span className="txm-monthnav__label">{txmMonthLabel(mk)}</span>
+            <button className="txm-monthnav__btn" aria-label={t('nextMonth')}><ChevronRight size={19} /></button>
+            <button className="txm-monthnav__btn" style={{ marginLeft: 'auto' }} aria-label={t('filter.title')}>
+              <SlidersHorizontal size={18} />
+            </button>
+            <button className="txm-monthnav__btn" aria-label={t('addTransaction')}><Plus size={19} /></button>
           </div>
-          <SkeletonBase className="h-9 w-[74px] rounded-[12px]" />
-        </div>
-        <div className="txm-cal">
-          <div className="txm-dow">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <span key={i} className="flex justify-center"><SkeletonBase className="h-3.5 w-4" /></span>
-            ))}
-          </div>
-          <div className="txm-week">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="txm-cell" style={{ cursor: 'default' }}>
-                <SkeletonBase className="h-[33px] w-[33px] rounded-full" />
-                <SkeletonBase className="h-2.5 w-8" />
+          <div className="txm-collapse">
+            <div className="txm-head">
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <SkeletonBase className="h-8 w-40" />
+                <SkeletonBase className="mt-2 h-4 w-52" />
               </div>
-            ))}
+              <button className="txm-sumbtn">{t('txm.spendSummary')}</button>
+            </div>
           </div>
-          <div className="txm-expand"><SkeletonBase className="h-4 w-5" /></div>
+          <div className="txm-cal">
+            <div className="txm-dow">
+              {dowLabels.map((d, i) => (
+                <span key={i} style={{ color: i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined }}>{d}</span>
+              ))}
+            </div>
+            <div className="txm-week">
+              {weekDays.map((d, i) => (
+                <div key={i} className="txm-cell" style={{ cursor: 'default' }}>
+                  <span className="txm-cell__num" style={{ color: 'var(--fg-primary)', opacity: inMonth(d) ? 1 : 0.35 }}>
+                    {d.getDate()}
+                  </span>
+                  <span className="txm-cell__amt"><SkeletonBase className="h-2.5 w-8" /></span>
+                </div>
+              ))}
+            </div>
+            <div className="txm-expand"><ChevronDown size={20} /></div>
+          </div>
+          <div className="txm-divider" />
         </div>
-        <div className="txm-divider" />
         <div className="txm-list" style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
           <ExpenseDayGroupSkeleton rows={3} mobile />
           <ExpenseDayGroupSkeleton rows={2} mobile />
@@ -266,7 +285,7 @@ export const ExpensePage = () => {
   const [hasEverLoaded, setHasEverLoaded] = useState(false)
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
   if (!isLoading && !hasEverLoaded) setHasEverLoaded(true)
-  if (isLoading && !hasEverLoaded) return <ExpensePageSkeleton mobile={mobile} />
+  if (isLoading && !hasEverLoaded) return <ExpensePageSkeleton mobile={mobile} month={initialMonth} />
   return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />
 }
 
@@ -1002,6 +1021,18 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     todayStr.startsWith(initialMonth) ? todayStr : null,
   )
   const rootRef = useRef<HTMLDivElement | null>(null)
+  // pin/compact — 스크롤 시 총액 영역 접힘 + 상단 고정 (design txm-pin).
+  const [compact, setCompact] = useState(false)
+  const pinRef = useRef<HTMLDivElement | null>(null)
+  const lockRef = useRef(false)
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const selectedRef = useRef<string | null>(selected)
+  useEffect(() => { selectedRef.current = selected }, [selected])
+  const lock = (ms: number) => {
+    lockRef.current = true
+    if (lockTimer.current) clearTimeout(lockTimer.current)
+    lockTimer.current = setTimeout(() => { lockRef.current = false }, ms)
+  }
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
@@ -1085,13 +1116,20 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const scrollToDay = (ds: string) => {
     const el = rootRef.current?.querySelector(`[data-txm-day="${ds}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
+    if (!el || !p) return
+    const pinH = pinRef.current?.offsetHeight ?? 0
+    p.scrollTo({
+      top: p.scrollTop + el.getBoundingClientRect().top - p.getBoundingClientRect().top - pinH - 6,
+      behavior: 'smooth',
+    })
   }
   const goMonth = (dir: -1 | 1) => {
     const next = shiftMonthKey(month, dir)
     setMonth(next)
     setSelected(todayStr.startsWith(next) ? todayStr : null)
     setExpanded(false)
+    lock(800)
     rootRef.current?.closest('.m-scroll, .overflow-y-auto')?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -1101,6 +1139,32 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     if (dow === 6) return 'var(--fg-brand)'
     return 'var(--fg-primary)'
   }
+
+  // 스크롤 스파이 — compact 토글(히스테리시스 72/24) + 맨 위 날짜 그룹을 선택일로 동기.
+  useEffect(() => {
+    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
+    if (!p) return
+    const onScroll = () => {
+      const st = p.scrollTop
+      setCompact(prev => {
+        const next = prev ? st > 24 : st > 72
+        if (next && !prev) setExpanded(false)
+        return next
+      })
+      if (lockRef.current || !pinRef.current || !rootRef.current) return
+      const bottom = pinRef.current.getBoundingClientRect().bottom
+      const groups = rootRef.current.querySelectorAll('[data-txm-day]')
+      if (!groups.length) return
+      let cur = groups[0].getAttribute('data-txm-day')
+      for (const g of groups) {
+        if (g.getBoundingClientRect().top <= bottom + 28) cur = g.getAttribute('data-txm-day')
+        else break
+      }
+      if (cur && selectedRef.current !== cur) { selectedRef.current = cur; setSelected(cur) }
+    }
+    p.addEventListener('scroll', onScroll, { passive: true })
+    return () => p.removeEventListener('scroll', onScroll)
+  }, [])
 
   const dowLabels = useMemo(() => {
     // 요일 라벨 — formatDay 로케일 반환 재사용(2026-02-01 = 일요일).
@@ -1122,7 +1186,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const monthNum = Number(month.split('-')[1])
 
   return (
-    <div ref={rootRef} style={{ padding: '10px 0 28px' }}>
+    <div ref={rootRef} style={{ padding: '0 0 28px' }}>
+      {/* 고정 영역 — 월네비 + 총액(스크롤 시 접힘) + 캘린더. 리스트만 스크롤(design txm-pin). */}
+      <div ref={pinRef} className={`txm-pin ${compact ? 'txm-pin--compact' : ''}`}>
       {/* 월 네비 + 필터/추가 */}
       <div className="txm-monthnav">
         <button className="txm-monthnav__btn" onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
@@ -1167,7 +1233,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </div>
       )}
 
-      {/* 총액 + 인사이트 + 소비 요약 토글 */}
+      {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘 (design txm-collapse) */}
+      <div className="txm-collapse">
       <div className="txm-head">
         <div style={{ minWidth: 0 }}>
           <div className="txm-total num">
@@ -1206,6 +1273,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           </div>
         </Card>
       )}
+      </div>
 
       {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
       {!(activeCount > 0 || asset) && (
@@ -1231,7 +1299,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 <button
                   key={c.ds}
                   className={`txm-cell ${isSel ? 'txm-cell--sel' : ''}`}
-                  onClick={() => { setSelected(c.ds); if (data) scrollToDay(c.ds) }}
+                  onClick={() => { setSelected(c.ds); if (data) { lock(800); scrollToDay(c.ds) } }}
                 >
                   <span
                     className="txm-cell__num"
@@ -1262,6 +1330,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       )}
 
       <div className="txm-divider" />
+      </div>
 
       {/* 거래 리스트 — 날짜 그룹 */}
       <div className="txm-list">
