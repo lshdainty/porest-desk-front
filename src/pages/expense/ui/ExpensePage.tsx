@@ -133,7 +133,7 @@ function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobil
       key={i}
       style={{
         borderTop: mobile || i === 0 ? 'none' : '1px solid var(--border-subtle)',
-        padding: mobile ? '12px 10px' : '12px 14px',
+        padding: mobile ? '12px 0 12px 2px' : '12px 14px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
