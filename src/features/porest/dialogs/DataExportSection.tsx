@@ -195,7 +195,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       {modeSeg}
       {/* 1. 기간 선택 */}
-      <SectionCard title={t('section.periodSelect')}>
+      <SectionCard mobile={mobile} title={t('section.periodSelect')}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 8 }}>
           {PERIODS.map(p => {
             const active = period === p.v
@@ -227,6 +227,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
       {/* 2. 데이터 종류 */}
       <SectionCard
+        mobile={mobile}
         title={t('section.dataTypeTitle', { count: selected.length })}
         desc={t('section.dataTypeDesc')}
       >
@@ -260,7 +261,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
       </SectionCard>
 
       {/* 3. 파일 형식 */}
-      <SectionCard title={t('fileFormat')}>
+      <SectionCard mobile={mobile} title={t('fileFormat')}>
         <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 8 }}>
           {FORMATS.map(f => {
             const active = format === f.v
@@ -305,7 +306,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
       {/* 미리보기 결과 */}
       {preview && activeTab && (
-        <SectionCard title={t('preview')}>
+        <SectionCard mobile={mobile} title={t('preview')}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {preview.map(tbl => {
               const on = (previewTab ?? preview[0]?.type) === tbl.type
@@ -367,7 +368,17 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
 // ─── 보조 컴포넌트/스타일 ──────────────────────────────────────
 
-function SectionCard({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
+function SectionCard({ title, desc, children, mobile }: { title: string; desc?: string; children: React.ReactNode; mobile?: boolean }) {
+  const inner = (
+    <>
+      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
+      {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
+      <div style={{ marginTop: 12 }}>{children}</div>
+    </>
+  )
+  // 모바일 카드 다이어트(사용자 결정) — 셸 없이 [label+content] 플랫 묶음.
+  // 묶음 간 간격은 최상위 gap-2xl(32)가 담당. 데스크톱은 기존 카드 유지.
+  if (mobile) return <section>{inner}</section>
   return (
     <div
       style={{
@@ -377,9 +388,7 @@ function SectionCard({ title, desc, children }: { title: string; desc?: string; 
         padding: 'var(--spacing-lg)',
       }}
     >
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{title}</div>
-      {desc && <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, marginBottom: 4 }}>{desc}</div>}
-      <div style={{ marginTop: 12 }}>{children}</div>
+      {inner}
     </div>
   )
 }
