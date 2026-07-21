@@ -65,7 +65,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xl)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
       {/* 묶음 1 — 배너 + 취합카드(상단 정보 블록). 내부 gap md, 최상위 16 으로 묶음 2 와 분리(사용자 결정). */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
       {/* Intro */}
@@ -205,7 +205,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: mobile ? '12px 4px' : '14px 16px',
+                  padding: mobile ? '12px 8px' : '14px 16px',
                   borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
                 }}
               >
@@ -362,7 +362,7 @@ function PresetManagerSkeleton({ mobile }: { mobile: boolean }) {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            padding: mobile ? '12px 4px' : '14px 16px',
+            padding: mobile ? '12px 8px' : '14px 16px',
             borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
           }}
         >
