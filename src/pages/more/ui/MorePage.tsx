@@ -92,26 +92,29 @@ export const MorePage = () => {
   return (
     <div style={{ padding: 'var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)' }}>
       {/* 검색바 */}
-      <div className="relative" style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg-surface)', paddingBottom: 'var(--spacing-sm)' }}>
-        <Search
-          size={16}
-          style={{
-            position: 'absolute',
-            left: 12,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--fg-tertiary)',
-            pointerEvents: 'none',
-          }}
-        />
-        <Input
-          search
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder={t('search')}
-          className="w-full pl-9"
-        />
+      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg-surface)', paddingBottom: 'var(--spacing-sm)' }}>
+        {/* 아이콘 세로 중앙 기준은 input 높이 — sticky wrapper의 paddingBottom에 안 끌리도록 분리 */}
+        <div className="relative">
+          <Search
+            size={16}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--fg-tertiary)',
+              pointerEvents: 'none',
+            }}
+          />
+          <Input
+            search
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('search')}
+            className="w-full pl-9"
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (
