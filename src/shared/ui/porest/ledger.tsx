@@ -327,7 +327,9 @@ export function LedgerDrop({ className, ...props }: React.ComponentProps<'div'>)
 
 export const LedgerCalendar = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('relative pt-3', className)} {...props} />
+    // -mx-2: 셀 콘텐츠가 중앙정렬이라 그리드를 페이지 라인보다 8px 바깥으로 —
+    // 첫/끝 셀(일·토)이 다른 요소와 같은 라인에서 시작해 보이게 (design txm-cal 정합).
+    <div ref={ref} className={cn('relative pt-3 -mx-2', className)} {...props} />
   ),
 )
 LedgerCalendar.displayName = 'LedgerCalendar'
@@ -517,6 +519,81 @@ export function LedgerDaySum({ className, ...props }: React.ComponentProps<'span
   return (
     <span
       className={cn('ml-auto text-[length:var(--text-caption)] tabular-nums', className)}
+      {...props}
+    />
+  )
+}
+
+// ─── 리스트 행 골격 (tx-row spec 공용화) ────────────────────
+// leading(카테고리 칩/체크) · Main(Title+Sub) · trailing(금액/뱃지)은 화면이 소유.
+
+export function LedgerRow({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-3 cursor-pointer rounded-lg pl-1.5 pr-1 -ml-1 -mr-1 py-3',
+        'transition-[background] duration-[var(--motion-duration-fast)]',
+        'hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]',
+        '[-webkit-tap-highlight-color:transparent]',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+export function LedgerRowMain({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div className={cn('flex-1 min-w-0', className)} {...props} />
+}
+
+export function LedgerRowTitle({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn(
+        'text-[14px] font-semibold text-[var(--fg-primary)] tracking-[-0.005em]',
+        'whitespace-nowrap overflow-hidden text-ellipsis',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+export function LedgerRowSub({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn(
+        'text-[12px] text-[var(--fg-tertiary)] mt-[2px] flex items-center gap-1',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+/** sub 안 구분점(·). */
+export function LedgerRowSep({ className, ...props }: React.ComponentProps<'span'>) {
+  return (
+    <span
+      className={cn('w-[2px] h-[2px] rounded-full bg-[var(--border-strong)]', className)}
+      {...props}
+    />
+  )
+}
+
+/** 우측 금액 — income이면 fg-income, 아니면 fg-expense. */
+export function LedgerRowAmt({
+  className,
+  income = false,
+  ...props
+}: React.ComponentProps<'div'> & { income?: boolean }) {
+  return (
+    <div
+      className={cn(
+        'text-[14px] font-bold tabular-nums tracking-[-0.01em] text-right shrink-0',
+        income ? 'text-[var(--fg-income)]' : 'text-[var(--fg-expense)]',
+        className,
+      )}
       {...props}
     />
   )

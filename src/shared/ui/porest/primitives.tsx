@@ -8,7 +8,7 @@ import { KRW, money, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatMonthShort } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import * as LucideIcons from 'lucide-react'
-import { TX_ROW } from './tx-row-tokens'
+import { LedgerRow, LedgerRowAmt, LedgerRowMain, LedgerRowSep, LedgerRowSub, LedgerRowTitle } from './ledger'
 
 type LucideIconName = keyof typeof LucideIcons
 
@@ -88,35 +88,34 @@ export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 
   )
 }
 
-// tx-row CSS spec: tx-row-tokens.ts (TX_ROW) 토큰 재사용.
-// (별도 파일로 분리한 것은 react-refresh/only-export-components 를 만족하기 위함.)
+// tx-row spec — shared/ui/porest/ledger.tsx 의 LedgerRow 계열 공용화.
 export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
   const c = CATEGORIES[tx.cat]
   const isIncome = tx.amt > 0
   return (
-    <div className={TX_ROW.className} onClick={() => onClick?.(tx)}>
+    <LedgerRow onClick={() => onClick?.(tx)}>
       <CatIcon cat={tx.cat} />
-      <div style={TX_ROW.metaStyle}>
-        <div style={TX_ROW.titleStyle}>{tx.title}</div>
-        <div style={TX_ROW.subStyle}>
+      <LedgerRowMain>
+        <LedgerRowTitle>{tx.title}</LedgerRowTitle>
+        <LedgerRowSub>
           <span>{c?.label}</span>
-          <span style={TX_ROW.sepStyle} />
+          <LedgerRowSep />
           <span>{tx.account}</span>
           {tx.time && (
             <>
-              <span style={TX_ROW.sepStyle} />
+              <LedgerRowSep />
               <span>{tx.time}</span>
             </>
           )}
-        </div>
-      </div>
+        </LedgerRowSub>
+      </LedgerRowMain>
       <div>
-        <div style={TX_ROW.amtStyle(isIncome)}>
+        <LedgerRowAmt income={isIncome}>
           <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
           <HideUnit>{isEn() ? '' : '원'}</HideUnit>
-        </div>
+        </LedgerRowAmt>
       </div>
-    </div>
+    </LedgerRow>
   )
 }
 

@@ -7,7 +7,7 @@ import type { Expense } from '@/entities/expense/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
 import { tileRadius } from '@/shared/lib'
 import { Icon } from './primitives'
-import { TX_ROW } from './tx-row-tokens'
+import { LedgerRow, LedgerRowAmt, LedgerRowMain, LedgerRowSep, LedgerRowSub, LedgerRowTitle } from './ledger'
 
 /**
  * expenseDate 의 시각 부분만 표시 ("HH:mm").
@@ -76,14 +76,14 @@ export function ExpenseRow({
   const { t } = useTranslation('common')
   const isIncome = expense.expenseType === 'INCOME'
   return (
-    <div className={TX_ROW.className} onClick={() => onClick?.(expense)}>
+    <LedgerRow onClick={() => onClick?.(expense)}>
       <CategoryChip
         name={expense.categoryName ?? t('others')}
         color={expense.categoryColor ?? null}
         icon={expense.categoryIcon ?? null}
       />
-      <div style={TX_ROW.metaStyle}>
-        <div style={{ ...TX_ROW.titleStyle, display: 'flex', alignItems: 'center', gap: 5, overflow: 'visible' }}>
+      <LedgerRowMain>
+        <LedgerRowTitle className="flex items-center gap-[5px] overflow-visible">
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {expense.merchant ?? expense.description ?? expense.categoryName ?? t('transaction')}
           </span>
@@ -95,38 +95,38 @@ export function ExpenseRow({
               </span>
             </span>
           )}
-        </div>
-        <div style={TX_ROW.subStyle}>
+        </LedgerRowTitle>
+        <LedgerRowSub>
           <span>{expense.categoryName ?? t('others')}</span>
           {expense.assetName && (
             <>
-              <span style={TX_ROW.sepStyle} />
+              <LedgerRowSep />
               <span>{expense.assetName}</span>
             </>
           )}
           {expense.expenseDate && (showDate
             ? (
               <>
-                <span style={TX_ROW.sepStyle} />
+                <LedgerRowSep />
                 <span>{formatExpenseDateFull(expense.expenseDate)}</span>
               </>
             )
             : formatExpenseTimeLabel(expense.expenseDate) && (
               <>
-                <span style={TX_ROW.sepStyle} />
+                <LedgerRowSep />
                 <span>{formatExpenseTimeLabel(expense.expenseDate)}</span>
               </>
             ))}
-        </div>
-      </div>
+        </LedgerRowSub>
+      </LedgerRowMain>
       <div>
         {right ?? (
-          <div style={TX_ROW.amtStyle(isIncome)}>
+          <LedgerRowAmt income={isIncome}>
             <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
             <HideUnit>{isEn() ? '' : '원'}</HideUnit>
-          </div>
+          </LedgerRowAmt>
         )}
       </div>
-    </div>
+    </LedgerRow>
   )
 }

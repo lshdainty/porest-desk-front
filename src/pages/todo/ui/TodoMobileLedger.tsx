@@ -35,6 +35,11 @@ import {
   LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
+  LedgerRow,
+  LedgerRowMain,
+  LedgerRowSep,
+  LedgerRowSub,
+  LedgerRowTitle,
   LedgerShell,
   LedgerSub,
   LedgerSumBtn,
@@ -408,9 +413,9 @@ export function TodoMobileLedger({
                   const overdue = !isDone(td) && !!due && due < today
                   const done = isDone(td)
                   return (
-                    <div
+                    <LedgerRow
                       key={td.rowId}
-                      className="tdm-row"
+                      className="rounded-none"
                       style={{
                         borderBottom:
                           i === items.length - 1 ? 'none' : '1px solid var(--border-subtle)',
@@ -436,23 +441,22 @@ export function TodoMobileLedger({
                       >
                         {done && <Check size={13} color="#fff" strokeWidth={3} />}
                       </button>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          className="tdm-row__title"
+                      <LedgerRowMain>
+                        <LedgerRowTitle
                           style={{ textDecoration: done ? 'line-through' : 'none' }}
                         >
                           {td.title}
-                        </div>
-                        <div className="tdm-row__meta">
+                        </LedgerRowTitle>
+                        <LedgerRowSub>
                           {tagOf(td) && <span>{tagOf(td)}</span>}
                           {td.content && (
                             <>
-                              {tagOf(td) && <i />}
+                              {tagOf(td) && <LedgerRowSep />}
                               <AlignLeft size={11} />
                             </>
                           )}
-                        </div>
-                      </div>
+                        </LedgerRowSub>
+                      </LedgerRowMain>
                       <span
                         className="tdm-prio"
                         style={{
@@ -462,7 +466,7 @@ export function TodoMobileLedger({
                       >
                         {t(`prio.${td.priority}`)}
                       </span>
-                    </div>
+                    </LedgerRow>
                   )
                 })}
               </div>

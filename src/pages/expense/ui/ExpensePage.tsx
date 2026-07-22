@@ -267,7 +267,7 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
           <LedgerCalendar>
             <LedgerDow
               labels={dowLabels}
-              colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+              colorFor={i => (i === 0 ? 'var(--color-chart-red)' : i === 6 ? 'var(--fg-brand)' : undefined)}
             />
             <LedgerWeek>
               {weekDays.map((d, i) => (
@@ -1244,7 +1244,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > todayStr) return 'var(--fg-tertiary)'
-    if (dow === 0) return 'var(--fg-expense)'
+    if (dow === 0) return 'var(--color-chart-red)' // 다크에서도 light 값 고정(사용자 결정)
     if (dow === 6) return 'var(--fg-brand)'
     return 'var(--fg-primary)'
   }
@@ -1363,7 +1363,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       <LedgerCalendar ref={calRef}>
         <LedgerDow
           labels={dowLabels}
-          colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+          colorFor={i => (i === 0 ? 'var(--color-chart-red)' : i === 6 ? 'var(--fg-brand)' : undefined)}
         />
         {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
           <LedgerWeek key={wi}>
