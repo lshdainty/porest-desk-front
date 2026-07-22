@@ -264,7 +264,7 @@ export const SettingsPage = () => {
         </div>
         {/* 모바일 섹션 본문 스크롤 — scrollbar 숨김(스크롤 기능 유지). 데스크톱/태블릿은 별도 분기라 무관. */}
         {/* 앱 설정 계열 화면(ListView x20/x24) 정합 — 상하 24 / 좌우 20 */}
-        <div className="scrollbar-hide" style={{ padding: '24px 20px', flex: 1, overflowY: 'auto', minHeight: 0 }}>{renderBody(true)}</div>
+        <div className="scrollbar-hide" style={{ padding: 'var(--spacing-xl)', flex: 1, overflowY: 'auto', minHeight: 0 }}>{renderBody(true)}</div>
       </div>
     )
   }
@@ -743,7 +743,6 @@ function AccountGroup({ label, children, mobile }: { label: string; children: Re
           fontWeight: 700,
           color: 'var(--fg-primary)',
           paddingBottom: 8,
-          paddingLeft: 2,
         }}
       >
         {label}
@@ -825,7 +824,7 @@ function AccountRow({
     alignItems: 'center',
     gap: 12,
     width: '100%',
-    padding: '14px 16px',
+    padding: '14px 0', // 좌우 inset 삭제(사용자 결정)
     borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
   }
 
@@ -906,7 +905,7 @@ function SubscriptionRow({
         alignItems: 'center',
         gap: 12,
         width: '100%',
-        padding: '14px 16px',
+        padding: '14px 0', // 좌우 inset 삭제(사용자 결정)
         border: 0,
         background: 'transparent',
         cursor: 'pointer',
