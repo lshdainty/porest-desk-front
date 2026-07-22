@@ -811,7 +811,7 @@ function AccountRow({
         {label}
       </span>
       {desc && (
-        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginRight: right ? 8 : 0 }}>
+        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>
           {desc}
         </span>
       )}
