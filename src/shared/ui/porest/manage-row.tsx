@@ -26,7 +26,7 @@ export function ManageRow({
 }) {
   return (
     <div
-      className={`${ROW_BASE_CLS} ${className}`}
+      className={`${MANAGE_ROW.className} ${className}`}
       style={style}
       onClick={onClick}
     >

@@ -233,7 +233,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
         desc={t('section.dataTypeDesc')}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {DATA_TYPES.map((dt, idx) => {
+          {DATA_TYPES.map(dt => {
             const active = selected.includes(dt.v)
             const IconComp = dt.Icon
             const cnt = counts[TYPE_SLUG[dt.v]]
