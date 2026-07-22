@@ -9,7 +9,6 @@ import {
   Sparkles,
   CheckCheck,
   AlignLeft,
-  Settings2,
   Flame,
   CircleDot,
   Leaf,
@@ -165,7 +164,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   )
 
   const [filter, setFilter] = useState<FilterKey>('today')
-  const [quickAdd, setQuickAdd] = useState('')
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null)
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
@@ -227,20 +225,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todos, filter, today])
 
-  const handleQuickAdd = () => {
-    const v = quickAdd.trim()
-    if (!v) return
-    createTodo.mutate(
-      {
-        title: v,
-        priority: 'MEDIUM',
-        category: DEFAULT_TAG,
-        dueDate: today,
-      },
-      { onSuccess: () => setQuickAdd('') },
-    )
-  }
-
   const onSave = (values: TodoFormValues, id?: number) => {
     if (id != null)
       updateTodo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
@@ -271,120 +255,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         mobile={mobile}
       />
     ) : null
-
-  // ── 퀵추가 ────────────────────────────────────────────────────────────────
-  const QuickAdd = mobile ? (
-    // 모바일 카드 다이어트 — 인풋 그릇은 sunken 박스 (design 모바일 검색 인풋 패턴).
-    <div
-      className="focus-within:[outline:2px_solid_var(--border-focus)]"
-      style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4, background: 'var(--bg-sunken)', borderRadius: 'var(--radius-md)' }}
-    >
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          flexShrink: 0,
-        }}
-      >
-        <Plus size={18} />
-      </span>
-      <input
-        value={quickAdd}
-        onChange={e => setQuickAdd(e.target.value)}
-        onKeyDown={e => {
-          if (e.key === 'Enter') handleQuickAdd()
-        }}
-        placeholder={t('quickAddPlaceholder')}
-        aria-label={t('quickAddLabel')}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          border: 0,
-          outline: 'none',
-          background: 'transparent',
-          fontSize: 14,
-          color: 'var(--fg-primary)',
-          padding: '8px 0',
-          fontFamily: 'inherit',
-        }}
-      />
-      <Button
-        size="sm"
-        onClick={handleQuickAdd}
-        loading={createTodo.isPending}
-        style={{ flexShrink: 0 }}
-      >
-        {tc('add')}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setEditing({ _new: true })}
-        style={{ flexShrink: 0 }}
-      >
-        <Settings2 size={13} /> {t('detail')}
-      </Button>
-    </div>
-  ) : (
-    <Card
-      className="focus-within:[outline:2px_solid_var(--border-focus)]"
-      style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}
-    >
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          flexShrink: 0,
-        }}
-      >
-        <Plus size={18} />
-      </span>
-      <input
-        value={quickAdd}
-        onChange={e => setQuickAdd(e.target.value)}
-        onKeyDown={e => {
-          if (e.key === 'Enter') handleQuickAdd()
-        }}
-        placeholder={t('quickAddPlaceholder')}
-        aria-label={t('quickAddLabel')}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          border: 0,
-          outline: 'none',
-          background: 'transparent',
-          fontSize: 14,
-          color: 'var(--fg-primary)',
-          padding: '8px 0',
-          fontFamily: 'inherit',
-        }}
-      />
-      <Button
-        size="sm"
-        onClick={handleQuickAdd}
-        loading={createTodo.isPending}
-        style={{ flexShrink: 0 }}
-      >
-        {tc('add')}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setEditing({ _new: true })}
-        style={{ flexShrink: 0 }}
-      >
-        <Settings2 size={13} /> {t('detail')}
-      </Button>
-    </Card>
-  )
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
   const FilterChips = (
@@ -747,7 +617,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {SkyHero}
-          {QuickAdd}
           {FilterChips}
           {ListCard}
           {MySky}
@@ -810,7 +679,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {QuickAdd}
             {FilterChips}
             {ListCard}
           </div>
@@ -1287,89 +1155,9 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
     </div>
   )
 
-  // ── 퀵추가 (정적 틀 — 실제 렌더, 비활성) ──
-  const QuickAdd = (
-    <Card style={{ padding: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          flexShrink: 0,
-        }}
-      >
-        <Plus size={18} />
-      </span>
-      <input
-        disabled
-        placeholder={t('quickAddPlaceholder')}
-        aria-label={t('quickAddLabel')}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          border: 0,
-          outline: 'none',
-          background: 'transparent',
-          fontSize: 14,
-          color: 'var(--fg-primary)',
-          padding: '8px 0',
-          fontFamily: 'inherit',
-        }}
-      />
-      <Button size="sm" disabled style={{ flexShrink: 0 }}>
-        {tc('add')}
-      </Button>
-      <Button variant="outline" size="sm" disabled style={{ flexShrink: 0 }}>
-        <Settings2 size={13} /> {t('detail')}
-      </Button>
-    </Card>
-  )
-
-  // ── 필터 칩 (정적 틀 — 실제 렌더, 카운트만 skeleton) ──
-  const Chips = (
-    <Tabs value={t('today')}>
-      <TabsList variant="pills" size="sm">
-        {[t('today'), t('thisWeek'), t('status.ALL'), t('status.COMPLETED')].map(label => (
-          <TabsTrigger
-            key={label}
-            variant="pills"
-            size="sm"
-            value={label}
-            disabled
-          >
-            {label}
-            <SkeletonBase className="h-3 w-3 ml-0.5 rounded-sm" />
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
-  )
-
-  // ── 그룹 리스트 (데이터) — 실제 그룹 헤더 + 행 구조 미러 ──
-  const List = (
-    <Card style={{ padding: mobile ? '8px 16px' : '8px 20px' }}>
-      <div
-        style={{
-          padding: mobile ? '12px 0 6px' : '14px 0 8px',
-          borderBottom: '1px solid var(--border-subtle)',
-          marginBottom: 4,
-        }}
-      >
-        <SkeletonBase className="h-3 w-28" />
-      </div>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <TodoRowSkeleton key={i} last={i === 3} />
-      ))}
-    </Card>
-  )
-
   const Left = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {Stats}
-      {QuickAdd}
       {Chips}
       {List}
     </div>
@@ -1382,7 +1170,6 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ padding: '16px 24px 96px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {Stats}
-            {QuickAdd}
             {Chips}
             {List}
           </div>
