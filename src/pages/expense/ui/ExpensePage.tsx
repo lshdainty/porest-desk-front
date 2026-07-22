@@ -7,6 +7,37 @@ import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { Button } from '@/shared/ui/button'
+import {
+  LedgerCalendar,
+  LedgerCell,
+  LedgerCellAmt,
+  LedgerCellNum,
+  LedgerCellTip,
+  LedgerCollapse,
+  LedgerDayDate,
+  LedgerDayGroup,
+  LedgerDayHead,
+  LedgerDayRel,
+  LedgerDaySum,
+  LedgerDivider,
+  LedgerDow,
+  LedgerExpand,
+  LedgerHead,
+  LedgerList,
+  LedgerMonthLabel,
+  LedgerMonthNav,
+  LedgerNavBtn,
+  LedgerPin,
+  LedgerPrevBtn,
+  LedgerShell,
+  LedgerSub,
+  LedgerSumBtn,
+  LedgerSummary,
+  LedgerSummaryRow,
+  LedgerTotal,
+  LedgerWeek,
+  useLedgerScroll,
+} from '@/shared/ui/porest/ledger'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
@@ -213,51 +244,50 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
     const inMonth = (d: Date) => d.getFullYear() === y && d.getMonth() + 1 === m
     const dowLabels = Array.from({ length: 7 }, (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow)
     return (
-      <div style={{ padding: '0 0 28px' }}>
-        <div className="txm-pin">
-          <div className="txm-monthnav">
-            <button className="txm-monthnav__btn" aria-label={t('prevMonth')}><ChevronLeft size={19} /></button>
-            <span className="txm-monthnav__label">{txmMonthLabel(mk)}</span>
-            <button className="txm-monthnav__btn" aria-label={t('nextMonth')}><ChevronRight size={19} /></button>
-            <button className="txm-monthnav__btn" style={{ marginLeft: 'auto' }} aria-label={t('filter.title')}>
+      <LedgerShell>
+        <LedgerPin>
+          <LedgerMonthNav>
+            <LedgerNavBtn aria-label={t('prevMonth')}><ChevronLeft size={19} /></LedgerNavBtn>
+            <LedgerMonthLabel>{txmMonthLabel(mk)}</LedgerMonthLabel>
+            <LedgerNavBtn aria-label={t('nextMonth')}><ChevronRight size={19} /></LedgerNavBtn>
+            <LedgerNavBtn className="ml-auto" aria-label={t('filter.title')}>
               <SlidersHorizontal size={18} />
-            </button>
-            <button className="txm-monthnav__btn" aria-label={t('addTransaction')}><Plus size={19} /></button>
-          </div>
-          <div className="txm-collapse">
-            <div className="txm-head">
+            </LedgerNavBtn>
+            <LedgerNavBtn aria-label={t('addTransaction')}><Plus size={19} /></LedgerNavBtn>
+          </LedgerMonthNav>
+          <LedgerCollapse>
+            <LedgerHead>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <SkeletonBase className="h-8 w-40" />
                 <SkeletonBase className="mt-2 h-4 w-52" />
               </div>
-              <button className="txm-sumbtn">{t('txm.spendSummary')}</button>
-            </div>
-          </div>
-          <div className="txm-cal">
-            <div className="txm-dow">
-              {dowLabels.map((d, i) => (
-                <span key={i} style={{ color: i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined }}>{d}</span>
-              ))}
-            </div>
-            <div className="txm-week">
+              <LedgerSumBtn>{t('txm.spendSummary')}</LedgerSumBtn>
+            </LedgerHead>
+          </LedgerCollapse>
+          <LedgerCalendar>
+            <LedgerDow
+              labels={dowLabels}
+              colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+            />
+            <LedgerWeek>
               {weekDays.map((d, i) => (
-                <div key={i} className="txm-cell" style={{ cursor: 'default' }}>
-                  <span className="txm-cell__num" style={{ color: 'var(--fg-primary)', opacity: inMonth(d) ? 1 : 0.35 }}>
+                <LedgerCell key={i} empty>
+                  <LedgerCellNum style={{ color: 'var(--fg-primary)', opacity: inMonth(d) ? 1 : 0.35 }}>
                     {d.getDate()}
-                  </span>
-                  <span className="txm-cell__amt"><SkeletonBase className="h-2.5 w-8" /></span>
-                </div>
+                  </LedgerCellNum>
+                  <LedgerCellAmt><SkeletonBase className="h-2.5 w-8" /></LedgerCellAmt>
+                </LedgerCell>
               ))}
-            </div>
-            <div className="txm-expand"><ChevronDown size={20} /></div>
-          </div>
-          <div className="txm-divider" />
-        </div>
-        <div className="txm-list" style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            </LedgerWeek>
+            <LedgerExpand />
+          </LedgerCalendar>
+          <LedgerDivider />
+        </LedgerPin>
+        <LedgerList style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
           <ExpenseDayGroupSkeleton rows={3} mobile />
           <ExpenseDayGroupSkeleton rows={2} mobile />
-        </div>
-      </div>
+        </LedgerList>
+      </LedgerShell>
     )
   }
 
@@ -868,7 +898,8 @@ function FilterChipsRow({
   return (
     <div
       className="scrollbar-hide"
-      style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 20px 0', alignItems: 'center' }}
+      className="-mx-[var(--spacing-xl)] px-[var(--spacing-xl)]"
+      style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingTop: 8, alignItems: 'center' }}
     >
       {chips.map(c => (
         <span
@@ -1112,25 +1143,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [sumOpen, setSumOpen] = useState(false)
   const now = new Date()
   const todayStr = `${now.getFullYear()}-${TXM_PAD(now.getMonth() + 1)}-${TXM_PAD(now.getDate())}`
-  const [selected, setSelected] = useState<string | null>(
-    todayStr.startsWith(initialMonth) ? todayStr : null,
-  )
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  // pin/compact — 스크롤 시 총액 영역 접힘 + 상단 고정 (design txm-pin).
-  const [compact, setCompact] = useState(false)
   // 셀 차트형 툴팁(지출·수입) — hover 셀 기준 좌표 (사용자 결정).
   const [cellTip, setCellTip] = useState<{ ds: string; left: number; top: number } | null>(null)
   const calRef = useRef<HTMLDivElement | null>(null)
-  const pinRef = useRef<HTMLDivElement | null>(null)
-  const lockRef = useRef(false)
-  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const selectedRef = useRef<string | null>(selected)
-  useEffect(() => { selectedRef.current = selected }, [selected])
-  const lock = (ms: number) => {
-    lockRef.current = true
-    if (lockTimer.current) clearTimeout(lockTimer.current)
-    lockTimer.current = setTimeout(() => { lockRef.current = false }, ms)
-  }
+  // pin compact·스크롤 스파이·lock — 공용 원장 훅 (design txm-pin).
+  const { rootRef, pinRef, compact, selected, setSelected, lock, scrollToDay, scrollToTop } =
+    useLedgerScroll({
+      initialSelected: todayStr.startsWith(initialMonth) ? todayStr : null,
+      onCompactEnter: () => setExpanded(false),
+    })
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
@@ -1162,7 +1183,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           t={t}
           i18nKey={diff > 0 ? 'txm.insightLess' : 'txm.insightMore'}
           values={{ amount }}
-          components={{ hl: <b className={diff > 0 ? 'txm-hl' : 'txm-hl txm-hl--warn'} /> }}
+          components={{ hl: <b className={diff > 0 ? 'font-bold text-[var(--fg-brand)]' : 'font-bold text-[var(--fg-expense)]'} /> }}
         />
       )
     }
@@ -1176,7 +1197,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           t={t}
           i18nKey="txm.insightTopCat"
           values={{ cat: top.categoryName }}
-          components={{ hl: <b className="txm-hl" /> }}
+          components={{ hl: <b className="font-bold text-[var(--fg-brand)]" /> }}
         />
       )
     }
@@ -1212,23 +1233,13 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   if (selWeek < 0) selWeek = weeks.findIndex(w => w.some(c => c && c.ds === todayStr))
   if (selWeek < 0) selWeek = 0
 
-  const scrollToDay = (ds: string) => {
-    const el = rootRef.current?.querySelector(`[data-txm-day="${ds}"]`)
-    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
-    if (!el || !p) return
-    const pinH = pinRef.current?.offsetHeight ?? 0
-    p.scrollTo({
-      top: p.scrollTop + el.getBoundingClientRect().top - p.getBoundingClientRect().top - pinH - 6,
-      behavior: 'smooth',
-    })
-  }
   const goMonth = (dir: -1 | 1) => {
     const next = shiftMonthKey(month, dir)
     setMonth(next)
     setSelected(todayStr.startsWith(next) ? todayStr : null)
     setExpanded(false)
     lock(800)
-    rootRef.current?.closest('.m-scroll, .overflow-y-auto')?.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollToTop()
   }
 
   const numColor = (ds: string, dow: number): string => {
@@ -1237,37 +1248,6 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     if (dow === 6) return 'var(--fg-brand)'
     return 'var(--fg-primary)'
   }
-
-  // 스크롤 스파이 — compact 토글(히스테리시스 72/24) + 맨 위 날짜 그룹을 선택일로 동기.
-  useEffect(() => {
-    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
-    if (!p) return
-    const onScroll = () => {
-      const st = p.scrollTop
-      setCompact(prev => {
-        // 콘텐츠가 짧으면 접힘(−collapse 높이) 순간 scrollTop이 해제 임계 아래로
-        // clamp돼 접힘↔펼침 무한 플리커 발생 — 접힌 뒤에도 진입 임계(72) 위에
-        // 남을 수 있는 스크롤 여유가 있을 때만 진입.
-        const collapseH = pinRef.current?.querySelector('.txm-collapse')?.scrollHeight ?? 0
-        const canStay = p.scrollHeight - p.clientHeight - (prev ? 0 : collapseH) > 72
-        const next = prev ? st > 24 : st > 72 && canStay
-        if (next && !prev) setExpanded(false)
-        return next
-      })
-      if (lockRef.current || !pinRef.current || !rootRef.current) return
-      const bottom = pinRef.current.getBoundingClientRect().bottom
-      const groups = rootRef.current.querySelectorAll('[data-txm-day]')
-      if (!groups.length) return
-      let cur = groups[0]!.getAttribute('data-txm-day')
-      for (const g of groups) {
-        if (g.getBoundingClientRect().top <= bottom + 28) cur = g.getAttribute('data-txm-day')
-        else break
-      }
-      if (cur && selectedRef.current !== cur) { selectedRef.current = cur; setSelected(cur) }
-    }
-    p.addEventListener('scroll', onScroll, { passive: true })
-    return () => p.removeEventListener('scroll', onScroll)
-  }, [])
 
   const dowLabels = useMemo(() => {
     // 요일 라벨 — formatDay 로케일 반환 재사용(2026-02-01 = 일요일).
@@ -1290,32 +1270,27 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const filterActive = activeCount > 0 || !!asset
 
   return (
-    <div ref={rootRef} style={{ padding: '0 0 28px' }}>
+    <LedgerShell ref={rootRef}>
       {/* 고정 영역 — 월네비 + 총액(스크롤 시 접힘) + 캘린더. 리스트만 스크롤(design txm-pin). */}
-      <div ref={pinRef} className={`txm-pin ${compact ? 'txm-pin--compact' : ''}`}>
+      <LedgerPin ref={pinRef} compact={compact}>
       {/* 월 네비 + 필터/추가 */}
-      <div className="txm-monthnav">
+      <LedgerMonthNav>
         {!filterActive && (
           <>
-            <button className="txm-monthnav__btn" onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
+            <LedgerNavBtn onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
               <ChevronLeft size={19} />
-            </button>
-            <span className="txm-monthnav__label">{txmMonthLabel(month)}</span>
-            <button className="txm-monthnav__btn" onClick={() => goMonth(1)} aria-label={t('nextMonth')}>
+            </LedgerNavBtn>
+            <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
+            <LedgerNavBtn onClick={() => goMonth(1)} aria-label={t('nextMonth')}>
               <ChevronRight size={19} />
-            </button>
+            </LedgerNavBtn>
           </>
         )}
-        <button
-          className="txm-monthnav__btn"
+        <LedgerNavBtn
+          className="ml-auto relative"
+          active={activeCount > 0}
           onClick={() => setFilterOpen(true)}
           aria-label={t('filter.title')}
-          style={{
-            marginLeft: 'auto',
-            position: 'relative',
-            background: activeCount > 0 ? 'var(--bg-brand-subtle)' : 'transparent',
-            color: activeCount > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-          }}
         >
           <SlidersHorizontal size={18} />
           {activeCount > 0 && (
@@ -1326,11 +1301,11 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               {activeCount}
             </span>
           )}
-        </button>
-        <button className="txm-monthnav__btn" onClick={onAddTx} aria-label={t('addTransaction')}>
+        </LedgerNavBtn>
+        <LedgerNavBtn onClick={onAddTx} aria-label={t('addTransaction')}>
           <Plus size={19} />
-        </button>
-      </div>
+        </LedgerNavBtn>
+      </LedgerMonthNav>
 
       {filterActive && (
         <FilterChipsRow
@@ -1345,71 +1320,61 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
       {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
       {!filterActive && (
-      <div className="txm-collapse">
-      <div className="txm-head">
+      <LedgerCollapse>
+      <LedgerHead>
         <div style={{ minWidth: 0 }}>
-          <div className="txm-total num">
+          <LedgerTotal className="num">
             {isLoadingSummary ? '—' : <><MaskAmount>{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit /></>}
-          </div>
-          {insight && <div className="txm-sub">{insight}</div>}
+          </LedgerTotal>
+          {insight && <LedgerSub>{insight}</LedgerSub>}
         </div>
-        <button
-          className={`txm-sumbtn ${sumOpen ? 'txm-sumbtn--on' : ''}`}
-          onClick={() => setSumOpen(v => !v)}
-          aria-expanded={sumOpen}
-        >
+        <LedgerSumBtn active={sumOpen} onClick={() => setSumOpen(v => !v)} aria-expanded={sumOpen}>
           {t('txm.spendSummary')}
-        </button>
-      </div>
+        </LedgerSumBtn>
+      </LedgerHead>
 
       {sumOpen && (
-        <Card variant="raised" className="txm-summary">
-          <div className="txm-summary__row">
+        <LedgerSummary>
+          <LedgerSummaryRow>
             <span>{t('income')}</span>
             <span className="num" style={{ color: 'var(--fg-brand)' }}>
               <MaskAmount>+{wonPre()}{KRW(monthIn)}</MaskAmount><WonUnit />
             </span>
-          </div>
-          <div className="txm-summary__row">
+          </LedgerSummaryRow>
+          <LedgerSummaryRow>
             <span>{t('expense')}</span>
             <span className="num" style={{ color: 'var(--fg-expense)' }}>
               <MaskAmount>−{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit />
             </span>
-          </div>
-          <div className="txm-summary__row txm-summary__row--total">
+          </LedgerSummaryRow>
+          <LedgerSummaryRow total>
             <span>{t('txDetail.sumLabel')}</span>
             <span className="num">
               <MaskAmount>{monthIn - monthOut >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(monthIn - monthOut))}</MaskAmount><WonUnit />
             </span>
-          </div>
-        </Card>
+          </LedgerSummaryRow>
+        </LedgerSummary>
       )}
-      </div>
+      </LedgerCollapse>
       )}
 
       {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
       {!filterActive && (
-      <div className="txm-cal" ref={calRef} style={{ position: 'relative' }}>
-        <div className="txm-dow">
-          {dowLabels.map((d, i) => (
-            <span
-              key={i}
-              style={{ color: i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined }}
-            >
-              {d}
-            </span>
-          ))}
-        </div>
+      <LedgerCalendar ref={calRef}>
+        <LedgerDow
+          labels={dowLabels}
+          colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+        />
         {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
-          <div key={wi} className="txm-week">
+          <LedgerWeek key={wi}>
             {w.map((c, i) => {
-              if (!c) return <div key={`e${i}`} className="txm-cell" style={{ cursor: 'default' }} />
+              if (!c) return <LedgerCell key={`e${i}`} empty />
               const isSel = c.ds === selected
               const data = byDay[c.ds]
               return (
-                <button
+                <LedgerCell
                   key={c.ds}
-                  className={`txm-cell ${isSel ? 'txm-cell--sel' : ''}`}
+                  selected={isSel}
                   onClick={() => { setSelected(c.ds); if (data) { lock(800); scrollToDay(c.ds) } }}
                   onMouseEnter={(e) => {
                     if (!data || !calRef.current) return
@@ -1419,74 +1384,50 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   }}
                   onMouseLeave={() => setCellTip(null)}
                 >
-                  <span
-                    className="txm-cell__num"
+                  <LedgerCellNum
+                    selected={isSel}
                     style={isSel ? undefined : { color: numColor(c.ds, i % 7), opacity: c.ds > todayStr ? 0.55 : 1 }}
                   >
                     {c.d}
-                  </span>
+                  </LedgerCellNum>
                   {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
                   {data && data.out > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</span>
+                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</LedgerCellAmt>
                   )}
                   {data && data.inn > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</span>
+                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</LedgerCellAmt>
                   )}
-                  {!data && <span className="txm-cell__amt num" />}
-                </button>
+                  {!data && <LedgerCellAmt className="num" />}
+                </LedgerCell>
               )
             })}
-          </div>
+          </LedgerWeek>
         ))}
-        <button
-          className="txm-expand"
+        <LedgerExpand
+          expanded={expanded}
           onClick={() => setExpanded(v => !v)}
           aria-label={expanded ? t('viewCalendar') : t('viewList')}
-        >
-          {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
+        />
         {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
         {cellTip && byDay[cellTip.ds] && (
-          <div
-            style={{
-              position: 'absolute',
-              left: cellTip.left,
-              top: cellTip.top,
-              transform: 'translate(-50%, calc(-100% - 8px))',
-              zIndex: 20,
-              pointerEvents: 'none',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-tile)',
-              boxShadow: 'var(--shadow-md)',
-              padding: '10px 12px',
-              fontSize: 'var(--text-caption)',
-              minWidth: 150,
-            }}
-          >
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 6 }}>
-              {Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}
-            </div>
-            {([
-              { label: t('expense'), color: 'var(--fg-expense)', text: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit /></> },
-              { label: t('income'), color: 'var(--fg-brand)', text: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit /></> },
-            ] as const).map(row => (
-              <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
-                <span className="num" style={{ marginLeft: 'auto', fontWeight: 700, color: row.color }}>{row.text}</span>
-              </div>
-            ))}
-          </div>
+          <LedgerCellTip
+            left={cellTip.left}
+            top={cellTip.top}
+            title={<>{Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}</>}
+            rows={[
+              { label: t('expense'), color: 'var(--fg-expense)', value: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit /></> },
+              { label: t('income'), color: 'var(--fg-brand)', value: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit /></> },
+            ]}
+          />
         )}
-      </div>
+      </LedgerCalendar>
       )}
 
-      {!filterActive && <div className="txm-divider" />}
-      </div>
+      {!filterActive && <LedgerDivider />}
+      </LedgerPin>
 
       {/* 거래 리스트 — 날짜 그룹 */}
-      <div className="txm-list">
+      <LedgerList>
         {isLoadingList ? (
           <div style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <ExpenseDayGroupSkeleton rows={3} mobile />
@@ -1500,15 +1441,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             const dOut = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
             const dIn = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
             return (
-              <div key={d} className="txm-group" data-txm-day={d}>
-                <div className="txm-dayhead">
-                  <span className="txm-dayhead__date">{(yy ?? '').slice(2)}. {Number(mm)}. {Number(dd)}({dow})</span>
-                  {rel && <span className="txm-dayhead__rel">&nbsp;· {rel}</span>}
-                  <span className="txm-dayhead__sum num">
-                    {dOut > 0 && <span className="out"><MaskAmount>-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit /></span>}
-                    {dIn > 0 && <span className="in"><MaskAmount>+{wonPre()}{KRW(dIn)}</MaskAmount><WonUnit /></span>}
-                  </span>
-                </div>
+              <LedgerDayGroup key={d} day={d}>
+                <LedgerDayHead>
+                  <LedgerDayDate>{(yy ?? '').slice(2)}. {Number(mm)}. {Number(dd)}({dow})</LedgerDayDate>
+                  {rel && <LedgerDayRel>&nbsp;· {rel}</LedgerDayRel>}
+                  <LedgerDaySum className="num">
+                    {dOut > 0 && <span className="font-semibold text-[var(--fg-expense)]"><MaskAmount>-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit /></span>}
+                    {dIn > 0 && <span className="ml-2 font-semibold text-[var(--fg-brand)]"><MaskAmount>+{wonPre()}{KRW(dIn)}</MaskAmount><WonUnit /></span>}
+                  </LedgerDaySum>
+                </LedgerDayHead>
                 <div>
                   {items.map(e => {
                     const isFocus = focusTxId === e.rowId
@@ -1527,12 +1468,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     )
                   })}
                 </div>
-              </div>
+              </LedgerDayGroup>
             )
           })
         )}
         {!isLoadingList && expenses.length === 0 && (
-          <div style={{ padding: '56px 20px', textAlign: 'center' }}>
+          <div style={{ padding: '56px 0', textAlign: 'center' }}>
             <ReceiptText size={36} style={{ color: 'var(--fg-tertiary)', margin: '0 auto 12px' }} />
             <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)', marginBottom: 4 }}>
               {t('txm.emptyMonth', { month: txmMonthLabel(month) })}
@@ -1542,12 +1483,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             </div>
           </div>
         )}
-      </div>
+      </LedgerList>
 
       {!filterActive && (
-        <button className="txm-prevbtn" onClick={() => goMonth(-1)}>
+        <LedgerPrevBtn onClick={() => goMonth(-1)}>
           {t('txm.prevMonthBtn', { month: txmMonthLabel(shiftMonthKey(month, -1)) })}
-        </button>
+        </LedgerPrevBtn>
       )}
 
       {detail && !editing && (
@@ -1571,7 +1512,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           mobile
         />
       )}
-    </div>
+    </LedgerShell>
   )
 }
 

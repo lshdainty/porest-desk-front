@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AlignLeft,
   Check,
   CheckCheck,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Cloudy,
   FilterX,
   Sparkles,
@@ -16,6 +14,34 @@ import {
   Telescope,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import {
+  LedgerCalendar,
+  LedgerCell,
+  LedgerCellAmt,
+  LedgerCellNum,
+  LedgerCollapse,
+  LedgerDayDate,
+  LedgerDayGroup,
+  LedgerDayHead,
+  LedgerDayRel,
+  LedgerDaySum,
+  LedgerDivider,
+  LedgerDow,
+  LedgerDrop,
+  LedgerExpand,
+  LedgerHead,
+  LedgerList,
+  LedgerMonthLabel,
+  LedgerMonthNav,
+  LedgerNavBtn,
+  LedgerPin,
+  LedgerShell,
+  LedgerSub,
+  LedgerSumBtn,
+  LedgerTotal,
+  LedgerWeek,
+  useLedgerScroll,
+} from '@/shared/ui/porest/ledger'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import {
   constellationColorVar,
@@ -91,31 +117,21 @@ export function TodoMobileLedger({
   const today = useMemo(() => todayISO(), [])
 
   const [ym, setYm] = useState(today.slice(0, 7))
-  const [selected, setSelected] = useState<string | null>(today)
   const [expanded, setExpanded] = useState(false)
   const [skyOpen, setSkyOpen] = useState(false)
-  const [compact, setCompact] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [fTags, setFTags] = useState<string[]>([])
   const [fPrios, setFPrios] = useState<PrioKey[]>([])
   const [hideDone, setHideDone] = useState(false)
   const filterActive = fTags.length > 0 || fPrios.length > 0 || hideDone
 
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  const pinRef = useRef<HTMLDivElement | null>(null)
-  const lockRef = useRef(false)
-  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const selectedRef = useRef<string | null>(selected)
-  useEffect(() => {
-    selectedRef.current = selected
-  }, [selected])
-  const lock = (ms: number) => {
-    lockRef.current = true
-    if (lockTimer.current) clearTimeout(lockTimer.current)
-    lockTimer.current = setTimeout(() => {
-      lockRef.current = false
-    }, ms)
-  }
+  // pin compact·스크롤 스파이·lock — 공용 원장 훅 (가계부와 동일 문법).
+  const { rootRef, pinRef, compact, selected, setSelected, lock, scrollToDay, scrollToTop } =
+    useLedgerScroll({
+      pinTop,
+      initialSelected: today,
+      onCompactEnter: () => setExpanded(false),
+    })
 
   // 월 + 필터 적용 목록. 기한 없는 할 일은 월과 무관하게 꼬리 그룹으로 노출.
   const monthTodos = useMemo(() => {
@@ -161,57 +177,13 @@ export function TodoMobileLedger({
   if (selWeek < 0) selWeek = weeks.findIndex(w => w.some(c => c && c.ds === today))
   if (selWeek < 0) selWeek = 0
 
-  // 스크롤 스파이 — compact(72/24 히스테리시스) + 최상단 날짜 그룹 → 선택 동기 (txm 미러)
-  useEffect(() => {
-    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
-    if (!p) return
-    const onScroll = () => {
-      const st = p.scrollTop
-      setCompact(prev => {
-        // 콘텐츠가 짧으면 접힘(−collapse 높이) 순간 scrollTop이 해제 임계 아래로
-        // clamp돼 접힘↔펼침 무한 플리커 발생 — 접힌 뒤에도 진입 임계(72) 위에
-        // 남을 수 있는 스크롤 여유가 있을 때만 진입.
-        const collapseH = pinRef.current?.querySelector('.txm-collapse')?.scrollHeight ?? 0
-        const canStay = p.scrollHeight - p.clientHeight - (prev ? 0 : collapseH) > 72
-        const next = prev ? st > 24 : st > 72 && canStay
-        if (next && !prev) setExpanded(false)
-        return next
-      })
-      if (lockRef.current || !pinRef.current || !rootRef.current) return
-      const bottom = pinRef.current.getBoundingClientRect().bottom
-      const groupEls = rootRef.current.querySelectorAll('[data-tdm-day]')
-      if (!groupEls.length) return
-      let cur = groupEls[0]!.getAttribute('data-tdm-day')
-      for (const g of groupEls) {
-        if (g.getBoundingClientRect().top <= bottom + 28) cur = g.getAttribute('data-tdm-day')
-        else break
-      }
-      if (cur && selectedRef.current !== cur) {
-        selectedRef.current = cur
-        setSelected(cur)
-      }
-    }
-    p.addEventListener('scroll', onScroll, { passive: true })
-    return () => p.removeEventListener('scroll', onScroll)
-  }, [])
-
-  const scrollToDay = (ds: string) => {
-    const el = rootRef.current?.querySelector(`[data-tdm-day="${ds}"]`)
-    const p = rootRef.current?.closest('.m-scroll, .overflow-y-auto') as HTMLElement | null
-    if (!el || !p) return
-    const pinH = (pinRef.current?.offsetHeight ?? 0) + pinTop
-    p.scrollTo({
-      top: p.scrollTop + el.getBoundingClientRect().top - p.getBoundingClientRect().top - pinH - 6,
-      behavior: 'smooth',
-    })
-  }
   const goMonth = (dir: -1 | 1) => {
     const next = shiftYm(ym, dir)
     setYm(next)
     setSelected(today.startsWith(next) ? today : null)
     setExpanded(false)
     lock(800)
-    rootRef.current?.closest('.m-scroll, .overflow-y-auto')?.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollToTop()
   }
 
   const numColor = (ds: string, dow: number): string => {
@@ -294,73 +266,49 @@ export function TodoMobileLedger({
   const monthNum = Number(ym.split('-')[1])
 
   return (
-    <div ref={rootRef} style={{ padding: '0 0 28px' }}>
-      <div
-        ref={pinRef}
-        className={`txm-pin ${compact ? 'txm-pin--compact' : ''}`}
-        style={{ top: pinTop }}
-      >
+    <LedgerShell ref={rootRef}>
+      <LedgerPin ref={pinRef} compact={compact} top={pinTop}>
         {/* 월 네비 + 필터 */}
-        <div className="txm-monthnav">
-          <button
-            type="button"
-            className="txm-monthnav__btn"
-            onClick={() => goMonth(-1)}
-            aria-label={t('tdm.prevMonth')}
-          >
+        <LedgerMonthNav>
+          <LedgerNavBtn onClick={() => goMonth(-1)} aria-label={t('tdm.prevMonth')}>
             <ChevronLeft size={19} />
-          </button>
-          <span className="txm-monthnav__label">{t('tdm.monthLabel', { month: monthNum })}</span>
-          <button
-            type="button"
-            className="txm-monthnav__btn"
-            onClick={() => goMonth(1)}
-            aria-label={t('tdm.nextMonth')}
-          >
+          </LedgerNavBtn>
+          <LedgerMonthLabel>{t('tdm.monthLabel', { month: monthNum })}</LedgerMonthLabel>
+          <LedgerNavBtn onClick={() => goMonth(1)} aria-label={t('tdm.nextMonth')}>
             <ChevronRight size={19} />
-          </button>
-          <button
-            type="button"
-            className="txm-monthnav__btn"
+          </LedgerNavBtn>
+          <LedgerNavBtn
+            className="ml-auto"
+            active={filterActive}
             onClick={() => setFilterOpen(true)}
             aria-label={t('tdm.filter')}
-            style={{
-              marginLeft: 'auto',
-              background: filterActive ? 'var(--bg-brand-subtle)' : 'transparent',
-              color: filterActive ? 'var(--fg-brand-strong)' : 'var(--fg-secondary)',
-            }}
           >
             <SlidersHorizontal size={18} />
-          </button>
-        </div>
+          </LedgerNavBtn>
+        </LedgerMonthNav>
 
         {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 스크롤 시 접힘 */}
-        <div className="txm-collapse">
-          <div className="txm-head">
+        <LedgerCollapse>
+          <LedgerHead>
             <div style={{ minWidth: 0 }}>
-              <div className="txm-total">
+              <LedgerTotal>
                 {todayLeft > 0 ? t('tdm.todayLeft', { count: todayLeft }) : t('tdm.todayDone')}
-              </div>
+              </LedgerTotal>
               {constellationToday && (
-                <div className="txm-sub">
+                <LedgerSub>
                   {skyDone
                     ? t('tdm.insightDone', { name: conName, streak: constellationToday.streak })
                     : t('tdm.insightProgress', { lit, goal, left: goal - lit, name: conName })}
-                </div>
+                </LedgerSub>
               )}
             </div>
-            <button
-              type="button"
-              className={`txm-sumbtn ${skyOpen ? 'txm-sumbtn--on' : ''}`}
-              onClick={() => setSkyOpen(v => !v)}
-              aria-expanded={skyOpen}
-            >
+            <LedgerSumBtn active={skyOpen} onClick={() => setSkyOpen(v => !v)} aria-expanded={skyOpen}>
               <Sparkles size={13} style={{ marginRight: 4, verticalAlign: '-2px' }} />
               {t('tdm.nightSky')}
-            </button>
-          </div>
+            </LedgerSumBtn>
+          </LedgerHead>
           {skyOpen && constellationToday && (
-            <div className="tdm-sky">
+            <LedgerDrop>
               <NightSkyHero today={constellationToday} doneToday={doneToday} mobile />
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <Button variant="outline" size="sm" style={{ flex: 1 }} onClick={openReport}>
@@ -370,36 +318,28 @@ export function TodoMobileLedger({
                   <Sparkles size={13} /> {t('tdm.collection')}
                 </Button>
               </div>
-            </div>
+            </LedgerDrop>
           )}
-        </div>
+        </LedgerCollapse>
 
         {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체 */}
-        <div className="txm-cal">
-          <div className="txm-dow">
-            {dowLabels.map((d, i) => (
-              <span
-                key={i}
-                style={{
-                  color:
-                    i === 0 ? 'var(--color-chart-red)' : i === 6 ? 'var(--fg-brand)' : undefined,
-                }}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
+        <LedgerCalendar>
+          <LedgerDow
+            labels={dowLabels}
+            colorFor={i =>
+              i === 0 ? 'var(--color-chart-red)' : i === 6 ? 'var(--fg-brand)' : undefined
+            }
+          />
           {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
-            <div key={wi} className="txm-week">
+            <LedgerWeek key={wi}>
               {w.map((c, i) => {
-                if (!c) return <div key={`e${i}`} className="txm-cell" style={{ cursor: 'default' }} />
+                if (!c) return <LedgerCell key={`e${i}`} empty />
                 const isSel = c.ds === selected
                 const items = byDay.get(c.ds)
                 return (
-                  <button
-                    type="button"
+                  <LedgerCell
                     key={c.ds}
-                    className={`txm-cell ${isSel ? 'txm-cell--sel' : ''}`}
+                    selected={isSel}
                     onClick={() => {
                       setSelected(c.ds)
                       if (items) {
@@ -408,8 +348,8 @@ export function TodoMobileLedger({
                       }
                     }}
                   >
-                    <span
-                      className="txm-cell__num"
+                    <LedgerCellNum
+                      selected={isSel}
                       style={
                         isSel
                           ? undefined
@@ -417,32 +357,26 @@ export function TodoMobileLedger({
                       }
                     >
                       {c.d}
-                    </span>
-                    <span
-                      className="txm-cell__amt"
-                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
+                    </LedgerCellNum>
+                    <LedgerCellAmt className="inline-flex items-center justify-center">
                       {cellMark(c.ds)}
-                    </span>
-                  </button>
+                    </LedgerCellAmt>
+                  </LedgerCell>
                 )
               })}
-            </div>
+            </LedgerWeek>
           ))}
-          <button
-            type="button"
-            className="txm-expand"
+          <LedgerExpand
+            expanded={expanded}
             onClick={() => setExpanded(v => !v)}
             aria-label={expanded ? t('tdm.collapse') : t('tdm.expand')}
-          >
-            {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-        </div>
-        <div className="txm-divider" />
-      </div>
+          />
+        </LedgerCalendar>
+        <LedgerDivider />
+      </LedgerPin>
 
       {/* 일별 할 일 리스트 */}
-      <div className="txm-list">
+      <LedgerList>
         {dayKeys.map(d => {
           const items = byDay.get(d)!
           const doneN = items.filter(isDone).length
@@ -450,25 +384,23 @@ export function TodoMobileLedger({
           const rel = noDue ? null : relOf(d)
           const [yy = '', mm = '', dd = ''] = d.split('-')
           return (
-            <div key={d} className="txm-group" data-tdm-day={noDue ? undefined : d}>
-              <div className="txm-dayhead">
-                <span className="txm-dayhead__date">
+            <LedgerDayGroup key={d} day={noDue ? undefined : d}>
+              <LedgerDayHead>
+                <LedgerDayDate>
                   {noDue
                     ? t('tdm.noDue')
                     : `${yy.slice(2)}. ${Number(mm)}. ${Number(dd)}(${dowOf(d)})`}
-                </span>
-                {rel && <span className="txm-dayhead__rel"> · {rel}</span>}
-                <span
-                  className="txm-dayhead__sum num"
+                </LedgerDayDate>
+                {rel && <LedgerDayRel> · {rel}</LedgerDayRel>}
+                <LedgerDaySum
+                  className="num font-semibold"
                   style={{
                     color: doneN === items.length ? 'var(--color-chart-green)' : 'var(--fg-tertiary)',
-                    fontWeight: 600,
-                    marginLeft: 'auto',
                   }}
                 >
                   {t('tdm.doneRatio', { done: doneN, total: items.length })}
-                </span>
-              </div>
+                </LedgerDaySum>
+              </LedgerDayHead>
               <div>
                 {items.map((td, i) => {
                   const prio = TDM_PRIO[td.priority]
@@ -534,11 +466,11 @@ export function TodoMobileLedger({
                   )
                 })}
               </div>
-            </div>
+            </LedgerDayGroup>
           )
         })}
         {monthTodos.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '56px 20px' }}>
+          <div style={{ textAlign: 'center', padding: '56px 0' }}>
             <div
               style={{
                 width: 56,
@@ -562,7 +494,7 @@ export function TodoMobileLedger({
             </div>
           </div>
         )}
-      </div>
+      </LedgerList>
 
       {/* 필터 시트 */}
       {filterOpen && (
@@ -635,6 +567,6 @@ export function TodoMobileLedger({
           </div>
         </ModalShell>
       )}
-    </div>
+    </LedgerShell>
   )
 }
