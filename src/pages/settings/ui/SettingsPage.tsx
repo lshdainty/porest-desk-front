@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isEn } from '@/shared/lib/porest/format'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
@@ -578,13 +579,19 @@ function AccountSection({ mobile }: { mobile: boolean }) {
             {isPro ? 'Pro' : 'Free'}
           </span>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {t('account.joined')}
-        </div>
+        {user?.joinedAt && (
+          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+            {t('account.joined', {
+              date: isEn()
+                ? new Date(user.joinedAt).toLocaleDateString('en', { year: 'numeric', month: 'short' })
+                : `${new Date(user.joinedAt).getFullYear()}년 ${new Date(user.joinedAt).getMonth() + 1}월`,
+            })}
+          </div>
+        )}
       </div>
 
       {/* 보안 */}
-      <AccountGroup label={t('account.group.security')}>
+      <AccountGroup mobile={mobile} label={t('account.group.security')}>
         <AccountRow
           icon={<Key size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={tu('passwordChange')}
@@ -620,7 +627,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       </AccountGroup>
 
       {/* 연결된 계정 */}
-      <AccountGroup label={t('account.group.connected')}>
+      <AccountGroup mobile={mobile} label={t('account.group.connected')}>
         <AccountRow
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>G</span>}
           label="Google"
@@ -673,7 +680,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       </AccountGroup>
 
       {/* 구독·결제 — 앱 account_screen 정합: 40 브랜드 칩 + 제목/부제 스택 + 가격/배지 + chevron */}
-      <AccountGroup label={t('account.group.subscription')}>
+      <AccountGroup mobile={mobile} label={t('account.group.subscription')}>
         <SubscriptionRow isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
       </AccountGroup>
 
@@ -681,7 +688,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       {isPro && <TossConnectCard />}
 
       {/* 계정 관리 */}
-      <AccountGroup label={t('account.group.manage')}>
+      <AccountGroup mobile={mobile} label={t('account.group.manage')}>
         <AccountRow
           icon={<LogOut size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.logout.label')}
@@ -727,7 +734,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
 }
 
 // ─── AccountGroup ──────────────────────────────────────────────
-function AccountGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function AccountGroup({ label, children, mobile }: { label: string; children: React.ReactNode; mobile?: boolean }) {
   return (
     <div>
       <div
@@ -741,8 +748,9 @@ function AccountGroup({ label, children }: { label: string; children: React.Reac
       >
         {label}
       </div>
+      {/* 모바일 카드 다이어트(사용자 결정) — 셸 없이 플랫 리스트. 데스크톱은 카드 유지. */}
       <div
-        style={{
+        style={mobile ? undefined : {
           background: 'var(--bg-surface)',
           boxShadow: 'var(--shadow-sm)',
           borderRadius: 'var(--radius-card)',

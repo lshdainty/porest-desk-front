@@ -1655,7 +1655,7 @@ settings,groups.account,계정,Account
 settings,account.defaultName,사용자,User
 settings,account.profileMeta,내 정보 · 보안 · 연결된 계정,Profile · security · linked accounts
 settings,account.edit,편집,Edit
-settings,account.joined,가입 2024년 11월,Joined Nov 2024
+settings,account.joined,가입 {{date}},Joined {{date}}
 settings,account.group.security,보안,Security
 settings,account.group.connected,연결된 계정,Linked Accounts
 settings,account.group.subscription,구독·결제,Subscription & Billing
