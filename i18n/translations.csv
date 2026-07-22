@@ -2148,3 +2148,87 @@ expense,txm.today,오늘,Today
 expense,txm.yesterday,어제,Yesterday
 expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
 expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
+todo,tdm.prevMonth,이전 달,Previous month
+todo,tdm.nextMonth,다음 달,Next month
+todo,tdm.monthLabel,{{month}}월,Month {{month}}
+todo,tdm.filter,필터,Filters
+todo,tdm.todayLeft,오늘 할 일 {{count}}개,{{count}} to do today
+todo,tdm.todayDone,오늘 할 일 끝!,All done today!
+todo,tdm.insightProgress,별빛 {{lit}}/{{goal}} · {{left}}개 더 모으면 {{name}} 수집,Starlight {{lit}}/{{goal}} · {{left}} more to collect {{name}}
+todo,tdm.insightDone,{{name}} 수집 완료 · 연속 {{streak}}일,{{name}} collected · {{streak}}-day streak
+todo,tdm.nightSky,밤하늘,Night sky
+todo,tdm.report,관측 리포트,Observation report
+todo,tdm.collection,도감 · 기록,Collection · log
+todo,tdm.countN,{{count}}건,{{count}}
+todo,tdm.collapse,접기,Collapse
+todo,tdm.expand,월 전체 보기,Show full month
+todo,tdm.noDue,기한 없음,No due date
+todo,tdm.doneRatio,{{done}}/{{total}} 완료,{{done}}/{{total}} done
+todo,tdm.relToday,오늘,Today
+todo,tdm.relTomorrow,내일,Tomorrow
+todo,tdm.relYesterday,어제,Yesterday
+todo,tdm.emptyFilter,조건에 맞는 할 일이 없어요,No todos match the filters
+todo,tdm.emptyFilterDesc,필터를 조정하거나 초기화해보세요.,Adjust or reset the filters.
+todo,tdm.emptyMonth,{{month}}월 할 일이 없어요,No todos this month
+todo,tdm.emptyMonthDesc,오른쪽 아래 + 버튼으로 추가해보세요.,Add one with the + button.
+todo,tdm.hideDone,완료한 할 일 숨기기,Hide completed
+todo,tdm.reset,초기화,Reset
+todo,tdm.apply,완료,Done
+todo,quickAdd.placeholder,할 일을 입력하고 Enter,Type a todo and press Enter
+todo,quickAdd.add,추가,Add
+todo,quickAdd.detail,자세히,Details
+todo,starToast.collected,별빛 +{{gain}} · 오늘의 별자리 수집!,+{{gain}} starlight · constellation collected!
+todo,starToast.progress,별빛 +{{gain}} · 수집까지 {{left}}별,+{{gain}} starlight · {{left}} to collect
+todo,tags.title,할일 태그,Todo tags
+todo,tags.desc,할 일에 붙이는 태그예요. 리스트 필터와 태그별 분포에 사용돼요.,Tags for your todos — used in list filters and tag distribution.
+todo,tags.new,새 태그,New tag
+todo,tags.usage,할 일 {{count}}건에 사용 중,Used by {{count}} todos
+todo,tags.empty,태그가 없어요,No tags yet
+todo,tags.emptyHint,{{label}} 버튼으로 첫 태그를 만들어보세요.,Create your first tag with {{label}}.
+todo,tags.deleteTitle,'{{name}}' 태그를 삭제할까요?,Delete tag '{{name}}'?
+todo,tags.deleteMessage,이 태그를 쓰는 할 일 {{count}}건은 태그 없음으로 남아요.,{{count}} todos using it will be left untagged.
+todo,tags.name,이름,Name
+todo,tags.namePlaceholder,예: 운동,e.g. Workout
+todo,tags.color,색상,Color
+todo,tags.colorN,색 {{n}},Color {{n}}
+todo,tags.editTitle,태그 수정,Edit tag
+todo,tags.nameRequired,이름을 입력해 주세요.,Please enter a name.
+todo,tags.nameTooLong,이름은 12자 이내로 입력해 주세요.,Keep the name under 12 characters.
+todo,tags.preview,미리보기,Preview
+constellation,strip.title,오늘의 밤하늘 · {{name}},Tonight's sky · {{name}}
+constellation,strip.done,{{name}} 수집 완료!,{{name}} collected!
+constellation,strip.streak,{{count}}일,{{count}}d
+constellation,nightSky.title,밤하늘,Night Sky
+constellation,nightSky.back,뒤로,Back
+constellation,report.title,관측 리포트,Observation Report
+constellation,report.prevWeek,이전 주,Previous week
+constellation,report.nextWeek,다음 주,Next week
+constellation,report.today,오늘,Today
+constellation,report.asOf,{{time}} 기준,as of {{time}}
+constellation,report.future,아직 오지 않은 밤이에요,That night hasn't come yet
+constellation,report.result,관측 결과 :,Result:
+constellation,report.resultProgress,{{name}} {{lit}}/{{goal}} 진행 중,{{name}} {{lit}}/{{goal}} in progress
+constellation,report.resultCollected,{{name}} 수집!,{{name}} collected!
+constellation,report.resultWithered,흐린 밤,Cloudy night
+constellation,report.resultWitheredGuard,흐린 밤 · 구름 보호로 스트릭 유지,Cloudy night · streak kept by cloud guard
+constellation,report.resultRest,쉬어간 밤,Rest night
+constellation,report.stampDays,{{count}}일째,Day {{count}}
+constellation,report.stampLabel,연속 관측!,streak!
+constellation,report.starlight,별빛 모으기,Starlight
+constellation,report.pct,{{pct}}% 달성,{{pct}}% done
+constellation,report.pctBang,{{pct}}% 달성!,{{pct}}% done!
+constellation,report.earned,모은 별빛,Starlight earned
+constellation,report.earnedCount,{{count}}개,{{count}}
+constellation,report.doneTodos,완료한 할 일,Todos done
+constellation,report.doneCount,{{count}}건,{{count}}
+constellation,report.analysis,별빛 분석,Starlight breakdown
+constellation,report.legendDone,{{label}} 완료: {{count}},{{label}} done: {{count}}
+constellation,report.missed,못다 켠 별,Unlit stars
+constellation,report.missedNone,오늘 하늘의 별을 모두 켰어요. 남은 별빛은 내일 밤으로!,All stars lit tonight — see you tomorrow night!
+constellation,report.missedCount,{{count}}개,{{count}}
+constellation,collection.badgeNew,NEW,NEW
+constellation,collection.viewOwned,감상하기,View
+constellation,collection.viewLocked,미리보기,Preview
+constellation,collection.lockedDesc,별빛 {{count}}개를 하룻밤에 모으면 만날 수 있어요.,Collect {{count}} starlight in one night to meet it.
+settings,sections.todoTags.label,할일 태그,Todo tags
+settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo tag names & colors

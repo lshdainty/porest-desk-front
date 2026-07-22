@@ -17,6 +17,7 @@ import {
   Palette,
   Repeat,
   Tag,
+  Tags,
   Trash2,
   User,
   CreditCard,
@@ -34,6 +35,7 @@ import {
   NotificationsManager,
   PresetManager,
   RecurringManager,
+  TodoTagManager,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useTheme } from '@/shared/ui/theme-provider'
@@ -72,6 +74,7 @@ type SectionId =
   | 'presets'
   | 'calendar-share'
   | 'calendar-labels'
+  | 'todo-tags'
   | 'appearance'
   | 'notifications'
   | 'data'
@@ -92,6 +95,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'presets', labelKey: 'sections.presets.label', icon: Bookmark, descKey: 'sections.presets.desc' },
   { id: 'calendar-share', labelKey: 'sections.calendarShare.label', icon: CalendarCog, descKey: 'sections.calendarShare.desc' },
   { id: 'calendar-labels', labelKey: 'sections.calendarLabels.label', icon: Tag, descKey: 'sections.calendarLabels.desc' },
+  { id: 'todo-tags', labelKey: 'sections.todoTags.label', icon: Tags, descKey: 'sections.todoTags.desc' },
   { id: 'appearance', labelKey: 'sections.appearance.label', icon: Palette, descKey: 'sections.appearance.desc' },
   { id: 'notifications', labelKey: 'sections.notifications.label', icon: Bell, descKey: 'sections.notifications.desc' },
   { id: 'data', labelKey: 'sections.data.label', icon: Download, descKey: 'sections.data.desc' },
@@ -109,7 +113,7 @@ interface GroupDef {
 const MENU_GROUPS: GroupDef[] = [
   {
     labelKey: 'groups.dataManage',
-    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets'],
+    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets', 'todo-tags'],
   },
   {
     labelKey: 'groups.share',
@@ -201,6 +205,7 @@ export const SettingsPage = () => {
       case 'presets':       return <PresetManager mobile={m} />
       case 'calendar-share':  return <CalendarShareSection mobile={m} />
       case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
+      case 'todo-tags':     return <TodoTagManager mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />

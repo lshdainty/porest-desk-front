@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
@@ -12,6 +12,7 @@ import {
   Flame,
   CircleDot,
   Leaf,
+  Settings2,
 } from 'lucide-react'
 import {
   useTodos,
@@ -20,12 +21,10 @@ import {
   useToggleTodoStatus,
   useDeleteTodo,
 } from '@/features/todo'
-import {
-  useConstellationCollection,
-  useConstellationSky,
-  useConstellationToday,
-} from '@/features/constellation'
-import { CollectionCard, MySkyCard, NightSkyHero } from '@/widgets/constellation'
+import { useTodoTags } from '@/features/todo-tag'
+import { useConstellationSky, useConstellationToday } from '@/features/constellation'
+import { ForestReport, ForestStrip, NightSkyPanel } from '@/widgets/constellation'
+import { TodoMobileLedger } from './TodoMobileLedger'
 import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -141,33 +140,80 @@ export const TodoPage = () => {
   return <TodoPageInner mobile={mobile} />
 }
 
+/** 우선순위 별빛 가중치 — 서버 적립 규칙 미러(별빛 획득 토스트용). */
+const STAR_WEIGHT: Record<TodoPriority, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 }
+
 const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const { t } = useTranslation('todo')
-  const { t: tc } = useTranslation('common')
   const todosQ = useTodos()
   const createTodo = useCreateTodo()
   const updateTodo = useUpdateTodo()
   const toggleStatus = useToggleTodoStatus()
   const deleteTodo = useDeleteTodo()
+  const todoTagsQ = useTodoTags()
 
   const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data])
   const today = useMemo(() => todayISO(), [])
 
-  // ── 별자리 게이미피케이션 (밤하늘 히어로 · 나의 밤하늘 · 도감) ────────────
+  // ── 별자리 게이미피케이션 — 할일 화면엔 스트립/토글 진입점만, 상세는 밤하늘 화면 ──
   const constellationTodayQ = useConstellationToday()
-  const skyQ = useConstellationSky(14)
-  const collectionQ = useConstellationCollection()
+  // 모바일 원장 캘린더 마크(수집★/구름)용 — 이번 달 커버 확보(45일)
+  const skyQ = useConstellationSky(45)
   // 오늘 완료 건수 — 완료 이벤트(completedAt) 기준 (히어로 캡션용)
   const doneToday = useMemo(
     () => todos.filter(td => isDone(td) && (td.completedAt ?? '').slice(0, 10) === today).length,
     [todos, today],
   )
 
+  // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union.
+  const tagNames = useMemo(() => {
+    const names = (todoTagsQ.data ?? []).map(tag => tag.tagName)
+    for (const td of todos) {
+      const c = td.category
+      if (c && !names.includes(c)) names.push(c)
+    }
+    return names.length > 0 ? names : [...TAG_OPTIONS]
+  }, [todoTagsQ.data, todos])
+
   const [filter, setFilter] = useState<FilterKey>('today')
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null)
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
   const [viewing, setViewing] = useState<Todo | null>(null)
+  // 밤하늘 화면 / 관측 리포트 오버레이
+  const [nightSky, setNightSky] = useState(false)
+  const [forestReport, setForestReport] = useState(false)
+  // 별빛 획득 토스트 — 완료 시 "+N · 수집까지 N별"
+  const [starToast, setStarToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [quickAdd, setQuickAdd] = useState('')
+
+  // 완료 토글 + 별빛 토스트 (미완료→완료 전이에만).
+  const onToggleTodo = (td: Todo) => {
+    const wasDone = isDone(td)
+    toggleStatus.mutate(td.rowId)
+    const sky = constellationTodayQ.data
+    if (!wasDone && sky && !sky.collected) {
+      const gain = STAR_WEIGHT[td.priority]
+      const left = Math.max(0, sky.goal - (sky.points + gain))
+      setStarToast(
+        left === 0
+          ? t('starToast.collected', { gain })
+          : t('starToast.progress', { gain, left }),
+      )
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+      toastTimer.current = setTimeout(() => setStarToast(null), 2200)
+    }
+  }
+
+  const handleQuickAdd = () => {
+    const v = quickAdd.trim()
+    if (!v) return
+    createTodo.mutate(
+      { title: v, priority: 'MEDIUM', category: tagNames[0] ?? DEFAULT_TAG, dueDate: today },
+      { onSuccess: () => setQuickAdd('') },
+    )
+  }
 
   const inSevenDays = (key: string | null): boolean => {
     if (!key) return false
@@ -234,27 +280,79 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     deleteTodo.mutate(id, { onSuccess: () => setEditing(null) })
   }
 
-  // ── 밤하늘 히어로 / 나의 밤하늘 / 도감 (별자리 게이미피케이션) ─────────────
-  const SkyHero = constellationTodayQ.data ? (
-    <NightSkyHero today={constellationTodayQ.data} doneToday={doneToday} mobile={mobile} />
+  // ── 밤하늘 진입점 — 스트립(데스크톱)·토글(모바일 원장). 상세는 오버레이 화면 ──
+  const Strip = constellationTodayQ.data ? (
+    <ForestStrip today={constellationTodayQ.data} mobile={mobile} onOpen={() => setNightSky(true)} />
   ) : null
-  const MySky =
-    skyQ.data && constellationTodayQ.data && collectionQ.data ? (
-      <MySkyCard
-        sky={skyQ.data}
-        today={constellationTodayQ.data}
-        entries={collectionQ.data.entries}
-        mobile={mobile}
+  const overlays = (
+    <>
+      {starToast && (
+        <div className="star-toast">
+          <Sparkles size={14} /> {starToast}
+        </div>
+      )}
+      {nightSky && (
+        <NightSkyPanel
+          mobile={mobile}
+          doneToday={doneToday}
+          onClose={() => setNightSky(false)}
+          onOpenReport={() => setForestReport(true)}
+        />
+      )}
+      {forestReport && <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />}
+    </>
+  )
+
+  // ── 데스크톱 퀵추가 — sunken 인풋 + Enter/추가 + 자세히 ──────────────────
+  const QuickAdd = (
+    <div
+      style={{
+        padding: 6,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        background: 'var(--bg-sunken)',
+        borderRadius: 'var(--radius-md)',
+      }}
+    >
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--fg-tertiary)',
+        }}
+      >
+        <Plus size={18} />
+      </span>
+      <input
+        value={quickAdd}
+        onChange={e => setQuickAdd(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') handleQuickAdd()
+        }}
+        placeholder={t('quickAdd.placeholder')}
+        style={{
+          flex: 1,
+          border: 0,
+          outline: 0,
+          background: 'transparent',
+          fontSize: 14,
+          color: 'var(--fg-primary)',
+          padding: '8px 0',
+          fontFamily: 'inherit',
+        }}
       />
-    ) : null
-  const Collection =
-    collectionQ.data && constellationTodayQ.data ? (
-      <CollectionCard
-        collection={collectionQ.data}
-        todayKey={constellationTodayQ.data.constellation.constellationKey}
-        mobile={mobile}
-      />
-    ) : null
+      <Button size="sm" onClick={handleQuickAdd} loading={createTodo.isPending}>
+        {t('quickAdd.add')}
+      </Button>
+      <Button variant="outline" size="sm" onClick={() => setEditing({ _new: true })}>
+        <Settings2 size={13} /> {t('quickAdd.detail')}
+      </Button>
+    </div>
+  )
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
   const FilterChips = (
@@ -316,7 +414,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           type="button"
           onClick={e => {
             e.stopPropagation()
-            toggleStatus.mutate(todo.rowId)
+            onToggleTodo(todo)
           }}
           aria-label={done ? t('uncomplete') : t('status.COMPLETED')}
           aria-pressed={done}
@@ -479,7 +577,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     <Card style={{ padding: 22 }}>
       <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{t('tagDistribution')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {TAG_OPTIONS.map(tag => {
+        {tagNames.map(tag => {
           const tagged = todos.filter(t => todoTag(t) === tag)
           const total = tagged.length
           if (total === 0) return null
@@ -599,6 +697,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           todo={'_new' in editing ? null : editing}
           mobile={mobile}
           today={today}
+          tags={tagNames}
           onClose={() => setEditing(null)}
           onSave={onSave}
           onDelete={onDelete}
@@ -609,45 +708,51 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     </>
   )
 
-  // ── 모바일 ────────────────────────────────────────────────────────────────
+  // ── 모바일 — 캘린더+일별 리스트 원장 (design todo-mobile.jsx) ─────────────
   if (mobile) {
     return (
       <>
         <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {SkyHero}
-          {FilterChips}
-          {ListCard}
-          {MySky}
-          {Collection}
-        </div>
-        <button
-          type="button"
-          aria-label={t('addTodoLabel')}
-          onClick={() => setEditing({ _new: true })}
-          style={{
-            position: 'fixed',
-            // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
-            bottom: 24,
-            right: 18,
-            width: 52,
-            height: 52,
-            borderRadius: 999,
-            border: 0,
-            background: 'var(--bg-brand)',
-            color: 'var(--fg-on-brand)',
-            boxShadow: 'var(--shadow-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 20,
-          }}
-        >
-          <Plus size={22} strokeWidth={2.5} />
-        </button>
-        {dialog}
+        <div style={{ position: 'relative', paddingBottom: 96 }}>
+          <TodoMobileLedger
+            todos={todos}
+            tags={tagNames}
+            constellationToday={constellationTodayQ.data}
+            sky={skyQ.data ?? []}
+            doneToday={doneToday}
+            pinTop={46}
+            onToggle={onToggleTodo}
+            onRowClick={setViewing}
+            openNightSky={() => setNightSky(true)}
+            openReport={() => setForestReport(true)}
+          />
+          <button
+            type="button"
+            aria-label={t('addTodoLabel')}
+            onClick={() => setEditing({ _new: true })}
+            style={{
+              position: 'fixed',
+              // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
+              bottom: 24,
+              right: 18,
+              width: 52,
+              height: 52,
+              borderRadius: 999,
+              border: 0,
+              background: 'var(--bg-brand)',
+              color: 'var(--fg-on-brand)',
+              boxShadow: 'var(--shadow-lg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              zIndex: 20,
+            }}
+          >
+            <Plus size={22} strokeWidth={2.5} />
+          </button>
+          {dialog}
+          {overlays}
         </div>
       </>
     )
@@ -668,7 +773,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
       </div>
       <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
-        {SkyHero}
         <div
           style={{
             display: 'grid',
@@ -679,18 +783,19 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {QuickAdd}
             {FilterChips}
             {ListCard}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {MySky}
-            {Collection}
+            {Strip}
             {TagDistribution}
             {PriorityCard}
           </div>
         </div>
       </div>
       {dialog}
+      {overlays}
     </div>
   )
 }
@@ -907,6 +1012,7 @@ function TodoEditDialog({
   todo,
   mobile,
   today,
+  tags,
   onClose,
   onSave,
   onDelete,
@@ -916,6 +1022,7 @@ function TodoEditDialog({
   todo: Todo | null
   mobile: boolean
   today: string
+  tags: string[]
   onClose: () => void
   onSave: (values: TodoFormValues, id?: number) => void
   onDelete: (id: number) => void
@@ -927,7 +1034,7 @@ function TodoEditDialog({
   const isNew = !todo
   const [title, setTitle] = useState(todo?.title ?? '')
   const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today)
-  const [tag, setTag] = useState(todo?.category || DEFAULT_TAG)
+  const [tag, setTag] = useState(todo?.category || tags[0] || DEFAULT_TAG)
   const [priority, setPriority] = useState<TodoPriority>(todo?.priority ?? 'MEDIUM')
   const [note, setNote] = useState(todo?.content ?? '')
   const [error, setError] = useState(false)
@@ -1014,7 +1121,7 @@ function TodoEditDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TAG_OPTIONS.map(opt => (
+              {(tags.includes(tag) ? tags : [tag, ...tags]).map(opt => (
                 <SelectItem key={opt} value={opt}>
                   {opt}
                 </SelectItem>
@@ -1100,20 +1207,6 @@ function TodoRowSkeleton({ last }: { last?: boolean }) {
   )
 }
 
-/** 통계 카드 1장 skeleton — 라벨/숫자 placeholder. progress=true 면 3번째 완료율 카드의 진행바도 미러. */
-function StatCardSkeleton({ mobile, progress }: { mobile: boolean; progress?: boolean }) {
-  return (
-    <Card style={{ padding: mobile ? 14 : 18 }}>
-      <SkeletonBase className="h-3 w-10 mb-1.5" />
-      <SkeletonBase className={mobile ? 'h-[22px] w-12' : 'h-[26px] w-14'} />
-      {progress && (
-        <div className="budget-bar" style={{ marginTop: 8, height: 6 }}>
-          <SkeletonBase className="h-full w-2/5 rounded-full" />
-        </div>
-      )}
-    </Card>
-  )
-}
 
 /** 데스크톱 우측 분포/우선순위 카드 skeleton — 실제 타이틀 + 막대 행 구조 미러. */
 function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
@@ -1134,45 +1227,54 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
 }
 
 /**
- * Todo 페이지 skeleton — 정적 틀(페이지 헤더 / 퀵추가 / 필터 칩)은 실제 렌더,
- * 서버 쿼리(useTodos) 의존 데이터 영역(통계 숫자 / 리스트 / 분포)만 skeleton.
+ * Todo 페이지 skeleton — 정적 틀(페이지 헤더)은 실제 렌더,
+ * 서버 쿼리(useTodos) 의존 영역(원장 핀/리스트 · 퀵추가/칩/리스트/분포)만 skeleton.
  */
 function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('todo')
-  const { t: tc } = useTranslation('common')
-  // ── 통계 3카드 (데이터: 숫자/완료율) ──
-  const Stats = (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: mobile ? 8 : 12,
-      }}
-    >
-      <StatCardSkeleton mobile={mobile} />
-      <StatCardSkeleton mobile={mobile} />
-      <StatCardSkeleton mobile={mobile} progress />
+  // ── 필터 칩 4개 placeholder ──
+  const Chips = (
+    <div style={{ display: 'flex', gap: 8 }}>
+      {[0, 1, 2, 3].map(i => (
+        <SkeletonBase key={i} className="h-7 w-16 rounded-full" />
+      ))}
     </div>
   )
-
-  const Left = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {Stats}
-      {Chips}
-      {List}
-    </div>
+  // ── 리스트 — 날짜 라벨 + 행 skeleton ──
+  const rows = (
+    <>
+      <SkeletonBase className="h-3 w-36 mt-3 mb-2" />
+      {[0, 1, 2].map(i => (
+        <TodoRowSkeleton key={i} last={i === 2} />
+      ))}
+      <SkeletonBase className="h-3 w-36 mt-4 mb-2" />
+      {[0, 1].map(i => (
+        <TodoRowSkeleton key={i} last={i === 1} />
+      ))}
+    </>
   )
+  const List = mobile ? <div>{rows}</div> : <Card style={{ padding: '8px 20px' }}>{rows}</Card>
 
   if (mobile) {
+    // 모바일 원장 skeleton — 월네비/오늘상태/캘린더 핀 자리 + 일별 리스트
     return (
       <>
         <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ padding: '16px 24px 96px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {Stats}
-            {Chips}
-            {List}
+        <div style={{ padding: '10px 20px 96px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0 10px' }}>
+            <SkeletonBase className="h-6 w-6 rounded-md" />
+            <SkeletonBase className="h-5 w-12" />
+            <SkeletonBase className="h-6 w-6 rounded-md" />
+            <SkeletonBase className="h-6 w-6 rounded-md ml-auto" />
           </div>
+          <SkeletonBase className="h-6 w-40 mb-1.5" />
+          <SkeletonBase className="h-3.5 w-56 mb-4" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 14 }}>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <SkeletonBase key={i} className="h-12 w-full rounded-md" />
+            ))}
+          </div>
+          {List}
         </div>
       </>
     )
@@ -1198,10 +1300,16 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
             gridTemplateColumns: '1.4fr 1fr',
             gap: 20,
             alignItems: 'flex-start',
+            marginTop: 20,
           }}
         >
-          {Left}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <SkeletonBase className="h-12 w-full rounded-md" />
+            {Chips}
+            {List}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <SkeletonBase className="h-[62px] w-full rounded-lg" />
             <RatioCardSkeleton title={t('tagDistribution')} rows={4} />
             <RatioCardSkeleton title={t('form.priority')} rows={3} />
           </div>
