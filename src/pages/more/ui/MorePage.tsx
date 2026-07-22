@@ -97,7 +97,7 @@ export const MorePage = () => {
           size={16}
           style={{
             position: 'absolute',
-            left: 32,
+            left: 12,
             top: '50%',
             transform: 'translateY(-50%)',
             color: 'var(--fg-tertiary)',
