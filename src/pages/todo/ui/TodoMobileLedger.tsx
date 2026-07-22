@@ -168,7 +168,12 @@ export function TodoMobileLedger({
     const onScroll = () => {
       const st = p.scrollTop
       setCompact(prev => {
-        const next = prev ? st > 24 : st > 72
+        // 콘텐츠가 짧으면 접힘(−collapse 높이) 순간 scrollTop이 해제 임계 아래로
+        // clamp돼 접힘↔펼침 무한 플리커 발생 — 접힌 뒤에도 진입 임계(72) 위에
+        // 남을 수 있는 스크롤 여유가 있을 때만 진입.
+        const collapseH = pinRef.current?.querySelector('.txm-collapse')?.scrollHeight ?? 0
+        const canStay = p.scrollHeight - p.clientHeight - (prev ? 0 : collapseH) > 72
+        const next = prev ? st > 24 : st > 72 && canStay
         if (next && !prev) setExpanded(false)
         return next
       })
