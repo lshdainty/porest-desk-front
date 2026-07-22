@@ -321,7 +321,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         {/* TopMerchantsCard 프레임(Section) + 5행 로딩 (실제 888·897~909 미러) */}
         <Section
           mobile={mobile}
-          contentInset
           title={<SkeletonBase className="h-5 w-44" />}
           cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >
