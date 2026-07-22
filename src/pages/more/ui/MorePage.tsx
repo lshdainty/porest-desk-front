@@ -90,9 +90,9 @@ export const MorePage = () => {
     : visibleGroups
 
   return (
-    <div style={{ padding: 'var(--spacing-xl)' }}>
+    <div style={{ padding: 'var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)' }}>
       {/* 검색바 */}
-      <div className="relative" style={{ marginBottom: 4 }}>
+      <div className="relative" style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg-surface)', paddingBottom: 'var(--spacing-sm)' }}>
         <Search
           size={16}
           style={{
