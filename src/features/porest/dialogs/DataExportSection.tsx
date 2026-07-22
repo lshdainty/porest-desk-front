@@ -295,7 +295,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
           <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)' }}>{t('section.maskSensitive')}</span>
         </label>
         {/* 모바일 — 앱처럼 풀폭 반반(사용자 결정). 데스크톱은 우측 정렬 유지. */}
-        <div style={mobile ? { display: 'flex', gap: 8 } : { display: 'flex', gap: 8, marginLeft: 'auto' }}>
+        <div style={mobile ? { display: 'flex', gap: 8, flexBasis: '100%' } : { display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <Button variant="outline" onClick={handlePreview} loading={previewing} disabled={!selected.length || customInvalid} style={mobile ? { flex: 1 } : undefined}>
             <Eye size={14} /> {t('preview')}
           </Button>
