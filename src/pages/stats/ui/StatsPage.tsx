@@ -2218,7 +2218,7 @@ export const StatsPage = () => {
           >
             <PorestChartTooltip
               active
-              label={t(WK_KEYS[wkTip.i])}
+              label={t(WK_KEYS[wkTip.i] ?? 'dow.mon')}
               payload={[
                 { dataKey: 'now', value: wkAgg.now[wkTip.i] ?? 0 },
                 { dataKey: 'prev', value: wkAgg.prev[wkTip.i] ?? 0 },

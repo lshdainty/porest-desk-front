@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Crown, Sparkles } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
 import {
-  constellationColorVar,
+  constellationDesc,
   constellationName,
   type CollectionEntry,
   type ConstellationCollection,
@@ -12,8 +12,8 @@ import { ConstellationSVG } from './ConstellationSVG'
 import { ConstellationDetailDialog } from './ConstellationDetailDialog'
 
 /**
- * 별자리 도감 — 전체 별자리 목록(수집 횟수/미수집), 클릭 시 상세 감상.
- * 디자인 SoT: forest.jsx ForestCollection.
+ * 별자리 도감 v2 — 실루엣 잠금 + 뱃지(오늘의 목표/NEW/수집 N회) + 감상하기/미리보기 CTA.
+ * 디자인 SoT: forest-report.jsx ForestCollectionV2.
  */
 export function CollectionCard({
   collection,
@@ -27,120 +27,128 @@ export function CollectionCard({
   const { t, i18n } = useTranslation('constellation')
   const [detail, setDetail] = useState<CollectionEntry | null>(null)
 
-  // 모바일 카드 다이어트 — 카드 벗기고 콘텐츠만 (design .m-scroll .p-card 플랫).
-  const Wrap = mobile ? 'section' : Card
-  return (
-    <Wrap style={mobile ? undefined : { padding: 22 }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>
-          {t('collection.title')}
-        </h2>
-        <span className="num" style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginLeft: 'auto' }}>
-          {t('collection.progress', { collected: collection.collectedKinds, total: collection.entries.length })}
-        </span>
-      </div>
-      <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-        {t('collection.subtitle')}
-      </div>
-      {/* 도감 리스트 — 페이지 전체 스크롤 방지, 리스트 안에서 스크롤(사용자 결정) */}
-      <div className="scrollbar-hide" style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 420, overflowY: 'auto' }}>
-        {collection.entries.map(entry => {
-          const key = entry.constellation.constellationKey
-          const collected = entry.collectCount > 0
-          const isToday = key === todayKey
-          const color = constellationColorVar(entry.constellation.colorKey)
-          const name = constellationName(entry.constellation, i18n.language)
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setDetail(entry)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                width: '100%',
-                padding: '8px 6px',
-                border: 0,
-                background: 'transparent',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                fontFamily: 'inherit',
-                transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-muted)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <span
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 'var(--radius-md)',
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: collected
-                    ? `color-mix(in oklab, ${color} 14%, var(--bg-surface))`
-                    : 'var(--bg-sunken)',
-                  color: collected ? color : 'var(--fg-tertiary)',
-                }}
-              >
-                <ConstellationSVG
-                  starMap={entry.constellation.starMap}
-                  size={24}
-                  dim={!collected}
-                  linesOnly
-                />
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span
-                    style={{
-                      fontSize: 13.5,
-                      fontWeight: 600,
-                      color: collected ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
-                    }}
-                  >
-                    {name}
-                  </span>
-                  {isToday && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: 'var(--fg-brand)',
-                        background: 'color-mix(in oklab, var(--color-primary) 10%, var(--bg-surface))',
-                        padding: '1px 6px',
-                        borderRadius: 999,
-                      }}
-                    >
-                      {t('collection.todayBadge')}
-                    </span>
-                  )}
-                </span>
-                <span style={{ display: 'block', fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                  {t('collection.starCount', { count: entry.constellation.starCount })}
-                </span>
-              </span>
-              <span
-                className="num"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: collected ? 'var(--fg-secondary)' : 'var(--fg-tertiary)',
-                  flexShrink: 0,
-                }}
-              >
-                {collected ? t('collection.timesCollected', { count: entry.collectCount }) : t('collection.notCollected')}
-              </span>
-              <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-            </button>
-          )
-        })}
-      </div>
-      {detail && <ConstellationDetailDialog entry={detail} onClose={() => setDetail(null)} mobile={mobile} />}
-    </Wrap>
+  // NEW 뱃지 — 가장 최근 수집(lastCollectedDate 최대) 별자리 1종.
+  const newestKey = useMemo(() => {
+    let key: string | null = null
+    let max = ''
+    for (const entry of collection.entries) {
+      if (entry.collectCount > 0 && entry.lastCollectedDate && entry.lastCollectedDate > max) {
+        max = entry.lastCollectedDate
+        key = entry.constellation.constellationKey
+      }
+    }
+    return key
+  }, [collection.entries])
+
+  const head = (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        margin: 0,
+        padding: mobile ? '16px 0 4px' : '18px 22px 4px',
+      }}
+    >
+      <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', margin: 0 }}>
+        {t('collection.title')}
+      </h2>
+      <span
+        className="num"
+        style={{
+          fontSize: 12,
+          color: 'var(--fg-tertiary)',
+          marginLeft: 'auto',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
+        <Sparkles size={12} />
+        {t('collection.progress', { collected: collection.collectedKinds, total: collection.entries.length })}
+      </span>
+    </div>
   )
+
+  const rows = (
+    <div>
+      {collection.entries.map((entry, i) => {
+        const key = entry.constellation.constellationKey
+        const owned = entry.collectCount > 0
+        const isToday = key === todayKey
+        const name = constellationName(entry.constellation, i18n.language)
+        const description = constellationDesc(entry.constellation, i18n.language)
+        return (
+          <div
+            key={key}
+            className="fcol-row"
+            style={{
+              ...(i === 0 ? { borderTop: 'none' } : null),
+              ...(mobile ? { paddingLeft: 0, paddingRight: 0 } : null),
+            }}
+          >
+            <span className={`fcol-art ${owned ? '' : 'fcol-art--locked'}`}>
+              <ConstellationSVG
+                starMap={entry.constellation.starMap}
+                size={mobile ? 56 : 62}
+                dim={!owned}
+                lit={owned ? entry.constellation.starCount : 0}
+              />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                <span
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 800,
+                    letterSpacing: '-0.01em',
+                    color: owned ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+                  }}
+                >
+                  {name}
+                </span>
+                {isToday && (
+                  <span className="fcol-badge fcol-badge--rep">
+                    <Crown size={9} strokeWidth={2.6} /> {t('collection.todayBadge')}
+                  </span>
+                )}
+                {key === newestKey && owned && (
+                  <span className="fcol-badge fcol-badge--new">{t('collection.badgeNew')}</span>
+                )}
+                {owned && (
+                  <span className="fcol-badge fcol-badge--own">
+                    {t('collection.timesCollected', { count: entry.collectCount })}
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  fontSize: 12.5,
+                  color: 'var(--fg-tertiary)',
+                  marginTop: 3,
+                  lineHeight: 1.5,
+                }}
+              >
+                {owned ? description : t('collection.lockedDesc', { count: entry.constellation.starCount })}
+              </div>
+              <button type="button" className="fcol-cta" onClick={() => setDetail(entry)}>
+                {owned ? t('collection.viewOwned') : t('collection.viewLocked')}
+                <ChevronRight size={12} strokeWidth={2.4} />
+              </button>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const body = (
+    <>
+      {head}
+      {rows}
+      {detail && <ConstellationDetailDialog entry={detail} onClose={() => setDetail(null)} mobile={mobile} />}
+    </>
+  )
+  // 모바일 카드 다이어트 — 카드 벗김(.m-subpage 플랫). 데스크톱은 Card(padding 0) 리스트형.
+  if (mobile) return <section>{body}</section>
+  return <Card style={{ padding: 0, overflow: 'hidden' }}>{body}</Card>
 }

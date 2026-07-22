@@ -1095,7 +1095,7 @@ function shiftMonthKey(monthKey: string, delta: number): string {
 
 /** 월 라벨 — ko "7월" / en "Jul" (디자인 monthnav·prevbtn·empty 문구 공용). */
 function txmMonthLabel(monthKey: string): string {
-  const [y, m] = monthKey.split('-').map(Number)
+  const [y = 0, m = 1] = monthKey.split('-').map(Number)
   return isEn() ? new Date(y, m - 1, 1).toLocaleDateString('en', { month: 'short' }) : `${m}월`
 }
 
@@ -1197,7 +1197,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   // 캘린더 주(week) 구성.
   const weeks = useMemo(() => {
-    const [y, m] = month.split('-').map(Number)
+    const [y = 0, m = 1] = month.split('-').map(Number)
     const firstDow = new Date(y, m - 1, 1).getDay()
     const dim = new Date(y, m, 0).getDate()
     const cells: ({ d: number; ds: string } | null)[] = []
@@ -1253,7 +1253,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       const bottom = pinRef.current.getBoundingClientRect().bottom
       const groups = rootRef.current.querySelectorAll('[data-txm-day]')
       if (!groups.length) return
-      let cur = groups[0].getAttribute('data-txm-day')
+      let cur = groups[0]!.getAttribute('data-txm-day')
       for (const g of groups) {
         if (g.getBoundingClientRect().top <= bottom + 28) cur = g.getAttribute('data-txm-day')
         else break
@@ -1395,7 +1395,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             </span>
           ))}
         </div>
-        {(expanded ? weeks : [weeks[selWeek]]).map((w, wi) => (
+        {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
           <div key={wi} className="txm-week">
             {w.map((c, i) => {
               if (!c) return <div key={`e${i}`} className="txm-cell" style={{ cursor: 'default' }} />
@@ -1463,8 +1463,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               {Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}
             </div>
             {([
-              { label: t('expense'), color: 'var(--fg-expense)', text: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds].out)}</MaskAmount><WonUnit /></> },
-              { label: t('income'), color: 'var(--fg-brand)', text: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds].inn)}</MaskAmount><WonUnit /></> },
+              { label: t('expense'), color: 'var(--fg-expense)', text: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit /></> },
+              { label: t('income'), color: 'var(--fg-brand)', text: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit /></> },
             ] as const).map(row => (
               <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                 <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
@@ -1497,7 +1497,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             return (
               <div key={d} className="txm-group" data-txm-day={d}>
                 <div className="txm-dayhead">
-                  <span className="txm-dayhead__date">{yy.slice(2)}. {Number(mm)}. {Number(dd)}({dow})</span>
+                  <span className="txm-dayhead__date">{(yy ?? '').slice(2)}. {Number(mm)}. {Number(dd)}({dow})</span>
                   {rel && <span className="txm-dayhead__rel">&nbsp;· {rel}</span>}
                   <span className="txm-dayhead__sum num">
                     {dOut > 0 && <span className="out"><MaskAmount>-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit /></span>}
