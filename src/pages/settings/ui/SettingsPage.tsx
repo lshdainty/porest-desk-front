@@ -830,9 +830,8 @@ function AccountRow({
     return (
       <button
         style={{
-          ...sharedStyle,
           border: 0,
-          borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+          ...sharedStyle,
           background: 'transparent',
           cursor: 'pointer',
           textAlign: 'left',
@@ -849,9 +848,8 @@ function AccountRow({
       <button
         onClick={onClick}
         style={{
-          ...sharedStyle,
           border: 0,
-          borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
+          ...sharedStyle,
           background: 'transparent',
           cursor: 'pointer',
           textAlign: 'left',
