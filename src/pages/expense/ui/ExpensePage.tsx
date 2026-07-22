@@ -1118,6 +1118,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   // pin/compact — 스크롤 시 총액 영역 접힘 + 상단 고정 (design txm-pin).
   const [compact, setCompact] = useState(false)
+  // 셀 차트형 툴팁(지출·수입) — hover 셀 기준 좌표 (사용자 결정).
+  const [cellTip, setCellTip] = useState<{ ds: string; left: number; top: number } | null>(null)
+  const calRef = useRef<HTMLDivElement | null>(null)
   const pinRef = useRef<HTMLDivElement | null>(null)
   const lockRef = useRef(false)
   const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1381,7 +1384,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
       {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
       {!filterActive && (
-      <div className="txm-cal">
+      <div className="txm-cal" ref={calRef} style={{ position: 'relative' }}>
         <div className="txm-dow">
           {dowLabels.map((d, i) => (
             <span
@@ -1403,6 +1406,13 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   key={c.ds}
                   className={`txm-cell ${isSel ? 'txm-cell--sel' : ''}`}
                   onClick={() => { setSelected(c.ds); if (data) { lock(800); scrollToDay(c.ds) } }}
+                  onMouseEnter={(e) => {
+                    if (!data || !calRef.current) return
+                    const cell = e.currentTarget.getBoundingClientRect()
+                    const cal = calRef.current.getBoundingClientRect()
+                    setCellTip({ ds: c.ds, left: cell.left - cal.left + cell.width / 2, top: cell.top - cal.top })
+                  }}
+                  onMouseLeave={() => setCellTip(null)}
                 >
                   <span
                     className="txm-cell__num"
@@ -1412,10 +1422,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   </span>
                   {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
                   {data && data.out > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }} title={`-${KRW(data.out)}`}>-{KRW(data.out)}</span>
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</span>
                   )}
                   {data && data.inn > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }} title={`+${KRW(data.inn)}`}>+{KRW(data.inn)}</span>
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</span>
                   )}
                   {!data && <span className="txm-cell__amt num" />}
                 </button>
@@ -1430,6 +1440,40 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         >
           {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
+        {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
+        {cellTip && byDay[cellTip.ds] && (
+          <div
+            style={{
+              position: 'absolute',
+              left: cellTip.left,
+              top: cellTip.top,
+              transform: 'translate(-50%, calc(-100% - 8px))',
+              zIndex: 20,
+              pointerEvents: 'none',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-tile)',
+              boxShadow: 'var(--shadow-md)',
+              padding: '10px 12px',
+              fontSize: 'var(--text-caption)',
+              minWidth: 150,
+            }}
+          >
+            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 6 }}>
+              {Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}
+            </div>
+            {([
+              { label: t('expense'), color: 'var(--fg-expense)', text: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds].out)}</MaskAmount><WonUnit /></> },
+              { label: t('income'), color: 'var(--fg-brand)', text: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds].inn)}</MaskAmount><WonUnit /></> },
+            ] as const).map(row => (
+              <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
+                <span className="num" style={{ marginLeft: 'auto', fontWeight: 700, color: row.color }}>{row.text}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       )}
 
