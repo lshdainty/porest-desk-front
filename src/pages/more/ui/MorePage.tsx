@@ -90,9 +90,9 @@ export const MorePage = () => {
     : visibleGroups
 
   return (
-    <div style={{ padding: '20px 0 32px' }}>
+    <div style={{ padding: 'var(--spacing-xl)' }}>
       {/* 검색바 */}
-      <div className="relative" style={{ padding: '0 20px', marginBottom: 4 }}>
+      <div className="relative" style={{ marginBottom: 4 }}>
         <Search
           size={16}
           style={{
@@ -117,7 +117,7 @@ export const MorePage = () => {
       {filtered.length === 0 ? (
         <div
           style={{
-            padding: '60px 20px',
+            padding: '60px 0',
             textAlign: 'center',
             color: 'var(--fg-tertiary)',
           }}
@@ -129,14 +129,14 @@ export const MorePage = () => {
         filtered.map((group, gi) => (
           <div key={group.labelKey}>
             {/* 그룹 사이 헤어라인 (design .flat-div) */}
-            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 20px' }} />}
+            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 0' }} />}
             <div
               style={{
                 fontSize: 'var(--text-body-lg)',
                 fontWeight: 700,
                 color: 'var(--fg-primary)',
                 letterSpacing: '-0.01em',
-                padding: '14px 20px 2px',
+                padding: '14px 0 2px',
               }}
             >
               {t(group.labelKey)}
@@ -146,7 +146,7 @@ export const MorePage = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                padding: '6px 20px 4px',
+                padding: '6px 0 4px',
                 columnGap: 16,
               }}
             >

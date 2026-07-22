@@ -356,7 +356,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
     <>
       {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
       <MobileBackHeader title={t('page.title')} />
-      <div style={{ padding: '8px 0 32px' }}>
+      <div style={{ padding: 'var(--spacing-xl)' }}>
       {/* 내 정보 — K뱅크 톤: 카드 없이 이름 헤더 행 (design MobileSettingsList) */}
       <button
         onClick={() => changeSection('account')}
@@ -365,7 +365,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
           alignItems: 'center',
           gap: 14,
           width: '100%',
-          padding: '14px 20px 18px',
+          padding: '14px 0 18px',
           background: 'transparent',
           border: 0,
           cursor: 'pointer',
@@ -410,14 +410,14 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
 
         return (
           <div key={group.labelKey}>
-            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 20px' }} />}
+            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />}
             <div
               style={{
                 fontSize: 'var(--text-body-lg)',
                 fontWeight: 700,
                 color: 'var(--fg-primary)',
                 letterSpacing: '-0.01em',
-                padding: '14px 20px 4px',
+                padding: '14px 0 4px',
               }}
             >
               {t(group.labelKey)}
@@ -432,7 +432,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
                     display: 'flex',
                     alignItems: 'center',
                     gap: 12,
-                    padding: '13px 20px',
+                    padding: '13px 0',
                     background: 'transparent',
                     border: 0,
                     cursor: 'pointer',
