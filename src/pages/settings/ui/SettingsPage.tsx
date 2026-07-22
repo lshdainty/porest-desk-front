@@ -523,12 +523,10 @@ function AccountSection({ mobile }: { mobile: boolean }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
-      {/* 프로필 헤더 */}
-      <div
+      {/* 프로필 헤더 — 모바일은 자산 요약과 동일한 keep 카드(raised) */}
+      <Card
+        variant={mobile ? 'raised' : 'shadow'}
         style={{
-          background: 'var(--bg-surface)',
-          boxShadow: 'var(--shadow-sm)',
-          borderRadius: 'var(--radius-card)',
           padding: '28px 24px',
           display: 'flex',
           flexDirection: 'column',
@@ -588,7 +586,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
             })}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* 보안 */}
       <AccountGroup mobile={mobile} label={t('account.group.security')}>
