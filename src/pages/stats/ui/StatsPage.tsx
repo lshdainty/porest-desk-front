@@ -956,7 +956,6 @@ export const StatsPage = () => {
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      contentInset
       title={t('merchant.title')}
       cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
