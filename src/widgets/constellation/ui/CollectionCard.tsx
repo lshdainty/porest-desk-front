@@ -42,7 +42,8 @@ export function CollectionCard({
       <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginBottom: 12 }}>
         {t('collection.subtitle')}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* 도감 리스트 — 페이지 전체 스크롤 방지, 리스트 안에서 스크롤(사용자 결정) */}
+      <div className="scrollbar-hide" style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 420, overflowY: 'auto' }}>
         {collection.entries.map(entry => {
           const key = entry.constellation.constellationKey
           const collected = entry.collectCount > 0
