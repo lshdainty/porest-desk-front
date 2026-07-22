@@ -1412,10 +1412,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   </span>
                   {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
                   {data && data.out > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</span>
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-expense)' }} title={`-${KRW(data.out)}`}>-{KRW(data.out)}</span>
                   )}
                   {data && data.inn > 0 && (
-                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</span>
+                    <span className="txm-cell__amt num" style={{ color: 'var(--fg-brand)' }} title={`+${KRW(data.inn)}`}>+{KRW(data.inn)}</span>
                   )}
                   {!data && <span className="txm-cell__amt num" />}
                 </button>
