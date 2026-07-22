@@ -400,7 +400,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
         </div>
         <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
       </button>
-      <div style={{ height: 1, background: 'var(--border-subtle)', margin: '0 20px 4px' }} />
+      <div style={{ height: 1, background: 'var(--border-subtle)', margin: '0 0 4px' }} />
 
       {/* 그룹 — 카드 없이 라벨 + 텍스트 행 (터치 dim), 그룹 사이 헤어라인 */}
       {MENU_GROUPS.map((group, gi) => {
