@@ -4,8 +4,7 @@ import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
 import { PorestSidebar } from './PorestSidebar'
 import { PorestTopBar } from './PorestTopBar'
 import { MobileHeader } from './MobileHeader'
-import { MobileTabBar } from './MobileTabBar'
-import { MoneyTabBar } from './MoneyTabBar'
+import { AppTabBar } from './AppTabBar'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
@@ -65,14 +64,14 @@ export const AppLayout = () => {
     }
 
     return (
-      <div className="m-app" data-screen-label="Mobile">
+      <div className="m-app m-app--tabbar" data-screen-label="Mobile">
         <MobileHeader />
         {/* flex flex-col — 페이지가 flex-1 로 m-scroll 전체 height 를 차지하도록 (viewport
             fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작 (변경 없음). */}
         <div className="m-scroll flex flex-col">
           <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
         </div>
-        {isMoney ? <MoneyTabBar /> : <MobileTabBar onAdd={handleAdd} />}
+        <AppTabBar mode={isMoney ? 'money' : 'default'} onAdd={handleAdd} />
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
         {calendarAddOpen && <CalendarEventAddForm onClose={() => setCalendarAddOpen(false)} />}
       </div>

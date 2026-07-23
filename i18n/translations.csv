@@ -68,6 +68,7 @@ layout,all,전체,All
 layout,search,검색,Search
 layout,searchPlaceholder,"거래, 카테고리, 계좌 검색","Search transactions, categories, accounts"
 layout,back,뒤로,Back
+layout,addTransaction,거래 추가,Add transaction
 layout,notifications,알림,Notifications
 layout,showAmounts,금액 표시,Show amounts
 layout,hideAmounts,금액 가리기,Hide amounts

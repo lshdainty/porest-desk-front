@@ -216,50 +216,11 @@
 .m-header h1 { font-size: var(--text-display-sm); font-weight: 700; letter-spacing: -0.022em; flex: 1; }
 .m-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .m-scroll::-webkit-scrollbar { width: 0; }
-.m-tabbar {
-  height: 72px;
-  padding: 6px 8px 18px;
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border-subtle);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  flex-shrink: 0;
-}
-.m-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: transparent;
-  border: 0;
-  padding: 6px 2px;
-  font-size: var(--text-badge);
-  font-weight: 500;
-  color: var(--fg-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: color var(--motion-duration-fast);
-  position: relative;
-}
-/* > svg: 직접 자식만 매칭 — FAB 의 <span><svg/></span> 는 영향 없음 */
-.m-tab > svg { color: var(--fg-tertiary); }
-.m-tab.active { color: var(--fg-brand-strong); font-weight: 600; }
-.m-tab.active > svg { color: var(--fg-brand-strong); }
-/* back 버튼 — 라벨 없어 비어 보이는 현상 fix. 클로드 시각 정합 (mid-gray icon).
- * 클로드 토큰 이름은 var(--fg-primary) 지만 값이 우리와 달라 시각 정합 위해 fg-secondary 사용. */
-.m-tab__back-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-sunken);
-  color: var(--fg-secondary);
-  transition: background var(--motion-duration-fast) var(--motion-ease-out);
-}
+/* 모바일 하단 네비 — shared/ui/porest/tabbar.tsx 로 컴포넌트화(tailwind, iOS 27
+   Liquid Glass 플로팅 필). 여기엔 전환 keyframes 와 플로팅 보상 여백만 남긴다. */
+@keyframes mtabIn { from { opacity: 0; transform: translateY(8px) scale(0.88); } to { opacity: 1; transform: none; } }
+/* 플로팅 탭바가 스크롤 콘텐츠 하단을 덮지 않도록 보상 (탭바 있는 셸만) */
+.m-app--tabbar .m-scroll > :last-child { padding-bottom: 104px !important; }
 
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
