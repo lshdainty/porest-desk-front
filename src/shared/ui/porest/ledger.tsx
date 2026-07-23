@@ -264,7 +264,7 @@ export function LedgerSumBtn({
     <button
       type={type}
       className={cn(
-        'ml-auto shrink-0 border border-[var(--border-default)] bg-transparent',
+        'ml-auto shrink-0 whitespace-nowrap border border-[var(--border-default)] bg-transparent',
         'text-[var(--fg-primary)] text-[length:var(--text-label-sm)] font-semibold',
         'px-3.5 py-[9px] rounded-xl cursor-pointer',
         'transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
