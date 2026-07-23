@@ -141,7 +141,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
             ) : (
               list.map((tag, i) => {
                 const palette = getPaletteByColor(tag.color)
-                const count = tag.usageCount // 서버 GROUP BY 집계
+                const count = tag.usageCount ?? 0 // 서버 GROUP BY 집계(미배포 시 0)
                 return (
                   <div
                     key={tag.rowId}
@@ -226,7 +226,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
       {confirmDelete && (
         <ConfirmDialog
           title={t('tags.deleteTitle', { name: confirmDelete.tagName })}
-          message={t('tags.deleteMessage', { count: confirmDelete.usageCount })}
+          message={t('tags.deleteMessage', { count: confirmDelete.usageCount ?? 0 })}
           confirmLabel={tc('delete')}
           danger
           loading={deleteMut.isPending}
