@@ -220,7 +220,7 @@
    Liquid Glass 플로팅 필). 여기엔 전환 keyframes 와 플로팅 보상 여백만 남긴다. */
 @keyframes mtabIn { from { opacity: 0; transform: translateY(8px) scale(0.88); } to { opacity: 1; transform: none; } }
 /* 플로팅 탭바가 스크롤 콘텐츠 하단을 덮지 않도록 보상 (탭바 있는 셸만) */
-.m-app--tabbar .m-scroll > :last-child { padding-bottom: 104px !important; }
+.m-app--tabbar .m-scroll > :last-child { padding-bottom: calc(90px + max(14px, env(safe-area-inset-bottom) - 6px)) !important; }
 
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
