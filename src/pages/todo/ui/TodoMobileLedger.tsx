@@ -193,7 +193,7 @@ export function TodoMobileLedger({
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > today) return 'var(--fg-tertiary)'
-    if (dow === 0) return 'var(--color-chart-red)'
+    if (dow === 0) return 'var(--color-cat-red)' // 다크에서 light variant 스왑(사용자 결정)
     if (dow === 6) return 'var(--fg-brand)'
     return 'var(--fg-primary)'
   }
@@ -332,7 +332,7 @@ export function TodoMobileLedger({
           <LedgerDow
             labels={dowLabels}
             colorFor={i =>
-              i === 0 ? 'var(--color-chart-red)' : i === 6 ? 'var(--fg-brand)' : undefined
+              i === 0 ? 'var(--color-cat-red)' : i === 6 ? 'var(--fg-brand)' : undefined
             }
           />
           {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
