@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Tag, Tags, Trash2 } from 'lucide-react'
+import { ChevronRight, Plus, Tag, Tags, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
@@ -214,6 +214,8 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                     >
                       <Trash2 size={14} />
                     </Button>
+                    {/* 행 탭=편집 진입 표시 (앱 정합) */}
+                    <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
                   </div>
                 )
               })
