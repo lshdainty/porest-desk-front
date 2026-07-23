@@ -59,22 +59,24 @@ const PRIO: Record<
   TodoPriority,
   { labelKey: string; color: string; bg: string; order: number }
 > = {
+  // 중요=error(빨강)/보통=warning(노랑)/여유=info(파랑) — status-*-fg 는
+  // 다크에서 *-light 로 스왑되는 토큰 (사용자 결정, 앱 todo_meta 동기).
   HIGH: {
     labelKey: 'prio.HIGH',
-    color: 'var(--color-chart-red)',
-    bg: 'color-mix(in oklab, var(--color-chart-red) 14%, var(--bg-surface))',
+    color: 'var(--status-danger-fg)',
+    bg: 'color-mix(in oklab, var(--status-danger-fg) 14%, var(--bg-surface))',
     order: 0,
   },
   MEDIUM: {
     labelKey: 'prio.MEDIUM',
-    color: 'var(--color-chart-orange)',
-    bg: 'color-mix(in oklab, var(--color-chart-orange) 14%, var(--bg-surface))',
+    color: 'var(--status-warning-fg)',
+    bg: 'color-mix(in oklab, var(--status-warning-fg) 14%, var(--bg-surface))',
     order: 1,
   },
   LOW: {
     labelKey: 'prio.LOW',
-    color: 'var(--fg-tertiary)',
-    bg: 'var(--bg-sunken)',
+    color: 'var(--status-info-fg)',
+    bg: 'color-mix(in oklab, var(--status-info-fg) 14%, var(--bg-surface))',
     order: 2,
   },
 }
