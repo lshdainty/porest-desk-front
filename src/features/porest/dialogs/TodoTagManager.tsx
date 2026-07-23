@@ -202,20 +202,22 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                         {t('tags.usage', { count })}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="!text-[var(--fg-expense)]"
-                      aria-label={tc('delete')}
-                      onClick={e => {
-                        e.stopPropagation()
-                        setConfirmDelete(tag)
-                      }}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                    {/* 행 탭=편집 진입 표시 (앱 정합) */}
-                    <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0, marginLeft: -14 }} />
+                    {/* 삭제+편집 진입 표시 — 한 묶음(행 gap 미적용, 앱 정합) */}
+                    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="!text-[var(--fg-expense)]"
+                        aria-label={tc('delete')}
+                        onClick={e => {
+                          e.stopPropagation()
+                          setConfirmDelete(tag)
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                      <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)' }} />
+                    </div>
                   </div>
                 )
               })
