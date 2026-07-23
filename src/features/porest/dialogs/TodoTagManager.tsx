@@ -18,7 +18,6 @@ import {
   useTodoTags,
   useUpdateTodoTag,
 } from '@/features/todo-tag'
-import { useTodos } from '@/features/todo'
 
 type EditingState = TodoTag | { kind: 'new' } | null
 
@@ -35,7 +34,6 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
   const { data: tags, isLoading } = useTodoTags()
-  const todosQ = useTodos()
   const createMut = useCreateTodoTag()
   const updateMut = useUpdateTodoTag()
   const deleteMut = useDeleteTodoTag()
@@ -45,16 +43,6 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
 
   const list = useMemo(() => tags ?? [], [tags])
   const submitting = createMut.isPending || updateMut.isPending
-
-  // 사용 건수 — 할 일 category(라벨 문자열) 클라 집계.
-  const countByName = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const todo of todosQ.data ?? []) {
-      if (!todo.category) continue
-      map.set(todo.category, (map.get(todo.category) ?? 0) + 1)
-    }
-    return map
-  }, [todosQ.data])
 
   const onSave = (values: { tagName: string; color: string }) => {
     if (editing && 'rowId' in editing) {
@@ -153,7 +141,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
             ) : (
               list.map((tag, i) => {
                 const palette = getPaletteByColor(tag.color)
-                const count = countByName.get(tag.tagName) ?? 0
+                const count = tag.usageCount // 서버 GROUP BY 집계
                 return (
                   <div
                     key={tag.rowId}
@@ -238,7 +226,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
       {confirmDelete && (
         <ConfirmDialog
           title={t('tags.deleteTitle', { name: confirmDelete.tagName })}
-          message={t('tags.deleteMessage', { count: countByName.get(confirmDelete.tagName) ?? 0 })}
+          message={t('tags.deleteMessage', { count: confirmDelete.usageCount })}
           confirmLabel={tc('delete')}
           danger
           loading={deleteMut.isPending}
