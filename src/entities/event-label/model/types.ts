@@ -4,6 +4,8 @@ export interface EventLabel {
   labelName: string
   color: string
   sortOrder: number
+  /** 사용 중 일정 수 — 서버 GROUP BY 집계. */
+  usageCount: number
 }
 
 export interface EventLabelFormValues {

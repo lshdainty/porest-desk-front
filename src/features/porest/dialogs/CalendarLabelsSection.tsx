@@ -207,6 +207,9 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         >
                           {label.labelName}
                         </div>
+                        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                          {t('labels.usage', { count: label.usageCount })}
+                        </div>
                       </div>
                       {/* 삭제+편집 진입 표시 — 한 묶음(행 gap 미적용, 앱 정합) */}
                       <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>

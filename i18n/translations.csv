@@ -2183,7 +2183,7 @@ todo,starToast.progress,별빛 +{{gain}} · 수집까지 {{left}}별,+{{gain}} s
 todo,tags.title,할일 태그,Todo tags
 todo,tags.desc,할 일에 붙이는 태그예요. 리스트 필터와 태그별 분포에 사용돼요.,Tags for your todos — used in list filters and tag distribution.
 todo,tags.new,새 태그,New tag
-todo,tags.usage,할 일 {{count}}건에 사용 중,Used by {{count}} todos
+todo,tags.usage,{{count}}건에 사용 중,Used by {{count}} todos
 todo,tags.empty,태그가 없어요,No tags yet
 todo,tags.emptyHint,{{label}} 버튼으로 첫 태그를 만들어보세요.,Create your first tag with {{label}}.
 todo,tags.deleteTitle,'{{name}}' 태그를 삭제할까요?,Delete tag '{{name}}'?
@@ -2233,3 +2233,4 @@ constellation,collection.viewLocked,미리보기,Preview
 constellation,collection.lockedDesc,별빛 {{count}}개를 하룻밤에 모으면 만날 수 있어요.,Collect {{count}} starlight in one night to meet it.
 settings,sections.todoTags.label,할일 태그,Todo tags
 settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo tag names & colors
+calendar,labels.usage,{{count}}건에 사용 중,Used by {{count}} events
