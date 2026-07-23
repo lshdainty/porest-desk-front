@@ -106,8 +106,8 @@ export function TabBar({
           'shadow-[0_10px_30px_rgba(10,16,36,0.18),0_2px_8px_rgba(10,16,36,0.08),inset_0_0_0_1px_color-mix(in_srgb,var(--border-subtle)_70%,transparent)]',
           'transition-[height,left,right,bottom,padding,background-color] duration-[var(--motion-duration-base)] ease-[var(--motion-ease-out)]',
           compact
-            ? 'h-12 left-9 right-9 bottom-3 px-2 py-1 bg-[color-mix(in_srgb,var(--bg-surface)_68%,transparent)]'
-            : 'h-[66px] left-3.5 right-3.5 bottom-3.5 px-2.5 py-1.5 bg-[color-mix(in_srgb,var(--bg-surface)_82%,transparent)]',
+            ? 'h-12 left-9 right-9 bottom-[max(12px,calc(env(safe-area-inset-bottom)-8px))] px-2 py-1 bg-[color-mix(in_srgb,var(--bg-surface)_68%,transparent)]'
+            : 'h-[66px] left-3.5 right-3.5 bottom-[max(14px,calc(env(safe-area-inset-bottom)-6px))] px-2.5 py-1.5 bg-[color-mix(in_srgb,var(--bg-surface)_82%,transparent)]',
           className,
         )}
         onClick={() => {
