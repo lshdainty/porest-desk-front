@@ -249,7 +249,7 @@ export function TodoMobileLedger({
       return left > 0 ? (
         <span>{t('tdm.countN', { count: left })}</span>
       ) : (
-        <Check size={10} strokeWidth={3} style={{ color: 'var(--color-chart-green)' }} />
+        <Check size={10} strokeWidth={3} style={{ color: 'var(--color-cat-green)' }} />
       )
     }
     return null
@@ -400,7 +400,7 @@ export function TodoMobileLedger({
                 <LedgerDaySum
                   className="num font-semibold"
                   style={{
-                    color: doneN === items.length ? 'var(--color-chart-green)' : 'var(--fg-tertiary)',
+                    color: doneN === items.length ? 'var(--color-cat-green)' : 'var(--fg-tertiary)',
                   }}
                 >
                   {t('tdm.doneRatio', { done: doneN, total: items.length })}
