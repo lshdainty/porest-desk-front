@@ -59,11 +59,11 @@ import type { Todo, TodoPriority } from '@/entities/todo'
 
 type PrioKey = TodoPriority
 
-/** 모바일 원장 우선순위 색 — design TDM_PRIO(중요 red · 보통 blue · 여유 yellow). */
+/** 우선순위 색 — 중요=error·보통=warning·여유=info (status-*-fg, 다크 light 스왑). */
 const TDM_PRIO: Record<PrioKey, { color: string }> = {
-  HIGH: { color: 'var(--color-chart-red)' },
-  MEDIUM: { color: 'var(--color-chart-blue)' },
-  LOW: { color: 'var(--color-chart-yellow)' },
+  HIGH: { color: 'var(--status-danger-fg)' },
+  MEDIUM: { color: 'var(--status-warning-fg)' },
+  LOW: { color: 'var(--status-info-fg)' },
 }
 const PRIO_KEYS: PrioKey[] = ['HIGH', 'MEDIUM', 'LOW']
 
