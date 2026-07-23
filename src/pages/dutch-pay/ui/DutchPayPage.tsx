@@ -23,6 +23,7 @@ import {
 } from '@/features/dutch-pay'
 import type { DutchPay, DutchPayParticipant, DutchPayFormValues } from '@/entities/dutch-pay'
 import { Button } from '@/shared/ui/button'
+import { Fab } from '@/shared/ui/porest/fab'
 import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -437,32 +438,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           {TabsSeg}
           {Content}
         </div>
-        <button
-          type="button"
-          aria-label={t('fromTx.createSettlement')}
-          onClick={() => setCreating(true)}
-          className="m-fab"
-          style={{
-            position: 'fixed',
-            // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
-            bottom: 24,
-            right: 18,
-            width: 52,
-            height: 52,
-            borderRadius: 999,
-            border: 0,
-            background: 'var(--bg-brand)',
-            color: 'var(--fg-on-brand)',
-            boxShadow: 'var(--shadow-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 20,
-          }}
-        >
-          <Plus size={22} strokeWidth={2.5} />
-        </button>
+        <Fab aria-label={t('fromTx.createSettlement')} onClick={() => setCreating(true)} />
         {dialogs}
         </div>
       </>

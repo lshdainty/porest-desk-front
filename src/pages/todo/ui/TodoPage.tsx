@@ -27,6 +27,7 @@ import { ForestReport, ForestStrip, NightSkyPanel } from '@/widgets/constellatio
 import { TodoMobileLedger } from './TodoMobileLedger'
 import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
 import { Button } from '@/shared/ui/button'
+import { Fab } from '@/shared/ui/porest/fab'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import {
@@ -726,31 +727,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             openNightSky={() => setNightSky(true)}
             openReport={() => setForestReport(true)}
           />
-          <button
-            type="button"
-            aria-label={t('addTodoLabel')}
-            onClick={() => setEditing({ _new: true })}
-            style={{
-              position: 'fixed',
-              // 풀스크린 페이지(탭바 없음) — 하단 여백 24 (앱 FAB 기본 위치 미러)
-              bottom: 24,
-              right: 18,
-              width: 52,
-              height: 52,
-              borderRadius: 999,
-              border: 0,
-              background: 'var(--bg-brand)',
-              color: 'var(--fg-on-brand)',
-              boxShadow: 'var(--shadow-lg)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 20,
-            }}
-          >
-            <Plus size={22} strokeWidth={2.5} />
-          </button>
+          <Fab aria-label={t('addTodoLabel')} onClick={() => setEditing({ _new: true })} />
           {dialog}
           {overlays}
         </div>
