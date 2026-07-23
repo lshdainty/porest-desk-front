@@ -8,7 +8,6 @@ export interface TodoListParams {
   category?: string
   startDate?: string
   endDate?: string
-  projectRowId?: number
   type?: string
 }
 

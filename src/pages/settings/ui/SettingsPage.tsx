@@ -113,11 +113,15 @@ interface GroupDef {
 const MENU_GROUPS: GroupDef[] = [
   {
     labelKey: 'groups.dataManage',
-    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets', 'todo-tags'],
+    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets'],
+  },
+  {
+    labelKey: 'groups.tagsLabels',
+    sectionIds: ['todo-tags', 'calendar-labels'],
   },
   {
     labelKey: 'groups.share',
-    sectionIds: ['calendar-share', 'calendar-labels'],
+    sectionIds: ['calendar-share'],
   },
   {
     labelKey: 'groups.appEnv',

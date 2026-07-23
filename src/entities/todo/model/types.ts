@@ -20,8 +20,6 @@ export interface Todo {
   dueDate: string | null
   completedAt: string | null
   sortOrder: number
-  projectRowId: number | null
-  projectName: string | null
   parentRowId: number | null
   tags: TodoTagInfo[]
   subtaskCount: number
@@ -36,7 +34,6 @@ export interface TodoFormValues {
   priority: TodoPriority
   category?: string
   dueDate?: string
-  projectRowId?: number
   parentRowId?: number
   tagIds?: number[]
   type?: TodoType

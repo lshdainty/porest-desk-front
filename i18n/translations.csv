@@ -1648,6 +1648,7 @@ settings,sections.data.desc,CSV·Excel·JSON으로 데이터 백업,Back up data
 settings,sections.account.label,계정,Account
 settings,sections.account.desc,프로필·보안·로그아웃,Profile · security · logout
 settings,groups.dataManage,데이터 관리,Data Management
+settings,groups.tagsLabels,태그 · 라벨,Tags · Labels
 settings,groups.share,공유,Sharing
 settings,groups.appEnv,앱 환경,App Preferences
 settings,groups.data,데이터,Data
