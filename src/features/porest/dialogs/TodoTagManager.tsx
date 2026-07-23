@@ -364,7 +364,7 @@ function TagEditDialog({
           <div
             style={{
               fontSize: 'var(--text-badge)',
-              color: palette.color,
+              color: 'var(--fg-tertiary)',
               fontWeight: '600',
               letterSpacing: '0.02em',
             }}
@@ -375,7 +375,7 @@ function TagEditDialog({
             style={{
               fontSize: 'var(--text-body-lg)',
               fontWeight: '700',
-              color: palette.color,
+              color: 'var(--fg-primary)',
               letterSpacing: '-0.01em',
             }}
           >
