@@ -25,20 +25,24 @@ import { cn } from '@/shared/lib/index'
 
 const TabBarCtx = createContext<{ compact: boolean }>({ compact: false })
 
-/** 스크롤 방향 히스테리시스 — design DOWN_AT 20 / UP_AT 28 / 최상단 40. */
+/** 스크롤 방향 히스테리시스 — design DOWN_AT 20 / UP_AT 28 / 최상단 40.
+ * viewport-fit 페이지(통계 등)는 .m-scroll 이 아니라 내부 overflow-y-auto 가
+ * 스크롤러라, document 캡처 위임으로 셸 안 모든 세로 스크롤러를 듣는다. */
 function useTabBarCompact() {
   const [compact, setCompact] = useState(false)
   useEffect(() => {
-    const sc = document.querySelector('.m-app .m-scroll')
-    if (!sc) return
-    let last = sc.scrollTop
     let acc = 0
+    const lastMap = new WeakMap<Element, number>()
     const DOWN_AT = 20
     const UP_AT = 28
-    const onScroll = () => {
-      const st = sc.scrollTop
-      const dy = st - last
-      last = st
+    const onScroll = (e: Event) => {
+      const el = e.target
+      if (!(el instanceof HTMLElement)) return
+      if (!el.closest('.m-app')) return // 앱 셸 내부 스크롤만
+      if (el.scrollHeight - el.clientHeight <= 10) return // 가로 스크롤러 제외
+      const st = el.scrollTop
+      const dy = st - (lastMap.get(el) ?? st)
+      lastMap.set(el, st)
       if (st < 40) {
         acc = 0
         setCompact(false)
@@ -49,8 +53,8 @@ function useTabBarCompact() {
       if (acc > DOWN_AT) setCompact(true)
       else if (acc < -UP_AT) setCompact(false)
     }
-    sc.addEventListener('scroll', onScroll, { passive: true })
-    return () => sc.removeEventListener('scroll', onScroll)
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    return () => document.removeEventListener('scroll', onScroll, { capture: true })
   }, [])
   return [compact, setCompact] as const
 }
