@@ -215,7 +215,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                       <Trash2 size={14} />
                     </Button>
                     {/* 행 탭=편집 진입 표시 (앱 정합) */}
-                    <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                    <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0, marginLeft: -14 }} />
                   </div>
                 )
               })
