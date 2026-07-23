@@ -16,7 +16,9 @@ export const CalendarPage = () => {
   return (
     <div
       style={{
-        height: mobile ? 'calc(100dvh - 132px)' : 'calc(100dvh - 56px)',
+        // 모바일 — 자체 탭바 차감 금지: m-scroll 가용의 100%만 쓰고, 플로팅
+        // 탭바 보상은 .m-app--tabbar last-child padding(104)이 담당(이중 방지).
+        height: mobile ? '100%' : 'calc(100dvh - 56px)',
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
