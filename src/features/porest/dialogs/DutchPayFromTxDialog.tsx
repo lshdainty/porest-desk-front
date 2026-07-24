@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { DetailSourceTx } from '@/shared/ui/porest/detail'
+import { CategoryChip } from '@/shared/ui/porest/expense-row'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { KRW, money } from '@/shared/lib/porest/format'
-import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateDutchPay } from '@/features/dutch-pay'
 import { useExpenseCategories } from '@/features/expense'
 import { useCurrentUser } from '@/features/user'
@@ -17,7 +18,6 @@ import type {
   ParticipantFormValues,
   SplitMethod,
 } from '@/entities/dutch-pay'
-import { getPaletteByColor } from './CategoryEditDialog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 // 더치페이 참가자별 시각 구분 — porest chart palette 10색
@@ -34,7 +34,7 @@ const PARTICIPANT_PALETTE = [
   { color: 'var(--color-chart-gray)',   bg: 'color-mix(in oklch, var(--color-chart-gray) 18%, transparent)' },
 ]
 
-const ME_PALETTE = { color: 'var(--fg-income)', bg: 'color-mix(in oklch, var(--fg-income) 18%, transparent)' }
+const ME_PALETTE = { color: 'var(--fg-brand)', bg: 'var(--bg-brand-subtle)' }
 
 type Participant = {
   uid: string
@@ -73,7 +73,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   const isLoading = categoriesQ.isLoading || currentUserQ.isLoading
 
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
-  const palette = getPaletteByColor(category?.color)
   const meName = currentUserQ.data?.userName ?? t('fromTx.me')
   const meRowId = currentUserQ.data?.rowId ?? null
 
@@ -208,47 +207,13 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
 
   return (
     <ModalShell title={t('fromTx.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        {t('fromTx.description')}
-      </p>
-
-      {/* Source card */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '12px 14px',
-          marginBottom: 18,
-        }}
-      >
-        <span
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: tileRadius(38),
-            background: palette.bg,
-            color: palette.color,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{defaultTitle}</div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {expenseDateTime || expenseDay}
-          </div>
-        </div>
-        <div className="num" style={{ fontWeight: '800' }}>
-          {money(totalAbs)}
-        </div>
-      </div>
+      {/* 기준 거래 — 플랫 행 */}
+      <DetailSourceTx
+        icon={<CategoryChip color={category?.color} icon={category?.icon} size="sm" />}
+        title={defaultTitle}
+        sub={`${expenseDateTime || expenseDay} · ${t('fromTx.sourceSub')}`}
+        amount={money(totalAbs)}
+      />
 
       {/* 분배 방식 */}
       <Section title={t('fromTx.splitSection')}>
@@ -262,9 +227,9 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 type="button"
                 onClick={() => setSplitMethod(m.v)}
                 style={{
-                  padding: '12px 12px',
-                  background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                  border: `1px solid ${active ? 'var(--fg-income)' : 'var(--border-subtle)'}`,
+                  padding: '11px 10px',
+                  background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-sunken)',
+                  border: 'none',
                   borderRadius: 'var(--radius-lg)',
                   cursor: 'pointer',
                   display: 'flex',
@@ -273,6 +238,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   gap: 4,
                   fontFamily: 'inherit',
                   textAlign: 'left',
+                  transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
                 }}
               >
                 <span
@@ -306,22 +272,19 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          padding: '12px 14px',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: 18,
+          padding: '11px 2px',
+          marginBottom: 10,
           cursor: 'pointer',
         }}
       >
         <span
           aria-hidden
           style={{
-            width: 18,
-            height: 18,
+            width: 17,
+            height: 17,
             borderRadius: 'var(--radius-xs)',
-            border: `2px solid ${includeMyself ? 'var(--fg-income)' : 'var(--border-default)'}`,
-            background: includeMyself ? 'var(--fg-income)' : 'transparent',
+            border: `2px solid ${includeMyself ? 'var(--bg-brand)' : 'var(--border-default)'}`,
+            background: includeMyself ? 'var(--bg-brand)' : 'transparent',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -331,8 +294,10 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{t('fromTx.includeMe')}</span>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('fromTx.includeMeHint')}</span>
+        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{t('fromTx.includeMe')}</span>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          {includeMyself ? t('fromTx.includeMeHint') : t('fromTx.includeMeHintOff')}
+        </span>
       </div>
 
       {/* 참여자 */}
@@ -343,7 +308,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
         {participants.map((p, idx) => {
           const palette = p.isMe
             ? ME_PALETTE
@@ -355,17 +320,14 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                padding: '10px 14px',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
+                gap: 11,
+                padding: '10px 0',
               }}
             >
               <span
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: 'var(--radius-pill)',
                   background: palette.bg,
                   color: palette.color,
@@ -389,8 +351,8 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                       fontWeight: '700',
                       padding: '2px 7px',
                       borderRadius: 'var(--radius-pill)',
-                      background: 'color-mix(in oklch, var(--fg-income) 12%, transparent)',
-                      color: 'var(--fg-income)',
+                      background: 'var(--bg-brand-subtle)',
+                      color: 'var(--fg-brand-strong)',
                     }}
                   >
                     {t('fromTx.me')}
@@ -530,26 +492,22 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
   )
 }
 
-/** DutchPayFromTx skeleton — 원거래 카드 + 분배 방식 + 참여자 리스트 + 메시지. */
+/** DutchPayFromTx skeleton — 기준 거래 플랫 행 + 분배 방식 + 참여자 리스트 + 메시지. */
 function DutchPayFromTxSkeleton() {
   return (
     <>
-      <SkeletonBase className="h-4 w-2/3 mb-3.5" />
-
-      {/* Source card */}
+      {/* 기준 거래 — 플랫 행 */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '12px 14px',
-          marginBottom: 18,
+          padding: '2px 2px 16px',
+          borderBottom: '1px solid var(--border-subtle)',
+          marginBottom: 16,
         }}
       >
-        <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+        <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
         <div style={{ flex: 1, minWidth: 0 }}>
           <SkeletonBase className="h-4 w-32 mb-1.5" />
           <SkeletonBase className="h-3 w-24" />
@@ -559,32 +517,29 @@ function DutchPayFromTxSkeleton() {
 
       {/* 분배 방식 */}
       <SkeletonBase className="h-3 w-16 mb-2" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 14 }}>
         {Array.from({ length: 3 }).map((_, i) => (
           <SkeletonBase key={i} className="h-16 w-full rounded-md" />
         ))}
       </div>
 
       {/* 나도 포함 */}
-      <SkeletonBase className="h-12 w-full rounded-md mb-4" />
+      <SkeletonBase className="h-10 w-full mb-2.5" />
 
       {/* 참여자 */}
       <SkeletonBase className="h-3 w-16 mb-2" />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
-              padding: '10px 14px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)',
+              gap: 11,
+              padding: '10px 0',
             }}
           >
-            <SkeletonBase className="h-8 w-8 rounded-full shrink-0" />
+            <SkeletonBase className="h-9 w-9 rounded-full shrink-0" />
             <div style={{ flex: 1, minWidth: 0 }}>
               <SkeletonBase className="h-4 w-24" />
             </div>

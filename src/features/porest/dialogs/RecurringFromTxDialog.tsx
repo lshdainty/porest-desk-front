@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Bell, Zap, Calendar } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { DetailSection, DetailSourceTx } from '@/shared/ui/porest/detail'
+import { CategoryChip } from '@/shared/ui/porest/expense-row'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { money } from '@/shared/lib/porest/format'
-import { renderIcon, tileRadius } from '@/shared/lib'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type { Expense } from '@/entities/expense'
@@ -17,7 +18,6 @@ import type {
   RecurringFrequency,
   RecurringTransactionFormValues,
 } from '@/entities/recurring-transaction'
-import { getPaletteByColor } from './CategoryEditDialog'
 import { previewNextDates, addYears, todayIso, formatKoreanMonthDay } from './recurring-date'
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
@@ -43,7 +43,6 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   const createMut = useCreateRecurringTransaction()
   const categoriesQ = useExpenseCategories()
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
-  const palette = getPaletteByColor(category?.color)
 
   const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayIso()
   const baseDate = new Date(expenseDay)
@@ -113,50 +112,18 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
 
   return (
     <ModalShell title={t('settingsTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
-      <p style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)', margin: '0 0 14px', lineHeight: '1.5' }}>
-        {t('intro')}
-      </p>
-
-      {/* Source card */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '12px 14px',
-          marginBottom: 18,
-        }}
-      >
-        <span
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: tileRadius(38),
-            background: palette.bg,
-            color: palette.color,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 18)}
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-            {expense.merchant || expense.description || t('transaction')}
-          </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('startsOn', { date: expenseDay })}
-          </div>
-        </div>
-        <div className="num" style={{ fontWeight: '800', color: 'var(--fg-primary)' }}>
-          {expense.expenseType === 'INCOME' ? '+' : '−'}
-          {money(Math.abs(expense.amount))}
-        </div>
-      </div>
+      {/* 기준 거래 — 플랫 행 */}
+      <DetailSourceTx
+        icon={<CategoryChip color={category?.color} icon={category?.icon} size="sm" />}
+        title={expense.merchant || expense.description || t('transaction')}
+        sub={`${t('startsOn', { date: expenseDay })} · ${t('sourceSub')}`}
+        amount={
+          <>
+            {expense.expenseType === 'INCOME' ? '+' : '−'}
+            {money(Math.abs(expense.amount))}
+          </>
+        }
+      />
 
       {/* 반복 주기 */}
       <Section title={t('frequencyTitle')}>
@@ -283,40 +250,35 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         </div>
       </Section>
 
-      {/* 다음 예정일 */}
+      {/* 다음 예정일 — 플랫 섹션 */}
       {nextDates.length > 0 && (
-        <div
-          style={{
-            marginTop: 14,
-            padding: '12px 14px',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-          }}
+        <DetailSection
+          title={
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Calendar size={13} />
+              {t('nextDatesTitle')}
+            </span>
+          }
         >
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <Calendar size={13} />
-            <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700' }}>{t('nextDatesTitle')}</span>
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {nextDates.map((d, i) => (
               <span
                 key={i}
                 className="num"
                 style={{
-                  padding: '4px 10px',
+                  padding: '6px 12px',
                   background: 'var(--bg-sunken)',
-                  border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-pill)',
                   fontSize: 'var(--text-caption)',
                   fontWeight: '600',
+                  color: 'var(--fg-primary)',
                 }}
               >
                 {formatKoreanMonthDay(d)}
               </span>
             ))}
           </div>
-        </div>
+        </DetailSection>
       )}
     </ModalShell>
   )
@@ -333,6 +295,7 @@ export function Section({ title, children }: { title: string; children: React.Re
   )
 }
 
+/** 플랫 라디오 행 — design RadioRow (카드 박스 없음, 선택 시 제목만 강조). */
 export function RadioCard({
   selected,
   onSelect,
@@ -353,33 +316,47 @@ export function RadioCard({
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() } }}
       style={{
         display: 'flex',
-        gap: 10,
+        gap: 11,
         alignItems: 'flex-start',
-        padding: '12px 14px',
-        background: selected ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-        border: `1px solid ${selected ? 'var(--border-brand)' : 'var(--border-subtle)'}`,
-        borderRadius: 'var(--radius-lg)',
+        padding: '11px 2px',
         cursor: 'pointer',
-        transition: 'background 0.15s, border-color 0.15s',
       }}
     >
       <span
         aria-hidden
         style={{
           marginTop: 2,
-          width: 16,
-          height: 16,
+          width: 17,
+          height: 17,
           borderRadius: 'var(--radius-pill)',
           border: `2px solid ${selected ? 'var(--border-brand)' : 'var(--border-default)'}`,
           background: selected ? 'var(--bg-brand)' : 'transparent',
           boxShadow: selected ? 'inset 0 0 0 3px var(--bg-surface)' : 'none',
           flexShrink: 0,
+          transition: 'background 0.15s, border-color 0.15s',
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{title}</div>
+        <div
+          style={{
+            fontSize: 'var(--text-body-sm)',
+            fontWeight: '600',
+            color: selected ? 'var(--fg-primary)' : 'var(--fg-secondary)',
+          }}
+        >
+          {title}
+        </div>
         {sub && (
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 4 }}>
+          <div
+            style={{
+              fontSize: 'var(--text-caption)',
+              color: 'var(--fg-tertiary)',
+              marginTop: 2,
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
             {sub}
           </div>
         )}
@@ -403,21 +380,20 @@ export function ToggleRow({
 }) {
   return (
     <div
+      onClick={() => onChange(!value)}
       style={{
         display: 'flex',
         gap: 12,
         alignItems: 'center',
-        padding: '12px 14px',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
+        padding: '11px 2px',
+        cursor: 'pointer',
       }}
     >
       <span
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 'var(--radius-md)',
+          width: 36,
+          height: 36,
+          borderRadius: 'var(--radius-pill)',
           background: 'var(--bg-sunken)',
           color: 'var(--fg-secondary)',
           display: 'inline-flex',
@@ -426,17 +402,15 @@ export function ToggleRow({
           flexShrink: 0,
         }}
       >
-        <Icon size={16} />
+        <Icon size={15} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{title}</div>
         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
       </div>
-      <Switch
-        checked={value}
-        onCheckedChange={onChange}
-        className="shrink-0"
-      />
+      <span onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', flexShrink: 0 }}>
+        <Switch checked={value} onCheckedChange={onChange} />
+      </span>
     </div>
   )
 }
