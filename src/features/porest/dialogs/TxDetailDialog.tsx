@@ -1,13 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, ChevronUp, Repeat, Scissors, Split, Users } from 'lucide-react'
+import { ChevronDown, ChevronUp, Repeat, Scissors, Users } from 'lucide-react'
 import { KRW, money, isEn } from '@/shared/lib/porest/format'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
-import { renderIcon } from '@/shared/lib'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
-import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import {
+  DetailField,
+  DetailFieldGroup,
+  DetailHero,
+  DetailQuickAction,
+  DetailSection,
+  DetailStatSplit,
+} from '@/shared/ui/porest/detail'
+import { CategoryChip, ExpenseRow } from '@/shared/ui/porest/expense-row'
 import {
   useDeleteExpense,
   useExpenseCategories,
@@ -146,7 +153,6 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   )
 
   const title = isIncome ? t('txDetail.incomeTitle') : t('txDetail.expenseTitle')
-  const amountColor = isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)'
   const displayMerchant = expense.merchant ?? expense.description ?? category?.categoryName ?? t('transaction')
 
   return (
@@ -162,52 +168,27 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
           <TxDetailSkeleton />
         ) : (
         <>
-        {/* Hero */}
-        <div
-          style={{
-            background: `linear-gradient(135deg, ${palette.bg}, var(--bg-surface))`,
-            border: `1px solid color-mix(in oklch, ${palette.color} 20%, transparent)`,
-            borderRadius: 'var(--radius-xl)',
-            padding: 22,
-            marginBottom: 18,
-            textAlign: 'center',
-          }}
+        {/* Hero — 플랫 좌측 정렬 (design 신판 토스 톤) */}
+        <DetailHero
+          icon={
+            <CategoryChip
+              name={category?.categoryName}
+              color={category?.color ?? null}
+              icon={category?.icon ?? null}
+              size="sm"
+            />
+          }
+          title={displayMerchant}
+          meta={
+            (day || time) && (
+              <>
+                {day}
+                {time && ` · ${time}`}
+              </>
+            )
+          }
         >
-          <div style={{ display: 'inline-flex', marginBottom: 12 }}>
-            <span
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 'var(--radius-tile)',
-                background: palette.bg,
-                color: palette.color,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {renderIcon(category?.icon ?? 'tag', category?.categoryName?.charAt(0) ?? '·', 20)}
-            </span>
-          </div>
-          <div
-            style={{
-              fontSize: 'var(--text-label-sm)',
-              color: 'var(--fg-secondary)',
-              fontWeight: '500',
-              marginBottom: 4,
-            }}
-          >
-            {displayMerchant}
-          </div>
-          <div
-            className="num"
-            style={{
-              fontSize: 'var(--text-display-md)',
-              fontWeight: '800',
-              letterSpacing: '-0.022em',
-              color: amountColor,
-            }}
-          >
+          <span style={{ color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)' }}>
             <MaskAmount>
               {isIncome ? '+' : '−'}
               {wonPre()}
@@ -215,208 +196,192 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             </MaskAmount>
             {!isEn() && (
               <HideUnit>
-                <span style={{ fontSize: 'var(--text-title-md)', marginLeft: 2 }}>원</span>
+                <span className="ml-0.5 text-[length:var(--text-title-md)]">원</span>
               </HideUnit>
             )}
-          </div>
-          {(day || time) && (
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-              {day}
-              {time && ` · ${time}`}
-            </div>
-          )}
-        </div>
+          </span>
+        </DetailHero>
 
-        {/* Field rows */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
-          }}
-        >
-          <FieldRow
-            label={t('category')}
-            value={
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 'var(--radius-xs)',
-                    background: palette.color,
-                  }}
-                />
-                <span style={{ fontWeight: '600' }}>
-                  {category?.categoryName ?? t('txDetail.uncategorized')}
-                </span>
-              </div>
-            }
-          />
-          <FieldRow
-            label={t('form.amount')}
-            value={
-              <span className="num" style={{ fontWeight: '700' }}>
-                <MaskAmount>
-                  {isIncome ? '+' : '−'}
-                  {wonPre()}
-                  {KRW(expense.amount, { abs: true })}
-                </MaskAmount>
-                <WonUnit />
-              </span>
-            }
-          />
-          {asset && (
-            <FieldRow
-              label={t('accountCard')}
-              value={
-                <span style={{ fontWeight: '500' }}>
-                  {asset.institution
-                    ? `${asset.institution} · ${asset.assetName}`
-                    : asset.assetName}
-                </span>
-              }
-            />
-          )}
-          {paymentMethodLabel && (
-            <FieldRow
-              label={t('paymentMethodLabel')}
-              value={<span style={{ fontWeight: '500' }}>{paymentMethodLabel}</span>}
-            />
-          )}
-          <FieldRow
-            label={t('dateTime')}
-            value={
-              <span style={{ fontWeight: '500' }}>
-                {day}
-                {time && ` ${time}`}
-              </span>
-            }
-          />
-          <FieldRow
-            label={t('memo')}
-            value={
+        {/* Fields — 카드 없는 플랫 행 */}
+        <DetailFieldGroup>
+          <DetailField label={t('category')}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span
                 style={{
-                  fontWeight: '500',
-                  color: expense.description
-                    ? 'var(--fg-primary)'
-                    : 'var(--fg-tertiary)',
+                  width: 10,
+                  height: 10,
+                  borderRadius: 'var(--radius-xs)',
+                  background: palette.color,
                 }}
-              >
-                {expense.description || t('txDetail.empty')}
-              </span>
-            }
-          />
-        </div>
-
-        {/* Quick actions — 분할/반복/더치페이 진입 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 16 }}>
-          <QuickBtn
-            Icon={Scissors}
-            label={t('splitTitle')}
-            badge={splitCount > 0 ? t('txDetail.countItems', { count: splitCount }) : null}
-            onClick={() => setOpenSub('split')}
-          />
-          <QuickBtn
-            Icon={Repeat}
-            label={t('txDetail.recurring')}
-            badge={linkedRecurring.length > 0 ? t('txDetail.linked') : null}
-            onClick={() => setOpenSub('recurring')}
-          />
-          <QuickBtn
-            Icon={Users}
-            label={t('txDetail.dutchPay')}
-            badge={linkedDutchPays.length > 0 ? t('txDetail.countCases', { count: linkedDutchPays.length }) : null}
-            onClick={() => setOpenSub('dutch')}
-          />
-        </div>
-
-        {/* 분할 내역 요약 — 분할이 있으면 접을 수 있는 카드로 항목·비율 표시 */}
-        {splitCount > 0 && (
-          <div style={{ marginTop: 12, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-            <button
-              type="button"
-              onClick={() => setSplitExpanded(v => !v)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              <Split size={16} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
-              <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>{t('splitTitle')} {t('txDetail.countItems', { count: splitCount })}</span>
-              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}</span>
-              <span style={{ marginLeft: 'auto', color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
-                {splitExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </span>
-            </button>
-            {splitExpanded && (
-              <div style={{ padding: '0 14px 12px' }}>
-                <div style={{ display: 'flex', height: 8, borderRadius: 'var(--radius-pill)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
-                  {(splitsQ.data ?? []).map(s => {
-                    const total = Math.abs(expense.amount)
-                    const ratio = total > 0 ? s.amount / total : 0
-                    const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
-                    return ratio > 0 ? (
-                      <div key={s.rowId} style={{ width: `${ratio * 100}%`, background: getPaletteByColor(cat?.color).color }} />
-                    ) : null
-                  })}
-                </div>
-                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {(splitsQ.data ?? []).map(s => {
-                    const total = Math.abs(expense.amount)
-                    const pct = total > 0 ? Math.round((s.amount / total) * 100) : 0
-                    const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
-                    const pal = getPaletteByColor(cat?.color)
-                    return (
-                      <div key={s.rowId} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {(s.label && s.label.trim()) ? s.label : (s.categoryName ?? t('item'))}
-                          </div>
-                          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
-                        </div>
-                        <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: isIncome ? 'var(--fg-income)' : 'var(--fg-expense)' }}>
-                          {isIncome ? '+' : '−'}{money(s.amount)}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Merchant history */}
-        {merchantKey && history.length > 0 && (
-          <div style={{ marginTop: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8 }}>
-              <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-                {t('txDetail.prevAtMerchant', { merchant: merchantKey })}
-              </h4>
-              <span style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                {t('txDetail.thisMonth')}{' '}
-                <b className="num" style={{ color: 'var(--fg-secondary)' }}>
-                  {t('txDetail.countTimes', { count: merchantMonthCount })} · <MaskAmount>{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
-                  <WonUnit />
-                </b>
+              />
+              <span style={{ fontWeight: '600' }}>
+                {category?.categoryName ?? t('txDetail.uncategorized')}
               </span>
             </div>
-            <div
+          </DetailField>
+          <DetailField label={t('form.amount')}>
+            <span className="num" style={{ fontWeight: '700' }}>
+              <MaskAmount>
+                {isIncome ? '+' : '−'}
+                {wonPre()}
+                {KRW(expense.amount, { abs: true })}
+              </MaskAmount>
+              <WonUnit />
+            </span>
+          </DetailField>
+          {asset && (
+            <DetailField label={t('accountCard')}>
+              <span style={{ fontWeight: '500' }}>
+                {asset.institution
+                  ? `${asset.institution} · ${asset.assetName}`
+                  : asset.assetName}
+              </span>
+            </DetailField>
+          )}
+          {paymentMethodLabel && (
+            <DetailField label={t('paymentMethodLabel')}>
+              <span style={{ fontWeight: '500' }}>{paymentMethodLabel}</span>
+            </DetailField>
+          )}
+          <DetailField label={t('dateTime')}>
+            <span style={{ fontWeight: '500' }}>
+              {day}
+              {time && ` ${time}`}
+            </span>
+          </DetailField>
+          <DetailField label={t('memo')}>
+            <span
               style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '4px 14px',
+                fontWeight: '500',
+                color: expense.description
+                  ? 'var(--fg-primary)'
+                  : 'var(--fg-tertiary)',
               }}
             >
+              {expense.description || t('txDetail.empty')}
+            </span>
+          </DetailField>
+        </DetailFieldGroup>
+
+        {/* Quick actions — 원형 아이콘 3열 (분할/반복/더치페이 진입) */}
+        <DetailSection>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <DetailQuickAction
+              icon={Scissors}
+              label={t('splitTitle')}
+              active={splitCount > 0}
+              badge={splitCount > 0 ? t('txDetail.countItems', { count: splitCount }) : null}
+              onClick={() => setOpenSub('split')}
+            />
+            <DetailQuickAction
+              icon={Repeat}
+              label={t('txDetail.recurring')}
+              active={linkedRecurring.length > 0}
+              badge={linkedRecurring.length > 0 ? t('txDetail.linked') : null}
+              onClick={() => setOpenSub('recurring')}
+            />
+            <DetailQuickAction
+              icon={Users}
+              label={t('txDetail.dutchPay')}
+              active={linkedDutchPays.length > 0}
+              badge={linkedDutchPays.length > 0 ? t('txDetail.countCases', { count: linkedDutchPays.length }) : null}
+              onClick={() => setOpenSub('dutch')}
+            />
+          </div>
+        </DetailSection>
+
+        {/* 분할 내역 — 플랫 섹션(비율 바 + 행), 접기 토글 */}
+        {splitCount > 0 && (
+          <DetailSection
+            title={
+              <button
+                type="button"
+                onClick={() => setSplitExpanded(v => !v)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+              >
+                {t('splitTitle')}{' '}
+                <span className="num" style={{ color: 'var(--fg-brand)' }}>
+                  {t('txDetail.countItems', { count: splitCount })}
+                </span>
+                <span style={{ color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
+                  {splitExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </span>
+              </button>
+            }
+            trailing={
+              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+                {t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}
+              </span>
+            }
+          >
+            <div style={{ display: 'flex', height: 8, borderRadius: 'var(--radius-pill)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
+              {(splitsQ.data ?? []).map(s => {
+                const total = Math.abs(expense.amount)
+                const ratio = total > 0 ? s.amount / total : 0
+                const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
+                return ratio > 0 ? (
+                  <div key={s.rowId} style={{ width: `${ratio * 100}%`, background: getPaletteByColor(cat?.color).color }} />
+                ) : null
+              })}
+            </div>
+            {splitExpanded && (
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(splitsQ.data ?? []).map(s => {
+                  const total = Math.abs(expense.amount)
+                  const pct = total > 0 ? Math.round((s.amount / total) * 100) : 0
+                  const cat = (categoriesQ.data ?? []).find(c => c.rowId === s.categoryRowId)
+                  const pal = getPaletteByColor(cat?.color)
+                  return (
+                    <div key={s.rowId} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: pal.color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {(s.label && s.label.trim()) ? s.label : (s.categoryName ?? t('item'))}
+                        </div>
+                        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
+                      </div>
+                      <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: isIncome ? 'var(--fg-income)' : 'var(--fg-expense)' }}>
+                        {isIncome ? '+' : '−'}{money(s.amount)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </DetailSection>
+        )}
+
+        {/* Merchant history — 섹션 제목 + 2열 스플릿 통계 + 플랫 리스트 */}
+        {merchantKey && history.length > 0 && (
+          <DetailSection title={t('txDetail.prevAtMerchant', { merchant: merchantKey })}>
+            <DetailStatSplit
+              className="mt-3 mb-1"
+              items={[
+                {
+                  label: t('txDetail.thisMonth'),
+                  value: t('txDetail.countTimes', { count: merchantMonthCount }),
+                },
+                {
+                  label: t('txDetail.sumLabel'),
+                  value: (
+                    <>
+                      <MaskAmount>{isIncome ? '+' : '−'}{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
+                      <WonUnit />
+                    </>
+                  ),
+                  // 지출 합계 빨강 — 다크 light variant 스왑(cat-red)
+                  valueClassName: isIncome
+                    ? 'text-[var(--fg-brand)]'
+                    : 'text-[var(--color-cat-red)]',
+                },
+              ]}
+            />
+            <div>
               {history.map(t => (
                 <ExpenseRow key={t.rowId} expense={t} />
               ))}
             </div>
-          </div>
+          </DetailSection>
         )}
         </>
         )}
@@ -447,155 +412,39 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
   )
 }
 
-/** TxDetail skeleton — hero(아이콘+가맹점+금액+날짜) + 필드 5행 + quick actions 3개. */
+/** TxDetail skeleton — 신판 플랫 미러: hero(아이콘+가맹점+금액+날짜) + 필드 행 + quick 3원. */
 function TxDetailSkeleton() {
   return (
     <>
       {/* Hero */}
-      <div
-        style={{
-          background: 'var(--bg-sunken)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-xl)',
-          padding: 22,
-          marginBottom: 18,
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ display: 'inline-flex', marginBottom: 12 }}>
-          <SkeletonBase className="h-10 w-10 rounded-lg" />
+      <div className="pb-4">
+        <div className="flex items-center gap-2">
+          <SkeletonBase className="h-8 w-8 rounded-lg" />
+          <SkeletonBase className="h-4 w-28" />
         </div>
-        <SkeletonBase className="h-4 w-32 mx-auto mb-2" />
-        <SkeletonBase className="h-10 w-48 mx-auto" />
-        <SkeletonBase className="h-3 w-28 mx-auto mt-2" />
+        <SkeletonBase className="mt-3 h-9 w-44" />
+        <SkeletonBase className="mt-2 h-3 w-28" />
       </div>
 
       {/* Field rows */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
-        }}
-      >
+      <div className="border-t border-[var(--border-subtle)] pt-1">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '14px 16px',
-              gap: 12,
-              borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-            }}
-          >
+          <div key={i} className="flex items-center gap-3 py-3.5">
             <SkeletonBase className="h-4 w-16" />
-            <SkeletonBase className="h-4 w-24 ml-auto" />
+            <SkeletonBase className="ml-auto h-4 w-24" />
           </div>
         ))}
       </div>
 
       {/* Quick actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 16 }}>
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--border-subtle)] pt-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-              padding: '16px 4px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)',
-            }}
-          >
-            <SkeletonBase className="h-5 w-5 rounded-md" />
+          <div key={i} className="flex flex-col items-center gap-2 px-1 py-2">
+            <SkeletonBase className="h-11 w-11 rounded-full" />
             <SkeletonBase className="h-3 w-14" />
           </div>
         ))}
       </div>
     </>
-  )
-}
-
-function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '14px 16px',
-        background: 'var(--bg-surface)',
-        fontSize: 'var(--text-label-sm)',
-        gap: 12,
-      }}
-    >
-      <span style={{ color: 'var(--fg-tertiary)', minWidth: 72, flexShrink: 0 }}>
-        {label}
-      </span>
-      <div style={{ marginLeft: 'auto' }}>{value}</div>
-    </div>
-  )
-}
-
-function QuickBtn({
-  Icon,
-  label,
-  onClick,
-  badge,
-}: {
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
-  label: string
-  onClick?: () => void
-  badge?: string | null
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 8,
-        padding: '16px 4px',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        cursor: onClick ? 'pointer' : 'not-allowed',
-        fontFamily: 'inherit',
-        color: 'var(--fg-secondary)',
-        opacity: onClick ? 1 : 0.55,
-      }}
-      disabled={!onClick}
-    >
-      <Icon size={18} strokeWidth={1.9} />
-      <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', fontWeight: '600' }}>
-        {label}
-      </span>
-      {badge && (
-        <span
-          style={{
-            position: 'absolute',
-            top: 6,
-            right: 6,
-            fontSize: 'var(--text-badge)',
-            fontWeight: '700',
-            padding: '2px 6px',
-            borderRadius: 'var(--radius-pill)',
-            background: 'var(--bg-brand-subtle)',
-            color: 'var(--fg-brand-strong)',
-          }}
-        >
-          {badge}
-        </span>
-      )}
-    </button>
   )
 }
