@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Repeat, Scissors, Users } from 'lucide-react'
-import { KRW, money, isEn } from '@/shared/lib/porest/format'
+import { KRW, money, isEn, formatDay } from '@/shared/lib/porest/format'
+import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
@@ -110,6 +111,18 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
       .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
       .slice(0, 5)
   }, [historyQ.data, expense.rowId])
+
+  // 가계부 메인 리스트 미러 — 날짜별 그룹(최신순 유지). 합계는 상단 스탯이 대신.
+  const historyGroups = useMemo(() => {
+    const m = new Map<string, Expense[]>()
+    for (const tx of history) {
+      const k = tx.expenseDate.slice(0, 10)
+      const arr = m.get(k)
+      if (arr) arr.push(tx)
+      else m.set(k, [tx])
+    }
+    return [...m.entries()]
+  }, [history])
 
   const merchantMonthCount = historyQ.data?.length ?? 0
   const merchantMonthTotal = (historyQ.data ?? []).reduce(
@@ -376,10 +389,18 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                 },
               ]}
             />
-            <div>
-              {history.map(t => (
-                <ExpenseRow key={t.rowId} expense={t} />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {historyGroups.map(([d, items]) => {
+                const { md, dow } = formatDay(d)
+                return (
+                  <div key={d}>
+                    <DateGroupHeader date={md} weekday={dow} />
+                    {items.map(tx => (
+                      <ExpenseRow key={tx.rowId} expense={tx} />
+                    ))}
+                  </div>
+                )
+              })}
             </div>
           </DetailSection>
         )}
