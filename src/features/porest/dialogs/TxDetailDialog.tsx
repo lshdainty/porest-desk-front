@@ -307,24 +307,25 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         {splitCount > 0 && (
           <DetailSection
             title={
+              <>
+                {t('splitTitle')}{' '}
+                <span className="num">{t('txDetail.countItems', { count: splitCount })}</span>
+              </>
+            }
+            trailing={
+              // 접기 토글 — 합계 우측 chevron (사용자 결정)
               <button
                 type="button"
                 onClick={() => setSplitExpanded(v => !v)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
               >
-                {t('splitTitle')}{' '}
-                <span className="num" style={{ color: 'var(--fg-brand)' }}>
-                  {t('txDetail.countItems', { count: splitCount })}
+                <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+                  {t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}
                 </span>
                 <span style={{ color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
                   {splitExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </span>
               </button>
-            }
-            trailing={
-              <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                {t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}
-              </span>
             }
           >
             <div style={{ display: 'flex', height: 8, borderRadius: 'var(--radius-pill)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
