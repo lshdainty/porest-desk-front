@@ -45,7 +45,7 @@ export function DetailHero({
           {title}
         </span>
       </div>
-      <div className="num mt-3 text-[length:var(--text-h1)] font-extrabold tracking-[-0.03em]">
+      <div className="num mt-3 text-[length:var(--text-display-md)] font-extrabold tracking-[-0.03em]">
         {children}
       </div>
       {meta && (
@@ -200,7 +200,7 @@ export function DetailStatSplit({
           </div>
           <div
             className={cn(
-              'num mt-1 text-[length:var(--text-h4)] font-extrabold tracking-[-0.02em] text-[var(--fg-primary)]',
+              'num mt-1 text-[length:var(--text-title-md)] font-extrabold tracking-[-0.02em] text-[var(--fg-primary)]',
               it.valueClassName,
             )}
           >
