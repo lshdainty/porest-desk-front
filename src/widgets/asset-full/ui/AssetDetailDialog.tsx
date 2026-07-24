@@ -19,7 +19,8 @@ import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
+import { KRW, money, formatChartAxis, isEn, formatDay } from '@/shared/lib/porest/format'
+import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
@@ -683,7 +684,24 @@ export function AssetDetailDialog({
   const absBalance = Math.abs(asset.balance)
 
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
-  const relatedTx: Expense[] = (relatedAll ?? []).slice(0, 12)
+  const relatedTx: Expense[] = useMemo(
+    () => [...(relatedAll ?? [])]
+      .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
+      .slice(0, 12),
+    [relatedAll],
+  )
+
+  // 가계부 메인 리스트 미러 — 날짜별 그룹(최신순), 헤더에 일 지출/수입 합계.
+  const relatedGroups = useMemo(() => {
+    const m = new Map<string, Expense[]>()
+    for (const tx of relatedTx) {
+      const k = tx.expenseDate.slice(0, 10)
+      const arr = m.get(k)
+      if (arr) arr.push(tx)
+      else m.set(k, [tx])
+    }
+    return [...m.entries()]
+  }, [relatedTx])
 
   const title = isCard ? t('assetDetail.titleCard') : isInv ? t('assetDetail.titleInvest') : t('assetDetail.titleAccount')
   const valueLabel = isCard ? t('assetDetail.valueCard') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
@@ -875,42 +893,52 @@ export function AssetDetailDialog({
             {t('assetDetail.viewAll')} <ChevronRight size={12} />
           </button>
         </div>
-        <div
-          style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '4px 14px',
-          }}
-        >
-          {relatedLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0' }}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
-                    <SkeletonBase className="h-3 w-1/3" />
-                  </div>
-                  <SkeletonBase className="h-4 w-20 shrink-0" />
+        {/* 가계부 메인 리스트 미러 — 카드 제거, 날짜 그룹 헤더 + 플랫 행 */}
+        {relatedLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0' }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-1/3" />
                 </div>
-              ))}
-            </div>
-          ) : relatedTx.length === 0 ? (
-            <div
-              style={{
-                padding: '24px 0',
-                textAlign: 'center',
-                color: 'var(--fg-tertiary)',
-                fontSize: 'var(--text-label-sm)',
-              }}
-            >
-              {t('assetDetail.noLinkedTx')}
-            </div>
-          ) : (
-            relatedTx.map(t => <ExpenseRow key={t.rowId} expense={t} />)
-          )}
-        </div>
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : relatedTx.length === 0 ? (
+          <div
+            style={{
+              padding: '24px 0',
+              textAlign: 'center',
+              color: 'var(--fg-tertiary)',
+              fontSize: 'var(--text-label-sm)',
+            }}
+          >
+            {t('assetDetail.noLinkedTx')}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {relatedGroups.map(([d, items]) => {
+              const { md, dow } = formatDay(d)
+              const out = items
+                .filter(tx => tx.expenseType === 'EXPENSE')
+                .reduce((s, tx) => s + Math.abs(tx.amount), 0)
+              const inn = items
+                .filter(tx => tx.expenseType === 'INCOME')
+                .reduce((s, tx) => s + Math.abs(tx.amount), 0)
+              return (
+                <div key={d}>
+                  <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
+                  {items.map(tx => (
+                    <ExpenseRow key={tx.rowId} expense={tx} />
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </ModalShell>
     <HideAmountsUnlockDialog
