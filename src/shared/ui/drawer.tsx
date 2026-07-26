@@ -88,7 +88,8 @@ const DrawerBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex-1 overflow-y-auto px-5", className)} {...props} />
+  // scrollbar-hide — 모바일 drawer 는 앱(Flutter 시트, 스크롤바 없음) 정합.
+  <div className={cn("flex-1 overflow-y-auto px-5 scrollbar-hide", className)} {...props} />
 )
 DrawerBody.displayName = "DrawerBody"
 

@@ -440,6 +440,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
 
           {topPresets.length > 0 ? (
             <div
+              className="scrollbar-hide"
               style={{
                 display: 'flex',
                 gap: 6,
@@ -449,7 +450,6 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 paddingLeft: 2,
                 marginRight: -2,
                 paddingRight: 2,
-                scrollbarWidth: 'thin',
               }}
             >
               {topPresets.map(p => {
