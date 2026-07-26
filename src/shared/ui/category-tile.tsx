@@ -40,9 +40,10 @@ export function CategoryTile({
         gap: 4,
         padding: "10px 4px",
         background: active ? "var(--bg-brand-subtle)" : "transparent",
+        // 비활성 보더 제거(design 신판) — transparent 로 두어 active 전환 시 1px 시프트 방지.
         border: active
           ? "1px solid var(--border-brand)"
-          : "1px solid var(--border-subtle)",
+          : "1px solid transparent",
         borderRadius: "var(--radius-tile)",
         cursor: "pointer",
         fontFamily: "inherit",
