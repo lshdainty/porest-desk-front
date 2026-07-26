@@ -167,8 +167,8 @@ const MonthDayCell = ({
             className={cn(
               'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
               !currentMonth && 'opacity-20',
-              // 오늘 — 앱 bgBrand 정합: 라이트 primary / 다크 primary-light (var(--fg-brand) 가 자동 swap)
-              isToday(date) && 'bg-[var(--fg-brand)] font-bold text-primary-foreground hover:bg-[var(--fg-brand)]'
+              // 오늘 — 가계부 월그리드 선택 원 정합(--bg-brand, 다크 primary 고정. 사용자 결정)
+              isToday(date) && 'bg-[var(--bg-brand)] font-bold text-primary-foreground hover:bg-[var(--bg-brand)]'
             )}
             style={{
               // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).

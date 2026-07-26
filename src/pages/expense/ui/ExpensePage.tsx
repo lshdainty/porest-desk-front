@@ -267,7 +267,7 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
           <LedgerCalendar>
             <LedgerDow
               labels={dowLabels}
-              colorFor={i => (i === 0 ? 'var(--color-cat-red)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+              colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
             />
             <LedgerWeek>
               {weekDays.map((d, i) => (
@@ -1244,7 +1244,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > todayStr) return 'var(--fg-tertiary)'
-    if (dow === 0) return 'var(--color-cat-red)' // 다크에서 light variant 스왑(사용자 결정)
+    if (dow === 0) return 'var(--fg-expense)' // 캘린더 일요일 정합(사용자 결정)
     if (dow === 6) return 'var(--fg-brand)'
     return 'var(--fg-primary)'
   }
