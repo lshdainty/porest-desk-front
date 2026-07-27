@@ -419,27 +419,15 @@ function CardDetailBody({
             {t('assetDetail.viewAll')} <ChevronRight size={12} />
           </button>
         </div>
-        <div style={{ display: 'flex', gap: 7, margin: '12px 0 2px' }}>
-          {([
-            { k: 'recent', label: t('assetDetail.sortRecent') },
-            { k: 'amount', label: t('assetDetail.sortAmount') },
-            { k: 'category', label: t('assetDetail.sortCategory') },
-          ] as const).map(o => (
-            <button
-              key={o.k}
-              type="button"
-              onClick={() => setSort(o.k)}
-              style={{
-                border: 0, fontFamily: 'inherit', fontSize: 'var(--text-caption)', padding: '8px 14px',
-                borderRadius: 'var(--radius-pill)', cursor: 'pointer',
-                background: sort === o.k ? 'var(--bg-brand)' : 'var(--bg-sunken)',
-                color: sort === o.k ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
-                fontWeight: sort === o.k ? '700' : '600',
-              }}
-            >
-              {o.label}
-            </button>
-          ))}
+        {/* 정렬 — 통계 페이지와 동일한 pills 탭(공용, 사용자 결정) */}
+        <div style={{ margin: '12px 0 2px' }}>
+          <Tabs value={sort} onValueChange={v => v && setSort(v as 'recent' | 'amount' | 'category')}>
+            <TabsList variant="pills" size="sm">
+              <TabsTrigger value="recent">{t('assetDetail.sortRecent')}</TabsTrigger>
+              <TabsTrigger value="amount">{t('assetDetail.sortAmount')}</TabsTrigger>
+              <TabsTrigger value="category">{t('assetDetail.sortCategory')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         {sorted.length === 0 ? (
           <div style={{ padding: '28px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
