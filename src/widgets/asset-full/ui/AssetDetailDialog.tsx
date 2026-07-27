@@ -287,7 +287,7 @@ function CardBillingSection({ asset }: { asset: Asset }) {
           style={{
             fontWeight: '700',
             letterSpacing: '-0.012em',
-            color: upcomingAmount > 0 ? 'var(--status-danger-fg)' : 'var(--fg-primary)',
+            color: 'var(--fg-primary)',
           }}
         >
           <MaskAmount>
@@ -782,11 +782,10 @@ export function AssetDetailDialog({
             fontSize: 'var(--text-display-md)',
             fontWeight: '800',
             letterSpacing: '-0.022em',
-            color: isCard ? 'var(--fg-expense)' : 'var(--fg-primary)',
+            color: 'var(--fg-primary)',
           }}
         >
           <MaskAmount>
-            {isCard && heroAmount > 0 ? '−' : ''}
             {wonPre()}
             {KRW(heroAmount)}
           </MaskAmount>
