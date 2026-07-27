@@ -210,7 +210,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                           fontSize: 'var(--text-body-sm)',
                           fontWeight: 'var(--font-weight-bold)',
                           letterSpacing: '-0.012em',
-                          color: neg ? 'var(--fg-expense)' : 'var(--fg-primary)',
+                          color: 'var(--fg-primary)',
                         }}
                       >
                         <MaskAmount mask="••••">

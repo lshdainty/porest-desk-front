@@ -959,8 +959,8 @@ function AssetCard({
   onOpenDetail: (asset: Asset) => void
 }) {
   const { t } = useTranslation('asset')
-  // 음수(빚)만 fg-expense 빨강 + 부호(−), 0 은 부호·강조 없이 '0원' (−0원 방지)
-  // — 관리 화면(AccountManager) 과 동일 로직.
+  // 음수(빚)는 부호(−)만, 색은 중립(fg-primary) — 행 금액 규칙 정합(사용자 결정).
+  // 0 은 부호·강조 없이 '0원' (−0원 방지) — 관리 화면(AccountManager) 과 동일 로직.
   const neg = (negativeAmount ? -Math.abs(asset.balance) : asset.balance) < 0
   return (
     <div
@@ -1036,7 +1036,6 @@ function AssetCard({
             fontWeight: '700',
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.022em',
-            color: neg ? 'var(--fg-expense)' : undefined,
           }}
         >
           <MaskAmount>
