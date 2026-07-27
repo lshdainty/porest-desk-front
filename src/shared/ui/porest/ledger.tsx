@@ -585,14 +585,13 @@ export function LedgerRowSep({ className, ...props }: React.ComponentProps<'span
 /** 우측 금액 — income이면 fg-income, 아니면 fg-expense. */
 export function LedgerRowAmt({
   className,
-  income = false,
   ...props
-}: React.ComponentProps<'div'> & { income?: boolean }) {
+}: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'text-[14px] font-bold tabular-nums tracking-[-0.01em] text-right shrink-0',
-        income ? 'text-[var(--fg-income)]' : 'text-[var(--fg-expense)]',
+        // 행 금액은 지출/수입 무관 일반 텍스트색 — 색 구분은 날짜 헤더 일 합계만(사용자 결정).
+        'text-[14px] font-bold tabular-nums tracking-[-0.01em] text-right shrink-0 text-[var(--fg-primary)]',
         className,
       )}
       {...props}

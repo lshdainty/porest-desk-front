@@ -110,7 +110,7 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
         </LedgerRowSub>
       </LedgerRowMain>
       <div>
-        <LedgerRowAmt income={isIncome}>
+        <LedgerRowAmt>
           <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
           <HideUnit>{isEn() ? '' : '원'}</HideUnit>
         </LedgerRowAmt>

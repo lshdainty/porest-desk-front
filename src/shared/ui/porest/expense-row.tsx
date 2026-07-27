@@ -121,7 +121,7 @@ export function ExpenseRow({
       </LedgerRowMain>
       <div>
         {right ?? (
-          <LedgerRowAmt income={isIncome}>
+          <LedgerRowAmt>
             <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
             <HideUnit>{isEn() ? '' : '원'}</HideUnit>
           </LedgerRowAmt>
