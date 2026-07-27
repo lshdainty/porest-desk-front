@@ -354,7 +354,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                         </div>
                         <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{s.categoryName ?? '-'} · {pct}%</div>
                       </div>
-                      <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: isIncome ? 'var(--fg-income)' : 'var(--fg-expense)' }}>
+                      {/* 행 금액 중립색 — 가계부 리스트 정합(사용자 결정) */}
+                      <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
                         {isIncome ? '+' : '−'}{money(s.amount)}
                       </div>
                     </div>
