@@ -644,6 +644,23 @@ asset,assetDetail.paymentDue,결제 예정,Payment due
 asset,assetDetail.payNow,지금 결제,Pay now
 asset,assetDetail.billedMonthly,매월 {{day}}일 결제,Billed on day {{day}} each month
 asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{end}}
+asset,assetDetail.scheduledTag,예정,Upcoming
+asset,assetDetail.paidDone,결제 완료,Paid
+asset,assetDetail.usagePeriod,카드 이용 기간 {{period}},Card usage period {{period}}
+asset,assetDetail.limitSettings,한도 · 결제 설정,Limit · payment
+asset,assetDetail.limitUsage,한도 사용,Limit usage
+asset,assetDetail.limitPctUsed,{{pct}}% 사용,{{pct}}% used
+asset,assetDetail.limitOf,{{used}} / 한도 {{limit}},{{used}} / Limit {{limit}}
+asset,assetDetail.limitRemain,잔여 {{amount}},Remaining {{amount}}
+asset,assetDetail.limitEdit,한도 · 결제일 변경,Edit limit · payment day
+asset,assetDetail.perfDone,이번 달 실적 달성,Monthly target met
+asset,assetDetail.perfRemain,실적까지 {{amount}},{{amount}} to target
+asset,assetDetail.usageHistory,이용 내역,Usage history
+asset,assetDetail.sortRecent,최근순,Recent
+asset,assetDetail.sortAmount,고액순,Amount
+asset,assetDetail.sortCategory,카테고리별,Category
+asset,assetDetail.periodPick,기간 선택,Select period
+asset,assetDetail.noUsage,이용 내역이 없어요.,No usage history yet.
 asset,assetDetail.billingHistory,청구 이력,Billing history
 asset,assetDetail.paymentDateLabel,결제일,Payment date
 asset,assetDetail.payConfirm,결제 예정액 <strong>{{amount}}</strong>을 지금 결제 처리할까요?,Pay <strong>{{amount}}</strong> now?
