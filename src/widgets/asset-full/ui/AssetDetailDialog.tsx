@@ -312,8 +312,18 @@ function CardBillingSection({ asset }: { asset: Asset }) {
       </div>
 
       {paymentDay != null && (
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
+        <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
           {t('assetDetail.billedMonthly', { day: paymentDay })}
+          {/* 이 회차의 청구 기간(결제일의 전월 1일~말일) — 회차 모델 명시 */}
+          {billing?.upcomingPeriodStart && billing?.upcomingPeriodEnd && (
+            <>
+              {' · '}
+              {t('assetDetail.billingPeriod', {
+                start: fmtBillingDate(billing.upcomingPeriodStart),
+                end: fmtBillingDate(billing.upcomingPeriodEnd),
+              })}
+            </>
+          )}
         </div>
       )}
 
@@ -683,6 +693,11 @@ export function AssetDetailDialog({
 
   const absBalance = Math.abs(asset.balance)
 
+  // 카드 히어로("이번 달 결제 예정")는 회차 결제예정액 — 잔액 전액이 아님(사용자 결정).
+  // CardBillingSection 과 같은 쿼리 키라 중복 요청 없음. 비카드는 쿼리 비활성(id 0).
+  const heroBillingQ = useCardBilling(isCard ? asset.rowId : 0)
+  const heroAmount = isCard ? (heroBillingQ.data?.upcomingAmount ?? absBalance) : absBalance
+
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = useMemo(
     () => [...(relatedAll ?? [])]
@@ -771,9 +786,9 @@ export function AssetDetailDialog({
           }}
         >
           <MaskAmount>
-            {isCard ? '−' : ''}
+            {isCard && heroAmount > 0 ? '−' : ''}
             {wonPre()}
-            {KRW(absBalance)}
+            {KRW(heroAmount)}
           </MaskAmount>
           {!isEn() && (
             <HideUnit>
