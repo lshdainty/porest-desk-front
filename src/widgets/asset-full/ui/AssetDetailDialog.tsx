@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
-import { ChevronRight, Eye, EyeOff, TrendingUp, Wallet } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
-import { AssetLogo, type Asset, type BillingItem, type BillingStatus } from '@/entities/asset'
+import { AssetLogo, type Asset } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
@@ -78,14 +78,6 @@ const groupOf = (asset: Asset): AssetGroup => {
   return 'account'
 }
 
-// 청구 상태 배지 — app _StatusBadge 미러: COMPLETED=success / PENDING=warning / FAILED=error / SKIPPED=neutral
-const BILLING_STATUS_META: Record<BillingStatus, { labelKey: string; variant: 'success' | 'secondary' | 'warning' | 'error' }> = {
-  COMPLETED: { labelKey: 'assetDetail.statusCompleted', variant: 'success' },
-  PENDING: { labelKey: 'assetDetail.statusPending', variant: 'warning' },
-  FAILED: { labelKey: 'assetDetail.statusFailed', variant: 'error' },
-  SKIPPED: { labelKey: 'assetDetail.statusSkipped', variant: 'secondary' },
-}
-
 /** 'yyyy-MM-dd' → 'M.d' 표기 — app _fmtDate 미러. */
 function fmtBillingDate(iso: string): string {
   const [, mm, dd] = iso.split('-')
@@ -101,114 +93,159 @@ function currentYearMonth(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-// 카드 월 실적 카드 — app CardPerformanceBar 미러.
-// 헤더('YYYY-MM 실적' + pct%) / progress 8px / 사용·필요액 + 남은/달성 / requiredText.
-// 실적 무관 카드면 숨김. 달성(100%↑) 시 bar·% status-success, 미만은 fg-brand(다크 primary-light).
-function CardPerformanceCard({ assetRowId }: { assetRowId: number }) {
+// 카드 월 실적 배지 — design card-detail.jsx 신판(달성/잔여 요약). 실적 무관 카드면 숨김.
+// 달성: cat-green 10% tint 배경(다크 스왑) / 미달: sunken. 아이콘 30 원(surface).
+function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
   const { t } = useTranslation('asset')
   const ym = currentYearMonth()
   const { data: p, isLoading } = useCardPerformance(assetRowId, ym)
-  // 서버 실적 로딩 중 — 실제 바 레이아웃(헤더/진행바/금액 행) 그대로 스켈레톤 (앱 CardPerformanceBar 정합).
   if (isLoading) {
     return (
-      <div
-        style={{
-          padding: 12,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          marginBottom: 18,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <SkeletonBase className="h-3 w-24" />
-          <SkeletonBase className="ml-auto h-3 w-8" />
-        </div>
-        <SkeletonBase className="h-2 w-full rounded-full" style={{ margin: '6px 0' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <SkeletonBase className="h-3 w-28" />
-          <SkeletonBase className="ml-auto h-3 w-16" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, padding: '12px 13px', borderRadius: 'var(--radius-lg)', background: 'var(--bg-sunken)' }}>
+        <SkeletonBase className="h-[30px] w-[30px] rounded-full shrink-0" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <SkeletonBase className="h-4 w-32 mb-1" />
+          <SkeletonBase className="h-3 w-40" />
         </div>
       </div>
     )
   }
   if (!p || !p.isRequired || p.requiredAmount == null) return null
-  const rate = Math.min(Math.max(p.achievementRate, 0), 1.5)
-  const pct = Math.trunc(rate * 100)
-  const overrun = p.achievementRate >= 1.0
-  const barColor = overrun ? 'var(--status-success)' : 'var(--fg-brand)'
+  const done = p.isAchieved
+  const pct = Math.trunc(Math.min(Math.max(p.achievementRate, 0), 1.5) * 100)
   return (
     <div
       style={{
-        padding: 12,
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        marginBottom: 18,
+        display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, padding: '12px 13px',
+        borderRadius: 'var(--radius-lg)',
+        background: done
+          ? 'color-mix(in oklch, var(--color-cat-green) 10%, var(--bg-surface))'
+          : 'var(--bg-sunken)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <TrendingUp size={14} style={{ color: 'var(--fg-secondary)', flexShrink: 0 }} />
-        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-          {t('assetDetail.perfMonth', { ym })}
-        </span>
-        <span
-          className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: barColor }}
-        >
-          {pct}%
-        </span>
-      </div>
-      <div
+      <span
         style={{
-          height: 8, background: 'var(--bg-track)',
-          borderRadius: 'var(--radius-xs)', overflow: 'hidden', margin: '6px 0',
+          width: 30, height: 30, borderRadius: 'var(--radius-pill)', flexShrink: 0,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--bg-surface)',
+          color: done ? 'var(--color-cat-green)' : 'var(--fg-secondary)',
         }}
       >
-        <div
-          style={{
-            width: `${Math.min(100, rate * 100)}%`, height: '100%',
-            background: barColor, borderRadius: 'var(--radius-xs)',
-          }}
-        />
-      </div>
-      <div
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)',
-        }}
-      >
-        <span className="num">
+        {done ? <Check size={15} strokeWidth={3} /> : <Target size={15} strokeWidth={1.9} />}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          {done
+            ? t('assetDetail.perfDone')
+            : t('assetDetail.perfRemain', { amount: money(p.remainingAmount ?? 0) })}
+        </div>
+        <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
           <MaskAmount mask="•••">{wonPre()}{KRW(p.currentAmount)}</MaskAmount>
           {' / '}
           <MaskAmount mask="•••">{wonPre()}{KRW(p.requiredAmount)}</MaskAmount>
-          <WonUnit />
-        </span>
-        {!p.isAchieved && p.remainingAmount != null ? (
-          <span className="num" style={{ marginLeft: 'auto' }}>
-            {t('assetDetail.remainingLabel')} <MaskAmount mask="•••">{wonPre()}{KRW(p.remainingAmount)}</MaskAmount>
-            <WonUnit />
-          </span>
-        ) : (
-          <span style={{ marginLeft: 'auto', color: 'var(--status-success-fg)', fontWeight: '700' }}>{t('assetDetail.achieved')}</span>
-        )}
-      </div>
-      {p.requiredText && (
-        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-          {p.requiredText}
+          <WonUnit /> · {pct}%
         </div>
-      )}
+      </div>
     </div>
   )
 }
 
-// 신용카드 청구 사이클 — app _CardBillingSection 미러.
-// 단일 bordered 카드 안에 [결제 예정 + 예정일 M.d] / [금액 + 지금 결제] / 매월 N일 결제 / divider / 청구 이력.
-function CardBillingSection({ asset }: { asset: Asset }) {
+// 결제 회차(청구월) 항목 — 예정 1건 + 과거 결제 완료 이력.
+type CardStatement = {
+  key: string
+  label: string
+  scheduled: boolean
+  amount: number
+  periodStart: string | null
+  periodEnd: string | null
+  paymentDate: string
+}
+
+/**
+ * 카드 상세 본문 — design card-detail.jsx 신판(현대카드 결제정보 패턴) 토큰 스냅.
+ * 회차 히어로(기간 선택 시트) / 결제일·이용 기간 행 / 액션 2타일 /
+ * 한도 사용 게이지·실적 배지 / 이용 내역(정렬 칩 + 날짜 그룹). CREDIT_CARD 전용.
+ */
+function CardDetailBody({
+  asset,
+  relatedTx,
+  relatedGroups,
+  mobile,
+  onEdit,
+}: {
+  asset: Asset
+  relatedTx: Expense[]
+  relatedGroups: [string, Expense[]][]
+  mobile: boolean
+  onEdit?: () => void
+}) {
   const { t } = useTranslation('asset')
-  const { data: billing, isLoading, isError } = useCardBilling(asset.rowId)
+  const navigate = useNavigate()
+  const { data: billing, isLoading } = useCardBilling(asset.rowId)
   const payCard = usePayCard()
   const [confirmPay, setConfirmPay] = useState(false)
+  const [stIdx, setStIdx] = useState(0)
+  const [pickOpen, setPickOpen] = useState(false)
+  const [sort, setSort] = useState<'recent' | 'amount' | 'category'>('recent')
+
+  const statements: CardStatement[] = useMemo(() => {
+    const out: CardStatement[] = []
+    if (billing?.nextPaymentDate) {
+      out.push({
+        key: `up-${billing.nextPaymentDate}`,
+        label: formatDay(billing.nextPaymentDate).md,
+        scheduled: true,
+        amount: billing.upcomingAmount,
+        periodStart: billing.upcomingPeriodStart,
+        periodEnd: billing.upcomingPeriodEnd,
+        paymentDate: billing.nextPaymentDate,
+      })
+    }
+    for (const b of billing?.history ?? []) {
+      if (b.status !== 'COMPLETED') continue
+      out.push({
+        key: `h-${b.rowId}`,
+        label: formatDay(b.paymentDate).md,
+        scheduled: false,
+        amount: b.billingAmount,
+        periodStart: b.periodStart,
+        periodEnd: b.periodEnd,
+        paymentDate: b.paymentDate,
+      })
+    }
+    return out
+  }, [billing])
+  const st = statements[Math.min(stIdx, Math.max(0, statements.length - 1))] ?? null
+
+  // 기간 선택 시트 — 연도별 그룹(최신순 유지)
+  const byYear = useMemo(() => {
+    const g = new Map<string, { s: CardStatement; i: number }[]>()
+    statements.forEach((s, i) => {
+      const y = s.paymentDate.slice(0, 4)
+      if (!g.has(y)) g.set(y, [])
+      g.get(y)!.push({ s, i })
+    })
+    return [...g.entries()]
+  }, [statements])
+
+  // 한도 사용 — 현재 미결제 잔액(총 부채) 기준
+  const limit = asset.creditLimit ?? 0
+  const used = Math.abs(asset.balance)
+  const limitPct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+  const limitWarn = limitPct >= 80
+
+  const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null
+  const canPay = (billing?.upcomingAmount ?? 0) > 0 && !payCard.isPending
+  const periodText = st?.periodStart && st?.periodEnd
+    ? `${fmtBillingDate(st.periodStart)} ~ ${fmtBillingDate(st.periodEnd)}`
+    : null
+
+  const sorted = useMemo(() => {
+    const list = [...relatedTx]
+    if (sort === 'amount') return list.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+    if (sort === 'category') return list.sort((a, b) => (a.categoryName ?? '').localeCompare(b.categoryName ?? ''))
+    return list
+  }, [relatedTx, sort])
 
   const handlePay = () => {
     payCard.mutate(asset.rowId, {
@@ -223,148 +260,229 @@ function CardBillingSection({ asset }: { asset: Asset }) {
     })
   }
 
-  const upcomingAmount = billing?.upcomingAmount ?? Math.abs(asset.balance)
-  const nextPaymentDate = billing?.nextPaymentDate ?? null
-  const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null
-  const history: BillingItem[] = billing?.history ?? []
-  const canPay = upcomingAmount > 0 && !payCard.isPending
-
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--bg-surface)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-lg)',
-    padding: 16,
-    marginBottom: 18,
-  }
+  const viewAll = () => navigate(`/desk/expense?assetId=${asset.rowId}`)
 
   if (isLoading) {
     return (
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <SkeletonBase className="h-4 w-16" />
-          <SkeletonBase className="h-3 w-10" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 8 }}>
-          <SkeletonBase className="h-7 w-28" />
-          <SkeletonBase className="h-8 w-24 rounded-md" />
-        </div>
-        <SkeletonBase className="h-3 w-24 mt-2" />
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div style={cardStyle}>
-        <span style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>
-          {t('assetDetail.billingLoadError')}
-        </span>
+      <div style={{ padding: '2px 2px 16px' }}>
+        <SkeletonBase className="h-6 w-32 mb-3" />
+        <SkeletonBase className="h-9 w-44 mb-4" />
+        <SkeletonBase className="h-12 w-full" />
       </div>
     )
   }
 
   return (
-    <div style={cardStyle}>
-      {/* 헤더: 결제 예정 + 다음 결제일 M.d */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-          {t('assetDetail.paymentDue')}
-        </span>
-        {nextPaymentDate && (
-          <span
-            className="num"
-            style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}
-          >
-            {fmtBillingDate(nextPaymentDate)}
-          </span>
-        )}
-      </div>
-
-      {/* 금액 + 지금 결제 */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 8 }}>
-        <div
-          className="num"
-          style={{
-            fontWeight: '700',
-            letterSpacing: '-0.012em',
-            color: 'var(--fg-primary)',
-          }}
+    <>
+      {/* 결제 예정 히어로 — 회차 선택 */}
+      <div style={{ padding: '2px 2px 16px' }}>
+        <button
+          type="button"
+          onClick={() => setPickOpen(true)}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'transparent', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
         >
-          <MaskAmount>
-            <span style={{ fontSize: 'var(--text-display-sm)' }}>{wonPre()}{KRW(upcomingAmount)}</span>
-          </MaskAmount>
+          <span style={{ fontSize: 'var(--text-title-lg)', fontWeight: '700', color: 'var(--fg-primary)', letterSpacing: '-0.02em' }}>
+            {st?.label ?? '—'}
+          </span>
+          {st?.scheduled && (
+            <span style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: 'var(--fg-secondary)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-pill)', padding: '2px 9px' }}>
+              {t('assetDetail.scheduledTag')}
+            </span>
+          )}
+          <span style={{ width: 24, height: 24, borderRadius: 'var(--radius-pill)', background: 'var(--bg-sunken)', color: 'var(--fg-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ChevronDown size={14} strokeWidth={2.4} />
+          </span>
+        </button>
+        <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.03em', marginTop: 10, color: 'var(--fg-primary)' }}>
+          <MaskAmount>{wonPre()}{KRW(st?.amount ?? 0)}</MaskAmount>
           {!isEn() && (
             <HideUnit>
-              <span style={{ fontSize: 'var(--text-body-sm)' }}>원</span>
+              <span style={{ fontSize: 'var(--text-title-lg)', marginLeft: 1 }}>원</span>
             </HideUnit>
           )}
         </div>
-        <Button
-          variant="default"
-          size="sm"
-          style={{ marginLeft: 'auto' }}
-          disabled={!canPay}
-          onClick={() => setConfirmPay(true)}
-        >
-          <Wallet size={14} />
-          {t('assetDetail.payNow')}
-        </Button>
+        {st && !st.scheduled && (
+          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-cat-green)', fontWeight: '600', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Check size={13} strokeWidth={3} /> {t('assetDetail.paidDone')}
+          </div>
+        )}
       </div>
 
+      {/* 결제일 · 카드 이용 기간 */}
       {paymentDay != null && (
-        <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-          {t('assetDetail.billedMonthly', { day: paymentDay })}
-          {/* 이 회차의 청구 기간(결제일의 전월 1일~말일) — 회차 모델 명시 */}
-          {billing?.upcomingPeriodStart && billing?.upcomingPeriodEnd && (
-            <>
-              {' · '}
-              {t('assetDetail.billingPeriod', {
-                start: fmtBillingDate(billing.upcomingPeriodStart),
-                end: fmtBillingDate(billing.upcomingPeriodEnd),
-              })}
-            </>
-          )}
+        <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 2px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', minWidth: 68, flexShrink: 0 }}>
+              {t('assetDetail.paymentDateLabel')}
+            </span>
+            <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
+              {t('assetDetail.billedMonthly', { day: paymentDay })}
+            </span>
+            {periodText && (
+              <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+                {t('assetDetail.usagePeriod', { period: periodText })}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
-      {/* 청구 이력 — divider 아래 같은 카드 내부 (app 정합) */}
-      {history.length > 0 && (
-        <>
-          <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '12px 0 8px' }} />
-          <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>
-            {t('assetDetail.billingHistory')}
+      {/* 빠른 액션 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '14px 0 4px' }}>
+        <button
+          type="button"
+          disabled={!canPay}
+          onClick={() => setConfirmPay(true)}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 4px', background: 'var(--bg-sunken)', border: 0, borderRadius: 'var(--radius-lg)', cursor: canPay ? 'pointer' : 'not-allowed', fontFamily: 'inherit', fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-primary)', opacity: canPay ? 1 : 0.55 }}
+        >
+          <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Zap size={15} strokeWidth={1.9} />
+          </span>
+          <span>{t('assetDetail.payNow')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={onEdit}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 4px', background: 'var(--bg-sunken)', border: 0, borderRadius: 'var(--radius-lg)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-primary)' }}
+        >
+          <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <SlidersHorizontal size={15} strokeWidth={1.9} />
+          </span>
+          <span>{t('assetDetail.limitSettings')}</span>
+        </button>
+      </div>
+
+      {/* 한도 사용 · 실적 */}
+      {limit > 0 && (
+        <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: 18, paddingTop: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h4 style={{ margin: 0, fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.01em', color: 'var(--fg-primary)' }}>
+              {t('assetDetail.limitUsage')}
+            </h4>
+            <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700', color: limitWarn ? 'var(--color-cat-red)' : 'var(--fg-brand)' }}>
+              {t('assetDetail.limitPctUsed', { pct: limitPct })}
+            </span>
           </div>
-          <div style={{ marginTop: 4 }}>
-            {history.map(b => {
-              const meta = BILLING_STATUS_META[b.status]
+          <div style={{ height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--bg-sunken)', overflow: 'hidden', margin: '11px 0 7px' }}>
+            <div style={{ width: `${limitPct}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: limitWarn ? 'var(--color-cat-red)' : 'var(--bg-brand)' }} />
+          </div>
+          <div className="num" style={{ display: 'flex', fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+            <span>{t('assetDetail.limitOf', { used: money(used), limit: money(limit) })}</span>
+            <span style={{ marginLeft: 'auto' }}>{t('assetDetail.limitRemain', { amount: money(Math.max(0, limit - used)) })}</span>
+          </div>
+          <button
+            type="button"
+            onClick={onEdit}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 12, padding: '8px 13px', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-pill)', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}
+          >
+            <Pencil size={12} strokeWidth={2.2} /> {t('assetDetail.limitEdit')}
+          </button>
+          <CardPerfBadge assetRowId={asset.rowId} />
+        </div>
+      )}
+      {limit <= 0 && <CardPerfBadge assetRowId={asset.rowId} />}
+
+      {/* 이용 내역 — 정렬 칩 + 날짜 그룹 리스트 */}
+      <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: 18, paddingTop: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h4 style={{ margin: 0, fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+            {t('assetDetail.usageHistory')}{' '}
+            {sorted.length > 0 && <span className="num" style={{ color: 'var(--fg-brand)' }}>{sorted.length}</span>}
+          </h4>
+          <button
+            type="button"
+            onClick={viewAll}
+            style={{ marginLeft: 'auto', background: 'transparent', border: 0, color: 'var(--fg-secondary)', cursor: 'pointer', fontSize: 'var(--text-label-sm)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: 2 }}
+          >
+            {t('assetDetail.viewAll')} <ChevronRight size={12} />
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: 7, margin: '12px 0 2px' }}>
+          {([
+            { k: 'recent', label: t('assetDetail.sortRecent') },
+            { k: 'amount', label: t('assetDetail.sortAmount') },
+            { k: 'category', label: t('assetDetail.sortCategory') },
+          ] as const).map(o => (
+            <button
+              key={o.k}
+              type="button"
+              onClick={() => setSort(o.k)}
+              style={{
+                border: 0, fontFamily: 'inherit', fontSize: 'var(--text-caption)', padding: '8px 14px',
+                borderRadius: 'var(--radius-pill)', cursor: 'pointer',
+                background: sort === o.k ? 'var(--bg-brand)' : 'var(--bg-sunken)',
+                color: sort === o.k ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
+                fontWeight: sort === o.k ? '700' : '600',
+              }}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        {sorted.length === 0 ? (
+          <div style={{ padding: '28px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
+            {t('assetDetail.noUsage')}
+          </div>
+        ) : sort === 'recent' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 16 }}>
+            {relatedGroups.map(([d, items]) => {
+              const { md, dow } = formatDay(d)
+              const out = items.filter(tx => tx.expenseType === 'EXPENSE').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
+              const inn = items.filter(tx => tx.expenseType === 'INCOME').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
               return (
-                <div key={b.rowId} style={{ padding: '8px 0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span
-                      className="num"
-                      style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}
-                    >
-                      <MaskAmount>{wonPre()}{KRW(b.billingAmount)}</MaskAmount>
-                      <WonUnit />
-                    </span>
-                    <Badge variant={meta.variant}>{t(meta.labelKey)}</Badge>
-                  </div>
-                  <div
-                    className="num"
-                    style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}
-                  >
-                    {fmtBillingDate(b.periodStart)} ~ {fmtBillingDate(b.periodEnd)} · {t('assetDetail.paymentDateLabel')} {fmtBillingDate(b.paymentDate)}
-                  </div>
-                  {b.failureReason && (
-                    <div style={{ fontSize: 'var(--text-badge)', color: 'var(--status-danger-fg)', marginTop: 2 }}>
-                      {b.failureReason}
-                    </div>
-                  )}
+                <div key={d}>
+                  <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
+                  {items.map(tx => (
+                    <ExpenseRow key={tx.rowId} expense={tx} />
+                  ))}
                 </div>
               )
             })}
           </div>
-        </>
+        ) : (
+          <div style={{ paddingTop: 6 }}>
+            {sorted.map(tx => (
+              <ExpenseRow key={tx.rowId} expense={tx} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 기간 선택 시트 */}
+      {pickOpen && (
+        <ModalShell title={t('assetDetail.periodPick')} onClose={() => setPickOpen(false)} size="md" mobile={mobile}>
+          {byYear.map(([y, rows]) => (
+            <div key={y} style={{ display: 'flex', gap: 14, paddingTop: 6 }}>
+              <div className="num" style={{ width: 52, flexShrink: 0, fontSize: 'var(--text-body-md)', fontWeight: '700', color: 'var(--fg-primary)', paddingTop: 15 }}>
+                {y}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {rows.map(({ s, i }, ri) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => { setStIdx(i); setPickOpen(false) }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '15px 2px', background: 'transparent', border: 0,
+                      borderTop: ri === 0 ? 'none' : '1px solid var(--border-subtle)',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: 'var(--text-body-md)', fontWeight: i === stIdx ? '700' : '500', color: 'var(--fg-primary)' }}>
+                      {s.label}{s.scheduled ? ` (${t('assetDetail.scheduledTag')})` : ''}
+                    </span>
+                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
+                      <MaskAmount>{wonPre()}{KRW(s.amount)}</MaskAmount>
+                      <WonUnit />
+                    </span>
+                    {i === stIdx && <Check size={16} color="var(--fg-brand)" strokeWidth={2.6} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </ModalShell>
       )}
 
       {confirmPay && (
@@ -375,10 +493,10 @@ function CardBillingSection({ asset }: { asset: Asset }) {
               <Trans
                 i18nKey="assetDetail.payConfirm"
                 ns="asset"
-                values={{ amount: money(upcomingAmount) }}
+                values={{ amount: money(billing?.upcomingAmount ?? 0) }}
                 components={{ strong: <strong /> }}
               />
-              {nextPaymentDate ? ` ${t('assetDetail.paymentDateNote', { date: nextPaymentDate })}` : ''}
+              {billing?.nextPaymentDate ? ` ${t('assetDetail.paymentDateNote', { date: billing.nextPaymentDate })}` : ''}
             </>
           }
           confirmLabel={t('assetDetail.payAction')}
@@ -387,7 +505,7 @@ function CardBillingSection({ asset }: { asset: Asset }) {
           onConfirm={handlePay}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -693,10 +811,9 @@ export function AssetDetailDialog({
 
   const absBalance = Math.abs(asset.balance)
 
-  // 카드 히어로("이번 달 결제 예정")는 회차 결제예정액 — 잔액 전액이 아님(사용자 결정).
-  // CardBillingSection 과 같은 쿼리 키라 중복 요청 없음. 비카드는 쿼리 비활성(id 0).
-  const heroBillingQ = useCardBilling(isCard ? asset.rowId : 0)
-  const heroAmount = isCard ? (heroBillingQ.data?.upcomingAmount ?? absBalance) : absBalance
+  const heroAmount = absBalance
+  // CREDIT_CARD 는 신판 카드 상세 본문(CardDetailBody) — 회차 히어로가 금액을 담당.
+  const isCredit = asset.assetType === 'CREDIT_CARD'
 
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   const relatedTx: Expense[] = useMemo(
@@ -742,16 +859,17 @@ export function AssetDetailDialog({
   return (
     <>
     <ModalShell title={title} onClose={onClose} size="lg" footer={Footer} mobile={mobile}>
-      {/* Hero — 플랫(design 신판): 그라데이션 카드 제거, 이름 행 아래 구분선만 */}
-      <div style={{ marginBottom: 18 }}>
+      {/* Hero — 플랫(design 신판): 이름 행 + 구분선 + 잔액. 신용카드는 이름 행만
+          (회차 히어로가 금액 담당 — CardDetailBody). */}
+      <div style={{ marginBottom: isCredit ? 0 : 18 }}>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 14,
             paddingBottom: 14,
-            marginBottom: 14,
-            borderBottom: '1px solid var(--border-subtle)',
+            marginBottom: isCredit ? 0 : 14,
+            borderBottom: isCredit ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
           <AssetLogo asset={asset} size={48} />
@@ -766,47 +884,65 @@ export function AssetDetailDialog({
             </div>
           </div>
         </div>
-        <div
-          style={{
-            fontSize: 'var(--text-badge)',
-            color: 'var(--fg-tertiary)',
-            fontWeight: '600',
-            letterSpacing: '0.04em',
-            marginBottom: 4,
-          }}
-        >
-          {valueLabel}
-        </div>
-        <div
-          className="num"
-          style={{
-            fontSize: 'var(--text-display-md)',
-            fontWeight: '800',
-            letterSpacing: '-0.022em',
-            color: 'var(--fg-primary)',
-          }}
-        >
-          <MaskAmount>
-            {wonPre()}
-            {KRW(heroAmount)}
-          </MaskAmount>
-          {!isEn() && (
-            <HideUnit>
-              <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
-            </HideUnit>
-          )}
-        </div>
+        {!isCredit && (
+          <>
+            <div
+              style={{
+                fontSize: 'var(--text-badge)',
+                color: 'var(--fg-tertiary)',
+                fontWeight: '600',
+                letterSpacing: '0.04em',
+                marginBottom: 4,
+              }}
+            >
+              {valueLabel}
+            </div>
+            <div
+              className="num"
+              style={{
+                fontSize: 'var(--text-display-md)',
+                fontWeight: '800',
+                letterSpacing: '-0.022em',
+                color: 'var(--fg-primary)',
+              }}
+            >
+              <MaskAmount>
+                {wonPre()}
+                {KRW(heroAmount)}
+              </MaskAmount>
+              {!isEn() && (
+                <HideUnit>
+                  <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 2 }}>원</span>
+                </HideUnit>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* 투자 자산 ↔ 토스 보유종목 연결 (프로+토스 연결 사용자만 노출) */}
       {isInv && <TossLinkSection asset={asset} />}
 
-      {/* 카드 월 실적 (카드 공통) — app CardPerformanceBar 미러 */}
-      {isCard && <CardPerformanceCard assetRowId={asset.rowId} />}
+      {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
+      {isCredit && (
+        <CardDetailBody
+          asset={asset}
+          relatedTx={relatedTx}
+          relatedGroups={relatedGroups}
+          mobile={mobile}
+          onEdit={onEdit ? () => onEdit(asset) : undefined}
+        />
+      )}
 
-      {/* Card billing cycle (CREDIT_CARD 전용) — app _CardBillingSection 미러 */}
-      {asset.assetType === 'CREDIT_CARD' && <CardBillingSection asset={asset} />}
+      {/* 체크카드 — 실적 배지만(청구 회차 없음) */}
+      {isCard && !isCredit && (
+        <div style={{ marginBottom: 18 }}>
+          <CardPerfBadge assetRowId={asset.rowId} />
+        </div>
+      )}
 
+      {!isCredit && (
+      <>
       {/* Balance trend chart */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
@@ -955,6 +1091,8 @@ export function AssetDetailDialog({
           </div>
         )}
       </div>
+      </>
+      )}
     </ModalShell>
     <HideAmountsUnlockDialog
       open={unlockOpen}
