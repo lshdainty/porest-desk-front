@@ -349,8 +349,8 @@ export function LedgerDow({
       {labels.map((d, i) => (
         <span
           key={i}
-          // 평일 색 캘린더 정합(fg-secondary) — 색상만, 굵기는 기존 유지(사용자 결정)
-          className="text-center text-[length:var(--text-caption)] font-semibold text-[var(--fg-secondary)] pt-1.5 pb-2"
+          // 평일 = 일반 텍스트색(fg-primary), 일/토는 colorFor 로 지정(사용자 결정)
+          className="text-center text-[length:var(--text-caption)] font-semibold text-[var(--fg-primary)] pt-1.5 pb-2"
           style={{ color: colorFor?.(i) }}
         >
           {d}
