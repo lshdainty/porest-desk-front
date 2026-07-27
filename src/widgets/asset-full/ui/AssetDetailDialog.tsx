@@ -119,7 +119,7 @@ function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
         display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, padding: '12px 13px',
         borderRadius: 'var(--radius-lg)',
         background: done
-          ? 'color-mix(in oklch, var(--color-cat-green) 10%, var(--bg-surface))'
+          ? 'color-mix(in oklab, var(--color-cat-green) 10%, var(--bg-surface))'
           : 'var(--bg-sunken)',
       }}
     >
@@ -168,14 +168,10 @@ type CardStatement = {
  */
 function CardDetailBody({
   asset,
-  relatedTx,
-  relatedGroups,
   mobile,
   onEdit,
 }: {
   asset: Asset
-  relatedTx: Expense[]
-  relatedGroups: [string, Expense[]][]
   mobile: boolean
   onEdit?: () => void
 }) {
@@ -262,12 +258,37 @@ function CardDetailBody({
     ? `${fmtBillingDate(st.periodStart)} ~ ${fmtBillingDate(st.periodEnd)}`
     : null
 
+  // 이용 내역 — 선택 회차의 청구 기간(전월 1일~말일)만 조회(사용자 결정).
+  // 기간 미확정(폴백 회차)이면 기간 조건 없이 카드 전체에서 최근순.
+  const { data: usageAll } = useSearchExpenses(
+    st?.periodStart && st?.periodEnd
+      ? { assetId: asset.rowId, startDate: st.periodStart, endDate: st.periodEnd }
+      : { assetId: asset.rowId },
+  )
+  const usageTx: Expense[] = useMemo(
+    () => [...(usageAll ?? [])]
+      .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate)),
+    [usageAll],
+  )
+
   const sorted = useMemo(() => {
-    const list = [...relatedTx]
+    const list = [...usageTx]
     if (sort === 'amount') return list.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
     if (sort === 'category') return list.sort((a, b) => (a.categoryName ?? '').localeCompare(b.categoryName ?? ''))
     return list
-  }, [relatedTx, sort])
+  }, [usageTx, sort])
+
+  // 날짜 그룹(최근순 뷰)
+  const usageGroups = useMemo(() => {
+    const m = new Map<string, Expense[]>()
+    for (const tx of usageTx) {
+      const k = tx.expenseDate.slice(0, 10)
+      const arr = m.get(k)
+      if (arr) arr.push(tx)
+      else m.set(k, [tx])
+    }
+    return [...m.entries()]
+  }, [usageTx])
 
   const handlePay = () => {
     payCard.mutate(asset.rowId, {
@@ -435,7 +456,7 @@ function CardDetailBody({
           </div>
         ) : sort === 'recent' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 16 }}>
-            {relatedGroups.map(([d, items]) => {
+            {usageGroups.map(([d, items]) => {
               const { md, dow } = formatDay(d)
               const out = items.filter(tx => tx.expenseType === 'EXPENSE').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
               const inn = items.filter(tx => tx.expenseType === 'INCOME').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
@@ -937,8 +958,6 @@ export function AssetDetailDialog({
       {isCredit && (
         <CardDetailBody
           asset={asset}
-          relatedTx={relatedTx}
-          relatedGroups={relatedGroups}
           mobile={mobile}
           onEdit={onEdit ? () => onEdit(asset) : undefined}
         />
