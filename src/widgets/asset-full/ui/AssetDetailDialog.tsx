@@ -201,16 +201,38 @@ function CardDetailBody({
         paymentDate: billing.nextPaymentDate,
       })
     }
+    // 과거 회차 — 결제월별 합산: 같은 달에 여러 번(선결제 등) 결제해도 월 1행(사용자 결정).
+    // 라벨은 정규 결제일(paymentDay, 말일 보정), 기간은 결제월의 전월 1일~말일(백엔드 회차 규칙 미러).
+    const pad2 = (n: number) => String(n).padStart(2, '0')
+    const byMonth = new Map<string, { amount: number; latest: string }>()
     for (const b of billing?.history ?? []) {
       if (b.status !== 'COMPLETED') continue
+      const ym = b.paymentDate.slice(0, 7)
+      const cur = byMonth.get(ym)
+      if (cur) {
+        cur.amount += b.billingAmount
+        if (b.paymentDate > cur.latest) cur.latest = b.paymentDate
+      } else {
+        byMonth.set(ym, { amount: b.billingAmount, latest: b.paymentDate })
+      }
+    }
+    for (const [ym, g] of byMonth) {
+      const [y, m] = ym.split('-').map(Number)
+      if (!y || !m) continue
+      const lastDay = new Date(y, m, 0).getDate()
+      const day = Math.min(billing?.paymentDay ?? Number(g.latest.slice(8, 10)), lastDay)
+      const paymentDate = `${ym}-${pad2(day)}`
+      const py = m === 1 ? y - 1 : y
+      const pm = m === 1 ? 12 : m - 1
+      const pLast = new Date(py, pm, 0).getDate()
       out.push({
-        key: `h-${b.rowId}`,
-        label: formatDay(b.paymentDate).md,
+        key: `m-${ym}`,
+        label: formatDay(paymentDate).md,
         scheduled: false,
-        amount: b.billingAmount,
-        periodStart: b.periodStart,
-        periodEnd: b.periodEnd,
-        paymentDate: b.paymentDate,
+        amount: g.amount,
+        periodStart: `${py}-${pad2(pm)}-01`,
+        periodEnd: `${py}-${pad2(pm)}-${pad2(pLast)}`,
+        paymentDate,
       })
     }
     return out

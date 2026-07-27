@@ -581,53 +581,6 @@ export function AssetEditDialog({
                 })}
               </SearchableList>
 
-              {cardType === 'CREDIT' && (
-                <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5">
-                  <div className="text-[12px] font-semibold text-[var(--fg-secondary)]">{t('editDialog.billingCycle')}</div>
-                  <div>
-                    <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">{t('editDialog.creditLimit')}</Label>
-                    <Input
-                      id="card-credit-limit"
-                      inputMode="numeric"
-                      value={creditLimit}
-                      onChange={e => setCreditLimit(e.target.value.replace(/[^\d]/g, ''))}
-                      placeholder={t('editDialog.creditLimitPlaceholder')}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentDay')}</Label>
-                    <Select value={paymentDay || undefined} onValueChange={v => setPaymentDay(v)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('editDialog.paymentDayPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                          <SelectItem key={d} value={String(d)}>{t('editDialog.dayUnit', { day: d })}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentAccount')}</Label>
-                    <Select
-                      value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
-                      onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
-                      disabled={bankAccounts.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={bankAccounts.length === 0 ? t('editDialog.noCheckingAccount') : t('editDialog.selectPaymentAccount')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bankAccounts.map(a => (
-                          <SelectItem key={a.rowId} value={String(a.rowId)}>
-                            {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <div>
@@ -795,6 +748,35 @@ export function AssetEditDialog({
             />
           </div>
 
+          {/* 신용카드 — design 신판 순서: 신용한도 → 결제일 → 현재 사용액 → 결제 계좌(연동 유지) */}
+          {editingGroup === 'card' && cardType === 'CREDIT' && (
+            <>
+              <div>
+                <Label htmlFor="card-credit-limit" className="text-[13px] font-medium mb-2 block">{t('editDialog.creditLimit')}</Label>
+                <Input
+                  id="card-credit-limit"
+                  inputMode="numeric"
+                  value={creditLimit}
+                  onChange={e => setCreditLimit(e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder={t('editDialog.creditLimitPlaceholder')}
+                />
+              </div>
+              <div>
+                <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentDay')}</Label>
+                <Select value={paymentDay || undefined} onValueChange={v => setPaymentDay(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('editDialog.paymentDayPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                      <SelectItem key={d} value={String(d)}>{t('editDialog.dayUnit', { day: d })}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
           <div>
             <Label htmlFor="asset-edit-balance" className="text-[13px] font-medium mb-2 block">
               {balanceLabel}
@@ -816,6 +798,28 @@ export function AssetEditDialog({
               </p>
             )}
           </div>
+
+          {editingGroup === 'card' && cardType === 'CREDIT' && (
+            <div>
+              <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentAccount')}</Label>
+              <Select
+                value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
+                onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
+                disabled={bankAccounts.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={bankAccounts.length === 0 ? t('editDialog.noCheckingAccount') : t('editDialog.selectPaymentAccount')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {bankAccounts.map(a => (
+                    <SelectItem key={a.rowId} value={String(a.rowId)}>
+                      {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {editingGroup !== 'card' && (
             <div>
