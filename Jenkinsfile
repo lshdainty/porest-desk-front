@@ -45,6 +45,7 @@ pipeline {
                     docker rm ${CONTAINER_NAME}-dev || true
                     docker run -d --name ${CONTAINER_NAME}-dev \
                         --hostname ${CONTAINER_NAME}-dev \
+                        --restart unless-stopped \
                         --network ${env.DEV_NETWORK} \
                         ${IMAGE_NAME}:latest
                 """
@@ -71,6 +72,7 @@ pipeline {
                     docker rm ${CONTAINER_NAME}-prod || true
                     docker run -d --name ${CONTAINER_NAME}-prod \
                         --hostname ${CONTAINER_NAME}-prod \
+                        --restart unless-stopped \
                         --network ${env.PROD_NETWORK} \
                         ${IMAGE_NAME}:latest
                 """
