@@ -201,7 +201,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
             )
           }
         >
-          <span style={{ color: isIncome ? 'var(--fg-brand)' : 'var(--fg-primary)' }}>
+          <span style={{ color: 'var(--fg-primary)' }}>
             <MaskAmount>
               {isIncome ? '+' : '−'}
               {wonPre()}
@@ -384,10 +384,6 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
                       <WonUnit />
                     </>
                   ),
-                  // 지출 합계 빨강 — 다크 light variant 스왑(cat-red)
-                  valueClassName: isIncome
-                    ? 'text-[var(--fg-brand)]'
-                    : 'text-[var(--color-cat-red)]',
                 },
               ]}
             />
