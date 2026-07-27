@@ -742,17 +742,18 @@ export function AssetDetailDialog({
   return (
     <>
     <ModalShell title={title} onClose={onClose} size="lg" footer={Footer} mobile={mobile}>
-      {/* Hero */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, color-mix(in oklch, ${color} 12%, transparent), color-mix(in oklch, ${color} 4%, transparent))`,
-          border: `1px solid color-mix(in oklch, ${color} 22%, transparent)`,
-          borderRadius: 'var(--radius-xl)',
-          padding: 22,
-          marginBottom: 18,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+      {/* Hero — 플랫(design 신판): 그라데이션 카드 제거, 이름 행 아래 구분선만 */}
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            paddingBottom: 14,
+            marginBottom: 14,
+            borderBottom: '1px solid var(--border-subtle)',
+          }}
+        >
           <AssetLogo asset={asset} size={48} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em' }}>
