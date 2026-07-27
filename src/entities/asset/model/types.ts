@@ -87,8 +87,14 @@ export interface BillingItem {
 
 export interface CardBilling {
   cardAssetRowId: number
-  /** abs(카드 balance) — 이번 결제예정액 */
+  /**
+   * 다가오는 결제 회차의 결제예정액 = 청구 기간(결제일의 전월 1일~말일) 순사용액
+   * − 같은 회차 기결제액(선결제 차감). 결제일 미설정 시 잔액 전액 fallback.
+   */
   upcomingAmount: number
+  /** 다가오는 회차 청구 기간 "yyyy-MM-dd" | null (결제일 미설정 시 null) */
+  upcomingPeriodStart: string | null
+  upcomingPeriodEnd: string | null
   /** "yyyy-MM-dd" | null */
   nextPaymentDate: string | null
   paymentDay: number | null
