@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Download, Filter, List, Plus, ReceiptText, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, ReceiptText, SlidersHorizontal, X } from 'lucide-react'
 import { KRW, formatDay, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
@@ -155,16 +155,15 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
   )
 }
 
-function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobile?: boolean }) {
+function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
   // 날짜 헤더 = DateGroupHeader 정합. row = ExpenseRow 정합: CategoryChip 40px(md) +
   // gap-3(12px) + title 14px / sub 12px + 우측 금액.
-  // 모바일 = 카드 다이어트(행만 나열) / 데스크톱 = 카드 + divider.
+  // 카드 다이어트 — 데스크톱/모바일 모두 카드·divider 없이 행만 나열(실제 렌더 정합).
   const rowNodes = Array.from({ length: rows }).map((_, i) => (
     <div
       key={i}
       style={{
-        borderTop: mobile || i === 0 ? 'none' : '1px solid var(--border-subtle)',
-        padding: mobile ? '12px 0 12px 2px' : '12px 14px',
+        padding: '12px 0 12px 2px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -185,7 +184,7 @@ function ExpenseDayGroupSkeleton({ rows, mobile = false }: { rows: number; mobil
         <SkeletonBase className="h-4 w-5" />
         <SkeletonBase className="h-3.5 w-16 ml-auto" />
       </div>
-      {mobile ? rowNodes : <Card style={{ overflow: 'hidden' }}>{rowNodes}</Card>}
+      {rowNodes}
     </div>
   )
 }
@@ -284,8 +283,8 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
           <LedgerDivider />
         </LedgerPin>
         <LedgerList style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <ExpenseDayGroupSkeleton rows={3} mobile />
-          <ExpenseDayGroupSkeleton rows={2} mobile />
+          <ExpenseDayGroupSkeleton rows={3} />
+          <ExpenseDayGroupSkeleton rows={2} />
         </LedgerList>
       </LedgerShell>
     )
@@ -633,8 +632,8 @@ function ExpenseList({
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 24 : 18 }}>
-        <ExpenseDayGroupSkeleton rows={3} mobile={mobile} />
-        <ExpenseDayGroupSkeleton rows={2} mobile={mobile} />
+        <ExpenseDayGroupSkeleton rows={3} />
+        <ExpenseDayGroupSkeleton rows={2} />
       </div>
     )
   }
@@ -660,8 +659,9 @@ function ExpenseList({
   }
 
   return (
-    // 모바일 — 카드 다이어트: 날짜 그룹은 카드 없이 헤더+행, 그룹 사이 24px (design .tx-list).
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 24 : 18 }}>
+    // 카드 다이어트 — 날짜 그룹은 카드 없이 헤더+행, 그룹 사이 24px (design .tx-list).
+    // 데스크톱/태블릿도 동일(사용자 결정) — 카드·divider·행 inset 없이 플랫.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d)
         const out = items
@@ -670,35 +670,26 @@ function ExpenseList({
         const inn = items
           .filter(t => t.expenseType === 'INCOME')
           .reduce((s, t) => s + Math.abs(t.amount), 0)
-        const rows = items.map(e => {
-          const isFocus = focusTxId === e.rowId
-          return (
-            <div
-              key={e.rowId}
-              ref={isFocus ? focusRef : undefined}
-              style={{
-                borderTop: mobile || items.indexOf(e) === 0 ? 'none' : '1px solid var(--border-subtle)',
-                background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
-                transition: 'background 0.4s',
-                // 모바일 행 wrapper 좌우 inset 삭제(사용자 결정) — 데스크톱 14 유지.
-                padding: mobile ? undefined : '0 14px',
-                borderRadius: mobile ? 10 : undefined,
-              }}
-            >
-              <ExpenseRow expense={e} onClick={onItemClick} />
-            </div>
-          )
-        })
         return (
           <div key={d}>
-            {/* 날짜 헤더 — 카드 밖 평문 */}
+            {/* 날짜 헤더 — 평문 */}
             <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
-            {mobile ? (
-              rows
-            ) : (
-              /* 데스크톱 — 거래 카드, divider 로 구분 */
-              <Card style={{ overflow: 'hidden' }}>{rows}</Card>
-            )}
+            {items.map(e => {
+              const isFocus = focusTxId === e.rowId
+              return (
+                <div
+                  key={e.rowId}
+                  ref={isFocus ? focusRef : undefined}
+                  style={{
+                    background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
+                    transition: 'background 0.4s',
+                    borderRadius: 10,
+                  }}
+                >
+                  <ExpenseRow expense={e} onClick={onItemClick} />
+                </div>
+              )
+            })}
           </div>
         )
       })}
@@ -897,8 +888,7 @@ function FilterChipsRow({
   if (chips.length === 0) return null
   return (
     <div
-      className="scrollbar-hide"
-      className="-mx-[var(--spacing-xl)] px-[var(--spacing-xl)]"
+      className="scrollbar-hide -mx-[var(--spacing-xl)] px-[var(--spacing-xl)]"
       style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingTop: 8, alignItems: 'center' }}
     >
       {chips.map(c => (
@@ -1430,8 +1420,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       <LedgerList>
         {isLoadingList ? (
           <div style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <ExpenseDayGroupSkeleton rows={3} mobile />
-            <ExpenseDayGroupSkeleton rows={2} mobile />
+            <ExpenseDayGroupSkeleton rows={3} />
+            <ExpenseDayGroupSkeleton rows={2} />
           </div>
         ) : (
           grouped.map(([d, items]) => {
