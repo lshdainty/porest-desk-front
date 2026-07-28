@@ -74,6 +74,11 @@ apiClient.interceptors.response.use(
     if (error.config?.silent === true) {
       return Promise.reject(error)
     }
+    // 구독 게이트(SUBS_001) 403 은 토스트 제외 — 미구독 기능은 UI 가 이미 숨기므로
+    // 사용자에겐 노이즈일 뿐. 쿼리 실패는 그대로 전파돼 호출부가 폴백 처리한다.
+    if (error.response?.status === 403 && error.response?.data?.code === 'SUBS_001') {
+      return Promise.reject(error)
+    }
     const message = error.response?.data?.message || 'An error occurred'
     showApiErrorToast(message)
     return Promise.reject(error)

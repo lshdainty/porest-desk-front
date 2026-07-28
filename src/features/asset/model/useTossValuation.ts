@@ -19,8 +19,11 @@ export function useTossValuationMap(linkedAssets: Asset[]): Map<number, number> 
     () => [...new Set(linkedAssets.map(a => a.tossSymbol).filter((s): s is string => !!s))],
     [linkedAssets],
   )
-  const pricesQ = useTossPrices(enabled ? symbols : [])
-  const fxQ = useTossExchangeRate() // USD→KRW
+  // 토스 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자가 호출하면 403.
+  // 시세·환율 모두 enabled + 연결 자산 있을 때만 호출한다(앱 tossValuationMapProvider 정합).
+  const active = enabled && symbols.length > 0
+  const pricesQ = useTossPrices(active ? symbols : [])
+  const fxQ = useTossExchangeRate(active) // USD→KRW
 
   return useMemo(() => {
     const map = new Map<number, number>()
