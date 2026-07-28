@@ -6,16 +6,22 @@ import { useEffect, useMemo, useReducer } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { stockKeys } from '@/shared/config'
 import { applyLivePrices, setLiveFx, STOCKS } from '@/pages/stocks/model/stocksMock'
+import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { stockApi } from '../api/stockApi'
 
 const COMMON = { retry: false, refetchOnWindowFocus: false, staleTime: 15_000 } as const
 
 // ---- 개별 엔드포인트 훅 ----------------------------------------------------
 
-export const useTossExchangeRate = () =>
+/**
+ * USD→KRW 환율. `/api/v1/toss/**` 는 서버 게이트(SECURITIES 구독) 대상이라
+ * 미구독자가 호출하면 403 → 전역 토스트. 호출부가 구독·필요 여부를 판단해 enabled 를 넘긴다.
+ */
+export const useTossExchangeRate = (enabled = true) =>
   useQuery({
     queryKey: stockKeys.exchangeRate(),
     queryFn: () => stockApi.getExchangeRate('USD', 'KRW'),
+    enabled,
     ...COMMON,
     staleTime: 60_000,
   })
@@ -132,9 +138,13 @@ export const useTossHoldings = (accountSeq: number | null) =>
  * STOCKS[].price / FX_USDKRW 를 갱신하고 변경 시 강제 리렌더 → 리스트·상세·요약이 실시세로 표시된다.
  */
 export function useStockLiveOverlay() {
+  // 토스 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자는 호출 자체를 하지 않는다(403 방지).
+  const { data: features } = useMyFeatures()
+  const enabled =
+    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
   const symbols = useMemo(() => STOCKS.map(s => s.ticker), [])
-  const pricesQ = useTossPrices(symbols)
-  const fxQ = useTossExchangeRate()
+  const pricesQ = useTossPrices(enabled ? symbols : [])
+  const fxQ = useTossExchangeRate(enabled)
   const [, force] = useReducer((c: number) => c + 1, 0)
 
   useEffect(() => {
