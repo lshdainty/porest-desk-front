@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Tag, Tags, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
+import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -113,14 +114,14 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
           </CardContent>
         </Card>
 
-        {/* 태그 리스트 */}
-        <div>
+        {/* 태그 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
             {t('tags.title')} · {list.length}
           </div>
           <ListShell mobile={mobile}>
             {isLoading ? (
-              <TagListSkeleton />
+              <TagListSkeleton mobile={mobile} />
             ) : list.length === 0 ? (
               <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
                 <Tags size={28} strokeWidth={1.6} style={{ opacity: 0.5 }} />
@@ -151,7 +152,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 14,
-                      padding: '14px 8px',
+                      padding: settingsRowPadding(mobile),
                       borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
                       cursor: 'pointer',
                       transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
@@ -238,7 +239,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
   )
 }
 
-function TagListSkeleton() {
+function TagListSkeleton({ mobile }: { mobile?: boolean }) {
   return (
     <>
       {[0, 1, 2].map(i => (
@@ -248,7 +249,7 @@ function TagListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 8px',
+            padding: settingsRowPadding(mobile),
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
