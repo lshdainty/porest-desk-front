@@ -173,12 +173,15 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
   const modeSeg = (
     <ToggleGroup
       type="single"
-      variant="segmented"
+      // 색: primary 채움 대신 절제 톤(surface-input 채움) — 다른 관리 화면 토글과 통일(모바일·앱 공통).
+      variant="segmented-subtle"
       value={mode}
       onValueChange={v => v && setMode(v as 'export' | 'import')}
+      // 폭: 모바일은 full(터치 타깃), 데스크톱·태블릿은 내용 폭만(사용자 결정).
+      className={mobile ? undefined : 'w-auto self-start'}
     >
-      <ToggleGroupItem value="export" className="flex-1">{t('export')}</ToggleGroupItem>
-      <ToggleGroupItem value="import" className="flex-1">{t('import.tab')}</ToggleGroupItem>
+      <ToggleGroupItem value="export" className={mobile ? 'flex-1' : 'flex-none'}>{t('export')}</ToggleGroupItem>
+      <ToggleGroupItem value="import" className={mobile ? 'flex-1' : 'flex-none'}>{t('import.tab')}</ToggleGroupItem>
     </ToggleGroup>
   )
 

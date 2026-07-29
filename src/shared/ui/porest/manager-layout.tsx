@@ -99,7 +99,8 @@ export function ManagerHead({
  * active = surface-default pill + shadow-sm + text-primary (brand 채움 아님). count 배지 유지.
  */
 const TAB_BTN_BASE_STYLE: CSSProperties = {
-  padding: '8px 16px',
+  // 높이는 언어 토글(TabsList pill/sm = h-8) 정합 — 6+13+6 + 트랙 padding 2·border 1 ≈ 31.
+  padding: '6px 12px',
   border: 0,
   background: 'transparent',
   borderRadius: 'var(--radius-sm)',
