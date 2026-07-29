@@ -123,9 +123,10 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       </div>
       </div>
 
-      {/* 묶음 2 — Toolbar(정렬 toggle) + List. toggle 이 list 바로 위에 붙도록 내부 gap 0
-          (사용자 결정), 다른 묶음과는 최상위 gap(xl)으로 분리. */}
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* 묶음 2 — Toolbar(정렬 toggle) + List. 한 묶음 유지(사용자 결정)하되 사이 간격은
+          모바일 0(플랫 리스트라 밀착) / 데스크톱 12 — 아래가 카드라 토글이 붙으면 답답함.
+          다른 묶음과는 최상위 gap(xl)으로 분리. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
       {/* Toolbar */}
       <div
         style={{

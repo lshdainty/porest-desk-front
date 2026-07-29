@@ -112,7 +112,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
       {/* 개인정보·기본통화 label↔content gap: 모바일=0(사용자 결정, 플랫 리스트라 밀착)
           / 데스크톱=sm(8) — 아래가 카드라 라벨이 붙으면 답답함. */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-sm)' }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-md)' }}>
         <SectionLabel>{t('privacy.label')}</SectionLabel>
         {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치).
             모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행 (.m-subpage). */}
@@ -169,7 +169,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
 
       {/* 개인정보·기본통화 label↔content gap: 모바일=0(사용자 결정, 플랫 리스트라 밀착)
           / 데스크톱=sm(8) — 아래가 카드라 라벨이 붙으면 답답함. */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-sm)' }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-md)' }}>
         <SectionLabel>{t('currency.label')}</SectionLabel>
         <RadioList value={currency} onValueChange={v => setCurrency(v as CurrencyKey)}>
           {CURRENCY_OPTIONS.map(c => (

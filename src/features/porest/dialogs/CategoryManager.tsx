@@ -277,7 +277,7 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
             </div>
             {/* 검색바(label) + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라
                 밀착) / 데스크톱 8 — 아래가 카드라 검색바가 붙으면 답답함. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
               {reorderMode ? (
                 // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
                 <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
