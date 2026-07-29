@@ -404,7 +404,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
         {/* 카테고리별 예산 label↔list — 한 묶음 유지(사용자 결정). 사이 간격은 모바일 0(플랫
             리스트라 밀착) / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
               {t('manager.categoryBudgets', { count: categoryBudgets.length })}

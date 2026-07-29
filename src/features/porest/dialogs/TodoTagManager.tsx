@@ -115,7 +115,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
         </Card>
 
         {/* 태그 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
             {t('tags.title')} · {list.length}
           </div>

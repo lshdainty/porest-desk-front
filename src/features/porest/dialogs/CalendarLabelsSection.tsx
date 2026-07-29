@@ -122,7 +122,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
         </Card>
 
         {/* 전체 라벨 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
           <div
             style={{
               // 섹션 라벨 — 캘린더 관리·공유("내 캘린더 · N")와 동일: label-sm(13, 앱 bodySm)/700.
