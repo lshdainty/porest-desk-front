@@ -20,7 +20,7 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { Input } from '@/shared/ui/input'
 import { Switch } from '@/shared/ui/switch'
 import { downloadBlob } from '@/shared/lib/download'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { DataImportSection } from './DataImportSection'
 import {
   downloadExport,
@@ -171,18 +171,14 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
   const activeTab = preview?.find(tb => tb.type === previewTab) ?? preview?.[0] ?? null
 
   const modeSeg = (
-    <ToggleGroup
-      type="single"
-      // 색: primary 채움 대신 절제 톤(surface-input 채움) — 다른 관리 화면 토글과 통일(모바일·앱 공통).
-      variant="segmented-subtle"
-      value={mode}
-      onValueChange={v => v && setMode(v as 'export' | 'import')}
-      // 폭: 모바일은 full(터치 타깃), 데스크톱·태블릿은 내용 폭만(사용자 결정).
-      className={mobile ? undefined : 'w-auto self-start'}
-    >
-      <ToggleGroupItem value="export" className={mobile ? 'flex-1' : 'flex-none'}>{t('export')}</ToggleGroupItem>
-      <ToggleGroupItem value="import" className={mobile ? 'flex-1' : 'flex-none'}>{t('import.tab')}</ToggleGroupItem>
-    </ToggleGroup>
+    // 프리셋 정렬·관리 탭과 동일한 pills(트랙 없음 + active brand 채움, 사용자 결정).
+    // 폭은 내용 폭만 — 모바일도 동일(전체 폭 세그먼트 아님).
+    <Tabs value={mode} onValueChange={v => v && setMode(v as 'export' | 'import')}>
+      <TabsList variant="pills" size="sm">
+        <TabsTrigger value="export">{t('export')}</TabsTrigger>
+        <TabsTrigger value="import">{t('import.tab')}</TabsTrigger>
+      </TabsList>
+    </Tabs>
   )
 
   if (mode === 'import') {
