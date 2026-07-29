@@ -195,21 +195,45 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
       {modeSeg}
       {/* 1. 기간 선택 */}
       <SectionCard mobile={mobile} title={t('section.periodSelect')}>
-        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 8 }}>
-          {PERIODS.map(p => {
-            const active = period === p.v
-            const r = resolveRange(p.v, customFrom, customTo)
-            const sub = p.v === 'CUSTOM' ? t('section.customSelect') : `${krLabel(r.start)} — ${krLabel(r.end)}`
-            return (
-              <button key={p.v} type="button" onClick={() => setPeriod(p.v)} style={tileStyle(active)}>
-                <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)' }}>
-                  {t(p.labelKey)}
-                </div>
-                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 3 }}>{sub}</div>
-              </button>
-            )
-          })}
-        </div>
+        {/* 데스크톱·태블릿 — 언어 설정과 동일한 container 세그먼트(pill/sm, 풀폭, 사용자 결정).
+            모바일은 라벨 5개가 한 줄에 안 들어가 잘리므로 기존 2열 타일 유지. */}
+        {mobile ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {PERIODS.map(p => {
+              const active = period === p.v
+              const r = resolveRange(p.v, customFrom, customTo)
+              const sub = p.v === 'CUSTOM' ? t('section.customSelect') : `${krLabel(r.start)} — ${krLabel(r.end)}`
+              return (
+                <button key={p.v} type="button" onClick={() => setPeriod(p.v)} style={tileStyle(active)}>
+                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)' }}>
+                    {t(p.labelKey)}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 3 }}>{sub}</div>
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <>
+            <Tabs value={period} onValueChange={v => v && setPeriod(v as ExportPeriod)}>
+              <TabsList variant="pill" size="sm" className="w-full">
+                {PERIODS.map(p => (
+                  <TabsTrigger key={p.v} value={p.v} className="flex-1">
+                    {t(p.labelKey)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+            <div style={{ marginTop: 8, fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+              {period === 'CUSTOM'
+                ? t('section.customSelect')
+                : (() => {
+                    const r = resolveRange(period, customFrom, customTo)
+                    return `${krLabel(r.start)} — ${krLabel(r.end)}`
+                  })()}
+            </div>
+          </>
+        )}
         {period === 'CUSTOM' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center', marginTop: 10 }}>
             <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
