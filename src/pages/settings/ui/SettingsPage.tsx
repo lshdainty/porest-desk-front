@@ -600,6 +600,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       {/* 보안 */}
       <AccountGroup mobile={mobile} label={t('account.group.security')}>
         <AccountRow
+          mobile={mobile}
           icon={<Key size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={tu('passwordChange')}
           desc={t('account.password.desc')}
@@ -607,24 +608,28 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           onClick={() => setPwDialogOpen(true)}
         />
         <AccountRow
+          mobile={mobile}
           icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.twoFactor.label')}
           desc={t('account.twoFactor.desc')}
           right={<Switch checked={false} onCheckedChange={() => {}} />}
         />
         <AccountRow
+          mobile={mobile}
           icon={<Fingerprint size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.biometric.label')}
           desc={t('account.biometric.desc')}
           dimmed
         />
         <AccountRow
+          mobile={mobile}
           icon={<Monitor size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.devices.label')}
           desc={t('account.devices.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
         />
         <AccountRow
+          mobile={mobile}
           icon={<CalendarDays size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.loginHistory.label')}
           desc={t('account.loginHistory.desc')}
@@ -636,6 +641,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       {/* 연결된 계정 */}
       <AccountGroup mobile={mobile} label={t('account.group.connected')}>
         <AccountRow
+          mobile={mobile}
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>G</span>}
           label="Google"
           desc={googleLinked ? t('account.linked') : t('account.notLinked')}
@@ -666,18 +672,21 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           }
         />
         <AccountRow
+          mobile={mobile}
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>A</span>}
           label="Apple ID"
           desc={t('account.notLinked')}
           right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>{t('account.link')}</Button>}
         />
         <AccountRow
+          mobile={mobile}
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>K</span>}
           label={t('account.provider.kakao')}
           desc={t('account.notLinked')}
           right={<Button variant="outline" size="sm" disabled style={{ fontSize: 12, padding: '4px 10px', height: 'auto' }}>{t('account.link')}</Button>}
         />
         <AccountRow
+          mobile={mobile}
           icon={<span style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-secondary)' }}>N</span>}
           label={t('account.provider.naver')}
           desc={t('account.notLinked')}
@@ -688,7 +697,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
 
       {/* 구독·결제 — 앱 account_screen 정합: 40 브랜드 칩 + 제목/부제 스택 + 가격/배지 + chevron */}
       <AccountGroup mobile={mobile} label={t('account.group.subscription')}>
-        <SubscriptionRow isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
+        <SubscriptionRow mobile={mobile} isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
       </AccountGroup>
 
       {/* 증권 데이터 연동 — 구독(Pro) 시에만 */}
@@ -697,6 +706,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
       {/* 계정 관리 */}
       <AccountGroup mobile={mobile} label={t('account.group.manage')}>
         <AccountRow
+          mobile={mobile}
           icon={<LogOut size={20} style={{ color: 'var(--fg-secondary)' }} />}
           label={t('account.logout.label')}
           desc={t('account.logout.desc')}
@@ -706,6 +716,7 @@ function AccountSection({ mobile }: { mobile: boolean }) {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <AccountRow
+          mobile={mobile}
               icon={<Trash2 size={20} style={{ color: 'var(--status-danger)' }} />}
               label={t('account.withdraw.label')}
               desc={t('account.withdraw.desc')}
@@ -749,7 +760,8 @@ function AccountGroup({ label, children, mobile }: { label: string; children: Re
           fontSize: 13,
           fontWeight: 700,
           color: 'var(--fg-primary)',
-          paddingBottom: 8,
+          // 모바일=플랫 리스트라 라벨이 첫 행에 가깝게(8) / 데스크톱=카드 위 라벨이라 여백 12.
+          paddingBottom: mobile ? 8 : 12,
         }}
       >
         {label}
@@ -780,6 +792,8 @@ interface AccountRowProps {
   dimmed?: boolean
   labelColor?: string
   asChild?: boolean
+  /** 모바일=플랫(좌우 inset 0) / 데스크톱=카드 내부라 좌우 inset 필요. */
+  mobile?: boolean
 }
 
 function AccountRow({
@@ -792,6 +806,7 @@ function AccountRow({
   dimmed,
   labelColor,
   asChild,
+  mobile,
 }: AccountRowProps) {
   const content = (
     <>
@@ -831,7 +846,8 @@ function AccountRow({
     alignItems: 'center',
     gap: 12,
     width: '100%',
-    padding: '14px 0', // 좌우 inset 삭제(사용자 결정)
+    // 모바일 카드 다이어트 = 좌우 inset 0(사용자 결정) / 데스크톱은 카드 내부라 20 inset.
+    padding: mobile ? '14px 0' : '15px 20px',
     borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
   }
 
@@ -896,10 +912,13 @@ function SubscriptionRow({
   isPro,
   nextBill,
   onClick,
+  mobile,
 }: {
   isPro: boolean
   nextBill: string | null
   onClick: () => void
+  /** 모바일=플랫(좌우 inset 0) / 데스크톱=카드 내부라 좌우 inset 필요. */
+  mobile?: boolean
 }) {
   const { t } = useTranslation('settings')
   return (
@@ -910,7 +929,8 @@ function SubscriptionRow({
         alignItems: 'center',
         gap: 12,
         width: '100%',
-        padding: '14px 0', // 좌우 inset 삭제(사용자 결정)
+        // 모바일 카드 다이어트 = 좌우 inset 0 / 데스크톱은 카드 내부라 20 inset.
+        padding: mobile ? '14px 0' : '15px 20px',
         border: 0,
         background: 'transparent',
         cursor: 'pointer',
