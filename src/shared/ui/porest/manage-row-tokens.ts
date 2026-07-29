@@ -6,16 +6,23 @@ import { tileRadius } from '@/shared/lib'
  * MANAGE_ROW 스타일 토큰 — manage-row.tsx 에서 분리(Fast Refresh: 컴포넌트 파일은
  * 컴포넌트만 export). 시각 spec 주석은 manage-row.tsx 상단 참조.
  */
+// 좌우 inset 은 디바이스별로 다르다 — 모바일은 카드 다이어트(플랫 리스트)라 최소 inset(8),
+// 데스크톱/태블릿은 카드(.cat-list) 내부라 카드 여백(20)이 필요하다. 한쪽 값이 다른 쪽에
+// 새면 카드 안 행이 끝에 붙거나(데스크톱) 과하게 들여쓰인다(모바일).
 const ROW_BASE_CLS =
   'group flex items-center gap-3 ' +
-  'px-2 py-3 ' +
+  'py-3 ' +
   'border-b border-solid border-[var(--border-subtle)] ' +
   'last:border-b-0 ' +
   'hover:bg-[var(--bg-muted)]'
 
+/** 디바이스별 행 className — 호출부의 `mobile` 판정을 그대로 넘긴다. */
+export const manageRowClass = (mobile?: boolean) =>
+  `${ROW_BASE_CLS} ${mobile ? 'px-2' : 'px-5'}`
+
 export const MANAGE_ROW = {
-  /** 행 컨테이너 className (기존 .cat-row + last/hover) */
-  className: ROW_BASE_CLS,
+  /** 행 컨테이너 className — 모바일 기준(px-2). 데스크톱은 manageRowClass(false) 사용. */
+  className: `${ROW_BASE_CLS} px-2`,
   /** 아이콘 박스 style (기존 .cat-row__icon) */
   iconStyle: {
     width: 36,
