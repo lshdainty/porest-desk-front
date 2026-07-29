@@ -264,9 +264,10 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         </FlatShell>
       )}
 
-      {/* Filter chips + list — 모바일 카드 다이어트: 셸 카드 벗김, 내부 패딩은 페이지 패딩에 맡김 */}
-      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ padding: mobile ? 0 : '16px 20px 0' }}>
+      {/* 헤더(전체 목록·추가) + 필터 토글 + 리스트 — label·toggle 은 카드 밖(사용자 결정,
+          계좌·카드/예산 관리 정합). 셋은 한 묶음이라 사이 간격은 여기서 제어. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+        <div>
           {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
             <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
@@ -293,6 +294,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           </ToggleGroup>
         </div>
 
+      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {recurringsQ.isLoading && (
             <>
@@ -541,6 +543,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           })}
         </div>
       </FlatShell>
+      </div>
 
       {editing && (
         <RecurringEditDialog
@@ -654,13 +657,15 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
       </FlatShell>
 
       {/* Filter chips + list — 실제와 동일: 모바일 플랫(라벨 0 + 행 inset 10) */}
-      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: mobile ? '14px 0 0' : '16px 20px 0', flexWrap: 'wrap' }}>
+      {/* 헤더·토글은 카드 밖(실제 렌더 정합) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
           <SkeletonBase className="h-4 w-20 mr-auto" />
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
           ))}
         </div>
+      <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {Array.from({ length: 4 }).map((_, idx) => (
             <div
@@ -690,6 +695,7 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
           ))}
         </div>
       </FlatShell>
+      </div>
     </div>
   )
 }
