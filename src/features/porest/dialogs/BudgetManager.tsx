@@ -16,7 +16,7 @@ import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
-import { MANAGE_ROW } from '@/shared/ui/porest/manage-row-tokens'
+import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
@@ -402,8 +402,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </Card>
 
         {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
-        {/* 카테고리별 예산 label↔list gap 0(사용자 결정, label·list 는 한 묶음). */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* 카테고리별 예산 label↔list — 한 묶음 유지(사용자 결정). 사이 간격은 모바일 0(플랫
+            리스트라 밀착) / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
               {t('manager.categoryBudgets', { count: categoryBudgets.length })}
@@ -441,7 +442,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               return (
                 <div
                   key={b.rowId}
-                  className={MANAGE_ROW.className}
+                  className={manageRowClass(mobile)}
                   style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
                   onClick={mobile ? () => setEditing(b) : undefined}
                   role={mobile ? 'button' : undefined}
@@ -649,7 +650,7 @@ function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className={MANAGE_ROW.className}
+            className={manageRowClass(mobile)}
             style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 14, paddingBottom: 14 }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>

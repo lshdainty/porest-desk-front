@@ -22,7 +22,7 @@ import { Icon } from '@/shared/ui/porest/primitives'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
-import { MANAGE_ROW } from '@/shared/ui/porest/manage-row-tokens'
+import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -275,8 +275,9 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
                 </TabsList>
               </Tabs>
             </div>
-            {/* 검색바(label) + list = 한 묶음, 사이 gap 0 (label·list 는 한 div, 사용자 결정). */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* 검색바(label) + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라
+                밀착) / 데스크톱 8 — 아래가 카드라 검색바가 붙으면 답답함. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
               {reorderMode ? (
                 // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
                 <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
@@ -400,7 +401,7 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
       {entries.map((e, i) => (
         // eslint-disable-next-line react/no-array-index-key
         <div key={i}>
-          <div className={MANAGE_ROW.className}>
+          <div className={manageRowClass(mobile)}>
             {/* grip 은 모바일 평시엔 없음(편집 모드 전용) — 스켈레톤도 미러 */}
             {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
             <SkeletonBase className="h-4 w-4 shrink-0" />
@@ -423,7 +424,7 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
             <div style={{ paddingLeft: 28 }}>
               {Array.from({ length: e.childCount }).map((_, j) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <div key={j} className={MANAGE_ROW.className}>
+                <div key={j} className={manageRowClass(mobile)}>
                   {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
                   <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
                   <div style={MANAGE_ROW.textStyle}>
@@ -551,7 +552,7 @@ function SortableRow({
   const showGrip = !mobile || reorderMode
 
   return (
-    <div ref={setNodeRef} style={style} className={MANAGE_ROW.className}>
+    <div ref={setNodeRef} style={style} className={manageRowClass(mobile)}>
       {showGrip && (
         <button
           type="button"

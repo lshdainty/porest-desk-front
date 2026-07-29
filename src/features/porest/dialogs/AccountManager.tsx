@@ -16,7 +16,7 @@ import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { MANAGE_ROW } from '@/shared/ui/porest/manage-row-tokens'
+import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
 import { ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
 import { AssetEditDialog, type AssetGroup } from './AssetEditDialog'
@@ -139,8 +139,9 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           />
         )}
 
-        {/* 총금액 label + list = 항상 한 div 묶음, 사이 gap 0(사용자 결정). */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* 총금액 label + list = 항상 한 div 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라
+            밀착) / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
             {t('manager.totalPrefix')} <MaskAmount>{wonPre()}{KRW(totalInTab)}</MaskAmount>
@@ -177,7 +178,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 return (
                   <div
                     key={asset.rowId}
-                    className={MANAGE_ROW.className}
+                    className={manageRowClass(mobile)}
                     style={{ cursor: 'pointer' }}
                     onClick={() => setDetail(asset)}
                   >
@@ -330,7 +331,7 @@ function AccountManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className={MANAGE_ROW.className}>
+        <div key={i} className={manageRowClass(mobile)}>
           <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
           <div style={MANAGE_ROW.textStyle}>
             <SkeletonBase className="h-4 w-32 mb-1.5" />
