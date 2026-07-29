@@ -33,17 +33,33 @@ pipeline {
                 }
             }
         }
+        stage('Resolve Version') {
+            steps {
+                dir("${SRC_DIR}") {
+                    script {
+                        // 태그 위면 v1.0.1, 태그 이후면 v1.0.1-3-gabc1234, 태그 없으면 커밋 해시
+                        env.APP_VERSION = sh(
+                            script: 'git describe --tags --always 2>/dev/null || echo unknown',
+                            returnStdout: true
+                        ).trim()
+                        echo "APP_VERSION = ${env.APP_VERSION}"
+                    }
+                }
+            }
+        }
         stage('Prepare Env') {
             steps {
                 dir("${SRC_DIR}") {
                     sh "cp ${ENV_SRC_DIR}/${params.DEPLOY_ENV}/${APP_NAME}/${params.DEPLOY_ENV}.env .env.production"
+                    // 빌드 시점에 번들로 들어가는 버전 (화면 표시는 프론트에서 import.meta.env.VITE_APP_VERSION 사용)
+                    sh "echo 'VITE_APP_VERSION=${env.APP_VERSION}' >> .env.production"
                 }
             }
         }
         stage('Docker Build') {
             steps {
                 dir("${SRC_DIR}") {
-                    sh "docker build -t ${IMAGE_NAME}:latest ."
+                    sh "docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${env.APP_VERSION} ."
                 }
             }
         }
@@ -58,7 +74,7 @@ pipeline {
                         --hostname ${CONTAINER_NAME}-dev \
                         --restart unless-stopped \
                         --network ${env.DEV_NETWORK} \
-                        ${IMAGE_NAME}:latest
+                        ${IMAGE_NAME}:${env.APP_VERSION}
                 """
             }
         }
@@ -85,7 +101,7 @@ pipeline {
                         --hostname ${CONTAINER_NAME}-prod \
                         --restart unless-stopped \
                         --network ${env.PROD_NETWORK} \
-                        ${IMAGE_NAME}:latest
+                        ${IMAGE_NAME}:${env.APP_VERSION}
                 """
             }
         }
