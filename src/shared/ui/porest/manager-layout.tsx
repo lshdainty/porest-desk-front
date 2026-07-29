@@ -98,44 +98,39 @@ export function ManagerHead({
  * ManagerTabs (cat-mgr__tabs): segmented toggle — tabs.md Container 룩.
  * active = surface-default pill + shadow-sm + text-primary (brand 채움 아님). count 배지 유지.
  */
+// tabs.md pills variant 정합(프리셋 정렬 토글과 동일 룩, 사용자 결정) —
+// 트랙 없는 평면 배치 + active = bg-brand 채움(다크에서도 primary 고정) + on-brand 글씨.
 const TAB_BTN_BASE_STYLE: CSSProperties = {
-  // 높이는 언어 토글(TabsList pill/sm = h-8) 정합 — 6+13+6 + 트랙 padding 2·border 1 ≈ 31.
   padding: '6px 12px',
   border: 0,
   background: 'transparent',
-  borderRadius: 'var(--radius-sm)',
-  font: '600 13px/1 var(--font-sans)',
+  borderRadius: 'var(--radius-md)',
+  font: '500 13px/1 var(--font-sans)',
   cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
   fontFamily: 'inherit',
-  color: 'var(--fg-tertiary)',
+  color: 'var(--fg-secondary)',
+  transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
 }
 
 const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  // tabs.md Container variant active = surface-default pill + shadow-sm + text-primary (brand 채움 아님).
-  background: 'var(--bg-surface)',
-  color: 'var(--fg-primary)',
+  background: 'var(--bg-brand)',
+  color: 'var(--fg-on-brand)',
   fontWeight: '600',
-  boxShadow: 'var(--shadow-sm)',
 }
 
+// count 는 배지 pill 대신 인라인 숫자 — brand 채움 위에서도 읽히게 색만 구분.
 const TAB_CNT_BASE_STYLE: CSSProperties = {
-  fontSize: 'var(--text-badge)',
+  fontSize: 'var(--text-caption)',
   color: 'var(--fg-tertiary)',
-  background: 'var(--bg-surface)',
-  padding: '2px 7px',
-  borderRadius: 'var(--radius-pill)',
-  fontWeight: '700',
-  minWidth: 20,
-  textAlign: 'center',
+  fontWeight: '600',
 }
 
 const TAB_CNT_ACTIVE_STYLE: CSSProperties = {
-  // active pill 이 surface-default(흰색)라 count 배지는 surface-input 으로 대비.
-  background: 'var(--bg-sunken)',
-  color: 'var(--fg-secondary)',
+  color: 'var(--fg-on-brand)',
+  opacity: 0.8,
 }
 
 export function ManagerTabs<T extends string>({
@@ -157,13 +152,8 @@ export function ManagerTabs<T extends string>({
         width: fill ? '100%' : undefined,
         // fill=false(데스크톱): 부모 flex stretch 방지 → sunken bar 가 탭 내용에 딱 맞음
         alignSelf: fill ? undefined : 'flex-start',
-        background: 'var(--bg-sunken)',
-        // 프리셋 토글 p-0.5(=2px) 와 동일. spacing 스케일 최소가 xs(4px)라 2px 전용 토큰은 없음(raw).
-        padding: 2,
-        // 프리셋 정렬 토글(ToggleGroup segmented)·toggle-group spec 과 동일하게 radius-md(8px).
-        borderRadius: 'var(--radius-md)',
-        gap: 2,
-        border: '1px solid var(--border-subtle)',
+        // pills — 트랙(배경·보더·패딩) 없음. 아이템 사이만 xs(4).
+        gap: 'var(--spacing-xs)',
       }}
     >
       {options.map(o => {

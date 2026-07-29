@@ -32,7 +32,7 @@ import { RecurringAddDialog } from './RecurringAddDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
@@ -276,22 +276,20 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               <Plus size={14} /> {tCommon('add')}
             </Button>
           </div>
-          {/* 2행: 필터 개별 single toggle (배경 없음 — 앱 PToggle row 정합, active=surface-input pill) */}
-          <ToggleGroup
-            type="single"
-            variant="default"
-            size="sm"
+          {/* 2행: 필터 — 프리셋 정렬 토글과 동일한 pills(트랙 없음 + active brand 채움, 사용자 결정) */}
+          <Tabs
             value={filter}
             onValueChange={(v) => v && setFilter(v as FilterKey)}
             style={{ marginTop: 4 }}
-            className="justify-start gap-1"
           >
-            {FILTERS.map((f) => (
-              <ToggleGroupItem key={f.k} value={f.k} className="h-7 min-h-7 px-2">
-                {f.label} {f.count}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            <TabsList variant="pills" size="sm">
+              {FILTERS.map((f) => (
+                <TabsTrigger key={f.k} value={f.k}>
+                  {f.label} {f.count}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
 
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>

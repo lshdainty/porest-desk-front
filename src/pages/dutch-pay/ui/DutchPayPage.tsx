@@ -128,7 +128,8 @@ function DutchPayTabs({
   const { t } = useTranslation('dutchPay')
   return (
     <Tabs value={value} onValueChange={v => onValueChange(v as TabKey)} className="w-fit">
-      <TabsList variant="pill" size="sm">
+      {/* pills — 트랙 없는 평면 배치 + active brand 채움(관리·프리셋 토글과 통일, 사용자 결정) */}
+      <TabsList variant="pills" size="sm">
         {(
           [
             {
