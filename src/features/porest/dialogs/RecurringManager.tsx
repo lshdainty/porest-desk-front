@@ -268,28 +268,25 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           계좌·카드/예산 관리 정합). 셋은 한 묶음이라 사이 간격은 여기서 제어. */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
         <div>
-          {/* 1행: 전체 목록 (좌) + 추가 버튼 (우, accent 강조) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-            <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
-            <div style={{ flex: 1 }} />
-            <Button variant="accent" size="sm" onClick={() => setAdding(true)}>
+          {/* 1행: 라벨만 */}
+          <h3 style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: 'var(--fg-primary)', margin: 0 }}>{t('listTitle')}</h3>
+          {/* 2행: 필터 토글(좌, 넘치면 가로 스크롤·스크롤바 숨김) + 추가 버튼(우) — 사용자 결정 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginTop: 4 }}>
+            <div className="scrollbar-hide" style={{ flex: 1, minWidth: 0, overflowX: 'auto' }}>
+              <Tabs value={filter} onValueChange={(v) => v && setFilter(v as FilterKey)}>
+                <TabsList variant="pills" size="sm" className="w-max">
+                  {FILTERS.map((f) => (
+                    <TabsTrigger key={f.k} value={f.k} className="shrink-0">
+                      {f.label} {f.count}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+            <Button variant="accent" size="sm" className="shrink-0" onClick={() => setAdding(true)}>
               <Plus size={14} /> {tCommon('add')}
             </Button>
           </div>
-          {/* 2행: 필터 — 프리셋 정렬 토글과 동일한 pills(트랙 없음 + active brand 채움, 사용자 결정) */}
-          <Tabs
-            value={filter}
-            onValueChange={(v) => v && setFilter(v as FilterKey)}
-            style={{ marginTop: 4 }}
-          >
-            <TabsList variant="pills" size="sm">
-              {FILTERS.map((f) => (
-                <TabsTrigger key={f.k} value={f.k}>
-                  {f.label} {f.count}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
         </div>
 
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
@@ -657,11 +654,14 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
       {/* Filter chips + list — 실제와 동일: 모바일 플랫(라벨 0 + 행 inset 10) */}
       {/* 헤더·토글은 카드 밖(실제 렌더 정합) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-          <SkeletonBase className="h-4 w-20 mr-auto" />
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonBase key={i} className="h-7 w-14 rounded-full" />
-          ))}
+        <div>
+          <SkeletonBase className="h-4 w-20" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonBase key={i} className="h-7 w-14 rounded-full shrink-0" />
+            ))}
+            <SkeletonBase className="h-8 w-16 rounded-md ml-auto shrink-0" />
+          </div>
         </div>
       <FlatShell mobile={mobile} cardStyle={{ overflow: 'hidden', background: 'var(--bg-surface)', borderRadius: 'var(--radius-card)' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
