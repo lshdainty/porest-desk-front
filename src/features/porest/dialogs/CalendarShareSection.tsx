@@ -301,7 +301,8 @@ function CalendarListSection({
       {mobile ? (
         <div>{list}</div>
       ) : (
-        <Card>
+        {/* overflow hidden — 행 hover 배경이 카드 라운드 밖으로 새지 않게. */}
+        <Card style={{ overflow: 'hidden' }}>
           <CardContent style={{ padding: 0 }}>{list}</CardContent>
         </Card>
       )}

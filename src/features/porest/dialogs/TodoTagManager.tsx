@@ -24,7 +24,8 @@ type EditingState = TodoTag | { kind: 'new' } | null
 
 // 모바일 카드 다이어트 — 리스트 셸: 모바일은 카드 없이, 데스크톱은 Card (.m-subpage 정합).
 function ListShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
-  return mobile ? <div>{children}</div> : <Card><CardContent style={{ padding: 0 }}>{children}</CardContent></Card>
+  // overflow hidden — 행 hover 배경이 카드 라운드 밖으로 새지 않게(첫·마지막 행 모서리).
+  return mobile ? <div>{children}</div> : <Card style={{ overflow: 'hidden' }}><CardContent style={{ padding: 0 }}>{children}</CardContent></Card>
 }
 
 /**
