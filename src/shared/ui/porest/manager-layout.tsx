@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 /**
  * ManagerLayout: 설정 화면(카테고리/계좌/예산/알림 등) 상단 영역 공통 spec.
@@ -98,41 +99,11 @@ export function ManagerHead({
  * ManagerTabs (cat-mgr__tabs): segmented toggle — tabs.md Container 룩.
  * active = surface-default pill + shadow-sm + text-primary (brand 채움 아님). count 배지 유지.
  */
-// tabs.md pills variant 정합(프리셋 정렬 토글과 동일 룩, 사용자 결정) —
-// 트랙 없는 평면 배치 + active = bg-brand 채움(다크에서도 primary 고정) + on-brand 글씨.
-const TAB_BTN_BASE_STYLE: CSSProperties = {
-  padding: '6px 12px',
-  border: 0,
-  background: 'transparent',
-  borderRadius: 'var(--radius-md)',
-  font: '500 13px/1 var(--font-sans)',
-  cursor: 'pointer',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  fontFamily: 'inherit',
-  color: 'var(--fg-secondary)',
-  transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
-}
-
-const TAB_BTN_ACTIVE_STYLE: CSSProperties = {
-  background: 'var(--bg-brand)',
-  color: 'var(--fg-on-brand)',
-  fontWeight: '600',
-}
-
-// count 는 배지 pill 대신 인라인 숫자 — brand 채움 위에서도 읽히게 색만 구분.
-const TAB_CNT_BASE_STYLE: CSSProperties = {
-  fontSize: 'var(--text-caption)',
-  color: 'var(--fg-tertiary)',
-  fontWeight: '600',
-}
-
-const TAB_CNT_ACTIVE_STYLE: CSSProperties = {
-  color: 'var(--fg-on-brand)',
-  opacity: 0.8,
-}
-
+/**
+ * ManagerTabs — 관리 화면 탭. shared `Tabs`(tabs.md pills variant) 그대로 사용한다.
+ * 자체 button/inline-style 로 pills 를 모방하면 spec 변경 시 어긋나므로 금지(CLAUDE.md).
+ * count 는 라벨에 인라인으로 붙인다 — active(brand 채움) 위에서도 읽히도록 색 분리.
+ */
 export function ManagerTabs<T extends string>({
   value,
   options,
@@ -146,44 +117,21 @@ export function ManagerTabs<T extends string>({
   fill?: boolean
 }) {
   return (
-    <div
-      style={{
-        display: fill ? 'flex' : 'inline-flex',
-        width: fill ? '100%' : undefined,
-        // fill=false(데스크톱): 부모 flex stretch 방지 → sunken bar 가 탭 내용에 딱 맞음
-        alignSelf: fill ? undefined : 'flex-start',
-        // pills — 트랙(배경·보더·패딩) 없음. 아이템 사이만 xs(4).
-        gap: 'var(--spacing-xs)',
-      }}
+    <Tabs
+      value={value}
+      onValueChange={v => v && onChange(v as T)}
+      className={fill ? 'w-full' : 'w-fit self-start'}
     >
-      {options.map(o => {
-        const active = o.value === value
-        return (
-          <button
-            key={o.value}
-            type="button"
-            onClick={() => onChange(o.value)}
-            className={!active ? 'hover:!text-[var(--fg-secondary)]' : ''}
-            style={{
-              ...TAB_BTN_BASE_STYLE,
-              ...(fill ? { flex: 1, justifyContent: 'center' } : null),
-              ...(active ? TAB_BTN_ACTIVE_STYLE : null),
-            }}
-          >
+      <TabsList variant="pills" size="sm" className={fill ? 'flex w-full' : undefined}>
+        {options.map(o => (
+          <TabsTrigger key={o.value} value={o.value} className={fill ? 'flex-1' : undefined}>
             {o.label}
             {o.count != null && (
-              <span
-                style={{
-                  ...TAB_CNT_BASE_STYLE,
-                  ...(active ? TAB_CNT_ACTIVE_STYLE : null),
-                }}
-              >
-                {o.count}
-              </span>
+              <span className="ml-1.5 opacity-70">{o.count}</span>
             )}
-          </button>
-        )
-      })}
-    </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }
