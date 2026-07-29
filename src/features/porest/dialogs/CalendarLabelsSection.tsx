@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Tag, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
+import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -120,8 +121,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
           </CardContent>
         </Card>
 
-        {/* 전체 라벨 리스트 */}
-        <div>
+        {/* 전체 라벨 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
           <div
             style={{
               // 섹션 라벨 — 캘린더 관리·공유("내 캘린더 · N")와 동일: label-sm(13, 앱 bodySm)/700.
@@ -135,7 +136,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
           {/* 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */}
           <ListShell mobile={mobile}>
               {isLoading ? (
-                <LabelListSkeleton />
+                <LabelListSkeleton mobile={mobile} />
               ) : list.length === 0 ? (
                 <div
                   style={{
@@ -171,7 +172,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 14,
-                        padding: '14px 8px',
+                        padding: settingsRowPadding(mobile),
                         borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
                         cursor: 'pointer',
                         transition:
@@ -259,7 +260,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
   )
 }
 
-function LabelListSkeleton() {
+function LabelListSkeleton({ mobile }: { mobile?: boolean }) {
   return (
     <>
       {[0, 1, 2].map((i) => (
@@ -269,7 +270,7 @@ function LabelListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 8px',
+            padding: settingsRowPadding(mobile),
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >

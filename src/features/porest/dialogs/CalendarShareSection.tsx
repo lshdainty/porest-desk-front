@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent } from '@/shared/ui/card'
+import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -280,18 +281,20 @@ function CalendarListSection({
   mobile?: boolean
 }) {
   const list = isLoading ? (
-    <ShareListSkeleton />
+    <ShareListSkeleton mobile={mobile} />
   ) : calendars.length === 0 ? (
     <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
       {emptyText}
     </div>
   ) : (
     calendars.map((cal, i) => (
-      <CalendarRow key={cal.rowId} cal={cal} first={i === 0} onManage={onManage} />
+      <CalendarRow key={cal.rowId} cal={cal} first={i === 0} onManage={onManage} mobile={mobile} />
     ))
   )
   return (
-    <div>
+    // label + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라 밀착)
+    // / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 8 }}>
       <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
         {title}
       </div>
@@ -306,7 +309,7 @@ function CalendarListSection({
   )
 }
 
-function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boolean; onManage: (id: number) => void }) {
+function CalendarRow({ cal, first, onManage, mobile }: { cal: UserCalendar; first: boolean; onManage: (id: number) => void; mobile?: boolean }) {
   const { t } = useTranslation('calendar')
   const pal = getPaletteByColor(cal.color)
   return (
@@ -317,7 +320,7 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        padding: '14px 8px',
+        padding: settingsRowPadding(mobile),
         borderTop: first ? 'none' : '1px solid var(--border-subtle)',
         cursor: 'pointer',
         transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
@@ -376,7 +379,7 @@ function CalendarRow({ cal, first, onManage }: { cal: UserCalendar; first: boole
   )
 }
 
-function ShareListSkeleton() {
+function ShareListSkeleton({ mobile }: { mobile?: boolean }) {
   return (
     <>
       {[0, 1].map(i => (
@@ -386,7 +389,7 @@ function ShareListSkeleton() {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '14px 8px',
+            padding: settingsRowPadding(mobile),
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >

@@ -69,3 +69,10 @@ export const MANAGE_ROW = {
    */
   delClassName: '!text-[var(--fg-expense)]',
 } as const
+
+/**
+ * 설정 리스트 행의 좌우 inset — 인라인 style 로 행을 그리는 화면(캘린더 공유·라벨·할일 태그)용.
+ * 모바일은 카드 다이어트(플랫 리스트)라 최소 inset, 데스크톱/태블릿은 카드 내부 여백이 필요.
+ */
+export const settingsRowPadding = (mobile?: boolean) =>
+  (mobile ? '14px 8px' : '15px 20px')
