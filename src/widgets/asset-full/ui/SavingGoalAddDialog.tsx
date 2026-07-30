@@ -28,7 +28,7 @@ import {
 import type { SavingGoal } from '@/entities/savingGoal'
 import { tileRadius } from '@/shared/lib'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
-import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
+import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { i18n } from '@/shared/i18n/config'
 
 // 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.
@@ -71,6 +71,8 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const [deadlineDate, setDeadlineDate] = useState<string>(goal?.deadlineDate ?? '')
   const [icon, setIcon] = useState<IconName>(((goal?.icon as IconName) || 'piggy-bank') as IconName)
   const [color, setColor] = useState<string>(goal?.color ?? CAT_PALETTE[0]!.baseHex)
+  // 저장은 raw hex(color), 표시는 다크에서 light variant 로 스왑되는 팔레트를 쓴다.
+  const palette = getPaletteByColor(color)
   const [err, setErr] = useState<string>('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -201,8 +203,8 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
               width: 36,
               height: 36,
               borderRadius: tileRadius(36),
-              background: `oklch(from ${color} l c h / 0.12)`,
-              color,
+              background: palette.bg,
+              color: palette.color,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -248,7 +250,7 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
             style={{
               width: `${Math.min(100, pct)}%`,
               height: '100%',
-              background: color,
+              background: palette.color,
               borderRadius: 'var(--radius-pill)',
             }}
           />
