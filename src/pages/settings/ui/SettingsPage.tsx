@@ -15,6 +15,7 @@ import {
   LogOut,
   Monitor,
   Palette,
+  PiggyBank,
   Repeat,
   Tag,
   Tags,
@@ -35,6 +36,7 @@ import {
   NotificationsManager,
   PresetManager,
   RecurringManager,
+  SavingGoalManager,
   TodoTagManager,
 } from '@/features/porest/dialogs'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -70,6 +72,7 @@ type SectionId =
   | 'categories'
   | 'accounts'
   | 'budget'
+  | 'goals'
   | 'recurring'
   | 'presets'
   | 'calendar-share'
@@ -91,6 +94,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'categories', labelKey: 'sections.categories.label', icon: Tag, descKey: 'sections.categories.desc' },
   { id: 'accounts', labelKey: 'sections.accounts.label', icon: CreditCard, descKey: 'sections.accounts.desc' },
   { id: 'budget', labelKey: 'sections.budget.label', icon: FilePen, descKey: 'sections.budget.desc' },
+  { id: 'goals', labelKey: 'sections.goals.label', icon: PiggyBank, descKey: 'sections.goals.desc' },
   { id: 'recurring', labelKey: 'sections.recurring.label', icon: Repeat, descKey: 'sections.recurring.desc' },
   { id: 'presets', labelKey: 'sections.presets.label', icon: Bookmark, descKey: 'sections.presets.desc' },
   { id: 'calendar-share', labelKey: 'sections.calendarShare.label', icon: CalendarCog, descKey: 'sections.calendarShare.desc' },
@@ -113,7 +117,7 @@ interface GroupDef {
 const MENU_GROUPS: GroupDef[] = [
   {
     labelKey: 'groups.dataManage',
-    sectionIds: ['categories', 'accounts', 'budget', 'recurring', 'presets'],
+    sectionIds: ['categories', 'accounts', 'budget', 'goals', 'recurring', 'presets'],
   },
   {
     labelKey: 'groups.tagsLabels',
@@ -205,6 +209,7 @@ export const SettingsPage = () => {
       case 'categories':    return <CategoryManager mobile={m} reorderMode={m && catReorder} />
       case 'accounts':      return <AccountManager mobile={m} />
       case 'budget':        return <BudgetManager mobile={m} />
+      case 'goals':         return <SavingGoalManager mobile={m} />
       case 'recurring':     return <RecurringManager mobile={m} />
       case 'presets':       return <PresetManager mobile={m} />
       case 'calendar-share':  return <CalendarShareSection mobile={m} />
