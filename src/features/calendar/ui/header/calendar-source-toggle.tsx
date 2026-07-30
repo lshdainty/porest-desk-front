@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ListTodo, Flag, Settings, Settings2, ChevronDown, X } from 'lucide-react'
+import { Receipt, ListTodo, Flag, Settings2, ChevronDown, X } from 'lucide-react'
 
 import { useCalendar } from '@/features/calendar/model/calendar-context'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -14,7 +13,6 @@ import { useIsMobile } from '@/shared/hooks'
 
 import type { IBuiltinSource, TCalendarSourceType } from '@/features/calendar/model/types'
 import type { UserCalendar } from '@/entities/user-calendar'
-import { HolidayManagementDialog } from './HolidayManagementDialog'
 
 const SOURCE_ICONS: Record<TCalendarSourceType, React.ElementType> = {
   holiday: Flag,
@@ -81,7 +79,7 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
   )
 }
 
-const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onSettings?: () => void }) => {
+const BuiltinSourceItem = ({ source }: { source: IBuiltinSource }) => {
   const { t } = useTranslation('calendar')
   const { toggleBuiltinSource } = useCalendar()
 
@@ -104,29 +102,12 @@ const BuiltinSourceItem = ({ source, onSettings }: { source: IBuiltinSource; onS
           {t(`source.${source.id}`)}
         </span>
       </button>
-      {onSettings && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-          onClick={onSettings}
-          aria-label={t('manage')}
-        >
-          <Settings size={14} />
-        </Button>
-      )}
     </div>
   )
 }
 
 /** 캘린더 필터 내용 — Popover·Drawer 양쪽에서 재사용 */
-const CalendarSourceContent = ({
-  onManage,
-  onHolidayManage,
-}: {
-  onManage: () => void
-  onHolidayManage: () => void
-}) => {
+const CalendarSourceContent = ({ onManage }: { onManage: () => void }) => {
   const { t } = useTranslation('calendar')
   const { builtinSources, userCalendars } = useCalendar()
 
@@ -149,7 +130,8 @@ const CalendarSourceContent = ({
 
       <Separator />
 
-      {/* Section 2: 기타 소스 — 공휴일만 (가계부/할일 제거) */}
+      {/* Section 2: 기타 소스 — 공휴일만 (가계부/할일 제거).
+          공휴일은 백엔드가 매일 자동 동기화하므로 표시 토글만 두고 관리 진입점은 없다. */}
       <div className="p-3 py-2">
         <span className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {t('otherSources')}
@@ -158,11 +140,7 @@ const CalendarSourceContent = ({
           {builtinSources
             .filter((source) => source.id === 'holiday')
             .map((source) => (
-              <BuiltinSourceItem
-                key={source.id}
-                source={source}
-                onSettings={onHolidayManage}
-              />
+              <BuiltinSourceItem key={source.id} source={source} />
             ))}
         </div>
       </div>
@@ -187,7 +165,6 @@ const CalendarSourceToggle = () => {
   const { builtinSources, userCalendars } = useCalendar()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
-  const [holidayManagementOpen, setHolidayManagementOpen] = useState(false)
   // 관리·공유는 설정의 "캘린더 관리·공유" 탭으로 이동 (별도 dialog 폐지)
   const goManageShare = () => navigate('/desk/settings?section=calendar-share')
 
@@ -232,10 +209,7 @@ const CalendarSourceToggle = () => {
               </DrawerClose>
             </DrawerHeader>
             <DrawerBody className="pb-6">
-              <CalendarSourceContent
-                onManage={goManageShare}
-                onHolidayManage={() => setHolidayManagementOpen(true)}
-              />
+              <CalendarSourceContent onManage={goManageShare} />
             </DrawerBody>
           </DrawerContent>
         </Drawer>
@@ -248,18 +222,10 @@ const CalendarSourceToggle = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 p-0">
-            <CalendarSourceContent
-              onManage={goManageShare}
-              onHolidayManage={() => setHolidayManagementOpen(true)}
-            />
+            <CalendarSourceContent onManage={goManageShare} />
           </PopoverContent>
         </Popover>
       )}
-
-      <HolidayManagementDialog
-        open={holidayManagementOpen}
-        onOpenChange={setHolidayManagementOpen}
-      />
     </>
   )
 }

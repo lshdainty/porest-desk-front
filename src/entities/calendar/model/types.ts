@@ -65,5 +65,4 @@ export interface Holiday {
   holidayDate: string  // 'yyyy-MM-dd'
   holidayName: string
   holidayType: HolidayType
-  isRecurring: boolean
 }

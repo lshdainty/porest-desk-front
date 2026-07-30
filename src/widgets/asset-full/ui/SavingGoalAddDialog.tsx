@@ -7,6 +7,7 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
+import { IconPicker } from '@/shared/ui/icon-picker'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import {
   AlertDialog,
@@ -29,19 +30,6 @@ import { tileRadius } from '@/shared/lib'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 import { i18n } from '@/shared/i18n/config'
-
-const GOAL_ICONS: { k: IconName; labelKey: string }[] = [
-  { k: 'plane', labelKey: 'savingGoal.iconTravel' },
-  { k: 'shield', labelKey: 'savingGoal.iconEmergency' },
-  { k: 'laptop', labelKey: 'savingGoal.iconElectronics' },
-  { k: 'home', labelKey: 'savingGoal.iconHousing' },
-  { k: 'graduation-cap', labelKey: 'savingGoal.iconEducation' },
-  { k: 'gift', labelKey: 'savingGoal.iconGift' },
-  { k: 'car', labelKey: 'savingGoal.iconCar' },
-  { k: 'heart', labelKey: 'savingGoal.iconHealth' },
-  { k: 'piggy-bank', labelKey: 'savingGoal.iconSaving' },
-  { k: 'wallet', labelKey: 'savingGoal.iconWallet' },
-]
 
 // 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.
 function formatDeadlineLabel(iso: string): string {
@@ -360,37 +348,12 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
 
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>{t('form.icon')}</FieldLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
-          {GOAL_ICONS.map(g => {
-            const active = icon === g.k
-            return (
-              <button
-                key={g.k}
-                type="button"
-                title={t(g.labelKey)}
-                onClick={() => setIcon(g.k)}
-                style={{
-                  aspectRatio: '1 / 1',
-                  borderRadius: 'var(--radius-tile)',
-                  background: active
-                    ? `oklch(from ${color} l c h / 0.14)`
-                    : 'var(--bg-surface)',
-                  border: active
-                    ? `1.5px solid ${color}`
-                    : '1px solid var(--border-subtle)',
-                  color: active ? color : 'var(--fg-secondary)',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <DynamicIcon name={g.k} size={16} />
-              </button>
-            )
-          })}
-        </div>
+        {/* 카테고리 추가와 동일한 shared IconPicker (필드 트리거 + 검색 팝오버).
+            '없음' 선택은 저축 목표 기본 아이콘(piggy-bank)으로 대체. */}
+        <IconPicker
+          value={icon}
+          onChange={v => setIcon((v || 'piggy-bank') as IconName)}
+        />
       </Field>
 
       <Field>
