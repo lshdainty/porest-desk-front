@@ -68,7 +68,8 @@ pipeline {
                 dir("${SRC_DIR}") {
                     sh "cp ${ENV_SRC_DIR}/${params.DEPLOY_ENV}/${APP_NAME}/${params.DEPLOY_ENV}.env .env.production"
                     // 빌드 시점에 번들로 들어가는 버전 (화면 표시는 프론트에서 import.meta.env.VITE_APP_VERSION 사용)
-                    sh "echo 'VITE_APP_VERSION=${env.APP_VERSION}' >> .env.production"
+                    // printf 앞 개행: 원본 env 가 개행 없이 끝나도 마지막 변수 값에 이어붙지 않게
+                    sh "printf '\\nVITE_APP_VERSION=%s\\n' '${env.APP_VERSION}' >> .env.production"
                 }
             }
         }
