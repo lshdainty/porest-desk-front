@@ -86,6 +86,7 @@ more,item.expense,가계부,Expense
 more,item.asset,자산,Assets
 more,item.stocks,증권,Stocks
 more,item.budget,예산,Budget
+more,item.savingGoal,저축 목표,Saving Goals
 more,item.stats,통계·분석,Stats & Analysis
 more,item.recurring,반복 거래,Recurring
 more,item.accounts,계좌·카드 관리,Account & Card Management
@@ -105,6 +106,7 @@ more,desc.expense,지출 · 수입 · 이체,Spending · income · transfers
 more,desc.asset,계좌 · 카드 · 투자 · 부채,Accounts · cards · investments · debt
 more,desc.stocks,시세 · 보유 · 관심 · 호가,Quotes · holdings · watchlist · order book
 more,desc.budget,월간 · 카테고리별,Monthly · by category
+more,desc.savingGoal,목표 · 진행률,Goals · Progress
 more,desc.stats,카테고리 · 트렌드 · 비교,Category · trends · comparison
 more,desc.recurring,구독 · 고정비,Subscriptions · fixed costs
 more,desc.accounts,연결된 계좌 · 카드 관리,Manage linked accounts and cards

@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Pencil, Plus, Target, Trash2 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { tileRadius } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { KRW, isEn } from '@/shared/lib/porest/format'
 import { useDeleteSavingGoal, useSavingGoals } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
@@ -22,35 +24,73 @@ const formatDeadline = (deadline: string | null): string | null => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+// 모바일 카드 다이어트 — 항목 셸: 모바일은 카드 없이 행(위쪽 divider), 데스크톱은 Card.
+function FlatItem({
+  mobile,
+  idx,
+  onTap,
+  children,
+}: {
+  mobile: boolean
+  idx: number
+  onTap?: () => void
+  children: ReactNode
+}) {
+  if (!mobile) return <Card>{children}</Card>
+
+  return (
+    <div
+      onClick={onTap}
+      style={{
+        // 행 좌우 inset 4 — RecurringManager 목록 행과 같은 값.
+        padding: '12px 4px',
+        borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
+        cursor: onTap ? 'pointer' : undefined,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
+function MaybeContent({ mobile, children }: { mobile: boolean; children: ReactNode }) {
+  return mobile ? <div>{children}</div> : <CardContent>{children}</CardContent>
+}
+
 function GoalCard({
   goal,
   mobile,
+  idx,
   onEdit,
   onDelete,
 }: {
   goal: SavingGoal
   mobile: boolean
+  idx: number
   onEdit: (g: SavingGoal) => void
   onDelete: (g: SavingGoal) => void
 }) {
   const { t } = useTranslation('asset')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
-  const color = goal.color ?? 'var(--bg-brand)'
+  // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다.
+  // raw goal.color 를 그대로 쓰면 다크 모드에서 앱(resolveChartColor)과 색이 어긋난다.
+  const palette = getPaletteByColor(goal.color)
+  const color = palette.color
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
   const tile = mobile ? 40 : 36
 
   return (
     // 모바일 = 카드 탭이 곧 편집(디자인 GoalManager), 데스크톱 = 우측 편집/삭제 아이콘 버튼.
-    <Card
-      onClick={mobile ? () => onEdit(goal) : undefined}
-      style={mobile ? { cursor: 'pointer' } : undefined}
-    >
-      <CardContent>
+    // 모바일 카드 다이어트(RecurringManager 정합) — 항목마다 카드를 두지 않고 행 사이 divider 로만
+    // 구분한다. 페이지 배경 위에 카드가 겹겹이 쌓이면 keep 카드(요약)의 위계가 죽는다.
+    <FlatItem mobile={mobile} idx={idx} onTap={() => onEdit(goal)}>
+      <MaybeContent mobile={mobile}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
           <span
             style={{
               width: tile, height: tile, borderRadius: tileRadius(tile),
-              background: `oklch(from ${color} l c h / 0.12)`,
+              background: palette.bg,
               color,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
@@ -126,17 +166,17 @@ function GoalCard({
             }}
           />
         </div>
-      </CardContent>
-    </Card>
+      </MaybeContent>
+    </FlatItem>
   )
 }
 
-function SavingGoalManagerSkeleton() {
+function SavingGoalManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 10 }}>
       {[0, 1, 2].map(i => (
-        <Card key={i}>
-          <CardContent>
+        <FlatItem key={i} mobile={mobile} idx={i}>
+          <MaybeContent mobile={mobile}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <SkeletonBase className="h-9 w-9 rounded-[10px] shrink-0" />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -145,8 +185,8 @@ function SavingGoalManagerSkeleton() {
               </div>
             </div>
             <SkeletonBase className="h-1.5 w-full rounded-full" />
-          </CardContent>
-        </Card>
+          </MaybeContent>
+        </FlatItem>
       ))}
     </div>
   )
@@ -220,22 +260,30 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
         </div>
 
         {goalsQ.isLoading ? (
-          <SavingGoalManagerSkeleton />
+          <SavingGoalManagerSkeleton mobile={mobile} />
         ) : goals.length === 0 ? (
-          <Card>
-            <CardContent>
-              <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-                {t('savingGoal.emptyManager')}
-              </div>
-            </CardContent>
-          </Card>
+          // 모바일 카드 다이어트 — 빈 상태도 카드를 두지 않는다(RecurringManager 빈 상태 정합).
+          mobile ? (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
+              {t('savingGoal.emptyManager')}
+            </div>
+          ) : (
+            <Card>
+              <CardContent>
+                <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
+                  {t('savingGoal.emptyManager')}
+                </div>
+              </CardContent>
+            </Card>
+          )
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {goals.map(g => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 10 }}>
+            {goals.map((g, i) => (
               <GoalCard
                 key={g.rowId}
                 goal={g}
                 mobile={mobile}
+                idx={i}
                 onEdit={setEditing}
                 onDelete={setConfirmDelete}
               />
