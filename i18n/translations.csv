@@ -588,16 +588,6 @@ asset,savingGoals,저축 목표,Saving goals
 asset,addGoal,목표 추가,Add goal
 asset,manage,관리,Manage
 asset,manageGoalsPrompt,설정에서 저축 목표를 추가해보세요,Add saving goals in Settings
-asset,savingGoal.iconTravel,여행,Travel
-asset,savingGoal.iconEmergency,비상금,Emergency fund
-asset,savingGoal.iconElectronics,전자기기,Electronics
-asset,savingGoal.iconHousing,주거,Housing
-asset,savingGoal.iconEducation,교육,Education
-asset,savingGoal.iconGift,선물,Gift
-asset,savingGoal.iconCar,자동차,Car
-asset,savingGoal.iconHealth,건강,Health
-asset,savingGoal.iconSaving,저축,Saving
-asset,savingGoal.iconWallet,지갑,Wallet
 asset,savingGoal.noDeadline,기한 없음,No deadline
 asset,savingGoal.name,목표 이름,Goal name
 asset,savingGoal.namePlaceholder,예: 유럽 여행,e.g. Europe trip
