@@ -12,6 +12,7 @@ import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
@@ -495,7 +496,9 @@ function formatDeadline(deadline: string | null): string | null {
 function SavingGoalItem({ goal }: { goal: SavingGoal }) {
   const { t } = useTranslation('asset')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
-  const color = goal.color ?? 'var(--bg-brand)'
+  // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다(앱 resolveChartColor 정합).
+  const palette = getPaletteByColor(goal.color)
+  const color = palette.color
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
 
   return (
@@ -505,7 +508,7 @@ function SavingGoalItem({ goal }: { goal: SavingGoal }) {
         <span
           style={{
             width: 32, height: 32, borderRadius: tileRadius(32),
-            background: `oklch(from ${color} l c h / 0.12)`,
+            background: palette.bg,
             color,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,

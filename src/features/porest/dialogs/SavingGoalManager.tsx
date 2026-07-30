@@ -5,6 +5,7 @@ import { ChevronRight, Pencil, Plus, Target, Trash2 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { tileRadius } from '@/shared/lib'
+import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { KRW, isEn } from '@/shared/lib/porest/format'
 import { useDeleteSavingGoal, useSavingGoals } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
@@ -72,7 +73,10 @@ function GoalCard({
 }) {
   const { t } = useTranslation('asset')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
-  const color = goal.color ?? 'var(--bg-brand)'
+  // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다.
+  // raw goal.color 를 그대로 쓰면 다크 모드에서 앱(resolveChartColor)과 색이 어긋난다.
+  const palette = getPaletteByColor(goal.color)
+  const color = palette.color
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
   const tile = mobile ? 40 : 36
 
@@ -86,7 +90,7 @@ function GoalCard({
           <span
             style={{
               width: tile, height: tile, borderRadius: tileRadius(tile),
-              background: `oklch(from ${color} l c h / 0.12)`,
+              background: palette.bg,
               color,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
