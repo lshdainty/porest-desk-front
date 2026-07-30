@@ -28,6 +28,7 @@ const GROUPS: NavGroup[] = [
       { labelKey: 'item.asset', path: '/desk/asset', descKey: 'desc.asset' },
       { labelKey: 'item.stocks', path: '/desk/stocks', descKey: 'desc.stocks' },
       { labelKey: 'item.budget', path: '/desk/budget', descKey: 'desc.budget' },
+      { labelKey: 'item.savingGoal', path: '/desk/settings?section=goals', descKey: 'desc.savingGoal' },
       { labelKey: 'item.stats', path: '/desk/stats', descKey: 'desc.stats' },
       { labelKey: 'item.recurring', path: '/desk/settings?section=recurring', descKey: 'desc.recurring' },
       { labelKey: 'item.accounts', path: '/desk/settings?section=accounts', descKey: 'desc.accounts' },
