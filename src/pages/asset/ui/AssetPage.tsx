@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  ChevronRight, Eye, EyeOff, Plus, RefreshCw,
+  ChevronRight, Eye, EyeOff, RefreshCw,
   Target, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
@@ -26,8 +26,6 @@ import { useAssets, useAssetSummary, useNetWorthTrend, useTossValuationMap } fro
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
-import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
-import { SavingGoalDetailDialog } from '@/widgets/asset-full/ui/SavingGoalDetailDialog'
 import { AssetLogo, type Asset, type AssetType } from '@/entities/asset'
 import type { SavingGoal } from '@/entities/savingGoal'
 
@@ -494,23 +492,15 @@ function formatDeadline(deadline: string | null): string | null {
   return formatYearMonth(d)
 }
 
-function SavingGoalItem({
-  goal,
-  onOpen,
-}: {
-  goal: SavingGoal
-  onOpen: (g: SavingGoal) => void
-}) {
+function SavingGoalItem({ goal }: { goal: SavingGoal }) {
   const { t } = useTranslation('asset')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
   const color = goal.color ?? 'var(--bg-brand)'
   const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
 
   return (
-    <div
-      onClick={() => onOpen(goal)}
-      style={{ cursor: 'pointer' }}
-    >
+    // 조회 전용 — 추가·수정·삭제는 설정 > 저축 목표(관리)에서 (design AssetsScreen GoalsCard).
+    <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span
           style={{
@@ -575,31 +565,29 @@ function SavingGoalItem({
   )
 }
 
+/**
+ * 저축 목표 — 조회 전용 (추가·수정·삭제는 설정 > 저축 목표에서, design AssetsScreen GoalsCard).
+ * 모바일 = flat Section / 데스크톱 = Card, 우측 '관리 >' 링크로 설정 섹션 진입.
+ */
 function SavingGoalsCard({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
+  const navigate = useNavigate()
   const goalsQ = useSavingGoals()
-  const [dialogState, setDialogState] = useState<
-    { mode: 'add' } | { mode: 'edit'; goal: SavingGoal } | { mode: 'view'; goal: SavingGoal } | null
-  >(null)
 
   const goals = goalsQ.data?.goals ?? []
   const isLoading = goalsQ.isLoading
   const isEmpty = !isLoading && goals.length === 0
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('savingGoals')}</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          type="button"
-          onClick={() => setDialogState({ mode: 'add' })}
-        >
-          <Plus size={13} /> {t('addGoal')}
-        </Button>
-      </CardHeader>
-      <CardContent>
+    <Section
+      mobile={mobile}
+      title={t('savingGoals')}
+      action={
+        <button className="all" onClick={() => navigate('/desk/settings?section=goals')}>
+          {t('manage')} <ChevronRight size={13} />
+        </button>
+      }
+    >
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[0, 1, 2].map(i => (
@@ -620,52 +608,22 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
           ))}
         </div>
       ) : isEmpty ? (
-        <div style={{ padding: '20px 0', textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)',
-              fontWeight: '500', marginBottom: 10,
-            }}
-          >
-            {t('addSavingGoalPrompt')}
-          </div>
-          <Button
-            size="sm"
-            type="button"
-            onClick={() => setDialogState({ mode: 'add' })}
-          >
-            <Plus size={13} /> {t('addFirstGoal')}
-          </Button>
+        <div
+          style={{
+            padding: '20px 0', textAlign: 'center',
+            fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', fontWeight: '500',
+          }}
+        >
+          {t('manageGoalsPrompt')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {goals.map(g => (
-            <SavingGoalItem
-              key={g.rowId}
-              goal={g}
-              onOpen={goal => setDialogState({ mode: 'view', goal })}
-            />
+            <SavingGoalItem key={g.rowId} goal={g} />
           ))}
         </div>
       )}
-      </CardContent>
-
-      {dialogState?.mode === 'view' && (
-        <SavingGoalDetailDialog
-          goal={dialogState.goal}
-          mobile={mobile}
-          onClose={() => setDialogState(null)}
-          onEdit={goal => setDialogState({ mode: 'edit', goal })}
-        />
-      )}
-      {(dialogState?.mode === 'add' || dialogState?.mode === 'edit') && (
-        <SavingGoalAddDialog
-          goal={dialogState.mode === 'edit' ? dialogState.goal : null}
-          mobile={mobile}
-          onClose={() => setDialogState(null)}
-        />
-      )}
-    </Card>
+    </Section>
   )
 }
 
@@ -1553,6 +1511,7 @@ function AssetMobile() {
             onOpenDetail={setDetailAsset}
           />
         )}
+        <SavingGoalsCard mobile />
       </div>
       {detailAsset && (
         <AssetDetailDialog

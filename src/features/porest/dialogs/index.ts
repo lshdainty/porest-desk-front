@@ -11,6 +11,7 @@ export { CategoryEditDialog, CAT_PALETTE, getPaletteByColor, type CategoryItem }
 export { CategoryManager } from './CategoryManager'
 export { AccountManager } from './AccountManager'
 export { BudgetManager } from './BudgetManager'
+export { SavingGoalManager } from './SavingGoalManager'
 export { NotificationsManager } from './NotificationsManager'
 export { RecurringManager } from './RecurringManager'
 export { RecurringEditDialog } from './RecurringEditDialog'

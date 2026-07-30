@@ -586,8 +586,8 @@ asset,anytime,상시,Anytime
 asset,achieved,달성,Achieved
 asset,savingGoals,저축 목표,Saving goals
 asset,addGoal,목표 추가,Add goal
-asset,addSavingGoalPrompt,저축 목표를 추가해보세요,Add a saving goal
-asset,addFirstGoal,첫 목표 추가하기,Add your first goal
+asset,manage,관리,Manage
+asset,manageGoalsPrompt,설정에서 저축 목표를 추가해보세요,Add saving goals in Settings
 asset,savingGoal.iconTravel,여행,Travel
 asset,savingGoal.iconEmergency,비상금,Emergency fund
 asset,savingGoal.iconElectronics,전자기기,Electronics
@@ -610,8 +610,9 @@ asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
 asset,savingGoal.colorSwatch,색상 {{n}},Color {{n}}
 asset,savingGoal.deleteTitle,저축 목표 삭제,Delete saving goal
 asset,savingGoal.deleteConfirm,'{{title}}' 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.,Delete the '{{title}}' goal? This can't be undone.
-asset,savingGoal.detailTitle,저축 목표 상세,Saving goal details
-asset,savingGoal.progress,진행률,Progress
+asset,savingGoal.overallProgress,전체 진행률,Overall progress
+asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
+asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
 asset,savingGoal.remaining,남은 금액,Remaining
 asset,savingGoal.achievedAt,달성일,Achieved on
 asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
@@ -1652,6 +1653,9 @@ settings,sections.accounts.label,계좌·카드 관리,Manage Accounts & Cards
 settings,sections.accounts.desc,연결된 계좌와 카드 관리,Manage linked accounts and cards
 settings,sections.budget.label,예산 설정,Budget Settings
 settings,sections.budget.desc,월간 예산 및 카테고리별 한도,Monthly budget and per-category limits
+settings,sections.goals.label,저축 목표,Saving Goals
+settings,sections.goals.desc,목표 추가·수정·삭제 및 진행률 관리,Manage goals and track progress
+settings,sections.goals.managerDescription,목표를 추가하고 진행률을 관리합니다. 자산 화면에서는 진행 상황을 확인할 수 있어요.,Add goals and manage progress — view status on the Assets screen.
 settings,sections.recurring.label,반복 거래 관리,Manage Recurring
 settings,sections.recurring.desc,구독·고정 결제·정기 수입 일괄 관리,Manage subscriptions · fixed payments · regular income
 settings,sections.presets.label,프리셋 관리,Manage Presets
