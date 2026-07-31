@@ -2,12 +2,9 @@
  * 토스증권 Open API 연동 react-query 훅.
  * 모든 쿼리는 `retry: false` — 키 미설정(503)·백엔드 미기동 시 즉시 실패시켜 호출부가 mock 으로 폴백한다.
  */
-import { useEffect, useMemo, useReducer } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { stockKeys } from '@/shared/config'
-import { applyLivePrices, setLiveFx, STOCKS } from '@/pages/stocks/model/stocksMock'
-import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { stockApi } from '../api/stockApi'
+import { stockApi, type TossRankingDuration, type TossRankingType } from '../api/stockApi'
 
 const COMMON = { retry: false, refetchOnWindowFocus: false, staleTime: 15_000 } as const
 
@@ -131,36 +128,62 @@ export const useTossHoldings = (accountSeq: number | null) =>
     refetchInterval: 10_000,
   })
 
-// ---- 라이브 오버레이 브리지 ------------------------------------------------
+// ---- 랭킹 / 시장 지표 / 전일종가 --------------------------------------------
+
+/** 주식 랭킹 (발견 탭). 등락률·거래대금 포함이라 별도 시세 조회가 필요 없다. */
+export const useTossRankings = (
+  type: TossRankingType,
+  marketCountry: 'KR' | 'US',
+  duration: TossRankingDuration,
+  opts?: { count?: number; enabled?: boolean },
+) =>
+  useQuery({
+    queryKey: stockKeys.rankings(type, marketCountry, duration),
+    queryFn: () => stockApi.getRankings(type, marketCountry, duration, { count: opts?.count ?? 20 }),
+    enabled: opts?.enabled ?? true,
+    ...COMMON,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  })
+
+/** 시장 지표 현재가 (코스피·코스닥 지수 등 토스 카탈로그 8종) */
+export const useTossIndicatorPrices = (symbols: string[], enabled = true) =>
+  useQuery({
+    queryKey: stockKeys.indicators(symbols),
+    queryFn: () => stockApi.getIndicatorPrices(symbols),
+    enabled: enabled && symbols.length > 0,
+    ...COMMON,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  })
 
 /**
- * 화면 진입 시 전체 종목의 라이브 시세·환율을 받아 mock 모듈에 적용한다(키 있으면 실데이터, 없으면 무변경).
- * STOCKS[].price / FX_USDKRW 를 갱신하고 변경 시 강제 리렌더 → 리스트·상세·요약이 실시세로 표시된다.
+ * 전일 종가. 토스 /prices 에는 기준가·등락률이 없어 일봉 2개로 도출한다.
+ * 오늘 날짜 캔들을 제외한 마지막 종가 = 전일 종가 (장 시작 전이면 마지막 캔들이 곧 전일).
+ * 하루에 한 번 바뀌는 값이라 길게 캐시한다.
  */
-export function useStockLiveOverlay() {
-  // 토스 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자는 호출 자체를 하지 않는다(403 방지).
-  const { data: features } = useMyFeatures()
-  const enabled =
-    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
-  const symbols = useMemo(() => STOCKS.map(s => s.ticker), [])
-  const pricesQ = useTossPrices(enabled ? symbols : [])
-  const fxQ = useTossExchangeRate(enabled)
-  const [, force] = useReducer((c: number) => c + 1, 0)
+export const usePrevClose = (symbol: string | null) =>
+  useQuery({
+    queryKey: stockKeys.prevClose(symbol ?? ''),
+    queryFn: async () => {
+      const page = await stockApi.getCandles(symbol!, '1d', { count: 3 })
+      const candles = page.candles
+      if (candles.length === 0) return null
+      const today = new Date().toISOString().slice(0, 10)
+      // 캔들은 최신이 마지막 — 오늘 봉을 빼고 남는 마지막 봉이 전일이다.
+      const prev = [...candles].reverse().find(c => c.timestamp.slice(0, 10) !== today)
+      const v = Number.parseFloat((prev ?? candles[0]!).closePrice)
+      return Number.isFinite(v) ? v : null
+    },
+    enabled: !!symbol,
+    ...COMMON,
+    staleTime: 10 * 60_000,
+  })
 
-  useEffect(() => {
-    if (!pricesQ.data) return
-    const map: Record<string, number> = {}
-    for (const p of pricesQ.data) {
-      const v = Number.parseFloat(p.lastPrice)
-      if (Number.isFinite(v)) map[p.symbol] = v
-    }
-    if (applyLivePrices(map)) force()
-  }, [pricesQ.data])
-
-  useEffect(() => {
-    if (!fxQ.data) return
-    if (setLiveFx(Number.parseFloat(fxQ.data.rate))) force()
-  }, [fxQ.data])
-
-  return { pricesLive: !!pricesQ.data, fxLive: !!fxQ.data }
+/** lastPrice 와 전일종가로 등락률(%)을 계산한다. 어느 한쪽이 없으면 null. */
+export function changePctOf(lastPrice: string | number | null | undefined, prevClose: number | null | undefined): number | null {
+  if (lastPrice == null || prevClose == null || prevClose <= 0) return null
+  const last = typeof lastPrice === 'number' ? lastPrice : Number.parseFloat(lastPrice)
+  if (!Number.isFinite(last)) return null
+  return ((last - prevClose) / prevClose) * 100
 }

@@ -24,22 +24,28 @@ export function useStockSearch(keyword: string, limit = 8) {
 }
 
 /**
- * 심볼 → 한글 종목명 (연결된 종목 표시용). 심볼 정확 일치만 취하고 없으면 null.
+ * 심볼 → 종목 마스터 1건 (상세 헤더·관심 추가용). 심볼 정확 일치만 취하고 없으면 null.
  * 국내 005930 과 상해 600519 처럼 시장 간 심볼이 겹칠 수 있어 토스 시세 대상(KR/US) 시장을 우선한다.
  */
-export function useStockSymbolName(symbol: string | null | undefined) {
+export function useStockBySymbol(symbol: string | null | undefined) {
   const sym = (symbol ?? '').trim()
   return useQuery({
     queryKey: stockKeys.symbolName(sym),
-    queryFn: async (): Promise<string | null> => {
+    queryFn: async (): Promise<StockMasterItem | null> => {
       const page = await stockApi.searchStocks(sym, { size: 20 })
       const exact = page.content.filter(s => s.symbol.toUpperCase() === sym.toUpperCase())
       if (exact.length === 0) return null
       const tossPriority = exact.find(s => s.countryCode === 'KR' || s.countryCode === 'US')
-      return (tossPriority ?? exact[0]!).nameKr
+      return tossPriority ?? exact[0]!
     },
     enabled: sym.length > 0,
     retry: false,
     staleTime: 60 * 60_000,
   })
+}
+
+/** 심볼 → 한글 종목명 (연결된 종목 표시용). */
+export function useStockSymbolName(symbol: string | null | undefined) {
+  const query = useStockBySymbol(symbol)
+  return { ...query, data: query.data?.nameKr ?? (query.data === null ? null : undefined) }
 }

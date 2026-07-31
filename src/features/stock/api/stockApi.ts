@@ -217,6 +217,61 @@ export interface StockSearchPage {
   }
 }
 
+// ---- 랭킹 / 시장 지표 -------------------------------------------------------
+
+export type TossRankingType =
+  | 'MARKET_TRADING_AMOUNT'
+  | 'MARKET_TRADING_VOLUME'
+  | 'TOP_GAINERS'
+  | 'TOP_LOSERS'
+  | 'TOSS_SECURITIES_TRADING_AMOUNT'
+  | 'TOSS_SECURITIES_TRADING_VOLUME'
+
+export type TossRankingDuration = 'realtime' | '1d' | '1w' | '1mo' | '3mo' | '6mo' | '1y'
+
+export interface TossRankingItem {
+  rank: number
+  symbol: string
+  currency: string
+  /** changeRate 는 소수 비율(0.0125 = 1.25%). TOP_GAINERS/LOSERS 는 기간, 나머지는 전일 대비 */
+  price: { lastPrice: string; basePrice: string; changeRate: string | null }
+  tradingVolume: string
+  tradingAmount: string
+}
+
+export interface TossRankingResponse {
+  rankedAt: string | null
+  rankings: TossRankingItem[]
+}
+
+/** 시장 지표 현재가 (지수: 포인트, 국채: 수익률 %). 토스 카탈로그 8종만 지원 */
+export interface TossIndicatorPrice {
+  symbol: string
+  timestamp: string | null
+  lastPrice: string
+}
+
+// ---- 관심목록 (서버 stock-watch) -------------------------------------------
+
+export interface WatchItem {
+  rowId: number
+  stockMasterRowId: number
+  countryCode: string
+  marketCode: string
+  symbol: string
+  nameKr: string
+  nameEn: string | null
+  securityType: StockSecurityType
+  currency: string
+}
+
+export interface WatchGroup {
+  rowId: number
+  groupName: string
+  sortOrder: number
+  items: WatchItem[]
+}
+
 // ---- 클라이언트 ------------------------------------------------------------
 
 const BASE = '/v1/toss'
@@ -346,6 +401,59 @@ export const stockApi = {
       params: { date },
     })
     return resp.data
+  },
+
+  // 랭킹 / 시장 지표
+  getRankings: async (
+    type: TossRankingType,
+    marketCountry: 'KR' | 'US',
+    duration: TossRankingDuration,
+    opts?: { excludeInvestmentCaution?: boolean; count?: number },
+  ): Promise<TossRankingResponse> => {
+    const resp: ApiResponse<TossRankingResponse> = await apiClient.get(`${BASE}/rankings`, {
+      params: { type, marketCountry, duration, ...opts },
+    })
+    return resp.data
+  },
+
+  getIndicatorPrices: async (symbols: string[]): Promise<TossIndicatorPrice[]> => {
+    const resp: ApiResponse<TossIndicatorPrice[]> = await apiClient.get(
+      `${BASE}/market-indicators/prices`,
+      { params: { symbols: symbols.join(',') } },
+    )
+    return resp.data
+  },
+
+  // 관심목록 (게이트 없음 — 로그인만 필요)
+  getWatchGroups: async (): Promise<WatchGroup[]> => {
+    const resp: ApiResponse<WatchGroup[]> = await apiClient.get('/v1/stock-watch/groups')
+    return resp.data
+  },
+
+  createWatchGroup: async (groupName: string): Promise<WatchGroup> => {
+    const resp: ApiResponse<WatchGroup> = await apiClient.post('/v1/stock-watch/groups', { groupName })
+    return resp.data
+  },
+
+  renameWatchGroup: async (groupId: number, groupName: string): Promise<WatchGroup> => {
+    const resp: ApiResponse<WatchGroup> = await apiClient.put(`/v1/stock-watch/groups/${groupId}`, { groupName })
+    return resp.data
+  },
+
+  deleteWatchGroup: async (groupId: number): Promise<void> => {
+    await apiClient.delete(`/v1/stock-watch/groups/${groupId}`)
+  },
+
+  addWatchItem: async (groupId: number, symbol: string, marketCode?: string): Promise<WatchItem> => {
+    const resp: ApiResponse<WatchItem> = await apiClient.post(
+      `/v1/stock-watch/groups/${groupId}/items`,
+      { symbol, marketCode },
+    )
+    return resp.data
+  },
+
+  removeWatchItem: async (itemId: number): Promise<void> => {
+    await apiClient.delete(`/v1/stock-watch/items/${itemId}`)
   },
 
   // 계좌 / 보유자산
