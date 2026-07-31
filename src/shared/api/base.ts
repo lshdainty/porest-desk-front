@@ -16,11 +16,13 @@ export const hasToken = (): boolean => isAuthenticated()
 
 const apiBaseUrl = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}`
 
+// Content-Type 기본값을 고정하지 않는다 — axios 가 바디 타입으로 자동 결정한다
+// (객체 → application/json, FormData → multipart/form-data+boundary).
+// 인스턴스 기본을 application/json 으로 박으면 axios v1 transformRequest 가
+// FormData 를 JSON 으로 직렬화해버려 파일 업로드(/import/*, /files/upload)가
+// 415(HttpMediaTypeNotSupportedException)로 깨진다.
 export const apiClient: AxiosInstance = axios.create({
   baseURL: apiBaseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 })
 
