@@ -10,7 +10,10 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
@@ -90,6 +93,10 @@ export function PresetEditDialog({
     return map
   }, [categories, type])
 
+  // 선택된 카테고리의 부모(자신이 최상위면 자신) — 타일 active 판정 + 세부 Select 노출 조건
+  const selectedCategory = categoryRowId != null ? categories.find(c => c.rowId === categoryRowId) : null
+  const selectedParentId = selectedCategory ? (selectedCategory.parentRowId ?? selectedCategory.rowId) : null
+
   const canSave = name.trim().length > 0 && categoryRowId != null
   const submitting = createMut.isPending || updateMut.isPending
 
@@ -162,24 +169,50 @@ export function PresetEditDialog({
           </CategoryGrid>
         ) : (
           <CategoryGrid>
-            {topCategories.map(c => {
-              const selectedCat = categoryRowId != null ? categories.find(x => x.rowId === categoryRowId) : null
-              const selectedParentId = selectedCat ? (selectedCat.parentRowId ?? selectedCat.rowId) : null
-              return (
-                <CategoryTile
-                  key={c.rowId}
-                  name={c.categoryName}
-                  color={c.color ?? undefined}
-                  icon={c.icon}
-                  active={selectedParentId === c.rowId}
-                  onClick={() => {
-                    const firstChild = childrenByParent.get(c.rowId)?.[0]
-                    setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
-                  }}
-                />
-              )
-            })}
+            {topCategories.map(c => (
+              <CategoryTile
+                key={c.rowId}
+                name={c.categoryName}
+                color={c.color ?? undefined}
+                icon={c.icon}
+                active={selectedParentId === c.rowId}
+                onClick={() => {
+                  const firstChild = childrenByParent.get(c.rowId)?.[0]
+                  setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
+                }}
+              />
+            ))}
           </CategoryGrid>
+        )}
+        {/* 세부 카테고리 — 반복거래 추가와 동일 패턴: 자식이 있으면 상위/세부 Select 로 변경 가능 */}
+        {!categoriesQ.isLoading && selectedParentId != null && (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
+          <div style={{ marginTop: 10 }}>
+            <Select
+              value={categoryRowId != null ? String(categoryRowId) : ''}
+              onValueChange={(v) => setCategoryRowId(Number(v))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('addTx.subCategoryPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>{t('addTx.parent')}</SelectLabel>
+                  <SelectItem value={String(selectedParentId)}>
+                    {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? t('addTx.parent')}
+                  </SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>{t('addTx.detail')}</SelectLabel>
+                  {(childrenByParent.get(selectedParentId) ?? []).map(child => (
+                    <SelectItem key={child.rowId} value={String(child.rowId)}>
+                      {child.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </Field>
 
