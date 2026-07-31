@@ -111,11 +111,6 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           <ManagerHead
             title={t('shareSection.title')}
             description={t('shareSection.description')}
-            actions={
-              <Button size="sm" onClick={() => setCreating(true)}>
-                <Plus size={14} strokeWidth={2.4} />{t('newCalendar')}
-              </Button>
-            }
           />
         )}
 
@@ -146,11 +141,6 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
                   {t('shareSection.infoDesc')}
                 </div>
               </div>
-              {mobile && (
-                <Button size="sm" onClick={() => setCreating(true)}>
-                  <Plus size={14} strokeWidth={2.4} />{t('newCalendar')}
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -162,6 +152,17 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           emptyText={t('shareSection.emptyOwned')}
           onManage={setManagingId}
           mobile={mobile}
+          action={
+            // 라벨행 우측 텍스트(accent) 추가 버튼 — 프리셋 정합(사용자 결정, filled 헤더 버튼 폐기)
+            <Button
+              type="button"
+              variant="accent"
+              style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
+              onClick={() => setCreating(true)}
+            >
+              <Plus size={14} /> {t('newCalendar')}
+            </Button>
+          }
         />
 
         <CalendarListSection
@@ -271,12 +272,15 @@ function CalendarListSection({
   emptyText,
   onManage,
   mobile = false,
+  action,
 }: {
   title: string
   calendars: UserCalendar[]
   isLoading: boolean
   emptyText: string
   onManage: (id: number) => void
+  /** 라벨행 우측 액션(텍스트 버튼 등) — 없으면 라벨만 */
+  action?: React.ReactNode
   /** 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */
   mobile?: boolean
 }) {
@@ -295,8 +299,11 @@ function CalendarListSection({
     // label + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라 밀착)
     // / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함.
     <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
-      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-        {title}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+          {title}
+        </div>
+        {action}
       </div>
       {mobile ? (
         <div>{list}</div>

@@ -64,11 +64,6 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
           <ManagerHead
             title={t('labelsSection.title')}
             description={t('labelsSection.description')}
-            actions={
-              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                <Plus size={14} strokeWidth={2.4} />{t('newLabel')}
-              </Button>
-            }
           />
         )}
 
@@ -113,26 +108,32 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                   {t('labelsSection.infoDesc')}
                 </div>
               </div>
-              {mobile && (
-                <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                  <Plus size={14} strokeWidth={2.4} />{t('newLabel')}
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
 
         {/* 전체 라벨 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
-          <div
-            style={{
-              // 섹션 라벨 — 캘린더 관리·공유("내 캘린더 · N")와 동일: label-sm(13, 앱 bodySm)/700.
-              fontSize: 'var(--text-label-sm)',
-              fontWeight: '700',
-              color: 'var(--fg-primary)',
-            }}
-          >
-            {t('labelsSection.allLabels')} · {list.length}
+          {/* 라벨행 우측 텍스트(accent) 추가 버튼 — 프리셋 정합(사용자 결정, filled 헤더 버튼 폐기) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div
+              style={{
+                // 섹션 라벨 — 캘린더 관리·공유("내 캘린더 · N")와 동일: label-sm(13, 앱 bodySm)/700.
+                fontSize: 'var(--text-label-sm)',
+                fontWeight: '700',
+                color: 'var(--fg-primary)',
+              }}
+            >
+              {t('labelsSection.allLabels')} · {list.length}
+            </div>
+            <Button
+              type="button"
+              variant="accent"
+              style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
+              onClick={() => setEditing({ kind: 'new' })}
+            >
+              <Plus size={14} /> {t('newLabel')}
+            </Button>
           </div>
           {/* 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */}
           <ListShell mobile={mobile}>

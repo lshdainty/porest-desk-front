@@ -64,11 +64,6 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
           <ManagerHead
             title={t('tags.title')}
             description={t('tags.desc')}
-            actions={
-              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                <Plus size={14} strokeWidth={2.4} />{t('tags.new')}
-              </Button>
-            }
           />
         )}
 
@@ -106,19 +101,25 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                   {t('tags.desc')}
                 </div>
               </div>
-              {mobile && (
-                <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
-                  <Plus size={14} strokeWidth={2.4} />{t('tags.new')}
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
 
         {/* 태그 리스트 — label + list 한 묶음, 사이 간격 모바일 0 / 데스크톱 8. */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-            {t('tags.title')} · {list.length}
+          {/* 라벨행 우측 텍스트(accent) 추가 버튼 — 프리셋 정합(사용자 결정, filled 헤더 버튼 폐기) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+              {t('tags.title')} · {list.length}
+            </div>
+            <Button
+              type="button"
+              variant="accent"
+              style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
+              onClick={() => setEditing({ kind: 'new' })}
+            >
+              <Plus size={14} /> {t('tags.new')}
+            </Button>
           </div>
           <ListShell mobile={mobile}>
             {isLoading ? (
