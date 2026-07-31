@@ -183,6 +183,40 @@ export interface TossPriceLimit {
   currency: string
 }
 
+// ---- 종목 마스터 (서버 stock_master, KIS daily 동기화) ----------------------
+
+export type StockSecurityType = 'STOCK' | 'ETF' | 'INDEX' | 'WARRANT'
+
+/** 종목 마스터 1건 — 백엔드 StockApiDto.StockResponse 미러 */
+export interface StockMasterItem {
+  rowId: number
+  /** KR, US, CN, JP, HK, VN */
+  countryCode: string
+  /** KOSPI, KOSDAQ, KONEX, KRX_IDX, NAS, NYS, AMS, SHS, SHI, SZS, SZI, TSE, HKS, HNX, HSX */
+  marketCode: string
+  symbol: string
+  standardCode: string | null
+  nameKr: string
+  nameEn: string | null
+  securityType: StockSecurityType
+  currency: string
+}
+
+/** porest-core PageResponse 미러 */
+export interface StockSearchPage {
+  content: StockMasterItem[]
+  meta: {
+    page: number
+    size: number
+    totalElements: number
+    totalPages: number
+    first: boolean
+    last: boolean
+    hasNext: boolean
+    hasPrevious: boolean
+  }
+}
+
 // ---- 클라이언트 ------------------------------------------------------------
 
 const BASE = '/v1/toss'
@@ -191,6 +225,17 @@ const BASE = '/v1/toss'
 const TOSS_CANDLE_MAX = 200
 
 export const stockApi = {
+  // 종목 마스터 검색 (구독 게이트 없음 — 로그인만 필요)
+  searchStocks: async (
+    keyword: string,
+    opts?: { countryCode?: string; securityType?: StockSecurityType; page?: number; size?: number },
+  ): Promise<StockSearchPage> => {
+    const resp: ApiResponse<StockSearchPage> = await apiClient.get('/v1/stocks', {
+      params: { keyword: keyword || undefined, ...opts },
+    })
+    return resp.data
+  },
+
   // 시세
   getPrices: async (symbols: string[]): Promise<TossPrice[]> => {
     const resp: ApiResponse<TossPrice[]> = await apiClient.get(`${BASE}/prices`, {

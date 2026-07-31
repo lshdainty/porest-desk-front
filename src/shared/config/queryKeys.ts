@@ -150,6 +150,8 @@ export const subscriptionKeys = {
 
 export const stockKeys = {
   all: ['stocks'] as const,
+  search: (keyword: string) => [...stockKeys.all, 'search', keyword] as const,
+  symbolName: (symbol: string) => [...stockKeys.all, 'symbol-name', symbol] as const,
   prices: (symbols: string[]) => [...stockKeys.all, 'prices', symbols] as const,
   orderbook: (symbol: string) => [...stockKeys.all, 'orderbook', symbol] as const,
   trades: (symbol: string) => [...stockKeys.all, 'trades', symbol] as const,
