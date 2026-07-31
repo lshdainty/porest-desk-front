@@ -1786,6 +1786,25 @@ stocks,range.1m,1개월,1M
 stocks,range.3m,3개월,3M
 stocks,range.1y,1년,1Y
 stocks,embed.chartUnavailable,차트를 표시할 수 없어요,Chart unavailable
+stocks,market.KOSPI,코스피,KOSPI
+stocks,market.KOSDAQ,코스닥,KOSDAQ
+stocks,market.KONEX,코넥스,KONEX
+stocks,market.KRX_IDX,KRX 지수,KRX Index
+stocks,market.NAS,나스닥,NASDAQ
+stocks,market.NYS,뉴욕,NYSE
+stocks,market.AMS,아멕스,AMEX
+stocks,market.SHS,상해,Shanghai
+stocks,market.SHI,상해지수,SSE Index
+stocks,market.SZS,심천,Shenzhen
+stocks,market.SZI,심천지수,SZSE Index
+stocks,market.TSE,도쿄,Tokyo
+stocks,market.HKS,홍콩,Hong Kong
+stocks,market.HNX,하노이,Hanoi
+stocks,market.HSX,호치민,Ho Chi Minh
+stocks,securityType.STOCK,주식,Stock
+stocks,securityType.ETF,ETF,ETF
+stocks,securityType.INDEX,지수,Index
+stocks,securityType.WARRANT,워런트,Warrant
 stats,page.title,통계·분석,Statistics
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
 stats,tab.category,카테고리,Category

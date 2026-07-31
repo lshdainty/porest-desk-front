@@ -9,7 +9,7 @@ import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { Input } from '@/shared/ui/input'
-import { searchKrxStocks, getKrxStockName, type KrxStock } from '@/features/stock/lib/krxSearch'
+import { useStockSearch, useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
@@ -556,16 +556,26 @@ const tossListBtn: React.CSSProperties = {
  * 종목 + 보유수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 계산된다.
  * 토스 계좌 보유분과 무관 — 시세만 빌려 타 증권사 보유 주식도 평가.
  */
+/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
+
 function TossLinkSection({ asset }: { asset: Asset }) {
   const { t } = useTranslation('asset')
   const { t: tc } = useTranslation('common')
+  const { t: ts } = useTranslation('stocks')
   const { data: features } = useMyFeatures()
   const enabled =
     (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
   const linkMut = useLinkTossSymbol()
   const unlinkMut = useUnlinkTossSymbol()
   const [query, setQuery] = useState('')
-  const [matches, setMatches] = useState<KrxStock[]>([])
   const [selSymbol, setSelSymbol] = useState(asset.tossSymbol ?? '')
   const [selName, setSelName] = useState('')
   const [qty, setQty] = useState(asset.tossQuantity != null ? String(asset.tossQuantity) : '')
@@ -575,37 +585,17 @@ function TossLinkSection({ asset }: { asset: Asset }) {
       ? { symbol: asset.tossSymbol, quantity: asset.tossQuantity }
       : null,
   )
-  // KRX 마스터에서 조회한 종목명 (연결/선택 종목 표시용).
-  const [resolvedName, setResolvedName] = useState<string | undefined>(undefined)
   // 보유수량 수정 모드.
   const [editingQty, setEditingQty] = useState(false)
   const [editQty, setEditQty] = useState('')
 
-  // 종목 검색 (KRX 마스터, lazy fetch). 최신 query 만 반영(race-safe).
-  useEffect(() => {
-    const term = query.trim()
-    if (!term) {
-      setMatches([])
-      return
-    }
-    let alive = true
-    searchKrxStocks(term)
-      .then(r => { if (alive) setMatches(r) })
-      .catch(() => { if (alive) setMatches([]) })
-    return () => { alive = false }
-  }, [query])
-
-  // 연결/선택된 종목코드의 이름 조회 (KRX 마스터).
-  useEffect(() => {
-    const sym = linked?.symbol ?? selSymbol
-    if (!sym) {
-      setResolvedName(undefined)
-      return
-    }
-    let alive = true
-    getKrxStockName(sym).then(n => { if (alive) setResolvedName(n) }).catch(() => {})
-    return () => { alive = false }
-  }, [linked, selSymbol])
+  // 종목 검색 (서버 stock_master — 국내 + 해외 6개국). 300ms 디바운스.
+  const debouncedQuery = useDebounced(query.trim(), 300)
+  const { data: matches = [], isFetching: searching } = useStockSearch(
+    enabled ? debouncedQuery : '',
+  )
+  // 연결/선택된 종목코드의 이름 조회 (종목 마스터).
+  const { data: resolvedName } = useStockSymbolName(enabled ? (linked?.symbol ?? selSymbol) : '')
 
   if (!enabled) return null
 
@@ -703,12 +693,13 @@ function TossLinkSection({ asset }: { asset: Asset }) {
   }
 
   const q = query.trim()
-  const codeFallback = q && matches.length === 0 ? q.toUpperCase() : ''
+  // 마스터에 없는 코드 직접 연결 폴백 — 검색 응답이 끝난 뒤에만 노출해 깜빡임을 막는다.
+  const codeFallback =
+    q && q === debouncedQuery && !searching && matches.length === 0 ? q.toUpperCase() : ''
   const pick = (symbol: string, name: string) => {
     setSelSymbol(symbol)
     setSelName(name)
     setQuery('')
-    setMatches([])
   }
   const qtyNum = Number(qty.replace(/[^\d]/g, '')) || 0
   const canLink = !!selSymbol && qtyNum > 0 && !linkMut.isPending
@@ -746,8 +737,16 @@ function TossLinkSection({ asset }: { asset: Asset }) {
           {(matches.length > 0 || codeFallback) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, marginBottom: 4 }}>
               {matches.map(s => (
-                <button key={s.ticker} type="button" onClick={() => pick(s.ticker, s.name)} style={tossListBtn}>
-                  {s.name} <span style={{ color: 'var(--fg-tertiary)' }}>({s.ticker})</span>
+                <button
+                  key={`${s.marketCode}:${s.symbol}`}
+                  type="button"
+                  onClick={() => pick(s.symbol, s.nameKr)}
+                  style={tossListBtn}
+                >
+                  {s.nameKr}{' '}
+                  <span style={{ color: 'var(--fg-tertiary)' }}>
+                    ({s.symbol} · {ts(`market.${s.marketCode}`, { defaultValue: s.marketCode })})
+                  </span>
                 </button>
               ))}
               {codeFallback && (
