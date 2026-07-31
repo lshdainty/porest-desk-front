@@ -9,6 +9,21 @@ export interface AssetCardCatalogBrief {
   companyLogoUrl: string | null
 }
 
+/**
+ * 투자 자산 보유 항목 — 증권사(자산) 단위 아래 다건.
+ * linked=true → tossSymbol+quantity(토스 현재가 × 수량으로 평가) /
+ * linked=false → holdingName+holdingValue(직접 입력 평가액).
+ */
+export interface AssetHolding {
+  rowId?: number
+  linked: boolean
+  tossSymbol?: string | null
+  quantity?: number | null
+  holdingName?: string | null
+  holdingValue?: number | null
+  sortOrder?: number
+}
+
 export interface Asset {
   rowId: number
   userRowId: number
@@ -28,10 +43,12 @@ export interface Asset {
   paymentDay?: number | null
   /** 결제 출금계좌 자산 rowId (CREDIT_CARD 전용, nullable) */
   paymentAssetRowId?: number | null
-  /** 토스 연동 종목코드 (INVESTMENT 시세×수량 평가, nullable) */
+  /** 토스 연동 종목코드 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */
   tossSymbol?: string | null
-  /** 토스 연동 보유수량 (INVESTMENT 시세×수량 평가, nullable) */
+  /** 토스 연동 보유수량 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */
   tossQuantity?: number | null
+  /** 투자 보유 항목들 (INVESTMENT 전용, 구버전 응답이면 없음) */
+  holdings?: AssetHolding[]
   createAt: string
   modifyAt: string
 }
@@ -50,6 +67,8 @@ export interface AssetFormValues {
   creditLimit?: number | null
   paymentDay?: number | null
   paymentAssetRowId?: number | null
+  /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
+  holdings?: AssetHolding[]
 }
 
 export interface AssetUpdateFormValues {
@@ -65,6 +84,8 @@ export interface AssetUpdateFormValues {
   creditLimit?: number | null
   paymentDay?: number | null
   paymentAssetRowId?: number | null
+  /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
+  holdings?: AssetHolding[]
 }
 
 export type BillingStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'

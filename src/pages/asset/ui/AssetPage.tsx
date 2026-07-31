@@ -23,7 +23,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Donut } from '@/shared/ui/porest/charts'
-import { useAssets, useAssetSummary, useNetWorthTrend, useTossValuationMap } from '@/features/asset'
+import { useAssets, useAssetSummary, useNetWorthTrend, useInvestValuation, holdingsOf, type InvestValuation } from '@/features/asset'
+import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useRecurringTransactions } from '@/features/recurring-transaction'
 import { useSavingGoals } from '@/features/savingGoal'
 import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
@@ -908,16 +909,36 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
   )
 }
 
+// 투자 행 서브텍스트 — design: "{첫 보유명} 외 N종목" / "보유 종목 없음".
+// 연동 항목은 이름이 마스터에 있으므로 첫 항목이 linked 면 심볼→이름 1건 조회(캐시됨).
+function InvestHoldingsSub({ asset }: { asset: Asset }) {
+  const { t } = useTranslation('asset')
+  const hs = holdingsOf(asset)
+  const first = hs[0]
+  const firstSymbol = first?.linked ? first.tossSymbol ?? '' : ''
+  const { data: firstName } = useStockSymbolName(firstSymbol)
+  if (hs.length === 0) {
+    return <>{t('holdings.emptySub')}</>
+  }
+  const label = first?.linked
+    ? firstName ?? first.tossSymbol ?? ''
+    : first?.holdingName ?? ''
+  return <>{hs.length > 1 ? t('holdings.firstAndMore', { name: label, n: hs.length - 1 }) : label}</>
+}
+
 // AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,
 // item 사이 border-top 구분선 (TypeGroup 에서 처리). hover 는 background tint 만.
 function AssetCard({
   asset,
   negativeAmount = false,
   onOpenDetail,
+  investVal,
 }: {
   asset: Asset
   negativeAmount?: boolean
   onOpenDetail: (asset: Asset) => void
+  /** 투자 자산 라이브 평가(등락) — 투자 그룹에서만 전달, 없으면 등락 미표시 */
+  investVal?: InvestValuation | null
 }) {
   const { t } = useTranslation('asset')
   // 음수(빚)는 부호(−)만, 색은 중립(fg-primary) — 행 금액 규칙 정합(사용자 결정).
@@ -963,7 +984,19 @@ function AssetCard({
             </span>
           )}
         </div>
-        {asset.memo && (
+        {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
+        {asset.assetType === 'INVESTMENT' ? (
+          <div
+            style={{
+              fontSize: 'var(--text-caption)',
+              color: 'var(--fg-tertiary)',
+              marginTop: 1,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            <InvestHoldingsSub asset={asset} />
+          </div>
+        ) : asset.memo ? (
           <div
             style={{
               fontSize: 'var(--text-caption)',
@@ -974,7 +1007,7 @@ function AssetCard({
           >
             {asset.memo}
           </div>
-        )}
+        ) : null}
         {asset.assetType === 'CREDIT_CARD' && asset.paymentDay != null && (
           <div
             style={{
@@ -1004,6 +1037,25 @@ function AssetCard({
           </MaskAmount>
           <WonUnit />
         </div>
+        {/* 투자 등락 — design: +상승 빨강/−하락 파랑(국내 통념) + (변동액) */}
+        {investVal?.changePct != null && (
+          <div
+            className="num"
+            style={{
+              fontSize: 'var(--text-badge)',
+              fontWeight: '600',
+              marginTop: 2,
+              color: investVal.changePct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)',
+            }}
+          >
+            {investVal.changePct >= 0 ? '+' : ''}{investVal.changePct}%
+            {investVal.changeAmt != null && (
+              <MaskAmount mask="">
+                {' '}({investVal.changeAmt >= 0 ? '+' : '−'}{KRW(Math.abs(investVal.changeAmt))})
+              </MaskAmount>
+            )}
+          </div>
+        )}
         {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
         {asset.isIncludedInTotal === 'N' && (
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
@@ -1023,6 +1075,7 @@ function TypeGroup({
   mobile,
   onOpenDetail,
   negativeTotal = false,
+  investValMap,
 }: {
   title: string
   assets: Asset[]
@@ -1031,6 +1084,8 @@ function TypeGroup({
   mobile: boolean
   onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
+  /** 투자 그룹 전용 — 자산별 라이브 평가(등락) 맵 */
+  investValMap?: Map<number, InvestValuation>
 }) {
   const { t } = useTranslation('asset')
   return (
@@ -1067,6 +1122,7 @@ function TypeGroup({
               asset={a}
               negativeAmount={negativeTotal}
               onOpenDetail={onOpenDetail}
+              investVal={investValMap?.get(a.rowId) ?? null}
             />
           ))}
         </div>
@@ -1222,12 +1278,18 @@ function SummaryCard({
 function useAssetGroups() {
   const assetsQ = useAssets()
   const summaryQ = useAssetSummary()
-  // 토스 연결 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
+  // 연동 보유가 있는 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
+  // holdings(다건) 우선, 구버전 단일 tossSymbol 은 holdingsOf 가 합성해 하위호환.
   const linked = useMemo(
-    () => (assetsQ.data?.assets ?? []).filter(a => a.tossSymbol),
+    () => (assetsQ.data?.assets ?? []).filter(a => holdingsOf(a).some(h => h.linked)),
     [assetsQ.data],
   )
-  const valMap = useTossValuationMap(linked)
+  const investValMap = useInvestValuation(linked)
+  const valMap = useMemo(() => {
+    const m = new Map<number, number>()
+    for (const [k, v] of investValMap) m.set(k, v.value)
+    return m
+  }, [investValMap])
 
   const groups = useMemo(() => {
     // 연결 종목은 토스 라이브 평가액(시세×수량)으로 balance 치환 → 목록·구성비·합계가 실시간 반영.
@@ -1275,6 +1337,7 @@ function useAssetGroups() {
 
   return {
     ...groups,
+    investValMap,
     netWorth,
     changeAmount,
     changePercent,
@@ -1383,6 +1446,7 @@ function AssetDesktop() {
                 total={g.investmentsTotal}
                 mobile={false}
                 onOpenDetail={setDetailAsset}
+                investValMap={g.investValMap}
               />
             )}
             <TypeGroup
@@ -1492,6 +1556,7 @@ function AssetMobile() {
             total={g.investmentsTotal}
             mobile
             onOpenDetail={setDetailAsset}
+            investValMap={g.investValMap}
           />
         )}
         <TypeGroup

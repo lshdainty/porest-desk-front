@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CreditCard, Search, Wallet } from 'lucide-react'
+import { CreditCard, Plus, Search, Trash2, Wallet } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
@@ -48,12 +48,51 @@ import {
   AssetLogo,
   type Asset,
   type AssetFormValues,
+  type AssetHolding,
   type AssetType,
   type AssetUpdateFormValues,
   type YNType,
 } from '@/entities/asset'
+import { useStockSearch, useStockSymbolName } from '@/features/stock/model/useStockMaster'
+import { useTossPrices, useTossExchangeRate } from '@/features/stock/model/useTossStocks'
+import { useMyFeatures } from '@/features/subscription/model/useSubscription'
+import { Button } from '@/shared/ui/button'
 
 export type AssetGroup = 'account' | 'card' | 'invest'
+
+// 투자 보유 편집 행 — 로컬 편집용(react key + 검색 시 확보한 표시명 보관).
+type EditHolding = {
+  key: string
+  rowId?: number
+  linked: boolean
+  tossSymbol?: string
+  quantity?: number
+  holdingName?: string
+  holdingValue?: number
+  /** 검색에서 추가한 연동 항목의 종목명(표시용 — payload 미포함) */
+  displayName?: string
+}
+
+let editHoldingSeq = 0
+const nextHoldingKey = () => `eh-${++editHoldingSeq}`
+
+/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
+
+/** 연동 항목 이름 — 저장돼 있던 항목은 심볼→마스터 이름 조회(캐시), 검색 추가분은 displayName. */
+function LinkedHoldingName({ holding }: { holding: EditHolding }) {
+  const { data: masterName } = useStockSymbolName(
+    holding.displayName ? '' : holding.tossSymbol ?? '',
+  )
+  return <>{holding.displayName ?? masterName ?? holding.tossSymbol ?? ''}</>
+}
 
 type AccountSub = '입출금' | '적금' | '예금' | '현금' | '대출'
 const ACCOUNT_SUBS: AccountSub[] = ['입출금', '적금', '예금', '현금', '대출']
@@ -147,6 +186,85 @@ export function AssetEditDialog({
   // 계좌 sub
   const [accountSub, setAccountSub] = useState<AccountSub>(
     item && editingGroup === 'account' ? assetTypeToSub(item.assetType) : '입출금',
+  )
+
+  // 투자 — 보유 종목 다건 편집 (design AssetEditDialog invest 분기 미러).
+  // 기존 holdings 우선, 구버전 단일 연동(tossSymbol)은 linked 1건으로 합성(하위호환).
+  const [holdings, setHoldings] = useState<EditHolding[]>(() => {
+    if (item?.holdings && item.holdings.length > 0) {
+      return item.holdings.map(h => ({
+        key: nextHoldingKey(),
+        rowId: h.rowId,
+        linked: h.linked,
+        tossSymbol: h.tossSymbol ?? undefined,
+        quantity: h.quantity ?? undefined,
+        holdingName: h.holdingName ?? undefined,
+        holdingValue: h.holdingValue ?? undefined,
+      }))
+    }
+    if (item?.tossSymbol && item.tossQuantity != null) {
+      return [
+        {
+          key: nextHoldingKey(),
+          linked: true,
+          tossSymbol: item.tossSymbol,
+          quantity: item.tossQuantity,
+        },
+      ]
+    }
+    return []
+  })
+  const [stockQ, setStockQ] = useState('')
+  const debouncedStockQ = useDebounced(stockQ.trim(), 300)
+  const { data: features } = useMyFeatures()
+  const liveEnabled =
+    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+  const { data: stockMatches = [], isFetching: stockSearching } = useStockSearch(
+    editingGroup === 'invest' ? debouncedStockQ : '',
+  )
+  const stockResults = useMemo(
+    () =>
+      stockMatches
+        .filter(s => !holdings.some(h => h.linked && h.tossSymbol === s.symbol))
+        .slice(0, 6),
+    [stockMatches, holdings],
+  )
+  // 연동 항목 라이브 평가 — 시세(10초 폴링)×수량, 외화는 환율 환산. 게이트 밖이면 미평가.
+  const holdingSymbols = useMemo(
+    () => [...new Set(holdings.filter(h => h.linked && h.tossSymbol).map(h => h.tossSymbol as string))],
+    [holdings],
+  )
+  const priceActive = liveEnabled && editingGroup === 'invest' && holdingSymbols.length > 0
+  const activeHoldingSymbols = useMemo(
+    () => (priceActive ? holdingSymbols : []),
+    [priceActive, holdingSymbols],
+  )
+  const holdingPricesQ = useTossPrices(activeHoldingSymbols)
+  const holdingFxQ = useTossExchangeRate(priceActive)
+  const holdingValueOf = useMemo(() => {
+    const priceBySymbol = new Map<string, { price: number; currency: string }>()
+    for (const p of holdingPricesQ.data ?? []) {
+      const v = Number.parseFloat(p.lastPrice)
+      if (Number.isFinite(v)) priceBySymbol.set(p.symbol, { price: v, currency: p.currency })
+    }
+    const fx = Number.parseFloat(holdingFxQ.data?.rate ?? '')
+    return (h: EditHolding): number | null => {
+      if (!h.linked) return h.holdingValue ?? 0
+      const info = h.tossSymbol ? priceBySymbol.get(h.tossSymbol) : undefined
+      if (!info) return null
+      const krw =
+        info.currency === 'KRW'
+          ? info.price
+          : Number.isFinite(fx) && fx > 0
+            ? info.price * fx
+            : null
+      return krw != null ? Math.round(krw * (h.quantity ?? 0)) : null
+    }
+  }, [holdingPricesQ.data, holdingFxQ.data])
+  // 합계 — 평가 불가 연동 항목은 0 취급하지 않고 '평가 가능분 합'으로 표기.
+  const holdingsTotal = useMemo(
+    () => holdings.reduce((s, h) => s + (holdingValueOf(h) ?? 0), 0),
+    [holdings, holdingValueOf],
   )
 
   // 카드
@@ -376,29 +494,31 @@ export function AssetEditDialog({
 
     if (editingGroup === 'invest') {
       const resolvedName = name.trim() || `${brand} 투자`
-      if (isNew) {
-        onCreate({
-          assetName: resolvedName,
-          assetType: 'INVESTMENT',
-          balance: parsedBalance,
-          currency: 'KRW',
-          institution: brand,
-          color: brandColor?.bg,
-          memo: memo.trim() || undefined,
-          isIncludedInTotal,
-        })
-      } else {
-        onUpdate({
-          assetName: resolvedName,
-          assetType: 'INVESTMENT',
-          balance: parsedBalance,
-          currency: 'KRW',
-          institution: brand,
-          color: brandColor?.bg,
-          memo: memo.trim() || undefined,
-          isIncludedInTotal,
-        })
+      // holdings 페이로드 — 리스트 전체 교체 계약. linked→tossSymbol+quantity / manual→holdingName+holdingValue.
+      const holdingsPayload: AssetHolding[] = holdings.map((h, i) => ({
+        rowId: h.rowId,
+        linked: h.linked,
+        tossSymbol: h.linked ? h.tossSymbol ?? null : null,
+        quantity: h.linked ? h.quantity ?? 0 : null,
+        holdingName: h.linked ? null : h.holdingName ?? '',
+        holdingValue: h.linked ? null : h.holdingValue ?? 0,
+        sortOrder: i,
+      }))
+      // 보유가 있으면 balance = 평가 가능분 합(연동 시세 미확보는 0 대신 제외된 합) — 서버 스냅샷용.
+      const investBalance = holdings.length > 0 ? holdingsTotal : parsedBalance
+      const common = {
+        assetName: resolvedName,
+        assetType: 'INVESTMENT' as AssetType,
+        balance: investBalance,
+        currency: 'KRW',
+        institution: brand,
+        color: brandColor?.bg,
+        memo: memo.trim() || undefined,
+        isIncludedInTotal,
+        holdings: holdingsPayload,
       }
+      if (isNew) onCreate(common)
+      else onUpdate(common)
       return
     }
 
@@ -748,6 +868,175 @@ export function AssetEditDialog({
             />
           </div>
 
+          {/* 투자 — 보유 종목 편집 (design invest 분기: 검색→연동 추가 / 직접 추가, qty·평가액 인라인 편집) */}
+          {editingGroup === 'invest' && (
+            <div>
+              <div className="flex items-baseline justify-between mb-2">
+                <Label className="text-[13px] font-medium">{t('holdings.sectionTitle')}</Label>
+                <span className="num text-[11px] text-[var(--fg-tertiary)]">
+                  {t('holdings.editSummary', { n: holdings.length, total: KRW(holdingsTotal) })}
+                </span>
+              </div>
+              <div className="relative mb-1">
+                <Search
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
+                />
+                <Input
+                  search
+                  value={stockQ}
+                  onChange={e => setStockQ(e.target.value)}
+                  placeholder={t('holdings.searchPlaceholder')}
+                  className="pl-9"
+                />
+              </div>
+              {stockQ.trim().length > 0 && (
+                <div
+                  className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] mb-2"
+                  style={{ maxHeight: 240, overflowY: 'auto' }}
+                >
+                  {stockResults.map(s => (
+                    <button
+                      key={`${s.marketCode}:${s.symbol}`}
+                      type="button"
+                      className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--bg-hover)] transition-colors"
+                      style={{ background: 'transparent', border: 0, cursor: 'pointer' }}
+                      onClick={() => {
+                        setHoldings(prev => [
+                          ...prev,
+                          {
+                            key: nextHoldingKey(),
+                            linked: true,
+                            tossSymbol: s.symbol,
+                            quantity: 1,
+                            displayName: s.nameKr,
+                          },
+                        ])
+                        setStockQ('')
+                      }}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13px] font-semibold text-[var(--fg-primary)]">{s.nameKr}</div>
+                        <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
+                          {s.symbol} · {s.marketCode}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                  {stockSearching && stockResults.length === 0 && (
+                    <div className="py-4 text-center text-[12px] text-[var(--fg-tertiary)]">…</div>
+                  )}
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-1.5 px-3 py-2.5 text-[12.5px] font-bold text-[var(--fg-brand)]"
+                    style={{
+                      background: 'transparent',
+                      border: 0,
+                      borderTop: stockResults.length ? '1px solid var(--border-subtle)' : 'none',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      setHoldings(prev => [
+                        ...prev,
+                        {
+                          key: nextHoldingKey(),
+                          linked: false,
+                          holdingName: stockQ.trim(),
+                          holdingValue: 0,
+                        },
+                      ])
+                      setStockQ('')
+                    }}
+                  >
+                    <Plus size={13} strokeWidth={2.4} /> {t('holdings.addManual', { name: stockQ.trim() })}
+                  </button>
+                </div>
+              )}
+              {holdings.length === 0 ? (
+                <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5 leading-relaxed">
+                  {t('holdings.editEmptyHelp')}
+                </p>
+              ) : (
+                <div>
+                  {holdings.map((h, i) => {
+                    const val = holdingValueOf(h)
+                    return (
+                      <div
+                        key={h.key}
+                        className="flex items-center gap-2"
+                        style={{
+                          padding: '11px 2px',
+                          borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+                        }}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-semibold text-[var(--fg-primary)] truncate">
+                            {h.linked ? <LinkedHoldingName holding={h} /> : h.holdingName}
+                            {h.linked && (
+                              <span
+                                className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold align-middle"
+                                style={{ background: 'var(--bg-brand-subtle)', color: 'var(--fg-brand-strong)' }}
+                              >
+                                {t('holdings.linkedBadge')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
+                            {h.linked ? t('holdings.editLinkedSub') : t('holdings.manualSub')}
+                          </div>
+                        </div>
+                        {h.linked ? (
+                          <span className="inline-flex items-center gap-1 shrink-0">
+                            <Input
+                              inputMode="numeric"
+                              value={h.quantity != null ? String(h.quantity) : ''}
+                              onChange={e => {
+                                const q = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
+                                setHoldings(prev =>
+                                  prev.map(x => (x.key === h.key ? { ...x, quantity: q } : x)),
+                                )
+                              }}
+                              className="num h-[34px] w-[58px] px-2 text-right"
+                            />
+                            <span className="text-[12px] text-[var(--fg-tertiary)]">{t('holdings.sharesUnitShort')}</span>
+                          </span>
+                        ) : (
+                          <Input
+                            inputMode="numeric"
+                            value={h.holdingValue != null ? String(h.holdingValue) : ''}
+                            onChange={e => {
+                              const v = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
+                              setHoldings(prev =>
+                                prev.map(x => (x.key === h.key ? { ...x, holdingValue: v } : x)),
+                              )
+                            }}
+                            className="num h-[34px] w-[104px] px-2 text-right shrink-0"
+                          />
+                        )}
+                        <span
+                          className="num shrink-0 text-right text-[12.5px] font-bold text-[var(--fg-primary)]"
+                          style={{ minWidth: 84 }}
+                        >
+                          {val != null ? `${KRW(val)}원` : '—'}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 h-8 w-8"
+                          aria-label={t('holdings.remove')}
+                          onClick={() => setHoldings(prev => prev.filter(x => x.key !== h.key))}
+                        >
+                          <Trash2 size={13} />
+                        </Button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 신용카드 — design 신판 순서: 신용한도 → 결제일 → 현재 사용액 → 결제 계좌(연동 유지) */}
           {editingGroup === 'card' && cardType === 'CREDIT' && (
             <>
@@ -777,27 +1066,42 @@ export function AssetEditDialog({
             </>
           )}
 
-          <div>
-            <Label htmlFor="asset-edit-balance" className="text-[13px] font-medium mb-2 block">
-              {balanceLabel}
-            </Label>
-            <Input
-              id="asset-edit-balance"
-              inputMode="numeric"
-              value={balanceStr}
-              onChange={e => setBalanceStr(e.target.value.replace(/[^\d-]/g, ''))}
-              onBlur={() => {
-                const n = Number(balanceStr) || 0
-                setBalanceStr(n ? KRW(n) : '0')
-              }}
-              onFocus={() => setBalanceStr(prev => prev.replace(/,/g, ''))}
-            />
-            {editingGroup === 'card' && (
+          {/* 투자 + 보유 종목 존재 시 평가액은 보유 합계로 자동 계산 — 입력 대신 요약 표시 */}
+          {editingGroup === 'invest' && holdings.length > 0 ? (
+            <div>
+              <Label className="text-[13px] font-medium mb-2 block">{balanceLabel}</Label>
+              <div
+                className="num rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)] px-3 py-2.5 text-[14px] font-bold text-[var(--fg-primary)]"
+              >
+                {KRW(holdingsTotal)}원
+              </div>
               <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-                {t('editDialog.cardBalanceHelp')}
+                {t('holdings.balanceAutoHelp')}
               </p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="asset-edit-balance" className="text-[13px] font-medium mb-2 block">
+                {balanceLabel}
+              </Label>
+              <Input
+                id="asset-edit-balance"
+                inputMode="numeric"
+                value={balanceStr}
+                onChange={e => setBalanceStr(e.target.value.replace(/[^\d-]/g, ''))}
+                onBlur={() => {
+                  const n = Number(balanceStr) || 0
+                  setBalanceStr(n ? KRW(n) : '0')
+                }}
+                onFocus={() => setBalanceStr(prev => prev.replace(/,/g, ''))}
+              />
+              {editingGroup === 'card' && (
+                <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+                  {t('editDialog.cardBalanceHelp')}
+                </p>
+              )}
+            </div>
+          )}
 
           {editingGroup === 'card' && cardType === 'CREDIT' && (
             <div>
