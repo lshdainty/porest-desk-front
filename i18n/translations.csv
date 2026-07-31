@@ -1805,6 +1805,32 @@ stocks,securityType.STOCK,주식,Stock
 stocks,securityType.ETF,ETF,ETF
 stocks,securityType.INDEX,지수,Index
 stocks,securityType.WARRANT,워런트,Warrant
+stocks,search.hint,종목명·심볼로 검색하세요 (국내 + 미국·중국·일본·홍콩·베트남),Search by name or symbol (KR + US·CN·JP·HK·VN)
+stocks,detail.priceUnavailable,토스 시세 미지원 종목이에요 (국내·미국만 제공),Price unavailable via Toss (KR·US only)
+stocks,discover.loading,랭킹을 불러오는 중…,Loading rankings…
+stocks,discover.empty,집계된 랭킹이 없어요,No rankings available
+stocks,watch.defaultGroupName,관심,Watchlist
+stocks,watch.groupAdd,그룹 추가,Add group
+stocks,watch.groupRename,그룹 이름 변경,Rename group
+stocks,watch.groupDelete,그룹 삭제,Delete group
+stocks,watch.groupNamePlaceholder,그룹 이름,Group name
+stocks,watch.groupDeleteConfirm,그룹과 담긴 종목이 함께 삭제됩니다. 계속할까요?,The group and its stocks will be removed. Continue?
+stocks,watch.groupSaveFail,관심목록 그룹 저장에 실패했어요,Failed to save watchlist group
+stocks,watch.addFail,관심 등록에 실패했어요,Failed to add to watchlist
+stocks,warning.LIQUIDATION_TRADING,정리매매,Liquidation trading
+stocks,warning.OVERHEATED,단기과열,Overheated
+stocks,warning.SHORT_TERM_OVERHEAT,단기과열,Short-term overheat
+stocks,warning.EXCESSIVE_RISE,이상급등,Excessive rise
+stocks,warning.INVESTMENT_WARNING,투자경고,Investment warning
+stocks,warning.INVESTMENT_RISK,투자위험,Investment risk
+stocks,warning.INVESTMENT_CAUTION,투자주의,Investment caution
+stocks,warning.VI,VI 발동,Volatility interruption
+stocks,warning.VI_STATIC,정적 VI,Static VI
+stocks,warning.VI_DYNAMIC,동적 VI,Dynamic VI
+stocks,warning.VI_STATIC_AND_DYNAMIC,VI 발동,Volatility interruption
+stocks,warning.STOCK_WARRANTS,신주인수권,Stock warrants
+stocks,warning.ADMINISTRATIVE,관리종목,Administrative issue
+stocks,warning.ADJUSTMENT_OF_SHARES,주식병합·분할,Share adjustment
 stats,page.title,통계·분석,Statistics
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
 stats,tab.category,카테고리,Category

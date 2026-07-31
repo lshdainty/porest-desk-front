@@ -163,6 +163,11 @@ export const stockKeys = {
   priceLimits: (symbol: string) => [...stockKeys.all, 'price-limits', symbol] as const,
   candles: (symbol: string, interval: string) => [...stockKeys.all, 'candles', symbol, interval] as const,
   warnings: (symbol: string) => [...stockKeys.all, 'warnings', symbol] as const,
+  prevClose: (symbol: string) => [...stockKeys.all, 'prev-close', symbol] as const,
+  rankings: (type: string, market: string, duration: string) =>
+    [...stockKeys.all, 'rankings', type, market, duration] as const,
+  indicators: (symbols: string[]) => [...stockKeys.all, 'indicators', symbols] as const,
+  watchGroups: () => [...stockKeys.all, 'watch-groups'] as const,
 }
 
 export const constellationKeys = {

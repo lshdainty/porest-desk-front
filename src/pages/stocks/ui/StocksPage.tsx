@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext, Link } from 'react-router-dom'
-import { AlertTriangle, ChevronDown, ChevronUp, Info, LineChart, Search, Star } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Info, LineChart, Pencil, Plus, Search, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { tileRadius } from '@/shared/lib'
@@ -16,44 +16,54 @@ import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { LightweightStockChart } from './LightweightStockChart'
 import type {
-  TossCandle,
+  StockMasterItem,
   TossHoldingsItem,
   TossMarketSession,
   TossOrderbook,
+  TossRankingItem,
   TossStockInfo,
   TossTrade,
+  WatchGroup,
 } from '@/features/stock/api/stockApi'
 import {
-  useStockLiveOverlay,
+  changePctOf,
+  usePrevClose,
   useTossAccounts,
   useTossCandles,
+  useTossExchangeRate,
   useTossHoldings,
+  useTossIndicatorPrices,
   useTossMarketCalendarKr,
   useTossMarketCalendarUs,
   useTossOrderbook,
   useTossPriceLimits,
+  useTossPrices,
+  useTossRankings,
   useTossStockInfo,
   useTossStockWarnings,
   useTossTrades,
 } from '@/features/stock/model/useTossStocks'
-import { useTossCredentialStatus } from '@/features/subscription/model/useSubscription'
+import { useStockBySymbol, useStockSearch } from '@/features/stock/model/useStockMaster'
 import {
-  FX_USDKRW,
-  findStock,
-  priceKRW,
-  STOCK_WATCH,
-  STOCKS,
-  type Stock,
-  type WatchGroup,
-} from '../model/stocksMock'
+  findWatchEntries,
+  useAddWatchItem,
+  useCreateWatchGroup,
+  useDeleteWatchGroup,
+  useRemoveWatchItem,
+  useRenameWatchGroup,
+  useWatchGroups,
+} from '@/features/stock/api/watchlistApi'
+import { useTossCredentialStatus } from '@/features/subscription/model/useSubscription'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
 // ---- 시세 포맷 ----------------------------------------------------------
 
-function fmtPrice(s: Stock): string {
-  if (s.market === 'US') return `$${s.price.toFixed(2)}`
-  return money(s.price)
+/** 통화별 가격 표기 — KRW 는 원화 포맷, USD 는 $, 그 외(CNY·JPY 등)는 통화코드 병기. */
+function fmtByCurrency(price: number, currency: string): string {
+  if (currency === 'USD') return `$${price.toFixed(2)}`
+  if (currency === 'KRW') return money(Math.round(price))
+  return `${price.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`
 }
 
 /** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary). */
@@ -77,14 +87,6 @@ function liveTradeFills(trades?: TossTrade[]): { time: string; p: number; q: num
   })
 }
 
-/** 캔들 → 시간순(오름차순) 종가 배열. */
-function candleCloses(candles: TossCandle[]): number[] {
-  return [...candles]
-    .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
-    .map(c => Number.parseFloat(c.closePrice))
-    .filter(Number.isFinite)
-}
-
 // ---- 등락률 배지 (색 + 부호 + 아이콘 3중 병기 — A11y 1.4.1) ----------------
 
 function PctBadge({ pct, size = 13 }: { pct: number; size?: number }) {
@@ -102,10 +104,21 @@ function PctBadge({ pct, size = 13 }: { pct: number; size?: number }) {
   )
 }
 
-// ---- 종목 심볼 배지 — KR=cat-blue / US=cat-violet (다크 자동 light swap) ----
+// ---- 종목 심볼 배지 — 국가별 색 (다크 자동 light swap) -----------------------
 
-function StockBadge({ s, size = 40 }: { s: Stock; size?: number }) {
-  const tone = s.market === 'KR' ? 'var(--color-cat-blue)' : 'var(--color-cat-violet)'
+const COUNTRY_TONE: Record<string, string> = {
+  KR: 'var(--color-cat-blue)',
+  US: 'var(--color-cat-violet)',
+  CN: 'var(--color-cat-orange)',
+  JP: 'var(--color-cat-pink)',
+  HK: 'var(--color-cat-green)',
+  VN: 'var(--color-cat-indigo)',
+}
+
+function StockBadge({ name, symbol, countryCode, size = 40 }: { name: string; symbol: string; countryCode: string; size?: number }) {
+  const tone = COUNTRY_TONE[countryCode] ?? 'var(--color-cat-blue)'
+  // 한글명은 첫 글자, 알파벳 심볼은 앞 2글자.
+  const initial = /^[A-Za-z]/.test(symbol) ? symbol.slice(0, 2) : name.slice(0, 1)
   return (
     <span
       style={{
@@ -123,47 +136,32 @@ function StockBadge({ s, size = 40 }: { s: Stock; size?: number }) {
         color: `color-mix(in oklab, ${tone} 72%, var(--fg-primary))`,
       }}
     >
-      {s.market === 'US' ? s.ticker.slice(0, 2) : s.name.slice(0, 1)}
+      {initial}
     </span>
   )
 }
 
-// ---- 미니 스파크라인 (리스트 행 — 큐레이트 카탈로그 spark) -------------------
+// ---- 종목 리스트 행 (표시 전용 — 데이터는 각 패널이 공급) ---------------------
 
-function Sparkline({ values, height = 40, color, fill = true, gradientId }: { values: number[]; height?: number; color: string; fill?: boolean; gradientId?: string }) {
-  if (values.length === 0) return null
-  const max = Math.max(...values)
-  const min = Math.min(...values)
-  const range = max - min || 1
-  const w = 200
-  const h = height
-  const step = w / (values.length - 1)
-  const pts = values.map((v, i) => [i * step, h - ((v - min) / range) * (h - 8) - 4] as const)
-  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
-  const gid = gradientId ?? 'spark-fill'
-  const last = pts[pts.length - 1]!
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height }}>
-      {fill && (
-        <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      )}
-      {fill && <path d={`${d} L${w},${h} L0,${h} Z`} fill={`url(#${gid})`} />}
-      <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r="3.5" fill={color} />
-    </svg>
-  )
-}
+type RowStock = { symbol: string; name: string; countryCode: string; currency: string }
 
-// ---- 종목 리스트 행 ------------------------------------------------------
-
-function StockRow({ ticker, onClick, sub, right, active }: { ticker: string; onClick: () => void; sub?: string; right?: React.ReactNode; active?: boolean }) {
-  const s = findStock(ticker)
-  if (!s) return null
+function StockRow({
+  stock,
+  onClick,
+  sub,
+  price,
+  changePct,
+  right,
+  active,
+}: {
+  stock: RowStock
+  onClick: () => void
+  sub?: string
+  price?: number | null
+  changePct?: number | null
+  right?: React.ReactNode
+  active?: boolean
+}) {
   return (
     <button
       type="button"
@@ -189,27 +187,32 @@ function StockRow({ ticker, onClick, sub, right, active }: { ticker: string; onC
         if (!active) e.currentTarget.style.background = 'transparent'
       }}
     >
-      <StockBadge s={s} size={40} />
+      <StockBadge name={stock.name} symbol={stock.symbol} countryCode={stock.countryCode} size={40} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {s.name}
+          {stock.name}
         </div>
         <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', display: 'flex', alignItems: 'center', gap: 5, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          <span style={{ fontWeight: 600 }}>{s.ticker}</span>
-          <span>·</span>
-          <span style={{ whiteSpace: 'nowrap' }}>{sub || s.sector}</span>
+          <span style={{ fontWeight: 600 }}>{stock.symbol}</span>
+          {sub && (
+            <>
+              <span>·</span>
+              <span style={{ whiteSpace: 'nowrap' }}>{sub}</span>
+            </>
+          )}
         </div>
       </div>
-      <div style={{ width: 56, height: 28, flexShrink: 0, opacity: 0.9 }}>
-        <Sparkline values={s.spark} height={28} color={trendColor(s.changePct)} fill={false} />
-      </div>
       <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 78 }}>
-        {right || (
+        {right ?? (
           <>
-            <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>{fmtPrice(s)}</div>
-            <div style={{ marginTop: 1 }}>
-              <PctBadge pct={s.changePct} size={11.5} />
+            <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+              {price != null ? fmtByCurrency(price, stock.currency) : '—'}
             </div>
+            {changePct != null && (
+              <div style={{ marginTop: 1 }}>
+                <PctBadge pct={changePct} size={11.5} />
+              </div>
+            )}
           </>
         )}
       </div>
@@ -232,9 +235,9 @@ const RANGE_LABEL_KEY: Record<Range, string> = {
 
 // ---- 호가창 (토스 orderbook · 실데이터 전용) -------------------------------
 
-function OrderBook({ s, book, changePct }: { s: Stock; book: TossOrderbook; changePct: number }) {
+function OrderBook({ currency, lastPrice, book, changePct }: { currency: string; lastPrice: number | null; book: TossOrderbook; changePct: number }) {
   const { t } = useTranslation('stocks')
-  const fmt = (p: number) => (s.market === 'US' ? `$${p.toFixed(2)}` : KRW(Math.round(p)))
+  const fmt = (p: number) => fmtByCurrency(p, currency)
   // asks=낮은가격순 → 상단(높은가격 위) 위해 5개 잘라 역순, bids=높은가격순 그대로.
   const asks = book.asks.slice(0, 5).map(e => ({ p: Number.parseFloat(e.price), q: Math.round(Number.parseFloat(e.volume)) })).reverse()
   const bids = book.bids.slice(0, 5).map(e => ({ p: Number.parseFloat(e.price), q: Math.round(Number.parseFloat(e.volume)) }))
@@ -279,7 +282,9 @@ function OrderBook({ s, book, changePct }: { s: Stock; book: TossOrderbook; chan
         <Row key={`a${i}`} {...a} type="ask" />
       ))}
       <div style={{ borderTop: '1px dashed var(--border-subtle)', borderBottom: '1px dashed var(--border-subtle)', margin: '3px 0', padding: '5px 0', textAlign: 'center' }}>
-        <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 800, color: trendColor(changePct) }}>{fmtPrice(s)}</span>
+        <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 800, color: trendColor(changePct) }}>
+          {lastPrice != null ? fmt(lastPrice) : '—'}
+        </span>
         <span style={{ marginLeft: 6 }}>
           <PctBadge pct={changePct} size={11} />
         </span>
@@ -297,12 +302,12 @@ function QuotesEmpty({ msg }: { msg: string }) {
   return <div style={{ padding: '36px 12px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{msg}</div>
 }
 
-function QuotesCard({ s, changePct }: { s: Stock; changePct: number }) {
+function QuotesCard({ symbol, currency, lastPrice, changePct }: { symbol: string; currency: string; lastPrice: number | null; changePct: number }) {
   const { t } = useTranslation('stocks')
   const [tab, setTab] = useState<'book' | 'tape'>('book')
-  const orderbookQ = useTossOrderbook(s.ticker)
-  const tradesQ = useTossTrades(s.ticker)
-  const fmt = (p: number) => (s.market === 'US' ? `$${p.toFixed(2)}` : KRW(Math.round(p)))
+  const orderbookQ = useTossOrderbook(symbol)
+  const tradesQ = useTossTrades(symbol)
+  const fmt = (p: number) => fmtByCurrency(p, currency)
   const book = orderbookQ.data
   const hasBook = !!book && book.asks.length > 0 && book.bids.length > 0
   const fills = liveTradeFills(tradesQ.data)
@@ -320,7 +325,7 @@ function QuotesCard({ s, changePct }: { s: Stock; changePct: number }) {
         orderbookQ.isLoading ? (
           <QuotesEmpty msg={t('quotes.orderbookLoading')} />
         ) : hasBook ? (
-          <OrderBook s={s} book={book} changePct={changePct} />
+          <OrderBook currency={currency} lastPrice={lastPrice} book={book} changePct={changePct} />
         ) : (
           <QuotesEmpty msg={t('quotes.orderbookEmpty')} />
         )
@@ -350,10 +355,10 @@ function QuotesCard({ s, changePct }: { s: Stock; changePct: number }) {
 
 // ---- 일별 시세 표 (토스 candles 1d) ---------------------------------------
 
-function DailyQuoteTable({ symbol, isUs }: { symbol: string; isUs: boolean }) {
+function DailyQuoteTable({ symbol, currency }: { symbol: string; currency: string }) {
   const { t } = useTranslation('stocks')
   const q = useTossCandles(symbol, '1d', 252)
-  const fmt = (v: number) => (isUs ? `$${v.toFixed(2)}` : KRW(Math.round(v)))
+  const fmt = (v: number) => fmtByCurrency(v, currency)
   const rows = useMemo(() => {
     const asc = [...(q.data?.candles ?? [])].sort((a, b) => a.timestamp.localeCompare(b.timestamp))
     const recent = asc.slice(-9)
@@ -403,25 +408,7 @@ function DailyQuoteTable({ symbol, isUs }: { symbol: string; isUs: boolean }) {
   )
 }
 
-// ---- 장 상태 바 (토스 market-calendar) ------------------------------------
-
-const WARNING_LABELS: Record<string, string> = {
-  LIQUIDATION_TRADING: '정리매매',
-  OVERHEATED: '단기과열',
-  SHORT_TERM_OVERHEAT: '단기과열',
-  EXCESSIVE_RISE: '이상급등',
-  INVESTMENT_WARNING: '투자경고',
-  INVESTMENT_RISK: '투자위험',
-  INVESTMENT_CAUTION: '투자주의',
-  VI: 'VI 발동',
-  VI_STATIC: '정적 VI',
-  VI_DYNAMIC: '동적 VI',
-  VI_STATIC_AND_DYNAMIC: 'VI 발동',
-  STOCK_WARRANTS: '신주인수권',
-  ADMINISTRATIVE: '관리종목',
-  ADJUSTMENT_OF_SHARES: '주식병합·분할',
-}
-const warningLabel = (t: string) => WARNING_LABELS[t] ?? t
+// ---- 장 상태 바 (토스 market-calendar + 국내 지수) --------------------------
 
 /** 'HH:MM:SS' → 'HH:MM' */
 const hhmm = (t?: string | null) => (t ? t.slice(0, 5) : null)
@@ -450,12 +437,15 @@ function MarketStatusBar({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('stocks')
   const krQ = useTossMarketCalendarKr()
   const usQ = useTossMarketCalendarUs()
+  // 국내 지수 현재가 (토스 시장지표 — KOSPI·KOSDAQ 포인트)
+  const idxQ = useTossIndicatorPrices(['KOSPI', 'KOSDAQ'])
   const kr = marketState(krQ.data?.today.integrated?.regularMarket, 'Asia/Seoul')
   const us = marketState(usQ.data?.today.regularMarket, 'America/New_York')
   const markets = [
     { name: mobile ? t('market.krShort') : t('market.krFull'), ...kr },
     { name: mobile ? t('market.usShort') : t('market.usFull'), ...us },
   ]
+  const indices = (idxQ.data ?? []).filter(i => num(i.lastPrice) > 0)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 16, flexWrap: 'wrap' }}>
       {markets.map(m => (
@@ -472,6 +462,16 @@ function MarketStatusBar({ mobile }: { mobile: boolean }) {
           <span style={{ width: 7, height: 7, borderRadius: 'var(--radius-full)', flexShrink: 0, background: m.open ? 'var(--status-success-fg)' : 'var(--fg-tertiary)' }} />
           <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)' }}>{m.name}</span>
           <span style={{ fontSize: 'var(--text-caption)', color: m.open ? 'var(--fg-secondary)' : 'var(--fg-tertiary)' }}>{t(m.labelKey, m.time ? { time: m.time } : undefined)}</span>
+        </div>
+      ))}
+      {indices.map(i => (
+        <div key={i.symbol} style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-secondary)' }}>
+            {i.symbol === 'KOSPI' ? t('market.KOSPI') : t('market.KOSDAQ')}
+          </span>
+          <span className="num" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-primary)' }}>
+            {num(i.lastPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </span>
         </div>
       ))}
       {!mobile && <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{t('market.dataNotice')}</span>}
@@ -543,46 +543,78 @@ function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
   )
 }
 
-// ---- 발견(디스커버리) 랭킹 — 큐레이트 universe 실시세 정렬 --------------------
+// ---- 발견(디스커버리) 랭킹 — 토스 rankings 실데이터 ---------------------------
 
-function volNum(vol: string): number {
-  const raw = vol.replace(/,/g, '')
-  if (raw.endsWith('M')) return parseFloat(raw) * 1_000_000
-  if (raw.endsWith('K')) return parseFloat(raw) * 1_000
-  return parseFloat(raw)
+function RankRow({ item, name, index, active, onPick }: { item: TossRankingItem; name: string | undefined; index: number; active: boolean; onPick: (symbol: string) => void }) {
+  const country = /^[A-Za-z]/.test(item.symbol) ? 'US' : 'KR'
+  const last = num(item.price.lastPrice)
+  const changePct = item.price.changeRate != null ? num(item.price.changeRate) * 100 : null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <span className="num" style={{ width: 22, textAlign: 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: index < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
+        {item.rank}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <StockRow
+          stock={{ symbol: item.symbol, name: name ?? item.symbol, countryCode: country, currency: item.currency }}
+          active={active}
+          onClick={() => onPick(item.symbol)}
+          price={last > 0 ? last : null}
+          changePct={changePct}
+        />
+      </div>
+    </div>
+  )
 }
 
 function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: string) => void; selected: string | null; mobile?: boolean }) {
   const { t } = useTranslation('stocks')
+  const [market, setMarket] = useState<'KR' | 'US'>('KR')
   const [tab, setTab] = useState<'gainers' | 'losers' | 'volume'>('gainers')
-  const list = useMemo(() => {
-    const arr = [...STOCKS]
-    if (tab === 'gainers') arr.sort((a, b) => b.changePct - a.changePct)
-    else if (tab === 'losers') arr.sort((a, b) => a.changePct - b.changePct)
-    else arr.sort((a, b) => volNum(b.vol) - volNum(a.vol))
-    return arr.slice(0, 6)
-  }, [tab])
-  const rows = list.map((s, i) => (
-    <div key={s.ticker} style={{ display: 'flex', alignItems: 'center' }}>
-      <span className="num" style={{ width: 22, textAlign: 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: i < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
-        {i + 1}
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <StockRow ticker={s.ticker} active={selected === s.ticker} onClick={() => onPick(s.ticker)} />
-      </div>
-    </div>
+  // TOP_GAINERS/LOSERS 는 realtime 미지원 → 1d, 거래량은 실시간.
+  const type = tab === 'gainers' ? 'TOP_GAINERS' : tab === 'losers' ? 'TOP_LOSERS' : 'MARKET_TRADING_VOLUME'
+  const duration = tab === 'volume' ? 'realtime' : '1d'
+  const q = useTossRankings(type, market, duration, { count: 10 })
+  const rankings = q.data?.rankings ?? []
+  // 랭킹 응답엔 종목명이 없어 토스 종목정보로 배치 조회한다.
+  const infoQ = useTossStockInfo(rankings.map(r => r.symbol))
+  const nameOf = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const i of infoQ.data ?? []) map.set(i.symbol, i.name)
+    return map
+  }, [infoQ.data])
+
+  const rows = rankings.map((r, i) => (
+    <RankRow key={`${r.symbol}`} item={r} name={nameOf.get(r.symbol)} index={i} active={selected === r.symbol} onPick={onPick} />
   ))
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <Tabs value={tab} onValueChange={v => setTab(v as 'gainers' | 'losers' | 'volume')}>
-        <TabsList variant="pill" size="sm">
-          <TabsTrigger variant="pill" value="gainers">{t('discover.gainers')}</TabsTrigger>
-          <TabsTrigger variant="pill" value="losers">{t('discover.losers')}</TabsTrigger>
-          <TabsTrigger variant="pill" value="volume">{t('discover.volume')}</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      {/* 모바일 카드 다이어트 — 리스트 카드 벗김 (행 hover 가 구분 담당) */}
-      {mobile ? <div>{rows}</div> : <Card style={{ padding: 6 }}>{rows}</Card>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <Tabs value={tab} onValueChange={v => setTab(v as 'gainers' | 'losers' | 'volume')}>
+          <TabsList variant="pill" size="sm">
+            <TabsTrigger variant="pill" value="gainers">{t('discover.gainers')}</TabsTrigger>
+            <TabsTrigger variant="pill" value="losers">{t('discover.losers')}</TabsTrigger>
+            <TabsTrigger variant="pill" value="volume">{t('discover.volume')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div style={{ marginLeft: 'auto' }}>
+          <Tabs value={market} onValueChange={v => setMarket(v as 'KR' | 'US')}>
+            <TabsList variant="pill" size="sm">
+              <TabsTrigger variant="pill" value="KR">{t('market.krShort')}</TabsTrigger>
+              <TabsTrigger variant="pill" value="US">{t('market.usShort')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+      {q.isLoading ? (
+        <QuotesEmpty msg={t('discover.loading')} />
+      ) : rows.length === 0 ? (
+        <QuotesEmpty msg={t('discover.empty')} />
+      ) : mobile ? (
+        <div>{rows}</div>
+      ) : (
+        <Card style={{ padding: 6 }}>{rows}</Card>
+      )}
     </div>
   )
 }
@@ -601,20 +633,23 @@ function fmtShares(n: number): string {
   return `${Math.round(n / 1e4).toLocaleString()}만 주`
 }
 
-function StockInfoCard({ s, info, isUs }: { s: Stock; info: TossStockInfo | undefined; isUs: boolean }) {
+function StockInfoCard({ symbol, currency, info, lastPrice, fxRate }: { symbol: string; currency: string; info: TossStockInfo | undefined; lastPrice: number | null; fxRate: number | null }) {
   const { t } = useTranslation('stocks')
-  const limitsQ = useTossPriceLimits(s.ticker)
+  const limitsQ = useTossPriceLimits(symbol)
   const limits = limitsQ.data
   const shares = num(info?.sharesOutstanding)
-  const mcKRW = priceKRW(s) * shares
-  const isKr = s.market === 'KR'
+  const isUs = currency === 'USD'
+  const isKr = currency === 'KRW'
+  // 시가총액 = 현재가 × 발행주식수 (USD 는 환율 환산). 시세가 없으면 표시하지 않는다.
+  const priceInKrw = lastPrice == null ? null : isUs ? (fxRate == null ? null : lastPrice * fxRate) : isKr ? lastPrice : null
+  const mcKRW = priceInKrw != null && shares > 0 ? priceInKrw * shares : null
   const upper = limits?.upperLimitPrice ? num(limits.upperLimitPrice) : null
   const lower = limits?.lowerLimitPrice ? num(limits.lowerLimitPrice) : null
   const rows: Array<{ k: string; v: string; c?: string }> = [
     { k: t('info.market'), v: info ? info.market : isUs ? t('market.usShort') : t('market.krShort') },
     { k: t('info.securityType'), v: info?.securityType === 'ETF' ? 'ETF' : t('info.stock') },
-    { k: t('info.currency'), v: info?.currency ?? (isUs ? 'USD' : 'KRW') },
-    ...(shares > 0 ? [{ k: t('info.marketCap'), v: fmtCapKRW(mcKRW) }] : []),
+    { k: t('info.currency'), v: info?.currency ?? currency },
+    ...(mcKRW != null ? [{ k: t('info.marketCap'), v: fmtCapKRW(mcKRW) }] : []),
     ...(isKr && upper != null ? [{ k: t('info.upperLimit'), v: money(upper), c: 'var(--status-danger-fg)' }] : []),
     ...(isKr && lower != null ? [{ k: t('info.lowerLimit'), v: money(lower), c: 'var(--fg-brand)' }] : []),
     ...(info?.listDate ? [{ k: t('info.listDate'), v: info.listDate }] : []),
@@ -643,45 +678,56 @@ function StockInfoCard({ s, info, isUs }: { s: Stock; info: TossStockInfo | unde
 
 // ---- 종목 상세 본문 ------------------------------------------------------
 
-function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { ticker: string; holding: TossHoldingsItem | null; watched: boolean; onToggleWatch: () => void; mobile: boolean }) {
+function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { ticker: string; holding: TossHoldingsItem | null; watched: boolean; onToggleWatch: (marketCode?: string) => void; mobile: boolean }) {
   const { t } = useTranslation('stocks')
   const [range, setRange] = useState<Range>('1D')
-  const s = findStock(ticker)
+  // 종목 정체성: 마스터(이름·시장·통화) + 토스 종목정보 병행. 마스터에 없는 심볼(보유 이관 등)은 토스 정보로 폴백.
+  const masterQ = useStockBySymbol(ticker)
   const infoQ = useTossStockInfo([ticker])
+  const pricesQ = useTossPrices([ticker])
+  const prevCloseQ = usePrevClose(ticker)
+  const fxQ = useTossExchangeRate()
   const warningsQ = useTossStockWarnings(ticker)
-  const dailyQ = useTossCandles(ticker, '1d', 252)
-  if (!s) return null
+
+  const master = masterQ.data ?? null
   const info = infoQ.data?.[0]
-  const isUs = s.market === 'US'
+  const name = master?.nameKr ?? info?.name ?? holding?.name ?? ticker
+  const currency = info?.currency ?? master?.currency ?? holding?.currency ?? 'KRW'
+  const countryCode = master?.countryCode ?? (currency === 'USD' ? 'US' : 'KR')
+  const isUs = currency === 'USD'
   const warnings = warningsQ.data ?? []
 
-  // 등락률 — 1d 캔들(현재가 vs 전일 종가)로 실산출, 미연동 시 카탈로그 fallback.
-  const changePct = (() => {
-    const asc = candleCloses(dailyQ.data?.candles ?? [])
-    const prev = asc.length >= 2 ? asc[asc.length - 2]! : 0
-    if (prev > 0) return ((s.price - prev) / prev) * 100
-    return s.changePct
-  })()
+  const lastRaw = pricesQ.data?.[0]?.lastPrice
+  const last = lastRaw != null && Number.isFinite(Number.parseFloat(lastRaw)) ? Number.parseFloat(lastRaw) : null
+  const fxRate = fxQ.data ? num(fxQ.data.rate) : null
+  // 등락률 = 토스 현재가 vs 전일 종가(일봉). 시세 미지원 종목은 배지를 숨긴다.
+  const changePct = changePctOf(last, prevCloseQ.data)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* 헤더: 종목명·관심 토글 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <StockBadge s={s} size={46} />
+        <StockBadge name={name} symbol={ticker} countryCode={countryCode} size={46} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-primary)', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {s.name}
+            {name}
           </div>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span>{s.ticker}</span>
-            <Badge variant="secondary">{info ? info.market : isUs ? 'NASDAQ' : 'KRX·NXT'}</Badge>
+            <span>{ticker}</span>
+            <Badge variant="secondary">
+              {master ? t(`market.${master.marketCode}`, { defaultValue: master.marketCode }) : info?.market ?? ''}
+            </Badge>
             <span>·</span>
-            <span>{info?.securityType === 'ETF' ? 'ETF' : s.sector}</span>
+            <span>
+              {info?.securityType === 'ETF' || master?.securityType === 'ETF'
+                ? 'ETF'
+                : t(`securityType.${master?.securityType ?? 'STOCK'}`, { defaultValue: t('info.stock') })}
+            </span>
           </div>
         </div>
         <button
           type="button"
-          onClick={onToggleWatch}
+          onClick={() => onToggleWatch(master?.marketCode)}
           title={watched ? t('watch.remove') : t('watch.add')}
           aria-pressed={watched}
           style={{
@@ -702,12 +748,19 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
         </button>
       </div>
 
-      {/* 현재가 */}
+      {/* 현재가 (토스 prices — KR/US 만 제공. 그 외 시장은 미지원 안내) */}
       <div>
-        <div className="num" style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)' }}>{fmtPrice(s)}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-          <PctBadge pct={changePct} size={14} />
-          {isUs && <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>≈ {money(priceKRW(s))}</span>}
+        <div className="num" style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)' }}>
+          {last != null ? fmtByCurrency(last, currency) : '—'}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
+          {changePct != null && <PctBadge pct={changePct} size={14} />}
+          {isUs && last != null && fxRate != null && (
+            <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>≈ {money(Math.round(last * fxRate))}</span>
+          )}
+          {last == null && !pricesQ.isLoading && (
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('detail.priceUnavailable')}</span>
+          )}
         </div>
       </div>
 
@@ -730,7 +783,7 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
               }}
             >
               <AlertTriangle size={12} strokeWidth={2.4} />
-              {warningLabel(w.warningType)}
+              {t(`warning.${w.warningType}`, { defaultValue: w.warningType })}
             </span>
           ))}
         </div>
@@ -793,19 +846,19 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
 
       {/* 호가/체결 + 기본정보 */}
       <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16 }}>
-        <QuotesCard s={s} changePct={changePct} />
-        <StockInfoCard s={s} info={info} isUs={isUs} />
+        <QuotesCard symbol={ticker} currency={currency} lastPrice={last} changePct={changePct ?? 0} />
+        <StockInfoCard symbol={ticker} currency={currency} info={info} lastPrice={last} fxRate={fxRate} />
       </div>
 
       {/* 일별 시세 */}
-      <DailyQuoteTable symbol={ticker} isUs={isUs} />
+      <DailyQuoteTable symbol={ticker} currency={currency} />
 
       {/* 매매 (모의) — 매도=primary(파랑), 매수=destructive(빨강) — 국내 통념 */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <Button variant="default" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.sellToast', { name: s.name }))}>
+        <Button variant="default" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.sellToast', { name }))}>
           {t('trade.sell')}
         </Button>
-        <Button variant="destructive" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.buyToast', { name: s.name }))}>
+        <Button variant="destructive" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.buyToast', { name }))}>
           {t('trade.buy')}
         </Button>
       </div>
@@ -827,13 +880,23 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
   )
 }
 
-// ---- 종목 검색 다이얼로그 -------------------------------------------------
+// ---- 종목 검색 다이얼로그 (서버 stock_master — 국내 + 해외 6개국) -------------
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
 
 function StockSearchDialog({ mobile, onPick, onClose }: { mobile: boolean; onPick: (ticker: string) => void; onClose: () => void }) {
   const { t } = useTranslation('stocks')
   const [q, setQ] = useState('')
-  const ql = q.trim().toLowerCase()
-  const results = ql ? STOCKS.filter(s => s.name.toLowerCase().includes(ql) || s.ticker.toLowerCase().includes(ql) || s.sector.includes(q.trim())) : STOCKS
+  const debounced = useDebounced(q.trim(), 300)
+  const { data: results = [], isFetching } = useStockSearch(debounced, 20)
+  const searched = debounced.length > 0 && !isFetching && q.trim() === debounced
   return (
     <ModalShell title={t('search.label')} onClose={onClose} mobile={mobile} mobileMinHeight="85dvh">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -842,15 +905,19 @@ function StockSearchDialog({ mobile, onPick, onClose }: { mobile: boolean; onPic
           <Input search autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder={t('search.placeholder')} className="w-full pl-9" />
         </div>
         <div style={{ maxHeight: mobile ? undefined : '56vh', overflowY: 'auto' }}>
-          {results.length === 0 ? (
+          {q.trim().length === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('search.hint')}</div>
+          ) : searched && results.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('search.noResults', { query: q })}</div>
           ) : (
-            results.map(s => (
+            results.map((s: StockMasterItem) => (
               <StockRow
-                key={s.ticker}
-                ticker={s.ticker}
+                key={`${s.marketCode}:${s.symbol}`}
+                stock={{ symbol: s.symbol, name: s.nameKr, countryCode: s.countryCode, currency: s.currency }}
+                sub={`${t(`market.${s.marketCode}`, { defaultValue: s.marketCode })} · ${t(`securityType.${s.securityType}`, { defaultValue: s.securityType })}`}
+                right={<span />}
                 onClick={() => {
-                  onPick(s.ticker)
+                  onPick(s.symbol)
                   onClose()
                 }}
               />
@@ -862,21 +929,119 @@ function StockSearchDialog({ mobile, onPick, onClose }: { mobile: boolean; onPic
   )
 }
 
+// ---- 관심목록 그룹 편집 다이얼로그 ------------------------------------------
+
+function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: WatchGroup | null; onClose: () => void }) {
+  const { t } = useTranslation('stocks')
+  const { t: tc } = useTranslation('common')
+  const [name, setName] = useState(group?.groupName ?? '')
+  const createMut = useCreateWatchGroup()
+  const renameMut = useRenameWatchGroup()
+  const deleteMut = useDeleteWatchGroup()
+  const busy = createMut.isPending || renameMut.isPending || deleteMut.isPending
+  const canSave = name.trim().length > 0 && !busy
+
+  const save = () => {
+    const groupName = name.trim()
+    if (!groupName) return
+    if (group) {
+      renameMut.mutate({ groupId: group.rowId, groupName }, {
+        onSuccess: onClose,
+        onError: () => toast.error(t('watch.groupSaveFail')),
+      })
+    } else {
+      createMut.mutate(groupName, {
+        onSuccess: onClose,
+        onError: () => toast.error(t('watch.groupSaveFail')),
+      })
+    }
+  }
+
+  return (
+    <ModalShell title={group ? t('watch.groupRename') : t('watch.groupAdd')} onClose={onClose} mobile={mobile}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Input
+          autoFocus
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder={t('watch.groupNamePlaceholder')}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && canSave) save()
+          }}
+        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button size="sm" disabled={!canSave} onClick={save} style={{ flex: 1 }}>
+            {tc('save')}
+          </Button>
+          {group && (
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                if (!window.confirm(t('watch.groupDeleteConfirm'))) return
+                deleteMut.mutate(group.rowId, {
+                  onSuccess: onClose,
+                  onError: () => toast.error(t('watch.groupSaveFail')),
+                })
+              }}
+            >
+              {t('watch.groupDelete')}
+            </Button>
+          )}
+        </div>
+      </div>
+    </ModalShell>
+  )
+}
+
+// ---- 관심목록 행 (시세 + 전일대비 — 심볼 단위 조회) ---------------------------
+
+function WatchRowItem({ symbol, name, countryCode, currency, sub, priceMap, active, onClick }: { symbol: string; name: string; countryCode: string; currency: string; sub: string; priceMap: Map<string, number>; active: boolean; onClick: () => void }) {
+  const prevCloseQ = usePrevClose(symbol)
+  const last = priceMap.get(symbol) ?? null
+  const changePct = changePctOf(last, prevCloseQ.data)
+  return (
+    <StockRow
+      stock={{ symbol, name, countryCode, currency }}
+      sub={sub}
+      price={last}
+      changePct={changePct}
+      active={active}
+      onClick={onClick}
+    />
+  )
+}
+
 // ---- 메인 화면 -----------------------------------------------------------
 
 export function StocksPage() {
   const { t } = useTranslation('stocks')
   const { mobile } = useOutletContext<OutletCtx>()
-  // 개인키 연결 상태 — 미연결 시 페이지 전체를 '연결 유도'로 게이트(mock 노출 금지).
+  // 개인키 연결 상태 — 미연결 시 페이지 전체를 '연결 유도'로 게이트.
   const { data: credential, isLoading: credLoading } = useTossCredentialStatus()
   const connected = credential?.connected ?? false
-  // 토스 Open API 라이브 시세·환율 오버레이 (연결 시에만 실데이터 적용)
-  useStockLiveOverlay()
   const [selected, setSelected] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [seg, setSeg] = useState<'holdings' | 'watch' | 'discover'>('holdings')
-  const [watchGroups, setWatchGroups] = useState<WatchGroup[]>(STOCK_WATCH)
-  const [activeGroup, setActiveGroup] = useState(STOCK_WATCH[0]!.id)
+
+  // 관심목록 — 서버 영속(stock-watch). 그룹 탭 + 별 토글.
+  const watchQ = useWatchGroups()
+  const watchGroups = useMemo(() => watchQ.data ?? [], [watchQ.data])
+  const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
+  const [groupDialog, setGroupDialog] = useState<{ open: boolean; group: WatchGroup | null }>({ open: false, group: null })
+  useEffect(() => {
+    if (watchGroups.length === 0) {
+      setActiveGroupId(null)
+      return
+    }
+    if (activeGroupId == null || !watchGroups.some(g => g.rowId === activeGroupId)) {
+      setActiveGroupId(watchGroups[0]!.rowId)
+    }
+  }, [watchGroups, activeGroupId])
+  const createGroupMut = useCreateWatchGroup()
+  const addItemMut = useAddWatchItem()
+  const removeItemMut = useRemoveWatchItem()
 
   // 보유자산 — 키 연결 시 실데이터(/toss/accounts→/toss/holdings), 미연결 시 빈 상태.
   const { data: accounts } = useTossAccounts()
@@ -886,6 +1051,8 @@ export function StocksPage() {
     () => (holdings ? [...holdings.items].sort((a, b) => num(b.marketValue.amount) - num(a.marketValue.amount)) : []),
     [holdings],
   )
+  // 환율 (요약 카드 + 상세 원화 환산)
+  const fxQ = useTossExchangeRate()
 
   // 데스크톱: 기본 선택 = 첫 보유 종목
   useEffect(() => {
@@ -893,14 +1060,25 @@ export function StocksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile, holdingItems.length])
 
-  const watchedTickers = useMemo(() => new Set(watchGroups.flatMap(g => g.tickers)), [watchGroups])
-  const isWatched = (t: string) => watchedTickers.has(t)
-  const toggleWatch = (t: string) => {
-    setWatchGroups(prev => {
-      const inSome = prev.some(g => g.tickers.includes(t))
-      if (inSome) return prev.map(g => ({ ...g, tickers: g.tickers.filter(x => x !== t) }))
-      return prev.map(g => (g.id === activeGroup ? { ...g, tickers: [...g.tickers, t] } : g))
-    })
+  const watchedSymbols = useMemo(() => new Set(watchGroups.flatMap(g => g.items.map(i => i.symbol))), [watchGroups])
+  const isWatched = (sym: string) => watchedSymbols.has(sym)
+  const toggleWatch = (sym: string, marketCode?: string) => {
+    const entries = findWatchEntries(watchGroups, sym)
+    if (entries.length > 0) {
+      // 별 해제 = 모든 그룹에서 제거 (기존 UX 유지)
+      for (const e of entries) removeItemMut.mutate(e.item.rowId)
+      return
+    }
+    if (watchGroups.length === 0) {
+      // 첫 관심 등록이면 기본 그룹부터 만든다.
+      createGroupMut.mutate(t('watch.defaultGroupName'), {
+        onSuccess: g => addItemMut.mutate({ groupId: g.rowId, symbol: sym, marketCode }),
+        onError: () => toast.error(t('watch.addFail')),
+      })
+      return
+    }
+    const groupId = activeGroupId ?? watchGroups[0]!.rowId
+    addItemMut.mutate({ groupId, symbol: sym, marketCode }, { onError: () => toast.error(t('watch.addFail')) })
   }
 
   // 요약 (서버 계산값)
@@ -908,8 +1086,21 @@ export function StocksPage() {
   const totalCost = holdings ? num(holdings.totalPurchaseAmount.krw) : 0
   const totalPnl = holdings ? num(holdings.profitLoss.amount.krw) : 0
   const totalPnlPct = holdings ? num(holdings.profitLoss.rate) : 0
-  const curGroup = watchGroups.find(g => g.id === activeGroup) ?? watchGroups[0]!
+  const curGroup = watchGroups.find(g => g.rowId === activeGroupId) ?? watchGroups[0] ?? null
   const selHolding = selected ? holdingItems.find(h => h.symbol === selected) ?? null : null
+  const fxRate = fxQ.data ? num(fxQ.data.rate) : null
+
+  // 관심 탭 시세 — 현재 그룹 심볼 배치 1콜 (10초 폴링은 useTossPrices 공통)
+  const watchSymbols = useMemo(() => (curGroup ? curGroup.items.map(i => i.symbol) : []), [curGroup])
+  const watchPricesQ = useTossPrices(seg === 'watch' ? watchSymbols : [])
+  const watchPriceMap = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const p of watchPricesQ.data ?? []) {
+      const v = Number.parseFloat(p.lastPrice)
+      if (Number.isFinite(v)) map.set(p.symbol, v)
+    }
+    return map
+  }, [watchPricesQ.data])
 
   // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 투자 요약 (design StocksScreen).
   const summary = !holdings ? (
@@ -934,7 +1125,7 @@ export function StocksPage() {
           [
             [t('holding.purchaseAmount'), <MaskAmount key="c">{money(totalCost)}</MaskAmount>],
             [t('summary.holdingsCount'), t('unit.count', { count: holdingItems.length })],
-            [t('summary.fxRate'), `₩${FX_USDKRW.toLocaleString()}`],
+            [t('summary.fxRate'), fxRate != null ? `₩${Math.round(fxRate).toLocaleString()}` : '—'],
           ] as Array<[string, React.ReactNode]>
         ).map(([k, v]) => (
           <div key={k} style={{ flex: 1 }}>
@@ -956,7 +1147,7 @@ export function StocksPage() {
       <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
         <TabsList variant="pill" size="sm">
           <TabsTrigger variant="pill" value="holdings">{t('segments.holdings', { count: holdingItems.length })}</TabsTrigger>
-          <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchedTickers.size })}</TabsTrigger>
+          <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchedSymbols.size })}</TabsTrigger>
           <TabsTrigger variant="pill" value="discover">{t('segments.discover')}</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -976,10 +1167,11 @@ export function StocksPage() {
               const ev = num(h.marketValue.amount)
               const pnl = num(h.profitLoss.amount)
               const pct = num(h.profitLoss.rate)
+              const heldUs = h.marketCountry.toUpperCase() === 'US' || h.currency.toUpperCase() === 'USD'
               return (
                 <StockRow
                   key={h.symbol}
-                  ticker={h.symbol}
+                  stock={{ symbol: h.symbol, name: h.name || h.symbol, countryCode: heldUs ? 'US' : 'KR', currency: h.currency }}
                   active={selected === h.symbol}
                   onClick={() => setSelected(h.symbol)}
                   sub={t('holding.sharesHeld', { count: h.quantity })}
@@ -1001,20 +1193,46 @@ export function StocksPage() {
         )
       ) : (
         <>
-          <Tabs value={activeGroup} onValueChange={val => val && setActiveGroup(val)}>
-            <TabsList variant="pill" size="sm">
-              {watchGroups.map(g => (
-                <TabsTrigger key={g.id} variant="pill" value={g.id}>
-                  {g.name} <span style={{ opacity: 0.7 }}>{g.tickers.length}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {watchGroups.length > 0 && (
+            <Tabs value={String(activeGroupId ?? '')} onValueChange={val => val && setActiveGroupId(Number(val))}>
+              <TabsList variant="pill" size="sm">
+                {watchGroups.map(g => (
+                  <TabsTrigger key={g.rowId} variant="pill" value={String(g.rowId)}>
+                    {g.groupName} <span style={{ opacity: 0.7 }}>{g.items.length}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          )}
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+              {curGroup && (
+                <Button variant="ghost" size="icon" title={t('watch.groupRename')} onClick={() => setGroupDialog({ open: true, group: curGroup })}>
+                  <Pencil size={14} />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" title={t('watch.groupAdd')} onClick={() => setGroupDialog({ open: true, group: null })}>
+                <Plus size={15} />
+              </Button>
+            </div>
+          </div>
           <ListWrap mobile={mobile}>
-            {curGroup.tickers.length === 0 ? (
+            {!curGroup || curGroup.items.length === 0 ? (
               <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('watch.empty')}</div>
             ) : (
-              curGroup.tickers.map(t => <StockRow key={t} ticker={t} active={selected === t} onClick={() => setSelected(t)} />)
+              curGroup.items.map(i => (
+                <WatchRowItem
+                  key={i.rowId}
+                  symbol={i.symbol}
+                  name={i.nameKr}
+                  countryCode={i.countryCode}
+                  currency={i.currency}
+                  sub={t(`market.${i.marketCode}`, { defaultValue: i.marketCode })}
+                  priceMap={watchPriceMap}
+                  active={selected === i.symbol}
+                  onClick={() => setSelected(i.symbol)}
+                />
+              ))
             )}
           </ListWrap>
         </>
@@ -1022,7 +1240,7 @@ export function StocksPage() {
     </div>
   )
 
-  // ---- 개인키 미연결: 전 화면 연결 유도 (mock 노출 금지) ----
+  // ---- 개인키 미연결: 전 화면 연결 유도 ----
   if (!credLoading && !connected) {
     const gateBody = (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
@@ -1051,6 +1269,13 @@ export function StocksPage() {
     )
   }
 
+  const dialogs = (
+    <>
+      {searchOpen && <StockSearchDialog mobile={mobile} onPick={sym => setSelected(sym)} onClose={() => setSearchOpen(false)} />}
+      {groupDialog.open && <WatchGroupDialog mobile={mobile} group={groupDialog.group} onClose={() => setGroupDialog({ open: false, group: null })} />}
+    </>
+  )
+
   // ---- 모바일: 풀스크린(← 헤더) + 스택 + 상세 시트 ----
   if (mobile) {
     return (
@@ -1062,10 +1287,10 @@ export function StocksPage() {
           {listPanel}
           {selected && (
             <ModalShell title={t('detail.sheetTitle')} onClose={() => setSelected(null)} mobile mobileMinHeight="88dvh">
-              <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={() => toggleWatch(selected)} mobile />
+              <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={mc => toggleWatch(selected, mc)} mobile />
             </ModalShell>
           )}
-          {searchOpen && <StockSearchDialog mobile onPick={t => setSelected(t)} onClose={() => setSearchOpen(false)} />}
+          {dialogs}
         </div>
       </>
     )
@@ -1085,7 +1310,7 @@ export function StocksPage() {
         </div>
         <Card style={{ padding: 24 }}>
           {selected ? (
-            <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={() => toggleWatch(selected)} mobile={false} />
+            <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={mc => toggleWatch(selected, mc)} mobile={false} />
           ) : (
             <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
               <LineChart size={40} />
@@ -1094,7 +1319,7 @@ export function StocksPage() {
           )}
         </Card>
       </div>
-      {searchOpen && <StockSearchDialog mobile={false} onPick={t => setSelected(t)} onClose={() => setSearchOpen(false)} />}
+      {dialogs}
     </div>
   )
 }
