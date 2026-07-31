@@ -902,15 +902,24 @@ export function AssetEditDialog({
                       className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--bg-hover)] transition-colors"
                       style={{ background: 'transparent', border: 0, cursor: 'pointer' }}
                       onClick={() => {
+                        // 시세 게이트 OFF(비구독·토스 미연결)면 연동해도 평가액을 못 구하므로
+                        // 검색 결과도 수동 항목으로 추가 — 사용자가 평가액을 직접 입력해 합계에 반영(사용자 결정).
                         setHoldings(prev => [
                           ...prev,
-                          {
-                            key: nextHoldingKey(),
-                            linked: true,
-                            tossSymbol: s.symbol,
-                            quantity: 1,
-                            displayName: s.nameKr,
-                          },
+                          liveEnabled
+                            ? {
+                                key: nextHoldingKey(),
+                                linked: true,
+                                tossSymbol: s.symbol,
+                                quantity: 1,
+                                displayName: s.nameKr,
+                              }
+                            : {
+                                key: nextHoldingKey(),
+                                linked: false,
+                                holdingName: s.nameKr,
+                                holdingValue: 0,
+                              },
                         ])
                         setStockQ('')
                       }}
