@@ -18,4 +18,9 @@ export {
   useLinkTossSymbol,
   useUnlinkTossSymbol,
 } from './model/useAssets'
-export { useTossValuationMap } from './model/useTossValuation'
+export {
+  useTossValuationMap,
+  useInvestValuation,
+  holdingsOf,
+  type InvestValuation,
+} from './model/useTossValuation'

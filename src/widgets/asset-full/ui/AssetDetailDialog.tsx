@@ -1,21 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
-import { AssetLogo, type Asset } from '@/entities/asset'
+import { AssetLogo, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend, useCardBilling, usePayCard, useLinkTossSymbol, useUnlinkTossSymbol } from '@/features/asset'
+import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf } from '@/features/asset'
+import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { Input } from '@/shared/ui/input'
-import { useStockSearch, useStockSymbolName } from '@/features/stock/model/useStockMaster'
+import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
 import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
-import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -540,255 +539,167 @@ function CardDetailBody({
   )
 }
 
-const tossListBtn: React.CSSProperties = {
-  textAlign: 'left',
-  fontSize: 'var(--text-caption)',
-  color: 'var(--fg-primary)',
-  background: 'var(--bg-muted)',
-  border: 'none',
-  borderRadius: 'var(--radius-sm)',
-  padding: '8px 10px',
-  cursor: 'pointer',
-}
-
-/**
- * 투자 자산 ↔ 토스 종목 연결 섹션 (프로(SECURITIES) + 토스 연결 사용자에게만 노출).
- * 종목 + 보유수량을 등록하면 토스 현재가 × 수량으로 평가액이 실시간 계산된다.
- * 토스 계좌 보유분과 무관 — 시세만 빌려 타 증권사 보유 주식도 평가.
- */
-/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
-}
-
-function TossLinkSection({ asset }: { asset: Asset }) {
+// ---------------------------------------------------------------------------
+// 투자 상세 — 보유 종목 리스트 (design dialogs.jsx split24 AssetDetailDialog invest 분기 미러)
+//   연동(linked) 항목: 종목명 · "N주 · 현재가 X 연동" · 평가액 · 등락%
+//   수동(manual) 항목: 이름 · "직접 입력" · 평가액
+//   행 클릭 → 편집 다이얼로그(종목 추가/수정은 편집에서).
+// ---------------------------------------------------------------------------
+function HoldingRow({
+  holding,
+  price,
+  prevClose,
+  fx,
+  live,
+  first,
+  onEdit,
+}: {
+  holding: AssetHolding
+  price: { price: number; currency: string } | null
+  prevClose: number | null
+  fx: number | null
+  live: boolean
+  first: boolean
+  onEdit?: () => void
+}) {
   const { t } = useTranslation('asset')
-  const { t: tc } = useTranslation('common')
-  const { t: ts } = useTranslation('stocks')
-  const { data: features } = useMyFeatures()
-  const enabled =
-    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
-  const linkMut = useLinkTossSymbol()
-  const unlinkMut = useUnlinkTossSymbol()
-  const [query, setQuery] = useState('')
-  const [selSymbol, setSelSymbol] = useState(asset.tossSymbol ?? '')
-  const [selName, setSelName] = useState('')
-  const [qty, setQty] = useState(asset.tossQuantity != null ? String(asset.tossQuantity) : '')
-  // 연결 상태는 mutation 후 즉시 반영되도록 로컬로 추적 (asset prop 은 부모 state 라 stale).
-  const [linked, setLinked] = useState<{ symbol: string; quantity: number } | null>(
-    asset.tossSymbol && asset.tossQuantity != null
-      ? { symbol: asset.tossSymbol, quantity: asset.tossQuantity }
-      : null,
-  )
-  // 보유수량 수정 모드.
-  const [editingQty, setEditingQty] = useState(false)
-  const [editQty, setEditQty] = useState('')
+  const { data: masterName } = useStockSymbolName(holding.linked ? holding.tossSymbol ?? '' : '')
+  const name = holding.linked
+    ? masterName ?? holding.tossSymbol ?? ''
+    : holding.holdingName ?? ''
 
-  // 종목 검색 (서버 stock_master — 국내 + 해외 6개국). 300ms 디바운스.
-  const debouncedQuery = useDebounced(query.trim(), 300)
-  const { data: matches = [], isFetching: searching } = useStockSearch(
-    enabled ? debouncedQuery : '',
-  )
-  // 연결/선택된 종목코드의 이름 조회 (종목 마스터).
-  const { data: resolvedName } = useStockSymbolName(enabled ? (linked?.symbol ?? selSymbol) : '')
-
-  if (!enabled) return null
-
-  const box: React.CSSProperties = {
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-lg)',
-    background: 'var(--bg-surface)',
-    padding: 16,
-    marginBottom: 18,
+  const toKrw = (v: number, currency: string): number | null => {
+    if (currency === 'KRW') return v
+    return fx != null && fx > 0 ? v * fx : null
+  }
+  let value: number | null = null
+  let changePct: number | null = null
+  let priceLabel: string | null = null
+  if (holding.linked) {
+    if (live && price) {
+      const krw = toKrw(price.price, price.currency)
+      if (krw != null) value = Math.round(krw * (holding.quantity ?? 0))
+      priceLabel =
+        price.currency === 'USD' ? `$${price.price.toLocaleString()}` : `${KRW(price.price)}원`
+      if (prevClose != null && prevClose > 0) {
+        changePct = Math.round(((price.price - prevClose) / prevClose) * 1000) / 10
+      }
+    }
+  } else {
+    value = holding.holdingValue ?? 0
   }
 
-  if (linked) {
-    const editQtyNum = Number(editQty.replace(/[^\d]/g, '')) || 0
-    return (
-      <section style={box}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <Badge variant="info">{t('assetDetail.tossLinked')}</Badge>
-          <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
-            {resolvedName ?? linked.symbol} · {t('assetDetail.sharesUnit', { n: linked.quantity.toLocaleString() })}
-          </span>
-        </div>
-        {editingQty ? (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <Input
-              inputMode="numeric"
-              value={editQty}
-              onChange={e => setEditQty(e.target.value.replace(/[^\d]/g, ''))}
-              placeholder={t('assetDetail.holdingsQty')}
-              style={{ flex: 1 }}
-            />
-            <Button
-              size="sm"
-              disabled={editQtyNum <= 0 || linkMut.isPending}
-              onClick={() =>
-                linkMut.mutate(
-                  { id: asset.rowId, symbol: linked.symbol, quantity: editQtyNum },
-                  {
-                    onSuccess: () => {
-                      setLinked({ symbol: linked.symbol, quantity: editQtyNum })
-                      setEditingQty(false)
-                      toast.success(t('assetDetail.toastQtyUpdated'))
-                    },
-                    onError: () => toast.error(t('assetDetail.toastQtyFail')),
-                  },
-                )
-              }
-            >
-              {tc('save')}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setEditingQty(false)}>
-              {tc('cancel')}
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-              {t('assetDetail.valuationFormula', { n: linked.quantity.toLocaleString() })}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setEditQty(String(linked.quantity))
-                  setEditingQty(true)
-                }}
-              >
-                {t('assetDetail.editQty')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={unlinkMut.isPending}
-                onClick={() =>
-                  unlinkMut.mutate(asset.rowId, {
-                    onSuccess: () => {
-                      setLinked(null)
-                      setSelSymbol('')
-                      setSelName('')
-                      setQty('')
-                      setQuery('')
-                      toast.success(t('assetDetail.toastUnlinked'))
-                    },
-                    onError: () => toast.error(t('assetDetail.toastUnlinkFail')),
-                  })
-                }
-              >
-                {t('assetDetail.unlink')}
-              </Button>
-            </div>
-          </>
-        )}
-      </section>
-    )
-  }
-
-  const q = query.trim()
-  // 마스터에 없는 코드 직접 연결 폴백 — 검색 응답이 끝난 뒤에만 노출해 깜빡임을 막는다.
-  const codeFallback =
-    q && q === debouncedQuery && !searching && matches.length === 0 ? q.toUpperCase() : ''
-  const pick = (symbol: string, name: string) => {
-    setSelSymbol(symbol)
-    setSelName(name)
-    setQuery('')
-  }
-  const qtyNum = Number(qty.replace(/[^\d]/g, '')) || 0
-  const canLink = !!selSymbol && qtyNum > 0 && !linkMut.isPending
+  const sub = holding.linked
+    ? live && priceLabel
+      ? t('holdings.linkedSub', { n: (holding.quantity ?? 0).toLocaleString(), price: priceLabel })
+      : t('holdings.linkedPending', { n: (holding.quantity ?? 0).toLocaleString() })
+    : t('holdings.manualSub')
 
   return (
-    <section style={box}>
-      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, marginBottom: 6 }}>
-        {t('assetDetail.tossRealtimeTitle')}
-      </div>
-      <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 12 }}>
-        {t('assetDetail.tossRealtimeDesc')}
-      </div>
-
-      {selSymbol ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600 }}>
-            {selName || resolvedName || selSymbol} ({selSymbol})
-          </span>
-          <button
-            type="button"
-            onClick={() => { setSelSymbol(''); setSelName('') }}
-            style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            {t('assetDetail.change')}
-          </button>
+    <div
+      onClick={onEdit}
+      role={onEdit ? 'button' : undefined}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 0',
+        borderTop: first ? 'none' : '1px solid var(--border-subtle)',
+        cursor: onEdit ? 'pointer' : 'default',
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, letterSpacing: '-0.01em' }}>
+          {name}
         </div>
-      ) : (
-        <>
-          <Input
-            search
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={t('assetDetail.symbolSearchPlaceholder')}
-          />
-          {(matches.length > 0 || codeFallback) && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, marginBottom: 4 }}>
-              {matches.map(s => (
-                <button
-                  key={`${s.marketCode}:${s.symbol}`}
-                  type="button"
-                  onClick={() => pick(s.symbol, s.nameKr)}
-                  style={tossListBtn}
-                >
-                  {s.nameKr}{' '}
-                  <span style={{ color: 'var(--fg-tertiary)' }}>
-                    ({s.symbol} · {ts(`market.${s.marketCode}`, { defaultValue: s.marketCode })})
-                  </span>
-                </button>
-              ))}
-              {codeFallback && (
-                <button type="button" onClick={() => pick(codeFallback, '')} style={tossListBtn}>
-                  {t('assetDetail.linkByCode', { code: codeFallback })}
-                </button>
-              )}
-            </div>
-          )}
-        </>
-      )}
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-        <Input
-          inputMode="numeric"
-          value={qty}
-          onChange={e => setQty(e.target.value.replace(/[^\d]/g, ''))}
-          placeholder={t('assetDetail.holdingsQty')}
-          style={{ flex: 1 }}
-        />
-        <Button
-          size="sm"
-          disabled={!canLink}
-          onClick={() =>
-            linkMut.mutate(
-              { id: asset.rowId, symbol: selSymbol, quantity: qtyNum },
-              {
-                onSuccess: () => {
-                  setLinked({ symbol: selSymbol, quantity: qtyNum })
-                  toast.success(t('assetDetail.toastLinkStarted'))
-                },
-                onError: () => toast.error(t('assetDetail.toastLinkFail')),
-              },
-            )
-          }
-        >
-          {t('assetDetail.link')}
-        </Button>
+        <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+          {sub}
+        </div>
       </div>
-    </section>
+      <div style={{ textAlign: 'right' }}>
+        <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
+          {value != null ? (
+            <>
+              <MaskAmount>{wonPre()}{KRW(value)}</MaskAmount>
+              <WonUnit />
+            </>
+          ) : (
+            '—'
+          )}
+        </div>
+        {changePct != null && (
+          <div
+            className="num"
+            style={{
+              fontSize: 'var(--text-badge)',
+              fontWeight: 600,
+              marginTop: 2,
+              color: changePct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)',
+            }}
+          >
+            {changePct >= 0 ? '+' : ''}{changePct}%
+          </div>
+        )}
+      </div>
+      {onEdit && <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />}
+    </div>
   )
 }
+
+function HoldingsSection({ asset, onEdit }: { asset: Asset; onEdit?: () => void }) {
+  const { t } = useTranslation('asset')
+  const { data: features } = useMyFeatures()
+  const live =
+    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+  const hs = holdingsOf(asset)
+  const symbols = useMemo(
+    () => [...new Set(hs.filter(h => h.linked && h.tossSymbol).map(h => h.tossSymbol as string))],
+    [hs],
+  )
+  const active = live && symbols.length > 0
+  const activeSymbols = useMemo(() => (active ? symbols : []), [active, symbols])
+  const pricesQ = useTossPrices(activeSymbols)
+  const fxQ = useTossExchangeRate(active)
+  const prevCloses = usePrevCloses(activeSymbols)
+  const priceBySymbol = useMemo(() => {
+    const m = new Map<string, { price: number; currency: string }>()
+    for (const p of pricesQ.data ?? []) {
+      const v = Number.parseFloat(p.lastPrice)
+      if (Number.isFinite(v)) m.set(p.symbol, { price: v, currency: p.currency })
+    }
+    return m
+  }, [pricesQ.data])
+  const fx = Number.parseFloat(fxQ.data?.rate ?? '')
+
+  return (
+    <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '14px 0 6px', marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <h2 style={{ fontSize: 'var(--text-label-md)', fontWeight: 700, margin: 0 }}>
+          {t('holdings.sectionTitle')}{' '}
+          <span className="num" style={{ color: 'var(--fg-brand)' }}>{hs.length}</span>
+        </h2>
+      </div>
+      {hs.map((h, i) => (
+        <HoldingRow
+          key={h.rowId ?? `${h.tossSymbol ?? h.holdingName ?? ''}-${i}`}
+          holding={h}
+          price={h.linked && h.tossSymbol ? priceBySymbol.get(h.tossSymbol) ?? null : null}
+          prevClose={h.linked && h.tossSymbol ? prevCloses.get(h.tossSymbol) ?? null : null}
+          fx={Number.isFinite(fx) && fx > 0 ? fx : null}
+          live={live}
+          first={i === 0}
+          onEdit={onEdit}
+        />
+      ))}
+      {hs.length === 0 && (
+        <div style={{ padding: '20px 0', fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', textAlign: 'center' }}>
+          {t('holdings.emptyDetail')}
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 export function AssetDetailDialog({
   asset,
@@ -841,7 +752,12 @@ export function AssetDetailDialog({
 
   const absBalance = Math.abs(asset.balance)
 
-  const heroAmount = absBalance
+  // 투자 자산 — holdings 라이브 평가(시세×수량+수동합)로 헤로 금액을 덮어쓰고 등락 표시.
+  const investAssets = useMemo(() => (isInv ? [asset] : []), [isInv, asset])
+  const investValMap = useInvestValuation(investAssets)
+  const investVal = isInv ? investValMap.get(asset.rowId) ?? null : null
+
+  const heroAmount = investVal != null ? Math.abs(investVal.value) : absBalance
   // CREDIT_CARD 는 신판 카드 상세 본문(CardDetailBody) — 회차 히어로가 금액을 담당.
   const isCredit = asset.assetType === 'CREDIT_CARD'
 
@@ -908,9 +824,18 @@ export function AssetDetailDialog({
               {asset.assetName}
             </div>
             <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-              {[asset.institution, assetTypeLabel(asset.assetType), asset.memo]
-                .filter(Boolean)
-                .join(' · ')}
+              {/* 투자 — design: "투자 · 보유 N종목 · 메모" */}
+              {isInv
+                ? [
+                    assetTypeLabel(asset.assetType),
+                    t('holdings.countLabel', { n: holdingsOf(asset).length }),
+                    asset.memo,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+                : [asset.institution, assetTypeLabel(asset.assetType), asset.memo]
+                    .filter(Boolean)
+                    .join(' · ')}
             </div>
           </div>
         </div>
@@ -946,12 +871,34 @@ export function AssetDetailDialog({
                 </HideUnit>
               )}
             </div>
+            {/* 투자 등락 — design: "+N% · 오늘 ±N원" (+빨강/−파랑 국내 통념) */}
+            {investVal?.changePct != null && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, fontSize: 'var(--text-label-sm)' }}>
+                <span
+                  className="num"
+                  style={{
+                    fontWeight: 700,
+                    color: investVal.changePct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)',
+                  }}
+                >
+                  {investVal.changePct >= 0 ? '+' : ''}{investVal.changePct}%
+                </span>
+                {investVal.changeAmt != null && (
+                  <span className="num" style={{ color: 'var(--fg-tertiary)' }}>
+                    {t('holdings.todayChange', {
+                      sign: investVal.changeAmt >= 0 ? '+' : '−',
+                      amount: KRW(Math.abs(investVal.changeAmt)),
+                    })}
+                  </span>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
 
-      {/* 투자 자산 ↔ 토스 보유종목 연결 (프로+토스 연결 사용자만 노출) */}
-      {isInv && <TossLinkSection asset={asset} />}
+      {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
+      {isInv && <HoldingsSection asset={asset} onEdit={onEdit ? () => onEdit(asset) : undefined} />}
 
       {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
       {isCredit && (

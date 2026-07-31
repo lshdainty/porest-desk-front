@@ -2,7 +2,7 @@
  * 토스증권 Open API 연동 react-query 훅.
  * 모든 쿼리는 `retry: false` — 키 미설정(503)·백엔드 미기동 시 즉시 실패시켜 호출부가 mock 으로 폴백한다.
  */
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { stockKeys } from '@/shared/config'
 import { stockApi, type TossRankingDuration, type TossRankingType } from '../api/stockApi'
 
@@ -179,6 +179,35 @@ export const usePrevClose = (symbol: string | null) =>
     ...COMMON,
     staleTime: 10 * 60_000,
   })
+
+/**
+ * 여러 심볼의 전일 종가 배치 조회 — 투자 자산 보유 종목 등락 계산용.
+ * usePrevClose 와 동일 쿼리키를 공유해 상세 화면과 캐시가 겹친다.
+ */
+export const usePrevCloses = (symbols: string[]): Map<string, number> => {
+  const results = useQueries({
+    queries: symbols.map(symbol => ({
+      queryKey: stockKeys.prevClose(symbol),
+      queryFn: async () => {
+        const page = await stockApi.getCandles(symbol, '1d', { count: 3 })
+        const candles = page.candles
+        if (candles.length === 0) return null
+        const today = new Date().toISOString().slice(0, 10)
+        const prev = [...candles].reverse().find(c => c.timestamp.slice(0, 10) !== today)
+        const v = Number.parseFloat((prev ?? candles[0]!).closePrice)
+        return Number.isFinite(v) ? v : null
+      },
+      ...COMMON,
+      staleTime: 10 * 60_000,
+    })),
+  })
+  const map = new Map<string, number>()
+  results.forEach((r, i) => {
+    const sym = symbols[i]
+    if (sym && r.data != null) map.set(sym, r.data)
+  })
+  return map
+}
 
 /** lastPrice 와 전일종가로 등락률(%)을 계산한다. 어느 한쪽이 없으면 null. */
 export function changePctOf(lastPrice: string | number | null | undefined, prevClose: number | null | undefined): number | null {

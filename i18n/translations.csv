@@ -2281,3 +2281,21 @@ constellation,collection.lockedDesc,별빛 {{count}}개를 하룻밤에 모으�
 settings,sections.todoTags.label,할일 태그,Todo tags
 settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo tag names & colors
 calendar,labels.usage,{{count}}건에 사용 중,Used by {{count}} events
+asset,holdings.sectionTitle,보유 종목,Holdings
+asset,holdings.countLabel,보유 {{n}}종목,{{n}} holdings
+asset,holdings.emptySub,보유 종목 없음,No holdings
+asset,holdings.firstAndMore,{{name}} 외 {{n}}종목,{{name}} and {{n}} more
+asset,holdings.linkedSub,{{n}}주 · 현재가 {{price}} 연동,{{n}} shares · live at {{price}}
+asset,holdings.linkedPending,{{n}}주 · 시세 연동 대기,{{n}} shares · awaiting live price
+asset,holdings.manualSub,직접 입력,Manual entry
+asset,holdings.emptyDetail,보유 종목이 없어요. 편집에서 종목을 추가해보세요.,No holdings yet. Add them from Edit.
+asset,holdings.todayChange,오늘 {{sign}}{{amount}}원,Today {{sign}}₩{{amount}}
+asset,holdings.editSummary,{{n}}종목 · {{total}}원,{{n}} holdings · ₩{{total}}
+asset,holdings.searchPlaceholder,"종목명·티커 검색 후 추가 (예: 삼성전자, NVDA)","Search name/ticker to add (e.g. Samsung, NVDA)"
+asset,holdings.addManual,"""{{name}}"" 직접 추가 — 평가액 입력","Add ""{{name}}"" manually — enter value"
+asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
+asset,holdings.linkedBadge,연동,Linked
+asset,holdings.editLinkedSub,현재가 × 수량 연동,Live price × quantity
+asset,holdings.sharesUnitShort,주,sh
+asset,holdings.remove,삭제,Remove
+asset,holdings.balanceAutoHelp,보유 종목 합계로 자동 계산돼요. 연동 종목은 시세 확보 시 반영됩니다.,Calculated from holdings. Linked items reflect live prices when available.
