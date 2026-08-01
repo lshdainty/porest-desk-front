@@ -69,6 +69,39 @@ const PasswordRules = ({ password, t }: { password: string; t: (key: string) => 
   )
 }
 
+/**
+ * 확인 입력이 새 비밀번호와 같은지 실시간 표시.
+ * 확인 입력이 비어 있으면 표시하지 않는다(입력 시작 전부터 불일치로 겁주지 않게).
+ * 불일치는 규칙 미달(아직 채우는 중)과 달리 두 값이 어긋난 '충돌'이라
+ * 위 체크리스트의 muted 대신 destructive 로 분명하게 보여준다.
+ */
+const PasswordMatch = ({
+  password,
+  confirmPassword,
+  t,
+}: {
+  password: string
+  confirmPassword: string
+  t: (key: string) => string
+}) => {
+  if (!confirmPassword) return null
+
+  const matched = password === confirmPassword
+  const Icon = matched ? Check : X
+
+  return (
+    <p
+      className={`flex items-center gap-1.5 text-xs ${
+        matched ? 'text-[var(--status-success-fg)]' : 'text-destructive'
+      }`}
+      aria-live="polite"
+    >
+      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      <span>{matched ? t('passwordMatched') : t('passwordMismatch')}</span>
+    </p>
+  )
+}
+
 type PasswordChangeFormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialogProps) => {
@@ -86,8 +119,9 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
     },
   })
 
-  // 체크리스트용 — 입력할 때마다 갱신
+  // 체크리스트·일치 표시용 — 입력할 때마다 갱신
   const newPassword = useWatch({ control: form.control, name: 'newPassword' }) ?? ''
+  const confirmPassword = useWatch({ control: form.control, name: 'confirmPassword' }) ?? ''
 
   useEffect(() => {
     if (open) {
@@ -190,11 +224,14 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
               placeholder={t('confirmPasswordPlaceholder')}
               {...form.register('confirmPassword')}
             />
-            {form.formState.errors.confirmPassword && (
+            {/* 불일치는 아래 PasswordMatch 가 입력 중에 이미 보여주므로, 여기선 미입력 에러만 남긴다 */}
+            {form.formState.errors.confirmPassword && !confirmPassword && (
               <p className="text-sm text-destructive">
                 {form.formState.errors.confirmPassword.message}
               </p>
             )}
+            {/* 입력 중 실시간 일치 표시 — 저장 누르기 전에 알 수 있게 */}
+            <PasswordMatch password={newPassword} confirmPassword={confirmPassword} t={t} />
           </div>
         </div>
         </form>
