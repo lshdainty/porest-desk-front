@@ -8,7 +8,7 @@ RUN npm ci
 
 # 소스 복사 및 빌드
 COPY . .
-RUN npm run i18n:generate && npm run build:skip-check
+RUN npm run i18n:generate && npm run build
 
 # 실행 단계
 FROM nginx:alpine AS runtime
