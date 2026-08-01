@@ -776,7 +776,7 @@ export function AssetDetailDialog({
       ...(relatedAll ?? []).map(e => ({ kind: 'expense', at: e.expenseDate, expense: e }) as AssetLedgerItem),
       ...(transfersAll?.transfers ?? [])
         .filter(t => t.fromAssetRowId === asset.rowId || t.toAssetRowId === asset.rowId)
-        .map(t => ({ kind: 'transfer', at: `${t.transferDate}T00:00:00`, transfer: t }) as AssetLedgerItem),
+        .map(t => ({ kind: 'transfer', at: t.transferDate, transfer: t }) as AssetLedgerItem),
     ]
     return rows.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12)
   }, [relatedAll, transfersAll, asset.rowId])

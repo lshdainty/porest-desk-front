@@ -163,6 +163,7 @@ export interface AssetTransfer {
   amount: number
   fee: number
   description: string | null
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
   transferDate: string
   createAt: string
 }
@@ -173,6 +174,7 @@ export interface AssetTransferFormValues {
   amount: number
   fee?: number
   description?: string
+  /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
   transferDate: string
 }
 

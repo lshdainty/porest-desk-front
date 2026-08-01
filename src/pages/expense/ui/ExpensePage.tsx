@@ -109,9 +109,9 @@ type LedgerItem =
 const ledgerKey = (i: LedgerItem) =>
   i.kind === 'expense' ? `e${i.expense.rowId}` : `t${i.transfer.rowId}`
 
-/** 정렬·그룹 기준 시각. 이체는 LocalDate(시각 없음)라 그날의 시작으로 둔다. */
+/** 정렬·그룹 기준 시각. 이체도 DATETIME 이라 지출과 같은 기준으로 섞인다. */
 const ledgerAt = (i: LedgerItem) =>
-  i.kind === 'expense' ? i.expense.expenseDate : `${i.transfer.transferDate}T00:00:00`
+  i.kind === 'expense' ? i.expense.expenseDate : i.transfer.transferDate
 
 function groupLedgerByDay(
   expenses: Expense[],

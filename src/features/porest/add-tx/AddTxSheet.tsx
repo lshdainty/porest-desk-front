@@ -265,7 +265,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
           amount: amountNumber,
           fee: fee ? Number(fee) : undefined,
           description: description || undefined,
-          transferDate: expenseDate,
+          transferDate: `${expenseDate}T${expenseTime}`,
         },
         { onSuccess: onClose },
       )
@@ -857,21 +857,18 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
         </>
       )}
 
-      {/* 날짜·시간 (TRANSFER는 시간 없음 — 백엔드 transferDate가 LocalDate) */}
+      {/* 날짜·시간 — 이체도 동일(백엔드 transferDate 가 DATETIME).
+          시각이 있어야 같은 날 잔액수정보다 뒤에 일어난 이체가 앵커에 지워지지 않는다. */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{type === 'TRANSFER' ? t('form.date') : t('dateTime')}</FieldLabel>
-        {type === 'TRANSFER' ? (
+        <FieldLabel>{t('dateTime')}</FieldLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 116px', gap: 8 }}>
           <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 116px', gap: 8 }}>
-            <InputDatePicker value={expenseDate} onValueChange={setExpenseDate} />
-            <InputTimePicker
-              value={expenseTime}
-              onValueChange={setExpenseTime}
-              minuteStep={5}
-            />
-          </div>
-        )}
+          <InputTimePicker
+            value={expenseTime}
+            onValueChange={setExpenseTime}
+            minuteStep={5}
+          />
+        </div>
       </Field>
 
       {/* 메모 */}

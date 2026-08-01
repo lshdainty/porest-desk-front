@@ -105,12 +105,19 @@ export function TransferRow({
               <span>{t('transferFeePrefix')} {KRW(fee, { abs: true })}</span>
             </>
           )}
-          {showDate && (
-            <>
-              <LedgerRowSep />
-              <span>{formatExpenseDateFull(transfer.transferDate)}</span>
-            </>
-          )}
+          {showDate
+            ? (
+              <>
+                <LedgerRowSep />
+                <span>{formatExpenseDateFull(transfer.transferDate)}</span>
+              </>
+            )
+            : formatExpenseTimeLabel(transfer.transferDate) && (
+              <>
+                <LedgerRowSep />
+                <span>{formatExpenseTimeLabel(transfer.transferDate)}</span>
+              </>
+            )}
         </LedgerRowSub>
       </LedgerRowMain>
       <div>
