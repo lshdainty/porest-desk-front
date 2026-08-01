@@ -1,8 +1,12 @@
 # 빌드 컨텍스트에서 제외 — COPY . . 가 호스트 산출물로 이미지 내용을 덮어쓰지 않게 한다.
 # · node_modules: npm ci 로 설치한 이미지 내부 의존성을 호스트(플랫폼 다름) 것으로 덮어씀
 # · tsbuildinfo: tsc 가 증분 판단으로 타입 체크를 건너뛰어 Dockerfile 의 build 게이트가 무력화됨
-# · 로컬 env: Vite 우선순위상 Jenkins 가 주입한 .env.production 을 덮어쓰거나(.env.local)
-#   빠진 키를 로컬 값(localhost)으로 채워(.env) 잘못된 API URL 로 빌드됨
+# · 로컬 env(.env/.env.local): Vite 우선순위상 Jenkins 가 주입한 .env.production 을 덮어쓰거나
+#   빠진 키를 로컬 값(localhost)으로 채워 잘못된 API URL 로 빌드됨
+#
+# ⚠️ .env.production 은 절대 제외하지 말 것 — Jenkins 가 배포 환경별 <env>.env 를
+#    .env.production 으로 복사해 넣는 "빌드 입력"이다. 제외하면 VITE_* 가 전부 undefined 로
+#    빌드되어 API/SSO URL 이 깨진다(로그인 리다이렉트 실패).
 node_modules
 dist
 *.tsbuildinfo
@@ -12,9 +16,7 @@ dist
 .vscode
 .claude
 
-# 로컬 전용 환경파일 (배포는 Jenkins 가 .env.production 을 주입) — .gitignore 와 동일 목록
+# 로컬 전용 환경파일 (배포는 Jenkins 가 .env.production 을 주입하므로 그것만 남긴다)
 .env
 .env.local
 .env.*.local
-.env.development
-.env.production
