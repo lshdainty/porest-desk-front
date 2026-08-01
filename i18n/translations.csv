@@ -1174,6 +1174,10 @@ user,confirmPassword,새 비밀번호 확인,Confirm New Password
 user,confirmPasswordPlaceholder,새 비밀번호를 다시 입력하세요,Re-enter your new password
 user,confirmPasswordRequired,새 비밀번호 확인을 입력해주세요,Password confirmation is required
 user,passwordMismatch,새 비밀번호가 일치하지 않습니다,New passwords do not match
+user,passwordRuleLength,8자 이상,At least 8 characters
+user,passwordRuleSpecial,특수문자 1자 이상,At least 1 special character
+user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해주세요,Password does not meet the requirements
+user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해주세요,New password must be different from the current one
 user,passwordChangeSuccess,비밀번호가 성공적으로 변경되었습니다,Password changed successfully
 user,passwordChangeError,비밀번호 변경에 실패했습니다,Failed to change password
 budget,add,추가,Add
