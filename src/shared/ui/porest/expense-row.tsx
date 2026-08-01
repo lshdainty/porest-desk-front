@@ -4,6 +4,7 @@ import { KRW, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayDow } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import type { Expense } from '@/entities/expense/model/types'
+import type { AssetTransfer } from '@/entities/asset/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
 import { tileRadius } from '@/shared/lib'
 import { Icon } from './primitives'
@@ -58,6 +59,71 @@ export function CategoryChip({
     >
       <Icon name={icon || 'tag'} size={iconSize} strokeWidth={1.9} />
     </span>
+  )
+}
+
+/**
+ * 이체 한 건.
+ *
+ * 지출/수입과 달리 한 건이 자산 두 개에 걸쳐서, 부호가 "보는 관점"에 따라 달라진다.
+ * - `perspectiveAssetRowId` 없음(전체 거래 목록): 관점이 없으므로 중립 — "A → B" 와 금액만.
+ *   이체는 순자산 증감이 0(수수료 제외)이라 +/- 를 붙이면 지출·수입 합계와 헷갈린다.
+ * - `perspectiveAssetRowId` 있음(자산 상세): 그 자산 기준으로 출금이면 -(금액+수수료), 입금이면 +금액.
+ *   수수료는 보내는 쪽에서만 빠진다(백엔드 recordTransfer 와 동일 규칙).
+ */
+export function TransferRow({
+  transfer,
+  perspectiveAssetRowId,
+  onClick,
+  showDate,
+}: {
+  transfer: AssetTransfer
+  perspectiveAssetRowId?: number
+  onClick?: (t: AssetTransfer) => void
+  showDate?: boolean
+}) {
+  const { t } = useTranslation('expense')
+  const fee = transfer.fee ?? 0
+  const isOut = perspectiveAssetRowId != null && transfer.fromAssetRowId === perspectiveAssetRowId
+  const isIn = perspectiveAssetRowId != null && transfer.toAssetRowId === perspectiveAssetRowId
+  const signed = isOut ? -(transfer.amount + fee) : isIn ? transfer.amount : null
+
+  return (
+    <LedgerRow onClick={() => onClick?.(transfer)}>
+      <CategoryChip color="var(--fg-tertiary)" icon="arrow-left-right" />
+      <LedgerRowMain>
+        <LedgerRowTitle className="flex items-center gap-[5px] overflow-visible">
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+            {transfer.description || t('addTx.transfer')}
+          </span>
+        </LedgerRowTitle>
+        <LedgerRowSub>
+          <span>{transfer.fromAssetName} → {transfer.toAssetName}</span>
+          {fee > 0 && (
+            <>
+              <LedgerRowSep />
+              <span>{t('transferFeePrefix')} {KRW(fee, { abs: true })}</span>
+            </>
+          )}
+          {showDate && (
+            <>
+              <LedgerRowSep />
+              <span>{formatExpenseDateFull(transfer.transferDate)}</span>
+            </>
+          )}
+        </LedgerRowSub>
+      </LedgerRowMain>
+      <div>
+        <LedgerRowAmt>
+          <MaskAmount>
+            {signed == null ? '' : signed < 0 ? '-' : '+'}
+            {isEn() ? '₩' : ''}
+            {KRW(signed ?? transfer.amount, { abs: true })}
+          </MaskAmount>
+          <HideUnit>{isEn() ? '' : '원'}</HideUnit>
+        </LedgerRowAmt>
+      </div>
+    </LedgerRow>
   )
 }
 

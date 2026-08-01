@@ -41,7 +41,8 @@ import {
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
-import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { ExpenseRow, TransferRow } from '@/shared/ui/porest/expense-row'
+import { TransferDetailDialog } from '@/features/porest/dialogs/TransferDetailDialog'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
@@ -54,7 +55,8 @@ import {
   useRangeSummary,
   useExpenseCategories,
 } from '@/features/expense'
-import { useAsset, useAssets } from '@/features/asset'
+import { useAsset, useAssets, useAssetTransfers } from '@/features/asset'
+import type { AssetTransfer } from '@/entities/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
@@ -96,19 +98,40 @@ function dayKey(expenseDate: string): string {
   return expenseDate.slice(0, 10)
 }
 
-function groupExpensesByDay(expenses: Expense[]): [string, Expense[]][] {
-  const map = new Map<string, Expense[]>()
-  for (const e of expenses) {
-    const k = dayKey(e.expenseDate)
+/**
+ * 목록에 함께 놓이는 한 행. 이체는 지출/수입이 아니므로 Expense 로 억지로 표현하지 않고
+ * 표시 단계에서만 합류시킨다(통계·폼 같은 지출 전용 경로에 새지 않게).
+ */
+type LedgerItem =
+  | { kind: 'expense'; expense: Expense }
+  | { kind: 'transfer'; transfer: AssetTransfer }
+
+const ledgerKey = (i: LedgerItem) =>
+  i.kind === 'expense' ? `e${i.expense.rowId}` : `t${i.transfer.rowId}`
+
+/** 정렬·그룹 기준 시각. 이체는 LocalDate(시각 없음)라 그날의 시작으로 둔다. */
+const ledgerAt = (i: LedgerItem) =>
+  i.kind === 'expense' ? i.expense.expenseDate : `${i.transfer.transferDate}T00:00:00`
+
+function groupLedgerByDay(
+  expenses: Expense[],
+  transfers: AssetTransfer[],
+): [string, LedgerItem[]][] {
+  const items: LedgerItem[] = [
+    ...expenses.map(e => ({ kind: 'expense', expense: e }) as LedgerItem),
+    ...transfers.map(t => ({ kind: 'transfer', transfer: t }) as LedgerItem),
+  ]
+  const map = new Map<string, LedgerItem[]>()
+  for (const i of items) {
+    const k = dayKey(ledgerAt(i))
     const arr = map.get(k) ?? []
-    arr.push(e)
+    arr.push(i)
     map.set(k, arr)
   }
-  // sort days descending
   const sortedKeys = [...map.keys()].sort((a, b) => b.localeCompare(a))
   return sortedKeys.map(k => {
-    const items = (map.get(k) ?? []).slice().sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-    return [k, items] as [string, Expense[]]
+    const day = (map.get(k) ?? []).slice().sort((a, b) => ledgerAt(b).localeCompare(ledgerAt(a)))
+    return [k, day] as [string, LedgerItem[]]
   })
 }
 
@@ -609,19 +632,23 @@ function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => 
 
 function ExpenseList({
   expenses,
+  transfers = [],
   mobile,
   isLoading,
   onItemClick,
+  onTransferClick,
   focusTxId,
 }: {
   expenses: Expense[]
+  transfers?: AssetTransfer[]
   mobile: boolean
   isLoading: boolean
   onItemClick?: (expense: Expense) => void
+  onTransferClick?: (transfer: AssetTransfer) => void
   focusTxId?: number | null
 }) {
   const { t } = useTranslation('expense')
-  const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
+  const grouped = useMemo(() => groupLedgerByDay(expenses, transfers), [expenses, transfers])
   const focusRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (focusTxId && focusRef.current) {
@@ -664,21 +691,23 @@ function ExpenseList({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d)
+        // 날짜 헤더의 지출/수입 합계 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
         const out = items
-          .filter(t => t.expenseType === 'EXPENSE')
-          .reduce((s, t) => s + Math.abs(t.amount), 0)
+          .filter(i => i.kind === 'expense' && i.expense.expenseType === 'EXPENSE')
+          .reduce((s, i) => s + Math.abs((i as { expense: Expense }).expense.amount), 0)
         const inn = items
-          .filter(t => t.expenseType === 'INCOME')
-          .reduce((s, t) => s + Math.abs(t.amount), 0)
+          .filter(i => i.kind === 'expense' && i.expense.expenseType === 'INCOME')
+          .reduce((s, i) => s + Math.abs((i as { expense: Expense }).expense.amount), 0)
         return (
           <div key={d}>
             {/* 날짜 헤더 — 평문 */}
             <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
-            {items.map(e => {
-              const isFocus = focusTxId === e.rowId
+            {items.map(item => {
+              // 지출·이체가 다른 테이블이라 rowId 가 겹칠 수 있다 — key 와 포커스는 종류까지 합쳐 판별.
+              const isFocus = item.kind === 'expense' && focusTxId === item.expense.rowId
               return (
                 <div
-                  key={e.rowId}
+                  key={ledgerKey(item)}
                   ref={isFocus ? focusRef : undefined}
                   style={{
                     background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
@@ -686,7 +715,9 @@ function ExpenseList({
                     borderRadius: 10,
                   }}
                 >
-                  <ExpenseRow expense={e} onClick={onItemClick} />
+                  {item.kind === 'expense'
+                    ? <ExpenseRow expense={item.expense} onClick={onItemClick} />
+                    : <TransferRow transfer={item.transfer} onClick={onTransferClick} />}
                 </div>
               )
             })}
@@ -799,14 +830,43 @@ function useExpenseData(
     return list
   }, [expensesQ.data, filterValue, allowedCatIds])
 
+  // 이체는 지출/수입이 아니라 자산 간 이동이라 expense 목록에 섞여 오지 않는다(별도 테이블).
+  // 목록에 함께 보여주기 위해 같은 기간으로 따로 받아 화면 단에서만 합친다 —
+  // 통계·예산 같은 지출 전용 경로에 이체가 새지 않게 하려는 의도적 분리.
+  const transfersQ = useAssetTransfers({ startDate, endDate })
+
+  const filteredTransfers = useMemo(() => {
+    let list = transfersQ.data?.transfers ?? []
+    // 카테고리·유형·거래처 필터는 이체에 해당 개념이 없다 → 필터가 걸리면 이체는 대상에서 빠진다.
+    if (serverType || allowedCatIds) return []
+    if (filterValue && filterValue.types.length > 0 && filterValue.types.length < 2) return []
+    // 자산 필터는 보내는 쪽·받는 쪽 둘 다 매칭(한 건이 자산 두 개에 걸침).
+    if (assetId != null) {
+      list = list.filter(t => t.fromAssetRowId === assetId || t.toAssetRowId === assetId)
+    }
+    if (filterValue && filterValue.assetIds.length > 0) {
+      list = list.filter(
+        t => filterValue.assetIds.includes(t.fromAssetRowId) || filterValue.assetIds.includes(t.toAssetRowId),
+      )
+    }
+    if (filterValue) {
+      const minN = filterValue.min ? Number(filterValue.min) : null
+      const maxN = filterValue.max ? Number(filterValue.max) : null
+      if (minN != null) list = list.filter(t => t.amount >= minN)
+      if (maxN != null) list = list.filter(t => t.amount <= maxN)
+    }
+    return list
+  }, [transfersQ.data, filterValue, allowedCatIds, serverType, assetId])
+
   const monthIn = monthlyQ.data?.totalIncome ?? 0
   const monthOut = monthlyQ.data?.totalExpense ?? 0
 
   return {
     expenses: filtered,
+    transfers: filteredTransfers,
     monthIn,
     monthOut,
-    isLoadingList: expensesQ.isLoading,
+    isLoadingList: expensesQ.isLoading || transfersQ.isLoading,
     isLoadingSummary: monthlyQ.isLoading,
   }
 }
@@ -967,11 +1027,13 @@ function filterActiveCount(v: FilterValue | null): number {
 /** 행 클릭 → 상세 TxDetailDialog → 편집 버튼 → AddTxSheet. Desktop/Mobile 공용. */
 function EditableList({
   expenses,
+  transfers = [],
   isLoading,
   mobile,
   focusTxId,
 }: {
   expenses: Expense[]
+  transfers?: AssetTransfer[]
   isLoading: boolean
   mobile: boolean
   focusTxId?: number | null
@@ -979,16 +1041,27 @@ function EditableList({
   // detail: 상세 보기, editing: 편집 폼
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
+  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
 
   return (
     <>
       <ExpenseList
         expenses={expenses}
+        transfers={transfers}
         mobile={mobile}
         isLoading={isLoading}
         onItemClick={(e) => setDetail(e)}
+        onTransferClick={(tr) => setTransferDetail(tr)}
         focusTxId={focusTxId}
       />
+      {transferDetail && (
+        <TransferDetailDialog
+          transfer={transferDetail}
+          mobile={mobile}
+          onClose={() => setTransferDetail(null)}
+        />
+      )}
       {detail && !editing && (
         <TxDetailDialog
           expense={detail}
@@ -1026,7 +1099,7 @@ function ExpenseDesktop() {
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
 
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
+  const { expenses, transfers, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
     month, filter, filterValue, assetId, categoriesQ.data ?? null,
   )
 
@@ -1078,6 +1151,7 @@ function ExpenseDesktop() {
           <Chips filter={filter} onChange={setFilter} />
           <EditableList
             expenses={expenses}
+            transfers={transfers}
             isLoading={isLoadingList}
             mobile={false}
             focusTxId={focusTxId}
@@ -1145,10 +1219,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
+  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
 
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
-  const { expenses, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
+  const { expenses, transfers, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
     month, 'all', filterValue, assetId, categoriesQ.data ?? null,
   )
   const activeCount = filterActiveCount(filterValue)
@@ -1244,7 +1320,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     return Array.from({ length: 7 }, (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow)
   }, [])
 
-  const grouped = useMemo(() => groupExpensesByDay(expenses), [expenses])
+  const grouped = useMemo(() => groupLedgerByDay(expenses, transfers), [expenses, transfers])
   const yest = new Date(now); yest.setDate(now.getDate() - 1)
   const yesterdayStr = `${yest.getFullYear()}-${TXM_PAD(yest.getMonth() + 1)}-${TXM_PAD(yest.getDate())}`
   const relOf = (d: string) => (d === todayStr ? t('txm.today') : d === yesterdayStr ? t('txm.yesterday') : null)
@@ -1428,8 +1504,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             const [yy, mm, dd] = d.split('-')
             const dow = formatDay(d).dow
             const rel = relOf(d)
-            const dOut = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
-            const dIn = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
+            // 일별 합계 — 이체는 자산 간 이동이라 지출/수입 어느 쪽에도 넣지 않는다.
+            const dayExpenses = items.flatMap(i => (i.kind === 'expense' ? [i.expense] : []))
+            const dOut = dayExpenses.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
+            const dIn = dayExpenses.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
             return (
               <LedgerDayGroup key={d} day={d}>
                 <LedgerDayHead>
@@ -1441,11 +1519,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   </LedgerDaySum>
                 </LedgerDayHead>
                 <div>
-                  {items.map(e => {
-                    const isFocus = focusTxId === e.rowId
+                  {items.map(item => {
+                    // 지출·이체는 다른 테이블이라 rowId 가 겹칠 수 있다 — key·포커스는 종류까지 합쳐 판별.
+                    const isFocus = item.kind === 'expense' && focusTxId === item.expense.rowId
                     return (
                       <div
-                        key={e.rowId}
+                        key={ledgerKey(item)}
                         ref={isFocus ? focusRef : undefined}
                         style={{
                           background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
@@ -1453,7 +1532,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                           borderRadius: 10,
                         }}
                       >
-                        <ExpenseRow expense={e} onClick={(ex) => setDetail(ex)} />
+                        {item.kind === 'expense'
+                          ? <ExpenseRow expense={item.expense} onClick={(ex) => setDetail(ex)} />
+                          : <TransferRow transfer={item.transfer} onClick={(tr) => setTransferDetail(tr)} />}
                       </div>
                     )
                   })}
@@ -1462,7 +1543,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             )
           })
         )}
-        {!isLoadingList && expenses.length === 0 && (
+        {!isLoadingList && expenses.length === 0 && transfers.length === 0 && (
           <div style={{ padding: '56px 0', textAlign: 'center' }}>
             <ReceiptText size={36} style={{ color: 'var(--fg-tertiary)', margin: '0 auto 12px' }} />
             <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)', marginBottom: 4 }}>
@@ -1491,6 +1572,13 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       )}
       {editing && (
         <AddTxSheet expense={editing} mobile onClose={() => setEditing(null)} />
+      )}
+      {transferDetail && (
+        <TransferDetailDialog
+          transfer={transferDetail}
+          mobile
+          onClose={() => setTransferDetail(null)}
+        />
       )}
       {filterOpen && (
         <FilterDialog
