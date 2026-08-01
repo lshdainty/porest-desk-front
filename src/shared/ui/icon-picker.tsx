@@ -5,6 +5,7 @@ import type { IconName } from 'lucide-react/dynamic'
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/lib/cn'
+import { isIconName } from '@/shared/lib/icon-map'
 import { Input } from '@/shared/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
 
@@ -50,11 +51,13 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
   }, [search, source])
 
   // 검색어가 바뀌면 표시 개수를 초기화(맨 위부터 다시).
-  useEffect(() => {
+  // effect 대신 입력 핸들러에서 함께 갱신한다 — effect 내 setState 는 연쇄 렌더를 유발.
+  const handleSearchChange = useCallback((next: string) => {
+    setSearch(next)
     setVisibleCount(STEP)
-  }, [search])
+  }, [])
 
-  // 실제로 렌더할 만큼만 잘라낸다(스크롤로 점진 확장 — 1892개 한 번에 안 그림).
+  // 실제로 렌더할 만큼만 잘라낸다(스크롤로 점진 확장 — 2000여 개를 한 번에 안 그림).
   const visible = useMemo(() => matched.slice(0, visibleCount), [matched, visibleCount])
 
   // 스크롤이 하단 근처에 오면 STEP 만큼 더 렌더.
@@ -104,8 +107,9 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
             className,
           )}
         >
-          {value ? (
-            <DynamicIcon name={value as IconName} size={18} className="text-text-primary" />
+          {/* 저장된 값이 현재 카탈로그에 없으면(1.0 삭제 아이콘 등) 빈 칸 대신 '—' 표시 */}
+          {isIconName(value) ? (
+            <DynamicIcon name={value} size={18} className="text-text-primary" />
           ) : (
             <span className="text-xs text-text-secondary">—</span>
           )}
@@ -121,7 +125,7 @@ export const IconPicker = ({ value, onChange, className, icons }: IconPickerProp
             ref={searchRef}
             placeholder={t('iconSearchPlaceholder')}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-8"
           />
         </div>
