@@ -73,8 +73,14 @@ export function CategoryEditDialog({
 
   const palette = CAT_PALETTE[paletteIdx]!
   const labelTrim = label.trim()
+  // 이름 중복 — 서버 규칙과 동일 범위: 같은 상위(부모) · 같은 타입 안에서만 금지.
+  // (지출 '이자'와 수입 '이자', '생활>관리비'와 '주거>관리비' 처럼 위치·타입이 다르면 허용)
   const duplicate = existing.some(
-    c => c.categoryName === labelTrim && c.rowId !== cat?.rowId,
+    c =>
+      c.categoryName === labelTrim &&
+      c.rowId !== cat?.rowId &&
+      c.expenseType === kind &&
+      (c.parentRowId ?? null) === parentRowId,
   )
   const valid = labelTrim.length > 0 && labelTrim.length <= 12 && !duplicate
   const err =

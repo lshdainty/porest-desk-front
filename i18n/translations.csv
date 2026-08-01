@@ -1325,7 +1325,7 @@ category,addSub,하위 추가,Add subcategory
 category,edit,편집,Edit
 category,nameRequired,이름을 입력해 주세요.,Please enter a name.
 category,nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
-category,nameDuplicate,같은 이름의 카테고리가 있습니다.,A category with this name already exists.
+category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습니다.,A category with this name already exists in this location.
 category,editTitle,카테고리 편집,Edit Category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category
