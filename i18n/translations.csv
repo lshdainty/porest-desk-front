@@ -1448,6 +1448,12 @@ expense,addTx.noAssetForMethod,해당 결제 수단에 연결된 자산이 없�
 expense,addTx.fromAccount,출금 계좌,From account
 expense,addTx.selectPlaceholder,선택,Select
 expense,addTx.fee,수수료 (선택),Fee (optional)
+expense,transferFeePrefix,수수료,Fee
+expense,transferListTitle,이체 내역,Transfers
+expense,transferDeleteConfirm,이 이체를 삭제할까요? 양쪽 자산의 잔액이 되돌아갑니다,Delete this transfer? Both assets' balances will be restored.
+expense,transferEmpty,이체 내역이 없어요,No transfers yet
+expense,transferWithdrawn,출금 합계,Total withdrawn
+expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,savePreset.title,프리셋으로 저장,Save as preset

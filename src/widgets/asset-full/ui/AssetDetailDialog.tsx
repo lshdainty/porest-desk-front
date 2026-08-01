@@ -6,7 +6,8 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf } from '@/features/asset'
+import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
+import type { AssetTransfer } from '@/entities/asset'
 import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
@@ -16,7 +17,7 @@ import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { ExpenseRow } from '@/shared/ui/porest/expense-row'
+import { ExpenseRow, TransferRow } from '@/shared/ui/porest/expense-row'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { KRW, money, formatChartAxis, isEn, formatDay } from '@/shared/lib/porest/format'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
@@ -94,6 +95,11 @@ function currentYearMonth(): string {
 
 // 카드 월 실적 배지 — design card-detail.jsx 신판(달성/잔여 요약). 실적 무관 카드면 숨김.
 // 달성: cat-green 10% tint 배경(다크 스왑) / 미달: sunken. 아이콘 30 원(surface).
+/** 자산 상세의 한 행. 이체는 지출/수입이 아니라 자산 간 이동이라 별도 종류로 둔다. */
+type AssetLedgerItem =
+  | { kind: 'expense'; at: string; expense: Expense }
+  | { kind: 'transfer'; at: string; transfer: AssetTransfer }
+
 function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
   const { t } = useTranslation('asset')
   const ym = currentYearMonth()
@@ -762,24 +768,30 @@ export function AssetDetailDialog({
   const isCredit = asset.assetType === 'CREDIT_CARD'
 
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
-  const relatedTx: Expense[] = useMemo(
-    () => [...(relatedAll ?? [])]
-      .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-      .slice(0, 12),
-    [relatedAll],
-  )
+  // 이체는 expense 가 아니라 asset_transfer 라 따로 받아 합친다. 한 건이 자산 두 개에 걸치므로
+  // 이 자산이 보내는 쪽인지 받는 쪽인지로 걸러낸다(서버 필터는 기간만 지원).
+  const { data: transfersAll } = useAssetTransfers()
+  const relatedItems = useMemo(() => {
+    const rows: AssetLedgerItem[] = [
+      ...(relatedAll ?? []).map(e => ({ kind: 'expense', at: e.expenseDate, expense: e }) as AssetLedgerItem),
+      ...(transfersAll?.transfers ?? [])
+        .filter(t => t.fromAssetRowId === asset.rowId || t.toAssetRowId === asset.rowId)
+        .map(t => ({ kind: 'transfer', at: `${t.transferDate}T00:00:00`, transfer: t }) as AssetLedgerItem),
+    ]
+    return rows.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12)
+  }, [relatedAll, transfersAll, asset.rowId])
 
   // 가계부 메인 리스트 미러 — 날짜별 그룹(최신순), 헤더에 일 지출/수입 합계.
   const relatedGroups = useMemo(() => {
-    const m = new Map<string, Expense[]>()
-    for (const tx of relatedTx) {
-      const k = tx.expenseDate.slice(0, 10)
+    const m = new Map<string, AssetLedgerItem[]>()
+    for (const item of relatedItems) {
+      const k = item.at.slice(0, 10)
       const arr = m.get(k)
-      if (arr) arr.push(tx)
-      else m.set(k, [tx])
+      if (arr) arr.push(item)
+      else m.set(k, [item])
     }
     return [...m.entries()]
-  }, [relatedTx])
+  }, [relatedItems])
 
   const title = isCard ? t('assetDetail.titleCard') : isInv ? t('assetDetail.titleInvest') : t('assetDetail.titleAccount')
   const valueLabel = isCard ? t('assetDetail.valueCard') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
@@ -997,7 +1009,7 @@ export function AssetDetailDialog({
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-            {t('assetDetail.recentTx')}{relatedTx.length > 0 ? ` (${relatedTx.length})` : ''}
+            {t('assetDetail.recentTx')}{relatedItems.length > 0 ? ` (${relatedItems.length})` : ''}
           </h4>
           <button
             type="button"
@@ -1033,7 +1045,7 @@ export function AssetDetailDialog({
               </div>
             ))}
           </div>
-        ) : relatedTx.length === 0 ? (
+        ) : relatedItems.length === 0 ? (
           <div
             style={{
               padding: '24px 0',
@@ -1048,18 +1060,24 @@ export function AssetDetailDialog({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {relatedGroups.map(([d, items]) => {
               const { md, dow } = formatDay(d)
-              const out = items
+              // 일 합계는 지출/수입만 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
+              const dayExpenses = items.flatMap(i => (i.kind === 'expense' ? [i.expense] : []))
+              const out = dayExpenses
                 .filter(tx => tx.expenseType === 'EXPENSE')
                 .reduce((s, tx) => s + Math.abs(tx.amount), 0)
-              const inn = items
+              const inn = dayExpenses
                 .filter(tx => tx.expenseType === 'INCOME')
                 .reduce((s, tx) => s + Math.abs(tx.amount), 0)
               return (
                 <div key={d}>
                   <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
-                  {items.map(tx => (
-                    <ExpenseRow key={tx.rowId} expense={tx} />
-                  ))}
+                  {items.map(item => (item.kind === 'expense'
+                    ? <ExpenseRow key={`e${item.expense.rowId}`} expense={item.expense} />
+                    : <TransferRow
+                        key={`t${item.transfer.rowId}`}
+                        transfer={item.transfer}
+                        perspectiveAssetRowId={asset.rowId}
+                      />))}
                 </div>
               )
             })}
