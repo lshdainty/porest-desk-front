@@ -51,7 +51,10 @@ export function TransferDetailDialog({
     ...(fee > 0
       ? [{ label: t('transferWithdrawn'), value: won(transfer.amount + fee) }]
       : []),
-    { label: t('form.date'), value: formatMonthDayDow(transfer.transferDate) },
+    {
+      label: t('form.date'),
+      value: `${formatMonthDayDow(transfer.transferDate.slice(0, 10))} ${transfer.transferDate.slice(11, 16)}`,
+    },
     ...(transfer.description ? [{ label: t('memo'), value: transfer.description }] : []),
   ]
 
