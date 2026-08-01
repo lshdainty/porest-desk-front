@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { KeyRound, Lock, ShieldCheck } from 'lucide-react'
+import { Check, KeyRound, Lock, ShieldCheck, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
@@ -12,6 +12,7 @@ import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { useIsMobile } from '@/shared/hooks'
+import { PASSWORD_RULES, isPasswordValid } from '@/shared/lib'
 
 interface PasswordChangeDialogProps {
   open: boolean
@@ -21,12 +22,52 @@ interface PasswordChangeDialogProps {
 const createFormSchema = (t: (key: string) => string) =>
   z.object({
     currentPassword: z.string().min(1, t('currentPasswordRequired')),
-    newPassword: z.string().min(1, t('newPasswordRequired')),
+    // 정책(8자 이상·특수문자)은 PASSWORD_RULES 단일 소스 — 체크리스트가 이미 미달 항목을
+    // 짚어주므로 필드 에러는 한 줄로만 남긴다.
+    newPassword: z
+      .string()
+      .min(1, t('newPasswordRequired'))
+      .refine(isPasswordValid, { message: t('passwordPolicyUnmet') }),
     confirmPassword: z.string().min(1, t('confirmPasswordRequired')),
-  }).refine((data) => data.newPassword === data.confirmPassword, {
-    message: t('passwordMismatch'),
-    path: ['confirmPassword'],
   })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t('passwordMismatch'),
+      path: ['confirmPassword'],
+    })
+    // 서버(SSO)도 현재와 동일한 비밀번호를 거부한다 — 제출 전에 걸러 왕복을 줄인다.
+    .refine((data) => !data.currentPassword || data.newPassword !== data.currentPassword, {
+      message: t('passwordSameAsCurrent'),
+      path: ['newPassword'],
+    })
+
+/**
+ * 입력 중 규칙 충족 여부 체크리스트.
+ * 값이 비어 있으면 표시하지 않는다(입력 전 경고로 겁주지 않게).
+ * 이 레포에서 비밀번호를 새로 만드는 화면은 여기뿐이라 다이얼로그 로컬로 둔다.
+ */
+const PasswordRules = ({ password, t }: { password: string; t: (key: string) => string }) => {
+  if (!password) return null
+
+  return (
+    <ul className="grid gap-1 pt-0.5" aria-live="polite">
+      {PASSWORD_RULES.map((rule) => {
+        const ok = rule.test(password)
+        const Icon = ok ? Check : X
+        return (
+          <li
+            key={rule.key}
+            className={`flex items-center gap-1.5 text-xs ${
+              ok ? 'text-[var(--status-success-fg)]' : 'text-muted-foreground'
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span>{t(rule.key)}</span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
 
 type PasswordChangeFormValues = z.infer<ReturnType<typeof createFormSchema>>
 
@@ -44,6 +85,9 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
       confirmPassword: '',
     },
   })
+
+  // 체크리스트용 — 입력할 때마다 갱신
+  const newPassword = useWatch({ control: form.control, name: 'newPassword' }) ?? ''
 
   useEffect(() => {
     if (open) {
@@ -131,6 +175,8 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
                 {form.formState.errors.newPassword.message}
               </p>
             )}
+            {/* 입력 중 실시간 규칙 표시 — 저장 누르기 전에 미달 조건을 알 수 있게 */}
+            <PasswordRules password={newPassword} t={t} />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="confirmPassword" className="flex items-center gap-1.5">
