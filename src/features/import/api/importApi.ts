@@ -15,6 +15,9 @@ export type ImportField =
   | 'SUBCATEGORY'
   | 'ASSET'
   | 'MEMO'
+  | 'TIME'
+  | 'MERCHANT'
+  | 'PAYMENT_METHOD'
 
 export type ImportMapping = Partial<Record<ImportField, number>>
 
