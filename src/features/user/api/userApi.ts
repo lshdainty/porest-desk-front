@@ -43,6 +43,8 @@ export interface UserPreferences {
   emailEnabled: boolean
   /** 발송 주기 */
   emailFrequency: EmailFrequency
+  /** 표시 기준 지역 (IANA 타임존 ID) */
+  timezone: string
 }
 
 export const userApi = {

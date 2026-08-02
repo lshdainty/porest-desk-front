@@ -9,6 +9,9 @@ import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { disablePdHideAmounts, enablePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { regionOptionsWith } from '@/shared/lib'
+import { useUserPreferences, useUpdateUserPreferences } from '@/features/user'
 
 type CurrencyKey = 'KRW' | 'USD' | 'EUR' | 'JPY'
 
@@ -56,6 +59,17 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
   const hidden = useHideAmounts()
   const [unlockOpen, setUnlockOpen] = useState(false)
+
+  const { data: prefs } = useUserPreferences()
+  const updatePrefs = useUpdateUserPreferences()
+  const isEnLang = i18n.language?.startsWith('en') ?? false
+  // 저장된 값이 목록에 없을 수도 있어(가입 후 목록 변경 등) 현재 값을 옵션에 끼워 넣는다.
+  const regionOptions = regionOptionsWith(prefs?.timezone)
+
+  const handleRegionChange = (tz: string) => {
+    if (!tz || tz === prefs?.timezone) return
+    updatePrefs.mutate({ timezone: tz })
+  }
 
   // 켜기는 즉시, 끄기는 비밀번호 인증 (헤더 눈 버튼 제거 후 설정 진입점)
   const handleHideChange = (checked: boolean) => {
@@ -147,6 +161,30 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           onOpenChange={setUnlockOpen}
           onVerified={disablePdHideAmounts}
         />
+      </section>
+
+      {/* 표시 기준 지역 — 서버가 이 값으로 "오늘"을 판단하므로 로컬이 아니라 서버에 저장한다. */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+        <SectionLabel>{t('region.label')}</SectionLabel>
+        <Select
+          value={prefs?.timezone ?? ''}
+          onValueChange={handleRegionChange}
+          disabled={!prefs || updatePrefs.isPending}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={t('region.placeholder')} />
+          </SelectTrigger>
+          <SelectContent>
+            {regionOptions.map(o => (
+              <SelectItem key={o.value} value={o.value}>
+                {isEnLang ? o.en : o.ko}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          {t('region.desc')}
+        </div>
       </section>
 
       {/* label + content = 한 세트(flex 묶음, 내부 gap sm=8). 세트끼리는 최상위 gap-2xl(32). */}
