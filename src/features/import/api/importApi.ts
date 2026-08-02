@@ -43,6 +43,8 @@ export interface ImportAnalyzeResult {
   totalRows: number
   validRows: number
   duplicateCount: number
+  /** 거래가 달려 있어 하위를 만들 수 없는 대분류 — 비어 있지 않으면 그 행들이 전부 실패한다 */
+  blockedParents: string[]
   columns: ImportColumn[]
   suggestedMapping: ImportMapping
   preview: ImportPreviewRow[]
