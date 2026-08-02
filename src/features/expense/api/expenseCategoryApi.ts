@@ -23,6 +23,19 @@ export const expenseCategoryApi = {
     return resp.data
   },
 
+  /**
+   * 카테고리에 달린 거래를 다른 카테고리로 일괄 이동.
+   * 거래가 직접 달린 카테고리는 부모가 될 수 없어 하위를 만들 수 없는데, 그걸 푸는 유일한 방법.
+   */
+  moveTransactions: async (
+    id: number,
+    targetCategoryRowId: number,
+  ): Promise<{ expenses: number; recurring: number; splits: number }> => {
+    const resp: ApiResponse<{ expenses: number; recurring: number; splits: number }> =
+      await apiClient.post(`/v1/expense/category/${id}/move-transactions`, { targetCategoryRowId })
+    return resp.data
+  },
+
   reorderCategories: async (
     items: { categoryRowId: number; sortOrder: number; parentRowId: number | null }[],
   ): Promise<void> => {

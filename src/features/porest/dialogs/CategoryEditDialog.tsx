@@ -40,6 +40,7 @@ export function CategoryEditDialog({
   onClose,
   onSave,
   onDelete,
+  onMoveTx,
   mobile,
   existing,
   submitting,
@@ -50,6 +51,8 @@ export function CategoryEditDialog({
   onClose: () => void
   onSave: (values: ExpenseCategoryFormValues) => void
   onDelete?: () => void
+  /** 거래를 다른 카테고리로 옮기기 — 거래가 달려 하위를 만들 수 없을 때의 탈출구. */
+  onMoveTx?: () => void
   mobile: boolean
   existing: ExpenseCategory[]
   submitting?: boolean
@@ -283,6 +286,35 @@ export function CategoryEditDialog({
         <FieldLabel>{te('form.icon')}</FieldLabel>
         <IconPicker value={icon} onChange={setIcon} />
       </Field>
+
+      {/* 거래 옮기기 — 거래가 직접 달린 카테고리는 하위 분류를 만들 수 없다.
+          그걸 푸는 유일한 방법이라 편집 화면에서 바로 갈 수 있게 둔다. */}
+      {onMoveTx && (
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+          <button
+            type="button"
+            onClick={onMoveTx}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              color: 'var(--fg-brand)',
+              fontSize: 'var(--text-label-sm)',
+              fontWeight: 600,
+            }}
+          >
+            <Icon name="arrow-right-left" size={14} />
+            {t('moveTx.entry')}
+          </button>
+          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+            {t('moveTx.entryDesc')}
+          </div>
+        </div>
+      )}
     </ModalShell>
   )
 }

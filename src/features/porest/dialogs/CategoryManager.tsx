@@ -42,6 +42,7 @@ import type {
   ExpenseType,
 } from '@/entities/expense'
 import { CategoryEditDialog, getPaletteByColor } from './CategoryEditDialog'
+import { CategoryMoveTxDialog } from './CategoryMoveTxDialog'
 
 type EditingState = ExpenseCategory | { kind: 'new'; parentRowId?: number | null } | null
 
@@ -60,6 +61,8 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<EditingState>(null)
   const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(null)
+  // 거래가 달려 하위를 만들 수 없는 카테고리를 푸는 경로 — 거래를 다른 곳으로 옮긴다.
+  const [movingTx, setMovingTx] = useState<ExpenseCategory | null>(null)
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   // 자식 이동 시 새 부모 예산 초과 확인 — 승인하면 저장 진행.
   const [pendingMove, setPendingMove] = useState<
@@ -333,6 +336,14 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
 
       </ManagerShell>
 
+      {movingTx && (
+        <CategoryMoveTxDialog
+          source={movingTx}
+          categories={list}
+          mobile={mobile}
+          onClose={() => setMovingTx(null)}
+        />
+      )}
       {editing && (
         <CategoryEditDialog
           cat={editing && 'rowId' in editing ? editing : null}
@@ -344,6 +355,14 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
             editing && 'rowId' in editing
               ? () => {
                   setConfirmDelete(editing)
+                  setEditing(null)
+                }
+              : undefined
+          }
+          onMoveTx={
+            editing && 'rowId' in editing
+              ? () => {
+                  setMovingTx(editing)
                   setEditing(null)
                 }
               : undefined

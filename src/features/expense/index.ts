@@ -24,6 +24,7 @@ export {
   useCreateExpenseCategory,
   useUpdateExpenseCategory,
   useDeleteExpenseCategory,
+  useMoveCategoryTransactions,
   useReorderExpenseCategories,
 } from './model/useExpenseCategories'
 export {
