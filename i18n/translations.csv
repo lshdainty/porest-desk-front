@@ -2178,6 +2178,8 @@ export,import.dupBadge,중복?,Dup?
 export,import.optionsTitle,가져오기 옵션,Import options
 export,import.optDupSkip,중복 거래 건너뛰기,Skip duplicate transactions
 export,import.optDupSkipDesc,날짜·금액·내용이 같은 {{dup}}건을 제외해요,"Excludes {{dup}} rows with same date, amount & content"
+export,import.blockedTitle,"{{names}} 카테고리에 거래가 직접 등록돼 있어 하위 분류를 만들 수 없어요","Cannot create subcategories under {{names}} — it already has transactions"
+export,import.blockedDesc,해당 대분류를 쓰는 행은 저장에 실패해요. 그 카테고리의 거래를 하위로 옮기거나 파일의 분류를 바꿔주세요,Rows using it will fail. Move its transactions into a subcategory or change the category in the file
 export,import.optAutoCat,새 카테고리 자동 생성,Auto-create new categories
 export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요,Missing categories are created automatically
 export,import.prev,이전,Back

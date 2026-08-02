@@ -8,6 +8,7 @@ import {
   Info,
   Loader2,
   Plus,
+  TriangleAlert,
   UploadCloud,
   X,
 } from 'lucide-react'
@@ -220,6 +221,29 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
 
       {step === 'mapping' && analysis && (
         <>
+          {/* 실행하면 반드시 실패할 행을 미리 알린다 — 넣고 나서 실패 숫자만 보면 원인을 알 수 없다. */}
+          {analysis.blockedParents.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                padding: 14,
+                borderRadius: 'var(--radius-tile)',
+                background: 'var(--bg-danger-subtle, var(--bg-muted))',
+                border: '1px solid var(--border-danger, var(--border-subtle))',
+              }}
+            >
+              <TriangleAlert size={17} style={{ color: 'var(--fg-expense)', flexShrink: 0, marginTop: 1 }} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
+                  {t('import.blockedTitle', { names: analysis.blockedParents.join(', ') })}
+                </div>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 3 }}>
+                  {t('import.blockedDesc')}
+                </div>
+              </div>
+            </div>
+          )}
           <SectionCard mobile={mobile} title={t('import.fileTitle')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <span style={fileIconStyle}>
