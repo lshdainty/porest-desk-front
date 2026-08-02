@@ -48,7 +48,7 @@ export const BANK_ENTRIES: BankEntry[] = [
   // 인터넷은행
   { name: '카카오뱅크',  category: '인터넷은행', code: '090', color: { bg: '#FEE500', fg: '#191919' }, aliases: ['카뱅'] },
   { name: '토스뱅크',    category: '인터넷은행', code: '092', color: { bg: '#0064FF' }, aliases: ['토스'] },
-  { name: '케이뱅크',    category: '인터넷은행', code: '089', color: { bg: '#FF6F20' }, aliases: ['K뱅크', 'K Bank'] },
+  { name: '케이뱅크',    category: '인터넷은행', code: '089', color: { bg: '#0214A1' }, aliases: ['K뱅크', 'K Bank'] },
 
   // 지방은행
   { name: '부산',    category: '지방은행', code: '032', color: { bg: '#0033A0' }, aliases: ['부산은행', 'BNK부산'] },
