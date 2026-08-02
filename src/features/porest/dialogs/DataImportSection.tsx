@@ -41,6 +41,11 @@ const MAP_FIELDS: { f: ImportField; labelKey: string; required?: boolean }[] = [
   { f: 'CATEGORY', labelKey: 'import.field.category' },
   { f: 'ASSET', labelKey: 'import.field.asset' },
   { f: 'MEMO', labelKey: 'import.field.memo' },
+  // 소스에 따라 있을 수도 없을 수도 있는 열 — 자동매핑이 잡으면 채워지고, 없으면 '사용 안 함'.
+  { f: 'SUBCATEGORY', labelKey: 'import.field.subcategory' },
+  { f: 'TIME', labelKey: 'import.field.time' },
+  { f: 'MERCHANT', labelKey: 'import.field.merchant' },
+  { f: 'PAYMENT_METHOD', labelKey: 'import.field.paymentMethod' },
 ]
 
 const NONE = 'none'

@@ -2167,6 +2167,10 @@ export,import.field.amount,금액,Amount
 export,import.field.category,카테고리,Category
 export,import.field.asset,자산·결제수단,Asset/Method
 export,import.field.memo,메모,Memo
+export,import.field.subcategory,소분류,Subcategory
+export,import.field.time,시간,Time
+export,import.field.merchant,거래처,Merchant
+export,import.field.paymentMethod,결제수단,Payment method
 export,import.previewDesc,처음 몇 행 미리보기 · 중복 의심 {{dup}}건,Preview of first rows · {{dup}} possible duplicates
 export,import.income,수입,Income
 export,import.expense,지출,Expense
