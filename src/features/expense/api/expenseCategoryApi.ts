@@ -36,6 +36,19 @@ export const expenseCategoryApi = {
     return resp.data
   },
 
+  /**
+   * 하위 카테고리를 만들면서 이 카테고리의 거래를 그리로 옮긴다.
+   * 거래가 있어 하위를 못 만들고, 옮길 하위가 없어 거래도 못 옮기는 교착을 푼다.
+   */
+  splitIntoChild: async (
+    id: number,
+    body: { childName: string; icon: string; color: string },
+  ): Promise<{ expenses: number; recurring: number; splits: number }> => {
+    const resp: ApiResponse<{ expenses: number; recurring: number; splits: number }> =
+      await apiClient.post(`/v1/expense/category/${id}/split-into-child`, body)
+    return resp.data
+  },
+
   reorderCategories: async (
     items: { categoryRowId: number; sortOrder: number; parentRowId: number | null }[],
   ): Promise<void> => {

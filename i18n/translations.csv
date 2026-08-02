@@ -1341,6 +1341,11 @@ category,moveTx.hint,같은 유형의 말단 카테고리만 고를 수 있어�
 category,moveTx.noTarget,옮길 수 있는 카테고리가 없어요. 먼저 하나 만들어주세요,No target available — create one first
 category,moveTx.action,옮기기,Move
 category,moveTx.done,{{count}}건을 옮겼어요,Moved {{count}} items
+category,moveTx.modeNew,새 하위 만들기,Create subcategory
+category,moveTx.modeExisting,기존 카테고리로,Move to existing
+category,moveTx.childName,만들 하위 이름,New subcategory name
+category,moveTx.childPlaceholder,예: 강의,e.g. Lectures
+category,moveTx.newHint,"{{name}} 아래에 만들고 거래를 모두 그리로 옮겨요. 그러면 다른 하위도 만들 수 있어요","Creates it under {{name}} and moves all transactions there, so you can add more subcategories"
 category,editTitle,카테고리 편집,Edit Category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category

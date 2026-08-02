@@ -59,6 +59,18 @@ export const useMoveCategoryTransactions = () => {
   })
 }
 
+export const useSplitCategoryIntoChild = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: number; childName: string; icon: string; color: string }) =>
+      expenseCategoryApi.splitIntoChild(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+    },
+  })
+}
+
 export const useReorderExpenseCategories = () => {
   const queryClient = useQueryClient()
 
