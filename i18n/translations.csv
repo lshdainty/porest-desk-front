@@ -1331,6 +1331,16 @@ category,edit,편집,Edit
 category,nameRequired,이름을 입력해 주세요.,Please enter a name.
 category,nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
 category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습니다.,A category with this name already exists in this location.
+category,moveTx.entry,거래 옮기기,Move transactions
+category,moveTx.entryDesc,거래가 달린 카테고리는 하위 분류를 만들 수 없어요. 거래를 옮기면 만들 수 있어요,A category with transactions cannot have subcategories. Move them to enable it
+category,moveTx.title,거래 옮기기,Move transactions
+category,moveTx.desc,"{{name}} 에 달린 거래·반복거래·분할을 모두 옮겨요","Moves all transactions, recurring and splits from {{name}}"
+category,moveTx.target,옮길 카테고리,Target category
+category,moveTx.targetPlaceholder,카테고리 선택,Select a category
+category,moveTx.hint,같은 유형의 말단 카테고리만 고를 수 있어요,Only leaf categories of the same type can be selected
+category,moveTx.noTarget,옮길 수 있는 카테고리가 없어요. 먼저 하나 만들어주세요,No target available — create one first
+category,moveTx.action,옮기기,Move
+category,moveTx.done,{{count}}건을 옮겼어요,Moved {{count}} items
 category,editTitle,카테고리 편집,Edit Category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category

@@ -46,6 +46,19 @@ export const useDeleteExpenseCategory = () => {
   })
 }
 
+export const useMoveCategoryTransactions = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, targetCategoryRowId }: { id: number; targetCategoryRowId: number }) =>
+      expenseCategoryApi.moveTransactions(id, targetCategoryRowId),
+    onSuccess: () => {
+      // 거래의 카테고리가 바뀌므로 목록·통계까지 전부 무효화한다.
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+    },
+  })
+}
+
 export const useReorderExpenseCategories = () => {
   const queryClient = useQueryClient()
 
