@@ -458,16 +458,20 @@ export function AssetEditDialog({
       const parsedLimit = creditLimit.trim() ? parseInt(creditLimit, 10) : null
       const parsedDay = paymentDay.trim() ? parseInt(paymentDay, 10) : null
       const billingFields = {
+        // 한도·결제일은 신용카드에만 있는 개념. 계좌 연결은 둘 다 쓴다 —
+        // 신용카드는 결제일 자동이체 대상, 체크카드는 즉시 차감 대상.
         creditLimit: isCredit ? (Number.isFinite(parsedLimit as number) ? parsedLimit : null) : null,
         paymentDay: isCredit ? (Number.isFinite(parsedDay as number) ? parsedDay : null) : null,
-        paymentAssetRowId: isCredit ? paymentAssetRowId : null,
+        paymentAssetRowId,
       }
+      // 체크카드는 잔액을 들지 않는다 — 사용액은 연결 계좌에서 빠져 있다.
+      const cardBalance = isCredit ? parsedBalance : 0
 
       if (isNew) {
         onCreate({
           assetName: resolvedName,
           assetType: type,
-          balance: parsedBalance,
+          balance: cardBalance,
           currency: 'KRW',
           institution,
           color,
@@ -479,7 +483,7 @@ export function AssetEditDialog({
         onUpdate({
           assetName: resolvedName,
           assetType: type,
-          balance: parsedBalance,
+          balance: cardBalance,
           currency: 'KRW',
           institution,
           color,
@@ -1075,8 +1079,10 @@ export function AssetEditDialog({
             </>
           )}
 
-          {/* 투자 + 보유 종목 존재 시 평가액은 보유 합계로 자동 계산 — 입력 대신 요약 표시 */}
-          {editingGroup === 'invest' && holdings.length > 0 ? (
+          {/* 체크카드는 잔액 개념이 없다 — 긁는 즉시 연결 계좌에서 빠지므로 카드가 들고 있을 금액이 없다.
+              신용카드는 결제일까지 사용액을 들고 있으므로 그대로 입력받는다. */}
+          {editingGroup === 'card' && cardType === 'CHECK' ? null
+            : editingGroup === 'invest' && holdings.length > 0 ? (
             <div>
               <Label className="text-[13px] font-medium mb-2 block">{balanceLabel}</Label>
               <div
@@ -1112,16 +1118,25 @@ export function AssetEditDialog({
             </div>
           )}
 
-          {editingGroup === 'card' && cardType === 'CREDIT' && (
+          {/* 신용카드는 결제일에 여기서 한 번에 빠지고, 체크카드는 긁는 즉시 빠진다 — 의미가 달라 라벨을 나눈다. */}
+          {editingGroup === 'card' && (
             <div>
-              <Label className="text-[13px] font-medium mb-2 block">{t('editDialog.paymentAccount')}</Label>
+              <Label className="text-[13px] font-medium mb-2 block">
+                {cardType === 'CHECK' ? t('editDialog.linkedAccount') : t('editDialog.paymentAccount')}
+              </Label>
               <Select
                 value={paymentAssetRowId != null ? String(paymentAssetRowId) : undefined}
                 onValueChange={v => setPaymentAssetRowId(v ? Number(v) : null)}
                 disabled={bankAccounts.length === 0}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={bankAccounts.length === 0 ? t('editDialog.noCheckingAccount') : t('editDialog.selectPaymentAccount')} />
+                  <SelectValue placeholder={
+                    bankAccounts.length === 0
+                      ? t('editDialog.noCheckingAccount')
+                      : cardType === 'CHECK'
+                        ? t('editDialog.selectLinkedAccount')
+                        : t('editDialog.selectPaymentAccount')
+                  } />
                 </SelectTrigger>
                 <SelectContent>
                   {bankAccounts.map(a => (
@@ -1131,6 +1146,11 @@ export function AssetEditDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {cardType === 'CHECK' && (
+                <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+                  {t('editDialog.linkedAccountHelp')}
+                </p>
+              )}
             </div>
           )}
 
