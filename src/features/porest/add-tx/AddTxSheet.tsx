@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -202,25 +202,36 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     [assets],
   )
 
-  // 결제 수단으로 계좌·카드 목록 필터
-  const filteredAssets = useMemo(() => {
-    if (!paymentMethod) return assets
-    const allowed = PAYMENT_ASSET_TYPES[paymentMethod]
-    if (!allowed) return assets
-    return assets.filter(a => allowed.includes(a.assetType))
-  }, [assets, paymentMethod])
+  // 결제 수단 + 거래 타입으로 계좌·카드 목록 필터.
+  //
+  // 지출에선 예·적금(SAVINGS: 청약·정기예금·정기적금)을 뺀다 — 만기 전까지 묶인 돈이라
+  // 거기서 직접 결제나 출금이 나가지 않는다(쓰려면 해지해서 입출금으로 옮긴다).
+  // 납입·해지는 이체로 처리하므로 이체 목록에는 그대로 남는다.
+  // 수입은 이자가 그 계좌로 직접 들어오므로 남긴다.
+  const allowAsset = useCallback(
+    (a: Asset) => {
+      const allowed = paymentMethod ? PAYMENT_ASSET_TYPES[paymentMethod] : null
+      if (allowed && !allowed.includes(a.assetType)) return false
+      if (type === 'EXPENSE' && a.assetType === 'SAVINGS') return false
+      return true
+    },
+    [paymentMethod, type],
+  )
 
-  // 결제 수단 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
+  const filteredAssets = useMemo(
+    () => assets.filter(allowAsset),
+    [assets, allowAsset],
+  )
+
+  // 결제 수단·거래 타입 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
   useEffect(() => {
-    if (!paymentMethod || assetRowId == null) return
-    const allowed = PAYMENT_ASSET_TYPES[paymentMethod]
-    if (!allowed) return
-    const ok = assets.some(a => a.rowId === assetRowId && allowed.includes(a.assetType))
-    if (!ok) {
+    if (assetRowId == null) return
+    const picked = assets.find(a => a.rowId === assetRowId)
+    if (picked && !allowAsset(picked)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAssetRowId(null)
     }
-  }, [paymentMethod, assetRowId, assets])
+  }, [assetRowId, assets, allowAsset])
 
   // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
   useEffect(() => {
