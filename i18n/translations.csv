@@ -557,6 +557,9 @@ asset,editDialog.dayUnit,{{day}}일,{{day}}
 asset,editDialog.paymentAccount,결제계좌,Payment Account
 asset,editDialog.noCheckingAccount,입출금 계좌가 없어요,No checking account
 asset,editDialog.selectPaymentAccount,결제 출금계좌 선택,Select payment account
+asset,editDialog.linkedAccount,연결 계좌,Linked Account
+asset,editDialog.selectLinkedAccount,연결 계좌 선택,Select linked account
+asset,editDialog.linkedAccountHelp,이 카드로 결제하면 이 계좌에서 바로 빠져나가요.,Spending on this card is deducted from this account right away.
 asset,editDialog.brokerExchange,증권사·거래소,Brokerage/Exchange
 asset,editDialog.institutionBrand,기관·브랜드,Institution/Brand
 asset,editDialog.totalCount,총 {{count}}개,{{count}} total
