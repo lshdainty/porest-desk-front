@@ -194,6 +194,14 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     ? (selectedCategory.parentRowId ?? selectedCategory.rowId)
     : null
 
+  // 이체 대상 — 체크카드는 뺀다. 잔액을 들지 않는 자산이라(긁는 즉시 연결 계좌에서
+  // 빠진다) 이체할 잔액이 없고, 걸면 카드에 있을 수 없는 잔액이 생긴다.
+  // 신용카드는 결제일 자동이체 대상이라 그대로 둔다.
+  const transferAssets = useMemo(
+    () => assets.filter(a => a.assetType !== 'CHECK_CARD'),
+    [assets],
+  )
+
   // 결제 수단으로 계좌·카드 목록 필터
   const filteredAssets = useMemo(() => {
     if (!paymentMethod) return assets
@@ -816,7 +824,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 <SelectValue placeholder={t('addTx.selectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {assets.map(a => (
+                {transferAssets.map(a => (
                   <SelectItem key={a.rowId} value={String(a.rowId)}>
                     {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
                   </SelectItem>
@@ -834,7 +842,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
                 <SelectValue placeholder={t('addTx.selectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {assets
+                {transferAssets
                   .filter(a => a.rowId !== fromAssetRowId)
                   .map(a => (
                     <SelectItem key={a.rowId} value={String(a.rowId)}>
