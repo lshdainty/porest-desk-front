@@ -157,8 +157,9 @@ export interface BudgetComplianceMonth {
 }
 
 export interface CategoryBreakdown {
-  categoryRowId: number
-  categoryName: string
+  /** null = 미분류 — 카테고리 없이 자동 생성되는 거래(실현손익·대출이자)가 여기 모인다. */
+  categoryRowId: number | null
+  categoryName: string | null
   totalAmount: number
   parentCategoryRowId: number | null
   parentCategoryName: string | null
@@ -166,8 +167,8 @@ export interface CategoryBreakdown {
 }
 
 export interface ParentCategoryBreakdown {
-  categoryRowId: number
-  categoryName: string
+  categoryRowId: number | null
+  categoryName: string | null
   totalAmount: number
   children: CategoryBreakdown[]
 }

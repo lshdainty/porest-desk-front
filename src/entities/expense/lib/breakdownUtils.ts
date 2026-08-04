@@ -19,9 +19,11 @@ export function separateBreakdownByType(
   const expenseBreakdown: CategoryBreakdown[] = []
 
   breakdown.forEach((item) => {
-    // 자식 카테고리는 부모의 타입을 따르므로 parentCategoryRowId 우선 조회
+    // 자식 카테고리는 부모의 타입을 따르므로 parentCategoryRowId 우선 조회.
+    // 미분류(카테고리 없음)는 룩업할 게 없으니 항목이 들고 온 유형을 그대로 쓴다 —
+    // 서버가 수입/지출을 갈라 보낸다.
     const lookupId = item.parentCategoryRowId ?? item.categoryRowId
-    const type = typeMap.get(lookupId) ?? 'EXPENSE'
+    const type = lookupId != null ? typeMap.get(lookupId) ?? 'EXPENSE' : item.expenseType
 
     if (type === 'INCOME') {
       incomeBreakdown.push(item)

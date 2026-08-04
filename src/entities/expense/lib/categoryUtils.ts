@@ -23,9 +23,10 @@ export function getSelectableCategories(categories: ExpenseCategory[]): ExpenseC
 }
 
 export function aggregateByParent(breakdown: CategoryBreakdown[]): ParentCategoryBreakdown[] {
-  const parentMap = new Map<number, ParentCategoryBreakdown>()
+  const parentMap = new Map<number | null, ParentCategoryBreakdown>()
 
   breakdown.forEach((item) => {
+    // 미분류는 categoryRowId 가 null 이다 — 부모 없는 단독 항목으로 그대로 담는다.
     const parentId = item.parentCategoryRowId ?? item.categoryRowId
     const parentName = item.parentCategoryName ?? item.categoryName
 

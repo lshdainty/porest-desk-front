@@ -615,14 +615,15 @@ function HomeDesktop() {
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
     return items.map((c, i) => {
-      const raw = catColorMap.get(c.categoryRowId)
+      // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
+      const raw = c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined
       const color = raw
         ? getPaletteByColor(raw).color
         : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
       return {
         value: c.totalAmount,
         color,
-        label: c.categoryName,
+        label: c.categoryName ?? t('uncategorized'),
       }
     })
   }, [monthly, categoriesQ.data])
@@ -1267,14 +1268,15 @@ function HomeMobile() {
       .slice()
       .sort((a, b) => b.totalAmount - a.totalAmount)
     return items.map((c, i) => {
-      const raw = catColorMap.get(c.categoryRowId)
+      // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
+      const raw = c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined
       const color = raw
         ? getPaletteByColor(raw).color
         : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
       return {
         value: c.totalAmount,
         color,
-        label: c.categoryName,
+        label: c.categoryName ?? t('uncategorized'),
       }
     })
   }, [monthlyQ.data, categoriesQ.data])

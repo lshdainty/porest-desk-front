@@ -719,6 +719,7 @@ asset,assetDetail.recentTx,최근 거래,Recent transactions
 asset,assetDetail.viewAll,전체 보기,View all
 asset,assetDetail.noLinkedTx,연결된 거래 내역이 없어요.,No linked transactions.
 dashboard,title,대시보드,Dashboard
+dashboard,uncategorized,미분류,Uncategorized
 dashboard,welcome,환영합니다,Welcome
 dashboard,overview,개요,Overview
 dashboard,viewAll,전체 보기,View All
@@ -1896,6 +1897,7 @@ stocks,warning.STOCK_WARRANTS,신주인수권,Stock warrants
 stocks,warning.ADMINISTRATIVE,관리종목,Administrative issue
 stocks,warning.ADJUSTMENT_OF_SHARES,주식병합·분할,Share adjustment
 stats,page.title,통계·분석,Statistics
+stats,uncategorized,미분류,Uncategorized
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
 stats,tab.category,카테고리,Category
 stats,tab.trend,추이,Trends

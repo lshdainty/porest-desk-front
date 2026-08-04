@@ -89,6 +89,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     const map = new Map<number, number>()
     const breakdown = monthlySummary?.categoryBreakdown ?? []
     for (const item of breakdown) {
+      // 미분류는 특정 카테고리가 없으니 카테고리 예산에서 빼지 않는다 —
+      // 전체 예산(카테고리 없는 예산)에서만 차감된다(서버도 같은 규칙).
+      if (item.categoryRowId == null) continue
       map.set(item.categoryRowId, (map.get(item.categoryRowId) ?? 0) + item.totalAmount)
       // 부모에도 누적 (예: 예산은 부모 카테고리에 걸려 있을 수 있음)
       if (item.parentCategoryRowId != null) {
