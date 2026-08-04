@@ -20,16 +20,19 @@ const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
   cat => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
 )
 
-const CATEGORY_LABEL: Record<BankCategory, string> = {
-  '시중은행': '시중은행',
-  '인터넷은행': '인터넷은행',
-  '지방은행': '지방은행',
-  '특수은행': '특수은행',
-  '저축기관': '저축기관',
-  '외국계': '외국계',
-  '증권사': '증권사',
-  '가상자산': '가상자산거래소',
-  '기타': '기타',
+/** 기관 분류 라벨 키 — 카테고리 자체는 한국 금융권 분류라 한글이 원문이지만,
+ *  화면 라벨은 로케일을 따른다(영어 사용자에게 '시중은행' 이 그대로 나오면 안 된다). */
+const CATEGORY_LABEL_KEY: Record<BankCategory, string> = {
+  '시중은행': 'editDialog.category.commercialBank',
+  '인터넷은행': 'editDialog.category.internetBank',
+  '지방은행': 'editDialog.category.localBank',
+  '특수은행': 'editDialog.category.specialBank',
+  '저축기관': 'editDialog.category.savingsInstitution',
+  '외국계': 'editDialog.category.foreignBank',
+  '기타': 'editDialog.category.other',
+  '증권사': 'editDialog.category.brokerage',
+  '상품거래소': 'editDialog.category.commodityExchange',
+  '가상자산': 'editDialog.category.cryptoExchange',
 }
 
 interface InvestmentAddDialogProps {
@@ -153,7 +156,7 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
                 filteredByCategory.map(([cat, list]) => (
                   <div key={cat}>
                     <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                      {CATEGORY_LABEL[cat]}
+                      {t(CATEGORY_LABEL_KEY[cat])}
                     </div>
                     <div className="flex flex-wrap gap-1.5 px-3 pb-2">
                       {list.map(e => {

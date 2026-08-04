@@ -14,12 +14,21 @@ export type BankCategory =
   | '외국계'
   | '기타'
   | '증권사'
+  | '상품거래소'
   | '가상자산'
 
 /** 투자 상품 등록 시 선택 가능한 카테고리.
- *  증권사: 금투협 표준 코드. 주식/ETF 및 KRX 금시장(증권사 HTS로 거래)을 포함.
+ *  증권사: 금투협 표준 코드. 주식·ETF.
+ *  상품거래소: 실물 금 — 금은방 체인과 KRX 금시장. 단위가 g 이라 주식과 입력이 다르다.
  *  가상자산: 금융정보분석원(FIU) VASP 신고번호 체계로 별도 관리. */
-export const INVEST_CATEGORIES: BankCategory[] = ['증권사', '가상자산']
+export const INVEST_CATEGORIES: BankCategory[] = ['증권사', '상품거래소', '가상자산']
+
+/** 기관이 정해 주는 보유 유형 — 증권사에서 코인을, 거래소에서 주식을 담을 일은 없다. */
+export const CATEGORY_HOLDING_TYPE: Partial<Record<BankCategory, 'STOCK' | 'GOLD' | 'CRYPTO'>> = {
+  '증권사': 'STOCK',
+  '상품거래소': 'GOLD',
+  '가상자산': 'CRYPTO',
+}
 
 export interface BankEntry {
   name: string
@@ -111,6 +120,15 @@ export const BANK_ENTRIES: BankEntry[] = [
   { name: '카카오페이증권', category: '증권사', code: '288', color: { bg: '#FEE500', fg: '#191919' }, aliases: ['카카오페이'] },
   { name: '토스증권',      category: '증권사', code: '298', color: { bg: '#0064FF' } },
 
+  // 상품거래소 (실물 금). 금은방 체인은 표준 기관코드 체계가 없어 code 생략.
+  // KRX 금시장은 증권사 HTS 로 거래하지만, 담기는 건 g 단위 실물 금이라 여기에 둔다.
+  { name: 'KRX 금시장',      category: '상품거래소', color: { bg: '#C9A227', fg: '#191919' }, aliases: ['한국거래소', 'KRX', '금시장'] },
+  { name: '한국금거래소',     category: '상품거래소', color: { bg: '#B8232F' }, aliases: ['koreagoldx', '금거래소'] },
+  { name: '한국표준금거래소', category: '상품거래소', color: { bg: '#8C6A1F' }, aliases: ['표준금거래소'] },
+  { name: '삼성금거래소',     category: '상품거래소', color: { bg: '#1428A0' }, aliases: ['삼성금'] },
+  { name: '한국조폐공사',     category: '상품거래소', color: { bg: '#00594F' }, aliases: ['조폐공사', '오롯', 'KOMSCO'] },
+  { name: '기타 금은방',      category: '상품거래소', color: { bg: '#A78246', fg: '#191919' }, aliases: ['금은방', '직접보관', '실물'] },
+
   // 가상자산거래소 (KR 원화마켓 주요 거래소).
   // 금융정보분석원(FIU) VASP 신고사업자. code 는 공식 신고번호 형식(제YYYY-NNN호)이 통일돼 있지 않아 생략.
   { name: '업비트',  category: '가상자산', color: { bg: '#1F55F4' }, aliases: ['Upbit', 'UPBIT', '두나무'] },
@@ -164,5 +182,6 @@ export const BANK_CATEGORY_ORDER: BankCategory[] = [
   '외국계',
   '기타',
   '증권사',
+  '상품거래소',
   '가상자산',
 ]
