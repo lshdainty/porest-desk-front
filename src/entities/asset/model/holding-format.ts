@@ -31,10 +31,22 @@ export function sanitizeQty(raw: string): string {
  * **표시·미리보기 전용** — JS number 는 십진 소수를 정확히 담지 못한다.
  * 서버로 보내는 값은 절대 이걸 거치지 말고 {@link normalizeQty} 로 문자열을 유지한다.
  */
-export function qtyNumber(q?: string | null): number | null {
-  if (!q) return null
-  const v = Number.parseFloat(q)
+export function qtyNumber(q?: string | number | null): number | null {
+  const s = qtyText(q)
+  if (!s) return null
+  const v = Number.parseFloat(s)
   return Number.isFinite(v) ? v : null
+}
+
+/**
+ * 수량류 값을 문자열로 맞춘다 — 서버가 숫자로 내려보내도 화면이 죽지 않게.
+ *
+ * 계약은 문자열이다(십진 자릿수 보존). 다만 표시 함수가 서버 응답을 그대로 받는 자리라,
+ * 계약이 어긋난 순간 다이얼로그 전체가 흰 화면이 된다 — 여기서 흡수한다.
+ */
+function qtyText(q?: string | number | null): string {
+  if (q == null) return ''
+  return typeof q === 'number' ? String(q) : q
 }
 
 /**
@@ -43,9 +55,9 @@ export function qtyNumber(q?: string | null): number | null {
  * 숫자로 한 번도 변환하지 않는다 — 사용자가 친 자릿수를 그대로 BigDecimal 로 넘긴다.
  * `sanitizeQty` 가 남긴 입력 중 상태('3.' · '.5' · '.')만 정리한다.
  */
-export function normalizeQty(q?: string | null): string | null {
-  if (!q) return null
-  let s = q.trim()
+export function normalizeQty(q?: string | number | null): string | null {
+  let s = qtyText(q).trim()
+  if (!s) return null
   if (s.endsWith('.')) s = s.slice(0, -1)
   if (s.startsWith('.')) s = `0${s}`
   return /^\d+(\.\d+)?$/.test(s) ? s : null
@@ -64,8 +76,8 @@ const QTY_MAX_DECIMALS: Record<HoldingType, number> = {
  * 문자열을 그대로 다듬는다(숫자 파싱 없음) — `toLocaleString` 은 기본 3자리에서 끊어
  * `0.00012345 BTC` 를 `0` 으로 보여주고, number 로 바꾸는 순간 자릿수도 흔들린다.
  */
-export function formatQty(q?: string | null, type: HoldingType = 'STOCK'): string {
-  const s = (q ?? '').trim()
+export function formatQty(q?: string | number | null, type: HoldingType = 'STOCK'): string {
+  const s = qtyText(q).trim()
   if (!s) return '0'
   const neg = s.startsWith('-')
   const [intRaw = '0', fracRaw = ''] = (neg ? s.slice(1) : s).split('.')
