@@ -4,6 +4,7 @@ export type {
   YNType,
   Asset,
   AssetHolding,
+  HoldingType,
   AssetCardCatalogBrief,
   AssetFormValues,
   AssetUpdateFormValues,

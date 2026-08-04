@@ -2335,5 +2335,13 @@ asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연�
 asset,holdings.linkedBadge,연동,Linked
 asset,holdings.editLinkedSub,현재가 × 수량 연동,Live price × quantity
 asset,holdings.sharesUnitShort,주,sh
+asset,holdings.typeStock,주식,Stocks
+asset,holdings.typeGold,금,Gold
+asset,holdings.typeCrypto,코인,Crypto
+asset,holdings.addGold,금 추가,Add gold
+asset,holdings.addCrypto,코인 추가,Add crypto
+asset,holdings.unitGram,g,g
+asset,holdings.unitCount,개,units
+asset,holdings.namePlaceholder,항목 이름,Item name
 asset,holdings.remove,삭제,Remove
 asset,holdings.balanceAutoHelp,보유 종목 합계로 자동 계산돼요. 연동 종목은 시세 확보 시 반영됩니다.,Calculated from holdings. Linked items reflect live prices when available.

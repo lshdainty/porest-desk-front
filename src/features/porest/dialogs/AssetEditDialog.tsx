@@ -49,6 +49,7 @@ import {
   type Asset,
   type AssetFormValues,
   type AssetHolding,
+  type HoldingType,
   type AssetType,
   type AssetUpdateFormValues,
   type YNType,
@@ -64,9 +65,11 @@ export type AssetGroup = 'account' | 'card' | 'invest'
 type EditHolding = {
   key: string
   rowId?: number
+  holdingType: HoldingType
   linked: boolean
   tossSymbol?: string
-  quantity?: number
+  /** 소수 허용(코인 0.05·금 3.75g). 입력 중 상태를 보존하려 문자열로 다룬다 */
+  quantity?: string
   holdingName?: string
   holdingValue?: number
   /** 검색에서 추가한 연동 항목의 종목명(표시용 — payload 미포함) */
@@ -75,6 +78,34 @@ type EditHolding = {
 
 let editHoldingSeq = 0
 const nextHoldingKey = () => `eh-${++editHoldingSeq}`
+
+/** 유형별 수량 단위 i18n 키 — 주식 주 / 금 g / 코인 개. */
+const HOLDING_UNIT_KEY: Record<HoldingType, string> = {
+  STOCK: 'holdings.sharesUnitShort',
+  GOLD: 'holdings.unitGram',
+  CRYPTO: 'holdings.unitCount',
+}
+
+/** 유형 섹션 제목 i18n 키. 표시 순서도 이 배열을 따른다. */
+const HOLDING_TYPES: { type: HoldingType; labelKey: string }[] = [
+  { type: 'STOCK', labelKey: 'holdings.typeStock' },
+  { type: 'GOLD', labelKey: 'holdings.typeGold' },
+  { type: 'CRYPTO', labelKey: 'holdings.typeCrypto' },
+]
+
+/** 수량 입력 정규화 — 숫자와 소수점 1개만 남긴다(입력 중 '3.' 같은 중간 상태 허용). */
+function sanitizeQty(raw: string): string {
+  const cleaned = raw.replace(/[^\d.]/g, '')
+  const [head, ...rest] = cleaned.split('.')
+  return rest.length > 0 ? `${head}.${rest.join('')}` : head ?? ''
+}
+
+/** 편집 문자열 수량 → 숫자. 비었거나 '3.' 같은 중간 상태면 null. */
+function qtyNumber(q?: string): number | null {
+  if (!q) return null
+  const v = Number.parseFloat(q)
+  return Number.isFinite(v) ? v : null
+}
 
 /** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
 function useDebounced<T>(value: T, delay: number): T {
@@ -195,9 +226,11 @@ export function AssetEditDialog({
       return item.holdings.map(h => ({
         key: nextHoldingKey(),
         rowId: h.rowId,
+        // 구버전 응답(holdingType 없음)은 주식으로 본다.
+        holdingType: h.holdingType ?? 'STOCK',
         linked: h.linked,
         tossSymbol: h.tossSymbol ?? undefined,
-        quantity: h.quantity ?? undefined,
+        quantity: h.quantity != null ? String(h.quantity) : undefined,
         holdingName: h.holdingName ?? undefined,
         holdingValue: h.holdingValue ?? undefined,
       }))
@@ -206,9 +239,10 @@ export function AssetEditDialog({
       return [
         {
           key: nextHoldingKey(),
+          holdingType: 'STOCK' as HoldingType,
           linked: true,
           tossSymbol: item.tossSymbol,
-          quantity: item.tossQuantity,
+          quantity: String(item.tossQuantity),
         },
       ]
     }
@@ -258,7 +292,7 @@ export function AssetEditDialog({
           : Number.isFinite(fx) && fx > 0
             ? info.price * fx
             : null
-      return krw != null ? Math.round(krw * (h.quantity ?? 0)) : null
+      return krw != null ? Math.round(krw * (qtyNumber(h.quantity) ?? 0)) : null
     }
   }, [holdingPricesQ.data, holdingFxQ.data])
   // 합계 — 평가 불가 연동 항목은 0 취급하지 않고 '평가 가능분 합'으로 표기.
@@ -499,17 +533,23 @@ export function AssetEditDialog({
     if (editingGroup === 'invest') {
       const resolvedName = name.trim() || `${brand} 투자`
       // holdings 페이로드 — 리스트 전체 교체 계약. linked→tossSymbol+quantity / manual→holdingName+holdingValue.
-      const holdingsPayload: AssetHolding[] = holdings.map((h, i) => ({
+      // 추가만 하고 아무것도 안 채운 행은 버린다 — 이름이 빈 미연동 항목은 서버가 400 으로 막는다.
+      const filledHoldings = holdings.filter(
+        h => h.linked || (h.holdingName ?? '').trim().length > 0,
+      )
+      // 미연동도 수량을 함께 보낸다 — 시세가 없어도 몇 주·몇 g 인지는 남긴다(선택 입력).
+      const holdingsPayload: AssetHolding[] = filledHoldings.map((h, i) => ({
         rowId: h.rowId,
+        holdingType: h.holdingType,
         linked: h.linked,
         tossSymbol: h.linked ? h.tossSymbol ?? null : null,
-        quantity: h.linked ? h.quantity ?? 0 : null,
+        quantity: h.linked ? qtyNumber(h.quantity) ?? 0 : qtyNumber(h.quantity),
         holdingName: h.linked ? null : h.holdingName ?? '',
         holdingValue: h.linked ? null : h.holdingValue ?? 0,
         sortOrder: i,
       }))
       // 보유가 있으면 balance = 평가 가능분 합(연동 시세 미확보는 0 대신 제외된 합) — 서버 스냅샷용.
-      const investBalance = holdings.length > 0 ? holdingsTotal : parsedBalance
+      const investBalance = filledHoldings.length > 0 ? holdingsTotal : parsedBalance
       const common = {
         assetName: resolvedName,
         assetType: 'INVESTMENT' as AssetType,
@@ -913,13 +953,15 @@ export function AssetEditDialog({
                           liveEnabled
                             ? {
                                 key: nextHoldingKey(),
+                                holdingType: 'STOCK' as HoldingType,
                                 linked: true,
                                 tossSymbol: s.symbol,
-                                quantity: 1,
+                                quantity: '1',
                                 displayName: s.nameKr,
                               }
                             : {
                                 key: nextHoldingKey(),
+                                holdingType: 'STOCK' as HoldingType,
                                 linked: false,
                                 holdingName: s.nameKr,
                                 holdingValue: 0,
@@ -953,6 +995,7 @@ export function AssetEditDialog({
                         ...prev,
                         {
                           key: nextHoldingKey(),
+                          holdingType: 'STOCK' as HoldingType,
                           linked: false,
                           holdingName: stockQ.trim(),
                           holdingValue: 0,
@@ -965,83 +1008,135 @@ export function AssetEditDialog({
                   </button>
                 </div>
               )}
+              {/* 금·코인은 검색 대상이 아니다(토스·마스터 모두 미제공) — 직접 추가로만 담는다. */}
+              <div className="flex gap-1.5 mb-1">
+                {(['GOLD', 'CRYPTO'] as HoldingType[]).map(type => (
+                  <Button
+                    key={type}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setHoldings(prev => [
+                        ...prev,
+                        { key: nextHoldingKey(), holdingType: type, linked: false, holdingName: '', holdingValue: 0 },
+                      ])
+                    }
+                  >
+                    <Plus size={13} strokeWidth={2.4} />
+                    {type === 'GOLD' ? t('holdings.addGold') : t('holdings.addCrypto')}
+                  </Button>
+                ))}
+              </div>
               {holdings.length === 0 ? (
                 <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5 leading-relaxed">
                   {t('holdings.editEmptyHelp')}
                 </p>
               ) : (
                 <div>
-                  {holdings.map((h, i) => {
-                    const val = holdingValueOf(h)
+                  {HOLDING_TYPES.map(({ type, labelKey }) => {
+                    const rows = holdings.filter(h => h.holdingType === type)
+                    if (rows.length === 0) return null
                     return (
-                      <div
-                        key={h.key}
-                        className="flex items-center gap-2"
-                        style={{
-                          padding: '11px 2px',
-                          borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
-                        }}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="text-[13px] font-semibold text-[var(--fg-primary)] truncate">
-                            {h.linked ? <LinkedHoldingName holding={h} /> : h.holdingName}
-                            {h.linked && (
-                              <span
-                                className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold align-middle"
-                                style={{ background: 'var(--bg-brand-subtle)', color: 'var(--fg-brand-strong)' }}
-                              >
-                                {t('holdings.linkedBadge')}
-                              </span>
-                            )}
-                          </div>
-                          <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
-                            {h.linked ? t('holdings.editLinkedSub') : t('holdings.manualSub')}
-                          </div>
+                      <div key={type} className="mt-2 first:mt-0">
+                        {/* 유형 라벨과 목록은 한 묶음 — 유형이 하나뿐이어도 어떤 단위인지 드러난다. */}
+                        <div className="text-[11px] font-bold text-[var(--fg-tertiary)] pt-1.5">
+                          {t(labelKey)}
                         </div>
-                        {h.linked ? (
-                          <span className="inline-flex items-center gap-1 shrink-0">
-                            <Input
-                              inputMode="numeric"
-                              value={h.quantity != null ? String(h.quantity) : ''}
-                              onChange={e => {
-                                const q = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
-                                setHoldings(prev =>
-                                  prev.map(x => (x.key === h.key ? { ...x, quantity: q } : x)),
-                                )
+                        {rows.map((h, i) => {
+                          const val = holdingValueOf(h)
+                          return (
+                            <div
+                              key={h.key}
+                              className="flex items-center gap-2"
+                              style={{
+                                padding: '11px 2px',
+                                borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
                               }}
-                              className="num h-[34px] w-[58px] px-2 text-right"
-                            />
-                            <span className="text-[12px] text-[var(--fg-tertiary)]">{t('holdings.sharesUnitShort')}</span>
-                          </span>
-                        ) : (
-                          <Input
-                            inputMode="numeric"
-                            value={h.holdingValue != null ? String(h.holdingValue) : ''}
-                            onChange={e => {
-                              const v = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
-                              setHoldings(prev =>
-                                prev.map(x => (x.key === h.key ? { ...x, holdingValue: v } : x)),
-                              )
-                            }}
-                            className="num h-[34px] w-[104px] px-2 text-right shrink-0"
-                          />
-                        )}
-                        <span
-                          className="num shrink-0 text-right text-[12.5px] font-bold text-[var(--fg-primary)]"
-                          style={{ minWidth: 84 }}
-                        >
-                          {val != null ? `${KRW(val)}원` : '—'}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="shrink-0 h-8 w-8"
-                          aria-label={t('holdings.remove')}
-                          onClick={() => setHoldings(prev => prev.filter(x => x.key !== h.key))}
-                        >
-                          <Trash2 size={13} />
-                        </Button>
+                            >
+                              <div className="min-w-0 flex-1">
+                                {h.linked ? (
+                                  <>
+                                    <div className="text-[13px] font-semibold text-[var(--fg-primary)] truncate">
+                                      <LinkedHoldingName holding={h} />
+                                      <span
+                                        className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold align-middle"
+                                        style={{ background: 'var(--bg-brand-subtle)', color: 'var(--fg-brand-strong)' }}
+                                      >
+                                        {t('holdings.linkedBadge')}
+                                      </span>
+                                    </div>
+                                    <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
+                                      {t('holdings.editLinkedSub')}
+                                    </div>
+                                  </>
+                                ) : (
+                                  // 미연동은 이름도 고칠 수 있어야 한다 — 금·코인은 검색으로 이름을 받지 못한다.
+                                  <Input
+                                    value={h.holdingName ?? ''}
+                                    placeholder={t('holdings.namePlaceholder')}
+                                    onChange={e =>
+                                      setHoldings(prev =>
+                                        prev.map(x =>
+                                          x.key === h.key ? { ...x, holdingName: e.target.value } : x,
+                                        ),
+                                      )
+                                    }
+                                    className="h-[34px]"
+                                  />
+                                )}
+                              </div>
+                              {/* 수량 — 연동은 필수(시세×수량), 미연동은 선택. 소수 허용(0.05 BTC·3.75g) */}
+                              <span className="inline-flex items-center gap-1 shrink-0">
+                                <Input
+                                  inputMode="decimal"
+                                  value={h.quantity ?? ''}
+                                  onChange={e => {
+                                    const q = sanitizeQty(e.target.value)
+                                    setHoldings(prev =>
+                                      prev.map(x => (x.key === h.key ? { ...x, quantity: q } : x)),
+                                    )
+                                  }}
+                                  className="num h-[34px] w-[62px] px-2 text-right"
+                                />
+                                <span className="text-[12px] text-[var(--fg-tertiary)]">
+                                  {t(HOLDING_UNIT_KEY[h.holdingType])}
+                                </span>
+                              </span>
+                              {/* 평가액 — 연동은 시세로 계산(읽기 전용), 미연동은 직접 입력 */}
+                              {h.linked ? (
+                                <span
+                                  className="num shrink-0 text-right text-[12.5px] font-bold text-[var(--fg-primary)]"
+                                  style={{ minWidth: 84 }}
+                                >
+                                  {val != null ? `${KRW(val)}원` : '—'}
+                                </span>
+                              ) : (
+                                <Input
+                                  inputMode="numeric"
+                                  value={h.holdingValue != null ? String(h.holdingValue) : ''}
+                                  onChange={e => {
+                                    const v = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
+                                    setHoldings(prev =>
+                                      prev.map(x => (x.key === h.key ? { ...x, holdingValue: v } : x)),
+                                    )
+                                  }}
+                                  className="num h-[34px] w-[100px] px-2 text-right shrink-0"
+                                />
+                              )}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0 h-8 w-8"
+                                aria-label={t('holdings.remove')}
+                                onClick={() => setHoldings(prev => prev.filter(x => x.key !== h.key))}
+                              >
+                                <Trash2 size={13} />
+                              </Button>
+                            </div>
+                          )
+                        })}
                       </div>
                     )
                   })}
