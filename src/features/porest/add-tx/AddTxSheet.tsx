@@ -153,6 +153,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
   const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(null)
   const [toAssetRowId, setToAssetRowId] = useState<number | null>(null)
   const [fee, setFee] = useState<string>('')
+  // 대출 상환의 이자 — 상환액 중 이 금액은 부채를 줄이지 않고 지출로 잡힌다.
+  const [interest, setInterest] = useState<string>('')
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -247,6 +249,21 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
     [assets, allowAsset],
   )
 
+  // 이자는 대출 상환에만 — 입금 대상이 대출 자산일 때만 의미가 있다.
+  // (원금은 부채가 줄어드는 자산 이동이지만 이자는 은행으로 아예 나가는 비용이다)
+  const showInterest = useMemo(() => {
+    if (type !== 'TRANSFER' || toAssetRowId == null) return false
+    return assets.find(a => a.rowId === toAssetRowId)?.assetType === 'LOAN'
+  }, [type, toAssetRowId, assets])
+
+  // 대출이 아니게 되면 남아 있던 이자를 지운다(저장 시 흘러들지 않도록).
+  useEffect(() => {
+    if (!showInterest && interest) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setInterest('')
+    }
+  }, [showInterest, interest])
+
   // 할부는 신용카드 지출에만 존재한다 — 체크카드는 긁는 즉시 계좌에서 빠지고, 현금·이체는 나눌 수 없다.
   const showInstallment = useMemo(() => {
     if (type !== 'EXPENSE') return false
@@ -322,6 +339,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
           toAssetRowId: toAssetRowId!,
           amount: amountNumber,
           fee: fee ? Number(fee) : undefined,
+          // 이자는 대출 상환에만 — 그 밖의 이체에선 값을 흘리지 않는다.
+          interestAmount: showInterest && interest ? Number(interest) : undefined,
           description: description || undefined,
           transferDate: `${expenseDate}T${expenseTime}`,
         },
@@ -950,6 +969,28 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
               inputMode="numeric"
             />
           </Field>
+
+          {/* 이자 — 대출 상환에만. 상환액 중 이자는 부채를 줄이지 않고 지출로 잡힌다. */}
+          {showInterest && (
+            <Field style={{ marginBottom: 14 }}>
+              <FieldLabel>{t('addTx.interest')}</FieldLabel>
+              <Input
+                className="num"
+                value={interest}
+                onChange={e => setInterest(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="0"
+                inputMode="numeric"
+              />
+              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+                {interest && amountNumber > 0
+                  ? t('addTx.interestSplit', {
+                      principal: KRW(Math.max(0, amountNumber - Number(interest))),
+                      interest: KRW(Number(interest)),
+                    })
+                  : t('addTx.interestHint')}
+              </div>
+            </Field>
+          )}
         </>
       )}
 

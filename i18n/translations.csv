@@ -1470,6 +1470,9 @@ expense,addTx.installmentHint,매달 약 {{perMonth}}원씩 {{months}}회 청구
 expense,addTx.fromAccount,출금 계좌,From account
 expense,addTx.selectPlaceholder,선택,Select
 expense,addTx.fee,수수료 (선택),Fee (optional)
+expense,addTx.interest,이자,Interest
+expense,addTx.interestHint,상환액 중 이자 몫 — 부채는 이자를 뺀 만큼만 줄어들어요,The interest portion — debt decreases only by the rest
+expense,addTx.interestSplit,원금 {{principal}}원 · 이자 {{interest}}원,Principal {{principal}} · Interest {{interest}}
 expense,transferFeePrefix,수수료,Fee
 expense,transferListTitle,이체 내역,Transfers
 expense,transferDeleteConfirm,이 이체를 삭제할까요? 양쪽 자산의 잔액이 되돌아갑니다,Delete this transfer? Both assets' balances will be restored.
