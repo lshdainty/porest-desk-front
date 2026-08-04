@@ -6,6 +6,7 @@ import type {
   AssetFormValues,
   AssetUpdateFormValues,
   AssetTransferFormValues,
+  AssetTradeFormValues,
   ReorderItem,
 } from '@/entities/asset'
 
@@ -130,6 +131,41 @@ export const useCreateTransfer = () => {
     mutationFn: (data: AssetTransferFormValues) => assetApi.createTransfer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
+    },
+  })
+}
+
+/**
+ * 매수·매도 등록 — 예수금·보유 수량·원가·실현손익이 함께 움직인다.
+ * 실현손익이 거래로 잡히므로 가계부 쿼리까지 무효화한다.
+ */
+export const useCreateTrade = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: AssetTradeFormValues) => assetApi.createTrade(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    },
+  })
+}
+
+export const useAssetTrades = (assetRowId?: number) =>
+  useQuery({
+    queryKey: [...assetKeys.all, 'trades', assetRowId],
+    queryFn: () => assetApi.getTrades(assetRowId as number),
+    enabled: assetRowId != null,
+  })
+
+export const useDeleteTrade = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => assetApi.deleteTrade(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
     },
   })
 }

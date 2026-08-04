@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
+import { AssetTradeDialog } from '@/features/porest/dialogs/AssetTradeDialog'
+import { useAssetTrades, useDeleteTrade } from '@/features/asset'
+import type { TradeType } from '@/entities/asset'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
-import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap, Trash2 } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, HOLDING_UNIT_KEY,
@@ -706,8 +709,79 @@ function HoldingRow({
   )
 }
 
-function HoldingsSection({ asset, onEdit }: { asset: Asset; onEdit?: () => void }) {
+/**
+ * 거래 내역 — 매수·매도가 언제 얼마에 있었는지. 실현손익도 함께 보여 준다.
+ * 취소하면 예수금·보유 수량·원가가 거래 전으로 되돌아간다.
+ */
+function TradeHistory({ assetRowId }: { assetRowId: number }) {
   const { t } = useTranslation('asset')
+  const { data: trades } = useAssetTrades(assetRowId)
+  const deleteMut = useDeleteTrade()
+  if (!trades || trades.length === 0) {
+    return null
+  }
+  return (
+    <div style={{ marginTop: 14 }}>
+      <h3 style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, margin: '0 0 6px' }}>
+        {t('trade.history')}
+      </h3>
+      {trades.map(tr => (
+        <div
+          key={tr.rowId}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'var(--text-badge)', fontWeight: 700,
+              color: tr.tradeType === 'SELL' ? 'var(--fg-brand)' : 'var(--status-danger-fg)',
+            }}
+          >
+            {tr.tradeType === 'SELL' ? t('trade.sell') : t('trade.buy')}
+          </span>
+          <span className="truncate" style={{ fontSize: 'var(--text-body-sm)', minWidth: 0, flex: 1 }}>
+            {tr.holdingKey}
+          </span>
+          <span className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
+            {tr.quantity} · {tr.tradeDate.slice(0, 10)}
+          </span>
+          <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700 }}>
+            {KRW(tr.amount)}원
+          </span>
+          {tr.realizedPl != null && tr.realizedPl !== 0 && (
+            <span
+              className="num"
+              style={{
+                fontSize: 'var(--text-badge)', fontWeight: 700,
+                color: tr.realizedPl > 0 ? 'var(--fg-income)' : 'var(--fg-expense)',
+              }}
+            >
+              {tr.realizedPl > 0 ? '+' : '−'}{KRW(Math.abs(tr.realizedPl))}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="xs"
+            aria-label={t('trade.deleted')}
+            onClick={() => {
+              if (window.confirm(t('trade.deleteConfirm'))) {
+                deleteMut.mutate(tr.rowId, { onSuccess: () => toast.success(t('trade.deleted')) })
+              }
+            }}
+          >
+            <Trash2 size={13} />
+          </Button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () => void; mobile: boolean }) {
+  const { t } = useTranslation('asset')
+  const [trade, setTrade] = useState<TradeType | null>(null)
   const { data: features } = useMyFeatures()
   const live =
     (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
@@ -738,6 +812,15 @@ function HoldingsSection({ asset, onEdit }: { asset: Asset; onEdit?: () => void 
           {t('holdings.sectionTitle')}{' '}
           <span className="num" style={{ color: 'var(--fg-brand)' }}>{hs.length}</span>
         </h2>
+        {/* 매수·매도 — 예수금이 실제로 움직이는 자리. 보유를 손으로 고치는 것과 다르다. */}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          <Button variant="accent" size="sm" onClick={() => setTrade('BUY')}>
+            {t('trade.entryBuy')}
+          </Button>
+          <Button variant="accent" size="sm" disabled={hs.length === 0} onClick={() => setTrade('SELL')}>
+            {t('trade.entrySell')}
+          </Button>
+        </div>
       </div>
       {hs.map((h, i) => (
         <HoldingRow
@@ -755,6 +838,19 @@ function HoldingsSection({ asset, onEdit }: { asset: Asset; onEdit?: () => void 
         <div style={{ padding: '20px 0', fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', textAlign: 'center' }}>
           {t('holdings.emptyDetail')}
         </div>
+      )}
+
+      {/* 거래 내역 — 언제 사고 팔았는지, 얼마가 남았는지. 취소도 여기서. */}
+      <TradeHistory assetRowId={asset.rowId} />
+
+      {trade && (
+        <AssetTradeDialog
+          asset={asset}
+          holdings={hs}
+          defaultType={trade}
+          mobile={mobile}
+          onClose={() => setTrade(null)}
+        />
       )}
     </div>
   )
@@ -980,7 +1076,7 @@ export function AssetDetailDialog({
       </div>
 
       {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
-      {isInv && <HoldingsSection asset={asset} onEdit={onEdit ? () => onEdit(asset) : undefined} />}
+      {isInv && <HoldingsSection asset={asset} onEdit={onEdit ? () => onEdit(asset) : undefined} mobile={mobile} />}
 
       {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
       {isCredit && (

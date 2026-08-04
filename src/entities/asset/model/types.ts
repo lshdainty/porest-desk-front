@@ -31,7 +31,46 @@ export interface AssetHolding {
   quantity?: string | null
   holdingName?: string | null
   holdingValue?: number | null
+  /** 총 매수원가 (원화, 수수료 포함). 평가액과의 차이가 평가손익이다. */
+  totalCost?: number | null
+  /** 평단가 — 총원가 / 수량. 서버 파생값이라 읽기 전용. */
+  avgPrice?: string | null
   sortOrder?: number
+}
+
+/** 매수·매도 거래 유형. OPENING 은 앱을 쓰기 전부터 갖고 있던 보유라 돈이 오가지 않는다. */
+export type TradeType = 'OPENING' | 'BUY' | 'SELL'
+
+export interface AssetTrade {
+  rowId: number
+  assetRowId: number
+  tradeType: TradeType
+  holdingType: HoldingType
+  /** 종목 식별자 — 연동은 토스 종목코드, 미연동은 항목명. */
+  holdingKey: string
+  linked: boolean
+  /** 소수 허용이라 문자열로 주고받는다(AssetHolding.quantity 와 같은 이유). */
+  quantity: string
+  /** 거래대금 — 수수료 제외. */
+  amount: number
+  fee: number
+  /** 실현손익 (매도 전용). 이익 양수 / 손실 음수. */
+  realizedPl?: number | null
+  tradeDate: string
+  description?: string | null
+}
+
+export interface AssetTradeFormValues {
+  assetRowId: number
+  tradeType: TradeType
+  holdingType: HoldingType
+  holdingKey: string
+  linked: boolean
+  quantity: string
+  amount: number
+  fee?: number
+  tradeDate: string
+  description?: string
 }
 
 export interface Asset {
