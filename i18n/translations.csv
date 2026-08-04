@@ -463,6 +463,10 @@ asset,form.assetName,자산명,Asset Name
 asset,form.assetNamePlaceholder,자산명을 입력하세요,Enter asset name
 asset,form.assetType,자산 유형,Asset Type
 asset,form.balance,잔액,Balance
+asset,form.currency,통화,Currency
+asset,form.exchangeRate,환율,Exchange rate
+asset,form.exchangeRatePlaceholder,"{{code}} 1당 원화",KRW per 1 {{code}}
+asset,form.exchangeRateHint,"순자산은 잔액 × 환율로 환산합니다. 비워 두면 환산 없이 그대로 더해집니다.",Net worth converts balance × rate. Left empty it is added without conversion.
 asset,form.institution,금융기관,Institution
 asset,form.institutionPlaceholder,금융기관명을 입력하세요,Enter institution name
 asset,form.icon,아이콘,Icon
@@ -1467,6 +1471,11 @@ expense,addTx.installment,할부,Installment
 expense,addTx.lumpSum,일시불,Lump sum
 expense,addTx.installmentMonths,{{months}}개월,{{months}} months
 expense,addTx.installmentHint,매달 약 {{perMonth}}원씩 {{months}}회 청구돼요,About {{perMonth}} per month for {{months}} months
+expense,addTx.currency,통화,Currency
+expense,addTx.originalAmountPlaceholder,현지 금액,Local amount
+expense,addTx.exchangeRatePlaceholder,환율,Rate
+expense,addTx.fxHint,"{{original}} × {{rate}} = {{krw}}원",{{original}} × {{rate}} = {{krw}}
+expense,txDetail.foreignPayment,해외 결제,Foreign payment
 expense,addTx.fromAccount,출금 계좌,From account
 expense,addTx.selectPlaceholder,선택,Select
 expense,addTx.fee,수수료 (선택),Fee (optional)

@@ -507,6 +507,13 @@ function ExpenseCalendar({
           onClose={() => setEditing(null)}
         />
       )}
+      {refunding && (
+        <AddTxSheet
+          refundOf={refunding}
+          mobile={mobile}
+          onClose={() => setRefunding(null)}
+        />
+      )}
       {addSeedDate && (
         <AddTxSheet
           defaultDate={addSeedDate}
