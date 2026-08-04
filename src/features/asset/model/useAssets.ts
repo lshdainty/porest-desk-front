@@ -97,8 +97,8 @@ export const usePayCard = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => assetApi.payCard(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, amount }: { id: number; amount?: number }) => assetApi.payCard(id, amount),
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
       queryClient.invalidateQueries({ queryKey: assetKeys.billing(id) })
     },

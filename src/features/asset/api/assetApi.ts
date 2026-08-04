@@ -66,8 +66,13 @@ export const assetApi = {
     return resp.data
   },
 
-  payCard: async (id: number): Promise<BillingItem> => {
-    const resp: ApiResponse<BillingItem> = await apiClient.post(`/v1/asset/${id}/pay`)
+  /** amount 미전달 = 남은 청구액 전액, 전달 = 그만큼만(부분 선결제) */
+  payCard: async (id: number, amount?: number): Promise<BillingItem> => {
+    const resp: ApiResponse<BillingItem> = await apiClient.post(
+      `/v1/asset/${id}/pay`,
+      undefined,
+      amount != null ? { params: { amount } } : undefined,
+    )
     return resp.data
   },
 
