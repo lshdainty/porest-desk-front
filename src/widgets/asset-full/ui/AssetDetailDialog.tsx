@@ -14,7 +14,10 @@ import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
-import { ModalShell, ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -182,10 +185,13 @@ function CardDetailBody({
   onEdit?: () => void
 }) {
   const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
   const { data: billing, isLoading } = useCardBilling(asset.rowId)
   const payCard = usePayCard()
   const [confirmPay, setConfirmPay] = useState(false)
+  // 부분 선결제 — 기본값은 남은 청구액 전액. 고치면 그만큼만 내고 나머지는 결제일에 빠진다.
+  const [payAmount, setPayAmount] = useState('')
   const [stIdx, setStIdx] = useState(0)
   const [pickOpen, setPickOpen] = useState(false)
   const [sort, setSort] = useState<'recent' | 'amount' | 'category'>('recent')
@@ -296,8 +302,18 @@ function CardDetailBody({
     return [...m.entries()]
   }, [usageTx])
 
+  const openPay = () => {
+    setPayAmount(String(billing?.upcomingAmount ?? 0))
+    setConfirmPay(true)
+  }
+
+  const payAmountNum = Number(payAmount.replace(/[^0-9]/g, '')) || 0
+  const upcoming = billing?.upcomingAmount ?? 0
+  const payAmountValid = payAmountNum > 0 && payAmountNum <= upcoming
+
   const handlePay = () => {
-    payCard.mutate(asset.rowId, {
+    if (!payAmountValid) return
+    payCard.mutate({ id: asset.rowId, amount: payAmountNum }, {
       onSuccess: () => {
         setConfirmPay(false)
         toast.success(t('assetDetail.toastPaid'))
@@ -381,7 +397,7 @@ function CardDetailBody({
         <button
           type="button"
           disabled={!canPay}
-          onClick={() => setConfirmPay(true)}
+          onClick={openPay}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 4px', background: 'var(--bg-sunken)', border: 0, borderRadius: 'var(--radius-lg)', cursor: canPay ? 'pointer' : 'not-allowed', fontFamily: 'inherit', fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-primary)', opacity: canPay ? 1 : 0.55 }}
         >
           <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -523,24 +539,50 @@ function CardDetailBody({
       )}
 
       {confirmPay && (
-        <ConfirmDialog
+        <ModalShell
           title={t('assetDetail.payNow')}
-          message={
-            <>
+          onClose={() => { if (!payCard.isPending) setConfirmPay(false) }}
+          mobile={mobile}
+          size="sm"
+          footer={
+            <ModalFooter
+              onCancel={() => { if (!payCard.isPending) setConfirmPay(false) }}
+              cancelLabel={tc('cancel')}
+              onSave={handlePay}
+              saveLabel={t('assetDetail.payAction')}
+              saving={payCard.isPending}
+              saveDisabled={!payAmountValid}
+            />
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <p style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: 1.7, margin: 0 }}>
               <Trans
                 i18nKey="assetDetail.payConfirm"
                 ns="asset"
-                values={{ amount: money(billing?.upcomingAmount ?? 0) }}
+                values={{ amount: money(upcoming) }}
                 components={{ strong: <strong /> }}
               />
               {billing?.nextPaymentDate ? ` ${t('assetDetail.paymentDateNote', { date: billing.nextPaymentDate })}` : ''}
-            </>
-          }
-          confirmLabel={t('assetDetail.payAction')}
-          loading={payCard.isPending}
-          onCancel={() => { if (!payCard.isPending) setConfirmPay(false) }}
-          onConfirm={handlePay}
-        />
+            </p>
+
+            {/* 부분 선결제 — 일부만 내면 나머지는 결제일에 정상적으로 빠진다. */}
+            <div className="flex flex-col gap-2">
+              <Label>{t('assetDetail.payAmount')}</Label>
+              <Input
+                className="num"
+                value={payAmount}
+                onChange={e => setPayAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                inputMode="numeric"
+              />
+              {payAmountNum > 0 && payAmountNum < upcoming && (
+                <p className="text-xs text-[var(--fg-tertiary)]">
+                  {t('assetDetail.payRemainder', { amount: money(upcoming - payAmountNum) })}
+                </p>
+              )}
+            </div>
+          </div>
+        </ModalShell>
       )}
     </>
   )

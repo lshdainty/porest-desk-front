@@ -677,6 +677,8 @@ asset,assetDetail.paymentDateLabel,결제일,Payment date
 asset,assetDetail.payConfirm,결제 예정액 <strong>{{amount}}</strong>을 지금 결제 처리할까요?,Pay <strong>{{amount}}</strong> now?
 asset,assetDetail.paymentDateNote,결제일은 {{date}} 입니다.,The payment date is {{date}}.
 asset,assetDetail.payAction,결제하기,Pay
+asset,assetDetail.payAmount,결제 금액,Payment amount
+asset,assetDetail.payRemainder,남은 {{amount}}은 결제일에 빠져요,{{amount}} remaining will be paid on the payment date
 asset,assetDetail.tossLinked,토스 연동 중,Linked with Toss
 asset,assetDetail.sharesUnit,{{n}}주,{{n}} shares
 asset,assetDetail.holdingsQty,보유 수량,Quantity held
