@@ -81,6 +81,8 @@ type EditHolding = {
   quantity?: string
   holdingName?: string
   holdingValue?: number
+  /** 총 매수원가 — 실현손익의 기준. 안 적으면 서버가 기존 값을 잇는다. */
+  totalCost?: number
   /** 검색에서 추가한 연동 항목의 종목명(표시용 — payload 미포함) */
   displayName?: string
 }
@@ -214,6 +216,7 @@ export function AssetEditDialog({
         quantity: h.quantity ?? undefined,
         holdingName: h.holdingName ?? undefined,
         holdingValue: h.holdingValue ?? undefined,
+        totalCost: h.totalCost ?? undefined,
       }))
     }
     if (item?.tossSymbol && item.tossQuantity != null) {
@@ -540,6 +543,8 @@ export function AssetEditDialog({
         quantity: h.linked ? normalizeQty(h.quantity) ?? '0' : normalizeQty(h.quantity),
         holdingName: h.linked ? null : h.holdingName ?? '',
         holdingValue: h.linked ? null : h.holdingValue ?? 0,
+        // 안 적었으면 안 보낸다 — 서버가 같은 종목의 기존 원가를 잇는다.
+        totalCost: h.totalCost ?? null,
         sortOrder: i,
       }))
       // 보유가 있으면 balance 를 아예 보내지 않는다 — 서버가 시세×수량을 BigDecimal 로 산정한다.
@@ -1086,6 +1091,32 @@ export function AssetEditDialog({
                                     className="h-[34px]"
                                   />
                                 )}
+                                {/* 매수원가 — 실현손익의 기준. 매수·매도로 쌓이지만
+                                    앱을 쓰기 전부터 갖고 있던 보유는 여기서 적어 넣어야 손익이 맞는다. */}
+                                <div className="mt-1.5 flex items-center gap-1.5">
+                                  <span className="text-[11px] text-[var(--fg-tertiary)] shrink-0">
+                                    {t('holdings.totalCost')}
+                                  </span>
+                                  <Input
+                                    inputMode="numeric"
+                                    value={h.totalCost != null ? String(h.totalCost) : ''}
+                                    placeholder="0"
+                                    onChange={e => {
+                                      const v = parseInt(e.target.value.replace(/[^\d]/g, ''), 10) || 0
+                                      setHoldings(prev =>
+                                        prev.map(x => (x.key === h.key ? { ...x, totalCost: v } : x)),
+                                      )
+                                    }}
+                                    className="num h-[28px] w-[104px] px-2 text-right"
+                                  />
+                                  {h.totalCost != null && h.totalCost > 0 && qtyNumber(h.quantity) ? (
+                                    <span className="num text-[11px] text-[var(--fg-tertiary)]">
+                                      {t('holdings.avgPriceInline', {
+                                        avg: KRW(Math.round(h.totalCost / (qtyNumber(h.quantity) || 1))),
+                                      })}
+                                    </span>
+                                  ) : null}
+                                </div>
                               </div>
                               {/* 수량 — 연동은 필수(시세×수량), 미연동은 선택. 소수 허용(0.05 BTC·3.75g) */}
                               <span className="inline-flex items-center gap-1 shrink-0">
