@@ -5,18 +5,11 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
-import { Button } from '@/shared/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useCreateTrade } from '@/features/asset'
-import { HOLDING_TYPES, sanitizeQty, qtyNumber } from '@/entities/asset'
-import type { Asset, AssetHolding, HoldingType, TradeType } from '@/entities/asset'
+import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
+import { sanitizeQty, qtyNumber, formatQty } from '@/entities/asset'
+import type { Asset, AssetHolding, TradeType } from '@/entities/asset'
 import { KRW } from '@/shared/lib/porest/format'
 
 /**
@@ -31,16 +24,15 @@ import { KRW } from '@/shared/lib/porest/format'
  */
 export function AssetTradeDialog({
   asset,
-  holdings,
+  holding,
   defaultType = 'BUY',
-  defaultHoldingKey,
   mobile,
   onClose,
 }: {
   asset: Asset
-  holdings: AssetHolding[]
+  /** 어떤 종목인지 정해진 채로 들어온다 — 여기서 다시 고르게 하면 편집과 역할이 겹친다. */
+  holding: AssetHolding
   defaultType?: TradeType
-  defaultHoldingKey?: string
   mobile: boolean
   onClose: () => void
 }) {
@@ -51,22 +43,6 @@ export function AssetTradeDialog({
   const [type, setType] = useState<Exclude<TradeType, 'OPENING'>>(
     defaultType === 'SELL' ? 'SELL' : 'BUY',
   )
-  // 보유 종목의 식별자 — 연동은 토스 종목코드, 미연동은 항목명. 보유 목록은 편집할 때마다
-  // 통째로 재생성돼서 rowId 로는 거래를 묶을 수 없다.
-  const keyOf = (h: AssetHolding) => (h.linked ? h.tossSymbol ?? '' : h.holdingName ?? '')
-  const options = useMemo(
-    () => holdings.filter(h => keyOf(h).length > 0),
-    [holdings],
-  )
-
-  const [holdingKey, setHoldingKey] = useState<string>(
-    defaultHoldingKey ?? (options[0] ? keyOf(options[0]) : ''),
-  )
-  const [newKey, setNewKey] = useState('')
-  const [newType, setNewType] = useState<HoldingType>('STOCK')
-  // 매수는 새 종목을 들일 수 있다. 매도는 보유한 것만.
-  const [addNew, setAddNew] = useState(options.length === 0)
-
   const [quantity, setQuantity] = useState('')
   const [amount, setAmount] = useState('')
   const [fee, setFee] = useState('')
@@ -74,8 +50,14 @@ export function AssetTradeDialog({
   const [description, setDescription] = useState('')
 
   const isSell = type === 'SELL'
-  const picked = options.find(h => keyOf(h) === holdingKey) ?? null
-  const useNew = !isSell && addNew
+  // 종목 식별자 — 연동은 토스 종목코드, 미연동은 항목명. 보유 목록은 편집할 때마다
+  // 통째로 재생성돼서 rowId 로는 거래를 묶을 수 없다.
+  const holdingKey = (holding.linked ? holding.tossSymbol : holding.holdingName) ?? ''
+  // 티커가 아니라 종목명으로 보여 준다 — 편집 화면과 같은 이름이어야 헷갈리지 않는다.
+  const { data: masterName } = useStockSymbolName(holding.linked ? holding.tossSymbol ?? '' : '')
+  const holdingName = holding.linked
+    ? masterName ?? holding.tossSymbol ?? ''
+    : holding.holdingName ?? ''
 
   const qty = qtyNumber(quantity) ?? 0
   const amountNum = Number(amount.replace(/[^\d]/g, '')) || 0
@@ -86,17 +68,16 @@ export function AssetTradeDialog({
   const cashAfter = (asset.cashBalance ?? 0) + cashDelta
 
   // 매도는 판 만큼의 원가를 빼야 손익이 나온다 — 서버와 같은 비율 계산으로 미리 보여 준다.
-  const heldQty = picked ? qtyNumber(picked.quantity) ?? 0 : 0
+  const heldQty = qtyNumber(holding.quantity) ?? 0
   const realizedPreview = useMemo(() => {
-    if (!isSell || !picked || heldQty <= 0 || qty <= 0) return null
-    const soldCost = Math.round(((picked.totalCost ?? 0) * qty) / heldQty)
+    if (!isSell || heldQty <= 0 || qty <= 0) return null
+    const soldCost = Math.round(((holding.totalCost ?? 0) * qty) / heldQty)
     return amountNum - feeNum - soldCost
-  }, [isSell, picked, heldQty, qty, amountNum, feeNum])
+  }, [isSell, holding.totalCost, heldQty, qty, amountNum, feeNum])
 
-  const resolvedKey = useNew ? newKey.trim() : holdingKey
   const canSubmit =
-    resolvedKey.length > 0 && qty > 0 && amountNum > 0 &&
-    (!isSell || (picked != null && qty <= heldQty)) &&
+    holdingKey.length > 0 && qty > 0 && amountNum > 0 &&
+    (!isSell || qty <= heldQty) &&
     (isSell || cashAfter >= 0)
 
   const submit = () => {
@@ -105,10 +86,9 @@ export function AssetTradeDialog({
       {
         assetRowId: asset.rowId,
         tradeType: type,
-        holdingType: useNew ? newType : picked?.holdingType ?? 'STOCK',
-        holdingKey: resolvedKey,
-        // 새로 들이는 종목은 수동 입력이다 — 토스 연동은 종목 검색을 거쳐야 해서 편집 화면에서 붙인다.
-        linked: useNew ? false : picked?.linked ?? false,
+        holdingType: holding.holdingType ?? 'STOCK',
+        holdingKey,
+        linked: holding.linked,
         quantity: sanitizeQty(quantity),
         amount: amountNum,
         fee: feeNum,
@@ -147,7 +127,6 @@ export function AssetTradeDialog({
         onValueChange={v => {
           if (!v) return
           setType(v as typeof type)
-          if (v === 'SELL') setAddNew(false)
         }}
         className="mb-[14px]"
       >
@@ -157,64 +136,19 @@ export function AssetTradeDialog({
         </TabsList>
       </Tabs>
 
-      <Field className="mb-[14px]">
-        <FieldLabel>{t('trade.holding')}</FieldLabel>
-        {useNew ? (
-          <>
-            <Input
-              value={newKey}
-              onChange={e => setNewKey(e.target.value)}
-              placeholder={t('trade.newHoldingPlaceholder')}
-              maxLength={100}
-              autoFocus
-            />
-            <div className="mt-2">
-              <Select value={newType} onValueChange={v => setNewType(v as HoldingType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HOLDING_TYPES.map(ht => (
-                    <SelectItem key={ht.type} value={ht.type}>{t(ht.labelKey)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        ) : (
-          <Select value={holdingKey} onValueChange={setHoldingKey} disabled={options.length === 0}>
-            <SelectTrigger>
-              <SelectValue placeholder={t('trade.noHolding')} />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map(h => (
-                <SelectItem key={keyOf(h)} value={keyOf(h)}>
-                  {h.linked ? h.tossSymbol : h.holdingName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        {!isSell && options.length > 0 && (
-          <Button
-            type="button"
-            variant="accent"
-            size="sm"
-            className="mt-1.5 self-start"
-            onClick={() => setAddNew(v => !v)}
-          >
-            {useNew ? t('trade.pickExisting') : t('trade.addNewHolding')}
-          </Button>
-        )}
-        {isSell && picked && (
-          <div className="mt-1.5 text-[11.5px] text-[var(--fg-tertiary)]">
-            {t('trade.heldSummary', {
-              qty: picked.quantity ?? '0',
-              avg: picked.avgPrice ? KRW(Math.round(Number(picked.avgPrice))) : '—',
-            })}
-          </div>
-        )}
-      </Field>
+      {/* 어떤 종목인지 — 여기서 고르는 게 아니라 이미 정해져서 들어온다.
+          종목 추가는 편집(토스 검색)에서 한다. */}
+      <div
+        className="mb-[14px] rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)] px-3 py-2.5"
+      >
+        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700 }}>{holdingName}</div>
+        <div className="mt-0.5 text-[11.5px] text-[var(--fg-tertiary)]">
+          {t('trade.heldSummary', {
+            qty: formatQty(holding.quantity, holding.holdingType ?? 'STOCK'),
+            avg: holding.avgPrice ? KRW(Math.round(Number(holding.avgPrice))) : '—',
+          })}
+        </div>
+      </div>
 
       <Field className="mb-[14px]">
         <FieldLabel>{t('trade.quantity')}</FieldLabel>
@@ -292,7 +226,7 @@ export function AssetTradeDialog({
             {t('trade.insufficientCash')}
           </div>
         )}
-        {isSell && picked && qty > heldQty && (
+        {isSell && qty > heldQty && (
           <div className="mt-1.5 text-[11.5px]" style={{ color: 'var(--color-error)' }}>
             {t('trade.insufficientQty')}
           </div>
