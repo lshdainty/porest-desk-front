@@ -59,10 +59,17 @@ function formatKRW(n: number) {
   return new Intl.NumberFormat('ko-KR').format(n)
 }
 
-/** 연회비 표기: amount>0 → "N원", 0/null → label ?? "없음". */
+/**
+ * 연회비 표기 — "정보 없음"과 "무료"를 구분한다.
+ *
+ * annual_fee_amount 는 DB 에서 NOT NULL DEFAULT 0 이라 미수집분도 0 으로 내려왔고,
+ * 예전에는 그걸 "없음"으로 찍어 연회비를 안 받는 카드처럼 보였다(9,466장 중 5,399장).
+ * 지금은 백엔드가 amount=0 이고 label 도 없으면 annualFee 자체를 null 로 내린다.
+ */
 function annualFeeText(s: CardCatalogSummary, t: TFunction) {
+  if (!s.annualFee) return t('benefit.annualFeeLabel', { label: t('benefit.feeUnknown') })
   if (s.annualFee.amount > 0) return t('benefit.annualFeeAmount', { amount: formatKRW(s.annualFee.amount) })
-  return t('benefit.annualFeeLabel', { label: s.annualFee.label ?? t('benefit.feeNone') })
+  return t('benefit.annualFeeLabel', { label: s.annualFee.label ?? t('benefit.feeFree') })
 }
 
 /** 전월 실적 표기: isRequired==='Y' → "실적 N원/월", 아니면 "실적 무관". */

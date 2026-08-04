@@ -552,6 +552,7 @@ asset,cardAdd.outstandingHint,청구될 금액을 입력하세요. 총 부채에
 asset,cardAdd.selectRequired,카드 선택 필요,Select a card
 asset,cardAdd.title,카드 추가,Add card
 asset,editDialog.annualFeeValue,연회비 {{amount}}원,Annual fee {{amount}} KRW
+asset,editDialog.annualFeeFree,연회비 무료,No annual fee
 asset,editDialog.billingCycle,청구 사이클 (선택),Billing Cycle (optional)
 asset,editDialog.creditLimit,신용한도 (원),Credit Limit (KRW)
 asset,editDialog.creditLimitPlaceholder,예: 3000000,e.g. 3000000
@@ -1289,6 +1290,8 @@ card,benefit.emptyDesc,다른 검색어나 필터를 시도해보세요,Try a di
 card,benefit.annualFeeAmount,연회비 {{amount}}원,Annual fee {{amount}} KRW
 card,benefit.annualFeeLabel,연회비 {{label}},Annual fee {{label}}
 card,benefit.feeNone,없음,None
+card,benefit.feeUnknown,정보 없음,Unknown
+card,benefit.feeFree,무료,Free
 card,benefit.performanceAmount,실적 {{amount}}원/월,{{amount}} KRW/month spending
 card,benefit.performanceNone,실적 무관,No spending requirement
 card,benefit.detailTitle,카드 상세,Card details

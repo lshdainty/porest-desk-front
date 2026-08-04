@@ -76,9 +76,11 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
               <div className="space-y-0.5">
                 <dt className="text-xs text-muted-foreground">{t('benefit.statAnnualFee')}</dt>
                 <dd className="font-semibold tabular-nums">
-                  {s.annualFee.amount > 0
-                    ? money(s.annualFee.amount)
-                    : t('benefit.feeNone')}
+                  {!s.annualFee
+                    ? t('benefit.feeUnknown')
+                    : s.annualFee.amount > 0
+                      ? money(s.annualFee.amount)
+                      : (s.annualFee.label ?? t('benefit.feeFree'))}
                 </dd>
               </div>
               <div className="space-y-0.5">

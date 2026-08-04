@@ -337,7 +337,7 @@ export function AssetEditDialog({
       launchDate: null,
       imgUrl: item.cardCatalog.imgUrl,
       detailUrl: null,
-      annualFee: { amount: 0, label: null },
+      annualFee: null, // 자산에서 만든 임시 요약 — 연회비를 모르는 상태다
       performance: { requiredAmount: 0, requiredText: null, isRequired: 'N' },
       company: item.cardCatalog.companyName
         ? {
@@ -730,8 +730,11 @@ export function AssetEditDialog({
                       subtitle={
                         <>
                           {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? t('cardTypeShort.credit') : t('cardTypeShort.check')}
-                          {c.annualFee.amount > 0 && (
-                            <> · {t('editDialog.annualFeeValue', { amount: c.annualFee.amount.toLocaleString('ko-KR') })}</>
+                          {/* 연회비 정보가 없으면(null) 좁은 목록에선 생략. 0원이면 '무료'로 구분해 보인다. */}
+                          {c.annualFee && (
+                            c.annualFee.amount > 0
+                              ? <> · {t('editDialog.annualFeeValue', { amount: c.annualFee.amount.toLocaleString('ko-KR') })}</>
+                              : <> · {t('editDialog.annualFeeFree')}</>
                           )}
                         </>
                       }
