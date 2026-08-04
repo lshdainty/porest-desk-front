@@ -51,6 +51,9 @@ const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
   OTHER: null,
 }
 
+/** 카드사 공통 할부 개월 — 2~12, 18, 24. */
+const INSTALLMENT_MONTHS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24] as const
+
 type TxType = 'EXPENSE' | 'INCOME' | 'TRANSFER'
 
 type Props = {
@@ -121,6 +124,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   )
   const [merchant, setMerchant] = useState(expense?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
+  // 할부 개월 — 신용카드 결제에만 의미. '' = 일시불.
+  const [installmentMonths, setInstallmentMonths] = useState<string>(
+    expense?.installmentMonths ? String(expense.installmentMonths) : '',
+  )
 
   // EXPENSE/INCOME 전용
   const [categoryRowId, setCategoryRowId] = useState<number | null>(expense?.categoryRowId ?? null)
@@ -161,6 +168,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     setAssetRowId(p.assetRowId ?? null)
     setMerchant(p.merchant ?? '')
     setPaymentMethod(p.paymentMethod ?? '')
+    setInstallmentMonths('')
     setDescription(p.description ?? '')
     setActivePresetId(p.rowId)
   }
@@ -222,6 +230,21 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
     () => assets.filter(allowAsset),
     [assets, allowAsset],
   )
+
+  // 할부는 신용카드 지출에만 존재한다 — 체크카드는 긁는 즉시 계좌에서 빠지고, 현금·이체는 나눌 수 없다.
+  const showInstallment = useMemo(() => {
+    if (type !== 'EXPENSE') return false
+    const picked = assetRowId != null ? assets.find(a => a.rowId === assetRowId) : null
+    return picked?.assetType === 'CREDIT_CARD'
+  }, [type, assetRowId, assets])
+
+  // 신용카드가 아니게 되면 남아 있던 할부 개월을 지운다(저장 시 흘러들지 않도록).
+  useEffect(() => {
+    if (!showInstallment && installmentMonths) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setInstallmentMonths('')
+    }
+  }, [showInstallment, installmentMonths])
 
   // 결제 수단·거래 타입 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
   useEffect(() => {
@@ -304,6 +327,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       expenseDate: `${expenseDate}T${expenseTime}`,
       merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
+      // 할부는 신용카드 지출에만 — 그 밖의 조합에선 값을 흘리지 않는다.
+      installmentMonths: showInstallment && installmentMonths ? Number(installmentMonths) : null,
       // 일치화한 분할이 있으면 금액과 함께 원자적으로 교체(백엔드가 합==금액 검증).
       ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
     }
@@ -821,6 +846,40 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
               </div>
             )}
           </Field>
+
+          {/* 할부 — 신용카드 지출에만. 청구는 이 개월 수로 나뉘어 잡힌다. */}
+          {showInstallment && (
+            <Field style={{ marginBottom: 14 }}>
+              <FieldLabel>{t('addTx.installment')}</FieldLabel>
+              <Select
+                value={installmentMonths || '__none__'}
+                onValueChange={(v) => {
+                  setInstallmentMonths(v === '__none__' ? '' : v)
+                  clearPresetMark()
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('addTx.lumpSum')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('addTx.lumpSum')}</SelectItem>
+                  {INSTALLMENT_MONTHS.map(m => (
+                    <SelectItem key={m} value={String(m)}>
+                      {t('addTx.installmentMonths', { months: m })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {installmentMonths && amountNumber > 0 && (
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+                  {t('addTx.installmentHint', {
+                    months: installmentMonths,
+                    perMonth: KRW(Math.floor(amountNumber / Number(installmentMonths))),
+                  })}
+                </div>
+              )}
+            </Field>
+          )}
         </>
       ) : (
         <>
