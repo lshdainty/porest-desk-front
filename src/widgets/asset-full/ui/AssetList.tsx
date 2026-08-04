@@ -5,6 +5,7 @@ import { CreditCard, Pencil, Trash2 } from 'lucide-react'
 import { AssetLogo, type Asset } from '@/entities/asset'
 import { cn, formatCurrency } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
+import { assetBalanceInKrw, isForeignCurrency, formatOriginalAmount } from '@/shared/lib/porest/currency'
 
 interface AssetListProps {
   assets: Asset[]
@@ -18,14 +19,14 @@ const getAssetTypeLabel = (assetType: string): string => {
 }
 
 export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListProps) => {
-  const { t } = useTranslation('asset')
+  const { t, i18n } = useTranslation('asset')
   const navigate = useNavigate()
 
   // Total of positive balances included in net worth — used for the weight bar.
   const positiveTotal = useMemo(() => {
     return assets
-      .filter((a) => a.isIncludedInTotal === 'Y' && a.balance > 0)
-      .reduce((sum, a) => sum + a.balance, 0)
+      .filter((a) => a.isIncludedInTotal === 'Y' && assetBalanceInKrw(a) > 0)
+      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0)
   }, [assets])
 
   if (assets.length === 0) {
@@ -41,8 +42,8 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
     <div className="space-y-2">
       {assets.map((asset) => {
         const weight =
-          positiveTotal > 0 && asset.isIncludedInTotal === 'Y' && asset.balance > 0
-            ? (asset.balance / positiveTotal) * 100
+          positiveTotal > 0 && asset.isIncludedInTotal === 'Y' && assetBalanceInKrw(asset) > 0
+            ? (assetBalanceInKrw(asset) / positiveTotal) * 100
             : 0
 
         return (
@@ -83,8 +84,14 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                     asset.balance >= 0 ? 'text-foreground' : 'text-red-600 dark:text-red-400',
                   )}
                 >
-                  {formatCurrency(asset.balance)}
+                  {formatCurrency(assetBalanceInKrw(asset))}
                 </span>
+                {/* 외화는 환산액이 주 표기 — 원 통화 잔고를 밑에 함께 보여 준다 */}
+                {isForeignCurrency(asset.currency) && (
+                  <p className="text-[10px] text-muted-foreground tabular-nums">
+                    {formatOriginalAmount(asset.balance, asset.currency, i18n.language)}
+                  </p>
+                )}
                 {weight > 0 && (
                   <p className="text-[10px] text-muted-foreground tabular-nums">
                     {weight.toFixed(0)}%

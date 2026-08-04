@@ -41,6 +41,7 @@ import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import type { ExpenseSplitFormValue } from '@/entities/expense-split'
 import { Card, CardContent } from '@/shared/ui/card'
+import { CURRENCIES, DEFAULT_CURRENCY, formatOriginalAmount } from '@/shared/lib/porest/currency'
 import { SplitTxDialog } from '../dialogs/SplitTxDialog'
 
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
@@ -92,7 +93,7 @@ const extractTime = (s?: string | null) => {
 }
 
 export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: Props) {
-  const { t } = useTranslation('expense')
+  const { t, i18n } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
   const isEdit = !!expense
 
@@ -139,6 +140,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
   // 할부 개월 — 신용카드 결제에만 의미. '' = 일시불.
   const [installmentMonths, setInstallmentMonths] = useState<string>(
     expense?.installmentMonths ? String(expense.installmentMonths) : '',
+  )
+  // 해외 결제 — 원 통화 금액·환율을 남긴다. 셋이 함께여야 카드사 청구 환율과 대사할 수 있다.
+  const [origCurrency, setOrigCurrency] = useState<string>(
+    expense?.originalCurrency ?? DEFAULT_CURRENCY,
+  )
+  const [origAmount, setOrigAmount] = useState<string>(
+    expense?.originalAmount != null ? String(expense.originalAmount) : '',
+  )
+  const [fxRate, setFxRate] = useState<string>(
+    expense?.exchangeRate != null ? String(expense.exchangeRate) : '',
   )
 
   // EXPENSE/INCOME 전용
@@ -279,6 +290,32 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
     }
   }, [showInstallment, installmentMonths])
 
+  // 외화는 지출·수입에만 — 이체는 두 자산 사이의 이동이라 통화가 자산에 달려 있다.
+  const isForeignTx = type !== 'TRANSFER' && origCurrency !== DEFAULT_CURRENCY
+
+  // 원화로 돌아오면 남아 있던 외화 입력을 지운다(저장 시 흘러들지 않도록).
+  useEffect(() => {
+    if (!isForeignTx && (origAmount || fxRate)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOrigAmount('')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFxRate('')
+    }
+  }, [isForeignTx, origAmount, fxRate])
+
+  // 해외 결제는 $5.50 을 보고 입력하지 원화 환산액을 모른다 — 원 통화 × 환율로 금액을 채운다.
+  // 카드사 실제 청구액이 다르면 금액 칸을 직접 고치면 된다(이 effect 는 원통화·환율이
+  // 바뀔 때만 발화하므로 손으로 고친 금액을 덮어쓰지 않는다).
+  useEffect(() => {
+    if (!isForeignTx) return
+    const a = parseFloat(origAmount)
+    const r = parseFloat(fxRate)
+    if (!Number.isFinite(a) || !Number.isFinite(r) || a <= 0 || r <= 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAmount(String(Math.round(a * r)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [origAmount, fxRate, isForeignTx])
+
   // 결제 수단·거래 타입 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
   useEffect(() => {
     if (assetRowId == null) return
@@ -366,6 +403,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
       installmentMonths: showInstallment && installmentMonths ? Number(installmentMonths) : null,
       // 환불 모드에서만 원거래를 묶는다 — 이 연결이 통계 상계를 만든다.
       refundOfExpenseRowId: isRefundMode && type === 'INCOME' ? refundOf.rowId : null,
+      // 셋이 함께여야 의미가 있다 — 서버도 반쪽이면 전부 비운다.
+      originalAmount: isForeignTx && origAmount ? Number(origAmount) : null,
+      originalCurrency: isForeignTx && origAmount ? origCurrency : null,
+      exchangeRate: isForeignTx && origAmount ? (parseFloat(fxRate) || null) : null,
       // 일치화한 분할이 있으면 금액과 함께 원자적으로 교체(백엔드가 합==금액 검증).
       ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
     }
@@ -697,6 +738,61 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
           }}
         />
       </Field>
+
+      {/* 해외 결제 — 원 통화·환율. 금액(원화)은 둘을 곱해 자동으로 채워진다. */}
+      {type !== 'TRANSFER' && (
+        <Field style={{ marginBottom: 18 }}>
+          <FieldLabel>{t('addTx.currency')}</FieldLabel>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ width: isForeignTx ? 110 : '100%' }}>
+              <Select
+                value={origCurrency}
+                onValueChange={(v) => { setOrigCurrency(v); clearPresetMark() }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map(c => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} {c.code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {isForeignTx && (
+              <>
+                <Input
+                  className="num"
+                  value={origAmount}
+                  onChange={e => { setOrigAmount(e.target.value.replace(/[^0-9.]/g, '')); clearPresetMark() }}
+                  placeholder={t('addTx.originalAmountPlaceholder')}
+                  inputMode="decimal"
+                  style={{ flex: 1 }}
+                />
+                <Input
+                  className="num"
+                  value={fxRate}
+                  onChange={e => { setFxRate(e.target.value.replace(/[^0-9.]/g, '')); clearPresetMark() }}
+                  placeholder={t('addTx.exchangeRatePlaceholder')}
+                  inputMode="decimal"
+                  style={{ flex: 1 }}
+                />
+              </>
+            )}
+          </div>
+          {isForeignTx && Number(origAmount) > 0 && Number(fxRate) > 0 && (
+            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+              {t('addTx.fxHint', {
+                original: formatOriginalAmount(Number(origAmount), origCurrency, i18n.language),
+                rate: Number(fxRate).toLocaleString(i18n.language),
+                krw: KRW(Math.round(Number(origAmount) * Number(fxRate))),
+              })}
+            </div>
+          )}
+        </Field>
+      )}
 
       {/* 분할 합 불일치 경고 — 금액을 바꿔 기존 분할 합과 어긋날 때 */}
       {splitMismatch && (

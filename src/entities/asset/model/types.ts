@@ -41,6 +41,8 @@ export interface Asset {
   assetType: AssetType
   balance: number
   currency: string
+  /** 원화 환산율 (통화 1단위당 원화). KRW 는 1 — 순자산은 balance × 이 값으로 환산된다 */
+  exchangeRate: number
   color: string | null
   institution: string | null
   memo: string | null
@@ -69,6 +71,8 @@ export interface AssetFormValues {
   /** 미전달 = 서버 산정. 투자+holdings 는 서버가 평가액을 BigDecimal 로 잡으므로 보내지 않는다 */
   balance?: number
   currency?: string
+  /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
+  exchangeRate?: number | null
   color?: string
   institution?: string
   memo?: string
@@ -88,6 +92,8 @@ export interface AssetUpdateFormValues {
   /** 미전달 = 기존 잔액 유지(투자+holdings 는 서버 산정) */
   balance?: number
   currency?: string
+  /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
+  exchangeRate?: number | null
   color?: string
   institution?: string
   memo?: string

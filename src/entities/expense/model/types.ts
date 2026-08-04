@@ -39,6 +39,12 @@ export interface Expense {
   installmentMonths: number | null
   /** 환불 원거래 행 아이디 (null = 환불 아님). 수입이면서 이 값이 있으면 지출 상계로 집계. */
   refundOfExpenseRowId: number | null
+  /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
+  originalAmount: number | null
+  /** 원 통화 (ISO 4217, 예: USD) */
+  originalCurrency: string | null
+  /** 적용 환율 (원 통화 1단위당 원화) */
+  exchangeRate: number | null
   calendarEventRowId: number | null
   todoRowId: number | null
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
@@ -61,6 +67,12 @@ export interface ExpenseFormValues {
   installmentMonths?: number | null
   /** 환불 원거래 행 아이디. 이 연결이 통계 상계를 만든다(수입으로 부풀지 않는다). */
   refundOfExpenseRowId?: number | null
+  /** 원 통화 금액 (해외 결제) */
+  originalAmount?: number | null
+  /** 원 통화 (ISO 4217) */
+  originalCurrency?: string | null
+  /** 적용 환율 */
+  exchangeRate?: number | null
   calendarEventRowId?: number
   todoRowId?: number
   /**

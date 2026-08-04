@@ -19,6 +19,7 @@ import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
 import { CardCatalogCombobox } from '@/features/card-catalog'
 import { useAssets } from '@/features/asset'
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/shared/lib/porest/currency'
 import { useIsMobile } from '@/shared/hooks'
 
 interface AssetFormProps {
@@ -41,6 +42,10 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
   const [assetName, setAssetName] = useState(asset?.assetName ?? '')
   const [assetType, setAssetType] = useState<AssetType>(asset?.assetType ?? 'BANK_ACCOUNT')
   const [balance, setBalance] = useState(asset?.balance?.toString() ?? '0')
+  const [currency, setCurrency] = useState(asset?.currency ?? DEFAULT_CURRENCY)
+  const [exchangeRate, setExchangeRate] = useState(
+    asset?.exchangeRate != null ? String(asset.exchangeRate) : '',
+  )
   const [institution, setInstitution] = useState(asset?.institution ?? '')
   const [memo, setMemo] = useState(asset?.memo ?? '')
   const [color, setColor] = useState(asset?.color ?? DEFAULT_ASSET_COLOR)
@@ -61,6 +66,9 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
     () => (assetsData?.assets ?? []).filter(a => a.assetType === 'BANK_ACCOUNT'),
     [assetsData],
   )
+
+  // 카드·대출도 외화가 있을 수 있다(해외 카드, 외화 대출) — 통화는 모든 유형에 연다.
+  const isForeign = currency !== DEFAULT_CURRENCY
 
   const isCardAsset = assetType === 'CREDIT_CARD' || assetType === 'CHECK_CARD'
   const isCreditCard = assetType === 'CREDIT_CARD'
@@ -90,7 +98,9 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
       assetName: assetName.trim(),
       assetType,
       balance: parseInt(balance) || 0,
-      currency: 'KRW',
+      currency,
+      // 환율은 외화일 때만 보낸다. 비우면 서버가 1로 잡아 환산 없이 더해진다.
+      exchangeRate: isForeign ? (parseFloat(exchangeRate) || null) : null,
       color,
       institution: institution || undefined,
       memo: memo || undefined,
@@ -102,7 +112,7 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
     }
 
     onSubmit(data)
-  }, [assetName, assetType, balance, color, institution, memo, isIncludedInTotal, cardCatalogRowId, isCardAsset, isCreditCard, creditLimit, paymentDay, paymentAssetRowId, onSubmit])
+  }, [assetName, assetType, balance, currency, exchangeRate, isForeign, color, institution, memo, isIncludedInTotal, cardCatalogRowId, isCardAsset, isCreditCard, creditLimit, paymentDay, paymentAssetRowId, onSubmit])
 
   const Footer = (
     <ModalFooter
@@ -226,6 +236,43 @@ export const AssetForm = ({ asset, onSubmit, onClose, isLoading }: AssetFormProp
             onChange={(e) => setBalance(e.target.value)}
           />
         </div>
+
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Label>{t('form.currency')}</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.symbol} {c.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {isForeign && (
+            <div className="flex-1">
+              <Label>{t('form.exchangeRate')}</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={exchangeRate}
+                onChange={(e) => setExchangeRate(e.target.value)}
+                placeholder={t('form.exchangeRatePlaceholder', { code: currency })}
+              />
+            </div>
+          )}
+        </div>
+
+        {isForeign && (
+          <p className="-mt-1 text-xs text-muted-foreground">
+            {t('form.exchangeRateHint', { code: currency })}
+          </p>
+        )}
 
         <div>
           <Label>{t('form.institution')}</Label>

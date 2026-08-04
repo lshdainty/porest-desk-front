@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/ui/c
 import { HeroStatCard } from '@/shared/ui/hero-stat-card'
 import type { AssetSummary, Asset, AssetType } from '@/entities/asset'
 import { formatCurrency } from '@/shared/lib'
+import { assetBalanceInKrw } from '@/shared/lib/porest/currency'
 
 // porest chart palette 매핑 — 자산 타입별 파이차트 색
 const ASSET_TYPE_COLORS: Record<AssetType, string> = {
@@ -30,7 +31,7 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
     if (assets.length === 0) return summary.totalBalance
     return assets
       .filter((a) => a.isIncludedInTotal === 'Y')
-      .reduce((sum, a) => sum + a.balance, 0)
+      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0)
   }, [assets, summary.totalBalance])
 
   const chartData = useMemo(() => {

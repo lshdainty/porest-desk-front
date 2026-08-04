@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Repeat, Scissors, Users, Undo2 } from 'lucide-react'
 import { KRW, money, isEn, formatDay } from '@/shared/lib/porest/format'
+import { formatOriginalAmount } from '@/shared/lib/porest/currency'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
@@ -54,7 +55,7 @@ type Props = {
 }
 
 export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: Props) {
-  const { t } = useTranslation('expense')
+  const { t, i18n } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [openSub, setOpenSub] = useState<'split' | 'recurring' | 'dutch' | null>(null)
@@ -247,6 +248,19 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
               <WonUnit />
             </span>
           </DetailField>
+          {expense.originalCurrency && expense.originalAmount != null && (
+            <DetailField label={t('txDetail.foreignPayment')}>
+              <span className="num" style={{ fontWeight: '600' }}>
+                {formatOriginalAmount(expense.originalAmount, expense.originalCurrency, i18n.language)}
+                {expense.exchangeRate != null && (
+                  <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400' }}>
+                    {' × '}
+                    {expense.exchangeRate.toLocaleString(i18n.language)}
+                  </span>
+                )}
+              </span>
+            </DetailField>
+          )}
           {asset && (
             <DetailField label={t('accountCard')}>
               <span style={{ fontWeight: '500' }}>
