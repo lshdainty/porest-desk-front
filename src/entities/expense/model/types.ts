@@ -35,6 +35,8 @@ export interface Expense {
   expenseDate: string
   merchant: string | null
   paymentMethod: string | null
+  /** 할부 개월 (null = 일시불). 신용카드 결제에만 의미. */
+  installmentMonths: number | null
   calendarEventRowId: number | null
   todoRowId: number | null
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
@@ -53,6 +55,8 @@ export interface ExpenseFormValues {
   expenseDate: string
   merchant?: string
   paymentMethod?: string
+  /** 할부 개월 (미전달·1 = 일시불). 신용카드 결제에만 의미. */
+  installmentMonths?: number | null
   calendarEventRowId?: number
   todoRowId?: number
   /**
