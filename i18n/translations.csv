@@ -2391,6 +2391,7 @@ asset,trade.deleted,거래를 취소했어요,Trade cancelled
 asset,trade.deleteConfirm,이 거래를 취소하시겠어요? 예수금과 보유 수량이 거래 전으로 돌아가요.,Cancel this trade? Cash and quantity return to their pre-trade state.
 asset,holdings.avgPrice,평단가,Avg price
 asset,holdings.totalCost,매수원가,Cost basis
+asset,holdings.avgPriceInline,"평단가 {{avg}}원","avg {{avg}} KRW"
 asset,holdings.holdingBalance,평가금액,Holdings
 asset,holdings.emptySub,보유 종목 없음,No holdings
 asset,holdings.firstAndMore,{{name}} 외 {{n}}종목,{{name}} and {{n}} more
