@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
+import { AssetLogo } from '@/entities/asset'
 import {
   useAssets,
   useCreateAsset,
@@ -12,7 +13,6 @@ import {
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
-import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -172,9 +172,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 // 카드 사용액은 음수 표기 컨벤션, 계좌는 실제 부호(대출 등 음수 잔액).
                 // 0 은 부호·강조 없이 '0원' (−0원 방지).
                 const neg = (isCard ? -amt : balance) < 0
-                const brand = getBrandColor(asset.institution, asset.assetName)
-                const accentColor = asset.color || brand?.bg || 'var(--fg-tertiary)'
-                const iconChar = (asset.institution || asset.assetName || '?').charAt(0)
                 return (
                   <div
                     key={asset.rowId}
@@ -182,16 +179,15 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                     style={{ cursor: 'pointer' }}
                     onClick={() => setDetail(asset)}
                   >
-                    <span
+                    {/* 카드 정식 이미지 → 없으면 회사 primary 색 모노그램. AssetLogo 단일 표현. */}
+                    <AssetLogo
+                      asset={asset}
+                      size={36}
                       style={{
-                        ...MANAGE_ROW.iconStyle,
-                        background: accentColor,
-                        color: brand?.fg || 'var(--fg-on-brand)',
+                        borderRadius: MANAGE_ROW.iconStyle.borderRadius,
                         fontSize: 'var(--text-label-sm)',
                       }}
-                    >
-                      {iconChar}
-                    </span>
+                    />
                     <div style={MANAGE_ROW.textStyle}>
                       <div style={MANAGE_ROW.labelStyle}>{asset.assetName}</div>
                       <div style={MANAGE_ROW.metaStyle}>
