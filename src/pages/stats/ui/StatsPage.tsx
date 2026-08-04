@@ -624,7 +624,8 @@ export const StatsPage = () => {
   )
 
   type DonutRow = {
-    rowId: number
+    /** null = 미분류. 카테고리 메타가 없으므로 드릴다운도 없다. */
+    rowId: number | null
     name: string
     amount: number
     icon: string | null
@@ -634,13 +635,14 @@ export const StatsPage = () => {
 
   // 부모 카테고리 집계 (드릴 전)
   const donutBreakdown = useMemo<DonutRow[]>(() => {
-    const map = new Map<number, DonutRow>()
+    const map = new Map<number | null, DonutRow>()
     for (const c of periodBreakdown) {
       const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
-      const groupName = c.parentCategoryName ?? c.categoryName
+      // 미분류는 카테고리 메타가 없어 이름을 서버가 주지 않는다 — 여기서 라벨을 붙인다.
+      const groupName = c.parentCategoryName ?? c.categoryName ?? t('uncategorized')
       let row = map.get(groupRowId)
       if (!row) {
-        const cat = categoryById.get(groupRowId)
+        const cat = groupRowId != null ? categoryById.get(groupRowId) : undefined
         row = {
           rowId: groupRowId,
           name: groupName,
@@ -660,15 +662,15 @@ export const StatsPage = () => {
   // 드릴 모드: 활성 부모의 자식 leaf 집계
   const drillBreakdown = useMemo<DonutRow[]>(() => {
     if (activeParentId == null) return []
-    const map = new Map<number, DonutRow>()
+    const map = new Map<number | null, DonutRow>()
     for (const c of periodBreakdown) {
       if (c.parentCategoryRowId !== activeParentId) continue
       let row = map.get(c.categoryRowId)
       if (!row) {
-        const cat = categoryById.get(c.categoryRowId)
+        const cat = c.categoryRowId != null ? categoryById.get(c.categoryRowId) : undefined
         row = {
           rowId: c.categoryRowId,
-          name: c.categoryName,
+          name: c.categoryName ?? t('uncategorized'),
           amount: 0,
           icon: cat?.icon ?? null,
           color: cat?.color ?? null,
@@ -1761,8 +1763,8 @@ export const StatsPage = () => {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', margin: '10px 0 4px' }}>
         {catTrendTop3.map((c, i) => (
           <span key={c.categoryRowId} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: segmentColor(i, categoryById.get(c.categoryRowId)?.color) }} />
-            {c.categoryName}
+            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: segmentColor(i, c.categoryRowId != null ? categoryById.get(c.categoryRowId)?.color : undefined) }} />
+            {c.categoryName ?? t('uncategorized')}
           </span>
         ))}
       </div>
@@ -1804,8 +1806,8 @@ export const StatsPage = () => {
                 </div>
                 {catTrendTop3.map((c, ci) => (
                   <div key={c.categoryRowId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: segmentColor(ci, categoryById.get(c.categoryRowId)?.color), flexShrink: 0 }} />
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{c.categoryName}</span>
+                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: segmentColor(ci, c.categoryRowId != null ? categoryById.get(c.categoryRowId)?.color : undefined), flexShrink: 0 }} />
+                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{c.categoryName ?? t('uncategorized')}</span>
                     <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
                       <MaskAmount>{wonPre()}{KRW(d.parts[ci] ?? 0)}</MaskAmount>
                       <WonUnit />
@@ -1834,7 +1836,7 @@ export const StatsPage = () => {
                     key={ci}
                     style={{
                       height: `${(v / d.sum) * 100}%`,
-                      background: segmentColor(ci, categoryById.get(catTrendTop3[ci]!.categoryRowId)?.color),
+                      background: segmentColor(ci, catTrendTop3[ci]!.categoryRowId != null ? categoryById.get(catTrendTop3[ci]!.categoryRowId!)?.color : undefined),
                     }}
                   />
                 ))}
@@ -1852,7 +1854,7 @@ export const StatsPage = () => {
   // ---------- COMPARE TAB ----------
   // 카테고리별 비교 (parent rowId로 그룹핑, 아이콘/색 동반)
   type CompareRow = {
-    groupRowId: number
+    groupRowId: number | null
     name: string
     icon: string | null
     color: string | null
@@ -1860,16 +1862,17 @@ export const StatsPage = () => {
     prev: number
   }
   const compareRows = useMemo<CompareRow[]>(() => {
-    const byId = new Map<number, CompareRow>()
+    const byId = new Map<number | null, CompareRow>()
 
     const addBreakdown = (source: 'now' | 'prev', list: CategoryBreakdown[]) => {
       for (const c of list) {
         if (c.expenseType !== 'EXPENSE') continue
+        // 미분류(카테고리 없음)도 한 줄로 세운다 — 빼면 합이 총액과 안 맞는다.
         const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
-        const groupName = c.parentCategoryName ?? c.categoryName
+        const groupName = c.parentCategoryName ?? c.categoryName ?? t('uncategorized')
         let row = byId.get(groupRowId)
         if (!row) {
-          const cat = categoryById.get(groupRowId)
+          const cat = groupRowId != null ? categoryById.get(groupRowId) : undefined
           row = {
             groupRowId,
             name: groupName,

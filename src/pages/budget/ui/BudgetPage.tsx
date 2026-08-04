@@ -356,6 +356,9 @@ export const BudgetPage = () => {
   const spentByCategory = useMemo(() => {
     const map = new Map<number, number>()
     for (const c of summaryQ.data?.categoryBreakdown ?? []) {
+      // 미분류는 특정 카테고리가 없으니 카테고리 예산에서 빼지 않는다 —
+      // 전체 예산에서만 차감된다(서버도 같은 규칙).
+      if (c.categoryRowId == null) continue
       map.set(c.categoryRowId, (map.get(c.categoryRowId) ?? 0) + c.totalAmount)
       if (c.parentCategoryRowId != null) {
         map.set(c.parentCategoryRowId, (map.get(c.parentCategoryRowId) ?? 0) + c.totalAmount)
