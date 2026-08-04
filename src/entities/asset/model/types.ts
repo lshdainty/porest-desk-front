@@ -14,10 +14,16 @@ export interface AssetCardCatalogBrief {
  * linked=true → tossSymbol+quantity(토스 현재가 × 수량으로 평가) /
  * linked=false → holdingName+holdingValue(직접 입력 평가액).
  */
+/** 보유 유형 — 수량 단위가 다르다(주식 주 / 금 g / 코인 개). 토스 시세 연동은 STOCK 만 가능. */
+export type HoldingType = 'STOCK' | 'GOLD' | 'CRYPTO'
+
 export interface AssetHolding {
   rowId?: number
+  /** 구버전 응답이면 없음 — STOCK 으로 간주 */
+  holdingType?: HoldingType
   linked: boolean
   tossSymbol?: string | null
+  /** 코인 0.05·금 3.75g 등 소수 허용. 미연동도 기록 가능(선택) */
   quantity?: number | null
   holdingName?: string | null
   holdingValue?: number | null
