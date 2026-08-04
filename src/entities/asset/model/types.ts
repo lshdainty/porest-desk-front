@@ -58,6 +58,8 @@ export interface AssetTrade {
   realizedPl?: number | null
   tradeDate: string
   description?: string | null
+  /** 결제 계좌 — 지정하면 증권계좌 예수금 대신 이 계좌에서 오간다. */
+  settlementAssetRowId?: number | null
 }
 
 export interface AssetTradeFormValues {
@@ -71,6 +73,7 @@ export interface AssetTradeFormValues {
   fee?: number
   tradeDate: string
   description?: string
+  settlementAssetRowId?: number | null
 }
 
 export interface Asset {

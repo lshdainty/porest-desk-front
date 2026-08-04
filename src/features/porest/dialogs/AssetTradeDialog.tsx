@@ -5,8 +5,15 @@ import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { useCreateTrade } from '@/features/asset'
+import { useCreateTrade, useAssets } from '@/features/asset'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { sanitizeQty, qtyNumber, formatQty } from '@/entities/asset'
 import type { Asset, AssetHolding, TradeType } from '@/entities/asset'
@@ -39,6 +46,14 @@ export function AssetTradeDialog({
   const { t } = useTranslation('asset')
   const { t: tc } = useTranslation('common')
   const createMut = useCreateTrade()
+  const { data: assetsData } = useAssets()
+  // 결제 계좌 후보 — 이 증권계좌 자신은 뺀다(예수금 경로와 같아진다).
+  const settlementOptions = useMemo(
+    () => (assetsData?.assets ?? []).filter(
+      a => a.rowId !== asset.rowId && a.assetType !== 'CREDIT_CARD' && a.assetType !== 'CHECK_CARD',
+    ),
+    [assetsData, asset.rowId],
+  )
 
   const [type, setType] = useState<Exclude<TradeType, 'OPENING'>>(
     defaultType === 'SELL' ? 'SELL' : 'BUY',
@@ -48,6 +63,8 @@ export function AssetTradeDialog({
   const [fee, setFee] = useState('')
   const [tradeDate, setTradeDate] = useState(() => new Date().toISOString().slice(0, 16))
   const [description, setDescription] = useState('')
+  // 결제 계좌 — 비우면 증권계좌 예수금에서. 예수금을 따로 관리하지 않으면 통장을 고른다.
+  const [settlementAssetRowId, setSettlementAssetRowId] = useState<number | null>(null)
 
   const isSell = type === 'SELL'
   // 종목 식별자 — 연동은 토스 종목코드, 미연동은 항목명. 보유 목록은 편집할 때마다
@@ -75,10 +92,12 @@ export function AssetTradeDialog({
     return amountNum - feeNum - soldCost
   }, [isSell, holding.totalCost, heldQty, qty, amountNum, feeNum])
 
+  // 예수금으로 살 때만 잔액을 본다 — 결제 계좌는 마이너스를 막지 않는다(서버도 같은 규칙).
+  const viaCash = settlementAssetRowId == null
   const canSubmit =
     holdingKey.length > 0 && qty > 0 && amountNum > 0 &&
     (!isSell || qty <= heldQty) &&
-    (isSell || cashAfter >= 0)
+    (isSell || !viaCash || cashAfter >= 0)
 
   const submit = () => {
     if (!canSubmit) return
@@ -94,6 +113,7 @@ export function AssetTradeDialog({
         fee: feeNum,
         tradeDate: `${tradeDate}:00`,
         description: description.trim() || undefined,
+        settlementAssetRowId,
       },
       {
         onSuccess: () => {
@@ -182,6 +202,29 @@ export function AssetTradeDialog({
       </Field>
 
       <Field className="mb-[14px]">
+        <FieldLabel>{t('trade.settlement')}</FieldLabel>
+        <Select
+          value={settlementAssetRowId != null ? String(settlementAssetRowId) : '__cash__'}
+          onValueChange={v => setSettlementAssetRowId(v === '__cash__' ? null : Number(v))}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__cash__">{t('trade.settlementCash')}</SelectItem>
+            {settlementOptions.map(a => (
+              <SelectItem key={a.rowId} value={String(a.rowId)}>
+                {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="mt-1.5 text-[11.5px] text-[var(--fg-tertiary)]">
+          {viaCash ? t('trade.settlementCashHelp') : t('trade.settlementAccountHelp')}
+        </div>
+      </Field>
+
+      <Field className="mb-[14px]">
         <FieldLabel>{t('trade.date')}</FieldLabel>
         <Input type="datetime-local" value={tradeDate} onChange={e => setTradeDate(e.target.value)} />
       </Field>
@@ -202,12 +245,14 @@ export function AssetTradeDialog({
         style={{ fontSize: 'var(--text-body-sm)' }}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[var(--fg-secondary)]">{t('trade.cashAfter')}</span>
+          <span className="text-[var(--fg-secondary)]">
+            {viaCash ? t('trade.cashAfter') : t('trade.settlementDelta')}
+          </span>
           <span
             className="num font-bold"
-            style={{ color: cashAfter < 0 ? 'var(--color-error)' : 'var(--fg-primary)' }}
+            style={{ color: viaCash && cashAfter < 0 ? 'var(--color-error)' : 'var(--fg-primary)' }}
           >
-            {KRW(cashAfter)}원
+            {viaCash ? `${KRW(cashAfter)}원` : `${cashDelta >= 0 ? '+' : '−'}${KRW(Math.abs(cashDelta))}원`}
           </span>
         </div>
         {realizedPreview != null && (
@@ -221,7 +266,7 @@ export function AssetTradeDialog({
             </span>
           </div>
         )}
-        {!isSell && cashAfter < 0 && (
+        {!isSell && viaCash && cashAfter < 0 && (
           <div className="mt-1.5 text-[11.5px]" style={{ color: 'var(--color-error)' }}>
             {t('trade.insufficientCash')}
           </div>
