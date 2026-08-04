@@ -15,8 +15,6 @@ export {
   useAssetTransfers,
   useCreateTransfer,
   useDeleteTransfer,
-  useLinkTossSymbol,
-  useUnlinkTossSymbol,
 } from './model/useAssets'
 export {
   useTossValuationMap,

@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
-import { AssetLogo, HOLDING_UNIT_KEY, type Asset, type AssetHolding } from '@/entities/asset'
+import { AssetLogo, HOLDING_UNIT_KEY, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
@@ -578,13 +578,15 @@ function HoldingRow({
     if (currency === 'KRW') return v
     return fx != null && fx > 0 ? v * fx : null
   }
+  // 수량은 정밀도 때문에 문자열로 온다 — 표시·미리보기 계산에서만 숫자로 푼다(저장은 서버 몫).
+  const qty = qtyNumber(holding.quantity) ?? 0
   let value: number | null = null
   let changePct: number | null = null
   let priceLabel: string | null = null
   if (holding.linked) {
     if (live && price) {
       const krw = toKrw(price.price, price.currency)
-      if (krw != null) value = Math.round(krw * (holding.quantity ?? 0))
+      if (krw != null) value = Math.round(krw * qty)
       priceLabel =
         price.currency === 'USD' ? `$${price.price.toLocaleString()}` : `${KRW(price.price)}원`
       if (prevClose != null && prevClose > 0) {
@@ -597,13 +599,13 @@ function HoldingRow({
 
   // 미연동도 수량을 적어뒀으면 함께 보여준다 — 단위는 유형을 따른다(주/g/개).
   const manualQty =
-    !holding.linked && holding.quantity != null && holding.quantity > 0
-      ? `${holding.quantity.toLocaleString()}${t(HOLDING_UNIT_KEY[holding.holdingType ?? 'STOCK'])}`
+    !holding.linked && qty > 0
+      ? `${qty.toLocaleString()}${t(HOLDING_UNIT_KEY[holding.holdingType ?? 'STOCK'])}`
       : null
   const sub = holding.linked
     ? live && priceLabel
-      ? t('holdings.linkedSub', { n: (holding.quantity ?? 0).toLocaleString(), price: priceLabel })
-      : t('holdings.linkedPending', { n: (holding.quantity ?? 0).toLocaleString() })
+      ? t('holdings.linkedSub', { n: qty.toLocaleString(), price: priceLabel })
+      : t('holdings.linkedPending', { n: qty.toLocaleString() })
     : manualQty
       ? `${manualQty} · ${t('holdings.manualSub')}`
       : t('holdings.manualSub')
