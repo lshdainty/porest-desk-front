@@ -775,7 +775,10 @@ export function AssetDetailDialog({
   const investValMap = useInvestValuation(investAssets)
   const investVal = isInv ? investValMap.get(asset.rowId) ?? null : null
 
-  const heroAmount = investVal != null ? Math.abs(investVal.value) : absBalance
+  // 라이브 평가는 '보유분'만 — 예수금을 더해야 계좌 총액이다.
+  const investCash = isInv ? asset.cashBalance ?? 0 : 0
+  const investHolding = investVal != null ? investVal.value : asset.holdingBalance ?? 0
+  const heroAmount = investVal != null ? Math.abs(investCash + investVal.value) : absBalance
   // CREDIT_CARD 는 신판 카드 상세 본문(CardDetailBody) — 회차 히어로가 금액을 담당.
   const isCredit = asset.assetType === 'CREDIT_CARD'
 
@@ -895,6 +898,19 @@ export function AssetDetailDialog({
                 </HideUnit>
               )}
             </div>
+            {/* 예수금·평가금액 — 실제 증권 계좌처럼 나눠 보여 준다(예수금이 있을 때만). */}
+            {isInv && investCash !== 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
+                <span className="num">
+                  {t('holdings.cashBalance')} <MaskAmount>{KRW(investCash)}</MaskAmount>
+                </span>
+                <span className="dot-sep" />
+                <span className="num">
+                  {t('holdings.holdingBalance')} <MaskAmount>{KRW(investHolding)}</MaskAmount>
+                </span>
+              </div>
+            )}
+
             {/* 투자 등락 — design: "+N% · 오늘 ±N원" (+빨강/−파랑 국내 통념) */}
             {investVal?.changePct != null && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, fontSize: 'var(--text-label-sm)' }}>

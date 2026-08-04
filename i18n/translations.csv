@@ -2351,6 +2351,8 @@ settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo ta
 calendar,labels.usage,{{count}}건에 사용 중,Used by {{count}} events
 asset,holdings.sectionTitle,보유 종목,Holdings
 asset,holdings.countLabel,보유 {{n}}종목,{{n}} holdings
+asset,holdings.cashBalance,예수금,Cash
+asset,holdings.holdingBalance,평가금액,Holdings
 asset,holdings.emptySub,보유 종목 없음,No holdings
 asset,holdings.firstAndMore,{{name}} 외 {{n}}종목,{{name}} and {{n}} more
 asset,holdings.linkedSub,{{n}}주 · 현재가 {{price}} 연동,{{n}} shares · live at {{price}}
