@@ -1495,6 +1495,7 @@ expense,txDetail.countItems,{{count}}개,{{count}}
 expense,txDetail.recurring,반복 설정,Recurring
 expense,txDetail.linked,연결됨,Linked
 expense,txDetail.dutchPay,더치페이,Dutch Pay
+expense,txDetail.refund,환불,Refund
 expense,txDetail.countCases,{{count}}건,{{count}}
 expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}

@@ -37,6 +37,8 @@ export interface Expense {
   paymentMethod: string | null
   /** 할부 개월 (null = 일시불). 신용카드 결제에만 의미. */
   installmentMonths: number | null
+  /** 환불 원거래 행 아이디 (null = 환불 아님). 수입이면서 이 값이 있으면 지출 상계로 집계. */
+  refundOfExpenseRowId: number | null
   calendarEventRowId: number | null
   todoRowId: number | null
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
@@ -57,6 +59,8 @@ export interface ExpenseFormValues {
   paymentMethod?: string
   /** 할부 개월 (미전달·1 = 일시불). 신용카드 결제에만 의미. */
   installmentMonths?: number | null
+  /** 환불 원거래 행 아이디. 이 연결이 통계 상계를 만든다(수입으로 부풀지 않는다). */
+  refundOfExpenseRowId?: number | null
   calendarEventRowId?: number
   todoRowId?: number
   /**

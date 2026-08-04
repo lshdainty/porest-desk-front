@@ -64,6 +64,12 @@ type Props = {
   expense?: Expense | null
   /** 신규 생성 시 기본 날짜(yyyy-MM-dd). 미지정이면 오늘. expense가 있으면 무시. */
   defaultDate?: string
+  /**
+   * 환불 모드 — 이 지출의 환불을 기록한다.
+   * 수입으로 들어가되 원거래에 묶여 통계에서 지출을 상계한다(수입으로 부풀지 않는다).
+   * 카테고리·자산·가맹점은 원거래를 승계하고 금액만 고치면 된다(부분 환불).
+   */
+  refundOf?: Expense | null
 }
 
 const todayLocal = () => {
@@ -85,7 +91,7 @@ const extractTime = (s?: string | null) => {
   return m ? m[1] : null
 }
 
-export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
+export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: Props) {
   const { t } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
   const isEdit = !!expense
@@ -110,11 +116,17 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const categories: ExpenseCategory[] = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
   const assets: Asset[] = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data])
 
-  // 타입
-  const [type, setType] = useState<TxType>(expense?.expenseType ?? 'EXPENSE')
+  const isRefundMode = !!refundOf && !isEdit
+
+  // 타입 — 환불은 수입으로 들어간다(원거래 연결이 상계를 만든다)
+  const [type, setType] = useState<TxType>(
+    isRefundMode ? 'INCOME' : (expense?.expenseType ?? 'EXPENSE'),
+  )
 
   // 공통 필드
-  const [amount, setAmount] = useState<string>(expense?.amount ? String(expense.amount) : '')
+  const [amount, setAmount] = useState<string>(
+    expense?.amount ? String(expense.amount) : (refundOf ? String(refundOf.amount) : ''),
+  )
   const [description, setDescription] = useState(expense?.description ?? '')
   const [expenseDate, setExpenseDate] = useState<string>(
     expense?.expenseDate ? expense.expenseDate.slice(0, 10) : (defaultDate ?? todayLocal()),
@@ -122,7 +134,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   const [expenseTime, setExpenseTime] = useState<string>(
     () => extractTime(expense?.expenseDate) ?? nowTimeLocal(),
   )
-  const [merchant, setMerchant] = useState(expense?.merchant ?? '')
+  const [merchant, setMerchant] = useState(expense?.merchant ?? refundOf?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
   // 할부 개월 — 신용카드 결제에만 의미. '' = 일시불.
   const [installmentMonths, setInstallmentMonths] = useState<string>(
@@ -130,8 +142,12 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
   )
 
   // EXPENSE/INCOME 전용
-  const [categoryRowId, setCategoryRowId] = useState<number | null>(expense?.categoryRowId ?? null)
-  const [assetRowId, setAssetRowId] = useState<number | null>(expense?.assetRowId ?? null)
+  const [categoryRowId, setCategoryRowId] = useState<number | null>(
+    expense?.categoryRowId ?? refundOf?.categoryRowId ?? null,
+  )
+  const [assetRowId, setAssetRowId] = useState<number | null>(
+    expense?.assetRowId ?? refundOf?.assetRowId ?? null,
+  )
 
   // TRANSFER 전용
   const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(null)
@@ -329,6 +345,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate }: Props) {
       paymentMethod: paymentMethod || undefined,
       // 할부는 신용카드 지출에만 — 그 밖의 조합에선 값을 흘리지 않는다.
       installmentMonths: showInstallment && installmentMonths ? Number(installmentMonths) : null,
+      // 환불 모드에서만 원거래를 묶는다 — 이 연결이 통계 상계를 만든다.
+      refundOfExpenseRowId: isRefundMode && type === 'INCOME' ? refundOf.rowId : null,
       // 일치화한 분할이 있으면 금액과 함께 원자적으로 교체(백엔드가 합==금액 검증).
       ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
     }

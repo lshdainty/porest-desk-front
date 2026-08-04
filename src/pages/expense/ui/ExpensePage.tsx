@@ -447,6 +447,8 @@ function ExpenseCalendar({
   // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
+  const [refunding, setRefunding] = useState<Expense | null>(null)
   // 일별 drawer '거래 추가' → 그 날짜 seed 로 신규 AddTxSheet.
   const [addSeedDate, setAddSeedDate] = useState<string | null>(null)
   const dayItems = useMemo(() => {
@@ -495,6 +497,7 @@ function ExpenseCalendar({
           mobile={mobile}
           onClose={() => setDetail(null)}
           onEdit={(e) => { setDetail(null); setEditing(e) }}
+          onRefund={(e) => { setDetail(null); setRefunding(e) }}
         />
       )}
       {editing && (
@@ -1041,6 +1044,8 @@ function EditableList({
   // detail: 상세 보기, editing: 편집 폼
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
+  const [refunding, setRefunding] = useState<Expense | null>(null)
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
 
@@ -1071,6 +1076,10 @@ function EditableList({
             setDetail(null)
             setEditing(e)
           }}
+          onRefund={(e) => {
+            setDetail(null)
+            setRefunding(e)
+          }}
         />
       )}
       {editing && (
@@ -1078,6 +1087,13 @@ function EditableList({
           expense={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {refunding && (
+        <AddTxSheet
+          refundOf={refunding}
+          mobile={mobile}
+          onClose={() => setRefunding(null)}
         />
       )}
     </>
@@ -1219,6 +1235,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
+  const [refunding, setRefunding] = useState<Expense | null>(null)
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
 
@@ -1568,10 +1586,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           mobile
           onClose={() => setDetail(null)}
           onEdit={(e) => { setDetail(null); setEditing(e) }}
+          onRefund={(e) => { setDetail(null); setRefunding(e) }}
         />
       )}
       {editing && (
         <AddTxSheet expense={editing} mobile onClose={() => setEditing(null)} />
+      )}
+      {refunding && (
+        <AddTxSheet refundOf={refunding} mobile onClose={() => setRefunding(null)} />
       )}
       {transferDetail && (
         <TransferDetailDialog
