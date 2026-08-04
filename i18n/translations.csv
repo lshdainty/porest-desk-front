@@ -520,10 +520,10 @@ asset,editDialog.newCard,새 카드,New Card
 asset,editDialog.newInvest,새 투자 상품,New Investment
 asset,editDialog.newAccount,새 계좌,New Account
 asset,editDialog.previewSub,{{brand}} · 미리보기,{{brand}} · Preview
-asset,editDialog.nameLabelInvest,상품·종목명,Product/Ticker Name
+asset,editDialog.nameLabelInvest,별칭,Alias
 asset,editDialog.nameLabelCard,별칭 (선택),Alias (optional)
 asset,editDialog.nameLabelAccount,별칭,Alias
-asset,editDialog.namePlaceholderInvest,"예: KODEX 200, 해외 ETF 포트폴리오","e.g. KODEX 200, Overseas ETF Portfolio"
+asset,editDialog.namePlaceholderInvest,"예: 연금저축, 금 보유분","e.g. Pension savings, Gold holdings"
 asset,editDialog.namePlaceholderCard,예: 신한 Deep Dream,e.g. Shinhan Deep Dream
 asset,editDialog.namePlaceholderAccount,예: 신한 주거래,e.g. Shinhan Main Account
 asset,editDialog.balanceLabelCard,현재 사용액 (원),Current Usage (KRW)
