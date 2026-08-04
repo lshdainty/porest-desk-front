@@ -24,22 +24,26 @@ import {
   BANK_ENTRIES_BY_CATEGORY,
   BANK_CATEGORY_ORDER,
   INVEST_CATEGORIES,
+  CATEGORY_HOLDING_TYPE,
   type BankCategory,
   type BankEntry,
 } from '@/shared/lib/porest/bank-colors'
 
 const INVEST_CATEGORY_SET = new Set<BankCategory>(INVEST_CATEGORIES)
 
-const CATEGORY_LABEL: Record<BankCategory, string> = {
-  '시중은행': '시중은행',
-  '인터넷은행': '인터넷은행',
-  '지방은행': '지방은행',
-  '특수은행': '특수은행',
-  '저축기관': '저축기관',
-  '외국계': '외국계',
-  '증권사': '증권사',
-  '가상자산': '가상자산거래소',
-  '기타': '기타',
+/** 기관 분류 라벨 키 — 카테고리 자체는 한국 금융권 분류라 한글이 원문이지만,
+ *  화면 라벨은 로케일을 따른다(영어 사용자에게 '시중은행' 이 그대로 나오면 안 된다). */
+const CATEGORY_LABEL_KEY: Record<BankCategory, string> = {
+  '시중은행': 'editDialog.category.commercialBank',
+  '인터넷은행': 'editDialog.category.internetBank',
+  '지방은행': 'editDialog.category.localBank',
+  '특수은행': 'editDialog.category.specialBank',
+  '저축기관': 'editDialog.category.savingsInstitution',
+  '외국계': 'editDialog.category.foreignBank',
+  '기타': 'editDialog.category.other',
+  '증권사': 'editDialog.category.brokerage',
+  '상품거래소': 'editDialog.category.commodityExchange',
+  '가상자산': 'editDialog.category.cryptoExchange',
 }
 import { useCardCatalogs } from '@/features/card-catalog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -386,6 +390,18 @@ export function AssetEditDialog({
     () => getBrandColor(cardCompanyName, selectedCard?.cardName),
     [cardCompanyName, selectedCard?.cardName],
   )
+  // 기관이 보유 유형을 정한다 — 증권사에서 코인을, 금거래소에서 주식을 담을 일은 없다.
+  // 모르는 기관(직접 입력·구버전 데이터)이면 셋 다 열어 둔다.
+  const brandHoldingType = useMemo<HoldingType | null>(() => {
+    const cat = BANK_ENTRIES.find(e => e.name === brand)?.category
+    return cat ? (CATEGORY_HOLDING_TYPE[cat] ?? null) : null
+  }, [brand])
+  const allowStock = brandHoldingType === null || brandHoldingType === 'STOCK'
+  const manualAddTypes = useMemo<HoldingType[]>(() => {
+    if (brandHoldingType === null) return ['GOLD', 'CRYPTO']
+    return brandHoldingType === 'STOCK' ? [] : [brandHoldingType]
+  }, [brandHoldingType])
+
   const brandColor = useMemo(() => {
     if (editingGroup === 'card') return cardBrandColor
     return getBrandColor(brand)
@@ -776,7 +792,7 @@ export function AssetEditDialog({
                       {investFilteredByCategory.map(([cat, list]) => (
                         <div key={cat}>
                           <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                            {CATEGORY_LABEL[cat]}
+                            {t(CATEGORY_LABEL_KEY[cat])}
                           </div>
                           <div className="flex flex-wrap gap-1.5 px-3 pb-2">
                             {list.map(e => {
@@ -900,20 +916,22 @@ export function AssetEditDialog({
                   {t('holdings.editSummary', { n: holdings.length, total: KRW(holdingsTotal) })}
                 </span>
               </div>
-              <div className="relative mb-1">
-                <Search
-                  size={14}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-                />
-                <Input
-                  search
-                  value={stockQ}
-                  onChange={e => setStockQ(e.target.value)}
-                  placeholder={t('holdings.searchPlaceholder')}
-                  className="pl-9"
-                />
-              </div>
-              {stockQ.trim().length > 0 && (
+              {allowStock && (
+                <div className="relative mb-1">
+                  <Search
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
+                  />
+                  <Input
+                    search
+                    value={stockQ}
+                    onChange={e => setStockQ(e.target.value)}
+                    placeholder={t('holdings.searchPlaceholder')}
+                    className="pl-9"
+                  />
+                </div>
+              )}
+              {allowStock && stockQ.trim().length > 0 && (
                 <div
                   className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] mb-2"
                   style={{ maxHeight: 240, overflowY: 'auto' }}
@@ -987,9 +1005,10 @@ export function AssetEditDialog({
                   </button>
                 </div>
               )}
-              {/* 금·코인은 검색 대상이 아니다(토스·마스터 모두 미제공) — 직접 추가로만 담는다. */}
+              {/* 금·코인은 검색 대상이 아니다(토스·마스터 모두 미제공) — 직접 추가로만 담는다.
+                  기관이 유형을 정하므로 증권사면 아무것도 안 뜬다(주식은 위 검색으로 담는다). */}
               <div className="flex gap-1.5 mb-1">
-                {(['GOLD', 'CRYPTO'] as HoldingType[]).map(type => (
+                {manualAddTypes.map(type => (
                   <Button
                     key={type}
                     type="button"
@@ -1009,7 +1028,7 @@ export function AssetEditDialog({
               </div>
               {holdings.length === 0 ? (
                 <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5 leading-relaxed">
-                  {t('holdings.editEmptyHelp')}
+                  {allowStock ? t('holdings.editEmptyHelp') : t('holdings.editEmptyHelpManual')}
                 </p>
               ) : (
                 <div>

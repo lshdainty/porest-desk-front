@@ -567,7 +567,17 @@ asset,editDialog.linkedAccountHelp,이 카드로 결제하면 이 계좌에서 �
 asset,editDialog.brokerExchange,증권사·거래소,Brokerage/Exchange
 asset,editDialog.institutionBrand,기관·브랜드,Institution/Brand
 asset,editDialog.totalCount,총 {{count}}개,{{count}} total
-asset,editDialog.investSearchPlaceholder,증권사·가상자산거래소 검색,Search brokerage/crypto exchange
+asset,editDialog.investSearchPlaceholder,증권사·상품거래소·가상자산거래소 검색,Search brokerage/commodity/crypto exchange
+asset,editDialog.category.commercialBank,시중은행,Commercial bank
+asset,editDialog.category.internetBank,인터넷은행,Internet bank
+asset,editDialog.category.localBank,지방은행,Local bank
+asset,editDialog.category.specialBank,특수은행,Special bank
+asset,editDialog.category.savingsInstitution,저축기관,Savings institution
+asset,editDialog.category.foreignBank,외국계,Foreign bank
+asset,editDialog.category.other,기타,Other
+asset,editDialog.category.brokerage,증권사,Brokerage
+asset,editDialog.category.commodityExchange,상품거래소,Commodity exchange
+asset,editDialog.category.cryptoExchange,가상자산거래소,Crypto exchange
 asset,editDialog.bankSearchPlaceholder,은행명 검색,Search bank name
 asset,editDialog.noSearchResults,검색 결과가 없어요,No search results
 asset,editDialog.accountTypeLabel,계좌 종류,Account Type
@@ -2349,6 +2359,7 @@ asset,holdings.editSummary,{{n}}종목 · {{total}}원,{{n}} holdings · ₩{{to
 asset,holdings.searchPlaceholder,"종목명·티커 검색 후 추가 (예: 삼성전자, NVDA)","Search name/ticker to add (e.g. Samsung, NVDA)"
 asset,holdings.addManual,"""{{name}}"" 직접 추가 — 평가액 입력","Add ""{{name}}"" manually — enter value"
 asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
+asset,holdings.editEmptyHelpManual,"위 버튼으로 보유분을 추가하세요. 시세 연동이 없어 평가액은 직접 입력합니다.",Add your holdings with the button above. No live price — enter the value yourself.
 asset,holdings.linkedBadge,연동,Linked
 asset,holdings.editLinkedSub,현재가 × 수량 연동,Live price × quantity
 asset,holdings.sharesUnitShort,주,sh
