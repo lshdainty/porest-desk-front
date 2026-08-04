@@ -33,7 +33,9 @@ export interface CardCatalogSummary {
   launchDate: string | null
   imgUrl: string | null
   detailUrl: string | null
-  annualFee: CardAnnualFee
+  /** 연회비 정보가 없으면 null. amount=0 은 '0원'이지 '모름'이 아니다 —
+   *  백엔드가 amount=0 이고 label 도 없을 때만 null 로 내린다. */
+  annualFee: CardAnnualFee | null
   performance: CardPerformanceMeta
 }
 

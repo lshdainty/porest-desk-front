@@ -255,8 +255,11 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
                         </div>
                         <div className="truncate text-[11.5px] text-[var(--fg-tertiary)] mt-0.5">
                           {c.company?.name ?? '—'} · {c.cardType === 'CREDIT' ? t('cardTypeShort.credit') : t('cardTypeShort.check')}
-                          {c.annualFee.amount > 0 && (
-                            <> · {t('editDialog.annualFeeValue', { amount: KRW(c.annualFee.amount) })}</>
+                          {/* 연회비 정보가 없으면(null) 생략, 0원이면 '무료'. */}
+                          {c.annualFee && (
+                            c.annualFee.amount > 0
+                              ? <> · {t('editDialog.annualFeeValue', { amount: KRW(c.annualFee.amount) })}</>
+                              : <> · {t('editDialog.annualFeeFree')}</>
                           )}
                         </div>
                       </div>

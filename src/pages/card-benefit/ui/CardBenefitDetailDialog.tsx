@@ -29,10 +29,14 @@ function formatKRW(n: number) {
   return new Intl.NumberFormat('ko-KR').format(n)
 }
 
-/** 연회비 표기: amount>0 → "국내전용 N원", 0/null → label ?? "없음". */
+/**
+ * 연회비 표기 — "정보 없음"과 "무료"를 구분한다(CardBenefitPage 와 같은 규칙).
+ * annualFee 가 null 이면 백엔드가 "연회비 정보를 모른다"고 알려준 것이다.
+ */
 function annualFeeText(s: CardCatalogSummary, t: TFunction) {
+  if (!s.annualFee) return t('benefit.feeUnknown')
   if (s.annualFee.amount > 0) return t('benefit.annualFeeDomestic', { amount: formatKRW(s.annualFee.amount) })
-  return s.annualFee.label ?? t('benefit.feeNone')
+  return s.annualFee.label ?? t('benefit.feeFree')
 }
 
 /** 전월 실적 표기: isRequired==='Y' → requiredText ?? "N원 이상", 아니면 "실적 무관". */
