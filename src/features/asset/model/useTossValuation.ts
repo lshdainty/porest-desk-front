@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
-import type { Asset, AssetHolding } from '@/entities/asset'
+import { qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 
 /** 투자 자산의 라이브 평가 요약 — value(평가액), changeAmt/changePct(전일 대비, 연동 종목만). */
 export interface InvestValuation {
@@ -17,7 +17,8 @@ export interface InvestValuation {
 export function holdingsOf(a: Asset): AssetHolding[] {
   if (a.holdings && a.holdings.length > 0) return a.holdings
   if (a.tossSymbol && a.tossQuantity != null) {
-    return [{ linked: true, tossSymbol: a.tossSymbol, quantity: a.tossQuantity }]
+    // tossQuantity 는 구버전 bigint 컬럼(정수) — 문자열 수량 계약에 맞춰 넘긴다.
+    return [{ linked: true, tossSymbol: a.tossSymbol, quantity: String(a.tossQuantity) }]
   }
   return []
 }
@@ -81,7 +82,8 @@ export function useInvestValuation(investAssets: Asset[]): Map<number, InvestVal
       for (const h of hs) {
         if (h.linked && h.tossSymbol) {
           const info = infoBySymbol.get(h.tossSymbol)
-          const qty = h.quantity ?? 0
+          // 수량은 문자열(BigDecimal 계약) — 화면 표시용 합계라 여기서만 숫자로 푼다.
+          const qty = qtyNumber(h.quantity) ?? 0
           const krw = info ? toKrw(info.price, info.currency) : null
           if (krw == null) {
             complete = false

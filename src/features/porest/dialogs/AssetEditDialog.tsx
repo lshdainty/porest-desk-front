@@ -54,6 +54,7 @@ import {
   HOLDING_TYPES,
   sanitizeQty,
   qtyNumber,
+  normalizeQty,
   type AssetType,
   type AssetUpdateFormValues,
   type YNType,
@@ -206,7 +207,7 @@ export function AssetEditDialog({
         holdingType: h.holdingType ?? 'STOCK',
         linked: h.linked,
         tossSymbol: h.tossSymbol ?? undefined,
-        quantity: h.quantity != null ? String(h.quantity) : undefined,
+        quantity: h.quantity ?? undefined,
         holdingName: h.holdingName ?? undefined,
         holdingValue: h.holdingValue ?? undefined,
       }))
@@ -514,18 +515,20 @@ export function AssetEditDialog({
         h => h.linked || (h.holdingName ?? '').trim().length > 0,
       )
       // 미연동도 수량을 함께 보낸다 — 시세가 없어도 몇 주·몇 g 인지는 남긴다(선택 입력).
+      // 수량은 숫자로 바꾸지 않고 문자열 그대로 — 서버가 BigDecimal 로 받아 자릿수를 잃지 않는다.
       const holdingsPayload: AssetHolding[] = filledHoldings.map((h, i) => ({
         rowId: h.rowId,
         holdingType: h.holdingType,
         linked: h.linked,
         tossSymbol: h.linked ? h.tossSymbol ?? null : null,
-        quantity: h.linked ? qtyNumber(h.quantity) ?? 0 : qtyNumber(h.quantity),
+        quantity: h.linked ? normalizeQty(h.quantity) ?? '0' : normalizeQty(h.quantity),
         holdingName: h.linked ? null : h.holdingName ?? '',
         holdingValue: h.linked ? null : h.holdingValue ?? 0,
         sortOrder: i,
       }))
-      // 보유가 있으면 balance = 평가 가능분 합(연동 시세 미확보는 0 대신 제외된 합) — 서버 스냅샷용.
-      const investBalance = filledHoldings.length > 0 ? holdingsTotal : parsedBalance
+      // 보유가 있으면 balance 를 아예 보내지 않는다 — 서버가 시세×수량을 BigDecimal 로 산정한다.
+      // 화면 합계(holdingsTotal)는 미리보기일 뿐 DB 에 남는 금액이 아니다.
+      const investBalance = filledHoldings.length > 0 ? undefined : parsedBalance
       const common = {
         assetName: resolvedName,
         assetType: 'INVESTMENT' as AssetType,

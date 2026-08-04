@@ -23,8 +23,12 @@ export interface AssetHolding {
   holdingType?: HoldingType
   linked: boolean
   tossSymbol?: string | null
-  /** 코인 0.05·금 3.75g 등 소수 허용. 미연동도 기록 가능(선택) */
-  quantity?: number | null
+  /**
+   * 코인 0.05·금 3.75g 등 소수 허용. 미연동도 기록 가능(선택).
+   * 서버는 decimal(28,8)/BigDecimal 이고 JS number 는 십진 소수를 정확히 담지 못한다 —
+   * 왕복 정밀도를 지키려 문자열로 주고받는다(Jackson 이 문자열→BigDecimal 로 받는다).
+   */
+  quantity?: string | null
   holdingName?: string | null
   holdingValue?: number | null
   sortOrder?: number
@@ -62,7 +66,8 @@ export interface Asset {
 export interface AssetFormValues {
   assetName: string
   assetType: AssetType
-  balance: number
+  /** 미전달 = 서버 산정. 투자+holdings 는 서버가 평가액을 BigDecimal 로 잡으므로 보내지 않는다 */
+  balance?: number
   currency?: string
   color?: string
   institution?: string
@@ -80,7 +85,8 @@ export interface AssetFormValues {
 export interface AssetUpdateFormValues {
   assetName: string
   assetType: AssetType
-  balance: number
+  /** 미전달 = 기존 잔액 유지(투자+holdings 는 서버 산정) */
+  balance?: number
   currency?: string
   color?: string
   institution?: string
