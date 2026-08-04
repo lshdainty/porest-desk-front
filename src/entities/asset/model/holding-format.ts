@@ -50,3 +50,27 @@ export function normalizeQty(q?: string | null): string | null {
   if (s.startsWith('.')) s = `0${s}`
   return /^\d+(\.\d+)?$/.test(s) ? s : null
 }
+
+/** 유형별 수량 표시 소수 자릿수 — 코인은 잘게 쪼개 사니 8자리까지 보여준다(0.00012345 BTC). */
+const QTY_MAX_DECIMALS: Record<HoldingType, number> = {
+  STOCK: 3,
+  GOLD: 3,
+  CRYPTO: 8,
+}
+
+/**
+ * 보유 수량 표시 — 천단위 콤마 + 유형별 소수 자릿수(뒤 0 은 생략).
+ *
+ * 문자열을 그대로 다듬는다(숫자 파싱 없음) — `toLocaleString` 은 기본 3자리에서 끊어
+ * `0.00012345 BTC` 를 `0` 으로 보여주고, number 로 바꾸는 순간 자릿수도 흔들린다.
+ */
+export function formatQty(q?: string | null, type: HoldingType = 'STOCK'): string {
+  const s = (q ?? '').trim()
+  if (!s) return '0'
+  const neg = s.startsWith('-')
+  const [intRaw = '0', fracRaw = ''] = (neg ? s.slice(1) : s).split('.')
+  const int = (intRaw || '0').replace(/^0+(?=\d)/, '')
+  const frac = fracRaw.slice(0, QTY_MAX_DECIMALS[type]).replace(/0+$/, '')
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return `${neg ? '-' : ''}${grouped}${frac ? `.${frac}` : ''}`
+}

@@ -4,7 +4,8 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
-import { AssetLogo, HOLDING_UNIT_KEY, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
+import { AssetLogo, HOLDING_UNIT_KEY,
+  formatQty, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
 import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
@@ -597,15 +598,17 @@ function HoldingRow({
     value = holding.holdingValue ?? 0
   }
 
+  // 수량 표기는 문자열을 그대로 다듬는다 — 코인은 8자리까지(0.00012345 BTC 가 0 으로 보이지 않게).
+  const qtyLabel = formatQty(holding.quantity, holding.holdingType ?? 'STOCK')
   // 미연동도 수량을 적어뒀으면 함께 보여준다 — 단위는 유형을 따른다(주/g/개).
   const manualQty =
     !holding.linked && qty > 0
-      ? `${qty.toLocaleString()}${t(HOLDING_UNIT_KEY[holding.holdingType ?? 'STOCK'])}`
+      ? `${qtyLabel}${t(HOLDING_UNIT_KEY[holding.holdingType ?? 'STOCK'])}`
       : null
   const sub = holding.linked
     ? live && priceLabel
-      ? t('holdings.linkedSub', { n: qty.toLocaleString(), price: priceLabel })
-      : t('holdings.linkedPending', { n: qty.toLocaleString() })
+      ? t('holdings.linkedSub', { n: qtyLabel, price: priceLabel })
+      : t('holdings.linkedPending', { n: qtyLabel })
     : manualQty
       ? `${manualQty} · ${t('holdings.manualSub')}`
       : t('holdings.manualSub')

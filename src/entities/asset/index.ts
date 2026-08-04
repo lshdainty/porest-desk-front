@@ -1,5 +1,5 @@
 export { AssetLogo } from './ui/asset-logo'
-export { HOLDING_UNIT_KEY, HOLDING_TYPES, sanitizeQty, qtyNumber, normalizeQty } from './model/holding-format'
+export { HOLDING_UNIT_KEY, HOLDING_TYPES, sanitizeQty, qtyNumber, normalizeQty, formatQty } from './model/holding-format'
 export type {
   AssetType,
   YNType,
