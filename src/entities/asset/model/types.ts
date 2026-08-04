@@ -174,6 +174,10 @@ export interface AssetTransfer {
   toAssetName: string
   amount: number
   fee: number
+  /** 이자 (대출 상환 시). amount 중 이 금액은 부채를 줄이지 않고 지출로 잡힌다. */
+  interestAmount: number
+  /** 원금 = amount − interestAmount. 입금 자산(대출)에 실제로 반영된 금액. */
+  principalAmount: number
   description: string | null
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
   transferDate: string
@@ -185,6 +189,8 @@ export interface AssetTransferFormValues {
   toAssetRowId: number
   amount: number
   fee?: number
+  /** 이자 (대출 상환 시). 상환액 중 이자 몫 — 부채는 amount − interestAmount 만큼만 줄어든다. */
+  interestAmount?: number
   description?: string
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
   transferDate: string
