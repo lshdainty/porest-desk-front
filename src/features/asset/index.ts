@@ -15,6 +15,9 @@ export {
   useAssetTransfers,
   useCreateTransfer,
   useDeleteTransfer,
+  useCreateTrade,
+  useAssetTrades,
+  useDeleteTrade,
 } from './model/useAssets'
 export {
   useTossValuationMap,

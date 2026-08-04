@@ -12,6 +12,8 @@ import type {
   AssetBalancePoint,
   CardBilling,
   BillingItem,
+  AssetTrade,
+  AssetTradeFormValues,
 } from '@/entities/asset'
 
 export interface TransferListParams {
@@ -93,6 +95,23 @@ export const assetApi = {
 
   deleteTransfer: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/asset-transfer/${id}`)
+    return resp.data
+  },
+
+  createTrade: async (data: AssetTradeFormValues): Promise<AssetTrade> => {
+    const resp: ApiResponse<AssetTrade> = await apiClient.post('/v1/asset-trade', data)
+    return resp.data
+  },
+
+  getTrades: async (assetRowId: number): Promise<AssetTrade[]> => {
+    const resp: ApiResponse<AssetTrade[]> = await apiClient.get('/v1/asset-trades', {
+      params: { assetRowId },
+    })
+    return resp.data
+  },
+
+  deleteTrade: async (id: number): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.delete(`/v1/asset-trade/${id}`)
     return resp.data
   },
 }
