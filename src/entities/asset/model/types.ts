@@ -40,6 +40,10 @@ export interface Asset {
   assetName: string
   assetType: AssetType
   balance: number
+  /** 예수금·현금 잔액 (투자 계좌의 매수 대기 자금). balance = cashBalance + holdingBalance */
+  cashBalance: number
+  /** 보유 종목 평가금액. 보유가 없으면 0 */
+  holdingBalance: number
   currency: string
   /** 원화 환산율 (통화 1단위당 원화). KRW 는 1 — 순자산은 balance × 이 값으로 환산된다 */
   exchangeRate: number

@@ -1292,9 +1292,13 @@ function useAssetGroups() {
   }, [investValMap])
 
   const groups = useMemo(() => {
-    // 연결 종목은 토스 라이브 평가액(시세×수량)으로 balance 치환 → 목록·구성비·합계가 실시간 반영.
+    // 연결 종목은 토스 라이브 평가액(시세×수량)으로 치환 → 목록·구성비·합계가 실시간 반영.
+    // 라이브 평가는 '보유분'만이라 예수금을 더해야 총액이 된다(안 더하면 증권계좌에 넣어 둔
+    // 매수 대기 자금이 목록에서 통째로 빠진다).
     const list: Asset[] = (assetsQ.data?.assets ?? []).map(a =>
-      valMap.has(a.rowId) ? { ...a, balance: valMap.get(a.rowId)! } : a,
+      valMap.has(a.rowId)
+        ? { ...a, holdingBalance: valMap.get(a.rowId)!, balance: (a.cashBalance ?? 0) + valMap.get(a.rowId)! }
+        : a,
     )
     const accounts = list.filter(a => ACCOUNT_TYPES.includes(a.assetType))
     const cards = list.filter(a => CARD_TYPES.includes(a.assetType))
