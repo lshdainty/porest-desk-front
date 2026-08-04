@@ -605,6 +605,7 @@ function HoldingRow({
   live,
   first,
   onEdit,
+  onTrade,
 }: {
   holding: AssetHolding
   price: { price: number; currency: string } | null
@@ -613,6 +614,7 @@ function HoldingRow({
   live: boolean
   first: boolean
   onEdit?: () => void
+  onTrade?: (type: TradeType) => void
 }) {
   const { t } = useTranslation('asset')
   const { data: masterName } = useStockSymbolName(holding.linked ? holding.tossSymbol ?? '' : '')
@@ -704,6 +706,17 @@ function HoldingRow({
           </div>
         )}
       </div>
+      {/* 매수·매도 — 이 종목에 대한 사건. 종목이 정해진 자리라 다시 고를 필요가 없다. */}
+      {onTrade && (
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+          <Button variant="accent" size="xs" onClick={() => onTrade('BUY')}>
+            {t('trade.entryBuy')}
+          </Button>
+          <Button variant="accent" size="xs" onClick={() => onTrade('SELL')}>
+            {t('trade.entrySell')}
+          </Button>
+        </div>
+      )}
       {onEdit && <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />}
     </div>
   )
@@ -781,7 +794,8 @@ function TradeHistory({ assetRowId }: { assetRowId: number }) {
 
 function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () => void; mobile: boolean }) {
   const { t } = useTranslation('asset')
-  const [trade, setTrade] = useState<TradeType | null>(null)
+  // 매수·매도는 종목마다 연다 — 어떤 종목인지 정해진 채로 들어가야 다시 고를 일이 없다.
+  const [trade, setTrade] = useState<{ type: TradeType; holding: AssetHolding } | null>(null)
   const { data: features } = useMyFeatures()
   const live =
     (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
@@ -812,15 +826,6 @@ function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () 
           {t('holdings.sectionTitle')}{' '}
           <span className="num" style={{ color: 'var(--fg-brand)' }}>{hs.length}</span>
         </h2>
-        {/* 매수·매도 — 예수금이 실제로 움직이는 자리. 보유를 손으로 고치는 것과 다르다. */}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-          <Button variant="accent" size="sm" onClick={() => setTrade('BUY')}>
-            {t('trade.entryBuy')}
-          </Button>
-          <Button variant="accent" size="sm" disabled={hs.length === 0} onClick={() => setTrade('SELL')}>
-            {t('trade.entrySell')}
-          </Button>
-        </div>
       </div>
       {hs.map((h, i) => (
         <HoldingRow
@@ -832,6 +837,7 @@ function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () 
           live={live}
           first={i === 0}
           onEdit={onEdit}
+          onTrade={type => setTrade({ type, holding: h })}
         />
       ))}
       {hs.length === 0 && (
@@ -846,8 +852,8 @@ function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () 
       {trade && (
         <AssetTradeDialog
           asset={asset}
-          holdings={hs}
-          defaultType={trade}
+          holding={trade.holding}
+          defaultType={trade.type}
           mobile={mobile}
           onClose={() => setTrade(null)}
         />
