@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, ChevronUp, Repeat, Scissors, Users } from 'lucide-react'
+import { ChevronDown, ChevronUp, Repeat, Scissors, Users, Undo2 } from 'lucide-react'
 import { KRW, money, isEn, formatDay } from '@/shared/lib/porest/format'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
@@ -45,10 +45,15 @@ type Props = {
   onClose: () => void
   /** 부모가 AddTxSheet 편집 모드를 여는 콜백 */
   onEdit?: (expense: Expense) => void
+  /**
+   * 부모가 AddTxSheet 를 환불 모드로 여는 콜백.
+   * 지출 거래에만 노출된다 — 수입·환불 자체를 다시 환불할 일은 없다.
+   */
+  onRefund?: (expense: Expense) => void
   mobile: boolean
 }
 
-export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
+export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: Props) {
   const { t } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -279,6 +284,15 @@ export function TxDetailDialog({ expense, onClose, onEdit, mobile }: Props) {
         {/* Quick actions — 원형 아이콘 3열 (분할/반복/더치페이 진입) */}
         <DetailSection>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {/* 환불 — 지출에만. 수입으로 기록하되 원거래에 묶여 통계에서 지출을 상계한다
+                (수입이 부풀지 않는다). 부분 환불이면 금액만 고치면 된다. */}
+            {!isIncome && onRefund && (
+              <DetailQuickAction
+                icon={Undo2}
+                label={t('txDetail.refund')}
+                onClick={() => onRefund(expense)}
+              />
+            )}
             <DetailQuickAction
               icon={Scissors}
               label={t('splitTitle')}
