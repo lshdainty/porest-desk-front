@@ -208,7 +208,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           }
         >
           <span style={{ color: 'var(--fg-primary)' }}>
-            <MaskAmount>
+            <MaskAmount card="ledger.txDetail">
               {isIncome ? '+' : '−'}
               {wonPre()}
               {KRW(expense.amount, { abs: true })}
@@ -240,12 +240,12 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           </DetailField>
           <DetailField label={t('form.amount')}>
             <span className="num" style={{ fontWeight: '700' }}>
-              <MaskAmount>
+              <MaskAmount card="ledger.txDetail">
                 {isIncome ? '+' : '−'}
                 {wonPre()}
                 {KRW(expense.amount, { abs: true })}
               </MaskAmount>
-              <WonUnit />
+              <WonUnit card="ledger.txDetail" />
             </span>
           </DetailField>
           {expense.originalCurrency && expense.originalAmount != null && (
@@ -408,8 +408,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
                   label: t('txDetail.sumLabel'),
                   value: (
                     <>
-                      <MaskAmount>{isIncome ? '+' : '−'}{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
-                      <WonUnit />
+                      <MaskAmount card="ledger.txDetail">{isIncome ? '+' : '−'}{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
+                      <WonUnit card="ledger.txDetail" />
                     </>
                   ),
                 },

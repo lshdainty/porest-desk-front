@@ -10,8 +10,8 @@ import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
+import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ExpenseRow } from '@/shared/ui/porest/expense-row'
@@ -65,16 +65,16 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.income')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{wonPre()}{KRW(income)}</MaskAmount>
-          <WonUnit />
+          <MaskAmount card="home.monthExpense">{wonPre()}{KRW(income)}</MaskAmount>
+          <WonUnit card="home.monthExpense" />
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.expense')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{wonPre()}{KRW(expense)}</MaskAmount>
-          <WonUnit />
+          <MaskAmount card="home.monthExpense">{wonPre()}{KRW(expense)}</MaskAmount>
+          <WonUnit card="home.monthExpense" />
         </span>
       </div>
       <div style={{
@@ -89,8 +89,8 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
           }}
         >
-          <MaskAmount>{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
-          <WonUnit />
+          <MaskAmount card="home.monthExpense">{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
+          <WonUnit card="home.monthExpense" />
         </span>
       </div>
     </div>
@@ -102,7 +102,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
   height?: number
 }) {
   const { t } = useTranslation('dashboard')
-  const hidden = useHideAmounts()
+  const hidden = useHideAmounts('home.monthExpense')
   const barChartConfig = {
     income:  { label: t('chart.income'), color: 'var(--status-info-fg)' },
     expense: { label: t('chart.expense'), color: 'var(--fg-expense)' },
@@ -538,11 +538,8 @@ function HomeDesktop() {
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
-  const [unlockOpen, setUnlockOpen] = useState(false)
-  const handleHideToggle = () => {
-    if (hidden) setUnlockOpen(true)
-    else enablePdHideAmounts()
-  }
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
+  const handleHideToggle = useOpenHideAmountsSettings('home')
   const { key: initialKey } = useCurrentMonthKey()
   const [period, setPeriod] = useState(initialKey)
   const [periodY, periodM] = period.split('-').map(Number) as [number, number]
@@ -728,7 +725,7 @@ function HomeDesktop() {
             </button>
           </div>
           <div className="balance-hero__amount num">
-            {assetSummaryQ.isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+            {assetSummaryQ.isLoading ? '—' : <MaskAmount card="home.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
             {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
           </div>
           <div className="balance-hero__sub">
@@ -748,15 +745,15 @@ function HomeDesktop() {
             <div>
               <div className="l">{t('asset.totalAsset')}</div>
               <div className="v num">
-                <MaskAmount>{wonPre()}{KRW(totalAssets)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount card="home.netWorth">{wonPre()}{KRW(totalAssets)}</MaskAmount>
+                <WonUnit card="home.netWorth" />
               </div>
             </div>
             <div>
               <div className="l">{t('asset.totalDebt')}</div>
               <div className="v num">
-                <MaskAmount>−{wonPre()}{KRW(totalDebt)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount card="home.netWorth">−{wonPre()}{KRW(totalDebt)}</MaskAmount>
+                <WonUnit card="home.netWorth" />
               </div>
             </div>
           </div>
@@ -774,7 +771,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount>+{wonPre()}{KRW(income)}</MaskAmount><WonUnit /></>}
+                  : <><MaskAmount card="home.monthExpense">+{wonPre()}{KRW(income)}</MaskAmount><WonUnit card="home.monthExpense" /></>}
               </div>
             </div>
             <div>
@@ -782,7 +779,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount>−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit /></>}
+                  : <><MaskAmount card="home.monthExpense">−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit card="home.monthExpense" /></>}
               </div>
             </div>
             <div>
@@ -791,8 +788,8 @@ function HomeDesktop() {
                 {monthlyQ.isLoading
                   ? '—'
                   : <>
-                      <MaskAmount>{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
-                      <WonUnit />
+                      <MaskAmount card="home.monthExpense">{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
+                      <WonUnit card="home.monthExpense" />
                     </>}
               </div>
             </div>
@@ -816,9 +813,9 @@ function HomeDesktop() {
           }}>
             {t('avg.dailyAverage')}{' '}
             <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-              <MaskAmount>{wonPre()}{KRW(dailyAvg)}</MaskAmount>
+              <MaskAmount card="home.monthExpense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
             </span>
-            <WonUnit />
+            <WonUnit card="home.monthExpense" />
             {' '}{t('avg.spent')}
             {prevExpense > 0 && (
               <>
@@ -842,8 +839,8 @@ function HomeDesktop() {
               <CardTitle>{t('expense.todaySpent')}</CardTitle>
               {todayTotal > 0 && (
                 <span className="num" style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-                  <MaskAmount mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
-                  <WonUnit />
+                  <MaskAmount card="home.todaySpend" mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+                  <WonUnit card="home.todaySpend" />
                 </span>
               )}
             </div>
@@ -923,7 +920,7 @@ function HomeDesktop() {
               <Donut segments={donutSegs} size={160} stroke={22}>
                 <div className="lbl">{t('summary.monthlyExpense')}</div>
                 <div className="val num">
-                  <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
+                  <MaskAmount card="home.categoryDonut" mask="••••">{KRW(donutTotal)}</MaskAmount>
                 </div>
               </Donut>
               <div className="cat-legend">
@@ -933,7 +930,7 @@ function HomeDesktop() {
                     <span className="cat-legend__name">{s.label}</span>
                     <span className="cat-legend__pct num">{((s.value / donutTotal) * 100).toFixed(0)}%</span>
                     <span className="cat-legend__amt num">
-                      <MaskAmount mask="••••">{KRW(s.value)}</MaskAmount>
+                      <MaskAmount card="home.categoryDonut" mask="••••">{KRW(s.value)}</MaskAmount>
                     </span>
                   </div>
                 ))}
@@ -995,8 +992,8 @@ function HomeDesktop() {
                         color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
                       }}
                     >
-                      <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
+                      <MaskAmount card="home.budget" mask="••••">{KRW(b.spent)}</MaskAmount>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount card="home.budget" mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar">
@@ -1067,7 +1064,7 @@ function HomeDesktop() {
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em', color: 'var(--fg-expense)' }}>
-                    <MaskAmount mask="••••">−{KRW(p.amount)}</MaskAmount>
+                    <MaskAmount card="home.upcoming" mask="••••">−{KRW(p.amount)}</MaskAmount>
                   </div>
                 </div>
               ))}
@@ -1181,11 +1178,6 @@ function HomeDesktop() {
           </CardContent>
         </Card>
       </div>
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
     </div>
   )
 }
@@ -1194,11 +1186,8 @@ function HomeMobile() {
   const { t } = useTranslation('dashboard')
   const navigate = useNavigate()
   const hidden = useHideAmounts()
-  const [unlockOpen, setUnlockOpen] = useState(false)
-  const handleHideToggle = () => {
-    if (hidden) setUnlockOpen(true)
-    else enablePdHideAmounts()
-  }
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
+  const handleHideToggle = useOpenHideAmountsSettings('home')
   const { key: initialKey } = useCurrentMonthKey()
   const [period] = useState(initialKey)
   const [year, month] = period.split('-').map(Number) as [number, number]
@@ -1343,7 +1332,7 @@ function HomeMobile() {
           </button>
         </div>
         <div className="balance-hero__amount num">
-          {assetSummaryQ.isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+          {assetSummaryQ.isLoading ? '—' : <MaskAmount card="home.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
           {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
         </div>
         <div className="balance-hero__sub">
@@ -1358,13 +1347,13 @@ function HomeMobile() {
           <div>
             <div className="l">{t('asset.assetTab')}</div>
             <div className="v num">
-              <MaskAmount mask="••••">{KRW(totalAssets)}</MaskAmount>
+              <MaskAmount card="home.netWorth" mask="••••">{KRW(totalAssets)}</MaskAmount>
             </div>
           </div>
           <div>
             <div className="l">{t('asset.debtTab')}</div>
             <div className="v num">
-              <MaskAmount mask="••••">−{KRW(totalDebt)}</MaskAmount>
+              <MaskAmount card="home.netWorth" mask="••••">−{KRW(totalDebt)}</MaskAmount>
             </div>
           </div>
         </div>
@@ -1379,13 +1368,13 @@ function HomeMobile() {
           <div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.income')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
-              <MaskAmount>+{KRW(income)}</MaskAmount>
+              <MaskAmount card="home.monthExpense">+{KRW(income)}</MaskAmount>
             </div>
           </div>
           <div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.expense')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-expense)' }}>
-              <MaskAmount>−{KRW(expense)}</MaskAmount>
+              <MaskAmount card="home.monthExpense">−{KRW(expense)}</MaskAmount>
             </div>
           </div>
         </div>
@@ -1398,9 +1387,9 @@ function HomeMobile() {
         }}>
           {t('avg.dailyAverage')}{' '}
           <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-            <MaskAmount>{wonPre()}{KRW(dailyAvg)}</MaskAmount>
+            <MaskAmount card="home.monthExpense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
           </span>
-          <WonUnit />
+          <WonUnit card="home.monthExpense" />
           {' '}{t('avg.spent')}
           {prevExpense > 0 && (
             <>
@@ -1449,7 +1438,7 @@ function HomeMobile() {
             <Donut segments={donutSegs} size={120} stroke={18}>
               <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>{t('chart.expense')}</div>
               <div className="val num" style={{ fontSize: 'var(--text-caption)' }}>
-                <MaskAmount mask="••••">{KRW(donutTotal)}</MaskAmount>
+                <MaskAmount card="home.categoryDonut" mask="••••">{KRW(donutTotal)}</MaskAmount>
               </div>
             </Donut>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1460,7 +1449,7 @@ function HomeMobile() {
                     {s.label}
                   </span>
                   <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-primary)', fontWeight: '600' }}>
-                    <MaskAmount mask="••••">{KRW(s.value)}</MaskAmount>
+                    <MaskAmount card="home.categoryDonut" mask="••••">{KRW(s.value)}</MaskAmount>
                   </span>
                 </div>
               ))}
@@ -1516,8 +1505,8 @@ function HomeMobile() {
                       fontSize: 'var(--text-body-lg)', fontWeight: '700',
                       color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                     }}>
-                      <MaskAmount mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
+                      <MaskAmount card="home.budget" mask="••••">{KRW(b.spent)}</MaskAmount>
+                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount card="home.budget" mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
                     </span>
                   </div>
                   <div className="budget-bar" style={{ marginTop: 10 }}>
@@ -1539,8 +1528,8 @@ function HomeMobile() {
           <h2>{t('expense.todaySpent')}</h2>
           {todayTotal > 0 && (
             <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-              <MaskAmount mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
-              <WonUnit />
+              <MaskAmount card="home.todaySpend" mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+              <WonUnit card="home.todaySpend" />
             </span>
           )}
           <button className="all" onClick={() => navigate('/desk/expense')}>{t('all')}</button>
@@ -1566,11 +1555,6 @@ function HomeMobile() {
           )}
         </div>
       </div>
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
     </div>
   )
 }

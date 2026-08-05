@@ -91,7 +91,7 @@ const MonthDayCell = ({
   const { startSelection, updateSelection, endSelection, isDateInSelection } = useDragSelect()
   // 금액 숨김 — 셀 합계가 formatNumber 로 직접 렌더돼 마스킹이 누락되던 버그 fix.
   // masked 면 부호 없이 점(compact 4개)만 — 다른 화면 MaskAmount 정합.
-  const hideAmounts = useHideAmounts()
+  const hideAmounts = useHideAmounts('ledger.calendar')
 
   const { day, currentMonth, date } = cell
 

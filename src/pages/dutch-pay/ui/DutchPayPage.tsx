@@ -382,10 +382,10 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           label={t('monthStats.totalAmount')}
           value={
             <>
-              <MaskAmount mask="••••">
+              <MaskAmount card="dutchpay.sessions" mask="••••">
                 <span className="num">{wonPre()}{KRW(monthStats.totalAmount)}</span>
               </MaskAmount>
-              <WonUnit />
+              <WonUnit card="dutchpay.sessions" />
             </>
           }
         />
@@ -562,7 +562,7 @@ function SummaryCard({
         <span style={{ fontSize: 12, fontWeight: '600', color: 'var(--fg-tertiary)' }}>{label}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-        <MaskAmount mask="••••">
+        <MaskAmount card="dutchpay.summary" mask="••••">
           <span
             className="num"
             style={{
@@ -645,7 +645,7 @@ function SessionCard({
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, justifyContent: 'flex-end' }}>
-            <MaskAmount mask="••••">
+            <MaskAmount card="dutchpay.sessions" mask="••••">
               <span className="num" style={{ fontSize: 17, fontWeight: '800', letterSpacing: '-0.02em' }}>
                 {wonPre()}{KRW(d.totalAmount)}
               </span>
@@ -657,8 +657,8 @@ function SessionCard({
             )}
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('perOne')} <MaskAmount mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
-            <WonUnit />
+            {t('perOne')} <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+            <WonUnit card="dutchpay.sessions" />
           </div>
         </div>
       </div>
@@ -776,7 +776,7 @@ function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: 
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
-        <MaskAmount mask="••••">
+        <MaskAmount card="dutchpay.sessions" mask="••••">
           <span className="num" style={{ fontSize: 14, fontWeight: '700' }}>
             {wonPre()}{KRW(d.totalAmount)}
           </span>
@@ -819,7 +819,7 @@ function FriendRow({
       </div>
       {f.net > 0 ? (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
-          <MaskAmount mask="••••">
+          <MaskAmount card="dutchpay.sessions" mask="••••">
             <span className="num" style={{ fontSize: 14, fontWeight: '700', color: 'var(--status-success-fg)' }}>
               +{wonPre()}{KRW(f.net)}
             </span>
@@ -1101,10 +1101,10 @@ function DutchCreateWizard({
             }}
           >
             {t('selectedCount', { count: picked.size })} · {t('fromTx.perPerson')}{' '}
-            <MaskAmount mask="••••">
+            <MaskAmount card="dutchpay.sessions" mask="••••">
               <span className="num">{wonPre()}{KRW(perPerson)}</span>
             </MaskAmount>
-            <WonUnit />
+            <WonUnit card="dutchpay.sessions" />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
@@ -1278,7 +1278,7 @@ function DutchDetailDialog({
       >
         <div style={{ fontSize: 12, fontWeight: '600', color: 'var(--fg-tertiary)' }}>{meta}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginTop: 6 }}>
-          <MaskAmount mask="••••">
+          <MaskAmount card="dutchpay.sessions" mask="••••">
             <span
               className="num"
               style={{
@@ -1298,8 +1298,8 @@ function DutchDetailDialog({
           )}
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--fg-secondary)', marginTop: 4 }}>
-          {t('fromTx.perPerson')} <MaskAmount mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
-          <WonUnit />
+          {t('fromTx.perPerson')} <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+          <WonUnit card="dutchpay.sessions" />
         </div>
       </div>
 
@@ -1363,8 +1363,8 @@ function DutchDetailDialog({
                 <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
                   {statusText ?? (
                     <>
-                      <MaskAmount mask="••••">{wonPre()}{KRW(p.amount)}</MaskAmount>
-                      <WonUnit /> {t('transferNeeded')}
+                      <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(p.amount)}</MaskAmount>
+                      <WonUnit card="dutchpay.sessions" /> {t('transferNeeded')}
                     </>
                   )}
                 </div>

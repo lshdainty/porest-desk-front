@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
 import { Switch } from '@/shared/ui/switch'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { disablePdHideAmounts, enablePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { regionOptionsWith } from '@/shared/lib'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/user'
@@ -46,11 +46,14 @@ function readCurrency(): CurrencyKey {
 }
 
 // 모바일 카드 다이어트 — 설정 행 셸: 모바일은 플랫 행, 데스크톱은 Card (.m-subpage 정합).
-function RowShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
-  const inner: React.CSSProperties = { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }
+function RowShell({ mobile, children, onClick }: { mobile: boolean; children: React.ReactNode; onClick?: () => void }) {
+  const inner: React.CSSProperties = {
+    display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12,
+    ...(onClick ? { cursor: 'pointer' } : null),
+  }
   return mobile
-    ? <div style={{ ...inner, padding: '14px 4px' }}>{children}</div>
-    : <Card style={{ ...inner, padding: '14px 16px' }}>{children}</Card>
+    ? <div style={{ ...inner, padding: '14px 4px' }} onClick={onClick}>{children}</div>
+    : <Card style={{ ...inner, padding: '14px 16px' }} onClick={onClick}>{children}</Card>
 }
 
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
@@ -58,7 +61,6 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { theme, setTheme } = useTheme()
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
   const hidden = useHideAmounts()
-  const [unlockOpen, setUnlockOpen] = useState(false)
 
   const { data: prefs } = useUserPreferences()
   const updatePrefs = useUpdateUserPreferences()
@@ -71,14 +73,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     updatePrefs.mutate({ timezone: tz })
   }
 
-  // 켜기는 즉시, 끄기는 비밀번호 인증 (헤더 눈 버튼 제거 후 설정 진입점)
-  const handleHideChange = (checked: boolean) => {
-    if (checked) {
-      enablePdHideAmounts()
-    } else {
-      setUnlockOpen(true)
-    }
-  }
+  // 가리는 단위가 카드라 여기서 켜고 끄지 않는다 — 고르는 화면으로 보낸다.
+  const openHideSettings = useOpenHideAmountsSettings()
 
 
   const setCurrency = (c: CurrencyKey) => {
@@ -130,7 +126,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         <SectionLabel>{t('privacy.label')}</SectionLabel>
         {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치).
             모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행 (.m-subpage). */}
-        <RowShell mobile={mobile}>
+        <RowShell mobile={mobile} onClick={openHideSettings}>
           <span
             style={{
               width: 36,
@@ -154,13 +150,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
               {t('hideAmounts.desc')}
             </div>
           </div>
-          <Switch checked={hidden} onCheckedChange={handleHideChange} aria-label={t('hideAmounts.label')} />
+          <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
         </RowShell>
-        <HideAmountsUnlockDialog
-          open={unlockOpen}
-          onOpenChange={setUnlockOpen}
-          onVerified={disablePdHideAmounts}
-        />
       </section>
 
       {/* 표시 기준 지역 — 서버가 이 값으로 "오늘"을 판단하므로 로컬이 아니라 서버에 저장한다. */}

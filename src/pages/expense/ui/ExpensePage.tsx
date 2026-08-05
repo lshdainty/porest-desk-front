@@ -386,13 +386,13 @@ function Summary({
             className="num"
             style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-brand)' }}
           >
-            {isLoading ? '—' : <MaskAmount>+{KRW(monthIn)}</MaskAmount>}
+            {isLoading ? '—' : <MaskAmount card="ledger.monthSummary">+{KRW(monthIn)}</MaskAmount>}
           </div>
         </div>
         <div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('expense')}</div>
           <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-expense)' }}>
-            {isLoading ? '—' : <MaskAmount>−{KRW(monthOut)}</MaskAmount>}
+            {isLoading ? '—' : <MaskAmount card="ledger.monthSummary">−{KRW(monthOut)}</MaskAmount>}
           </div>
         </div>
         <div>
@@ -407,7 +407,7 @@ function Summary({
           >
             {isLoading
               ? '—'
-              : <MaskAmount>{balance >= 0 ? '+' : '−'}{KRW(Math.abs(balance))}</MaskAmount>}
+              : <MaskAmount card="ledger.monthSummary">{balance >= 0 ? '+' : '−'}{KRW(Math.abs(balance))}</MaskAmount>}
           </div>
         </div>
       </div>
@@ -571,7 +571,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('income')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
-                  <MaskAmount>+{wonPre()}{KRW(incomeSum)}</MaskAmount><WonUnit />
+                  <MaskAmount card="ledger.txList">+{wonPre()}{KRW(incomeSum)}</MaskAmount><WonUnit card="ledger.txList" />
                 </span>
               </div>
             )}
@@ -579,7 +579,7 @@ function DayDetailDialog({
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('expense')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  <MaskAmount>−{wonPre()}{KRW(expenseSum)}</MaskAmount><WonUnit />
+                  <MaskAmount card="ledger.txList">−{wonPre()}{KRW(expenseSum)}</MaskAmount><WonUnit card="ledger.txList" />
                 </span>
               </div>
             )}
@@ -1415,7 +1415,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       <LedgerHead>
         <div style={{ minWidth: 0 }}>
           <LedgerTotal className="num">
-            {isLoadingSummary ? '—' : <><MaskAmount>{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit /></>}
+            {isLoadingSummary ? '—' : <><MaskAmount card="ledger.txList">{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit card="ledger.txList" /></>}
           </LedgerTotal>
           {insight && <LedgerSub>{insight}</LedgerSub>}
         </div>
@@ -1429,19 +1429,19 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           <LedgerSummaryRow>
             <span>{t('income')}</span>
             <span className="num" style={{ color: 'var(--fg-brand)' }}>
-              <MaskAmount>+{wonPre()}{KRW(monthIn)}</MaskAmount><WonUnit />
+              <MaskAmount card="ledger.txList">+{wonPre()}{KRW(monthIn)}</MaskAmount><WonUnit card="ledger.txList" />
             </span>
           </LedgerSummaryRow>
           <LedgerSummaryRow>
             <span>{t('expense')}</span>
             <span className="num" style={{ color: 'var(--fg-expense)' }}>
-              <MaskAmount>−{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit />
+              <MaskAmount card="ledger.txList">−{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit card="ledger.txList" />
             </span>
           </LedgerSummaryRow>
           <LedgerSummaryRow total>
             <span>{t('txDetail.sumLabel')}</span>
             <span className="num">
-              <MaskAmount>{monthIn - monthOut >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(monthIn - monthOut))}</MaskAmount><WonUnit />
+              <MaskAmount card="ledger.txList">{monthIn - monthOut >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(monthIn - monthOut))}</MaskAmount><WonUnit card="ledger.txList" />
             </span>
           </LedgerSummaryRow>
         </LedgerSummary>
@@ -1506,8 +1506,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             top={cellTip.top}
             title={<>{Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}</>}
             rows={[
-              { label: t('expense'), color: 'var(--fg-expense)', value: <><MaskAmount>−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit /></> },
-              { label: t('income'), color: 'var(--fg-brand)', value: <><MaskAmount>+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit /></> },
+              { label: t('expense'), color: 'var(--fg-expense)', value: <><MaskAmount card="ledger.txList">−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit card="ledger.txList" /></> },
+              { label: t('income'), color: 'var(--fg-brand)', value: <><MaskAmount card="ledger.txList">+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit card="ledger.txList" /></> },
             ]}
           />
         )}
@@ -1539,8 +1539,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   <LedgerDayDate>{(yy ?? '').slice(2)}. {Number(mm)}. {Number(dd)}({dow})</LedgerDayDate>
                   {rel && <LedgerDayRel>&nbsp;· {rel}</LedgerDayRel>}
                   <LedgerDaySum className="num">
-                    {dOut > 0 && <span className="font-semibold text-[var(--fg-expense)]"><MaskAmount>-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit /></span>}
-                    {dIn > 0 && <span className="ml-2 font-semibold text-[var(--fg-brand)]"><MaskAmount>+{wonPre()}{KRW(dIn)}</MaskAmount><WonUnit /></span>}
+                    {dOut > 0 && <span className="font-semibold text-[var(--fg-expense)]"><MaskAmount card="ledger.txList">-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit card="ledger.txList" /></span>}
+                    {dIn > 0 && <span className="ml-2 font-semibold text-[var(--fg-brand)]"><MaskAmount card="ledger.txList">+{wonPre()}{KRW(dIn)}</MaskAmount><WonUnit card="ledger.txList" /></span>}
                   </LedgerDaySum>
                 </LedgerDayHead>
                 <div>

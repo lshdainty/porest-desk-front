@@ -13,9 +13,10 @@ import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
+import { HideCard, HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import type { HideCardKey } from '@/shared/lib/porest/hide-amounts-cards'
+import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { getBrandColor } from '@/shared/lib/porest/bank-colors'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Button } from '@/shared/ui/button'
@@ -64,8 +65,8 @@ function NetWorthTooltip({
           className="num"
           style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}
         >
-          <MaskAmount>{wonPre()}{KRW(v)}</MaskAmount>
-          <WonUnit />
+          <MaskAmount card="asset.netWorth">{wonPre()}{KRW(v)}</MaskAmount>
+          <WonUnit card="asset.netWorth" />
         </span>
       </div>
     </div>
@@ -77,7 +78,7 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
   const netWorthChartConfig = {
     netWorth: { label: t('netWorth'), color: 'var(--border-brand)' },
   } satisfies ChartConfig
-  const hidden = useHideAmounts()
+  const hidden = useHideAmounts('asset.netWorth')
   const trendQ = useNetWorthTrend(12)
   const data = useMemo(
     () =>
@@ -297,7 +298,7 @@ function AssetCompositionCard({
           <Donut size={180} stroke={24} segments={segments}>
             <div className="lbl">{centerLbl}</div>
             <div className="val num" style={{ fontSize: 'var(--text-body-lg)' }}>
-              <MaskAmount mask="••••">{totalLabel}</MaskAmount>
+              <MaskAmount card="asset.composition" mask="••••">{totalLabel}</MaskAmount>
             </div>
           </Donut>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
@@ -340,7 +341,7 @@ function AssetCompositionCard({
                       {row.label}
                     </span>
                     <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                      <MaskAmount mask="••••">{KRW(row.amt)}</MaskAmount>
+                      <MaskAmount card="asset.composition" mask="••••">{KRW(row.amt)}</MaskAmount>
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -475,7 +476,7 @@ function UpcomingBillsCard() {
                   {it.daysLeft <= 0 ? t('date:today') : t('date:daysLater', { count: it.daysLeft })} · {it.dateLabel}
                 </span>
                 <span className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', flexShrink: 0 }}>
-                  <MaskAmount mask="••••">−{KRW(it.amount)}</MaskAmount>
+                  <MaskAmount card="asset.upcoming" mask="••••">−{KRW(it.amount)}</MaskAmount>
                 </span>
               </button>
             )
@@ -548,7 +549,10 @@ function SavingGoalItem({ goal }: { goal: SavingGoal }) {
         <div className="num" style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{pct.toFixed(0)}%</div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-            {KRW(goal.currentAmount)} / {isEn() ? formatChartAxis(goal.targetAmount) : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
+            {/* 저축목표만 마스킹에서 빠져 있었다 — 금액을 가려도 여기엔 그대로 나왔다. */}
+            <MaskAmount card="asset.savingGoals" mask="••• / •••">
+              {KRW(goal.currentAmount)} / {isEn() ? formatChartAxis(goal.targetAmount) : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
+            </MaskAmount>
           </div>
         </div>
       </div>
@@ -1079,6 +1083,7 @@ function TypeGroup({
   onOpenDetail,
   negativeTotal = false,
   investValMap,
+  card,
 }: {
   title: string
   assets: Asset[]
@@ -1087,13 +1092,17 @@ function TypeGroup({
   mobile: boolean
   onOpenDetail: (asset: Asset) => void
   negativeTotal?: boolean
+  /** 이 그룹이 금액 숨기기에서 어느 카드인지 — 안쪽 금액이 전부 이 키로 잡힌다. */
+  card: HideCardKey
   /** 투자 그룹 전용 — 자산별 라이브 평가(등락) 맵 */
   investValMap?: Map<number, InvestValuation>
 }) {
   const { t } = useTranslation('asset')
   return (
-    // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card — design Section SoT.
-    <Section
+    // 그룹 안의 금액(그룹 합계·자산별 잔액·카드 사용액·투자 등락)이 전부 이 카드로 잡힌다.
+    <HideCard card={card}>
+      {/* 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card — design Section SoT. */}
+      <Section
       mobile={mobile}
       title={title}
       totalColor={total === 0 ? undefined : totalColor}
@@ -1130,6 +1139,7 @@ function TypeGroup({
         </div>
       )}
     </Section>
+    </HideCard>
   )
 }
 
@@ -1155,11 +1165,8 @@ function SummaryCard({
   const { t } = useTranslation('asset')
   const hidden = useHideAmounts()
   const isUp = changeAmount >= 0
-  const [unlockOpen, setUnlockOpen] = useState(false)
-  const handleHideToggle = () => {
-    if (hidden) setUnlockOpen(true)
-    else enablePdHideAmounts()
-  }
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
+  const handleHideToggle = useOpenHideAmountsSettings('asset')
 
   return (
     // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 강조 요약 (design p-card--keep).
@@ -1193,7 +1200,7 @@ function SummaryCard({
           marginBottom: 6,
         }}
       >
-        {isLoading ? '—' : <MaskAmount>{wonPre()}{KRW(netWorth)}</MaskAmount>}
+        {isLoading ? '—' : <MaskAmount card="asset.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
         {!isEn() && (
           <HideUnit>
             <span style={{ fontSize: mobile ? 16 : 20, fontWeight: '700', marginLeft: 4 }}>원</span>
@@ -1248,13 +1255,13 @@ function SummaryCard({
         <div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('tab.accountDeposit')}</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
-            <MaskAmount>{KRW(accountsTotal)}</MaskAmount>
+            <MaskAmount card="asset.netWorth">{KRW(accountsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
           <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('group.invest')}</div>
           <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
-            <MaskAmount>{KRW(investmentsTotal)}</MaskAmount>
+            <MaskAmount card="asset.netWorth">{KRW(investmentsTotal)}</MaskAmount>
           </div>
         </div>
         <div>
@@ -1263,16 +1270,11 @@ function SummaryCard({
             className="num"
             style={{ fontSize: mobile ? 14 : 16, fontWeight: '700', color: 'var(--fg-expense)' }}
           >
-            <MaskAmount>−{KRW(cardsTotal)}</MaskAmount>
+            <MaskAmount card="asset.netWorth">−{KRW(cardsTotal)}</MaskAmount>
           </div>
         </div>
       </div>
       </CardContent>
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
     </Card>
   )
 }
@@ -1365,12 +1367,8 @@ function AssetDesktop() {
   const hidden = useHideAmounts()
   const g = useAssetGroups()
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [unlockOpen, setUnlockOpen] = useState(false)
-
-  const handleHideToggle = () => {
-    if (hidden) setUnlockOpen(true)
-    else enablePdHideAmounts()
-  }
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
+  const handleHideToggle = useOpenHideAmountsSettings('asset')
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
@@ -1442,6 +1440,7 @@ function AssetDesktop() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <TypeGroup
+              card="asset.accounts"
               title={t('accountDepositTitle')}
               assets={g.accounts}
               total={g.accountsTotal}
@@ -1450,6 +1449,7 @@ function AssetDesktop() {
             />
             {g.investments.length > 0 && (
               <TypeGroup
+                card="asset.investments"
                 title={t('group.invest')}
                 assets={g.investments}
                 total={g.investmentsTotal}
@@ -1459,6 +1459,7 @@ function AssetDesktop() {
               />
             )}
             <TypeGroup
+              card="asset.cards"
               title={t('group.card')}
               assets={g.cards}
               total={g.cardsTotal}
@@ -1469,6 +1470,7 @@ function AssetDesktop() {
             />
             {g.loans.length > 0 && (
               <TypeGroup
+                card="asset.loans"
                 title={t('assetType.loan')}
                 assets={g.loans}
                 total={g.loansTotal}
@@ -1493,11 +1495,6 @@ function AssetDesktop() {
           }}
         />
       )}
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
     </div>
   )
 }
@@ -1552,6 +1549,7 @@ function AssetMobile() {
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
         <TypeGroup
+          card="asset.accounts"
           title={t('accountDepositTitle')}
           assets={g.accounts}
           total={g.accountsTotal}
@@ -1560,6 +1558,7 @@ function AssetMobile() {
         />
         {g.investments.length > 0 && (
           <TypeGroup
+            card="asset.investments"
             title={t('group.invest')}
             assets={g.investments}
             total={g.investmentsTotal}
@@ -1569,6 +1568,7 @@ function AssetMobile() {
           />
         )}
         <TypeGroup
+          card="asset.cards"
           title={t('group.card')}
           assets={g.cards}
           total={g.cardsTotal}
@@ -1579,6 +1579,7 @@ function AssetMobile() {
         />
         {g.loans.length > 0 && (
           <TypeGroup
+            card="asset.loans"
             title={t('assetType.loan')}
             assets={g.loans}
             total={g.loansTotal}
