@@ -62,6 +62,25 @@ export interface AssetTrade {
   settlementAssetRowId?: number | null
 }
 
+/**
+ * 매매 미리보기 — 서버가 계산해 준다.
+ *
+ * <p>실현손익·평균단가는 이동평균 원가 규칙을 타는데, 그 규칙을 화면에도 적어 두면
+ * 서버와 갈라진다. JS 는 수를 double 로 다뤄서 끝자리도 어긋난다.
+ */
+export interface AssetTradePreview {
+  /** 이번에 파는 만큼의 취득원가 (매도 전용). */
+  soldCost: number | null
+  /** 실현손익 — 이익 양수 / 손실 음수 (매도 전용). */
+  realizedPl: number | null
+  /** 이 거래로 예수금이 움직이는 양 — 매수 음수 / 매도 양수. */
+  cashDelta: number
+  /** 거래 후 예수금. */
+  cashAfter: number
+  /** 예수금이 모자라 결제 계좌에서 끌어올 금액 — 0 이면 이체가 생기지 않는다. */
+  fundingAmount: number
+}
+
 export interface AssetTradeFormValues {
   assetRowId: number
   tradeType: TradeType

@@ -18,6 +18,7 @@ export type {
   TradeType,
   AssetTrade,
   AssetTradeFormValues,
+  AssetTradePreview,
   ReorderItem,
   BillingStatus,
   BillingItem,

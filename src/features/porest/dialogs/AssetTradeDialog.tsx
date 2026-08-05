@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -13,10 +13,10 @@ import {
   SelectValue,
 } from '@/shared/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { useCreateTrade, useAssets } from '@/features/asset'
+import { useCreateTrade, useAssets, useTradePreview } from '@/features/asset'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { sanitizeQty, qtyNumber, formatQty } from '@/entities/asset'
-import type { Asset, AssetHolding, TradeType } from '@/entities/asset'
+import type { Asset, AssetHolding, AssetTradeFormValues, TradeType } from '@/entities/asset'
 import { KRW } from '@/shared/lib/porest/format'
 
 /**
@@ -80,17 +80,40 @@ export function AssetTradeDialog({
   const amountNum = Number(amount.replace(/[^\d]/g, '')) || 0
   const feeNum = Number(fee.replace(/[^\d]/g, '')) || 0
 
-  // 예수금이 어떻게 움직이는지 미리 보여 준다 — 매수는 수수료까지 빠지고 매도는 떼고 들어온다.
-  const cashDelta = isSell ? amountNum - feeNum : -(amountNum + feeNum)
-  const cashAfter = (asset.cashBalance ?? 0) + cashDelta
-
-  // 매도는 판 만큼의 원가를 빼야 손익이 나온다 — 서버와 같은 비율 계산으로 미리 보여 준다.
   const heldQty = qtyNumber(holding.quantity) ?? 0
-  const realizedPreview = useMemo(() => {
-    if (!isSell || heldQty <= 0 || qty <= 0) return null
-    const soldCost = Math.round(((holding.totalCost ?? 0) * qty) / heldQty)
-    return amountNum - feeNum - soldCost
-  }, [isSell, holding.totalCost, heldQty, qty, amountNum, feeNum])
+
+  // 저장할 때 그대로 보낼 값 — 미리보기도 같은 몸통을 쓴다.
+  const payload: AssetTradeFormValues | null = useMemo(() => {
+    if (!(holdingKey.length > 0 && qty > 0 && amountNum > 0)) return null
+    return {
+      assetRowId: asset.rowId,
+      tradeType: type,
+      holdingType: holding.holdingType ?? 'STOCK',
+      holdingKey,
+      linked: holding.linked,
+      quantity: sanitizeQty(quantity),
+      amount: amountNum,
+      fee: feeNum,
+      tradeDate: `${tradeDate}:00`,
+      description: description.trim() || undefined,
+      settlementAssetRowId,
+    }
+  }, [holdingKey, qty, amountNum, feeNum, asset.rowId, type, holding.holdingType,
+      holding.linked, quantity, tradeDate, description, settlementAssetRowId])
+
+  // 타이핑하는 중에는 묻지 않는다 — 손을 멈추면 그때 한 번 간다.
+  const [settled, setSettled] = useState<AssetTradeFormValues | null>(null)
+  useEffect(() => {
+    const id = setTimeout(() => setSettled(payload), 350)
+    return () => clearTimeout(id)
+  }, [payload])
+
+  // 실현손익·예수금 잔액은 서버가 계산한다 — 화면이 같은 규칙을 따로 들고 있으면 갈라진다.
+  const { data: preview } = useTradePreview(settled)
+  const cashDelta = preview?.cashDelta ?? null
+  const cashAfter = preview?.cashAfter ?? null
+  const realizedPreview = isSell ? preview?.realizedPl ?? null : null
+  const fundingAmount = preview?.fundingAmount ?? 0
 
   // 예수금으로 살 때만 잔액을 본다 — 결제 계좌는 마이너스를 막지 않는다(서버도 같은 규칙).
   const viaCash = settlementAssetRowId == null
@@ -101,21 +124,10 @@ export function AssetTradeDialog({
     true
 
   const submit = () => {
-    if (!canSubmit) return
+    if (!canSubmit || payload == null) return
+    // 미리보기에 보낸 것과 같은 몸통을 보낸다 — 보여 준 값과 저장될 값이 다를 수 없다.
     createMut.mutate(
-      {
-        assetRowId: asset.rowId,
-        tradeType: type,
-        holdingType: holding.holdingType ?? 'STOCK',
-        holdingKey,
-        linked: holding.linked,
-        quantity: sanitizeQty(quantity),
-        amount: amountNum,
-        fee: feeNum,
-        tradeDate: `${tradeDate}:00`,
-        description: description.trim() || undefined,
-        settlementAssetRowId,
-      },
+      payload,
       {
         onSuccess: () => {
           toast.success(isSell ? t('trade.sold') : t('trade.bought'))
@@ -255,9 +267,16 @@ export function AssetTradeDialog({
           </span>
           <span
             className="num font-bold"
-            style={{ color: viaCash && cashAfter < 0 ? 'var(--color-error)' : 'var(--fg-primary)' }}
+            style={{
+              color: viaCash && (cashAfter ?? 0) < 0 ? 'var(--color-error)' : 'var(--fg-primary)',
+            }}
           >
-            {viaCash ? `${KRW(cashAfter)}원` : `${cashDelta >= 0 ? '+' : '−'}${KRW(Math.abs(cashDelta))}원`}
+            {/* 서버가 아직 답하기 전에는 자리만 잡아 둔다 — 틀린 값을 잠깐 보여 주느니 낫다. */}
+            {cashAfter == null || cashDelta == null
+              ? '—'
+              : viaCash
+                ? `${KRW(cashAfter)}원`
+                : `${cashDelta >= 0 ? '+' : '−'}${KRW(Math.abs(cashDelta))}원`}
           </span>
         </div>
         {realizedPreview != null && (
@@ -271,7 +290,13 @@ export function AssetTradeDialog({
             </span>
           </div>
         )}
-        {!isSell && viaCash && cashAfter < 0 && (
+        {/* 예수금이 모자라면 결제 계좌에서 그만큼 끌어온다 — 이체가 한 건 생긴다는 걸 미리 알린다. */}
+        {fundingAmount > 0 && (
+          <div className="mt-1.5 text-[11.5px] text-[var(--fg-tertiary)]">
+            {t('trade.fundingNotice', { amount: KRW(fundingAmount) })}
+          </div>
+        )}
+        {!isSell && viaCash && (cashAfter ?? 0) < 0 && (
           <div className="mt-1.5 text-[11.5px]" style={{ color: 'var(--color-error)' }}>
             {t('trade.insufficientCash')}
           </div>
