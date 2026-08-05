@@ -930,12 +930,10 @@ function InvestHoldingsSub({ asset }: { asset: Asset }) {
 // item 사이 border-top 구분선 (TypeGroup 에서 처리). hover 는 background tint 만.
 function AssetCard({
   asset,
-  negativeAmount = false,
   onOpenDetail,
   investVal,
 }: {
   asset: Asset
-  negativeAmount?: boolean
   onOpenDetail: (asset: Asset) => void
   /** 투자 자산 라이브 평가(등락) — 투자 그룹에서만 전달, 없으면 등락 미표시 */
   investVal?: InvestValuation | null
@@ -943,7 +941,12 @@ function AssetCard({
   const { t } = useTranslation('asset')
   // 음수(빚)는 부호(−)만, 색은 중립(fg-primary) — 행 금액 규칙 정합(사용자 결정).
   // 0 은 부호·강조 없이 '0원' (−0원 방지) — 관리 화면(AccountManager) 과 동일 로직.
-  const neg = (negativeAmount ? -Math.abs(asset.balance) : asset.balance) < 0
+  //
+  // 저장된 부호를 그대로 믿는다. 예전엔 카드 그룹에서 부호를 강제로 뒤집었는데(negativeAmount),
+  // 그러면 데이터가 양수로 어긋나도 행은 멀쩡해 보이고 그룹 합계만 틀린 값이 나온다 —
+  // 실제로 신용카드 잔액 하나가 양수로 들어가 그렇게 어긋났다. 지금은 저장할 때
+  // 음수로 정규화하므로 표시에서 손볼 게 없다.
+  const neg = asset.balance < 0
   return (
     <div
       role="button"
@@ -1120,7 +1123,6 @@ function TypeGroup({
             <AssetCard
               key={a.rowId}
               asset={a}
-              negativeAmount={negativeTotal}
               onOpenDetail={onOpenDetail}
               investVal={investValMap?.get(a.rowId) ?? null}
             />

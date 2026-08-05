@@ -68,7 +68,9 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   const handleSubmit = () => {
     if (!selected) return
     const name = nickname.trim() || selected.cardName
-    const outstanding = Number(outstandingStr.replace(/[^\d-]/g, '')) || 0
+    // 신용카드 잔액은 미결제 사용액이라 음수로 저장한다 — 화면은 "현재 사용액" 을 묻고
+    // 사용자는 양수를 치는 게 자연스럽다. 서버도 같은 정규화를 하지만 여기서도 맞춰 보낸다.
+    const outstanding = -Math.abs(Number(outstandingStr.replace(/[^\d-]/g, '')) || 0)
     const assetType: AssetType = cardType === 'CREDIT' ? 'CREDIT_CARD' : 'CHECK_CARD'
 
     createMut.mutate(
