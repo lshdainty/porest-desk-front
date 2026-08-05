@@ -28,8 +28,10 @@ jobs:
       - name: Generate i18n
         run: npm run i18n:generate
 
+      # 타입 검사까지 돌린다 — 예전엔 build:skip-check 라 CI 는 통과하고
+      # 배포 빌드에서만 터졌다(#191).
       - name: Build Test
-        run: npm run build:skip-check
+        run: npm run build
 
   trigger-deploy:
     needs: build-test
