@@ -151,6 +151,25 @@ export const useCreateTrade = () => {
   })
 }
 
+/**
+ * 매매 미리보기 — 실현손익·예수금 잔액을 서버에 물어본다.
+ *
+ * <p>화면에서 계산하지 않는다. 이동평균 매수원가 규칙이 웹·앱·서버에 각각 적혀 있으면
+ * 하나만 고쳐도 갈라지고, JS 는 수를 double 로 다뤄 끝자리가 어긋난다.
+ *
+ * <p>입력할 때마다 부르지 않도록 호출부에서 값을 늦춰(debounce) 넘긴다.
+ */
+export const useTradePreview = (data: AssetTradeFormValues | null) =>
+  useQuery({
+    queryKey: [...assetKeys.all, 'trade-preview', data],
+    queryFn: () => assetApi.previewTrade(data as AssetTradeFormValues),
+    enabled: data != null,
+    // 같은 입력이면 다시 묻지 않는다 — 저장 전이라 서버 상태가 바뀔 일이 없다.
+    staleTime: 30_000,
+    // 미리보기가 실패해도 화면을 막지 않는다. 값을 안 보여 줄 뿐이다.
+    retry: false,
+  })
+
 export const useAssetTrades = (assetRowId?: number) =>
   useQuery({
     queryKey: [...assetKeys.all, 'trades', assetRowId],

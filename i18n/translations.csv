@@ -1458,6 +1458,9 @@ expense,item,항목,Item
 expense,selectNone,선택 안 함,None
 expense,addTx.newTitle,내역 추가,Add Transaction
 expense,addTx.editTitle,거래 편집,Edit Transaction
+expense,addTx.autoSource.TRADE_REALIZED,"주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.","Realized P/L from a sale. The amount is calculated from the trade."
+expense,addTx.autoSource.TRANSFER_INTEREST,"이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.","Interest on a transfer. The amount is calculated from the transfer."
+expense,addTx.autoSource.default,"자동으로 만들어진 거래예요. 원래 거래를 지우면 함께 사라집니다.","Created automatically. It disappears when the original is deleted."
 expense,addTx.transfer,이체,Transfer
 expense,addTx.add,추가,Add
 expense,addTx.saveSplitAndSave,분할 맞추고 저장,Adjust splits & save
@@ -2383,7 +2386,8 @@ asset,trade.settlementCashHelp,"증권계좌 예수금에서 결제해요. 모�
 asset,trade.settlementAccountHelp,"예수금이 모자라면 이 계좌에서 부족분만큼 자동으로 이체돼요.",A transfer covers any shortfall from this account.
 asset,trade.settlementDelta,"결제 계좌 변동","Settlement account change"
 asset,trade.realizedPreview,실현손익,Realized P/L
-asset,trade.insufficientCash,예수금이 부족해요. 먼저 입금하거나 금액을 확인해주세요.,Not enough cash. Deposit first or check the amount.
+asset,trade.fundingNotice,"예수금이 모자라 결제 계좌에서 {{amount}}원을 옮겨요","{{amount}} moves from the settlement account to cover the shortfall"
+asset,trade.insufficientCash,"예수금이 마이너스가 돼요. 그대로 기록됩니다.","Cash will go negative. It is recorded as is."
 asset,trade.insufficientQty,보유 수량보다 많이 팔 수 없어요.,Cannot sell more than you hold.
 asset,trade.entryBuy,매수,Buy
 asset,trade.entrySell,매도,Sell

@@ -14,6 +14,7 @@ import type {
   BillingItem,
   AssetTrade,
   AssetTradeFormValues,
+  AssetTradePreview,
 } from '@/entities/asset'
 
 export interface TransferListParams {
@@ -95,6 +96,12 @@ export const assetApi = {
 
   deleteTransfer: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/asset-transfer/${id}`)
+    return resp.data
+  },
+
+  /** 저장하기 전에 결과를 물어본다 — 저장에 쓰는 계산 경로를 그대로 탄다. */
+  previewTrade: async (data: AssetTradeFormValues): Promise<AssetTradePreview> => {
+    const resp: ApiResponse<AssetTradePreview> = await apiClient.post('/v1/asset-trade/preview', data)
     return resp.data
   },
 

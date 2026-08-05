@@ -16,6 +16,7 @@ export {
   useCreateTransfer,
   useDeleteTransfer,
   useCreateTrade,
+  useTradePreview,
   useAssetTrades,
   useDeleteTrade,
 } from './model/useAssets'
