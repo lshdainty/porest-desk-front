@@ -91,11 +91,8 @@ npm install
 # 개발 서버 실행 (predev 훅으로 i18n:generate 자동 실행)
 npm run dev
 
-# 프로덕션 빌드 (타입 체크 포함)
+# 프로덕션 빌드 (타입 체크 포함) — 배포·CI 와 같은 명령
 npm run build
-
-# 타입 체크 생략 빌드
-npm run build:skip-check
 
 # 빌드된 앱 프리뷰
 npm run preview

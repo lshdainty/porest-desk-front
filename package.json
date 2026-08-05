@@ -8,8 +8,6 @@
     "dev": "vite",
     "prebuild": "npm run i18n:generate",
     "build": "tsc --noEmit -p tsconfig.app.json && vite build",
-    "prebuild:skip-check": "npm run i18n:generate",
-    "build:skip-check": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "i18n:generate": "node scripts/generate-i18n.mjs"

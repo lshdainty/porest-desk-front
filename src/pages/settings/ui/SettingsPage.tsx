@@ -14,6 +14,7 @@ import {
   Key,
   LogOut,
   Monitor,
+  EyeOff,
   Palette,
   PiggyBank,
   Repeat,
