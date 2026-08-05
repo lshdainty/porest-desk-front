@@ -97,7 +97,12 @@ export function PresetEditDialog({
   const selectedCategory = categoryRowId != null ? categories.find(c => c.rowId === categoryRowId) : null
   const selectedParentId = selectedCategory ? (selectedCategory.parentRowId ?? selectedCategory.rowId) : null
 
-  const canSave = name.trim().length > 0 && categoryRowId != null
+  // 금액은 선택이다 — 프리셋은 금액을 모르는 채로 양식만 저장하려고 만든 것이다.
+  // 고정 금액을 켰을 때만 값이 있어야 한다(불러오는 거래가 그 값을 그대로 받는다).
+  const canSave =
+    name.trim().length > 0 &&
+    categoryRowId != null &&
+    (!lockAmount || (Number(amount.replace(/[^\d]/g, '')) || 0) > 0)
   const submitting = createMut.isPending || updateMut.isPending
 
   const submit = () => {
