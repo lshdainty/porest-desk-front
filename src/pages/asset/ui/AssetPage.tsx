@@ -1321,12 +1321,15 @@ function useAssetGroups() {
   }, [assetsQ.data, valMap])
 
   // 백엔드 summary(DB 잔액 기준)에 연결 자산의 (라이브−DB) 차액만큼 순자산/변화를 보정.
+  //
+  // 비교 대상은 평가금액끼리다. 라이브 값은 보유분만 계산하는데 balance 는
+  // 예수금 + 평가금액이라, 그걸 빼면 예수금만큼 순자산이 깎인다.
   const liveDelta = useMemo(
     () =>
       linked.reduce((s, a) => {
         if (a.isIncludedInTotal !== 'Y') return s
         const v = valMap.get(a.rowId)
-        return v != null ? s + (v - a.balance) : s
+        return v != null ? s + (v - (a.holdingBalance ?? 0)) : s
       }, 0),
     [linked, valMap],
   )
