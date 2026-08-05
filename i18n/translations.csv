@@ -2379,8 +2379,8 @@ asset,trade.memoPlaceholder,선택 입력,Optional
 asset,trade.cashAfter,거래 후 예수금,Cash after trade
 asset,trade.settlement,"결제 계좌","Settlement account"
 asset,trade.settlementCash,"증권계좌 예수금","Brokerage cash"
-asset,trade.settlementCashHelp,"증권계좌에 넣어둔 예수금에서 오가요.","Moves in and out of the cash you keep in this brokerage account."
-asset,trade.settlementAccountHelp,"이 계좌에서 바로 오가요. 증권계좌 예수금은 건드리지 않아요.","Moves directly in and out of this account. Brokerage cash is untouched."
+asset,trade.settlementCashHelp,"증권계좌 예수금에서 결제해요. 모자라면 예수금이 마이너스로 남아요.",Paid from the brokerage cash balance. It may go negative.
+asset,trade.settlementAccountHelp,"예수금이 모자라면 이 계좌에서 부족분만큼 자동으로 이체돼요.",A transfer covers any shortfall from this account.
 asset,trade.settlementDelta,"결제 계좌 변동","Settlement account change"
 asset,trade.realizedPreview,실현손익,Realized P/L
 asset,trade.insufficientCash,예수금이 부족해요. 먼저 입금하거나 금액을 확인해주세요.,Not enough cash. Deposit first or check the amount.

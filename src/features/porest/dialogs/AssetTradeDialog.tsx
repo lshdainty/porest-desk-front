@@ -97,7 +97,8 @@ export function AssetTradeDialog({
   const canSubmit =
     holdingKey.length > 0 && qty > 0 && amountNum > 0 &&
     (!isSell || qty <= heldQty) &&
-    (isSell || !viaCash || cashAfter >= 0)
+    // 예수금이 모자라도 막지 않는다 — 기록용 앱이라 마이너스로 쌓이는 게 정상이다.
+    true
 
   const submit = () => {
     if (!canSubmit) return
@@ -201,6 +202,9 @@ export function AssetTradeDialog({
         />
       </Field>
 
+      {/* 결제 계좌는 매수에만. 매도 대금은 예수금에 남기고 사용자가 이체로 관리한다 —
+          팔았다고 통장으로 자동 이체되지는 않는다. */}
+      {!isSell && (
       <Field className="mb-[14px]">
         <FieldLabel>{t('trade.settlement')}</FieldLabel>
         <Select
@@ -223,6 +227,7 @@ export function AssetTradeDialog({
           {viaCash ? t('trade.settlementCashHelp') : t('trade.settlementAccountHelp')}
         </div>
       </Field>
+      )}
 
       <Field className="mb-[14px]">
         <FieldLabel>{t('trade.date')}</FieldLabel>
