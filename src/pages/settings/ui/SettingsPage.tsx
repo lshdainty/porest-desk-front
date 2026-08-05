@@ -28,6 +28,7 @@ import {
 import {
   AccountManager,
   AppearanceSection,
+  HideAmountsSection,
   BudgetManager,
   CalendarLabelsSection,
   CalendarShareSection,
@@ -79,6 +80,7 @@ type SectionId =
   | 'calendar-labels'
   | 'todo-tags'
   | 'appearance'
+  | 'hide-amounts'
   | 'notifications'
   | 'data'
   | 'account'
@@ -101,6 +103,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'calendar-labels', labelKey: 'sections.calendarLabels.label', icon: Tag, descKey: 'sections.calendarLabels.desc' },
   { id: 'todo-tags', labelKey: 'sections.todoTags.label', icon: Tags, descKey: 'sections.todoTags.desc' },
   { id: 'appearance', labelKey: 'sections.appearance.label', icon: Palette, descKey: 'sections.appearance.desc' },
+  { id: 'hide-amounts', labelKey: 'sections.hideAmounts.label', icon: EyeOff, descKey: 'sections.hideAmounts.desc' },
   { id: 'notifications', labelKey: 'sections.notifications.label', icon: Bell, descKey: 'sections.notifications.desc' },
   { id: 'data', labelKey: 'sections.data.label', icon: Download, descKey: 'sections.data.desc' },
   { id: 'account', labelKey: 'sections.account.label', icon: User, descKey: 'sections.account.desc' },
@@ -129,7 +132,7 @@ const MENU_GROUPS: GroupDef[] = [
   },
   {
     labelKey: 'groups.appEnv',
-    sectionIds: ['appearance', 'notifications'],
+    sectionIds: ['appearance', 'hide-amounts', 'notifications'],
   },
   {
     labelKey: 'groups.data',
@@ -216,6 +219,7 @@ export const SettingsPage = () => {
       case 'calendar-labels': return <CalendarLabelsSection mobile={m} />
       case 'todo-tags':     return <TodoTagManager mobile={m} />
       case 'appearance':    return <AppearanceSection mobile={m} />
+      case 'hide-amounts':  return <HideAmountsSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />
       case 'account':       return <AccountSection mobile={m} />

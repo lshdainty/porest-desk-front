@@ -43,12 +43,12 @@ export function DateGroupHeader({
       >
         {expense > 0 && (
           <span style={{ color: "var(--fg-expense)", fontWeight: '600' }}>
-            <MaskAmount>{`−${money(expense)}`}</MaskAmount>
+            <MaskAmount card="ledger.txList">{`−${money(expense)}`}</MaskAmount>
           </span>
         )}
         {income > 0 && (
           <span style={{ color: "var(--fg-income)", fontWeight: '600' }}>
-            <MaskAmount>{`+${money(income)}`}</MaskAmount>
+            <MaskAmount card="ledger.txList">{`+${money(income)}`}</MaskAmount>
           </span>
         )}
       </span>

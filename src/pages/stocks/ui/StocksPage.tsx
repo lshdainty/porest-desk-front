@@ -533,7 +533,7 @@ function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
               <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-xs)', background: r.color, flexShrink: 0 }} />
               <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
               <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--fg-secondary)' }}>
-                <MaskAmount>{`${((r.value / total) * 100).toFixed(1)}%`}</MaskAmount>
+                <MaskAmount card="stocks.summary">{`${((r.value / total) * 100).toFixed(1)}%`}</MaskAmount>
               </span>
             </div>
           ))}
@@ -819,13 +819,13 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
           const fees = num(holding.cost.commission) + num(holding.cost.tax ?? '0')
           const heldUs = holding.marketCountry.toUpperCase() === 'US' || holding.currency.toUpperCase() === 'USD'
           const rows: Array<[string, React.ReactNode, string]> = [
-            [t('holding.marketValue'), <MaskAmount key="ev">{money(ev)}</MaskAmount>, 'var(--fg-primary)'],
-            [t('holding.profitLoss'), <MaskAmount key="pnl">{`${pnl >= 0 ? '+' : '−'}${money(pnl, { abs: true })}`}</MaskAmount>, trendColor(pnl)],
+            [t('holding.marketValue'), <MaskAmount card="stocks.detail" key="ev">{money(ev)}</MaskAmount>, 'var(--fg-primary)'],
+            [t('holding.profitLoss'), <MaskAmount card="stocks.detail" key="pnl">{`${pnl >= 0 ? '+' : '−'}${money(pnl, { abs: true })}`}</MaskAmount>, trendColor(pnl)],
             [t('holding.quantity'), t('holding.sharesUnit', { count: holding.quantity }), 'var(--fg-primary)'],
             [t('holding.returnRate'), `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`, trendColor(pnl)],
-            [t('holding.dailyPnl'), <MaskAmount key="day">{`${dayPnl >= 0 ? '+' : '−'}${money(dayPnl, { abs: true })}`}</MaskAmount>, trendColor(dayPnl)],
+            [t('holding.dailyPnl'), <MaskAmount card="stocks.detail" key="day">{`${dayPnl >= 0 ? '+' : '−'}${money(dayPnl, { abs: true })}`}</MaskAmount>, trendColor(dayPnl)],
             [t('holding.avgPrice'), heldUs ? `$${avg.toFixed(2)}` : money(Math.round(avg)), 'var(--fg-secondary)'],
-            [t('holding.purchaseAmount'), <MaskAmount key="cost">{money(purchase)}</MaskAmount>, 'var(--fg-secondary)'],
+            [t('holding.purchaseAmount'), <MaskAmount card="stocks.detail" key="cost">{money(purchase)}</MaskAmount>, 'var(--fg-secondary)'],
             [t('holding.feesTax'), money(fees), 'var(--fg-secondary)'],
             [t('holding.sellable'), t('holding.sharesUnit', { count: holding.quantity }), 'var(--fg-secondary)'],
           ]
@@ -1112,18 +1112,18 @@ export function StocksPage() {
     <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('summary.title')}</div>
       <div className="num" style={{ fontSize: mobile ? 28 : 32, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)', marginTop: 4 }}>
-        <MaskAmount>{KRW(totalEval)}</MaskAmount>원
+        <MaskAmount card="stocks.holdings">{KRW(totalEval)}</MaskAmount>원
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
         <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: trendColor(totalPnl), whiteSpace: 'nowrap' }}>
-          <MaskAmount>{`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })}`}</MaskAmount>
+          <MaskAmount card="stocks.holdings">{`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })}`}</MaskAmount>
         </span>
         <PctBadge pct={totalPnlPct} size={13} />
       </div>
       <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
         {(
           [
-            [t('holding.purchaseAmount'), <MaskAmount key="c">{money(totalCost)}</MaskAmount>],
+            [t('holding.purchaseAmount'), <MaskAmount card="stocks.holdings" key="c">{money(totalCost)}</MaskAmount>],
             [t('summary.holdingsCount'), t('unit.count', { count: holdingItems.length })],
             [t('summary.fxRate'), fxRate != null ? `₩${Math.round(fxRate).toLocaleString()}` : '—'],
           ] as Array<[string, React.ReactNode]>
@@ -1178,7 +1178,7 @@ export function StocksPage() {
                   right={
                     <>
                       <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                        <MaskAmount>{money(ev)}</MaskAmount>
+                        <MaskAmount card="stocks.holdings">{money(ev)}</MaskAmount>
                       </div>
                       <div className="num" style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: trendColor(pnl), marginTop: 1 }}>
                         {pnl >= 0 ? '+' : ''}

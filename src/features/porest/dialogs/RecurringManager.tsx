@@ -169,15 +169,15 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               </div>
               <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 0' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)' }}>
-                <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
-                <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+                <RecStat label={t('statMonthlyExpense')} value={<MaskAmount card="etc.recurring">-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+                <RecStat label={t('statMonthlyIncome')} value={<MaskAmount card="etc.recurring">+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               </div>
             </>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-xl)' }}>
               <RecStat label={t('statActive')} value={t('countItems', { count: stats.count })} Icon={Repeat} />
-              <RecStat label={t('statMonthlyExpense')} value={<MaskAmount>-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
-              <RecStat label={t('statMonthlyIncome')} value={<MaskAmount>+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
+              <RecStat label={t('statMonthlyExpense')} value={<MaskAmount card="etc.recurring">-{KRW(stats.monthlyExpense)}</MaskAmount>} Icon={TrendingDown} tone="expense" />
+              <RecStat label={t('statMonthlyIncome')} value={<MaskAmount card="etc.recurring">+{KRW(stats.monthlyIncome)}</MaskAmount>} Icon={TrendingUp} tone="income" />
               <RecStat label={t('paused')} value={t('countItems', { count: stats.paused })} Icon={PauseCircle} tone="muted" />
             </div>
           )}
@@ -254,7 +254,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                     </div>
                   </div>
                   <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
-                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
+                    <MaskAmount card="etc.recurring">{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 </div>
               )
@@ -428,7 +428,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       opacity: isActive ? 1 : 0.55,
                     }}
                   >
-                    <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
+                    <MaskAmount card="etc.recurring">{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                   </div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
@@ -445,7 +445,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           opacity: isActive ? 1 : 0.55,
                         }}
                       >
-                        <MaskAmount>{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
+                        <MaskAmount card="etc.recurring">{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                       </span>
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <button

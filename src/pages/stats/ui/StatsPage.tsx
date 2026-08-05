@@ -5,7 +5,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } fro
 import { KRW, money, isEn, formatChartAxis, formatChartAmount } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
-import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { HideCard, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { Donut } from '@/shared/ui/porest/charts'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
@@ -551,7 +551,7 @@ export const StatsPage = () => {
   const { mobile } = useOutletContext<OutletCtx>()
   const { t } = useTranslation('stats')
   const { t: te } = useTranslation('expense')
-  const hidden = useHideAmounts()
+  const hidden = useHideAmounts('stats.category')
   const [tab, setTab] = useState<TabKey>('cat')
   const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
   const [activeParentId, setActiveParentId] = useState<number | null>(null)
@@ -2249,7 +2249,9 @@ export const StatsPage = () => {
     </Section>
   )
 
-  const Content =
+  // 탭 하나가 곧 카드다 — 안쪽 금액이 전부 그 탭 키로 잡힌다.
+  // 카드들이 변수로 조립돼 정의부만 봐선 어느 탭인지 알 수 없어서, 조립 결과를 감싼다.
+  const ContentInner =
     tab === 'cat' ? (
       // 한 덩어리(flex-col gap) — 카테고리/가맹점/히트맵/통계 4섹션 균일 gap(앱·추이·비교 탭 정합).
       // 데스크톱만 도넛|가맹점을 grid 2열로 나란히, 그 외엔 세로. margin-bottom 혼재 제거.
@@ -2288,6 +2290,12 @@ export const StatsPage = () => {
   void totalIncome
 
   // 정적 틀(탭·헤더)은 항상 실제 렌더 — 스켈레톤은 콘텐츠 영역에만(서버 데이터 자리).
+  const Content = (
+    <HideCard card={tab === 'cat' ? 'stats.category' : tab === 'trend' ? 'stats.trend' : 'stats.compare'}>
+      {ContentInner}
+    </HideCard>
+  )
+
   const content = shouldShowSkeleton ? <StatsPageSkeleton mobile={mobile} tab={tab} /> : Content
 
   if (mobile) {

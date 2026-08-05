@@ -295,7 +295,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
               {monthlyBudget ? (
                 <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.022em' }}>
-                  <MaskAmount>{wonPre()}{KRW(monthlyLimit)}</MaskAmount>
+                  <MaskAmount card="budget.manage">{wonPre()}{KRW(monthlyLimit)}</MaskAmount>
                   {!isEn() && (
                     <HideUnit>
                       <span style={{ fontSize: 'var(--text-body-lg)', marginLeft: 3 }}>원</span>
@@ -352,7 +352,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               </div>
               {/* 앱(13)·웹(16) 중간 → 토큰 스냅 14(body-sm) — 앱 body(14)와 동값(사용자 결정). */}
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount mask="••••">{KRW(totalSpent)}</MaskAmount>
+                <MaskAmount card="budget.manage" mask="••••">{KRW(totalSpent)}</MaskAmount>
               </div>
             </div>
             <div>
@@ -360,7 +360,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 {t('manager.assigned')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount mask="••••">{KRW(totalAssigned)}</MaskAmount>
+                <MaskAmount card="budget.manage" mask="••••">{KRW(totalAssigned)}</MaskAmount>
               </div>
             </div>
             <div>
@@ -375,7 +375,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   color: remaining < 0 ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
-                <MaskAmount mask="••••">
+                <MaskAmount card="budget.manage" mask="••••">
                   {remaining >= 0 ? '+' : ''}
                   {KRW(remaining)}
                 </MaskAmount>
@@ -398,7 +398,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               }}
             >
               <AlertTriangle size={13} />
-              {t('manager.overCapPre')} <MaskAmount mask="••••">{wonPre()}{KRW(Math.abs(remaining))}</MaskAmount><WonUnit /> {t('manager.overCapPost')}
+              {t('manager.overCapPre')} <MaskAmount card="budget.manage" mask="••••">{wonPre()}{KRW(Math.abs(remaining))}</MaskAmount><WonUnit card="budget.manage" /> {t('manager.overCapPost')}
             </div>
           )}
           </CardContent>
@@ -479,13 +479,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       >
                         {state === 'over' ? (
                           <>
-                            {t('manager.overLimit')} <MaskAmount mask="••••">{wonPre()}{KRW(spent - limitAmt)}</MaskAmount>
-                            <WonUnit />
+                            {t('manager.overLimit')} <MaskAmount card="budget.manage" mask="••••">{wonPre()}{KRW(spent - limitAmt)}</MaskAmount>
+                            <WonUnit card="budget.manage" />
                           </>
                         ) : (
                           <>
-                            {t('manager.remaining')} <MaskAmount mask="••••">{wonPre()}{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
-                            <WonUnit />
+                            {t('manager.remaining')} <MaskAmount card="budget.manage" mask="••••">{wonPre()}{KRW(Math.max(0, limitAmt - spent))}</MaskAmount>
+                            <WonUnit card="budget.manage" />
                           </>
                         )}
                       </div>
@@ -499,13 +499,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                           color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                         }}
                       >
-                        <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
+                        <MaskAmount card="budget.manage" mask="••••">{KRW(spent)}</MaskAmount>
                       </div>
                       <div
                         className="num"
                         style={{ fontSize: 'var(--text-badge)', fontWeight: '500', color: 'var(--fg-tertiary)' }}
                       >
-                        / <MaskAmount mask="••••">{KRW(limitAmt)}</MaskAmount>
+                        / <MaskAmount card="budget.manage" mask="••••">{KRW(limitAmt)}</MaskAmount>
                       </div>
                     </div>
                     {!mobile && (

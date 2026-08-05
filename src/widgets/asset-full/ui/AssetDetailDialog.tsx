@@ -32,8 +32,8 @@ import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { assetTypeLabel } from '@/shared/lib/porest/asset-labels'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { disablePdHideAmounts, enablePdHideAmounts, wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
+import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
 
@@ -69,8 +69,8 @@ function BalanceTooltip({ active, payload, seriesLabel }: BalanceTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--color-balance)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{seriesLabel}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount>{wonPre()}{KRW(val)}</MaskAmount>
-          <WonUnit />
+          <MaskAmount card="asset.detail">{wonPre()}{KRW(val)}</MaskAmount>
+          <WonUnit card="asset.detail" />
         </span>
       </div>
     </div>
@@ -152,10 +152,10 @@ function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
             : t('assetDetail.perfRemain', { amount: money(p.remainingAmount ?? 0) })}
         </div>
         <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          <MaskAmount mask="•••">{wonPre()}{KRW(p.currentAmount)}</MaskAmount>
+          <MaskAmount card="asset.detail" mask="•••">{wonPre()}{KRW(p.currentAmount)}</MaskAmount>
           {' / '}
-          <MaskAmount mask="•••">{wonPre()}{KRW(p.requiredAmount)}</MaskAmount>
-          <WonUnit /> · {pct}%
+          <MaskAmount card="asset.detail" mask="•••">{wonPre()}{KRW(p.requiredAmount)}</MaskAmount>
+          <WonUnit card="asset.detail" /> · {pct}%
         </div>
       </div>
     </div>
@@ -362,7 +362,7 @@ function CardDetailBody({
           </span>
         </button>
         <div className="num" style={{ fontSize: 'var(--text-display-md)', fontWeight: '800', letterSpacing: '-0.03em', marginTop: 10, color: 'var(--fg-primary)' }}>
-          <MaskAmount>{wonPre()}{KRW(st?.amount ?? 0)}</MaskAmount>
+          <MaskAmount card="asset.detail">{wonPre()}{KRW(st?.amount ?? 0)}</MaskAmount>
           {!isEn() && (
             <HideUnit>
               <span style={{ fontSize: 'var(--text-title-lg)', marginLeft: 1 }}>원</span>
@@ -529,8 +529,8 @@ function CardDetailBody({
                       {s.label}{s.scheduled ? ` (${t('assetDetail.scheduledTag')})` : ''}
                     </span>
                     <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
-                      <MaskAmount>{wonPre()}{KRW(s.amount)}</MaskAmount>
-                      <WonUnit />
+                      <MaskAmount card="asset.detail">{wonPre()}{KRW(s.amount)}</MaskAmount>
+                      <WonUnit card="asset.detail" />
                     </span>
                     {i === stIdx && <Check size={16} color="var(--fg-brand)" strokeWidth={2.6} />}
                   </button>
@@ -685,8 +685,8 @@ function HoldingRow({
         <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700 }}>
           {value != null ? (
             <>
-              <MaskAmount>{wonPre()}{KRW(value)}</MaskAmount>
-              <WonUnit />
+              <MaskAmount card="asset.detail">{wonPre()}{KRW(value)}</MaskAmount>
+              <WonUnit card="asset.detail" />
             </>
           ) : (
             '—'
@@ -876,16 +876,9 @@ export function AssetDetailDialog({
 }) {
   const { t } = useTranslation('asset')
   const navigate = useNavigate()
-  const hidden = useHideAmounts()
-  const [unlockOpen, setUnlockOpen] = useState(false)
-
-  const handleHideToggle = () => {
-    if (hidden) {
-      setUnlockOpen(true)
-    } else {
-      enablePdHideAmounts()
-    }
-  }
+  const hidden = useHideAmounts('asset.detail')
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
+  const handleHideToggle = useOpenHideAmountsSettings('asset')
 
   const group = groupOf(asset)
   const isCard = group === 'card'
@@ -1032,7 +1025,7 @@ export function AssetDetailDialog({
                 color: 'var(--fg-primary)',
               }}
             >
-              <MaskAmount>
+              <MaskAmount card="asset.detail">
                 {wonPre()}
                 {KRW(heroAmount)}
               </MaskAmount>
@@ -1046,11 +1039,11 @@ export function AssetDetailDialog({
             {isInv && investCash !== 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
                 <span className="num">
-                  {t('holdings.cashBalance')} <MaskAmount>{KRW(investCash)}</MaskAmount>
+                  {t('holdings.cashBalance')} <MaskAmount card="asset.detail">{KRW(investCash)}</MaskAmount>
                 </span>
                 <span className="dot-sep" />
                 <span className="num">
-                  {t('holdings.holdingBalance')} <MaskAmount>{KRW(investHolding)}</MaskAmount>
+                  {t('holdings.holdingBalance')} <MaskAmount card="asset.detail">{KRW(investHolding)}</MaskAmount>
                 </span>
               </div>
             )}
@@ -1259,11 +1252,6 @@ export function AssetDetailDialog({
       </>
       )}
     </ModalShell>
-    <HideAmountsUnlockDialog
-      open={unlockOpen}
-      onOpenChange={setUnlockOpen}
-      onVerified={disablePdHideAmounts}
-    />
     </>
   )
 }

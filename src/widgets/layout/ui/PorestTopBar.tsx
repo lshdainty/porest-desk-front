@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Bell, Eye, EyeOff, Plus, Search, Settings } from 'lucide-react'
-import { disablePdHideAmounts, enablePdHideAmounts, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
+import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { useUnreadCount } from '@/features/notification'
 import { NotificationsPopover } from '@/features/porest/dialogs'
-import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
 import { Button } from '@/shared/ui/button'
 import { ModeToggle } from '@/shared/ui/mode-toggle'
@@ -16,15 +16,8 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   const hidden = useHideAmounts()
   const { data: unreadCount = 0 } = useUnreadCount()
   const [notifOpen, setNotifOpen] = useState(false)
-  const [unlockOpen, setUnlockOpen] = useState(false)
-
-  const handleHideToggle = () => {
-    if (hidden) {
-      setUnlockOpen(true)
-    } else {
-      enablePdHideAmounts()
-    }
-  }
+  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다(어느 화면인지 특정할 수 없어 전체 목록).
+  const handleHideToggle = useOpenHideAmountsSettings()
 
   return (
     <header className="top">
@@ -78,11 +71,6 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
           onGoSettings={() => navigate('/desk/settings')}
         />
       )}
-      <HideAmountsUnlockDialog
-        open={unlockOpen}
-        onOpenChange={setUnlockOpen}
-        onVerified={disablePdHideAmounts}
-      />
     </header>
   )
 }

@@ -122,7 +122,7 @@ export function TransferRow({
       </LedgerRowMain>
       <div>
         <LedgerRowAmt>
-          <MaskAmount>
+          <MaskAmount card="ledger.txList">
             {signed == null ? '' : signed < 0 ? '-' : '+'}
             {isEn() ? '₩' : ''}
             {KRW(signed ?? transfer.amount, { abs: true })}
@@ -195,7 +195,7 @@ export function ExpenseRow({
       <div>
         {right ?? (
           <LedgerRowAmt>
-            <MaskAmount>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
+            <MaskAmount card="ledger.txList">{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
             <HideUnit>{isEn() ? '' : '원'}</HideUnit>
           </LedgerRowAmt>
         )}

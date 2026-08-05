@@ -108,14 +108,14 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
         <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
           <span>{t('spent')}</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
-            <MaskAmount mask="••••">{wonPre()}{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
+            <MaskAmount card="budget.compliance" mask="••••">{wonPre()}{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <WonUnit />
           </span>
         </div>
         <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
           <span>{t('limit')}</span>
           <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
-            <MaskAmount mask="••••">{wonPre()}{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
+            <MaskAmount card="budget.compliance" mask="••••">{wonPre()}{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
             <WonUnit />
           </span>
         </div>
@@ -443,11 +443,11 @@ export const BudgetPage = () => {
               className="num"
               style={{ fontSize: mobile ? 24 : 30, fontWeight: '800', letterSpacing: '-0.022em' }}
             >
-              <MaskAmount mask="••••">{wonPre()}{KRW(totalSpent)}</MaskAmount>
+              <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalSpent)}</MaskAmount>
             </div>
             <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', fontWeight: '500' }}>
-              / <MaskAmount mask="••••">{wonPre()}{KRW(totalLimit)}</MaskAmount>
-              <WonUnit />
+              / <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalLimit)}</MaskAmount>
+              <WonUnit card="budget.header" />
             </div>
           </div>
           <div className="budget-bar" style={{ height: 10 }}>
@@ -468,8 +468,8 @@ export const BudgetPage = () => {
             <span>{pct.toFixed(0)}% {t('manager.spent')}</span>
             <span style={{ color: totalLimit - totalSpent < 0 ? 'var(--fg-expense)' : undefined }}>
               {totalLimit - totalSpent >= 0
-                ? <>{t('manager.remaining')} <MaskAmount mask="••••">{wonPre()}{KRW(totalLimit - totalSpent)}</MaskAmount><WonUnit /></>
-                : <>{t('limit')} <MaskAmount mask="••••">{wonPre()}{KRW(totalSpent - totalLimit)}</MaskAmount><WonUnit /> {t('over')}</>}
+                ? <>{t('manager.remaining')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalLimit - totalSpent)}</MaskAmount><WonUnit card="budget.header" /></>
+                : <>{t('limit')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalSpent - totalLimit)}</MaskAmount><WonUnit card="budget.header" /> {t('over')}</>}
             </span>
           </div>
           <div
@@ -487,8 +487,8 @@ export const BudgetPage = () => {
                 {t('totalCap')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount mask="••••">{wonPre()}{KRW(overallLimit)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(overallLimit)}</MaskAmount>
+                <WonUnit card="budget.header" />
               </div>
             </div>
             <div>
@@ -496,8 +496,8 @@ export const BudgetPage = () => {
                 {t('categoryAllocated')}
               </div>
               <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount>
+                <WonUnit card="budget.header" />
               </div>
             </div>
             <div>
@@ -512,12 +512,12 @@ export const BudgetPage = () => {
                   color: overAllocated ? 'var(--fg-expense)' : 'var(--fg-income)',
                 }}
               >
-                <MaskAmount mask="••••">
+                <MaskAmount card="budget.header" mask="••••">
                   {overAllocated ? '−' : '+'}
                   {wonPre()}
                   {KRW(Math.abs(allocable))}
                 </MaskAmount>
-                <WonUnit />
+                <WonUnit card="budget.header" />
               </div>
             </div>
           </div>
@@ -538,7 +538,7 @@ export const BudgetPage = () => {
             >
               <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                {t('manager.overCapPre')} <MaskAmount mask="••••">{wonPre()}{KRW(categoryLimitSum - overallLimit)}</MaskAmount><WonUnit /> {t('manager.overCapPost')}
+                {t('manager.overCapPre')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum - overallLimit)}</MaskAmount><WonUnit card="budget.header" /> {t('manager.overCapPost')}
               </span>
             </div>
           )}
@@ -555,7 +555,7 @@ export const BudgetPage = () => {
           {t('capUnsetPre')} <strong>{t('manager.setBudget')}</strong> {t('capUnsetPost')}
           {categoryLimitSum > 0 && (
             <div style={{ marginTop: 8, fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-              {t('currentCategorySum')}: <MaskAmount mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount><WonUnit />
+              {t('currentCategorySum')}: <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount><WonUnit card="budget.header" />
             </div>
           )}
         </div>
@@ -640,7 +640,7 @@ export const BudgetPage = () => {
             {t('dailyAvg')}
           </div>
           <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', letterSpacing: '-0.022em' }}>
-            <MaskAmount mask="••••">{wonPre()}{KRW(dailyActual)}</MaskAmount>
+            <MaskAmount card="budget.pace" mask="••••">{wonPre()}{KRW(dailyActual)}</MaskAmount>
             {!isEn() && (
               <HideUnit>
                 <span style={{ fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
@@ -661,7 +661,7 @@ export const BudgetPage = () => {
               color: 'var(--fg-brand-strong)',
             }}
           >
-            <MaskAmount mask="••••">{wonPre()}{KRW(dailyTarget)}</MaskAmount>
+            <MaskAmount card="budget.pace" mask="••••">{wonPre()}{KRW(dailyTarget)}</MaskAmount>
             {!isEn() && (
               <HideUnit>
                 <span style={{ fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
@@ -909,8 +909,8 @@ export const BudgetPage = () => {
                     <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{name}</div>
                     <div style={{ fontSize: 'var(--text-caption)', color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-tertiary)', marginTop: 1 }}>
                       {state === 'over'
-                        ? <>{t('limit')} <MaskAmount mask="••••">{wonPre()}{KRW(spent - limit)}</MaskAmount><WonUnit /> {t('over')}</>
-                        : <>{t('manager.remaining')} <MaskAmount mask="••••">{wonPre()}{KRW(Math.max(0, limit - spent))}</MaskAmount><WonUnit /></>}
+                        ? <>{t('limit')} <MaskAmount card="budget.categories" mask="••••">{wonPre()}{KRW(spent - limit)}</MaskAmount><WonUnit card="budget.categories" /> {t('over')}</>
+                        : <>{t('manager.remaining')} <MaskAmount card="budget.categories" mask="••••">{wonPre()}{KRW(Math.max(0, limit - spent))}</MaskAmount><WonUnit card="budget.categories" /></>}
                     </div>
                   </div>
                   <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
@@ -921,10 +921,10 @@ export const BudgetPage = () => {
                         color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
                       }}
                     >
-                      <MaskAmount mask="••••">{KRW(spent)}</MaskAmount>
+                      <MaskAmount card="budget.categories" mask="••••">{KRW(spent)}</MaskAmount>
                     </div>
                     <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-                      / <MaskAmount mask="••••">{KRW(limit)}</MaskAmount>
+                      / <MaskAmount card="budget.categories" mask="••••">{KRW(limit)}</MaskAmount>
                     </div>
                   </div>
                 </div>

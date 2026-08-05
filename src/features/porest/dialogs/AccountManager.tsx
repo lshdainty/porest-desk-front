@@ -144,8 +144,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            {t('manager.totalPrefix')} <MaskAmount>{wonPre()}{KRW(totalInTab)}</MaskAmount>
-            <WonUnit />
+            {t('manager.totalPrefix')} <MaskAmount card="asset.manage">{wonPre()}{KRW(totalInTab)}</MaskAmount>
+            <WonUnit card="asset.manage" />
           </div>
           <Button variant="accent" size="sm" onClick={() => setEditing({ mode: 'create', group: tab })}>
             <Plus size={14} strokeWidth={2.4} />
@@ -210,12 +210,12 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                           color: 'var(--fg-primary)',
                         }}
                       >
-                        <MaskAmount mask="••••">
+                        <MaskAmount card="asset.manage" mask="••••">
                           {neg ? '−' : ''}
                           {wonPre()}
                           {KRW(amt)}
                         </MaskAmount>
-                        <WonUnit />
+                        <WonUnit card="asset.manage" />
                       </div>
                       {asset.isIncludedInTotal === 'N' && (
                         <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
