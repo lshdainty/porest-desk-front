@@ -495,7 +495,8 @@ export function AssetEditDialog({
         paymentAssetRowId,
       }
       // 체크카드는 잔액을 들지 않는다 — 사용액은 연결 계좌에서 빠져 있다.
-      const cardBalance = isCredit ? parsedBalance : 0
+      // 신용카드 잔액은 미결제 사용액이라 음수 — 사용자가 양수를 쳐도 뒤집어 보낸다.
+      const cardBalance = isCredit ? -Math.abs(parsedBalance) : 0
 
       if (isNew) {
         onCreate({
