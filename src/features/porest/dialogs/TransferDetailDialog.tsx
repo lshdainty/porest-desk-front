@@ -9,19 +9,25 @@ import { useDeleteTransfer } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 
 /**
- * 이체 상세 — 보기 + 삭제.
+ * 이체 상세 — 보기 + 수정 + 삭제.
  *
- * 이체는 수정 API 가 없다(생성/삭제만). 값을 바꾸려면 지우고 다시 넣는 방식이라
- * 편집 버튼 대신 삭제만 둔다. 삭제하면 서버가 양쪽 자산의 잔액 이력을 되돌린다.
+ * <p>수정·삭제는 서버가 이자 지출·잔액 이력을 되돌렸다 다시 만든다. rowId 는 유지되므로
+ * 이 이체를 가리키던 참조가 끊기지 않는다.
+ *
+ * <p>시스템이 만든 이체(매수 예수금 충당·카드 자동결제)는 금액이 원본과 묶여 있어
+ * 고칠 수 없다 — 버튼을 감추고 왜 그런지 적어 둔다.
  */
 export function TransferDetailDialog({
   transfer,
   mobile,
   onClose,
+  onEdit,
 }: {
   transfer: AssetTransfer
   mobile: boolean
   onClose: () => void
+  /** 수정 폼으로 넘긴다. 안 넘기면 수정 버튼이 없다. */
+  onEdit?: (transfer: AssetTransfer) => void
 }) {
   const { t } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
@@ -29,6 +35,8 @@ export function TransferDetailDialog({
   const deleteMut = useDeleteTransfer()
 
   const fee = transfer.fee ?? 0
+  // 매수 충당·카드 결제로 생긴 이체는 원본과 금액이 묶여 있다.
+  const locked = transfer.autoSource != null
   const won = (v: number) => `${isEn() ? '₩' : ''}${KRW(v, { abs: true })}${isEn() ? '' : '원'}`
 
   const handleConfirmDelete = () => {
@@ -67,13 +75,32 @@ export function TransferDetailDialog({
         mobile={mobile}
         footer={
           <ModalViewFooter
-            onDelete={() => setConfirmDelete(true)}
+            onDelete={locked ? undefined : () => setConfirmDelete(true)}
             deleteLabel={tc('delete')}
+            onEdit={locked || !onEdit ? undefined : () => onEdit(transfer)}
+            editLabel={tc('edit')}
             onConfirm={onClose}
           />
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* 왜 고칠 수 없는지 알려 준다 — 버튼만 없으면 고장으로 보인다. */}
+          {locked && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-sunken)',
+                fontSize: 'var(--text-caption)',
+                color: 'var(--fg-tertiary)',
+                lineHeight: 1.6,
+              }}
+            >
+              {t(`transferAutoSource.${transfer.autoSource}`, {
+                defaultValue: t('transferAutoSource.default'),
+              })}
+            </div>
+          )}
           {rows.map(r => (
             <div key={r.label} style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
               <span

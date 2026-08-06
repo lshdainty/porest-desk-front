@@ -68,7 +68,9 @@ export const expenseKeys = {
   recurring: () => [...expenseKeys.all, 'recurring'] as const,
   templates: () => [...expenseKeys.all, 'templates'] as const,
   dailySummary: (date: string) => [...expenseKeys.all, 'daily-summary', date] as const,
-  rangeSummary: (startDate: string, endDate: string) => [...expenseKeys.all, 'range-summary', startDate, endDate] as const,
+  // assetId 를 키에 넣는다 — 안 넣으면 자산 필터를 걸었다 풀어도 캐시가 그대로다.
+  rangeSummary: (startDate: string, endDate: string, assetId?: number | null) =>
+    [...expenseKeys.all, 'range-summary', startDate, endDate, assetId ?? null] as const,
   monthlyTrend: (months: number) => [...expenseKeys.all, 'monthly-trend', months] as const,
   merchantSummary: <T = Record<string, unknown>>(params?: T) => [...expenseKeys.all, 'merchant-summary', params] as const,
   heatmap: (startDate: string, endDate: string) => [...expenseKeys.all, 'heatmap', startDate, endDate] as const,

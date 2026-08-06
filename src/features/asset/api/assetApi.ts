@@ -89,6 +89,12 @@ export const assetApi = {
     return resp.data
   },
 
+  /** 이체 수정 — 서버가 이자 지출·잔액 이력을 되돌렸다 다시 만든다. rowId 는 유지된다. */
+  updateTransfer: async (id: number, data: AssetTransferFormValues): Promise<AssetTransfer> => {
+    const resp: ApiResponse<AssetTransfer> = await apiClient.put(`/v1/asset-transfer/${id}`, data)
+    return resp.data
+  },
+
   getTransfers: async (params?: TransferListParams): Promise<{ transfers: AssetTransfer[] }> => {
     const resp: ApiResponse<{ transfers: AssetTransfer[] }> = await apiClient.get('/v1/asset-transfers', { params })
     return resp.data

@@ -302,9 +302,12 @@ export function getMonthCellEvents(date: Date, events: IEvent[], eventPositions:
  * Expense (가계부 데이터)를 IEvent 인터페이스로 변환
  */
 export function convertExpenseToIEvent(expense: Expense): IEvent {
-  const isIncome = expense.expenseType === 'INCOME'
+  // 환불(INCOME + 원거래 지정)은 수입이 아니라 지출 상계다 — 서버 집계와 같은 규칙.
+  // 파랑 '+3,000' 으로 그리면 셀 합계가 월 헤더와 어긋난다.
+  const isRefund = expense.expenseType === 'INCOME' && expense.refundOfExpenseRowId != null
+  const isIncome = expense.expenseType === 'INCOME' && !isRefund
   const color = isIncome ? '#0147ad' : '#c73838'
-  const sign = isIncome ? '+' : '-'
+  const sign = isRefund ? '+' : isIncome ? '+' : '-'
   const amount = money(expense.amount, { abs: true })
   const categoryName = expense.categoryName || ''
   const title = categoryName

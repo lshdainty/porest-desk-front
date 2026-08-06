@@ -61,10 +61,10 @@ export const useDailySummary = (date: string) => {
   })
 }
 
-export const useRangeSummary = (startDate: string, endDate: string) => {
+export const useRangeSummary = (startDate: string, endDate: string, assetId?: number | null) => {
   return useQuery({
-    queryKey: expenseKeys.rangeSummary(startDate, endDate),
-    queryFn: () => expenseApi.getRangeSummary(startDate, endDate),
+    queryKey: expenseKeys.rangeSummary(startDate, endDate, assetId),
+    queryFn: () => expenseApi.getRangeSummary(startDate, endDate, assetId),
     enabled: !!startDate && !!endDate,
   })
 }

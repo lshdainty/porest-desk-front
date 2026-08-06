@@ -34,9 +34,10 @@ import {
   useUpdateExpense,
   useDeleteExpense,
 } from '@/features/expense'
-import { useAssets, useCreateTransfer } from '@/features/asset'
+import { useAssets, useCreateTransfer, useUpdateTransfer } from '@/features/asset'
 import { useExpenseSplits } from '@/features/expense-split'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
+import type { AssetTransfer } from '@/entities/asset'
 import type { Asset, AssetType } from '@/entities/asset'
 import type { ExpenseTemplate } from '@/entities/expense-template'
 import type { ExpenseSplitFormValue } from '@/entities/expense-split'
@@ -71,6 +72,11 @@ type Props = {
    * 카테고리·자산·가맹점은 원거래를 승계하고 금액만 고치면 된다(부분 환불).
    */
   refundOf?: Expense | null
+  /**
+   * 이체 편집 모드 — 전달되면 그 이체를 고친다.
+   * 서버가 이자 지출·잔액 이력을 되돌렸다 다시 만들고 rowId 는 유지한다.
+   */
+  editTransfer?: AssetTransfer | null
 }
 
 const todayLocal = () => {
@@ -92,10 +98,11 @@ const extractTime = (s?: string | null) => {
   return m ? m[1] : null
 }
 
-export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: Props) {
+export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, editTransfer }: Props) {
   const { t, i18n } = useTranslation('expense')
   const { t: tc } = useTranslation('common')
-  const isEdit = !!expense
+  const isEditTransfer = !!editTransfer
+  const isEdit = !!expense || isEditTransfer
   /**
    * 시스템이 만든 거래 — 매도 실현손익·이체 이자. 금액·날짜·자산은 계산 결과라 못 고친다.
    * 카테고리·메모는 분류라서 열어 둔다. 서버도 같은 규칙으로 거른다.
@@ -115,6 +122,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
   const updateMut = useUpdateExpense()
   const deleteMut = useDeleteExpense()
   const createTransferMut = useCreateTransfer()
+  const updateTransferMut = useUpdateTransfer()
   const touchPresetMut = useTouchExpenseTemplate()
   // 편집 모드: 기존 분할 내역 — 금액 변경 시 분할 합과 일치 여부 판정용
   const splitsQ = useExpenseSplits(expense?.rowId ?? null)
@@ -126,16 +134,22 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
 
   // 타입 — 환불은 수입으로 들어간다(원거래 연결이 상계를 만든다)
   const [type, setType] = useState<TxType>(
-    isRefundMode ? 'INCOME' : (expense?.expenseType ?? 'EXPENSE'),
+    editTransfer ? 'TRANSFER' : isRefundMode ? 'INCOME' : (expense?.expenseType ?? 'EXPENSE'),
   )
 
   // 공통 필드
   const [amount, setAmount] = useState<string>(
-    expense?.amount ? String(expense.amount) : (refundOf ? String(refundOf.amount) : ''),
+    editTransfer ? String(editTransfer.amount)
+      : expense?.amount ? String(expense.amount)
+      : (refundOf ? String(refundOf.amount) : ''),
   )
-  const [description, setDescription] = useState(expense?.description ?? '')
+  const [description, setDescription] = useState(
+    editTransfer?.description ?? expense?.description ?? '',
+  )
   const [expenseDate, setExpenseDate] = useState<string>(
-    expense?.expenseDate ? expense.expenseDate.slice(0, 10) : (defaultDate ?? todayLocal()),
+    editTransfer ? editTransfer.transferDate.slice(0, 10)
+      : expense?.expenseDate ? expense.expenseDate.slice(0, 10)
+      : (defaultDate ?? todayLocal()),
   )
   const [expenseTime, setExpenseTime] = useState<string>(
     () => extractTime(expense?.expenseDate) ?? nowTimeLocal(),
@@ -166,11 +180,19 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
   )
 
   // TRANSFER 전용
-  const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(null)
-  const [toAssetRowId, setToAssetRowId] = useState<number | null>(null)
-  const [fee, setFee] = useState<string>('')
+  const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(
+    editTransfer?.fromAssetRowId ?? null,
+  )
+  const [toAssetRowId, setToAssetRowId] = useState<number | null>(
+    editTransfer?.toAssetRowId ?? null,
+  )
+  const [fee, setFee] = useState<string>(
+    editTransfer?.fee ? String(editTransfer.fee) : '',
+  )
   // 대출 상환의 이자 — 상환액 중 이 금액은 부채를 줄이지 않고 지출로 잡힌다.
-  const [interest, setInterest] = useState<string>('')
+  const [interest, setInterest] = useState<string>(
+    editTransfer?.interestAmount ? String(editTransfer.interestAmount) : '',
+  )
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -373,24 +395,30 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
     return true
   })()
 
-  const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending || deleteMut.isPending
+  const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending
+    || updateTransferMut.isPending || deleteMut.isPending
 
   const save = () => {
     if (!canSave) return
     if (type === 'TRANSFER') {
-      createTransferMut.mutate(
-        {
-          fromAssetRowId: fromAssetRowId!,
-          toAssetRowId: toAssetRowId!,
-          amount: amountNumber,
-          fee: fee ? Number(fee) : undefined,
-          // 이자는 대출 상환에만 — 그 밖의 이체에선 값을 흘리지 않는다.
-          interestAmount: showInterest && interest ? Number(interest) : undefined,
-          description: description || undefined,
-          transferDate: `${expenseDate}T${expenseTime}`,
-        },
-        { onSuccess: onClose },
-      )
+      const payload = {
+        fromAssetRowId: fromAssetRowId!,
+        toAssetRowId: toAssetRowId!,
+        amount: amountNumber,
+        fee: fee ? Number(fee) : undefined,
+        // 이자는 대출 상환에만 — 그 밖의 이체에선 값을 흘리지 않는다.
+        interestAmount: showInterest && interest ? Number(interest) : undefined,
+        description: description || undefined,
+        transferDate: `${expenseDate}T${expenseTime}`,
+      }
+      if (editTransfer) {
+        updateTransferMut.mutate(
+          { id: editTransfer.rowId, data: payload },
+          { onSuccess: onClose },
+        )
+        return
+      }
+      createTransferMut.mutate(payload, { onSuccess: onClose })
       return
     }
     // 분할이 있는 거래의 금액을 바꿔 합과 어긋나면 → 저장 전에 분할을 먼저 맞춘다.
@@ -1193,6 +1221,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
               <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 8 }}>{t('deleteConfirm.title')}</div>
               <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: '1.7', marginBottom: 16 }}>
                 {t('addTx.deleteMessage')}
+                {/* 환불이 달려 있으면 그것도 함께 사라진다 — 모르고 지우면 지출 총액이
+                    조용히 바뀌고 원인을 찾을 수 없다. */}
+                {(expense?.refundCount ?? 0) > 0 && (
+                  <div style={{ marginTop: 8, color: 'var(--fg-expense)', fontWeight: 600 }}>
+                    {t('addTx.deleteRefundWarn', {
+                      count: expense!.refundCount,
+                      amount: KRW(expense!.refundedAmount),
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <Button

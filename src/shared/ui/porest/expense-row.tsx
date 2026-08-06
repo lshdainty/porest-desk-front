@@ -134,6 +134,13 @@ export function TransferRow({
   )
 }
 
+/** 아직 오지 않은 거래인가 — 서버 집계도 이 기준으로 오늘까지만 센다. */
+function isScheduled(expenseDate: string | null | undefined): boolean {
+  if (!expenseDate) return false
+  // 서버가 사용자 타임존 기준으로 자르므로 로컬 시각과 비교한다(둘이 같은 지역이다).
+  return new Date(expenseDate.length === 10 ? `${expenseDate}T23:59:59` : expenseDate) > new Date()
+}
+
 export function ExpenseRow({
   expense,
   onClick,
@@ -149,7 +156,7 @@ export function ExpenseRow({
   const { t } = useTranslation('common')
   const isIncome = expense.expenseType === 'INCOME'
   return (
-    <LedgerRow onClick={() => onClick?.(expense)}>
+    <LedgerRow onClick={() => onClick?.(expense)} dim={isScheduled(expense.expenseDate)}>
       <CategoryChip
         name={expense.categoryName ?? t('others')}
         color={expense.categoryColor ?? null}
@@ -160,6 +167,22 @@ export function ExpenseRow({
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {expense.merchant ?? expense.description ?? expense.categoryName ?? t('transaction')}
           </span>
+          {/* 아직 오지 않은 거래(반복거래 선생성분) — 합계에는 안 들어간다. */}
+          {isScheduled(expense.expenseDate) && (
+            <span
+              style={{
+                flexShrink: 0,
+                fontSize: 'var(--text-badge)',
+                fontWeight: 700,
+                color: 'var(--fg-tertiary)',
+                background: 'var(--bg-sunken)',
+                borderRadius: 'var(--radius-xs)',
+                padding: '1px 5px',
+              }}
+            >
+              {t('scheduled')}
+            </span>
+          )}
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, color: 'var(--fg-brand)' }}>
               <Icon name="split" size={12} />

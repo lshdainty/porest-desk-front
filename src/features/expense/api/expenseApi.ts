@@ -57,8 +57,8 @@ export const expenseApi = {
     return resp.data
   },
 
-  getRangeSummary: async (startDate: string, endDate: string): Promise<RangeSummary> => {
-    const resp: ApiResponse<RangeSummary> = await apiClient.get('/v1/expenses/summary/range', { params: { startDate, endDate } })
+  getRangeSummary: async (startDate: string, endDate: string, assetId?: number | null): Promise<RangeSummary> => {
+    const resp: ApiResponse<RangeSummary> = await apiClient.get('/v1/expenses/summary/range', { params: { startDate, endDate, assetId } })
     return resp.data
   },
 

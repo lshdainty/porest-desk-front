@@ -13,10 +13,12 @@ import { useIsMobile } from '@/shared/hooks/use-mobile'
 import type { ICalendarCell, IEvent } from '@/features/calendar/model/interfaces'
 
 /** expense 이벤트의 title에서 금액(숫자)을 추출 */
+/** 제목의 금액을 부호까지 읽는다 — 붉은색(지출 계열)에 `+` 면 환불이라 지출에서 빠진다. */
 function parseExpenseAmount(title: string): number {
-  const match = title.match(/[+-]?([\d,]+)/)
-  if (!match?.[1]) return 0
-  return Number(match[1].replace(/,/g, ''))
+  const match = title.match(/([+-])?([\d,]+)/)
+  if (!match?.[2]) return 0
+  const value = Number(match[2].replace(/,/g, ''))
+  return match[1] === '-' ? -value : value
 }
 
 /** 날짜별 수입/지출 합계 */
@@ -35,9 +37,13 @@ function buildExpenseSummaryMap(expenseEvents: IEvent[]): Map<string, IDayExpens
     const amount = parseExpenseAmount(event.title)
 
     if (event.color === '#0147ad') {
-      summary.income += amount
+      summary.income += Math.abs(amount)
     } else {
-      summary.expense += amount
+      // 지출 계열 — 제목의 부호를 뒤집어 더한다.
+      //   지출 `-52,400` → +52,400 (쓴 돈)
+      //   환불 `+3,000`  → −3,000  (되돌려받아 지출이 준다, 서버 집계와 같은 규칙)
+      // abs() 로 묶으면 환불이 지출로 더해져 월 헤더와 두 배로 어긋난다.
+      summary.expense += -amount
     }
 
     map.set(dayKey, summary)
@@ -146,7 +152,8 @@ const MonthDayCell = ({
     endSelection()
   }, [endSelection])
 
-  const hasExpense = expenseSummary && (expenseSummary.income > 0 || expenseSummary.expense > 0)
+  // 환불이 지출보다 많은 날은 expense 가 음수다 — 0 만 감춘다.
+  const hasExpense = expenseSummary && (expenseSummary.income > 0 || expenseSummary.expense !== 0)
 
   return (
     <div
@@ -205,8 +212,12 @@ const MonthDayCell = ({
           <div className="flex flex-col items-start gap-0.5 px-1 lg:px-2 leading-none font-semibold overflow-hidden flex-shrink-0">
             {/* 모바일: 글자 수별 step text-[NNpx] (11/10/9/8). lg+: text-base (16px) 고정.
                 inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
-            {expenseSummary.expense > 0 && (() => {
-              const text = hideAmounts ? '••••' : `−${formatNumber(expenseSummary.expense)}`
+            {expenseSummary.expense !== 0 && (() => {
+              // 환불이 더 많은 날은 순 −(음수) 라 부호가 뒤집힌다.
+              const net = expenseSummary.expense
+              const text = hideAmounts
+                ? '••••'
+                : `${net > 0 ? '−' : '+'}${formatNumber(Math.abs(net))}`
               // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :
