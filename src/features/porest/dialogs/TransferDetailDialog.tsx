@@ -35,6 +35,7 @@ export function TransferDetailDialog({
   const deleteMut = useDeleteTransfer()
 
   const fee = transfer.fee ?? 0
+  const interest = transfer.interestAmount ?? 0
   // 매수 충당·카드 결제로 생긴 이체는 원본과 금액이 묶여 있다.
   const locked = transfer.autoSource != null
   const won = (v: number) => `${isEn() ? '₩' : ''}${KRW(v, { abs: true })}${isEn() ? '' : '원'}`
@@ -58,6 +59,14 @@ export function TransferDetailDialog({
     // 보내는 쪽에서 실제로 빠져나간 금액 — 수수료가 있으면 이체 금액과 다르다.
     ...(fee > 0
       ? [{ label: t('transferWithdrawn'), value: won(transfer.amount + fee) }]
+      : []),
+    // 대출 상환에만 있다. 이자는 부채를 줄이지 않고 은행으로 나가는 비용이라,
+    // 안 보여 주면 "왜 원금이 이만큼밖에 안 줄었지" 가 된다.
+    ...(interest > 0
+      ? [
+          { label: t('addTx.interest'), value: won(interest) },
+          { label: t('transferPrincipal'), value: won(transfer.principalAmount) },
+        ]
       : []),
     {
       label: t('form.date'),

@@ -43,18 +43,30 @@ export const formatMonthDay = (input: Date | string, opts: { pad?: boolean } = {
     : `${m}월 ${day}일`
 }
 
-/** ko "M월 D일 (수)" / en "Jul 8 (Wed)". */
+/**
+ * ko "M월 D일 (수)" / en "Jul 8 (Wed)".
+ *
+ * <p>올해가 아니면 연도를 붙인다 — 반복거래는 내년치를 미리 만들어 두는데, 연도가
+ * 없으면 2027-01-01 이 그냥 "1월 1일" 로 보여 올해 것과 구분되지 않는다.
+ */
 export const formatMonthDayDow = (input: Date | string): string => {
   const d = toDate(input)
-  if (isEnLocale()) return format(d, 'MMM d (EEE)', { locale: enUS })
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW_KO[d.getDay()]})`
+  const otherYear = d.getFullYear() !== new Date().getFullYear()
+  if (isEnLocale()) return format(d, otherYear ? 'MMM d, yyyy (EEE)' : 'MMM d (EEE)', { locale: enUS })
+  const md = `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW_KO[d.getDay()]})`
+  return otherYear ? `${d.getFullYear()}년 ${md}` : md
 }
 
-/** ko "M월 D일 수요일" / en "Jul 8, Wednesday". 다이얼로그 타이틀 등 전체 요일명. */
+/**
+ * ko "M월 D일 수요일" / en "Jul 8, Wednesday". 다이얼로그 타이틀 등 전체 요일명.
+ * 올해가 아니면 연도를 붙인다(formatMonthDayDow 와 같은 이유).
+ */
 export const formatMonthDayWeekday = (input: Date | string): string => {
   const d = toDate(input)
-  if (isEnLocale()) return format(d, 'MMM d, EEEE', { locale: enUS })
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${DOW_KO[d.getDay()]}요일`
+  const otherYear = d.getFullYear() !== new Date().getFullYear()
+  if (isEnLocale()) return format(d, otherYear ? 'MMM d, yyyy, EEEE' : 'MMM d, EEEE', { locale: enUS })
+  const md = `${d.getMonth() + 1}월 ${d.getDate()}일 ${DOW_KO[d.getDay()]}요일`
+  return otherYear ? `${d.getFullYear()}년 ${md}` : md
 }
 
 /** ko "Y년 M월" / en "MMM yyyy"(예: "Jul 2026"). */

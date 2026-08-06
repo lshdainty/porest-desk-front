@@ -1500,6 +1500,7 @@ expense,addTx.fromAccount,출금 계좌,From account
 expense,addTx.selectPlaceholder,선택,Select
 expense,addTx.fee,수수료 (선택),Fee (optional)
 expense,addTx.interest,이자,Interest
+expense,transferPrincipal,원금,Principal
 expense,addTx.interestHint,상환액 중 이자 몫 — 부채는 이자를 뺀 만큼만 줄어들어요,The interest portion — debt decreases only by the rest
 expense,addTx.interestSplit,원금 {{principal}}원 · 이자 {{interest}}원,Principal {{principal}} · Interest {{interest}}
 expense,transferFeePrefix,수수료,Fee
