@@ -152,7 +152,8 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       : (defaultDate ?? todayLocal()),
   )
   const [expenseTime, setExpenseTime] = useState<string>(
-    () => extractTime(expense?.expenseDate) ?? nowTimeLocal(),
+    // 이체 편집이면 그 이체의 시각 — 안 읽으면 금액만 고쳐도 시각이 지금으로 밀린다.
+    () => extractTime(editTransfer?.transferDate ?? expense?.expenseDate) ?? nowTimeLocal(),
   )
   const [merchant, setMerchant] = useState(expense?.merchant ?? refundOf?.merchant ?? '')
   const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')

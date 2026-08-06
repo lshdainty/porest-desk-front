@@ -89,13 +89,18 @@ export function TransferRow({
   const signed = isOut ? -(transfer.amount + fee) : isIn ? transfer.amount : null
 
   return (
-    <LedgerRow onClick={() => onClick?.(transfer)}>
+    <LedgerRow
+      onClick={() => onClick?.(transfer)}
+      dim={isScheduled(transfer.transferDate)}
+    >
       <CategoryChip color="var(--fg-tertiary)" icon="arrow-left-right" />
       <LedgerRowMain>
         <LedgerRowTitle className="flex items-center gap-[5px] overflow-visible">
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {transfer.description || t('addTx.transfer')}
           </span>
+          {/* 이체도 미래 날짜로 넣을 수 있다 — 거래와 같은 표시를 준다. */}
+          {isScheduled(transfer.transferDate) && <ScheduledBadge label={t('scheduled', { ns: 'common' })} />}
         </LedgerRowTitle>
         <LedgerRowSub>
           <span>{transfer.fromAssetName} → {transfer.toAssetName}</span>
@@ -134,6 +139,24 @@ export function TransferRow({
   )
 }
 
+function ScheduledBadge({ label }: { label: string }) {
+  return (
+    <span
+      style={{
+        flexShrink: 0,
+        fontSize: 'var(--text-badge)',
+        fontWeight: 700,
+        color: 'var(--fg-tertiary)',
+        background: 'var(--bg-sunken)',
+        borderRadius: 'var(--radius-xs)',
+        padding: '1px 5px',
+      }}
+    >
+      {label}
+    </span>
+  )
+}
+
 /** 아직 오지 않은 거래인가 — 서버 집계도 이 기준으로 오늘까지만 센다. */
 function isScheduled(expenseDate: string | null | undefined): boolean {
   if (!expenseDate) return false
@@ -168,21 +191,7 @@ export function ExpenseRow({
             {expense.merchant ?? expense.description ?? expense.categoryName ?? t('transaction')}
           </span>
           {/* 아직 오지 않은 거래(반복거래 선생성분) — 합계에는 안 들어간다. */}
-          {isScheduled(expense.expenseDate) && (
-            <span
-              style={{
-                flexShrink: 0,
-                fontSize: 'var(--text-badge)',
-                fontWeight: 700,
-                color: 'var(--fg-tertiary)',
-                background: 'var(--bg-sunken)',
-                borderRadius: 'var(--radius-xs)',
-                padding: '1px 5px',
-              }}
-            >
-              {t('scheduled')}
-            </span>
-          )}
+          {isScheduled(expense.expenseDate) && <ScheduledBadge label={t('scheduled')} />}
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, color: 'var(--fg-brand)' }}>
               <Icon name="split" size={12} />
