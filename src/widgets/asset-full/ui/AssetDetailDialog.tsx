@@ -905,7 +905,15 @@ export function AssetDetailDialog({
     balance: { label: seriesLabel, color },
   }
 
-  const absBalance = Math.abs(asset.balance)
+  /**
+   * 헤드라인 금액 — 카드만 절대값이다.
+   *
+   * <p>카드 잔액은 <b>미결제 사용액이 음수</b>라는 규약이라, 화면에는 "얼마 썼나" 로 뒤집어
+   * 보여 준다. 그 밖의 자산은 음수가 정상 상태다 — 마이너스 통장, 잔액을 실제와 맞추지
+   * 않은 계좌, 지출이 잔고를 넘긴 현금. 여기서 abs() 를 씌우면 −5,000 이 "5,000원" 으로
+   * 보여 목록·편집 폼과 어긋난다.
+   */
+  const heroBalance = isCard ? Math.abs(asset.balance) : asset.balance
 
   // 투자 자산 — holdings 라이브 평가(시세×수량+수동합)로 헤로 금액을 덮어쓰고 등락 표시.
   const investAssets = useMemo(() => (isInv ? [asset] : []), [isInv, asset])
@@ -915,7 +923,8 @@ export function AssetDetailDialog({
   // 라이브 평가는 '보유분'만 — 예수금을 더해야 계좌 총액이다.
   const investCash = isInv ? asset.cashBalance ?? 0 : 0
   const investHolding = investVal != null ? investVal.value : asset.holdingBalance ?? 0
-  const heroAmount = investVal != null ? Math.abs(investCash + investVal.value) : absBalance
+  // 투자도 예수금이 마이너스일 수 있다(기록용 앱이라 막지 않는다) — 부호를 살린다.
+  const heroAmount = investVal != null ? investCash + investVal.value : heroBalance
   // CREDIT_CARD 는 신판 카드 상세 본문(CardDetailBody) — 회차 히어로가 금액을 담당.
   const isCredit = asset.assetType === 'CREDIT_CARD'
 
@@ -1026,8 +1035,9 @@ export function AssetDetailDialog({
               }}
             >
               <MaskAmount card="asset.detail">
+                {heroAmount < 0 ? '−' : ''}
                 {wonPre()}
-                {KRW(heroAmount)}
+                {KRW(heroAmount, { abs: true })}
               </MaskAmount>
               {!isEn() && (
                 <HideUnit>
