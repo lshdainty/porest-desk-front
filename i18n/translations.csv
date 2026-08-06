@@ -1505,6 +1505,9 @@ expense,addTx.interestSplit,원금 {{principal}}원 · 이자 {{interest}}원,Pr
 expense,transferFeePrefix,수수료,Fee
 expense,transferListTitle,이체 내역,Transfers
 expense,transferDeleteConfirm,이 이체를 삭제할까요? 양쪽 자산의 잔액이 되돌아갑니다,Delete this transfer? Both assets' balances will be restored.
+expense,transferAutoSource.TRADE_SETTLEMENT,"주식을 살 때 예수금이 모자라 자동으로 만들어진 이체예요. 매수를 취소하면 함께 사라집니다.","Created automatically to cover a shortfall when buying. It disappears when the purchase is cancelled."
+expense,transferAutoSource.CARD_PAYMENT,"카드 자동결제로 만들어진 이체예요. 청구 회차와 묶여 있어 따로 고칠 수 없습니다.","Created by a card auto-payment. It is tied to the billing cycle and cannot be edited separately."
+expense,transferAutoSource.default,"자동으로 만들어진 이체예요. 원래 거래를 지우면 함께 사라집니다.","Created automatically. It disappears when the original is deleted."
 expense,transferEmpty,이체 내역이 없어요,No transfers yet
 expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted

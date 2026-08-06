@@ -527,6 +527,12 @@ function ExpenseCalendar({
 
 /** 그날 거래 내역 dialog — App _DayDetailBody 정합. ModalShell 의 mobile=drawer /
  *  desktop=dialog 분기 활용. summary card (지출/수입/건수) + ExpenseRow 리스트. */
+/** 아직 오지 않은 거래인가 — 서버가 합계에서 빼는 기준과 같다. */
+function isScheduledTx(expenseDate: string | null | undefined): boolean {
+  if (!expenseDate) return false
+  return new Date(expenseDate.length === 10 ? `${expenseDate}T23:59:59` : expenseDate) > new Date()
+}
+
 function DayDetailDialog({
   date,
   items,
@@ -544,8 +550,16 @@ function DayDetailDialog({
 }) {
   const { t } = useTranslation('expense')
   const title = formatMonthDayWeekday(date)
-  const incomeSum = items.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
-  const expenseSum = items.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
+  // 서버 집계와 같은 규칙 — 환불은 수입이 아니라 지출 상계이고, 아직 안 온 건 안 센다.
+  const counted = items.filter(e => !isScheduledTx(e.expenseDate))
+  const isRefund = (e: Expense) => e.expenseType === 'INCOME' && e.refundOfExpenseRowId != null
+  const incomeSum = counted
+    .filter(e => e.expenseType === 'INCOME' && !isRefund(e))
+    .reduce((s, e) => s + Math.abs(e.amount), 0)
+  const expenseSum = counted.reduce(
+    (s, e) => s + (isRefund(e) ? -Math.abs(e.amount) : e.expenseType === 'EXPENSE' ? Math.abs(e.amount) : 0),
+    0,
+  )
   return (
     <ModalShell
       title={title}
@@ -1056,6 +1070,7 @@ function EditableList({
   const [refunding, setRefunding] = useState<Expense | null>(null)
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
+  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(null)
 
   return (
     <>
@@ -1068,11 +1083,19 @@ function EditableList({
         onTransferClick={(tr) => setTransferDetail(tr)}
         focusTxId={focusTxId}
       />
-      {transferDetail && (
+      {transferDetail && !editingTransfer && (
         <TransferDetailDialog
           transfer={transferDetail}
           mobile={mobile}
           onClose={() => setTransferDetail(null)}
+          onEdit={(tr) => { setTransferDetail(null); setEditingTransfer(tr) }}
+        />
+      )}
+      {editingTransfer && (
+        <AddTxSheet
+          editTransfer={editingTransfer}
+          mobile={mobile}
+          onClose={() => setEditingTransfer(null)}
         />
       )}
       {detail && !editing && (
@@ -1247,6 +1270,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [refunding, setRefunding] = useState<Expense | null>(null)
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
+  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(null)
 
   const categoriesQ = useExpenseCategories()
   const assetsQ = useAssets()
@@ -1603,11 +1627,19 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       {refunding && (
         <AddTxSheet refundOf={refunding} mobile onClose={() => setRefunding(null)} />
       )}
-      {transferDetail && (
+      {transferDetail && !editingTransfer && (
         <TransferDetailDialog
           transfer={transferDetail}
           mobile
           onClose={() => setTransferDetail(null)}
+          onEdit={(tr) => { setTransferDetail(null); setEditingTransfer(tr) }}
+        />
+      )}
+      {editingTransfer && (
+        <AddTxSheet
+          editTransfer={editingTransfer}
+          mobile
+          onClose={() => setEditingTransfer(null)}
         />
       )}
       {filterOpen && (
