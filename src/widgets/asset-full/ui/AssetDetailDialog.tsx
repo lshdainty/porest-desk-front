@@ -779,6 +779,8 @@ function TradeHistory({ assetRowId }: { assetRowId: number }) {
   const { t } = useTranslation('asset')
   const { data: trades } = useAssetTrades(assetRowId)
   const deleteMut = useDeleteTrade()
+  // 브라우저 confirm 은 앱 테마를 안 따르고 문구도 못 꾸민다 — 프로젝트 다이얼로그를 쓴다.
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
   if (!trades || trades.length === 0) {
     return null
   }
@@ -827,16 +829,31 @@ function TradeHistory({ assetRowId }: { assetRowId: number }) {
             variant="ghost"
             size="xs"
             aria-label={t('trade.deleted')}
-            onClick={() => {
-              if (window.confirm(t('trade.deleteConfirm'))) {
-                deleteMut.mutate(tr.rowId, { onSuccess: () => toast.success(t('trade.deleted')) })
-              }
-            }}
+            onClick={() => setConfirmDelete(tr.rowId)}
           >
             <Trash2 size={13} />
           </Button>
         </div>
       ))}
+
+      {confirmDelete != null && (
+        <ConfirmDialog
+          title={t('trade.deleteTitle')}
+          message={t('trade.deleteConfirm')}
+          confirmLabel={t('trade.deleteAction')}
+          danger
+          loading={deleteMut.isPending}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() =>
+            deleteMut.mutate(confirmDelete, {
+              onSuccess: () => {
+                toast.success(t('trade.deleted'))
+                setConfirmDelete(null)
+              },
+            })
+          }
+        />
+      )}
     </div>
   )
 }

@@ -11,7 +11,7 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Donut } from '@/shared/ui/porest/charts'
 import { Input } from '@/shared/ui/input'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { LightweightStockChart } from './LightweightStockChart'
@@ -938,6 +938,8 @@ function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: 
   const createMut = useCreateWatchGroup()
   const renameMut = useRenameWatchGroup()
   const deleteMut = useDeleteWatchGroup()
+  // 브라우저 confirm 은 앱 테마를 안 따르고 문구도 못 꾸민다 — 프로젝트 다이얼로그를 쓴다.
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const busy = createMut.isPending || renameMut.isPending || deleteMut.isPending
   const canSave = name.trim().length > 0 && !busy
 
@@ -978,19 +980,30 @@ function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: 
               variant="destructive"
               size="sm"
               disabled={busy}
-              onClick={() => {
-                if (!window.confirm(t('watch.groupDeleteConfirm'))) return
-                deleteMut.mutate(group.rowId, {
-                  onSuccess: onClose,
-                  onError: () => toast.error(t('watch.groupSaveFail')),
-                })
-              }}
+              onClick={() => setConfirmDelete(true)}
             >
               {t('watch.groupDelete')}
             </Button>
           )}
         </div>
       </div>
+
+      {confirmDelete && group && (
+        <ConfirmDialog
+          title={t('watch.groupDelete')}
+          message={t('watch.groupDeleteConfirm')}
+          confirmLabel={t('watch.groupDelete')}
+          danger
+          loading={deleteMut.isPending}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() =>
+            deleteMut.mutate(group.rowId, {
+              onSuccess: onClose,
+              onError: () => toast.error(t('watch.groupSaveFail')),
+            })
+          }
+        />
+      )}
     </ModalShell>
   )
 }
