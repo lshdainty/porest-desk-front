@@ -1681,7 +1681,7 @@ settings,theme.system,시스템,System
 settings,theme.systemDesc,OS 설정 따라가기,Follow OS setting
 settings,privacy.label,개인정보 보호,Privacy
 settings,hideAmounts.label,금액 가리기,Hide Amounts
-settings,hideAmounts.desc,화면·카드별로 골라서 가려요,Choose which screens and cards to hide
+settings,hideAmounts.desc,화면·카드별로 골라서 가려요,Pick screens and cards to hide
 settings,hideAmounts.unlockTitle,금액 보기 인증,Verify to View Amounts
 settings,hideAmounts.unlockDesc,금액을 다시 보려면 비밀번호로 본인 확인이 필요해요.,Verify your identity with your password to view amounts again.
 settings,hideAmounts.password,비밀번호,Password
@@ -1691,8 +1691,6 @@ settings,hideAmounts.sectionDesc,"가리고 싶은 카드만 골라 두세요. �
 settings,hideAmounts.lockAll,전체 잠그기,Lock everything
 settings,hideAmounts.lockAllDesc,{{count}} / {{total}}개 카드를 가리는 중,Hiding {{count}} of {{total}} cards
 settings,hideAmounts.pageCount,{{on}} / {{total}},{{on}} / {{total}}
-settings,sections.hideAmounts.label,금액 가리기,Hide Amounts
-settings,sections.hideAmounts.desc,화면·카드별로 금액을 가려요,Hide amounts per screen and card
 settings,hideAmounts.page.home,홈,Home
 settings,hideAmounts.page.asset,자산,Assets
 settings,hideAmounts.page.ledger,가계부,Ledger

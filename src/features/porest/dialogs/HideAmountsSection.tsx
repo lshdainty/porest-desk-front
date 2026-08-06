@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { ChevronDown, Eye, EyeOff, Lock } from 'lucide-react'
 import { Switch } from '@/shared/ui/switch'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import {
@@ -9,7 +8,6 @@ import {
   cardsOfPage,
   HIDE_PAGES,
   type HideCardKey,
-  type HidePageKey,
 } from '@/shared/lib/porest/hide-amounts-cards'
 import {
   hideCards,
@@ -18,26 +16,31 @@ import {
 } from '@/shared/lib/porest/hide-amounts-core'
 
 /**
- * 금액 숨기기 — 화면(페이지) → 카드 단위로 고르는 설정.
+ * 금액 가리기 — 표시 설정 '개인정보 보호' 안의 아코디언 (porest-design `hide-amounts.jsx` 미러).
  *
  * <p>예전엔 스위치 하나가 앱 전체 금액을 덮었다. 자산은 가리고 싶어도 가계부는 봐야 하는
- * 경우가 있어서 카드마다 따로 켜고 끈다.
+ * 경우가 있어서 화면(8) → 카드(37) 로 쪼갰다.
  *
- * <p>가리는 건 자유롭게, <b>푸는 건 비밀번호</b>를 받는다. 페이지·전체 스위치로 풀면
- * 그 묶음을 한 번의 인증으로 처리한다 — 카드마다 비밀번호를 치게 하면 못 쓴다.
+ * <p>가리는 건 자유롭게, <b>푸는 건 비밀번호</b>를 받는다. 전체·페이지 스위치로 풀면 그
+ * 묶음을 한 번의 인증으로 처리한다 — 카드마다 비밀번호를 치게 하면 못 쓴다.
  */
-export function HideAmountsSection({ mobile }: { mobile: boolean }) {
+export function HideAmountsSection({
+  mobile,
+  defaultOpen = false,
+}: {
+  mobile: boolean
+  /** 화면의 눈 버튼으로 들어오면 펼친 채로 연다 — 접힌 아코디언만 보이면 헛걸음이 된다. */
+  defaultOpen?: boolean
+}) {
   const { t } = useTranslation('settings')
-  const hiddenCards = useHiddenCards()
-  const [searchParams] = useSearchParams()
-  /** 화면의 눈 버튼으로 들어오면 그 페이지를 짚어 준다 — 어디를 만져야 할지 바로 보이게. */
-  const focusPage = searchParams.get('page') as HidePageKey | null
-
+  const hidden = useHiddenCards()
+  const [open, setOpen] = useState(defaultOpen)
   /** 인증을 기다리는 해제 대상. 인증되면 통째로 푼다. */
   const [pending, setPending] = useState<HideCardKey[] | null>(null)
 
-  const allOn = hiddenCards.size === ALL_HIDE_CARDS.length
-  const anyOn = hiddenCards.size > 0
+  const total = ALL_HIDE_CARDS.length
+  const hiddenCount = hidden.size
+  const allOn = hiddenCount === total
 
   const pages = useMemo(
     () => HIDE_PAGES.map(p => ({ page: p, cards: cardsOfPage(p) })),
@@ -50,116 +53,193 @@ export function HideAmountsSection({ mobile }: { mobile: boolean }) {
     else setPending(cards)
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-xs)' : 'var(--spacing-sm)' }}>
-        <SectionLabel>{t('hideAmounts.label')}</SectionLabel>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          {t('hideAmounts.sectionDesc')}
+  const descText = (
+    <div
+      style={{
+        fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
+        color: 'var(--fg-tertiary)',
+        lineHeight: 1.55,
+        padding: mobile ? '2px 0 4px' : '10px 0 2px',
+      }}
+    >
+      {t('hideAmounts.sectionDesc')}
+    </div>
+  )
+
+  // ── 전체 잠그기 마스터
+  const masterRow = (pad: string) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: pad }}>
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 'var(--radius-full)',
+          flexShrink: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: allOn ? 'var(--bg-brand-subtle)' : 'var(--bg-sunken)',
+          color: allOn ? 'var(--fg-brand)' : 'var(--fg-secondary)',
+        }}
+      >
+        <Lock size={16} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: mobile ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
+            fontWeight: 700,
+            color: 'var(--fg-primary)',
+          }}
+        >
+          {t('hideAmounts.lockAll')}
+        </div>
+        <div
+          className="num"
+          style={{
+            fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
+            color: 'var(--fg-tertiary)',
+            marginTop: 2,
+          }}
+        >
+          {t('hideAmounts.lockAllDesc', { count: hiddenCount, total })}
         </div>
       </div>
-
-      {/* 전체 잠그기 — 34개를 한꺼번에. 풀 때는 인증 한 번. */}
-      <ToggleRow
-        mobile={mobile}
-        emphasis
-        icon={anyOn ? <EyeOff size={17} /> : <Eye size={17} />}
-        title={t('hideAmounts.lockAll')}
-        desc={t('hideAmounts.lockAllDesc', { count: hiddenCards.size, total: ALL_HIDE_CARDS.length })}
+      <Switch
         checked={allOn}
-        onChange={next => apply(ALL_HIDE_CARDS, next)}
-      />
-
-      {pages.map(({ page, cards }) => {
-        const on = cards.filter(c => hiddenCards.has(c)).length
-        const focused = focusPage === page
-        return (
-          <section
-            key={page}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-xs)',
-              // 눈 버튼으로 들어온 페이지만 테두리로 짚어 준다.
-              ...(focused
-                ? {
-                    border: '1px solid var(--border-brand)',
-                    borderRadius: 'var(--radius-lg)',
-                    padding: 'var(--spacing-sm)',
-                  }
-                : null),
-            }}
-          >
-            <ToggleRow
-              mobile={mobile}
-              title={t(`hideAmounts.page.${page}`)}
-              desc={t('hideAmounts.pageCount', { on, total: cards.length })}
-              checked={on === cards.length}
-              /* 일부만 켜진 상태를 스위치로는 못 보여 준다 — 설명 줄의 개수로 알린다. */
-              onChange={next => apply(cards, next)}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: mobile ? 8 : 12 }}>
-              {cards.map(card => (
-                <ToggleRow
-                  key={card}
-                  mobile={mobile}
-                  compact
-                  title={t(`hideAmounts.card.${card}`)}
-                  checked={hiddenCards.has(card)}
-                  onChange={next => apply([card], next)}
-                />
-              ))}
-            </div>
-          </section>
-        )
-      })}
-
-      <HideAmountsUnlockDialog
-        open={pending !== null}
-        onOpenChange={open => {
-          if (!open) setPending(null)
-        }}
-        onVerified={() => {
-          if (pending) revealCards(pending)
-          setPending(null)
-        }}
+        onCheckedChange={next => apply(ALL_HIDE_CARDS, next)}
+        aria-label={t('hideAmounts.lockAll')}
       />
     </div>
   )
-}
 
-function ToggleRow({
-  mobile,
-  icon,
-  title,
-  desc,
-  checked,
-  onChange,
-  compact = false,
-  emphasis = false,
-}: {
-  mobile: boolean
-  icon?: React.ReactNode
-  title: string
-  desc?: string
-  checked: boolean
-  onChange: (next: boolean) => void
-  compact?: boolean
-  emphasis?: boolean
-}) {
-  return (
+  // ── 그룹 목록 (전체 잠금이면 만질 필요가 없다 — 물러나 있게)
+  const groups = (
     <div
       style={{
+        opacity: allOn ? 0.55 : 1,
+        pointerEvents: allOn ? 'none' : 'auto',
         display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--spacing-sm)',
-        padding: compact ? '8px 0' : mobile ? '10px 0' : '12px 0',
-        ...(emphasis || !compact
-          ? { borderBottom: '1px solid var(--border-subtle)' }
-          : null),
+        flexDirection: 'column',
+        gap: mobile ? 0 : 10,
       }}
     >
-      {icon ? (
+      {pages.map(({ page, cards }) => {
+        const on = cards.filter(c => hidden.has(c)).length
+        const groupOn = on === cards.length
+        return mobile ? (
+          <div key={page} style={{ marginTop: 18 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '4px 0 12px',
+                borderBottom: '1px solid var(--border-subtle)',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+                  {t(`hideAmounts.page.${page}`)}
+                </div>
+                <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                  {on} / {cards.length}
+                </div>
+              </div>
+              <Switch checked={groupOn} onCheckedChange={next => apply(cards, next)} />
+            </div>
+            {cards.map(card => (
+              <div
+                key={card}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '14px 0 14px 10px',
+                  borderBottom: '1px solid var(--border-subtle)',
+                }}
+              >
+                <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: 500, color: 'var(--fg-primary)' }}>
+                  {t(`hideAmounts.card.${card}`)}
+                </span>
+                <Switch checked={hidden.has(card)} onCheckedChange={next => apply([card], next)} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            key={page}
+            style={{
+              background: 'var(--bg-canvas)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px 13px' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+                  {t(`hideAmounts.page.${page}`)}
+                </div>
+                <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                  {on} / {cards.length}
+                </div>
+              </div>
+              <Switch checked={groupOn} onCheckedChange={next => apply(cards, next)} />
+            </div>
+            {cards.map(card => (
+              <div
+                key={card}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 16px',
+                  borderTop: '1px solid var(--border-subtle)',
+                }}
+              >
+                <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', fontWeight: 500, color: 'var(--fg-primary)' }}>
+                  {t(`hideAmounts.card.${card}`)}
+                </span>
+                <Switch checked={hidden.has(card)} onCheckedChange={next => apply([card], next)} />
+              </div>
+            ))}
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  return (
+    <div>
+      {/* 아코디언 트리거 — 접혀 있을 때도 몇 장을 가렸는지 보인다. */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setOpen(o => !o)
+          }
+        }}
+        style={
+          mobile
+            ? { padding: '12px 6px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }
+            : {
+                background: 'var(--bg-surface)',
+                borderRadius: open
+                  ? 'var(--radius-lg) var(--radius-lg) 0 0'
+                  : 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-sm)',
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                cursor: 'pointer',
+              }
+        }
+      >
         <span
           style={{
             width: 36,
@@ -173,41 +253,86 @@ function ToggleRow({
             color: 'var(--fg-secondary)',
           }}
         >
-          {icon}
+          {hiddenCount > 0 ? <EyeOff size={17} /> : <Eye size={17} />}
         </span>
-      ) : null}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: mobile ? 'var(--text-body-lg)' : 'var(--text-label-sm)',
+              fontWeight: 600,
+              color: 'var(--fg-primary)',
+            }}
+          >
+            {t('hideAmounts.label')}
+          </div>
+          <div
+            style={{
+              fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
+              color: 'var(--fg-tertiary)',
+              marginTop: 2,
+            }}
+          >
+            {t('hideAmounts.desc')}
+          </div>
+        </div>
+        <span
+          className="num"
           style={{
-            fontSize: compact ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
-            fontWeight: compact ? 500 : 600,
-            color: compact ? 'var(--fg-secondary)' : 'var(--fg-primary)',
+            fontSize: 'var(--text-caption)',
+            fontWeight: 600,
+            color: hiddenCount > 0 ? 'var(--fg-brand)' : 'var(--fg-tertiary)',
+            flexShrink: 0,
           }}
         >
-          {title}
-        </div>
-        {desc ? (
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {desc}
-          </div>
-        ) : null}
+          {hiddenCount} / {total}
+        </span>
+        <span
+          style={{
+            display: 'inline-flex',
+            flexShrink: 0,
+            color: 'var(--fg-tertiary)',
+            transform: open ? 'rotate(-180deg)' : 'none',
+            transition: 'transform var(--motion-duration-base) var(--motion-ease-out)',
+          }}
+        >
+          <ChevronDown size={17} />
+        </span>
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} aria-label={title} />
-    </div>
-  )
-}
 
-/** AppearanceSection 과 같은 모양의 섹션 라벨 (로컬 정의라 복제). */
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        fontSize: 'var(--text-label-sm)',
-        fontWeight: '600',
-        color: 'var(--fg-secondary)',
-      }}
-    >
-      {children}
+      {open &&
+        (mobile ? (
+          <div style={{ padding: '2px 6px 4px' }}>
+            {descText}
+            {masterRow('12px 0')}
+            <div style={{ borderBottom: '1px solid var(--border-subtle)' }} />
+            {groups}
+          </div>
+        ) : (
+          <div
+            style={{
+              background: 'var(--bg-surface)',
+              borderRadius: '0 0 var(--radius-lg) var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              padding: '4px 16px 16px',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            {descText}
+            {masterRow('12px 0 14px')}
+            {groups}
+          </div>
+        ))}
+
+      <HideAmountsUnlockDialog
+        open={pending !== null}
+        onOpenChange={o => {
+          if (!o) setPending(null)
+        }}
+        onVerified={() => {
+          if (pending) revealCards(pending)
+          setPending(null)
+        }}
+      />
     </div>
   )
 }

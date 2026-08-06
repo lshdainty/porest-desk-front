@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Eye, EyeOff, Monitor, Moon, Sun } from 'lucide-react'
-import { Card } from '@/shared/ui/card'
+import { useSearchParams } from 'react-router-dom'
+import { Monitor, Moon, Sun } from 'lucide-react'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
+import { HideAmountsSection } from '@/features/porest/dialogs/HideAmountsSection'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { regionOptionsWith } from '@/shared/lib'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/user'
@@ -45,21 +44,10 @@ function readCurrency(): CurrencyKey {
 }
 
 // 모바일 카드 다이어트 — 설정 행 셸: 모바일은 플랫 행, 데스크톱은 Card (.m-subpage 정합).
-function RowShell({ mobile, children, onClick }: { mobile: boolean; children: React.ReactNode; onClick?: () => void }) {
-  const inner: React.CSSProperties = {
-    display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12,
-    ...(onClick ? { cursor: 'pointer' } : null),
-  }
-  return mobile
-    ? <div style={{ ...inner, padding: '14px 4px' }} onClick={onClick}>{children}</div>
-    : <Card style={{ ...inner, padding: '14px 16px' }} onClick={onClick}>{children}</Card>
-}
-
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { t, i18n } = useTranslation('settings')
   const { theme, setTheme } = useTheme()
   const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency)
-  const hidden = useHideAmounts()
 
   const { data: prefs } = useUserPreferences()
   const updatePrefs = useUpdateUserPreferences()
@@ -72,8 +60,9 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     updatePrefs.mutate({ timezone: tz })
   }
 
-  // 가리는 단위가 카드라 여기서 켜고 끄지 않는다 — 고르는 화면으로 보낸다.
-  const openHideSettings = useOpenHideAmountsSettings()
+  // 화면의 눈 버튼이 ?hide=1 로 보낸다 — 그때는 아코디언을 펼친 채로 연다.
+  const [searchParams] = useSearchParams()
+  const openHideAmounts = searchParams.get('hide') === '1'
 
 
   const setCurrency = (c: CurrencyKey) => {
@@ -123,34 +112,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           / 데스크톱=sm(8) — 아래가 카드라 라벨이 붙으면 답답함. */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-md)' }}>
         <SectionLabel>{t('privacy.label')}</SectionLabel>
-        {/* 금액 가리기 — 클로드 디자인 settings 행 (아이콘 박스 + 라벨/설명 + 스위치).
-            모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행 (.m-subpage). */}
-        <RowShell mobile={mobile} onClick={openHideSettings}>
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 'var(--radius-md)',
-              flexShrink: 0,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--bg-sunken)',
-              color: 'var(--fg-secondary)',
-            }}
-          >
-            {hidden ? <EyeOff size={17} /> : <Eye size={17} />}
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, color: 'var(--fg-primary)' }}>
-              {t('hideAmounts.label')}
-            </div>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-              {t('hideAmounts.desc')}
-            </div>
-          </div>
-          <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-        </RowShell>
+        {/* 금액 가리기 — 화면·카드별로 고르는 아코디언. 여기서 바로 펼친다(별도 화면 아님). */}
+        <HideAmountsSection mobile={mobile} defaultOpen={openHideAmounts} />
       </section>
 
       {/* 표시 기준 지역 — 서버가 이 값으로 "오늘"을 판단하므로 로컬이 아니라 서버에 저장한다. */}

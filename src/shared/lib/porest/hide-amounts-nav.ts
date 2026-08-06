@@ -11,10 +11,10 @@ import type { HidePageKey } from '@/shared/lib/porest/hide-amounts-cards'
  * <p>어느 화면에서 눌렀는지 `page` 로 넘겨 그 묶음을 짚어 준다. 34개 목록 앞에서
  * 자기가 보던 카드를 다시 찾게 만들지 않는다.
  */
-export function useOpenHideAmountsSettings(page?: HidePageKey) {
+export function useOpenHideAmountsSettings(_page?: HidePageKey) {
   const navigate = useNavigate()
+  // 금액 가리기는 표시 설정 안의 아코디언이다 — hide=1 이면 펼친 채로 열린다.
   return useCallback(() => {
-    const q = page ? `&page=${page}` : ''
-    navigate(`/desk/settings?section=hide-amounts${q}`)
-  }, [navigate, page])
+    navigate('/desk/settings?section=appearance&hide=1')
+  }, [navigate])
 }
