@@ -59,6 +59,8 @@ const GROUPS: NavGroup[] = [
       { labelKey: 'item.notifications', path: '/desk/notifications', descKey: 'desc.notifications' },
       { labelKey: 'item.dataExport', path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
       { labelKey: 'item.account', path: '/desk/settings?section=account', descKey: 'desc.account' },
+      // 앱 받기 — 로그인 밖 공개 페이지라 경로에 /desk 가 없다.
+      { labelKey: 'item.appDownload', path: '/download', descKey: 'desc.appDownload' },
     ],
   },
 ]

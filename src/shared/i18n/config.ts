@@ -22,6 +22,7 @@ import koUser from '@/locales/ko/user.json'
 import koExport from '@/locales/ko/export.json'
 import koSettings from '@/locales/ko/settings.json'
 import koStocks from '@/locales/ko/stocks.json'
+import koDownload from '@/locales/ko/download.json'
 import koStats from '@/locales/ko/stats.json'
 import koMore from '@/locales/ko/more.json'
 import koRecurring from '@/locales/ko/recurring.json'
@@ -48,6 +49,7 @@ import enUser from '@/locales/en/user.json'
 import enExport from '@/locales/en/export.json'
 import enSettings from '@/locales/en/settings.json'
 import enStocks from '@/locales/en/stocks.json'
+import enDownload from '@/locales/en/download.json'
 import enStats from '@/locales/en/stats.json'
 import enMore from '@/locales/en/more.json'
 import enRecurring from '@/locales/en/recurring.json'
@@ -63,7 +65,7 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 export const NAMESPACES = [
   'common', 'layout', 'todo', 'calendar', 'memo',
   'timer', 'expense', 'budget', 'card', 'category', 'asset', 'dashboard', 'dutchPay',
-  'notification', 'login', 'user', 'export', 'settings', 'stocks', 'stats', 'more', 'recurring', 'subscription', 'date', 'constellation'
+  'notification', 'login', 'user', 'export', 'settings', 'stocks', 'stats', 'more', 'recurring', 'subscription', 'date', 'constellation', 'download'
 ] as const
 export type Namespace = typeof NAMESPACES[number]
 
@@ -89,6 +91,7 @@ const resources = {
     export: koExport,
     settings: koSettings,
     stocks: koStocks,
+    download: koDownload,
     stats: koStats,
     more: koMore,
     recurring: koRecurring,
@@ -116,6 +119,7 @@ const resources = {
     export: enExport,
     settings: enSettings,
     stocks: enStocks,
+    download: enDownload,
     stats: enStats,
     more: enMore,
     recurring: enRecurring,
