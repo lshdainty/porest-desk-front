@@ -131,6 +131,23 @@ export const useCreateTransfer = () => {
     mutationFn: (data: AssetTransferFormValues) => assetApi.createTransfer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      // 이자가 있는 이체는 지출 거래를 하나 만든다 — 가계부를 안 비우면 새로고침
+      // 전까지 그 거래도, 월 지출 합계도 안 바뀐다.
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    },
+  })
+}
+
+/** 이체 수정 — 서버가 이자 지출·잔액 이력을 다시 만들므로 가계부도 함께 비운다. */
+export const useUpdateTransfer = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: AssetTransferFormValues }) =>
+      assetApi.updateTransfer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
     },
   })
 }
@@ -196,6 +213,8 @@ export const useDeleteTransfer = () => {
     mutationFn: (id: number) => assetApi.deleteTransfer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      // 이자 지출도 함께 사라진다 — 가계부를 안 비우면 유령처럼 남아 보인다.
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
     },
   })
 }

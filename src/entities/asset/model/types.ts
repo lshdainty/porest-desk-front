@@ -250,6 +250,14 @@ export interface AssetTransfer {
   /** 원금 = amount − interestAmount. 입금 자산(대출)에 실제로 반영된 금액. */
   principalAmount: number
   description: string | null
+  /**
+   * 시스템이 만든 이체의 출처 — `TRADE_SETTLEMENT`(매수 예수금 충당) /
+   * `CARD_PAYMENT`(카드 자동결제). null 이면 사용자가 직접 만든 이체다.
+   *
+   * <p>값이 있으면 금액이 원본(매수·청구)과 묶여 있어 고칠 수 없다. 화면은 수정·삭제
+   * 버튼을 감춘다.
+   */
+  autoSource: string | null
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
   transferDate: string
   createAt: string

@@ -800,7 +800,8 @@ function useExpenseData(
   const monthStart = `${year}-${String(m).padStart(2, '0')}-01`
   const monthEndDay = new Date(year, m, 0).getDate()
   const monthEnd = `${year}-${String(m).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`
-  const monthlyQ = useRangeSummary(monthStart, monthEnd)
+  // 자산 필터를 합계에도 건다 — 목록·캘린더만 걸러지고 상단 수입/지출은 전체 값이었다.
+  const monthlyQ = useRangeSummary(monthStart, monthEnd, assetId ?? null)
 
   // 선택한 부모 카테고리의 자식 rowId까지 모두 허용 집합에 추가
   const allowedCatIds = useMemo(() => {

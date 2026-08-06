@@ -295,6 +295,33 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           </DetailField>
         </DetailFieldGroup>
 
+        {/* 환불 연결 — 이 거래에 달린 환불이 있으면 알린다. 지우면 함께 사라지고,
+            지출 총액도 상계된 값으로 잡혀 있다는 걸 여기서만 알 수 있다. */}
+        {(expense.refundCount ?? 0) > 0 && (
+          <DetailSection>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 12px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-sunken)',
+                fontSize: 'var(--text-body-sm)',
+                color: 'var(--fg-secondary)',
+              }}
+            >
+              <Undo2 size={15} style={{ flexShrink: 0, color: 'var(--fg-tertiary)' }} />
+              <span>
+                {t('txDetail.refundLinked', {
+                  count: expense.refundCount,
+                  amount: KRW(expense.refundedAmount),
+                })}
+              </span>
+            </div>
+          </DetailSection>
+        )}
+
         {/* Quick actions — 원형 아이콘 3열 (분할/반복/더치페이 진입) */}
         <DetailSection>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>

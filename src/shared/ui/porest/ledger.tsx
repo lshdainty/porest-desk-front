@@ -528,7 +528,14 @@ export function LedgerDaySum({ className, ...props }: React.ComponentProps<'span
 // ─── 리스트 행 골격 (tx-row spec 공용화) ────────────────────
 // leading(카테고리 칩/체크) · Main(Title+Sub) · trailing(금액/뱃지)은 화면이 소유.
 
-export function LedgerRow({ className, ...props }: React.ComponentProps<'div'>) {
+export function LedgerRow({
+  className,
+  dim,
+  ...props
+}: React.ComponentProps<'div'> & {
+  /** 아직 일어나지 않은 거래(예정) — 합계에 안 들어가므로 시각적으로도 물러나 있게. */
+  dim?: boolean
+}) {
   return (
     <div
       className={cn(
@@ -536,6 +543,7 @@ export function LedgerRow({ className, ...props }: React.ComponentProps<'div'>) 
         'transition-[background] duration-[var(--motion-duration-fast)]',
         'hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]',
         '[-webkit-tap-highlight-color:transparent]',
+        dim && 'opacity-60',
         className,
       )}
       {...props}

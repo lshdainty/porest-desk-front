@@ -1193,6 +1193,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf }: 
               <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', marginBottom: 8 }}>{t('deleteConfirm.title')}</div>
               <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: '1.7', marginBottom: 16 }}>
                 {t('addTx.deleteMessage')}
+                {/* 환불이 달려 있으면 그것도 함께 사라진다 — 모르고 지우면 지출 총액이
+                    조용히 바뀌고 원인을 찾을 수 없다. */}
+                {(expense?.refundCount ?? 0) > 0 && (
+                  <div style={{ marginTop: 8, color: 'var(--fg-expense)', fontWeight: 600 }}>
+                    {t('addTx.deleteRefundWarn', {
+                      count: expense!.refundCount,
+                      amount: KRW(expense!.refundedAmount),
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <Button

@@ -55,6 +55,12 @@ export interface Expense {
    * 카테고리·메모는 분류라서 그대로 고칠 수 있다.
    */
   autoSource: string | null
+  /**
+   * 이 거래에 달린 환불 건수·합계. 지우면 함께 사라지므로 화면이 미리 알린다.
+   * 환불이 없으면 0 이다.
+   */
+  refundCount: number
+  refundedAmount: number
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
   splitCategoryRowIds?: number[]
   createAt: string
