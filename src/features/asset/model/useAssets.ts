@@ -106,6 +106,20 @@ export const usePayCard = () => {
   })
 }
 
+/** 카드 결제 취소 — 잔액·청구·가계부가 함께 되돌아가므로 셋 다 비운다. */
+export const useCancelCardPayment = (cardRowId: number) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (billingRowId: number) => assetApi.cancelCardPayment(billingRowId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: assetKeys.billing(cardRowId) })
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    },
+  })
+}
+
 export const useReorderAssets = () => {
   const queryClient = useQueryClient()
 

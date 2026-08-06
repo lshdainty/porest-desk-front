@@ -79,6 +79,12 @@ export const assetApi = {
     return resp.data
   },
 
+  /** 카드 결제 취소 — 결제로 만든 이체를 무르면 잔액·청구가 그 연쇄로 되돌아간다. */
+  cancelCardPayment: async (billingRowId: number): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.delete(`/v1/card-billing/${billingRowId}`)
+    return resp.data
+  },
+
   reorderAssets: async (items: ReorderItem[]): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.patch('/v1/assets/reorder', { items })
     return resp.data
