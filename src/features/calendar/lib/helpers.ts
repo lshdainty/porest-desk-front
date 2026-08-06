@@ -30,6 +30,7 @@ import {
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { money } from '@/shared/lib/porest/format'
 import type { CalendarEvent, Holiday } from '@/entities/calendar'
+import { isRefundTx } from '@/shared/lib/porest/expense-aggregate'
 import type { Expense } from '@/entities/expense'
 import type { IEvent, ICalendarCell } from '@/features/calendar/model/interfaces'
 import type { TCalendarView, TVisibleHours, TWorkingHours } from '@/features/calendar/model/types'
@@ -304,7 +305,7 @@ export function getMonthCellEvents(date: Date, events: IEvent[], eventPositions:
 export function convertExpenseToIEvent(expense: Expense): IEvent {
   // 환불(INCOME + 원거래 지정)은 수입이 아니라 지출 상계다 — 서버 집계와 같은 규칙.
   // 파랑 '+3,000' 으로 그리면 셀 합계가 월 헤더와 어긋난다.
-  const isRefund = expense.expenseType === 'INCOME' && expense.refundOfExpenseRowId != null
+  const isRefund = isRefundTx(expense)
   const isIncome = expense.expenseType === 'INCOME' && !isRefund
   const color = isIncome ? '#0147ad' : '#c73838'
   const sign = isRefund ? '+' : isIncome ? '+' : '-'
