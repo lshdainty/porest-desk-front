@@ -4,20 +4,20 @@ import { useAssetTrades, useDeleteTrade } from '@/features/asset'
 import type { TradeType } from '@/entities/asset'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
-import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Eye, EyeOff, Pencil, SlidersHorizontal, Target, Zap, Trash2, Undo2 } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { AssetLogo, HOLDING_UNIT_KEY,
   formatQty, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
+import { useAssetBalanceTrend, useCancelCardPayment, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useCardPerformance } from '@/features/card-performance'
 import { useSearchExpenses } from '@/features/expense'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -269,6 +269,19 @@ function CardDetailBody({
 
   const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null
   const canPay = (billing?.upcomingAmount ?? 0) > 0 && !payCard.isPending
+  const cancelPayment = useCancelCardPayment(asset.rowId)
+  /**
+   * 되돌릴 수 있는 가장 최근 결제.
+   *
+   * <p>결제는 실행하면 되돌릴 길이 없었다 — 그 이체는 청구와 묶여 있어 잠가 뒀고
+   * 취소 경로도 없었다. 잘못 눌렀을 때 바로 무를 수 있게 마지막 한 건을 짚어 준다.
+   */
+  const lastPayment = useMemo(() => {
+    const done = (billing?.history ?? []).filter(b => b.status === 'COMPLETED')
+    if (done.length === 0) return null
+    return done.reduce((a, b) => (b.paymentDate > a.paymentDate ? b : a))
+  }, [billing])
+  const [confirmCancelPay, setConfirmCancelPay] = useState(false)
   const periodText = st?.periodStart && st?.periodEnd
     ? `${fmtBillingDate(st.periodStart)} ~ ${fmtBillingDate(st.periodEnd)}`
     : null
@@ -395,8 +408,8 @@ function CardDetailBody({
         </div>
       )}
 
-      {/* 빠른 액션 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '14px 0 4px' }}>
+      {/* 빠른 액션 — 되돌릴 결제가 있으면 3열 */}
+      <div style={{ display: 'grid', gridTemplateColumns: lastPayment ? '1fr 1fr 1fr' : '1fr 1fr', gap: 8, margin: '14px 0 4px' }}>
         <button
           type="button"
           disabled={!canPay}
@@ -418,6 +431,20 @@ function CardDetailBody({
           </span>
           <span>{t('assetDetail.limitSettings')}</span>
         </button>
+        {/* 결제 취소 — 실수로 누른 결제를 무른다. 이체·잔액·청구가 함께 되돌아간다. */}
+        {lastPayment && (
+          <button
+            type="button"
+            disabled={cancelPayment.isPending}
+            onClick={() => setConfirmCancelPay(true)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 4px', background: 'var(--bg-sunken)', border: 0, borderRadius: 'var(--radius-lg)', cursor: cancelPayment.isPending ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-primary)', opacity: cancelPayment.isPending ? 0.55 : 1 }}
+          >
+            <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Undo2 size={15} strokeWidth={1.9} />
+            </span>
+            <span>{t('assetDetail.cancelPayment')}</span>
+          </button>
+        )}
       </div>
 
       {/* 한도 사용 · 실적 */}
@@ -586,6 +613,28 @@ function CardDetailBody({
             </div>
           </div>
         </ModalShell>
+      )}
+      {confirmCancelPay && lastPayment && (
+        <ConfirmDialog
+          title={t('assetDetail.cancelPayment')}
+          message={t('assetDetail.cancelPaymentConfirm', {
+            date: formatDay(lastPayment.paymentDate).md,
+            amount: KRW(lastPayment.billingAmount),
+          })}
+          confirmLabel={t('assetDetail.cancelPayment')}
+          danger
+          loading={cancelPayment.isPending}
+          onCancel={() => { if (!cancelPayment.isPending) setConfirmCancelPay(false) }}
+          onConfirm={() => {
+            cancelPayment.mutate(lastPayment.rowId, {
+              onSuccess: () => {
+                setConfirmCancelPay(false)
+                toast.success(t('assetDetail.toastPaymentCancelled'))
+              },
+              onError: () => setConfirmCancelPay(false),
+            })
+          }}
+        />
       )}
     </>
   )

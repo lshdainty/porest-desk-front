@@ -400,6 +400,19 @@ export function AssetEditDialog({
     return cat ? (CATEGORY_HOLDING_TYPE[cat] ?? null) : null
   }, [brand])
   const allowStock = brandHoldingType === null || brandHoldingType === 'STOCK'
+  /**
+   * 손으로 추가하는 보유의 유형.
+   *
+   * <p>기관이 정해져 있으면 그 카테고리를 따른다(상품거래소=금, 코인거래소=코인).
+   * 기관을 안 골랐으면 <b>이미 들고 있는 보유</b>를 본다 — 금만 있는 자산에서 항목을
+   * 추가했는데 주식으로 저장되면 단위가 "주" 로 나오고 유형 분리가 무의미해진다.
+   * 둘 다 단서가 없을 때만 주식이다.
+   */
+  const manualHoldingType = useMemo<HoldingType>(() => {
+    if (brandHoldingType !== null) return brandHoldingType
+    const types = new Set(holdings.map(h => h.holdingType))
+    return types.size === 1 ? ([...types][0] ?? 'STOCK') : 'STOCK'
+  }, [brandHoldingType, holdings])
   const manualAddTypes = useMemo<HoldingType[]>(() => {
     if (brandHoldingType === null) return ['GOLD', 'CRYPTO']
     return brandHoldingType === 'STOCK' ? [] : [brandHoldingType]
@@ -967,7 +980,7 @@ export function AssetEditDialog({
                               }
                             : {
                                 key: nextHoldingKey(),
-                                holdingType: 'STOCK' as HoldingType,
+                                holdingType: manualHoldingType,
                                 linked: false,
                                 holdingName: s.nameKr,
                                 holdingValue: 0,
@@ -1001,7 +1014,7 @@ export function AssetEditDialog({
                         ...prev,
                         {
                           key: nextHoldingKey(),
-                          holdingType: 'STOCK' as HoldingType,
+                          holdingType: manualHoldingType,
                           linked: false,
                           holdingName: stockQ.trim(),
                           holdingValue: 0,

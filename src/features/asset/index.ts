@@ -15,6 +15,7 @@ export {
   useAssetTransfers,
   useCreateTransfer,
   useDeleteTransfer,
+  useCancelCardPayment,
   useCreateTrade,
   useUpdateTransfer,
   useTradePreview,

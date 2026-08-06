@@ -654,6 +654,9 @@ asset,assetDetail.toastPayFail,결제 처리에 실패했어요,Failed to proces
 asset,assetDetail.billingLoadError,청구 정보를 불러오지 못했어요,Couldn't load billing info
 asset,assetDetail.paymentDue,결제 예정,Payment due
 asset,assetDetail.payNow,지금 결제,Pay now
+asset,assetDetail.cancelPayment,결제 취소,Cancel payment
+asset,assetDetail.cancelPaymentConfirm,"{{date}}에 낸 {{amount}}원을 되돌려요. 통장 잔액과 카드 청구가 결제 전으로 돌아갑니다.","Reverts the {{amount}} KRW paid on {{date}}. The account balance and card billing return to the state before payment."
+asset,assetDetail.toastPaymentCancelled,결제를 취소했어요,Payment cancelled
 asset,assetDetail.billedMonthly,매월 {{day}}일 결제,Billed on day {{day}} each month
 asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{end}}
 asset,assetDetail.scheduledTag,예정,Upcoming
