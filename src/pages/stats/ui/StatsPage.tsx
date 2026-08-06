@@ -5,6 +5,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } fro
 import { KRW, money, isEn, formatChartAxis, formatChartAmount } from '@/shared/lib/porest/format'
 import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
 import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
+import { isRefundTx, isScheduledTx } from '@/shared/lib/porest/expense-aggregate'
 import { HideCard, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { Donut } from '@/shared/ui/porest/charts'
@@ -1413,13 +1414,12 @@ export const StatsPage = () => {
       }
       // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
       // 안 그러면 같은 화면의 저축률 위젯(서버 값)과 선 그래프가 어긋난다.
-      const now = new Date()
       for (const e of exps) {
         const key = e.expenseDate.slice(0, 10)
         const bucket = byDay.get(key)
         if (!bucket) continue
-        if (new Date(e.expenseDate.length === 10 ? `${e.expenseDate}T23:59:59` : e.expenseDate) > now) continue
-        const isRefund = e.expenseType === 'INCOME' && e.refundOfExpenseRowId != null
+        if (isScheduledTx(e.expenseDate)) continue
+        const isRefund = isRefundTx(e)
         if (isRefund) bucket.expense -= Math.abs(e.amount)
         else if (e.expenseType === 'INCOME') bucket.income += e.amount
         else bucket.expense += e.amount

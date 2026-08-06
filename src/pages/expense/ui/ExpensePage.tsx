@@ -59,6 +59,7 @@ import { useAsset, useAssets, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
 import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
+import { countableTx, expenseSum, incomeSum, isRefundTx } from '@/shared/lib/porest/expense-aggregate'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { TxDetailDialog } from '@/features/porest/dialogs/TxDetailDialog'
@@ -527,12 +528,6 @@ function ExpenseCalendar({
 
 /** 그날 거래 내역 dialog — App _DayDetailBody 정합. ModalShell 의 mobile=drawer /
  *  desktop=dialog 분기 활용. summary card (지출/수입/건수) + ExpenseRow 리스트. */
-/** 아직 오지 않은 거래인가 — 서버가 합계에서 빼는 기준과 같다. */
-function isScheduledTx(expenseDate: string | null | undefined): boolean {
-  if (!expenseDate) return false
-  return new Date(expenseDate.length === 10 ? `${expenseDate}T23:59:59` : expenseDate) > new Date()
-}
-
 function DayDetailDialog({
   date,
   items,
@@ -551,15 +546,8 @@ function DayDetailDialog({
   const { t } = useTranslation('expense')
   const title = formatMonthDayWeekday(date)
   // 서버 집계와 같은 규칙 — 환불은 수입이 아니라 지출 상계이고, 아직 안 온 건 안 센다.
-  const counted = items.filter(e => !isScheduledTx(e.expenseDate))
-  const isRefund = (e: Expense) => e.expenseType === 'INCOME' && e.refundOfExpenseRowId != null
-  const incomeSum = counted
-    .filter(e => e.expenseType === 'INCOME' && !isRefund(e))
-    .reduce((s, e) => s + Math.abs(e.amount), 0)
-  const expenseSum = counted.reduce(
-    (s, e) => s + (isRefund(e) ? -Math.abs(e.amount) : e.expenseType === 'EXPENSE' ? Math.abs(e.amount) : 0),
-    0,
-  )
+  const incomeTotal = incomeSum(items)
+  const expenseTotal = expenseSum(items)
   return (
     <ModalShell
       title={title}
@@ -581,19 +569,19 @@ function DayDetailDialog({
           </div>
           {/* 수입+지출 같이 있을 때 두 column horizontal (모바일 정합). 단독은 1 column. */}
           <div className="flex items-end gap-[var(--spacing-lg)]">
-            {incomeSum > 0 && (
+            {incomeTotal > 0 && (
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('income')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
-                  <MaskAmount card="ledger.txList">+{wonPre()}{KRW(incomeSum)}</MaskAmount><WonUnit card="ledger.txList" />
+                  <MaskAmount card="ledger.txList">+{wonPre()}{KRW(incomeTotal)}</MaskAmount><WonUnit card="ledger.txList" />
                 </span>
               </div>
             )}
-            {expenseSum > 0 && (
+            {expenseTotal > 0 && (
               <div className="flex flex-col items-end">
                 <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('expense')}</span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  <MaskAmount card="ledger.txList">−{wonPre()}{KRW(expenseSum)}</MaskAmount><WonUnit card="ledger.txList" />
+                  <MaskAmount card="ledger.txList">−{wonPre()}{KRW(expenseTotal)}</MaskAmount><WonUnit card="ledger.txList" />
                 </span>
               </div>
             )}
@@ -1323,10 +1311,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 일별 합계 — 캘린더 셀 밑 금액.
   const byDay = useMemo(() => {
     const m: Record<string, { out: number; inn: number }> = {}
-    for (const e of expenses) {
+    // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
+    for (const e of countableTx(expenses)) {
       const k = dayKey(e.expenseDate)
       m[k] = m[k] || { out: 0, inn: 0 }
-      if (e.expenseType === 'EXPENSE') m[k].out += Math.abs(e.amount)
+      if (isRefundTx(e)) m[k].out -= Math.abs(e.amount)
+      else if (e.expenseType === 'EXPENSE') m[k].out += Math.abs(e.amount)
       else m[k].inn += Math.abs(e.amount)
     }
     return m
@@ -1556,8 +1546,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             const rel = relOf(d)
             // 일별 합계 — 이체는 자산 간 이동이라 지출/수입 어느 쪽에도 넣지 않는다.
             const dayExpenses = items.flatMap(i => (i.kind === 'expense' ? [i.expense] : []))
-            const dOut = dayExpenses.filter(e => e.expenseType === 'EXPENSE').reduce((s, e) => s + Math.abs(e.amount), 0)
-            const dIn = dayExpenses.filter(e => e.expenseType === 'INCOME').reduce((s, e) => s + Math.abs(e.amount), 0)
+            const dOut = expenseSum(dayExpenses)
+            const dIn = incomeSum(dayExpenses)
             return (
               <LedgerDayGroup key={d} day={d}>
                 <LedgerDayHead>

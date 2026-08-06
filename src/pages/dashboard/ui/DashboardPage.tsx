@@ -10,6 +10,7 @@ import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
+import { expenseSum } from '@/shared/lib/porest/expense-aggregate'
 import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
@@ -582,9 +583,8 @@ function HomeDesktop() {
     .slice()
     .filter(t => t.expenseDate?.slice(0, 10) === todayDStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-  const todayTotal = todayTx
-    .filter(t => t.expenseType === 'EXPENSE')
-    .reduce((s, t) => s + t.amount, 0)
+  // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
+  const todayTotal = expenseSum(todayTx)
 
   // 일평균 + 전월 대비 — 가계부 카드 요약 라인용
   const _today = new Date()
@@ -1241,9 +1241,8 @@ function HomeMobile() {
     .slice()
     .filter(t => t.expenseDate?.slice(0, 10) === todayStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
-  const todayTotal = todayTx
-    .filter(t => t.expenseType === 'EXPENSE')
-    .reduce((s, t) => s + t.amount, 0)
+  // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
+  const todayTotal = expenseSum(todayTx)
 
   // 도넛 — 부모 카테고리로 롤업, 전체 표시
   const donutSegs = useMemo(() => {
