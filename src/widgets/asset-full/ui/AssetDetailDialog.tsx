@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { AssetLogo, HOLDING_UNIT_KEY,
   formatQty, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
-import { useAssetBalanceTrend, useCancelCardPayment, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
+import { useAssetBalanceTrend, useAssets, useCancelCardPayment, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
@@ -930,7 +930,7 @@ function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () 
 
 
 export function AssetDetailDialog({
-  asset,
+  asset: assetProp,
   onClose,
   onEdit,
   mobile,
@@ -941,6 +941,11 @@ export function AssetDetailDialog({
   mobile: boolean
 }) {
   const { t } = useTranslation('asset')
+  // 여는 쪽은 클릭 시점의 asset 을 상태에 박아 넘긴다 — 열려 있는 동안 매수·취소가
+  // 일어나면 리스트 쿼리는 새 값인데 prop 은 옛 스냅샷이라 수량·평가액이 낡은 채
+  // 남는다. 같은 자산을 쿼리에서 다시 찾아 산 값을 쓴다.
+  const { data: liveAssets } = useAssets()
+  const asset = liveAssets?.assets.find(a => a.rowId === assetProp.rowId) ?? assetProp
   const navigate = useNavigate()
   const hidden = useHideAmounts('asset.detail')
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
