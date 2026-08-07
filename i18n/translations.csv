@@ -2496,7 +2496,10 @@ download,android.desc,"내려받아서 바로 설치하면 돼요. 스토어를 
 download,android.cta,APK 내려받기,Download APK
 download,android.note,기존에 깔려 있다면 지우지 않고 그대로 덮어써도 돼요. 데이터는 유지됩니다.,"If it is already installed, you can install over it — your data stays."
 download,ios.title,iOS,iOS
-download,ios.warning,"이 파일은 서명이 없어 그대로는 설치되지 않아요. 컴퓨터에서 AltStore·Sideloadly 같은 도구로 본인 Apple ID 로 서명해야 하고, 무료 계정이면 7일마다 다시 서명해야 합니다.","This build is unsigned and will not install as is. You need to sign it with your own Apple ID using AltStore or Sideloadly on a computer, and a free account requires re-signing every 7 days."
-download,ios.desc,설치가 번거로우니 아이폰에서는 웹으로 쓰시는 걸 권해요. 주소를 홈 화면에 추가하면 앱처럼 열립니다.,"Installing is cumbersome, so we recommend using the web on iPhone. Add it to your home screen and it opens like an app."
+download,ios.warning,"이 파일은 서명이 없어 그대로는 설치되지 않아요. 컴퓨터에서 본인 Apple ID 로 서명해야 하고, 무료 계정이면 7일마다 다시 서명해야 합니다.","This build is unsigned and will not install as is. You need to sign it with your own Apple ID on a computer, and a free account requires re-signing every 7 days."
+download,ios.altstoreDesc,"AltStore 를 쓰시면 편해요. 아래 주소를 소스로 추가하면 새 버전을 AltStore 에서 바로 받을 수 있고, 컴퓨터를 켜 두면 7일 서명도 알아서 갱신됩니다.","AltStore makes this easier. Add the address below as a source to get new versions right from AltStore, and if your computer stays on, the 7-day signature renews on its own."
+download,ios.copy,주소 복사,Copy
+download,ios.copied,복사했어요,Copied
+download,ios.desc,"Sideloadly 처럼 IPA 를 직접 넣는 도구를 쓰신다면 아래에서 받으세요. 설치가 번거로우니 아이폰에서는 웹으로 쓰셔도 됩니다.","If you use a tool that takes the IPA directly, such as Sideloadly, download it below. Installing is fiddly, so using the web on iPhone is fine too."
 download,ios.cta,IPA 내려받기,Download IPA
 download,webHint,앱 없이도 브라우저에서 모든 기능을 쓸 수 있어요.,Everything works in the browser without the app.

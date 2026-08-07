@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Apple, Download, Smartphone } from 'lucide-react'
+import { Apple, Check, Copy, Download, Smartphone } from 'lucide-react'
 import { Card } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 
@@ -28,6 +28,20 @@ export const DownloadPage = () => {
   const { t } = useTranslation('download')
   const [release, setRelease] = useState<AppRelease | null>(null)
   const [failed, setFailed] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  // AltStore 에 붙여 넣을 주소. 이 페이지가 어디에 떠 있든 그 호스트를 그대로 쓴다.
+  const sourceUrl = `${window.location.origin}${DOWNLOAD_BASE}/altstore.json`
+
+  const copySource = async () => {
+    try {
+      await navigator.clipboard.writeText(sourceUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // 클립보드가 막힌 브라우저(비 HTTPS 등) — 주소는 눈에 보이니 직접 긁으면 된다.
+    }
+  }
 
   useEffect(() => {
     // 배포 전이거나 파일이 아직 없으면 조용히 접는다 — 링크는 그대로 두고 버전만 감춘다.
@@ -102,10 +116,38 @@ export const DownloadPage = () => {
           >
             {t('ios.warning')}
           </div>
+
+          {/* AltStore 소스 — 7일마다 다시 서명하는 수고를 없애는 유일한 길이라 먼저 권한다. */}
           <p style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', lineHeight: 1.7, margin: 0 }}>
+            {t('ios.altstoreDesc')}
+          </p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <code
+              style={{
+                flex: 1,
+                minWidth: 0,
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
+                padding: '8px 10px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-sunken)',
+                fontSize: 'var(--text-caption)',
+                color: 'var(--fg-primary)',
+              }}
+            >
+              {sourceUrl}
+            </code>
+            <Button size="md" variant="secondary" onClick={copySource}>
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              {copied ? t('ios.copied') : t('ios.copy')}
+            </Button>
+          </div>
+
+          {/* 직접 받는 길도 남겨 둔다 — Sideloadly 처럼 IPA 를 직접 먹이는 도구를 쓸 때. */}
+          <p style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', lineHeight: 1.7, margin: 0 }}>
             {t('ios.desc')}
           </p>
-          <Button asChild size="md" variant="secondary" disabled={!release}>
+          <Button asChild size="md" variant="ghost" disabled={!release}>
             <a href={release ? `${DOWNLOAD_BASE}/${release.ios}` : undefined}>
               <Download size={16} /> {t('ios.cta')}
             </a>
