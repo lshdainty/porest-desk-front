@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
@@ -61,7 +62,9 @@ export function AssetTradeDialog({
   const [quantity, setQuantity] = useState('')
   const [amount, setAmount] = useState('')
   const [fee, setFee] = useState('')
-  const [tradeDate, setTradeDate] = useState(() => new Date().toISOString().slice(0, 16))
+  // datetime-local 은 타임존 없는 로컬 시각을 받는다 — toISOString() 은 UTC 라
+  // 한국에서 9시간 과거로 표시·저장돼 거래가 소급 입력이 된다.
+  const [tradeDate, setTradeDate] = useState(() => format(new Date(), "yyyy-MM-dd'T'HH:mm"))
   const [description, setDescription] = useState('')
   // 결제 계좌 — 비우면 증권계좌 예수금에서. 예수금을 따로 관리하지 않으면 통장을 고른다.
   const [settlementAssetRowId, setSettlementAssetRowId] = useState<number | null>(null)
