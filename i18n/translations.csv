@@ -2457,7 +2457,7 @@ asset,trade.empty,아직 매수·매도 기록이 없어요,No trades recorded y
 asset,trade.deleted,거래를 취소했어요,Trade cancelled
 asset,trade.deleteConfirm,이 거래를 취소하시겠어요? 예수금과 보유 수량이 거래 전으로 돌아가요.,Cancel this trade? Cash and quantity return to their pre-trade state.
 asset,trade.deleteTitle,"거래 취소","Cancel trade"
-asset,trade.deleteAction,"취소","Cancel trade"
+asset,trade.deleteAction,"거래 취소","Cancel trade"
 asset,holdings.avgPrice,평단가,Avg price
 asset,holdings.totalCost,매수원가,Cost basis
 asset,holdings.avgPriceInline,"평단가 {{avg}}원","avg {{avg}} KRW"
