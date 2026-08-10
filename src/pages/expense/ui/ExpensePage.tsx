@@ -1469,7 +1469,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       <LedgerCalendar ref={calRef}>
         <LedgerDow
           labels={dowLabels}
-          colorFor={i => (i === 0 ? 'var(--color-cat-red)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+          // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
+          // 카테고리 팔레트의 빨강(--color-cat-red)을 쓰고 있어 헤더만 톤이 달랐다.
+          colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
         />
         {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
           <LedgerWeek key={wi}>
