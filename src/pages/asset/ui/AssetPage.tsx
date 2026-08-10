@@ -865,9 +865,9 @@ export const AssetPage = () => {
   return mobile ? <AssetMobile /> : <AssetDesktop />
 }
 
-// 카드 사용률 게이지 — usage = abs(balance)/creditLimit*100.
-// 70%↑ status-warning, 90%↑ status-danger. SavingGoalItem 진행률 바 패턴 재활용(height 6px pill bg-sunken).
-function CardUsageGauge({ asset }: { asset: Asset }) {
+// 카드 사용률 — usage = abs(balance)/creditLimit*100.
+// 70%↑ status-warning, 90%↑ status-danger.
+function cardUsageOf(asset: Asset) {
   if (asset.assetType !== 'CREDIT_CARD' || asset.creditLimit == null || asset.creditLimit <= 0) {
     return null
   }
@@ -875,40 +875,37 @@ function CardUsageGauge({ asset }: { asset: Asset }) {
   const usage = (used / asset.creditLimit) * 100
   const barColor =
     usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--fg-brand)'
+  return { used, limit: asset.creditLimit, usage, barColor }
+}
+
+// 게이지 바 — 행 맨 아래에 아이콘부터 오른쪽 끝까지 한 줄로 깔린다.
+// 예산 카테고리 행과 같은 배치라, 카드 이름이나 금액 길이와 무관하게 시작·끝이 늘 같다.
+// (사용금액/한도 라벨은 우측 금액 열에 있다 — 여기 두면 이름 길이에 밀려 넘쳤다)
+function CardUsageBar({ asset }: { asset: Asset }) {
+  const u = cardUsageOf(asset)
+  if (!u) return null
 
   return (
-    <div style={{ marginTop: 6 }}>
-      {/* 앱 정합 — 바(위) → 사용금액/한도 라벨(아래) 순서. 결제일은 행 상단(메모 아래)에 별도 표기 */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
       <div
         style={{
-          height: 6, background: 'var(--bg-sunken)',
+          flex: 1, height: 6, background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-pill)', overflow: 'hidden',
         }}
       >
         <div
           style={{
-            width: `${Math.min(100, usage)}%`, height: '100%',
-            background: barColor, borderRadius: 'var(--radius-pill)',
+            width: `${Math.min(100, u.usage)}%`, height: '100%',
+            background: u.barColor, borderRadius: 'var(--radius-pill)',
           }}
         />
       </div>
-      <div
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 8, marginTop: 4,
-        }}
+      <span
+        className="num"
+        style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: u.barColor, flexShrink: 0 }}
       >
-        <span className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-          <MaskAmount mask="••• / •••">{wonPre()}{KRW(used)} / {wonPre()}{KRW(asset.creditLimit)}</MaskAmount>
-          <WonUnit />
-        </span>
-        <span
-          className="num"
-          style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: barColor }}
-        >
-          {usage.toFixed(0)}%
-        </span>
-      </div>
+        {u.usage.toFixed(0)}%
+      </span>
     </div>
   )
 }
@@ -956,7 +953,7 @@ function AssetCard({
       role="button"
       tabIndex={0}
       className={[
-        'flex items-center gap-[14px] cursor-pointer',
+        'flex flex-col cursor-pointer',
         'transition-colors duration-[var(--motion-duration-fast)]',
         'hover:bg-[var(--bg-muted)]',
       ].join(' ')}
@@ -974,6 +971,7 @@ function AssetCard({
         }
       }}
     >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
@@ -1034,7 +1032,6 @@ function AssetCard({
             {asset.paymentDay != null ? t('paymentDayLabel', { day: asset.paymentDay }) : ' '}
           </div>
         )}
-        <CardUsageGauge asset={asset} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
         <div
@@ -1076,7 +1073,27 @@ function AssetCard({
             {t('excludedFromTotal')}
           </div>
         )}
+        {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
+            왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
+        {(() => {
+          const u = cardUsageOf(asset)
+          if (!u) return null
+          return (
+            <div
+              className="num"
+              style={{
+                fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)',
+                fontWeight: '500', marginTop: 2, whiteSpace: 'nowrap',
+              }}
+            >
+              <MaskAmount mask="••• / •••">{wonPre()}{KRW(u.used)} / {wonPre()}{KRW(u.limit)}</MaskAmount>
+              <WonUnit />
+            </div>
+          )
+        })()}
       </div>
+      </div>
+      <CardUsageBar asset={asset} />
     </div>
   )
 }
