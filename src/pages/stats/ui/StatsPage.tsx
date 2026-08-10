@@ -936,6 +936,7 @@ export const StatsPage = () => {
                         자리는 늘 잡아 둔다. 조건부로 넣으면 화살표 없는 행만 금액이
                         오른쪽으로 밀려 목록이 들쭉날쭉해진다. */}
                     <span
+                      // 폭은 아이콘 크기와 같아야 해서 spacing 토큰이 아니라 그 값을 그대로 쓴다.
                       style={{ width: 13, marginRight: -2, flexShrink: 0, display: 'inline-flex' }}
                       aria-hidden
                     >
