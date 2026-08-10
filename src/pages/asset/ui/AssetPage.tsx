@@ -1003,7 +1003,10 @@ function AssetCard({
           >
             <InvestHoldingsSub asset={asset} />
           </div>
-        ) : asset.memo ? (
+        ) : asset.memo && !CARD_TYPES.includes(asset.assetType) ? (
+          /* 카드는 메모를 행에 안 띄운다. 아래로 결제일·게이지가 이어지는데 메모가 한 줄
+             끼면 그만큼 밀려, 카드마다 게이지 높이가 달라진다. 투자 행이 이미 쓰는
+             원칙과 같다 — 메모는 상세에서 본다. */
           <div
             style={{
               fontSize: 'var(--text-caption)',
@@ -1015,7 +1018,9 @@ function AssetCard({
             {asset.memo}
           </div>
         ) : null}
-        {asset.assetType === 'CREDIT_CARD' && asset.paymentDay != null && (
+        {/* 신용카드는 이 줄을 늘 차지한다. 결제일이 없다고 줄을 빼면 그 카드만
+            게이지가 위로 붙어 목록이 어긋난다. */}
+        {asset.assetType === 'CREDIT_CARD' && (
           <div
             style={{
               fontSize: 'var(--text-caption)',
@@ -1024,7 +1029,9 @@ function AssetCard({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {t('paymentDayLabel', { day: asset.paymentDay })}
+            {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
+                0 이라 자리가 안 잡힌다. */}
+            {asset.paymentDay != null ? t('paymentDayLabel', { day: asset.paymentDay }) : ' '}
           </div>
         )}
         <CardUsageGauge asset={asset} />

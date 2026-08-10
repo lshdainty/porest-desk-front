@@ -932,14 +932,17 @@ export const StatsPage = () => {
                     style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}
                   >
                     <MaskAmount mask="••••">{KRW(s.amount)}</MaskAmount>
-                    {/* 하위 카테고리 있는 행 = 클릭 가능 표식 — 숫자 옆 밀착 (앱 chevronRight 정합) */}
-                    {clickable && (
-                      <ChevronRight
-                        size={13}
-                        style={{ color: 'var(--fg-tertiary)', marginRight: -2, flexShrink: 0 }}
-                        aria-hidden
-                      />
-                    )}
+                    {/* 하위 카테고리 있는 행 = 클릭 가능 표식 — 숫자 옆 밀착 (앱 chevronRight 정합).
+                        자리는 늘 잡아 둔다. 조건부로 넣으면 화살표 없는 행만 금액이
+                        오른쪽으로 밀려 목록이 들쭉날쭉해진다. */}
+                    <span
+                      style={{ width: 13, marginRight: -2, flexShrink: 0, display: 'inline-flex' }}
+                      aria-hidden
+                    >
+                      {clickable && (
+                        <ChevronRight size={13} style={{ color: 'var(--fg-tertiary)' }} />
+                      )}
+                    </span>
                   </span>
                 </div>
               )
