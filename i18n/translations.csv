@@ -1777,6 +1777,8 @@ settings,sections.data.label,데이터 내보내기,Export Data
 settings,sections.data.desc,CSV·Excel·JSON으로 데이터 백업,Back up data as CSV · Excel · JSON
 settings,sections.account.label,계정,Account
 settings,sections.account.desc,프로필·보안·로그아웃,Profile · security · logout
+settings,sections.privacy.label,개인정보 처리방침,Privacy Policy
+settings,sections.privacy.desc,수집 항목·보유기간·권리 안내,Data collected · retention · your rights
 settings,groups.dataManage,데이터 관리,Data Management
 settings,groups.tagsLabels,태그 · 라벨,Tags · Labels
 settings,groups.share,공유,Sharing
