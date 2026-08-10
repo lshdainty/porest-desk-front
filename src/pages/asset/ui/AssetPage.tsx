@@ -971,26 +971,27 @@ function AssetCard({
         }
       }}
     >
+      {/* 발급사는 행 맨 위, 아이콘과 같은 왼쪽 끝에서 시작한다.
+          이름 옆에 붙여 두면 이름 길이만큼 자리가 밀려 행마다 다른 곳에 서고,
+          이름이 쓸 가로도 그만큼 줄었다. */}
+      {asset.institution && (
+        <div
+          style={{
+            fontWeight: '500',
+            color: 'var(--fg-tertiary)',
+            fontSize: 'var(--text-caption)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            marginBottom: 2,
+          }}
+        >
+          {asset.institution}
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* 발급사를 이름 위에 둔다. 같은 줄에 붙이면 이름 길이에 따라 발급사가 행마다
-            다른 자리에 서고, 이름이 쓸 가로도 그만큼 준다. 위로 빼면 자리가 늘 같고
-            이름은 한 줄을 통째로 쓴다. */}
-        {asset.institution && (
-          <div
-            style={{
-              fontWeight: '500',
-              color: 'var(--fg-tertiary)',
-              fontSize: 'var(--text-caption)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {asset.institution}
-          </div>
-        )}
         <div
           style={{
             fontSize: 'var(--text-body-sm)',
