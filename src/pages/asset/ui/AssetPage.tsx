@@ -974,15 +974,35 @@ function AssetCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>
-          {asset.assetName}
+        {/* 이름·발급사를 각각 줄일 수 있는 flex 항목으로 둔다. 한 덩어리 텍스트로 흘리면
+            긴 이름이 두 줄로 접혀 행 높이가 제각각이 되고, 아래 게이지 위치도 밀린다.
+            앱은 Flexible + ellipsis 로 늘 한 줄이라 그쪽에 맞춘다. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 6,
+            minWidth: 0,
+            fontSize: 'var(--text-body-sm)',
+            fontWeight: '600',
+            color: 'var(--fg-primary)',
+          }}
+        >
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {asset.assetName}
+          </span>
           {asset.institution && (
             <span
               style={{
                 fontWeight: '500',
                 color: 'var(--fg-tertiary)',
                 fontSize: 'var(--text-caption)',
-                marginLeft: 6,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                // 이름이 먼저 줄어들게 — 발급사는 짧고, 어느 카드사인지가 이름만큼 중요하다.
+                flexShrink: 0,
+                minWidth: 0,
               }}
             >
               {asset.institution}
@@ -997,6 +1017,10 @@ function AssetCard({
               color: 'var(--fg-tertiary)',
               marginTop: 1,
               fontVariantNumeric: 'tabular-nums',
+              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             <InvestHoldingsSub asset={asset} />
@@ -1011,6 +1035,10 @@ function AssetCard({
               color: 'var(--fg-tertiary)',
               marginTop: 1,
               fontVariantNumeric: 'tabular-nums',
+              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {asset.memo}
@@ -1025,6 +1053,10 @@ function AssetCard({
               color: 'var(--fg-tertiary)',
               marginTop: 1,
               fontVariantNumeric: 'tabular-nums',
+              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
