@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { AssetLogo, HOLDING_UNIT_KEY,
   formatQty, qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 import type { Expense } from '@/entities/expense'
+import { isScheduledTx } from '@/shared/lib/porest/expense-aggregate'
 import { useAssetBalanceTrend, useAssets, useCancelCardPayment, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
@@ -1003,11 +1004,17 @@ export function AssetDetailDialog({
   // 이체는 expense 가 아니라 asset_transfer 라 따로 받아 합친다. 한 건이 자산 두 개에 걸치므로
   // 이 자산이 보내는 쪽인지 받는 쪽인지로 걸러낸다(서버 필터는 기간만 지원).
   const { data: transfersAll } = useAssetTransfers()
+  // "최근" 은 지나간 것이다. 반복거래가 미리 만들어 둔 미래분을 그대로 두면 날짜
+  // 내림차순에서 맨 위를 차지해, 정작 최근 거래가 12건 밖으로 밀려난다.
+  // 예정분은 전체 보기(가계부)에서 "예정" 표시와 함께 본다(사용자 결정).
   const relatedItems = useMemo(() => {
     const rows: AssetLedgerItem[] = [
-      ...(relatedAll ?? []).map(e => ({ kind: 'expense', at: e.expenseDate, expense: e }) as AssetLedgerItem),
+      ...(relatedAll ?? [])
+        .filter(e => !isScheduledTx(e.expenseDate))
+        .map(e => ({ kind: 'expense', at: e.expenseDate, expense: e }) as AssetLedgerItem),
       ...(transfersAll?.transfers ?? [])
-        .filter(t => t.fromAssetRowId === asset.rowId || t.toAssetRowId === asset.rowId)
+        .filter(t => (t.fromAssetRowId === asset.rowId || t.toAssetRowId === asset.rowId)
+          && !isScheduledTx(t.transferDate))
         .map(t => ({ kind: 'transfer', at: t.transferDate, transfer: t }) as AssetLedgerItem),
     ]
     return rows.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12)
