@@ -973,39 +973,38 @@ function AssetCard({
         }
       }}
     >
-      {/* 발급사는 행 맨 위, 아이콘과 같은 왼쪽 끝에서 시작한다.
-          이름 옆에 붙여 두면 이름 길이만큼 자리가 밀려 행마다 다른 곳에 서고,
-          이름이 쓸 가로도 그만큼 줄었다. */}
-      {asset.institution && (
-        <div
-          style={{
-            fontWeight: '500',
-            color: 'var(--fg-tertiary)',
-            fontSize: 'var(--text-caption)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            marginBottom: 'var(--spacing-xs)',
-          }}
-        >
-          {asset.institution}
-        </div>
-      )}
+      {/* 이름이 행 맨 위, 아이콘과 같은 왼쪽 끝에서 시작한다. 아래 아이콘 옆에는
+          발급사가 온다 — 어느 쪽이 나은지 보려고 자리를 맞바꾼 배치다(스타일은 그대로). */}
+      <div
+        style={{
+          fontSize: 'var(--text-body-sm)',
+          fontWeight: '600',
+          color: 'var(--fg-primary)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          marginBottom: 'var(--spacing-xs)',
+        }}
+      >
+        {asset.assetName}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 'var(--text-body-sm)',
-            fontWeight: '600',
-            color: 'var(--fg-primary)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {asset.assetName}
-        </div>
+        {asset.institution && (
+          <div
+            style={{
+              fontWeight: '500',
+              color: 'var(--fg-tertiary)',
+              fontSize: 'var(--text-caption)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {asset.institution}
+          </div>
+        )}
         {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
         {asset.assetType === 'INVESTMENT' ? (
           <div
