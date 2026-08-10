@@ -974,40 +974,34 @@ function AssetCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <AssetLogo asset={asset} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* 이름·발급사를 각각 줄일 수 있는 flex 항목으로 둔다. 한 덩어리 텍스트로 흘리면
-            긴 이름이 두 줄로 접혀 행 높이가 제각각이 되고, 아래 게이지 위치도 밀린다.
-            앱은 Flexible + ellipsis 로 늘 한 줄이라 그쪽에 맞춘다. */}
+        {/* 발급사를 이름 위에 둔다. 같은 줄에 붙이면 이름 길이에 따라 발급사가 행마다
+            다른 자리에 서고, 이름이 쓸 가로도 그만큼 준다. 위로 빼면 자리가 늘 같고
+            이름은 한 줄을 통째로 쓴다. */}
+        {asset.institution && (
+          <div
+            style={{
+              fontWeight: '500',
+              color: 'var(--fg-tertiary)',
+              fontSize: 'var(--text-caption)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {asset.institution}
+          </div>
+        )}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 6,
-            minWidth: 0,
             fontSize: 'var(--text-body-sm)',
             fontWeight: '600',
             color: 'var(--fg-primary)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
         >
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {asset.assetName}
-          </span>
-          {asset.institution && (
-            <span
-              style={{
-                fontWeight: '500',
-                color: 'var(--fg-tertiary)',
-                fontSize: 'var(--text-caption)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                // 이름이 먼저 줄어들게 — 발급사는 짧고, 어느 카드사인지가 이름만큼 중요하다.
-                flexShrink: 0,
-                minWidth: 0,
-              }}
-            >
-              {asset.institution}
-            </span>
-          )}
+          {asset.assetName}
         </div>
         {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
         {asset.assetType === 'INVESTMENT' ? (
