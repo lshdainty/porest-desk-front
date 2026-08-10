@@ -886,9 +886,11 @@ function CardUsageBar({ asset }: { asset: Asset }) {
   if (!u) return null
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
       <div
         style={{
+          // 바 두께는 간격이 아니라 컴포넌트 치수라 spacing 토큰을 안 쓴다.
+          // 저축목표 진행률 바와 같은 6px.
           flex: 1, height: 6, background: 'var(--bg-sunken)',
           borderRadius: 'var(--radius-pill)', overflow: 'hidden',
         }}
@@ -983,7 +985,7 @@ function AssetCard({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            marginBottom: 2,
+            marginBottom: 'var(--spacing-xs)',
           }}
         >
           {asset.institution}
