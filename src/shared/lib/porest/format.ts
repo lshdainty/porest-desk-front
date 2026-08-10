@@ -24,9 +24,16 @@ export const money = (n: number, opts: { sign?: boolean; abs?: boolean } = {}): 
 }
 
 /**
- * 차트 Y축 라벨 — ko 한국어 단위 축약(억/만) + 100만 단위 round / en `Intl.NumberFormat(compact)`(120M·52K).
- * 음수도 부호 prepend. 예: ko -517,500,000 → "-5,200만"·1,200,000,000 → "12.0억".
- * ko 회귀0: ko 분기는 기존 로직 그대로. App asset_detail_dialog.dart `_fmtAxisNum` 와 정합.
+ * 차트 Y축 라벨 — ko 조/억/만 축약 / en `Intl.NumberFormat(compact)`(120M·52K).
+ * 음수도 부호 prepend. App `core/format/krw.dart` formatChartAxis 와 정합.
+ *
+ * 구간마다 정밀도를 달리한다. 한 자리로 뭉개면 축 눈금이 겹치고(84만짜리 차트에서
+ * 25·50·75·100만이 "0만, 0만, 100만, 100만" 으로 나왔다), 반대로 늘 만 단위로 쓰면
+ * 조 단위에서 "10000.0억" 같은 라벨이 나와 축 폭을 넘는다.
+ *
+ *   1조~     1.2조        10억~    12억, 9,999억
+ *   1억~     5.2억        1만~     25만, 9,999만
+ *   ~1만     5000
  */
 export const formatChartAxis = (v: number): string => {
   const sign = v < 0 ? '-' : ''
@@ -34,20 +41,21 @@ export const formatChartAxis = (v: number): string => {
   if (isEn()) {
     return `${sign}${new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n)}`
   }
+  if (n >= 1_000_000_000_000) return `${sign}${(n / 1_000_000_000_000).toFixed(1)}조`
+  // 10억이 넘으면 소수 한 자리가 읽는 데 보태는 게 없다.
+  if (n >= 1_000_000_000) return `${sign}${Math.round(n / 100_000_000).toLocaleString('ko-KR')}억`
   if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`
-  if (n >= 10_000) {
-    const mil = Math.round(n / 1_000_000) * 100
-    return `${sign}${mil.toLocaleString('ko-KR')}만`
-  }
+  if (n >= 10_000) return `${sign}${Math.round(n / 10_000).toLocaleString('ko-KR')}만`
   return `${sign}${n.toLocaleString('ko-KR')}`
 }
 
 /**
  * 차트 값/틱 라벨 — 만 단위 축약. ko `457,400 → "46만"`·`120,000,000 → "1.2억"`,
  * en 은 `formatChartAxis`(Intl compact, 457.4K). 음수 부호 prepend.
- * `formatChartAxis` 는 100만 단위 round(대형 dual-axis 우축)라 소액(46만)이 "0만"으로
- * 뭉개짐 → stats 추이(순저축 Y축·카테고리 값라벨)처럼 소액 스케일엔 이 만 단위 헬퍼 사용.
  * App stats_screen `_fmtTick` 로직 미러.
+ *
+ * 예전엔 `formatChartAxis` 가 100만 단위로 뭉개서 소액이 "0만" 이 되는 바람에 이 함수가
+ * 따로 필요했다. 그 반올림을 걷어낸 지금은 ko 결과가 같다 — 남겨 둔 건 호출처가 많아서다.
  */
 export const formatChartAmount = (v: number): string => {
   if (isEn()) return formatChartAxis(v)
