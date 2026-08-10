@@ -17,6 +17,7 @@ import {
   Palette,
   PiggyBank,
   Repeat,
+  ShieldCheck,
   Tag,
   Tags,
   Trash2,
@@ -47,7 +48,7 @@ import { SubscriptionDialog } from '@/features/subscription/ui/SubscriptionDialo
 import { TossConnectCard } from '@/features/subscription/ui/TossConnectCard'
 import { useMyFeatures, useMySubscription } from '@/features/subscription/model/useSubscription'
 import { oauthLinkApi, useOAuthProviders, useUnlinkOAuth } from '@/features/oauth-link'
-import { oauthKeys } from '@/shared/config'
+import { config, oauthKeys } from '@/shared/config'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Switch } from '@/shared/ui/switch'
@@ -82,12 +83,18 @@ type SectionId =
   | 'notifications'
   | 'data'
   | 'account'
+  | 'privacy'
 
 interface SectionDef {
   id: SectionId
   labelKey: string
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>
   descKey: string
+  /**
+   * 값이 있으면 내부 섹션을 여는 대신 이 주소를 새 탭으로 연다.
+   * 처리방침은 계정 단위 문서라 SSO 에 한 벌만 두고 여기서는 가리키기만 한다.
+   */
+  externalUrl?: string
 }
 
 const SECTIONS: SectionDef[] = [
@@ -104,9 +111,17 @@ const SECTIONS: SectionDef[] = [
   { id: 'notifications', labelKey: 'sections.notifications.label', icon: Bell, descKey: 'sections.notifications.desc' },
   { id: 'data', labelKey: 'sections.data.label', icon: Download, descKey: 'sections.data.desc' },
   { id: 'account', labelKey: 'sections.account.label', icon: User, descKey: 'sections.account.desc' },
+  {
+    id: 'privacy',
+    labelKey: 'sections.privacy.label',
+    icon: ShieldCheck,
+    descKey: 'sections.privacy.desc',
+    externalUrl: `${config.ssoUrl}/privacy`,
+  },
 ]
 
-const SECTION_IDS: SectionId[] = SECTIONS.map(s => s.id)
+// 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다
+const SECTION_IDS: SectionId[] = SECTIONS.filter(s => !s.externalUrl).map(s => s.id)
 
 // ─── 모바일 메뉴 그룹 정의 ─────────────────────────────────────
 interface GroupDef {
@@ -137,7 +152,7 @@ const MENU_GROUPS: GroupDef[] = [
   },
   {
     labelKey: 'groups.account',
-    sectionIds: ['account'],
+    sectionIds: ['account', 'privacy'],
   },
 ]
 
@@ -201,6 +216,18 @@ export const SettingsPage = () => {
     setSearchParams(p, { replace: true })
   }
 
+  /**
+   * 메뉴 항목 클릭.
+   * 외부 링크 항목(처리방침 등)은 열 내부 화면이 없으므로 새 탭으로 띄운다.
+   */
+  const openSection = (s: SectionDef) => {
+    if (s.externalUrl) {
+      window.open(s.externalUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+    changeSection(s.id)
+  }
+
   const activeSection = section === 'menu' ? null : SECTIONS.find(s => s.id === section) ?? null
 
   const renderBody = (m: boolean) => {
@@ -225,7 +252,7 @@ export const SettingsPage = () => {
 
   if (mobile) {
     if (section === 'menu') {
-      return <MobileMenuView changeSection={changeSection} />
+      return <MobileMenuView changeSection={changeSection} openSection={openSection} />
     }
 
     return (
@@ -326,7 +353,7 @@ export const SettingsPage = () => {
             return (
               <button
                 key={s.id}
-                onClick={() => changeSection(s.id)}
+                onClick={() => openSection(s)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -362,7 +389,14 @@ export const SettingsPage = () => {
 }
 
 // ─── 모바일 메뉴 뷰 ────────────────────────────────────────────
-function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'menu') => void }) {
+function MobileMenuView({
+  changeSection,
+  openSection,
+}: {
+  changeSection: (id: SectionId | 'menu') => void
+  /** 메뉴 항목 클릭 — 외부 링크 항목은 새 탭으로 열린다 */
+  openSection: (s: SectionDef) => void
+}) {
   const { t } = useTranslation('settings')
   const { data: user } = useCurrentUser()
 
@@ -440,7 +474,7 @@ function MobileMenuView({ changeSection }: { changeSection: (id: SectionId | 'me
               {groupSections.map(s => (
                 <button
                   key={s.id}
-                  onClick={() => changeSection(s.id)}
+                  onClick={() => openSection(s)}
                   style={{
                     width: '100%',
                     display: 'flex',
