@@ -654,7 +654,6 @@ function HoldingRow({
   fx,
   live,
   first,
-  onEdit,
   onTrade,
 }: {
   holding: AssetHolding
@@ -663,7 +662,6 @@ function HoldingRow({
   fx: number | null
   live: boolean
   first: boolean
-  onEdit?: () => void
   onTrade?: (type: TradeType) => void
 }) {
   const { t } = useTranslation('asset')
@@ -710,17 +708,17 @@ function HoldingRow({
       ? `${manualQty} · ${t('holdings.manualSub')}`
       : t('holdings.manualSub')
 
+  // 행 자체는 누르는 자리가 아니다. 종목을 고치는 건 하단 [편집] 로만 들어간다 —
+  // 매수·매도 버튼 옆에서 행을 누르면 편집이 열려, 어디를 눌렀는지에 따라 다른 일이
+  // 벌어졌다. 앱도 버튼 둘만 두고 편집은 하단에서 받는다(사용자 결정).
   return (
     <div
-      onClick={onEdit}
-      role={onEdit ? 'button' : undefined}
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 12,
         padding: '12px 0',
         borderTop: first ? 'none' : '1px solid var(--border-subtle)',
-        cursor: onEdit ? 'pointer' : 'default',
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -756,18 +754,19 @@ function HoldingRow({
           </div>
         )}
       </div>
-      {/* 매수·매도 — 이 종목에 대한 사건. 종목이 정해진 자리라 다시 고를 필요가 없다. */}
+      {/* 매수·매도 — 이 종목에 대한 사건. 종목이 정해진 자리라 다시 고를 필요가 없다.
+          brand 색을 빼고 본문 톤으로 둔다 — 행마다 파란 글씨 둘이 서면 금액보다 먼저
+          눈에 들어와, 정작 봐야 할 평가액이 뒤로 밀린다(앱 정합). */}
       {onTrade && (
-        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-          <Button variant="accent" size="xs" onClick={() => onTrade('BUY')}>
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+          <Button variant="ghost" size="xs" onClick={() => onTrade('BUY')}>
             {t('trade.entryBuy')}
           </Button>
-          <Button variant="accent" size="xs" onClick={() => onTrade('SELL')}>
+          <Button variant="ghost" size="xs" onClick={() => onTrade('SELL')}>
             {t('trade.entrySell')}
           </Button>
         </div>
       )}
-      {onEdit && <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />}
     </div>
   )
 }
@@ -859,7 +858,7 @@ function TradeHistory({ assetRowId }: { assetRowId: number }) {
   )
 }
 
-function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () => void; mobile: boolean }) {
+function HoldingsSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
   const { t } = useTranslation('asset')
   // 매수·매도는 종목마다 연다 — 어떤 종목인지 정해진 채로 들어가야 다시 고를 일이 없다.
   const [trade, setTrade] = useState<{ type: TradeType; holding: AssetHolding } | null>(null)
@@ -903,7 +902,6 @@ function HoldingsSection({ asset, onEdit, mobile }: { asset: Asset; onEdit?: () 
           fx={Number.isFinite(fx) && fx > 0 ? fx : null}
           live={live}
           first={i === 0}
-          onEdit={onEdit}
           onTrade={type => setTrade({ type, holding: h })}
         />
       ))}
@@ -1163,7 +1161,8 @@ export function AssetDetailDialog({
       </div>
 
       {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
-      {isInv && <HoldingsSection asset={asset} onEdit={onEdit ? () => onEdit(asset) : undefined} mobile={mobile} />}
+      {/* 종목 편집은 하단 [편집] 로만 — 목록 행은 매수·매도 버튼만 받는다. */}
+      {isInv && <HoldingsSection asset={asset} mobile={mobile} />}
 
       {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
       {isCredit && (
