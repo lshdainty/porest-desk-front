@@ -143,9 +143,6 @@ export const TodoPage = () => {
   return <TodoPageInner mobile={mobile} />
 }
 
-/** 우선순위 별빛 가중치 — 서버 적립 규칙 미러(별빛 획득 토스트용). */
-const STAR_WEIGHT: Record<TodoPriority, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 }
-
 const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const { t } = useTranslation('todo')
   const todosQ = useTodos()
@@ -191,22 +188,24 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [quickAdd, setQuickAdd] = useState('')
 
-  // 완료 토글 + 별빛 토스트 (미완료→완료 전이에만).
+  // 완료 토글 + 별빛 토스트 — 서버가 돌려준 실제 적립량(earnedStarlight)으로만 띄운다.
+  // 낙관적으로 계산하면 평생 1회 정책에 걸려 적립이 0 이어도 "+N" 이 떠서 거짓말이 된다.
   const onToggleTodo = (td: Todo) => {
-    const wasDone = isDone(td)
-    toggleStatus.mutate(td.rowId)
-    const sky = constellationTodayQ.data
-    if (!wasDone && sky && !sky.collected) {
-      const gain = STAR_WEIGHT[td.priority]
-      const left = Math.max(0, sky.goal - (sky.points + gain))
-      setStarToast(
-        left === 0
-          ? t('starToast.collected', { gain })
-          : t('starToast.progress', { gain, left }),
-      )
-      if (toastTimer.current) clearTimeout(toastTimer.current)
-      toastTimer.current = setTimeout(() => setStarToast(null), 2200)
-    }
+    toggleStatus.mutate(td.rowId, {
+      onSuccess: updated => {
+        const gain = updated.earnedStarlight ?? 0
+        const sky = constellationTodayQ.data
+        if (gain <= 0 || !sky || sky.collected) return
+        const left = Math.max(0, sky.goal - (sky.points + gain))
+        setStarToast(
+          left === 0
+            ? t('starToast.collected', { gain })
+            : t('starToast.progress', { gain, left }),
+        )
+        if (toastTimer.current) clearTimeout(toastTimer.current)
+        toastTimer.current = setTimeout(() => setStarToast(null), 2200)
+      },
+    })
   }
 
   const handleQuickAdd = () => {
