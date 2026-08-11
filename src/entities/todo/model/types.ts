@@ -26,6 +26,8 @@ export interface Todo {
   subtaskCompletedCount: number
   createAt: string
   modifyAt: string
+  /** 이번 상태 토글로 실제 적립된 별빛 — 토글 응답에만 실린다(그 외 0). 토스트 근거. */
+  earnedStarlight?: number
 }
 
 export interface TodoFormValues {
