@@ -68,7 +68,9 @@ apiClient.interceptors.response.use(
       if (!isRedirectingToLogin) {
         isRedirectingToLogin = true
         clearAuthenticated()
-        window.location.href = '/login'
+        // expired=1 — 로그인 페이지가 버튼 대기 없이 곧장 SSO 로 넘어가게 하는 신호.
+        // SSO 에 Refresh 쿠키(7일)가 살아 있으면 무음 재인증으로 비밀번호 없이 돌아온다.
+        window.location.href = '/login?expired=1'
       }
       return Promise.reject(error)
     }
