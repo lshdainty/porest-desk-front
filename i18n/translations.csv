@@ -633,6 +633,7 @@ asset,savingGoal.errAmount,목표 금액을 입력해주세요,Enter a goal amou
 asset,savingGoal.errCurrentExceeds,현재 금액이 목표보다 클 수 없어요,Current amount can't exceed the target
 asset,subtitle,모든 계좌·카드·투자를 한 곳에서,"All accounts, cards, and investments in one place"
 asset,paymentDayLabel,{{day}}일 결제,Billed on day {{day}}
+asset,checkCardMonthLabel,이번 달 사용,Used this month
 asset,totalNetWorth,총 순자산,Total net worth
 asset,showAmount,금액 보기,Show amounts
 asset,hideAmount,금액 가리기,Hide amounts
@@ -711,6 +712,8 @@ asset,assetDetail.titleCard,카드 상세,Card details
 asset,assetDetail.titleInvest,투자 상세,Investment details
 asset,assetDetail.titleAccount,계좌 상세,Account details
 asset,assetDetail.valueCard,이번 달 결제 예정,Due this month
+asset,assetDetail.valueCheckCard,이번 달 사용액,Spent this month
+asset,assetDetail.monthTx,이번 달 내역,This month
 asset,assetDetail.showAmounts,금액 표시,Show amounts
 asset,assetDetail.hideAmounts,금액 가리기,Hide amounts
 asset,assetDetail.trendUsage,사용 추이,Usage trend

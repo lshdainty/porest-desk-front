@@ -950,6 +950,13 @@ function AssetCard({
   // 실제로 신용카드 잔액 하나가 양수로 들어가 그렇게 어긋났다. 지금은 저장할 때
   // 음수로 정규화하므로 표시에서 손볼 게 없다.
   const neg = asset.balance < 0
+  // 연결계좌형 체크카드는 결제가 계좌에서 즉시 빠져 잔액이 늘 0 이다 — 0원을 보여줘 봐야
+  // 아무 정보가 없으니 행 금액은 "이번 달 얼마 썼나"(서버 계산 당월 합계)로 바꾼다.
+  // 미연결 체크카드는 잔액이 실제로 쌓이므로 지금대로 잔액을 보여준다.
+  const checkCardMonthly =
+    asset.assetType === 'CHECK_CARD' && asset.paymentAssetRowId != null
+      ? asset.monthlyUsedAmount ?? 0
+      : null
   return (
     <div
       role="button"
@@ -1061,6 +1068,23 @@ function AssetCard({
             {asset.paymentDay != null ? t('paymentDayLabel', { day: asset.paymentDay }) : ' '}
           </div>
         )}
+        {/* 체크카드(연결계좌형) — 금액이 잔액이 아니라 당월 사용액임을 캡션으로 밝힌다.
+            신용카드의 결제일 줄과 같은 자리·타이포라 카드 그룹의 행 리듬이 맞는다. */}
+        {checkCardMonthly != null && (
+          <div
+            style={{
+              fontSize: 'var(--text-caption)',
+              color: 'var(--fg-tertiary)',
+              marginTop: 1,
+              fontVariantNumeric: 'tabular-nums',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {t('checkCardMonthLabel')}
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
         <div
@@ -1073,7 +1097,9 @@ function AssetCard({
           }}
         >
           <MaskAmount>
-            {neg ? '−' : ''}{wonPre()}{KRW(Math.abs(asset.balance))}
+            {checkCardMonthly != null
+              ? <>{wonPre()}{KRW(checkCardMonthly)}</>
+              : <>{neg ? '−' : ''}{wonPre()}{KRW(Math.abs(asset.balance))}</>}
           </MaskAmount>
           <WonUnit />
         </div>

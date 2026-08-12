@@ -993,10 +993,18 @@ export function AssetDetailDialog({
   // 라이브 평가는 '보유분'만 — 예수금을 더해야 계좌 총액이다.
   const investCash = isInv ? asset.cashBalance ?? 0 : 0
   const investHolding = investVal != null ? investVal.value : asset.holdingBalance ?? 0
-  // 투자도 예수금이 마이너스일 수 있다(기록용 앱이라 막지 않는다) — 부호를 살린다.
-  const heroAmount = investVal != null ? investCash + investVal.value : heroBalance
   // CREDIT_CARD 는 신판 카드 상세 본문(CardDetailBody) — 회차 히어로가 금액을 담당.
   const isCredit = asset.assetType === 'CREDIT_CARD'
+  // 연결계좌형 체크카드 — 결제가 계좌에서 즉시 빠져 잔액이 늘 0 이다. 히어로는 잔액 대신
+  // "이번 달 사용액"(서버 계산 당월 합계), 내역은 당월 1일~말일 전체를 보여준다(사용자 결정).
+  // 미연결 체크카드는 잔액이 실제로 쌓이므로 일반 계좌처럼 잔액·최근 내역 그대로다.
+  const isCheckLinked = asset.assetType === 'CHECK_CARD' && asset.paymentAssetRowId != null
+  // 투자도 예수금이 마이너스일 수 있다(기록용 앱이라 막지 않는다) — 부호를 살린다.
+  const heroAmount = investVal != null
+    ? investCash + investVal.value
+    : isCheckLinked
+      ? asset.monthlyUsedAmount ?? 0
+      : heroBalance
 
   const { data: relatedAll, isLoading: relatedLoading } = useSearchExpenses({ assetId: asset.rowId })
   // 이체는 expense 가 아니라 asset_transfer 라 따로 받아 합친다. 한 건이 자산 두 개에 걸치므로
@@ -1015,8 +1023,15 @@ export function AssetDetailDialog({
           && !isScheduledTx(t.transferDate))
         .map(t => ({ kind: 'transfer', at: t.transferDate, transfer: t }) as AssetLedgerItem),
     ]
-    return rows.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12)
-  }, [relatedAll, transfersAll, asset.rowId])
+    const sorted = rows.sort((a, b) => b.at.localeCompare(a.at))
+    // 연결계좌형 체크카드는 "이번 달 뭐 썼나" 가 목적이라 당월(1일~말일) 전체를 다 보여준다
+    // — 12건 컷을 두면 월말엔 월초 내역이 잘려 합계와 목록이 어긋난다. 그 밖에는 최근 12건.
+    if (isCheckLinked) {
+      const ym = currentYearMonth()
+      return sorted.filter(r => r.at.slice(0, 7) === ym)
+    }
+    return sorted.slice(0, 12)
+  }, [relatedAll, transfersAll, asset.rowId, isCheckLinked])
 
   // 가계부 메인 리스트 미러 — 날짜별 그룹(최신순), 헤더에 일 지출/수입 합계.
   const relatedGroups = useMemo(() => {
@@ -1031,7 +1046,9 @@ export function AssetDetailDialog({
   }, [relatedItems])
 
   const title = isCard ? t('assetDetail.titleCard') : isInv ? t('assetDetail.titleInvest') : t('assetDetail.titleAccount')
-  const valueLabel = isCard ? t('assetDetail.valueCard') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
+  const valueLabel = isCheckLinked
+    ? t('assetDetail.valueCheckCard')
+    : isCard ? t('assetDetail.valueCard') : isInv ? t('assetDetail.seriesValuation') : t('assetDetail.seriesBalance')
 
   const viewAll = () => {
     onClose()
@@ -1182,7 +1199,9 @@ export function AssetDetailDialog({
 
       {!isCredit && (
       <>
-      {/* Balance trend chart */}
+      {/* Balance trend chart — 연결계좌형 체크카드는 잔액이 늘 0 이라 평평한 0 선뿐이다.
+          차트만 빼고 내역은 그대로 둔다. */}
+      {!isCheckLinked && (
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
@@ -1256,12 +1275,14 @@ export function AssetDetailDialog({
           </ChartContainer>
         )}
       </div>
+      )}
 
       {/* Recent tx */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <h4 style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', margin: 0 }}>
-            {t('assetDetail.recentTx')}{relatedItems.length > 0 ? ` (${relatedItems.length})` : ''}
+            {isCheckLinked ? t('assetDetail.monthTx') : t('assetDetail.recentTx')}
+            {relatedItems.length > 0 ? ` (${relatedItems.length})` : ''}
           </h4>
           <button
             type="button"
