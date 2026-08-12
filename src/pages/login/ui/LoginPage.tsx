@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { Spinner } from '@/shared/ui/spinner'
 import { config } from '@/shared/config'
 import { hasToken } from '@/shared/api'
@@ -29,10 +29,14 @@ export const LoginPage = () => {
 
 const LoginForm = () => {
   const { t } = useTranslation('login')
-  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [searchParams] = useSearchParams()
+  // 세션 만료로 밀려난 진입(?expired=1)은 버튼 대기 없이 곧장 SSO 로 넘어간다 —
+  // SSO 쪽 무음 재인증이 살아 있으면 사용자는 클릭도 입력도 없이 제자리로 돌아온다.
+  const expired = searchParams.get('expired') === '1'
+  const [isRedirecting, setIsRedirecting] = useState(expired)
+  const autoStarted = useRef(false)
 
-  const handleSsoRedirect = async () => {
-    setIsRedirecting(true)
+  const startSsoRedirect = async () => {
     const callbackUrl = `${window.location.origin}/auth/callback`
     // PKCE: code_verifier/state 생성 후 보관, code_challenge(S256) 을 인가 요청에 첨부.
     const verifier = generateCodeVerifier()
@@ -48,6 +52,19 @@ const LoginForm = () => {
     })
     window.location.href = `${config.ssoUrl}/login?${params.toString()}`
   }
+
+  const handleSsoRedirect = () => {
+    setIsRedirecting(true)
+    void startSsoRedirect()
+  }
+
+  useEffect(() => {
+    if (expired && !autoStarted.current) {
+      autoStarted.current = true
+      // isRedirecting 은 expired 로 이미 true 초기화 — 여기서는 이동만 시작한다.
+      void startSsoRedirect()
+    }
+  }, [expired])
 
   return (
     // 묶음 구조(사용자 결정) — [로고+타이틀+안내문] 한 묶음(내부 gap 8, 앱 x8) ↔ 버튼을
