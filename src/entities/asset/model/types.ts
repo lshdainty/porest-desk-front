@@ -126,6 +126,9 @@ export interface Asset {
   tossQuantity?: number | null
   /** 투자 보유 항목들 (INVESTMENT 전용, 구버전 응답이면 없음) */
   holdings?: AssetHolding[]
+  /** 이번 달(1일~말일) 사용 합계 — CHECK_CARD 전용, 서버 계산(예정 제외·환불 상계).
+      연결계좌 즉시 차감으로 잔액이 늘 0 이라, 행·상세는 잔액 대신 이 값을 보여준다 */
+  monthlyUsedAmount?: number | null
   createAt: string
   modifyAt: string
 }
