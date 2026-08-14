@@ -62,9 +62,18 @@ function avatarColor(name: string): string {
 const initial = (name: string) => (name && name.length > 0 ? name[0]! : '?')
 
 // ── 모델 헬퍼 ────────────────────────────────────────────────────────────────
-/** 결제자(나) = userRowId 보유 참여자 또는 첫 번째. */
+/**
+ * 결제한 사람. 서버가 저장한 값이라 참가자 순서가 바뀌어도 흔들리지 않는다.
+ *
+ * 예전엔 `userRowId 가진 참여자 ?? 첫 번째` 로 추측했는데, userRowId 는 결제자 표식이
+ * 아니라 "그룹 멤버 자동완성으로 들어온 사람" 이라 아무나 가질 수 있었다. 게다가 앱은
+ * `index === 0` 으로 달리 판정해서 같은 정산을 서로 다른 사람이 결제한 걸로 그렸다.
+ *
+ * 첫 번째 fallback 은 서버 배포 전에 받아 둔 응답을 위한 안전망이다 — 마이그레이션이
+ * 기존 데이터를 채운 규칙과 같아서 화면이 갑자기 달라지지 않는다.
+ */
 function payerOf(d: DutchPay): DutchPayParticipant | undefined {
-  return d.participants.find(p => p.userRowId != null) ?? d.participants[0]
+  return d.participants.find(p => p.isPayer) ?? d.participants[0]
 }
 function isPayer(d: DutchPay, p: DutchPayParticipant): boolean {
   return payerOf(d)?.rowId === p.rowId
@@ -922,8 +931,10 @@ function DutchCreateWizard({
   // 추천 목록 = 기존 정산 이름 빈도 기반(중복 제거). 직접 추가 이름은 extras 에.
   const [extras, setExtras] = useState<string[]>([])
   const [newName, setNewName] = useState('')
-  // 선택 상태: '나'는 항상 고정 결제자. picked 에 이름 set.
+  // 선택 상태: '나'는 항상 참가. picked 에 이름 set.
   const [picked, setPicked] = useState<Set<string>>(() => new Set([MY_NAME]))
+  // 결제한 사람. 기본은 나지만 바꿀 수 있다 — 친구가 계산하고 내가 갚는 경우가 있다.
+  const [payerName, setPayerName] = useState<string>(MY_NAME)
 
   const totalNum = useMemo(() => Number(totalStr.replace(/[^0-9]/g, '')) || 0, [totalStr])
 
@@ -941,11 +952,14 @@ function DutchCreateWizard({
   const perPerson = picked.size > 0 ? Math.floor(totalNum / picked.size) : 0
 
   const toggle = (name: string) => {
-    if (name === MY_NAME) return // 결제자 고정
+    if (name === MY_NAME) return // '나'는 항상 참가
     setPicked(prev => {
       const next = new Set(prev)
-      if (next.has(name)) next.delete(name)
-      else next.add(name)
+      if (next.has(name)) {
+        next.delete(name)
+        // 빠진 사람이 결제자였으면 결제자를 잃는다 — 나에게 되돌린다.
+        if (name === payerName) setPayerName(MY_NAME)
+      } else next.add(name)
       return next
     })
   }
@@ -976,9 +990,11 @@ function DutchCreateWizard({
     const base = Math.floor(totalNum / names.length)
     const remainder = totalNum - base * names.length
     const participants = names.map((name, i) => ({
-      userRowId: i === 0 ? undefined : null,
+      userRowId: null,
       participantName: name,
       amount: base + (i === 0 ? remainder : 0),
+      // 결제자는 순서와 무관하다 — 서버가 이 값을 저장하고, 화면은 더 이상 추측하지 않는다.
+      isPayer: name === payerName,
     }))
     onCreate({
       title: title.trim(),
@@ -1108,14 +1124,32 @@ function DutchCreateWizard({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-            <ParticipantPick name={MY_NAME} note={t('payer')} checked locked onToggle={() => {}} />
+            <ParticipantPick
+              name={MY_NAME}
+              note={payerName === MY_NAME ? t('payer') : t('setPayer')}
+              checked
+              locked
+              onToggle={() => {}}
+              isPayer={payerName === MY_NAME}
+              onSetPayer={() => setPayerName(MY_NAME)}
+            />
             {candidates.map(name => (
               <ParticipantPick
                 key={name}
                 name={name}
-                note={friendNames.includes(name) ? t('recommended') : undefined}
+                note={
+                  payerName === name
+                    ? t('payer')
+                    : picked.has(name)
+                      ? t('setPayer')
+                      : friendNames.includes(name)
+                        ? t('recommended')
+                        : undefined
+                }
                 checked={picked.has(name)}
                 onToggle={() => toggle(name)}
+                isPayer={payerName === name}
+                onSetPayer={() => setPayerName(name)}
               />
             ))}
           </div>
@@ -1149,12 +1183,18 @@ function ParticipantPick({
   checked,
   locked,
   onToggle,
+  isPayer,
+  onSetPayer,
 }: {
   name: string
   note?: string
   checked: boolean
   locked?: boolean
   onToggle: () => void
+  /** 이 사람이 결제했는가. 표시만 하고, 바꾸는 건 onSetPayer. */
+  isPayer?: boolean
+  /** 결제자로 지정. 선택된 사람에게만 준다 — 안 낀 사람이 결제자일 수는 없다. */
+  onSetPayer?: () => void
 }) {
   return (
     <div
@@ -1191,7 +1231,24 @@ function ParticipantPick({
       <div style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 13.5, fontWeight: '600', color: 'var(--fg-primary)' }}>{name}</span>
       </div>
-      {note && <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>{note}</span>}
+      {isPayer && <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>{note}</span>}
+      {/* 결제자가 아닌 선택된 사람 — 눌러서 결제자를 옮긴다. 행 클릭(선택 해제)과
+          겹치지 않게 전파를 막는다. */}
+      {!isPayer && onSetPayer && checked && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={e => {
+            e.stopPropagation()
+            onSetPayer()
+          }}
+        >
+          {note}
+        </Button>
+      )}
+      {!isPayer && !onSetPayer && note && (
+        <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>{note}</span>
+      )}
     </div>
   )
 }
