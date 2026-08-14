@@ -1,0 +1,23 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { assetKeys, expenseKeys } from '@/shared/config'
+import { commitSms, type SmsCommitRequest } from '../api/smsApi'
+
+/**
+ * 결제 문자로 지출 만들기.
+ *
+ * 일반 생성 대신 이 경로를 쓰는 이유 — 서버가 원문을 다시 봐 취소 문자를 막고,
+ * 체크했다면 (카드 힌트 → 자산) 을 기억한다. 만들어지는 지출 자체는 같으므로
+ * 무효화 범위도 일반 생성과 같다.
+ */
+export const useCommitSms = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: SmsCommitRequest) => commitSms(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
+      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+    },
+  })
+}
