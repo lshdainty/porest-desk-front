@@ -35,6 +35,7 @@ import {
   useDeleteExpense,
 } from '@/features/expense'
 import { useAssets, useCreateTransfer, useUpdateTransfer } from '@/features/asset'
+import { SmsPasteField, useCommitSms, type SmsParseResult } from '@/features/sms'
 import { useExpenseSplits } from '@/features/expense-split'
 import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
 import type { AssetTransfer } from '@/entities/asset'
@@ -124,6 +125,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
   const createTransferMut = useCreateTransfer()
   const updateTransferMut = useUpdateTransfer()
   const touchPresetMut = useTouchExpenseTemplate()
+  const commitSmsMut = useCommitSms()
   // 편집 모드: 기존 분할 내역 — 금액 변경 시 분할 합과 일치 여부 판정용
   const splitsQ = useExpenseSplits(expense?.rowId ?? null)
 
@@ -195,6 +197,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
     editTransfer?.interestAmount ? String(editTransfer.interestAmount) : '',
   )
 
+  // 결제 문자 초안 — 있으면 저장이 문자 전용 경로로 간다(취소 차단·카드 기억이 거기 있다).
+  const [smsDraft, setSmsDraft] = useState<{ text: string; parsed: SmsParseResult } | null>(null)
+  const [rememberCard, setRememberCard] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   // 분할 합 일치화: 금액을 바꿔 기존 분할 합과 어긋날 때 맞추기 플로우
@@ -399,6 +404,33 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
   const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending
     || updateTransferMut.isPending || deleteMut.isPending
 
+  /**
+   * 문자 해석 결과를 폼에 채운다.
+   *
+   * 채우기만 하고 저장하지는 않는다 — 파서가 틀렸을 때 사용자가 고칠 수 있어야 한다.
+   * 결제수단은 카드 고정이다(카드 결제 문자다) — 자산 목록도 그에 맞춰 좁혀진다.
+   */
+  const applySms = (text: string, parsed: SmsParseResult) => {
+    setSmsDraft({ text, parsed })
+    setRememberCard(false)
+    setType('EXPENSE')
+    if (parsed.amount != null) setAmount(String(parsed.amount))
+    if (parsed.merchant) setMerchant(parsed.merchant)
+    if (parsed.expenseDate) {
+      setExpenseDate(parsed.expenseDate.slice(0, 10))
+      const m = /[T ](\d{2}):(\d{2})/.exec(parsed.expenseDate)
+      if (m) setExpenseTime(`${m[1]}:${m[2]}`)
+    }
+    if (parsed.categoryRowId != null) setCategoryRowId(parsed.categoryRowId)
+    if (parsed.assetRowId != null) setAssetRowId(parsed.assetRowId)
+    setPaymentMethod('CARD')
+    setInstallmentMonths(parsed.installmentMonths != null ? String(parsed.installmentMonths) : '')
+    if (parsed.originalCurrency && parsed.originalAmount != null) {
+      setOrigCurrency(parsed.originalCurrency)
+      setOrigAmount(String(parsed.originalAmount))
+    }
+  }
+
   const save = () => {
     if (!canSave) return
     if (type === 'TRANSFER') {
@@ -449,6 +481,27 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
     }
     if (isEdit && expense) {
       updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose })
+    } else if (smsDraft) {
+      // 문자에서 온 지출은 전용 경로로 — 서버가 원문을 다시 봐 취소 문자를 막고
+      // 체크했다면 카드 연결을 기억한다. 만들어지는 지출 자체는 같다.
+      commitSmsMut.mutate(
+        {
+          text: smsDraft.text,
+          assetRowId: assetRowId ?? null,
+          categoryRowId: categoryRowId!,
+          amount: amountNumber,
+          merchant: merchant || null,
+          description: description || null,
+          expenseDate: `${expenseDate}T${expenseTime}`,
+          paymentMethod: paymentMethod || null,
+          installmentMonths: data.installmentMonths,
+          originalAmount: data.originalAmount,
+          originalCurrency: data.originalCurrency,
+          exchangeRate: data.exchangeRate,
+          rememberCard: assetRowId != null && rememberCard,
+        },
+        { onSuccess: onClose },
+      )
     } else {
       const presetIdAtSubmit = activePresetId
       createMut.mutate(data, {
@@ -760,6 +813,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
         </div>
       )}
 
+      {/* 결제 문자 붙여넣기 — 새 지출에만. 편집·환불·이체는 이미 값이 정해져 있다. */}
+      {!isEdit && !isRefundMode && type === 'EXPENSE' && (
+        <SmsPasteField onParsed={applySms} />
+      )}
+
       {/* 금액 — 다른 필드와 동일한 라벨+인풋 (모바일 처럼 깔끔하게) */}
       <Field style={{ marginBottom: 18 }}>
         <FieldLabel>{t('form.amount')}</FieldLabel>
@@ -1025,6 +1083,28 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
               <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
                 {t('addTx.noAssetForMethod')}
               </div>
+            )}
+            {/* 문자로 들어온 카드를 아직 안 외운 경우에만 물어본다.
+                한 번 켜 두면 다음 문자부터는 자산을 고르는 단계가 사라진다. */}
+            {smsDraft?.parsed.cardHint && !smsDraft.parsed.assetRemembered && (
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginTop: 8,
+                  fontSize: 'var(--text-caption)',
+                  color: assetRowId == null ? 'var(--fg-tertiary)' : 'var(--fg-secondary)',
+                  cursor: assetRowId == null ? 'default' : 'pointer',
+                }}
+              >
+                <Checkbox
+                  checked={assetRowId != null && rememberCard}
+                  disabled={assetRowId == null}
+                  onCheckedChange={(v) => setRememberCard(v === true)}
+                />
+                {t('sms.rememberCard')}
+              </label>
             )}
           </Field>
 

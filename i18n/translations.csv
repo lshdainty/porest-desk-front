@@ -2508,3 +2508,12 @@ download,ios.copied,복사했어요,Copied
 download,ios.desc,"Sideloadly 처럼 IPA 를 직접 넣는 도구를 쓰신다면 아래에서 받으세요. 설치가 번거로우니 아이폰에서는 웹으로 쓰셔도 됩니다.","If you use a tool that takes the IPA directly, such as Sideloadly, download it below. Installing is fiddly, so using the web on iPhone is fine too."
 download,ios.cta,IPA 내려받기,Download IPA
 download,webHint,앱 없이도 브라우저에서 모든 기능을 쓸 수 있어요.,Everything works in the browser without the app.
+expense,sms.pasteOpen,결제 문자 붙여넣기,Paste a payment text
+expense,sms.pastePlaceholder,카드사에서 온 결제 문자를 그대로 붙여넣어 주세요,Paste the card payment text as it is
+expense,sms.pasteAction,문자 읽기,Read text
+expense,sms.parsing,읽는 중…,Reading…
+expense,sms.notRecognized,결제 문자로 보이지 않아요. 문자 전체를 붙여넣었는지 확인해 주세요.,This doesn't look like a payment text. Please check that the whole message was pasted.
+expense,sms.cancelNotice,취소 문자예요. 자동 기록은 지원하지 않아요 — 원래 지출을 찾아 환불로 기록해 주세요.,This is a cancellation text. Automatic recording is not supported — find the original expense and record it as a refund.
+expense,sms.lowConfidence,일부 항목을 읽지 못했어요. 확인하고 채워 주세요.,Some fields could not be read. Please review and fill them in.
+expense,sms.parseFailed,문자를 읽지 못했어요. 잠시 후 다시 시도해 주세요.,Could not read the text. Please try again in a moment.
+expense,sms.rememberCard,이 카드를 기억해서 다음부터 자동으로 연결하기,Remember this card and link it automatically next time
