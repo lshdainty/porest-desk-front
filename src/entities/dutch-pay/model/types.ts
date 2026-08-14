@@ -5,6 +5,8 @@ export interface DutchPayParticipant {
   userRowId: number | null
   participantName: string
   amount: number
+  /** 이 사람이 결제했는가. 한 정산에 한 명 — 나머지는 그 사람에게 갚을 참여자다. */
+  isPayer: boolean
   isPaid: boolean
   paidAt: string | null
 }
@@ -40,4 +42,6 @@ export interface ParticipantFormValues {
   userRowId?: number | null
   participantName: string
   amount: number
+  /** 이 사람이 결제했는가. 안 보내면 서버가 첫 사람을 결제자로 본다. */
+  isPayer?: boolean
 }

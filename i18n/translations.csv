@@ -1446,6 +1446,7 @@ dutchPay,placeLabel,장소,Place
 dutchPay,placePlaceholder,장소 또는 상호명 (선택),Place or venue (optional)
 dutchPay,selectedCount,{{count}}명 선택,{{count}} selected
 dutchPay,payer,결제자,Payer
+dutchPay,setPayer,결제자로,Set as payer
 dutchPay,recommended,추천,Suggested
 dutchPay,pickParticipants,참여자 선택,Select participants
 dutchPay,requestAll,일괄 요청,Request all
