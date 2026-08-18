@@ -280,13 +280,20 @@ export function LedgerSumBtn({
 
 // ─── 접힘 영역 내부 카드(요약 rows / 히어로 등) ─────────────
 
-/** 헤드 아래 드롭 카드 — raised + 진입 애니메이션 (요약 rows 컨테이너). */
+/**
+ * 헤드 아래 드롭 카드 — raised + 진입 애니메이션 (요약 rows 컨테이너).
+ *
+ * 아래 마진 28px 은 그림자 자리다. 이 카드는 `LedgerCollapse`(overflow-hidden) 안
+ * 마지막 요소라, 마진이 없으면 클립 경계가 카드 바닥선과 겹쳐 shadow-lg 가 칼같이
+ * 잘린다. 28 = dy 8 + blur 24 + spread −4 (그림자가 아래로 퍼지는 거리).
+ * spacing 유틸(mb-7)은 이 프로젝트에서 --spacing-* 재정의와 충돌하므로 명시값을 쓴다.
+ */
 export function LedgerSummary({ className, ...props }: React.ComponentProps<typeof Card>) {
   return (
     <Card
       variant="raised"
       className={cn(
-        'mt-[14px] px-4 py-1 animate-[txmDrop_0.18s_var(--motion-ease-out)]',
+        'mt-[14px] mb-[28px] px-4 py-1 animate-[txmDrop_0.18s_var(--motion-ease-out)]',
         className,
       )}
       {...props}
