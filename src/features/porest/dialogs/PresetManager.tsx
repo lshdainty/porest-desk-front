@@ -206,7 +206,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: mobile ? '12px 8px' : '14px 16px',
+                  // 모바일 좌우 0 — 페이지가 24 를 쥔다(설정 리스트 공통 규칙).
+                  padding: mobile ? '12px 0' : '14px 16px',
                   borderTop: i === 0 ? 0 : '1px solid var(--border-subtle)',
                 }}
               >

@@ -243,7 +243,8 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: '12px 4px',
+                  // 모바일 좌우 0 — 페이지가 24 를 쥔다(설정 리스트 공통 규칙).
+                  padding: mobile ? '12px 0' : '12px 4px',
                   cursor: 'pointer',
                 }}
               >
