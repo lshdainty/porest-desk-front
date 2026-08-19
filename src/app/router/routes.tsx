@@ -25,8 +25,6 @@ const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ d
 const DownloadPage = lazy(() => import('@/pages/download/ui/DownloadPage').then(m => ({ default: m.DownloadPage })))
 const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
 const EmbedStockChartPage = lazy(() => import('@/pages/stocks/ui/EmbedStockChartPage').then(m => ({ default: m.EmbedStockChartPage })))
-// SwipeActions 실기기 확인용 — DEV 에서만 라우트가 붙고 배선이 끝나면 지운다.
-const SwipeLabPage = lazy(() => import('@/pages/dev/ui/SwipeLabPage').then(m => ({ default: m.SwipeLabPage })))
 
 const Loading = () => (
   <div className="flex h-screen items-center justify-center">
@@ -63,11 +61,6 @@ export const AppRouter = () => {
               <Route path="/desk/more" element={<MorePage />} />
               <Route path="/desk/search" element={<SearchPage />} />
               <Route path="/desk/notifications" element={<NotificationsPage />} />
-              {/* AppLayout 자식이어야 한다 — Provider·.m-scroll 이 여기 안에 있어야
-                  '한 번에 한 행'·'스크롤하면 닫힘' 을 랩에서 확인할 수 있다. */}
-              {import.meta.env.DEV && (
-                <Route path="/desk/__swipe-lab" element={<SwipeLabPage />} />
-              )}
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
