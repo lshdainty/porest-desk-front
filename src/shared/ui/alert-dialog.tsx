@@ -173,7 +173,8 @@ const AlertDialogCancel = React.forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      buttonVariants({ variant: "outline" }),
+      // 모달 footer 취소 통일 — 테두리 없는 회색 채움(spec alert-dialog.md).
+      buttonVariants({ variant: "secondary" }),
       className,
     )}
     {...props}

@@ -1055,13 +1055,17 @@ export function AssetDetailDialog({
     navigate(`/desk/expense?assetId=${asset.rowId}`)
   }
 
+  // 모바일은 [편집] 하나 — 금액 가리기는 카드 우상단 눈 버튼과 계정 > 보안에도 있어
+  // 여기서 뺀다. 데스크탑·태블릿은 [금액 가리기][편집] 그대로 둔다.
   const Footer = (
     <ModalViewFooter
       leftSlot={
-        <Button variant="ghost" size="md" flush="left" onClick={handleHideToggle} type="button">
-          {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-          {hidden ? t('assetDetail.showAmounts') : t('assetDetail.hideAmounts')}
-        </Button>
+        mobile ? undefined : (
+          <Button variant="ghost" size="md" flush="left" onClick={handleHideToggle} type="button">
+            {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
+            {hidden ? t('assetDetail.showAmounts') : t('assetDetail.hideAmounts')}
+          </Button>
+        )
       }
       onEdit={onEdit ? () => onEdit(asset) : undefined}
     />
