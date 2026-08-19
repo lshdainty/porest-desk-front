@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Plus, ReceiptText, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Pencil, Plus, ReceiptText, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import { KRW, formatDay, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
@@ -54,7 +54,9 @@ import {
   useExpenses,
   useRangeSummary,
   useExpenseCategories,
+  useDeleteExpense,
 } from '@/features/expense'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { useAsset, useAssets, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
@@ -1254,6 +1256,55 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null)
   const [editing, setEditing] = useState<Expense | null>(null)
+  // 스와이프 액션 — 상세 다이얼로그와 같은 뮤테이션·같은 확인 문구를 쓴다.
+  const { t: tc } = useTranslation('common')
+  const deleteExpense = useDeleteExpense()
+
+  const rowLabelOf = (e: Expense) =>
+    e.merchant ?? e.description ?? e.categoryName ?? tc('transaction')
+
+  /**
+   * 밀었을 때 드러나는 액션 — 의미 순서 그대로 [수정, 삭제] 로 넘긴다.
+   * 컴포넌트가 뒤집어 삭제를 가장 안쪽에 놓으므로, 조금만 밀면 수정부터 닿는다.
+   */
+  const swipeActionsFor = (e: Expense): SwipeAction[] => [
+    {
+      label: tc('edit'),
+      icon: <Pencil />,
+      kind: 'primary',
+      // 상세를 닫고 편집으로 — 상세 footer 의 편집과 같은 목적지(AddTxSheet).
+      onSelect: () => {
+        setDetail(null)
+        setEditing(e)
+      },
+    },
+    {
+      label: tc('delete'),
+      icon: <Trash2 />,
+      kind: 'destructive',
+      confirm: {
+        title: t('deleteConfirm.title'),
+        // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
+        message:
+          (e.refundCount ?? 0) > 0 ? (
+            <>
+              {t('txDetail.deleteMessage', { name: `"${rowLabelOf(e)}"` })}
+              <br />
+              <br />
+              {t('addTx.deleteRefundWarn', {
+                count: e.refundCount,
+                amount: KRW(e.refundedAmount),
+              })}
+            </>
+          ) : (
+            t('txDetail.deleteMessage', { name: `"${rowLabelOf(e)}"` })
+          ),
+        confirmLabel: tc('delete'),
+        loading: deleteExpense.isPending,
+      },
+      onSelect: () => deleteExpense.mutateAsync(e.rowId),
+    },
+  ]
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
   const [refunding, setRefunding] = useState<Expense | null>(null)
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
@@ -1565,19 +1616,33 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     // 지출·이체는 다른 테이블이라 rowId 가 겹칠 수 있다 — key·포커스는 종류까지 합쳐 판별.
                     const isFocus = item.kind === 'expense' && focusTxId === item.expense.rowId
                     return (
-                      <div
-                        key={ledgerKey(item)}
-                        ref={isFocus ? focusRef : undefined}
-                        style={{
-                          background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
-                          transition: 'background 0.4s',
-                          borderRadius: 10,
-                        }}
-                      >
-                        {item.kind === 'expense'
-                          ? <ExpenseRow expense={item.expense} onClick={(ex) => setDetail(ex)} />
-                          : <TransferRow transfer={item.transfer} onClick={(tr) => setTransferDetail(tr)} />}
-                      </div>
+                      item.kind === 'expense' ? (
+                        <SwipeActions
+                          key={ledgerKey(item)}
+                          ref={isFocus ? focusRef : undefined}
+                          rowId={`expense-${item.expense.rowId}`}
+                          groupTag="expense-list"
+                          rowLabel={rowLabelOf(item.expense)}
+                          // 데스크톱 통과는 spec Platform — 이 브랜치는 이미 모바일 전용이라
+                          // 실질 no-op 이지만, 공용 컴포넌트로 옮겨질 때 새지 않게 의미를 남긴다.
+                          enabled
+                          style={{
+                            background: isFocus ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
+                            transition: 'background 0.4s',
+                            borderRadius: 10,
+                          }}
+                          // 시스템이 만든 거래(매도 실현손익·이체 이자)는 원본을 지워야 사라진다 —
+                          // 상세 다이얼로그가 버튼을 감추는 것과 같은 조건으로 액션 자체를 없앤다.
+                          actions={item.expense.autoSource != null ? [] : swipeActionsFor(item.expense)}
+                        >
+                          <ExpenseRow expense={item.expense} onClick={(ex) => setDetail(ex)} />
+                        </SwipeActions>
+                      ) : (
+                        // 이체 행은 감싸지 않는다 — 앱도 제외한다.
+                        <div key={ledgerKey(item)}>
+                          <TransferRow transfer={item.transfer} onClick={(tr) => setTransferDetail(tr)} />
+                        </div>
+                      )
                     )
                   })}
                 </div>
