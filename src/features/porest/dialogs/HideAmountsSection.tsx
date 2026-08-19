@@ -1,338 +1,272 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, Eye, EyeOff, Lock } from 'lucide-react'
-import { Switch } from '@/shared/ui/switch'
+import { toast } from 'sonner'
+import { ChevronLeft } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
+import { Chip } from '@/shared/ui/chip'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import {
   ALL_HIDE_CARDS,
   cardsOfPage,
   HIDE_PAGES,
   type HideCardKey,
+  type HidePageKey,
 } from '@/shared/lib/porest/hide-amounts-cards'
 import {
-  hideCards,
-  revealCards,
+  setHiddenCards,
   useHiddenCards,
 } from '@/shared/lib/porest/hide-amounts-core'
 
 /**
- * 금액 가리기 — 표시 설정 '개인정보 보호' 안의 아코디언 (porest-design `hide-amounts.jsx` 미러).
+ * 금액 가리기 — 계정 > 보안 > 금액 가리기 (앱 `hide_amounts_screen.dart` 미러).
  *
  * <p>예전엔 스위치 하나가 앱 전체 금액을 덮었다. 자산은 가리고 싶어도 가계부는 봐야 하는
  * 경우가 있어서 화면(8) → 카드(37) 로 쪼갰다.
  *
- * <p>가리는 건 자유롭게, <b>푸는 건 비밀번호</b>를 받는다. 전체·페이지 스위치로 풀면 그
- * 묶음을 한 번의 인증으로 처리한다 — 카드마다 비밀번호를 치게 하면 못 쓴다.
+ * <p>카드를 하나 만질 때마다 저장·인증하지 않는다. 고르는 동안에는 아무 일도 일어나지 않고,
+ * [저장] 을 눌러야 한 번에 반영된다. 예전엔 스위치를 내릴 때마다 풀기 인증이 떠서 여러 장을
+ * 조정하려면 그만큼 비밀번호를 쳐야 했다.
+ *
+ * <p>인증은 <b>푸는 카드가 하나라도 있을 때만</b> 받는다. 가리기만 늘리는 저장은 그대로 통과.
  */
 export function HideAmountsSection({
   mobile,
-  defaultOpen = false,
+  onBack,
 }: {
   mobile: boolean
-  /** 화면의 눈 버튼으로 들어오면 펼친 채로 연다 — 접힌 아코디언만 보이면 헛걸음이 된다. */
-  defaultOpen?: boolean
+  /** 뒤로 — 이 화면은 계정 > 보안에서 들어온다(눈 버튼도 여기로 직행). */
+  onBack: () => void
 }) {
   const { t } = useTranslation('settings')
-  const hidden = useHiddenCards()
-  const [open, setOpen] = useState(defaultOpen)
-  /** 인증을 기다리는 해제 대상. 인증되면 통째로 푼다. */
-  const [pending, setPending] = useState<HideCardKey[] | null>(null)
+  const { t: tc } = useTranslation('common')
+  const saved = useHiddenCards()
 
-  const total = ALL_HIDE_CARDS.length
-  const hiddenCount = hidden.size
-  const allOn = hiddenCount === total
+  /** 고르는 중인 선택 — 저장 전까지 어디에도 반영되지 않는다. */
+  const [draft, setDraft] = useState<Set<HideCardKey>>(() => new Set(saved))
+  /** `null` 은 '전체' 탭(모든 카드를 한 판에). */
+  const [tab, setTab] = useState<HidePageKey | null>(null)
+  /** 인증을 기다리는 저장 — 인증되면 그대로 반영한다. */
+  const [awaitingUnlock, setAwaitingUnlock] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
 
-  const pages = useMemo(
-    () => HIDE_PAGES.map(p => ({ page: p, cards: cardsOfPage(p) })),
-    [],
+  const tabCards = useMemo(
+    () => (tab === null ? ALL_HIDE_CARDS : cardsOfPage(tab)),
+    [tab],
   )
+  const allOnThisTab = tabCards.every(c => draft.has(c))
+  const dirty =
+    draft.size !== saved.size || [...draft].some(c => !saved.has(c))
 
-  /** 켜기는 그냥, 끄기는 인증을 거쳐서. */
-  const apply = (cards: HideCardKey[], next: boolean) => {
-    if (next) hideCards(cards)
-    else setPending(cards)
+  const toggle = (card: HideCardKey) =>
+    setDraft(prev => {
+      const next = new Set(prev)
+      if (!next.delete(card)) next.add(card)
+      return next
+    })
+
+  // 37장을 하나씩 누르게 두지 않는다 — 지금 탭 기준으로 한 번에 켜고 끈다.
+  const toggleTabAll = () =>
+    setDraft(prev => {
+      const next = new Set(prev)
+      for (const c of tabCards) {
+        if (allOnThisTab) next.delete(c)
+        else next.add(c)
+      }
+      return next
+    })
+
+  const commit = () => {
+    setHiddenCards(draft)
+    toast(t('hideAmounts.saved'))
+    onBack()
   }
 
-  const descText = (
+  const save = () => {
+    // 푸는 게 하나라도 있으면 본인 확인 — 가리기만 늘리는 저장은 그냥 통과한다.
+    const revealing = [...saved].some(c => !draft.has(c))
+    if (revealing) setAwaitingUnlock(true)
+    else commit()
+  }
+
+  // 저장하지 않고 나가려 할 때 — 고른 내용이 날아가는 걸 알리고, 확인하면 화면을 닫는다.
+  const back = () => {
+    if (dirty) setConfirmDiscard(true)
+    else onBack()
+  }
+
+  const pageLabel = (page: HidePageKey | null) =>
+    page === null ? t('hideAmounts.tabAll') : t(`hideAmounts.page.${page}`)
+
+  // 탭 라벨에 개수를 붙인다 — tabs spec 에 badge 가 없어 별도 스타일을 만들지 않는다(앱 정합).
+  const tabLabel = (page: HidePageKey | null) => {
+    const cards = page === null ? ALL_HIDE_CARDS : cardsOfPage(page)
+    const on = cards.filter(c => draft.has(c)).length
+    return on === 0 ? pageLabel(page) : `${pageLabel(page)} ${on}`
+  }
+
+  const selectAllButton = (
+    <Button variant="ghost" size="sm" onClick={toggleTabAll}>
+      {allOnThisTab ? t('hideAmounts.clearAll') : t('hideAmounts.selectAll')}
+    </Button>
+  )
+
+  // 탭 — 전체 + 화면별. 개수는 지금 고른 상태를 그대로 비춘다.
+  // pill 채움으로 둔다. underline 은 활성 탭 밑줄과 탭바 아래 경계선이 나란히 겹쳐
+  // 선이 두 줄로 보인다(앱도 같은 이유로 pills).
+  const tabs = (
+    <div className="scrollbar-hide" style={{ overflowX: 'auto', minWidth: 0 }}>
+      <Tabs value={tab ?? 'all'} onValueChange={v => setTab(v === 'all' ? null : (v as HidePageKey))}>
+        <TabsList variant="pills" size="sm">
+          <TabsTrigger variant="pills" value="all">
+            {tabLabel(null)}
+          </TabsTrigger>
+          {HIDE_PAGES.map(page => (
+            <TabsTrigger key={page} variant="pills" value={page}>
+              {tabLabel(page)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    </div>
+  )
+
+  const desc = (
     <div
       style={{
-        fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
+        fontSize: 'var(--text-caption)',
         color: 'var(--fg-tertiary)',
         lineHeight: 1.55,
-        padding: mobile ? '2px 0 4px' : '10px 0 2px',
       }}
     >
       {t('hideAmounts.sectionDesc')}
     </div>
   )
 
-  // ── 전체 잠그기 마스터
-  const masterRow = (pad: string) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: pad }}>
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 'var(--radius-full)',
-          flexShrink: 0,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: allOn ? 'var(--bg-brand-subtle)' : 'var(--bg-sunken)',
-          color: allOn ? 'var(--fg-brand)' : 'var(--fg-secondary)',
-        }}
-      >
-        <Lock size={16} />
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: mobile ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
-            fontWeight: 700,
-            color: 'var(--fg-primary)',
-          }}
-        >
-          {t('hideAmounts.lockAll')}
-        </div>
-        <div
-          className="num"
-          style={{
-            fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
-            color: 'var(--fg-tertiary)',
-            marginTop: 2,
-          }}
-        >
-          {t('hideAmounts.lockAllDesc', { count: hiddenCount, total })}
-        </div>
-      </div>
-      <Switch
-        checked={allOn}
-        onCheckedChange={next => apply(ALL_HIDE_CARDS, next)}
-        aria-label={t('hideAmounts.lockAll')}
-      />
-    </div>
-  )
-
-  // ── 그룹 목록 (전체 잠금이면 만질 필요가 없다 — 물러나 있게)
-  const groups = (
+  // 카드 그리드 — 라벨이 길어 모바일 3열은 말줄임이 잦다(앱과 같은 2열).
+  const grid = (
     <div
       style={{
-        opacity: allOn ? 0.55 : 1,
-        pointerEvents: allOn ? 'none' : 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: mobile ? 0 : 10,
+        display: 'grid',
+        gridTemplateColumns: `repeat(${mobile ? 2 : 3}, minmax(0, 1fr))`,
+        gap: 'var(--spacing-sm)',
+        gridAutoRows: 46,
       }}
     >
-      {pages.map(({ page, cards }) => {
-        const on = cards.filter(c => hidden.has(c)).length
-        const groupOn = on === cards.length
-        return mobile ? (
-          <div key={page} style={{ marginTop: 18 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '4px 0 12px',
-                borderBottom: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                  {t(`hideAmounts.page.${page}`)}
-                </div>
-                <div className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                  {on} / {cards.length}
-                </div>
-              </div>
-              <Switch checked={groupOn} onCheckedChange={next => apply(cards, next)} />
-            </div>
-            {cards.map(card => (
-              <div
-                key={card}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '14px 0 14px 10px',
-                  borderBottom: '1px solid var(--border-subtle)',
-                }}
-              >
-                <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: 500, color: 'var(--fg-primary)' }}>
-                  {t(`hideAmounts.card.${card}`)}
-                </span>
-                <Switch checked={hidden.has(card)} onCheckedChange={next => apply([card], next)} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div
-            key={page}
-            style={{
-              background: 'var(--bg-canvas)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px 13px' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                  {t(`hideAmounts.page.${page}`)}
-                </div>
-                <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                  {on} / {cards.length}
-                </div>
-              </div>
-              <Switch checked={groupOn} onCheckedChange={next => apply(cards, next)} />
-            </div>
-            {cards.map(card => (
-              <div
-                key={card}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 16px',
-                  borderTop: '1px solid var(--border-subtle)',
-                }}
-              >
-                <span style={{ flex: 1, fontSize: 'var(--text-label-sm)', fontWeight: 500, color: 'var(--fg-primary)' }}>
-                  {t(`hideAmounts.card.${card}`)}
-                </span>
-                <Switch checked={hidden.has(card)} onCheckedChange={next => apply([card], next)} />
-              </div>
-            ))}
-          </div>
-        )
-      })}
+      {tabCards.map(card => (
+        <Chip
+          key={card}
+          shape="rounded"
+          fullWidth
+          selected={draft.has(card)}
+          onClick={() => toggle(card)}
+        >
+          {t(`hideAmounts.card.${card}`)}
+        </Chip>
+      ))}
     </div>
   )
 
-  return (
-    <div>
-      {/* 아코디언 트리거 — 접혀 있을 때도 몇 장을 가렸는지 보인다. */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen(o => !o)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            setOpen(o => !o)
-          }
-        }}
-        style={
-          mobile
-            ? { padding: '12px 6px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }
-            : {
-                background: 'var(--bg-surface)',
-                borderRadius: open
-                  ? 'var(--radius-lg) var(--radius-lg) 0 0'
-                  : 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-sm)',
-                padding: '14px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                cursor: 'pointer',
-              }
-        }
-      >
-        <span
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 'var(--radius-md)',
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'var(--bg-sunken)',
-            color: 'var(--fg-secondary)',
-          }}
-        >
-          {hiddenCount > 0 ? <EyeOff size={17} /> : <Eye size={17} />}
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: mobile ? 'var(--text-body-lg)' : 'var(--text-label-sm)',
-              fontWeight: 600,
-              color: 'var(--fg-primary)',
-            }}
-          >
-            {t('hideAmounts.label')}
-          </div>
-          <div
-            style={{
-              fontSize: mobile ? 'var(--text-caption)' : 'var(--text-badge)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 2,
-            }}
-          >
-            {t('hideAmounts.desc')}
-          </div>
-        </div>
-        <span
-          className="num"
-          style={{
-            fontSize: 'var(--text-caption)',
-            fontWeight: 600,
-            color: hiddenCount > 0 ? 'var(--fg-brand)' : 'var(--fg-tertiary)',
-            flexShrink: 0,
-          }}
-        >
-          {hiddenCount} / {total}
-        </span>
-        <span
-          style={{
-            display: 'inline-flex',
-            flexShrink: 0,
-            color: 'var(--fg-tertiary)',
-            transform: open ? 'rotate(-180deg)' : 'none',
-            transition: 'transform var(--motion-duration-base) var(--motion-ease-out)',
-          }}
-        >
-          <ChevronDown size={17} />
-        </span>
-      </div>
-
-      {open &&
-        (mobile ? (
-          <div style={{ padding: '2px 6px 4px' }}>
-            {descText}
-            {masterRow('12px 0')}
-            <div style={{ borderBottom: '1px solid var(--border-subtle)' }} />
-            {groups}
-          </div>
-        ) : (
-          <div
-            style={{
-              background: 'var(--bg-surface)',
-              borderRadius: '0 0 var(--radius-lg) var(--radius-lg)',
-              boxShadow: 'var(--shadow-sm)',
-              padding: '4px 16px 16px',
-              borderTop: '1px solid var(--border-subtle)',
-            }}
-          >
-            {descText}
-            {masterRow('12px 0 14px')}
-            {groups}
-          </div>
-        ))}
-
+  const dialogs = (
+    <>
       <HideAmountsUnlockDialog
-        open={pending !== null}
+        open={awaitingUnlock}
         onOpenChange={o => {
-          if (!o) setPending(null)
+          if (!o) setAwaitingUnlock(false)
         }}
         onVerified={() => {
-          if (pending) revealCards(pending)
-          setPending(null)
+          setAwaitingUnlock(false)
+          commit()
         }}
       />
+      {confirmDiscard && (
+        <ConfirmDialog
+          title={t('hideAmounts.discardTitle')}
+          message={t('hideAmounts.discardBody')}
+          confirmLabel={t('hideAmounts.discardConfirm')}
+          danger
+          onCancel={() => setConfirmDiscard(false)}
+          onConfirm={() => {
+            setConfirmDiscard(false)
+            onBack()
+          }}
+        />
+      )}
+    </>
+  )
+
+  if (mobile) {
+    // 앱 화면 정합 — AppBar(뒤로 + 모두 선택) / 탭 / 안내 / 스크롤되는 그리드 / 아래 고정 [저장].
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 100,
+          background: 'var(--bg-surface)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <MobileBackHeader
+          title={t('hideAmounts.label')}
+          onBack={back}
+          trailing={selectAllButton}
+        />
+        <div style={{ padding: '12px 20px 16px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)', flexShrink: 0 }}>
+          {tabs}
+          {desc}
+        </div>
+        <div
+          className="scrollbar-hide"
+          style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0 20px 24px' }}
+        >
+          {grid}
+        </div>
+        {/* 저장 — 화면 아래 고정. 고르는 동안에는 아무것도 반영되지 않으므로 여기까지 와야 끝난다. */}
+        <div
+          style={{
+            padding: '12px 20px',
+            paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+            flexShrink: 0,
+          }}
+        >
+          <Button size="lg" className="w-full" disabled={!dirty} onClick={save}>
+            {tc('save')}
+          </Button>
+        </div>
+        {dialogs}
+      </div>
+    )
+  }
+
+  // 데스크톱 — 설정 우측 패널. 좌측 nav 에 자리가 없는 화면이라(계정 > 보안에서 들어온다)
+  // 맨 위에 돌아갈 길을 둔다.
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+      <div>
+        <Button variant="ghost" size="sm" flush="left" onClick={back}>
+          <ChevronLeft size={16} />
+          {t('sections.account.label')}
+        </Button>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+        {tabs}
+        <div style={{ marginLeft: 'auto', flexShrink: 0 }}>{selectAllButton}</div>
+      </div>
+      {desc}
+      {grid}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button disabled={!dirty} onClick={save}>
+          {tc('save')}
+        </Button>
+      </div>
+      {dialogs}
     </div>
   )
 }

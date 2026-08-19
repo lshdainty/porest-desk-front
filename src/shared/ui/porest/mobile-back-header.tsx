@@ -12,10 +12,17 @@ import { ChevronLeft } from 'lucide-react'
 export function MobileBackHeader({
   title,
   to = '/desk/more',
+  onBack,
   trailing,
 }: {
   title: string
   to?: string
+  /**
+   * 뒤로 눌렀을 때 할 일 — 주면 `to` 이동 대신 이걸 부른다.
+   * 라우트가 아니라 페이지 안 상태로 열린 화면(설정 서브페이지 등)이나,
+   * 나가기 전에 확인을 받아야 하는 화면용.
+   */
+  onBack?: () => void
   /** 헤더 우측 끝 액션 슬롯(앱 AppBar actions 미러). 미지정 시 기존과 동일. */
   trailing?: ReactNode
 }) {
@@ -38,7 +45,7 @@ export function MobileBackHeader({
       <button
         type="button"
         aria-label={t('back')}
-        onClick={() => navigate(to)}
+        onClick={() => (onBack ? onBack() : navigate(to))}
         style={{
           border: 0,
           background: 'transparent',

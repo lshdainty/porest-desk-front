@@ -121,22 +121,17 @@ export function useHiddenCards(): Set<HideCardKey> {
   return set
 }
 
-/** 가리기 — 인증 없이 자유롭게 켤 수 있다. 푸는 쪽만 인증을 받는다. */
-export function hideCards(cards: Iterable<HideCardKey>) {
-  const next = new Set(current())
-  for (const c of cards) next.add(c)
-  commit(next)
-}
-
-/** 풀기 — 호출 전에 인증을 거칠 것(UI 책임). */
-export function revealCards(cards: Iterable<HideCardKey>) {
-  const next = new Set(current())
-  for (const c of cards) next.delete(c)
-  commit(next)
+/**
+ * 가려진 카드 전체를 이 목록으로 교체 — 설정 화면이 [저장] 으로 한 번에 반영할 때.
+ *
+ * <p>지금 가려진 것 중 빠지는 카드는 곧 '푸는' 것이다 — 호출 전에 인증을 거칠 것(UI 책임).
+ */
+export function setHiddenCards(cards: Iterable<HideCardKey>) {
+  commit(new Set(cards))
 }
 
 export function hideAllCards() {
-  hideCards(ALL_HIDE_CARDS)
+  setHiddenCards(ALL_HIDE_CARDS)
 }
 
 export function revealAllCards() {
