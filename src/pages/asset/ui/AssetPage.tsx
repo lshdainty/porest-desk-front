@@ -731,11 +731,16 @@ function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
 }
 
 function AssetCompositionSkeleton() {
+  const { t } = useTranslation('asset')
+  // 제목·기준일은 정적(로컬 계산)이라 로딩에도 실제 렌더 — 도넛·범례만 데이터 자리.
+  const dateLabel = t('date:asOf', { date: formatMonthDay(new Date()) })
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-20" />
-        <SkeletonBase className="h-3 w-20" />
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('composition')}</CardTitle>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          {dateLabel}
+        </span>
       </CardHeader>
       <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
