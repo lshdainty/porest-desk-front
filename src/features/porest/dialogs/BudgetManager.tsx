@@ -551,14 +551,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           existing={categoryBudgets}
           onClose={() => setEditing(null)}
           onSave={saveCategoryBudget}
-          onDelete={
-            editing !== 'new'
-              ? () => {
-                  setConfirmDelete(editing)
-                  setEditing(null)
-                }
-              : undefined
-          }
           mobile={mobile}
           submitting={submitting}
         />

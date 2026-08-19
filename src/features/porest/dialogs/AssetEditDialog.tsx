@@ -162,7 +162,6 @@ export interface AssetEditDialogProps {
   onClose: () => void
   onCreate: (values: AssetFormValues) => void
   onUpdate: (values: AssetUpdateFormValues) => void
-  onDelete?: () => void
   mobile: boolean
   isSubmitting?: boolean
 }
@@ -173,7 +172,6 @@ export function AssetEditDialog({
   onClose,
   onCreate,
   onUpdate,
-  onDelete,
   mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
@@ -1333,8 +1331,6 @@ export function AssetEditDialog({
       saveDisabled={!canSubmit}
       onCancel={handleClose}
       cancelLabel={tCommon('cancel')}
-      onDelete={onDelete}
-      deleteLabel={tCommon('delete')}
     />
   )
 

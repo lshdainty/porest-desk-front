@@ -147,7 +147,6 @@ export function FilterDialog({
           {t('filter.reset')}
         </Button>
       }
-      onCancel={onClose}
       onSave={apply}
       saveLabel={t('filter.apply')}
       saveDisabled={customInvalid}

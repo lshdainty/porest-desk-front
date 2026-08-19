@@ -25,7 +25,6 @@ export function BudgetEditDialog({
   existing,
   onClose,
   onSave,
-  onDelete,
   mobile,
   submitting,
 }: {
@@ -34,7 +33,6 @@ export function BudgetEditDialog({
   existing: ExpenseBudget[]
   onClose: () => void
   onSave: (draft: BudgetDraft) => void
-  onDelete?: () => void
   mobile: boolean
   submitting?: boolean
 }) {
@@ -88,8 +86,6 @@ export function BudgetEditDialog({
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
-      onDelete={onDelete}
-      deleting={submitting}
     />
   )
 

@@ -39,7 +39,6 @@ export function CategoryEditDialog({
   defaultParentRowId,
   onClose,
   onSave,
-  onDelete,
   onMoveTx,
   mobile,
   existing,
@@ -50,7 +49,6 @@ export function CategoryEditDialog({
   defaultParentRowId?: number | null
   onClose: () => void
   onSave: (values: ExpenseCategoryFormValues) => void
-  onDelete?: () => void
   /** 거래를 다른 카테고리로 옮기기 — 거래가 달려 하위를 만들 수 없을 때의 탈출구. */
   onMoveTx?: () => void
   mobile: boolean
@@ -126,9 +124,6 @@ export function CategoryEditDialog({
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
-      onDelete={onDelete}
-      deleteLabel={tc('delete')}
-      deleting={submitting}
     />
   )
 

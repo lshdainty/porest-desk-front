@@ -10,19 +10,8 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { IconPicker } from '@/shared/ui/icon-picker'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/shared/ui/alert-dialog'
-import {
   useContributeSavingGoal,
   useCreateSavingGoal,
-  useDeleteSavingGoal,
   useUpdateSavingGoal,
 } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
@@ -74,12 +63,10 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   // 저장은 raw hex(color), 표시는 다크에서 light variant 로 스왑되는 팔레트를 쓴다.
   const palette = getPaletteByColor(color)
   const [err, setErr] = useState<string>('')
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const createMut = useCreateSavingGoal()
   const updateMut = useUpdateSavingGoal()
   const contributeMut = useContributeSavingGoal()
-  const deleteMut = useDeleteSavingGoal()
 
   const target = parseNum(targetStr)
   const current = parseNum(currentStr)
@@ -153,29 +140,12 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
     }
   }
 
-  const handleDelete = () => {
-    if (!goal) return
-    setShowDeleteConfirm(true)
-  }
-
-  const handleConfirmDelete = () => {
-    if (!goal) return
-    deleteMut.mutate(goal.rowId, {
-      onSuccess: () => {
-        setShowDeleteConfirm(false)
-        onClose()
-      },
-    })
-  }
-
   const Footer = (
     <ModalFooter
       onSave={handleSubmit}
       saveLabel={isEdit ? tc('save') : tc('add')}
       saving={createMut.isPending || updateMut.isPending || contributeMut.isPending}
       onCancel={onClose}
-      onDelete={isEdit ? handleDelete : undefined}
-      deleting={deleteMut.isPending}
     />
   )
 
@@ -391,32 +361,6 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
           <AlertCircle size={13} /> {err}
         </div>
       )}
-
-      <AlertDialog
-        open={showDeleteConfirm}
-        onOpenChange={(open) => {
-          if (!open) setShowDeleteConfirm(false)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('savingGoal.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {goal ? t('savingGoal.deleteConfirm', { title: goal.title }) : ''}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              loading={deleteMut.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {tc('delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </ModalShell>
   )
 }

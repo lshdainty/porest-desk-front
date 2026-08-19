@@ -276,14 +276,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           onClose={() => setEditing(null)}
           onCreate={handleCreate}
           onUpdate={handleUpdate}
-          onDelete={
-            editing.mode === 'edit'
-              ? () => {
-                  setConfirmDelete(editing.asset)
-                  setEditing(null)
-                }
-              : undefined
-          }
           mobile={mobile}
           isSubmitting={isSubmitting}
         />

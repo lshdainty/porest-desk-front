@@ -219,8 +219,6 @@ export const EventForm = ({
       onSave={handleSubmit(onFormSubmit)}
       saveLabel={tc('save')}
       saving={isLoading}
-      onCancel={onClose}
-      cancelLabel={tc('cancel')}
       onDelete={event && onDelete ? onDelete : undefined}
       deleteLabel={tc('delete')}
     />
