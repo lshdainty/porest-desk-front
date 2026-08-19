@@ -93,9 +93,9 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
   const c = CATEGORIES[tx.cat]
   const isIncome = tx.amt > 0
   return (
-    <LedgerRow onClick={() => onClick?.(tx)}>
+    <LedgerRow onClick={onClick ? () => onClick(tx) : undefined}>
       <CatIcon cat={tx.cat} />
-      <LedgerRowMain>
+      <LedgerRowMain as={onClick ? 'button' : 'div'}>
         <LedgerRowTitle>{tx.title}</LedgerRowTitle>
         <LedgerRowSub>
           <span>{c?.label}</span>

@@ -597,7 +597,7 @@ function DayDetailDialog({
         // card 없이 깔끔한 리스트 — 앱 _DayDetailBody 정합(TxDetail/AssetDetail 와 동일 패턴)
         <div>
           {items.map((e) => (
-            <ExpenseRow key={e.rowId} expense={e} onClick={(ex) => onItemClick?.(ex)} />
+            <ExpenseRow key={e.rowId} expense={e} onClick={onItemClick} />
           ))}
         </div>
       )}
