@@ -292,7 +292,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         {/* DonutCard 프레임(Section) + 도넛 로딩 (실제 745·778~803 미러) */}
         <Section
           mobile={mobile}
-          contentInset
           title={<SkeletonBase className="h-5 w-32" />}
           action={<SkeletonBase className="h-8 w-40" />}
         >
@@ -493,7 +492,6 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* CompareCategory 프레임(Section) + 4행 증감 로딩 (실제 카테고리별 증감 행 미러) */}
       <Section
         mobile={mobile}
-        contentInset
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-16" />}
       >
@@ -701,8 +699,9 @@ export const StatsPage = () => {
   ]
   // 모바일 = design .m-chip-tabs + .tg--pill (컴팩트 pill toggle, 선택=bg-brand 채움, 가로스크롤).
   // 데스크톱 = underline 탭 유지.
+  // 가로 24 — 아래 본문과 같은 지점에서 시작해야 첫 칩과 첫 섹션 제목이 한 줄로 맞는다.
   const StatsTabs = mobile ? (
-    <div className="scrollbar-hide" style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '12px 20px' }}>
+    <div className="scrollbar-hide" style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '12px 24px' }}>
       {TAB_ITEMS.map(({ v, l }) => {
         const on = tab === v
         return (
@@ -815,7 +814,6 @@ export const StatsPage = () => {
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      contentInset
       title={
         isDrilled ? (
           <>
@@ -889,9 +887,11 @@ export const StatsPage = () => {
               stroke={28}
             >
               <div className="lbl">{donutCenterLbl}</div>
+              {/* 도넛 구멍이 좁다(모바일 176 − 스트로크 28×2 = 120). 전체 자릿수를 쓰면
+                  구멍을 넘어 링 위에 얹힌다 — 1억만 넘어도 "102,176,580원" 이다.
+                  차트 축과 같은 축약을 쓴다(1.0억). 정확한 금액은 바로 아래 범례가 갖고 있다. */}
               <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
-                <MaskAmount>{wonPre()}{KRW(donutTotal)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount>{formatChartAxis(donutTotal)}</MaskAmount>
               </div>
             </Donut>
           </div>
@@ -994,13 +994,14 @@ export const StatsPage = () => {
         >
           {topMerchants.map((m, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {/* 순위는 왼쪽 정렬 — 가운데로 두면 한 자리 숫자가 24 컬럼 한복판에 놓여
+                  섹션 제목보다 안쪽에서 시작한다. 폭은 두 자리 자리잡이라 그대로. */}
               <span
                 style={{
                   width: 24,
                   fontSize: 'var(--text-caption)',
                   fontWeight: '700',
                   color: i < 3 ? 'var(--fg-income)' : 'var(--fg-tertiary)',
-                  textAlign: 'center',
                 }}
               >
                 {i + 1}
@@ -1077,16 +1078,17 @@ export const StatsPage = () => {
   }
 
   /**
-   * 셀 내부에 표시할 금액 약식 — 디자인 spec
-   *   0        → "—"
-   *   < 10000  → "X천"    (천 단위 정수)
-   *   >= 10000 → "X.X만"  (만 단위, 소수 1자리)
+   * 히트맵 셀 라벨 — 좁은 칸에 들어갈 만큼 짧게.
+   *
+   * 1만 위로는 차트 축과 같은 `formatChartAxis`(만·억·조)에 맡긴다. 예전엔 여기서
+   * 만 단위만 직접 계산해서 1억을 넘으면 `"10001.3만"` 이 나왔다 — 칸 안에서 읽을
+   * 수 있는 숫자가 아니다. 1만 아래만 '천' 으로 더 줄인다(축 라벨엔 없는 단위지만
+   * 칸이 좁다).
    */
   const shortAmount = (v: number): string => {
     if (v <= 0) return '—'
-    if (isEn()) return formatChartAxis(v)
-    if (v < 10_000) return `${Math.round(v / 1000)}천`
-    return `${(v / 10_000).toFixed(1)}만`
+    if (!isEn() && v < 10_000) return `${Math.round(v / 1000)}천`
+    return formatChartAxis(v)
   }
 
   const HeatmapCard = (
@@ -2022,10 +2024,8 @@ export const StatsPage = () => {
 
   const CompareCategory = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
-    // contentInset — 리스트 좌우 살짝 inset(spacing-sm), 다른 리스트(가맹점 등)·앱 정합.
     <Section
       mobile={mobile}
-      contentInset
       title={t('compare.categoryDeltaTitle')}
       action={
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
@@ -2312,7 +2312,7 @@ export const StatsPage = () => {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
     // viewport fit 패턴 — AppLayout `.m-scroll` 가 flex-col 이므로 페이지 root 는
     // flex-1 + min-h-0 으로 부모 전체 height 차지. 탭 띠는 shrink-0 로 상단 고정,
-    // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 20, 상하 24 padding).
+    // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 24, 상 20 · 하 24 padding).
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
