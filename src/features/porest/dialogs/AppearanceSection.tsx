@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { RadioList, RadioListItem } from '@/shared/ui/radio-list'
 import { TileGroup, TileItem } from '@/shared/ui/tile'
-import { HideAmountsSection } from '@/features/porest/dialogs/HideAmountsSection'
 import { useTheme } from '@/shared/ui/theme-provider'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
@@ -60,11 +58,6 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     updatePrefs.mutate({ timezone: tz })
   }
 
-  // 화면의 눈 버튼이 ?hide=1 로 보낸다 — 그때는 아코디언을 펼친 채로 연다.
-  const [searchParams] = useSearchParams()
-  const openHideAmounts = searchParams.get('hide') === '1'
-
-
   const setCurrency = (c: CurrencyKey) => {
     setCurrencyState(c)
     try {
@@ -108,13 +101,8 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         </TileGroup>
       </section>
 
-      {/* 개인정보·기본통화 label↔content gap: 모바일=0(사용자 결정, 플랫 리스트라 밀착)
-          / 데스크톱=sm(8) — 아래가 카드라 라벨이 붙으면 답답함. */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: mobile ? undefined : 'var(--spacing-md)' }}>
-        <SectionLabel>{t('privacy.label')}</SectionLabel>
-        {/* 금액 가리기 — 화면·카드별로 고르는 아코디언. 여기서 바로 펼친다(별도 화면 아님). */}
-        <HideAmountsSection mobile={mobile} defaultOpen={openHideAmounts} />
-      </section>
+      {/* 개인정보 보호(금액 가리기)는 계정 > 보안으로 옮겼다(앱 정합) — 보안 설정이
+          두 화면에 나뉘어 있으면 어디서 껐는지 찾게 된다. */}
 
       {/* 표시 기준 지역 — 서버가 이 값으로 "오늘"을 판단하므로 로컬이 아니라 서버에 저장한다. */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>

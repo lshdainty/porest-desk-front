@@ -13,8 +13,8 @@ import type { HidePageKey } from '@/shared/lib/porest/hide-amounts-cards'
  */
 export function useOpenHideAmountsSettings(_page?: HidePageKey) {
   const navigate = useNavigate()
-  // 금액 가리기는 표시 설정 안의 아코디언이다 — hide=1 이면 펼친 채로 열린다.
+  // 금액 가리기는 계정 > 보안 아래 자기 화면이다(앱 정합) — 그 화면으로 바로 보낸다.
   return useCallback(() => {
-    navigate('/desk/settings?section=appearance&hide=1')
+    navigate('/desk/settings?section=hide-amounts')
   }, [navigate])
 }

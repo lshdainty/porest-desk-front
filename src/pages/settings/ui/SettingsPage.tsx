@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Eye,
+  EyeOff,
   Fingerprint,
   Key,
   LogOut,
@@ -34,6 +36,7 @@ import {
   CalendarShareSection,
   CategoryManager,
   DataExportSection,
+  HideAmountsSection,
   NotificationsManager,
   PresetManager,
   RecurringManager,
@@ -65,6 +68,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
+import { ALL_HIDE_CARDS } from '@/shared/lib/porest/hide-amounts-cards'
+import { useHiddenCards } from '@/shared/lib/porest/hide-amounts-core'
 import { PasswordChangeDialog } from '@/widgets/sidebar/ui/PasswordChangeDialog'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 
@@ -84,6 +89,7 @@ type SectionId =
   | 'data'
   | 'account'
   | 'privacy'
+  | 'hide-amounts'
 
 interface SectionDef {
   id: SectionId
@@ -95,6 +101,11 @@ interface SectionDef {
    * 처리방침은 계정 단위 문서라 SSO 에 한 벌만 두고 여기서는 가리키기만 한다.
    */
   externalUrl?: string
+  /**
+   * 목록(데스크톱 nav · 모바일 메뉴)에 내보내지 않는 섹션 — 다른 화면에서만 들어온다.
+   * 금액 가리기는 계정 > 보안 아래 있어 설정 목록에 두 번 나오면 안 된다.
+   */
+  hidden?: boolean
 }
 
 const SECTIONS: SectionDef[] = [
@@ -118,9 +129,12 @@ const SECTIONS: SectionDef[] = [
     descKey: 'sections.privacy.desc',
     externalUrl: `${config.ssoUrl}/privacy`,
   },
+  // 계정 > 보안에서 들어오는 화면(화면의 눈 버튼도 여기로 온다). 목록에는 안 나온다.
+  { id: 'hide-amounts', labelKey: 'hideAmounts.label', icon: Eye, descKey: 'hideAmounts.desc', hidden: true },
 ]
 
-// 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다
+// 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다.
+// hidden 섹션은 목록에만 안 보일 뿐 화면이 있어 ?section= 딥링크로 들어올 수 있다.
 const SECTION_IDS: SectionId[] = SECTIONS.filter(s => !s.externalUrl).map(s => s.id)
 
 // ─── 모바일 메뉴 그룹 정의 ─────────────────────────────────────
@@ -245,7 +259,8 @@ export const SettingsPage = () => {
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />
-      case 'account':       return <AccountSection mobile={m} />
+      case 'account':       return <AccountSection mobile={m} onOpenHideAmounts={() => changeSection('hide-amounts')} />
+      case 'hide-amounts':  return <HideAmountsSection mobile={m} onBack={() => changeSection('account')} />
       default:              return <PlaceholderSection section={activeSection} />
     }
   }
@@ -253,6 +268,12 @@ export const SettingsPage = () => {
   if (mobile) {
     if (section === 'menu') {
       return <MobileMenuView changeSection={changeSection} openSection={openSection} />
+    }
+
+    // 금액 가리기는 헤더 액션(모두 선택)과 아래 고정 [저장] 이 있어 공용 서브페이지 셸을
+    // 쓰지 않는다 — 앱 화면처럼 자기 셸을 직접 그린다.
+    if (section === 'hide-amounts') {
+      return <HideAmountsSection mobile onBack={() => changeSection('account')} />
     }
 
     return (
@@ -341,7 +362,7 @@ export const SettingsPage = () => {
             borderRadius: 'var(--radius-lg)',
           }}
         >
-          {SECTIONS.map(s => {
+          {SECTIONS.filter(s => !s.hidden).map(s => {
             const IconComp = s.icon
             const active = section === s.id
             // inactive 는 회색(fg-secondary) 그대로 유지. 선택 탭만 다크에서 brand light variant 로.
@@ -524,7 +545,14 @@ function MobileMenuView({
 }
 
 // ─── Account Section ───────────────────────────────────────────
-function AccountSection({ mobile }: { mobile: boolean }) {
+function AccountSection({
+  mobile,
+  onOpenHideAmounts,
+}: {
+  mobile: boolean
+  /** 보안 > 금액 가리기 — 카드 37장을 훑는 목록이라 자기 화면으로 보낸다. */
+  onOpenHideAmounts: () => void
+}) {
   const { t } = useTranslation('settings')
   const { t: tu } = useTranslation('user')
   const { t: tc } = useTranslation('common')
@@ -532,6 +560,8 @@ function AccountSection({ mobile }: { mobile: boolean }) {
   const { logout } = useAuth()
   const [pwDialogOpen, setPwDialogOpen] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
+
+  const hiddenCount = useHiddenCards().size
 
   const featuresQ = useMyFeatures()
   const subQ = useMySubscription()
@@ -659,6 +689,21 @@ function AccountSection({ mobile }: { mobile: boolean }) {
           label={t('account.biometric.label')}
           desc={t('account.biometric.desc')}
           dimmed
+        />
+        {/* 금액 가리기 — 들어가 보지 않아도 몇 장을 가렸는지 행에서 보인다. */}
+        <AccountRow
+          mobile={mobile}
+          icon={
+            hiddenCount > 0 ? (
+              <EyeOff size={20} style={{ color: 'var(--fg-secondary)' }} />
+            ) : (
+              <Eye size={20} style={{ color: 'var(--fg-secondary)' }} />
+            )
+          }
+          label={t('hideAmounts.label')}
+          desc={<span className="num">{hiddenCount} / {ALL_HIDE_CARDS.length}</span>}
+          right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          onClick={onOpenHideAmounts}
         />
         <AccountRow
           mobile={mobile}
@@ -824,7 +869,8 @@ function AccountGroup({ label, children, mobile }: { label: string; children: Re
 interface AccountRowProps {
   icon: React.ReactNode
   label: string
-  desc?: string
+  /** 우측 보조 텍스트. 숫자를 넣을 땐 `num`(tabular) 로 감싼다 — 자릿수가 흔들리지 않게. */
+  desc?: React.ReactNode
   right?: React.ReactNode
   isLast?: boolean
   onClick?: () => void
