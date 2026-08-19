@@ -546,7 +546,10 @@ export function LedgerRow({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 cursor-pointer rounded-lg pl-1.5 pr-1 -ml-1 -mr-1 py-3',
+        // 좌우는 페이지가 쥔다. 행이 여기서 더 얹으면 그만큼 날짜 헤더와 어긋난다 —
+        // 미세하지만 목록 전체가 헤더보다 오른쪽으로 밀려 보인다.
+        // hover 배경은 음수 margin 으로 넓혀 둔다(행 여백 밖까지 눌리는 느낌).
+        'flex items-center gap-3 cursor-pointer rounded-lg px-1 -mx-1 py-3',
         'transition-[background] duration-[var(--motion-duration-fast)]',
         'hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]',
         '[-webkit-tap-highlight-color:transparent]',
