@@ -39,6 +39,7 @@ export function CategoryEditDialog({
   defaultParentRowId,
   onClose,
   onSave,
+  onDelete,
   onMoveTx,
   mobile,
   existing,
@@ -49,6 +50,12 @@ export function CategoryEditDialog({
   defaultParentRowId?: number | null
   onClose: () => void
   onSave: (values: ExpenseCategoryFormValues) => void
+  /**
+   * 삭제 — **모바일 footer 에서만 쓴다**. 데스크탑·태블릿은 관리 목록 행에 삭제
+   * 아이콘이 있지만 모바일 목록엔 없고 행을 탭하면 바로 이 시트로 들어와,
+   * 여기에 없으면 지울 방법이 사라진다.
+   */
+  onDelete?: () => void
   /** 거래를 다른 카테고리로 옮기기 — 거래가 달려 하위를 만들 수 없을 때의 탈출구. */
   onMoveTx?: () => void
   mobile: boolean
@@ -123,7 +130,12 @@ export function CategoryEditDialog({
       saveLabel={isNew ? t('add') : tc('save')}
       saving={submitting}
       saveDisabled={touched && !valid}
-      onCancel={onClose}
+      // 모바일은 [삭제][저장] — 목록에 삭제가 없어 여기가 유일한 경로다.
+      // 데스크탑·태블릿은 목록 행에 삭제 아이콘이 있어 [취소][저장] 그대로 둔다.
+      onCancel={mobile ? undefined : onClose}
+      onDelete={mobile ? onDelete : undefined}
+      deleteLabel={tc('delete')}
+      deleting={submitting}
     />
   )
 

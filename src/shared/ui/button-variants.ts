@@ -16,14 +16,22 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // 채움색은 brand primary(#0147AD, 남색) 가 아니라 info(#1D6FCB) — 버튼 채움에
+        // 한정한다(탭 선택·토글 등 brand 채움 자리는 --bg-brand 그대로).
+        // spec button.md Migration notes 2026-08.
         default:
-          "bg-primary text-text-on-accent shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
+          "bg-[var(--status-info)] text-text-on-accent shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
         destructive:
           "bg-destructive text-text-on-accent shadow-sm hover:shadow-md hover:brightness-105 active:shadow-none active:scale-[0.98] active:brightness-95",
         outline:
           "border border-border-default bg-transparent text-text-primary hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98]",
+        // spec Color tokens 표에 border 가 없다 — 구현에만 있던 1px 을 뺐다(2026-08).
         secondary:
-          "bg-secondary text-text-primary border border-border-default hover:bg-surface-input hover:border-[var(--border-strong)] active:scale-[0.98] active:brightness-95",
+          "bg-secondary text-text-primary hover:bg-border-default active:scale-[0.98] active:brightness-95",
+        // 모달 footer 의 삭제 — 옅은 빨강 채움. 전체 폭 두 버튼이 나란히 설 때 ghost 는
+        // 배경이 없어 버튼으로 안 보인다. 삭제 *확정* 은 AlertDialog 의 destructive.
+        dangerSoft:
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] hover:bg-[color-mix(in_srgb,var(--color-error)_18%,transparent)] active:scale-[0.98] active:brightness-95",
         ghost:
           "bg-transparent text-text-primary hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
         accent:

@@ -297,6 +297,14 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           goal={editing === 'new' ? null : editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
+          onDelete={
+            editing !== 'new'
+              ? () => {
+                  setConfirmDelete(editing)
+                  setEditing(null)
+                }
+              : undefined
+          }
         />
       )}
       {confirmDelete && (

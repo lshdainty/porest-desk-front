@@ -43,9 +43,14 @@ interface SavingGoalAddDialogProps {
   goal?: SavingGoal | null
   mobile: boolean
   onClose: () => void
+  /**
+   * 삭제 — **모바일 footer 에서만 쓴다**. 모바일은 목록 행을 탭하면 바로 이 시트로
+   * 들어오므로 삭제를 여기 둔다. 데스크탑·태블릿은 목록 행 아이콘이 담당.
+   */
+  onDelete?: () => void
 }
 
-export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDialogProps) {
+export function SavingGoalAddDialog({ goal, mobile, onClose, onDelete }: SavingGoalAddDialogProps) {
   const { t } = useTranslation('asset')
   const { t: tc } = useTranslation('common')
   const isEdit = !!goal
@@ -143,9 +148,13 @@ export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDial
   const Footer = (
     <ModalFooter
       onSave={handleSubmit}
-      saveLabel={isEdit ? tc('save') : tc('add')}
+      // 모바일 수정은 '수정'(앱 정합) — 데스크탑은 기존 '저장' 그대로.
+      saveLabel={isEdit ? (mobile ? tc('edit') : tc('save')) : tc('add')}
       saving={createMut.isPending || updateMut.isPending || contributeMut.isPending}
-      onCancel={onClose}
+      // 모바일은 [삭제][수정], 데스크탑·태블릿은 [취소][저장].
+      onCancel={mobile ? undefined : onClose}
+      onDelete={mobile && isEdit ? onDelete : undefined}
+      deleteLabel={tc('delete')}
     />
   )
 

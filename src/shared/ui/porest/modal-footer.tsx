@@ -82,17 +82,24 @@ export function ModalFooter({
   const { t } = useTranslation('common')
   const busy = saving || deleting
   // 터치 화면은 lg(48) — button.md "터치 우선 화면은 lg 권장", Desk 는 44 strict.
-  const size = useDeviceSize() === 'mobile' ? 'lg' : 'md'
+  const mobile = useDeviceSize() === 'mobile'
+  const size = mobile ? 'lg' : 'md'
   return (
     <>
       {onDelete && (
         <Button
           type="button"
-          variant="ghost"
+          // 모바일은 옅은 빨강 채움(dangerSoft) + 균등 분배 — 좌측이 배경 없이 글씨만이면
+          // 두 버튼 중 한쪽이 빈자리처럼 보인다(spec button.md Migration notes 2026-08).
+          // 데스크탑은 액션이 셋일 수 있어 기존대로 ghost + flush-left 분리.
+          variant={mobile ? 'dangerSoft' : 'ghost'}
           size={size}
-          flush="left"
-          // flex:none — 모바일 균등분배(ModalShell `[&>button]:flex-1`)에서 빠진다.
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto', flex: 'none' }}
+          flush={mobile ? undefined : 'left'}
+          style={
+            mobile
+              ? undefined
+              : { color: 'var(--fg-expense)', marginRight: 'auto', flex: 'none' }
+          }
           onClick={onDelete}
           loading={deleting}
           disabled={saving}
@@ -104,9 +111,9 @@ export function ModalFooter({
       {onCancel && (
         <Button
           type="button"
-          // 취소는 언제나 ghost — 전체 폭 버튼 둘이 테두리·채움으로 나란히 서면 위계가
-          // 흐려진다(spec button.md Migration notes 2026-08).
-          variant="ghost"
+          // 모바일은 secondary(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
+          // 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
+          variant={mobile ? 'secondary' : 'ghost'}
           size={size}
           onClick={onCancel}
           disabled={busy}
@@ -171,17 +178,22 @@ export function ModalViewFooter({
 }: ModalViewFooterProps) {
   const { t } = useTranslation('common')
   // 폼 시트와 같은 규칙 — 터치 화면은 lg(48).
-  const size = useDeviceSize() === 'mobile' ? 'lg' : 'md'
+  const mobile = useDeviceSize() === 'mobile'
+  const size = mobile ? 'lg' : 'md'
   return (
     <>
       {onDelete ? (
         <Button
           type="button"
-          variant="ghost"
+          // 모바일은 옅은 빨강 채움 + 균등 분배, 데스크탑은 ghost + flush-left 분리.
+          variant={mobile ? 'dangerSoft' : 'ghost'}
           size={size}
-          flush="left"
-          // flex:none — 모바일 균등분배에서 빠져 좌측에 붙는다.
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto', flex: 'none' }}
+          flush={mobile ? undefined : 'left'}
+          style={
+            mobile
+              ? undefined
+              : { color: 'var(--fg-expense)', marginRight: 'auto', flex: 'none' }
+          }
           onClick={onDelete}
           loading={deleting}
         >
@@ -191,7 +203,14 @@ export function ModalViewFooter({
         <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center' }}>{leftSlot}</div>
       ) : null}
       {onEdit && (
-        <Button type="button" variant="ghost" size={size} onClick={onEdit} disabled={deleting}>
+        <Button
+          type="button"
+          // 상세의 주 액션은 편집 — 모바일은 확인이 없어 이게 유일한 채움 버튼이다.
+          variant={mobile && !onConfirm ? 'default' : 'ghost'}
+          size={size}
+          onClick={onEdit}
+          disabled={deleting}
+        >
           <Pencil size={16} /> {editLabel ?? t('editAction')}
         </Button>
       )}

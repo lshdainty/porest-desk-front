@@ -25,6 +25,7 @@ export function BudgetEditDialog({
   existing,
   onClose,
   onSave,
+  onDelete,
   mobile,
   submitting,
 }: {
@@ -33,6 +34,11 @@ export function BudgetEditDialog({
   existing: ExpenseBudget[]
   onClose: () => void
   onSave: (draft: BudgetDraft) => void
+  /**
+   * 삭제 — **모바일 footer 에서만 쓴다**. 모바일 목록엔 삭제가 없고 행을 탭하면
+   * 바로 이 시트로 들어와, 여기에 없으면 지울 방법이 사라진다.
+   */
+  onDelete?: () => void
   mobile: boolean
   submitting?: boolean
 }) {
@@ -85,7 +91,12 @@ export function BudgetEditDialog({
       saveLabel={isNew ? t('add') : tCommon('save')}
       saving={submitting}
       saveDisabled={touched && !valid}
-      onCancel={onClose}
+      // 모바일은 [삭제][저장] — 목록에 삭제가 없어 여기가 유일한 경로다.
+      // 데스크탑·태블릿은 목록 행에 삭제 아이콘이 있어 [취소][저장] 그대로 둔다.
+      onCancel={mobile ? undefined : onClose}
+      onDelete={mobile ? onDelete : undefined}
+      deleteLabel={tCommon('delete')}
+      deleting={submitting}
     />
   )
 

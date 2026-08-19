@@ -351,6 +351,14 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
           defaultParentRowId={editing && 'kind' in editing ? editing.parentRowId ?? null : null}
           onClose={() => setEditing(null)}
           onSave={onSave}
+          onDelete={
+            editing && 'rowId' in editing
+              ? () => {
+                  setConfirmDelete(editing)
+                  setEditing(null)
+                }
+              : undefined
+          }
           onMoveTx={
             editing && 'rowId' in editing
               ? () => {
