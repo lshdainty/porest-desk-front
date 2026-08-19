@@ -423,7 +423,10 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
           <div className={manageRowClass(mobile)}>
             {/* grip 은 모바일 평시엔 없음(편집 모드 전용) — 스켈레톤도 미러 */}
             {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
-            <SkeletonBase className="h-4 w-4 shrink-0" />
+            {/* chevron 자리 18 은 항상 예약 — 하위가 없으면 실렌더도 화살표를 안 그린다 */}
+            <span className="w-[18px] shrink-0 inline-flex justify-center">
+              {e.childCount > 0 && <SkeletonBase className="h-4 w-4" />}
+            </span>
             <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
             <div style={MANAGE_ROW.textStyle}>
               <SkeletonBase className="h-4 w-32 mb-1.5" />
@@ -445,6 +448,8 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
                 // eslint-disable-next-line react/no-array-index-key
                 <div key={j} className={manageRowClass(mobile)}>
                   {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
+                  {/* 부모와 같은 chevron 자리 — 없으면 자식이 부모와 같은 x 에 선다 */}
+                  <span className="w-[18px] shrink-0" />
                   <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
                   <div style={MANAGE_ROW.textStyle}>
                     <SkeletonBase className="h-4 w-24" />
@@ -591,22 +596,41 @@ function SortableRow({
           <GripVertical size={16} />
         </button>
       )}
-      {isParent && hasChildren && !reorderMode && (
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={isCollapsed ? t('expand') : t('collapse')}
-          style={{
-            background: 'transparent',
-            border: 0,
-            padding: 2,
-            cursor: 'pointer',
-            color: 'var(--fg-secondary)',
-            display: 'inline-flex',
-          }}
+      {/*
+        expand chevron 자리 — 부모·자식 모두 폭(18)을 예약한다.
+
+        화살표를 가진 부모만 이 폭을 먹으면 그 18 + gap 12 = 30 이 자식 들여쓰기
+        28 을 거의 그대로 상쇄해, 하위가 있는 부모(30)·없는 부모(0)·자식(28)이
+        전부 다른 지점에서 시작한다. 계층이 안 읽히는 이유다.
+        편집 모드에서 또렷한 건 grip 이 모든 행에 같은 폭을 만들어서다.
+
+        자리를 항상 잡아 두면 부모끼리 먼저 정렬되고, 그 위에 자식 28 이 온전히
+        들여쓰기로 남는다(사용자 결정). 편집 모드는 grip 이 그 역할을 하므로 제외.
+        18 = 아이콘 14 + 버튼 padding 2×2.
+      */}
+      {!reorderMode && (
+        <span
+          aria-hidden={!(isParent && hasChildren)}
+          style={{ width: 18, flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}
         >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-        </button>
+          {isParent && hasChildren && (
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={isCollapsed ? t('expand') : t('collapse')}
+              style={{
+                background: 'transparent',
+                border: 0,
+                padding: 2,
+                cursor: 'pointer',
+                color: 'var(--fg-secondary)',
+                display: 'inline-flex',
+              }}
+            >
+              {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+            </button>
+          )}
+        </span>
       )}
       <span
         style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
