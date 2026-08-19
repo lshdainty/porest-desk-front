@@ -3,8 +3,16 @@ import type { CSSProperties } from 'react'
 import { tileRadius } from '@/shared/lib'
 
 /*
- * MANAGE_ROW 스타일 토큰 — manage-row.tsx 에서 분리(Fast Refresh: 컴포넌트 파일은
- * 컴포넌트만 export). 시각 spec 주석은 manage-row.tsx 상단 참조.
+ * MANAGE_ROW 스타일 토큰 — 설정 화면(카테고리·계좌·예산 등) 리스트 행의 정렬·구분선 spec.
+ *
+ * 유래: 기존 CSS `.cat-row` 계열(`__icon` / `__text` / `__label` / `__meta` / `__actions` /
+ * `__more` / `__del`)을 토큰 + className 으로 옮긴 것이다. 마지막 행 구분선 제거는
+ * `last:border-b-0` 가 맡는다.
+ *
+ * 원래 이 spec 주석은 manage-row.tsx 상단에 있었는데, 그 파일이 export 하던 ManageRow
+ * 컴포넌트가 아무 데서도 쓰이지 않아 파일째 지우면서 여기로 옮겼다. 옮기며 낡은 두 줄은
+ * 버렸다 — hover 배경은 `--pd-hover-bg` 가 아니라 `--bg-muted` 이고, actions 의
+ * opacity 0 → group-hover 1 은 "아이콘 항상 표시"로 바뀌면서 이미 사라졌다.
  */
 // 좌우 inset 은 디바이스별로 다르다.
 //

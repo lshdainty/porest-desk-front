@@ -582,8 +582,8 @@
 }
 
 /* .cat-row, .cat-row:last-child/:hover, .cat-row__icon/__text/__label/__meta/__actions/__del/__more
- *   → ManageRow / MANAGE_ROW (@/shared/ui/porest/manage-row.tsx) 의 토큰 + className 으로 이동.
- *     hover 시 actions opacity:1 효과는 group-hover Tailwind 로 매핑.
+ *   → MANAGE_ROW (@/shared/ui/porest/manage-row-tokens.ts) 의 토큰 + className 으로 이동.
+ *     actions 는 이후 hover-reveal 을 걷고 항상 표시로 바뀌었다.
  *
  * ---------- Category edit dialog ----------
  * .cat-edit__preview/__preview-chip/__preview-label/__preview-sub
