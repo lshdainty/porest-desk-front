@@ -533,7 +533,8 @@ function TxDetailSkeleton() {
           <SkeletonBase className="h-4 w-28" />
         </div>
         <SkeletonBase className="mt-3 h-9 w-44" />
-        <SkeletonBase className="mt-2 h-3 w-28" />
+        {/* meta(날짜·시간) — DetailHero 는 mt-1 */}
+        <SkeletonBase className="mt-1 h-3 w-28" />
       </div>
 
       {/* Field rows */}

@@ -296,22 +296,35 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
               {[0, 1, 2, 3].map(i => (
                 <div
                   key={i}
+                  // 실제 행과 같은 그리드·여백 — 아이콘 36, 모바일 패딩 '12px 0'.
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
+                    gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                     alignItems: 'center',
                     gap: mobile ? 12 : 16,
-                    padding: mobile ? '14px 4px' : '14px 20px',
+                    padding: mobile ? '12px 0' : '14px 20px',
                     borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                   }}
                 >
-                  <SkeletonBase className="h-8 w-8 rounded-md" />
+                  <SkeletonBase className="h-9 w-9 rounded-[var(--radius-md)]" />
                   <div style={{ minWidth: 0 }}>
-                    <SkeletonBase className="h-4 w-2/5 mb-1.5" />
+                    {/* 제목 줄 — 실렌더 marginBottom 2 */}
+                    <SkeletonBase className="h-4 w-2/5" style={{ marginBottom: 2 }} />
                     <SkeletonBase className="h-3 w-3/4" />
                   </div>
-                  {!mobile && <SkeletonBase className="h-4 w-20 ml-auto" />}
-                  <SkeletonBase className="h-6 w-6 rounded-md" />
+                  {/* 데스크톱 금액 열 — 실렌더 minWidth 110 */}
+                  {!mobile && <SkeletonBase className="h-4 ml-auto" style={{ width: 110 }} />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+                    {mobile ? (
+                      <>
+                        <SkeletonBase className="h-4 w-16" style={{ marginRight: 4 }} />
+                        <SkeletonBase className="h-8 w-8 rounded-[var(--radius-md)]" />
+                      </>
+                    ) : (
+                      /* RecAction(Button size=icon, h-9) 3개 — 재생/편집/삭제 */
+                      [0, 1, 2].map(a => <SkeletonBase key={a} className="h-9 w-9 rounded-[var(--radius-md)]" />)
+                    )}
+                  </div>
                 </div>
               ))}
             </>
@@ -669,26 +682,34 @@ function RecurringManagerSkeleton({ mobile }: { mobile: boolean }) {
           {Array.from({ length: 4 }).map((_, idx) => (
             <div
               key={idx}
+              // 실제 행과 같은 그리드·여백 — 아이콘 36, 모바일 패딩 '12px 0'.
               style={{
                 display: 'grid',
-                gridTemplateColumns: mobile ? '40px 1fr auto' : '40px 1fr auto auto',
+                gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
                 alignItems: 'center',
                 gap: mobile ? 12 : 16,
-                padding: mobile ? '14px 10px' : '14px 20px',
+                padding: mobile ? '12px 0' : '14px 20px',
                 borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
               }}
             >
-              <SkeletonBase className="h-8 w-8 rounded-md" />
+              <SkeletonBase className="h-9 w-9 rounded-[var(--radius-md)]" />
               <div style={{ minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-32 mb-1.5" />
+                {/* 제목 줄 — 실렌더 marginBottom 2 */}
+                <SkeletonBase className="h-4 w-32" style={{ marginBottom: 2 }} />
                 <SkeletonBase className="h-3 w-2/3" />
               </div>
-              {!mobile && <SkeletonBase className="h-4 w-24 ml-auto" />}
+              {/* 데스크톱 금액 열 — 실렌더 minWidth 110 */}
+              {!mobile && <SkeletonBase className="h-4 ml-auto" style={{ width: 110 }} />}
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
-                {mobile && <SkeletonBase className="h-4 w-20 mr-1" />}
-                <SkeletonBase className="h-8 w-8 rounded-md" />
-                <SkeletonBase className="h-8 w-8 rounded-md" />
-                <SkeletonBase className="h-8 w-8 rounded-md" />
+                {mobile ? (
+                  <>
+                    <SkeletonBase className="h-4 w-16" style={{ marginRight: 4 }} />
+                    <SkeletonBase className="h-8 w-8 rounded-[var(--radius-md)]" />
+                  </>
+                ) : (
+                  /* RecAction(Button size=icon, h-9) 3개 */
+                  [0, 1, 2].map(a => <SkeletonBase key={a} className="h-9 w-9 rounded-[var(--radius-md)]" />)
+                )}
               </div>
             </div>
           ))}

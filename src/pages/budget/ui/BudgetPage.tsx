@@ -10,7 +10,7 @@ import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader } from '@/shared/ui/card'
+import { Card, CardContent } from '@/shared/ui/card'
 import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
@@ -127,17 +127,26 @@ function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: Co
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
 // 모바일 = 카드 다이어트(flat-group 헤드) / 데스크톱 = Card — 실렌더 Section 정합.
 // (렌더 중 컴포넌트 생성 금지 — React Compiler 룰 — 로 모듈 레벨 정의.)
-function SkelSection({ mobile, head, children }: { mobile: boolean; head: React.ReactNode; children: React.ReactNode }) {
-  return mobile ? (
-    <section>
-      <div className="flat-group__head">{head}</div>
+/**
+ * 스켈레톤 섹션 껍데기 — 실렌더와 같은 `Section` SoT 를 그대로 쓴다.
+ * 자체 Card/flat-group 복제본을 두면 Section 이 바뀔 때(예: headGap 신설) 로딩만
+ * 옛 간격에 남아 데이터가 오는 순간 헤드↔리스트가 튄다.
+ */
+function SkelSection({
+  mobile,
+  head,
+  headGap,
+  children,
+}: {
+  mobile: boolean
+  head: React.ReactNode
+  headGap?: number
+  children: React.ReactNode
+}) {
+  return (
+    <Section mobile={mobile} title={head} headGap={headGap}>
       {children}
-    </section>
-  ) : (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">{head}</CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    </Section>
   )
 }
 
@@ -228,6 +237,8 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   const ListCardSkeleton = (
     <SkelSection
       mobile={mobile}
+      // 실렌더 Section 과 같은 헤드↔리스트 간격(홈 예산 정합).
+      headGap={28}
       head={<>
         <SkeletonBase className="h-5 w-28" />
         <SkeletonBase className="h-3 w-16 ml-auto" />
