@@ -288,7 +288,7 @@ function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }:
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
           <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.015em' }}>{t('summary.monthExpenseBook', { month })}</div>
         </div>
-        <div style={{ padding: '0 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           {[t('chart.income'), t('chart.expense')].map(lbl => (
             <div key={lbl}>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{lbl}</div>
@@ -297,7 +297,7 @@ function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }:
           ))}
         </div>
         <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 10px' }} />
-        <div style={{ padding: '0 10px' }}>
+        <div>
           <SkeletonBase className="h-3 w-3/4" />
         </div>
       </div>
@@ -338,8 +338,7 @@ function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; 
         flexDirection: mobile ? 'row' : 'column',
         alignItems: 'center',
         gap: mobile ? 16 : 20,
-        padding: mobile ? '0 10px' : undefined,
-      }}
+              }}
     >
       <SkeletonBase
         className={mobile ? 'h-[120px] w-[120px] rounded-full shrink-0' : 'h-[160px] w-[160px] rounded-full shrink-0'}
@@ -382,7 +381,7 @@ function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; on
   // 타이틀 + 링크(정적 틀)는 실제 렌더, 예산 항목(데이터)만 스켈레톤.
   const { t } = useTranslation('dashboard')
   const rows = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: mobile ? '0 10px' : undefined }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {[0, 1, 2].map(i => (
         <div key={i}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -1358,12 +1357,12 @@ function HomeMobile() {
         </div>
       </div>
 
-      {/* 월 가계부 — 카드 벗김: 헤드 + 본문(10px 인셋) + 헤어라인 (design HomeMobile) */}
+      {/* 월 가계부 — 카드 벗김: 헤드 + 본문 + 헤어라인. 좌우는 페이지가 쥔다(24). */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
           <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.015em' }}>{t('summary.monthExpenseBook', { month })}</div>
         </div>
-        <div style={{ padding: '0 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.income')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
@@ -1379,7 +1378,6 @@ function HomeMobile() {
         </div>
         <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 10px' }} />
         <div style={{
-          padding: '0 10px',
           fontSize: 'var(--text-caption)',
           color: 'var(--fg-secondary)',
           lineHeight: '1.5',
@@ -1415,7 +1413,7 @@ function HomeMobile() {
         </div>
         {donutSegs.length === 0 ? (
           monthlyQ.isLoading ? (
-            <div style={{ padding: '0 10px', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <SkeletonBase className="h-[120px] w-[120px] rounded-full shrink-0" />
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[0, 1, 2, 3].map(i => (
@@ -1433,7 +1431,7 @@ function HomeMobile() {
             </div>
           )
         ) : (
-          <div style={{ padding: '0 10px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
               <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>{t('chart.expense')}</div>
               <div className="val num" style={{ fontSize: 'var(--text-caption)' }}>
@@ -1467,7 +1465,7 @@ function HomeMobile() {
         </div>
         {budgetItems.length === 0 ? (
           budgetsQ.isLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '0 10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[0, 1, 2].map(i => (
                 <div key={i}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
