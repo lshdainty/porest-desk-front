@@ -6,6 +6,7 @@ import { PorestTopBar } from './PorestTopBar'
 import { MobileHeader } from './MobileHeader'
 import { AppTabBar } from './AppTabBar'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
+import { SwipeActionsProvider } from '@/shared/ui/swipe-actions'
 import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
 import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
@@ -56,7 +57,9 @@ export const AppLayout = () => {
       return (
         <div className="m-app" data-screen-label="Mobile">
           <div className="m-scroll flex flex-col">
-            <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
+            <SwipeActionsProvider>
+              <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
+            </SwipeActionsProvider>
           </div>
           {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
         </div>
@@ -69,7 +72,11 @@ export const AppLayout = () => {
         {/* flex flex-col — 페이지가 flex-1 로 m-scroll 전체 height 를 차지하도록 (viewport
             fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작 (변경 없음). */}
         <div className="m-scroll flex flex-col">
-          <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
+          {/* 스와이프 그룹은 셸마다 하나 — "한 번에 한 행" 과 "스크롤하면 닫힘" 을 여기가 맡는다.
+              화면마다 두면 리스트를 새로 붙일 때 빠뜨려 여러 행이 열린 채 남는다. */}
+          <SwipeActionsProvider>
+            <Outlet context={{ onAddTx: () => setAddOpen(true), mobile: true }} />
+          </SwipeActionsProvider>
         </div>
         <AppTabBar mode={isMoney ? 'money' : 'default'} onAdd={handleAdd} />
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
