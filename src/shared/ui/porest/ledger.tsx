@@ -174,10 +174,25 @@ export function LedgerCollapse({ className, ...props }: React.ComponentProps<'di
 }
 
 /** 구분선 — 풀블리드. */
-export function LedgerDivider({ className, ...props }: React.ComponentProps<'div'>) {
+export function LedgerDivider({
+  className,
+  inset,
+  subtle,
+  ...props
+}: React.ComponentProps<'div'> & {
+  /** 페이지 인셋 안에서 끝나는 구분선 — 리스트 행 사이용. 기본은 풀블리드(핀 아래 경계). */
+  inset?: boolean
+  /** 행 사이의 옅은 선. 기본은 영역을 가르는 진한 선. */
+  subtle?: boolean
+}) {
   return (
     <div
-      className={cn('h-px bg-[var(--border-default)] -mx-[var(--spacing-xl)]', className)}
+      className={cn(
+        'h-px',
+        subtle ? 'bg-[var(--border-subtle)]' : 'bg-[var(--border-default)]',
+        !inset && '-mx-[var(--spacing-xl)]',
+        className,
+      )}
       {...props}
     />
   )

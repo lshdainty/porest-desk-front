@@ -720,6 +720,10 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             pinTop={46}
             onToggle={onToggleTodo}
             onRowClick={setViewing}
+            // 스와이프 액션 — 상세 footer 의 편집·삭제와 같은 목적지·같은 뮤테이션.
+            onEdit={setEditing}
+            onDelete={td => deleteTodo.mutateAsync(td.rowId)}
+            deleting={deleteTodo.isPending}
             openNightSky={() => setNightSky(true)}
             openReport={() => setForestReport(true)}
           />
