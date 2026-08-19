@@ -1350,11 +1350,11 @@ export function AssetEditDialog({
       onClose={handleClose}
       mobile={mobile}
       size="md"
-      footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          {footerInner}
-        </div>
-      }
+      // ModalShell 이 footer 컨테이너를 쥔다 — 감싸면 안 된다. 모바일 균등분배가
+      // `[&>button]:flex-1`(직계 자식) 이라 div 를 한 겹 끼우면 버튼이 손자가 돼
+      // 선택자에서 빠지고, 데스크탑도 컨테이너의 justify-end 대신 그 div 의 배치를
+      // 따른다. 다른 다이얼로그처럼 footer 를 그대로 넘긴다.
+      footer={footerInner}
     >
       <div className="flex flex-col gap-5">{bodyContent}</div>
     </ModalShell>
