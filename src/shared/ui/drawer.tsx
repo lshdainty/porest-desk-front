@@ -76,7 +76,7 @@ const DrawerHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex items-center gap-3 px-5 pb-4 pt-2",
+      "flex items-center gap-3 px-xl pb-4 pt-2",
       className,
     )}
     {...props}
@@ -89,7 +89,7 @@ const DrawerBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   // scrollbar-hide — 모바일 drawer 는 앱(Flutter 시트, 스크롤바 없음) 정합.
-  <div className={cn("flex-1 overflow-y-auto px-5 scrollbar-hide", className)} {...props} />
+  <div className={cn("flex-1 overflow-y-auto px-xl scrollbar-hide", className)} {...props} />
 )
 DrawerBody.displayName = "DrawerBody"
 
@@ -101,7 +101,7 @@ const DrawerFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-auto flex items-center justify-end gap-2 px-5 py-3",
+      "mt-auto flex items-center justify-end gap-2 px-xl py-3",
       className,
     )}
     {...props}
