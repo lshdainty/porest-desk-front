@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AlignLeft,
@@ -8,12 +8,15 @@ import {
   ChevronRight,
   Cloudy,
   FilterX,
+  Pencil,
   Sparkles,
   SlidersHorizontal,
   Star,
   Telescope,
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import { SwipeActions } from '@/shared/ui/swipe-actions'
 import {
   LedgerCalendar,
   LedgerCell,
@@ -103,6 +106,9 @@ export function TodoMobileLedger({
   pinTop,
   onToggle,
   onRowClick,
+  onEdit,
+  onDelete,
+  deleting,
   openNightSky,
   openReport,
 }: {
@@ -115,10 +121,17 @@ export function TodoMobileLedger({
   pinTop: number
   onToggle: (todo: Todo) => void
   onRowClick: (todo: Todo) => void
+  /** 스와이프 '수정' — 상세 footer 의 편집과 같은 목적지. */
+  onEdit: (todo: Todo) => void
+  /** 스와이프 '삭제' — Promise 를 돌려주면 확인 버튼이 끝날 때까지 스피너를 문다. */
+  onDelete: (todo: Todo) => Promise<unknown> | void
+  /** 삭제 뮤테이션 pending. */
+  deleting: boolean
   openNightSky: () => void
   openReport: () => void
 }) {
   const { t, i18n } = useTranslation('todo')
+  const { t: tc } = useTranslation('common')
   const today = useMemo(() => todayISO(), [])
 
   const [ym, setYm] = useState(today.slice(0, 7))
@@ -413,14 +426,40 @@ export function TodoMobileLedger({
                   const overdue = !isDone(td) && !!due && due < today
                   const done = isDone(td)
                   return (
+                    <Fragment key={td.rowId}>
+                      {/* 구분선을 행 안쪽 border 로 두면 행이 밀릴 때 선도 함께 밀려
+                          트레이 위를 지나간다 — 행 사이 형제로 뺀다. */}
+                      {i > 0 && <LedgerDivider inset subtle />}
+                      <SwipeActions
+                        rowId={`todo-${td.rowId}`}
+                        groupTag="todo-list"
+                        rowLabel={td.title}
+                        enabled
+                        actions={[
+                          {
+                            label: tc('edit'),
+                            icon: <Pencil />,
+                            kind: 'primary',
+                            onSelect: () => onEdit(td),
+                          },
+                          {
+                            label: tc('delete'),
+                            icon: <Trash2 />,
+                            kind: 'destructive',
+                            confirm: {
+                              title: t('deleteConfirm.title'),
+                              message: t('deleteConfirm.message'),
+                              confirmLabel: t('deleteConfirm.confirm'),
+                              cancelLabel: t('deleteConfirm.cancel'),
+                              loading: deleting,
+                            },
+                            onSelect: () => onDelete(td),
+                          },
+                        ]}
+                      >
                     <LedgerRow
-                      key={td.rowId}
                       className="rounded-none"
-                      style={{
-                        borderBottom:
-                          i === items.length - 1 ? 'none' : '1px solid var(--border-subtle)',
-                        opacity: done ? 0.55 : 1,
-                      }}
+                      style={{ opacity: done ? 0.55 : 1 }}
                       onClick={() => onRowClick(td)}
                     >
                       <button
@@ -467,6 +506,8 @@ export function TodoMobileLedger({
                         {t(`prio.${td.priority}`)}
                       </span>
                     </LedgerRow>
+                      </SwipeActions>
+                    </Fragment>
                   )
                 })}
               </div>
