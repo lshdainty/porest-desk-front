@@ -153,8 +153,13 @@ type ModalViewFooterProps = {
    */
   onConfirm?: () => void
   confirmLabel?: string
-  /** 'default'(primary 확인) | 'ghost'(단일 닫기). */
-  confirmVariant?: 'default' | 'ghost'
+  /**
+   * 'default'(primary 확인) | 'secondary'(단일 닫기) | 'ghost'(레거시).
+   *
+   * 단일 닫기는 `secondary`(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
+   * 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
+   */
+  confirmVariant?: 'default' | 'secondary' | 'ghost'
   /** 우측 편집(opt). */
   onEdit?: () => void
   editLabel?: string
@@ -219,7 +224,7 @@ export function ModalViewFooter({
       {onConfirm && (
         <Button
           type="button"
-          variant={confirmVariant === 'ghost' ? 'ghost' : 'default'}
+          variant={confirmVariant}
           size={size}
           onClick={onConfirm}
           disabled={deleting}

@@ -541,8 +541,10 @@ export function CardBenefitDetailDialog({
   const { t: tCommon } = useTranslation('common')
   const { data: detail, isLoading, isError } = useCardCatalogDetail(rowId)
 
+  // 단일 닫기는 secondary(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
+  // 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
   const footer = (
-    <ModalViewFooter confirmLabel={tCommon('close')} confirmVariant="ghost" onConfirm={onClose} />
+    <ModalViewFooter confirmLabel={tCommon('close')} confirmVariant="secondary" onConfirm={onClose} />
   )
 
   return (
