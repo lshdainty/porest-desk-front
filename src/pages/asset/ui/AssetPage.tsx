@@ -788,10 +788,10 @@ function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          // design .acc-card flat row 리듬 — 실렌더(AssetCard)와 동일.
+          // 실렌더와 같은 여백 — 다르면 데이터가 오는 순간 행이 좌우로 튄다.
           style={{
             display: 'flex', alignItems: 'center', gap: 14,
-            padding: '12px 2px 12px 8px', margin: '0 -2px', borderRadius: 10,
+            padding: '12px 6px', margin: '0 -6px', borderRadius: 10,
           }}
         >
           <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
@@ -966,10 +966,12 @@ function AssetCard({
         'transition-colors duration-[var(--motion-duration-fast)]',
         'hover:bg-[var(--bg-muted)]',
       ].join(' ')}
-      // design .acc-card flat row 리듬 — 구분선 없이 hover 면으로 행 구분.
+      // 구분선 없이 hover 면으로 행을 가른다. 좌우 순 여백은 0 —
+      // 행이 여기서 더 얹으면 그만큼 섹션 라벨과 어긋난다.
+      // hover 면만 음수 margin 으로 넓힌다(행 밖까지 눌리는 느낌은 그대로).
       style={{
-        padding: '12px 2px 12px 8px',
-        margin: '0 -2px',
+        padding: '12px 6px',
+        margin: '0 -6px',
         borderRadius: 10,
       }}
       onClick={() => onOpenDetail(asset)}
