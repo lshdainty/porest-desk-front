@@ -441,7 +441,7 @@ export function TodoMobileLedger({
                       >
                         {done && <Check size={13} color="#fff" strokeWidth={3} />}
                       </button>
-                      <LedgerRowMain>
+                      <LedgerRowMain as="button">
                         <LedgerRowTitle
                           style={{ textDecoration: done ? 'line-through' : 'none' }}
                         >

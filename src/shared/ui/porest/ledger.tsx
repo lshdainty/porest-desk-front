@@ -543,15 +543,19 @@ export function LedgerRow({
   /** 아직 일어나지 않은 거래(예정) — 합계에 안 들어가므로 시각적으로도 물러나 있게. */
   dim?: boolean
 }) {
+  // 같은 행 컴포넌트가 상세로 들어가는 목록에도, 그냥 보여 주기만 하는 목록에도 쓰인다
+  // (자산 상세의 거래 내역·환불 목록). 후자에 손가락 커서와 hover 를 주면 눌리는 줄 알고
+  // 누르게 된다 — 핸들러가 있을 때만 인터랙티브 시각을 준다.
+  const interactive = props.onClick != null
   return (
     <div
       className={cn(
         // 좌우는 페이지가 쥔다. 행이 여기서 더 얹으면 그만큼 날짜 헤더와 어긋난다 —
         // 미세하지만 목록 전체가 헤더보다 오른쪽으로 밀려 보인다.
         // hover 배경은 음수 margin 으로 넓혀 둔다(행 여백 밖까지 눌리는 느낌).
-        'flex items-center gap-3 cursor-pointer rounded-lg px-1 -mx-1 py-3',
+        'flex items-center gap-3 rounded-lg px-1 -mx-1 py-3',
         'transition-[background] duration-[var(--motion-duration-fast)]',
-        'hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]',
+        interactive && 'cursor-pointer hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]',
         '[-webkit-tap-highlight-color:transparent]',
         dim && 'opacity-60',
         className,
@@ -561,8 +565,48 @@ export function LedgerRow({
   )
 }
 
-export function LedgerRowMain({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('flex-1 min-w-0', className)} {...props} />
+export function LedgerRowMain({
+  as = 'div',
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLElement> & {
+  /**
+   * `'button'` 이면 제목+부제 영역이 실제 `<button>` 이 된다 — 행 탭으로만 열리던 상세를
+   * 키보드로도 열 수 있게 하는 진입점이다(WCAG 2.1.1).
+   *
+   * <p>행 전체에 `role="button"` 을 씌우지 않는다. 할일 행은 안에 체크 토글을, 메모 행은
+   * 고정 버튼을 품는데 button role 은 자식을 presentational 로 만들어 그것들이 스크린리더에서
+   * 사라진다(4.1.2). 제목 영역만 버튼으로 두면 중첩이 아예 생기지 않는다.
+   *
+   * <p>클릭은 그대로 행의 `onClick` 으로 버블링되므로 여기에 핸들러를 따로 달지 않는다 —
+   * Enter·Space 도 네이티브 버튼이 click 으로 바꿔 준다.
+   */
+  as?: 'div' | 'button'
+}) {
+  const cls = cn('flex-1 min-w-0', className)
+  if (as === 'button') {
+    return (
+      <button
+        type="button"
+        className={cn(
+          cls,
+          // 시각은 div 그대로 — 버튼 기본값만 벗긴다. 글꼴은 자식(Title/Sub)이 각자 정한다.
+          'appearance-none bg-transparent border-0 p-0 text-left [font:inherit] [color:inherit]',
+          // 행이 -mx-1 로 넘쳐 있어 바깥쪽 offset 이면 포커스 링이 이웃 행과 겹친다.
+          'focus-visible:outline-offset-[-2px]',
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    )
+  }
+  return (
+    <div className={cls} {...props}>
+      {children}
+    </div>
+  )
 }
 
 export function LedgerRowTitle({ className, ...props }: React.ComponentProps<'div'>) {

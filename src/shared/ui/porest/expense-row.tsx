@@ -90,11 +90,11 @@ export function TransferRow({
 
   return (
     <LedgerRow
-      onClick={() => onClick?.(transfer)}
+      onClick={onClick ? () => onClick(transfer) : undefined}
       dim={isScheduled(transfer.transferDate)}
     >
       <CategoryChip color="var(--fg-tertiary)" icon="arrow-left-right" />
-      <LedgerRowMain>
+      <LedgerRowMain as={onClick ? 'button' : 'div'}>
         <LedgerRowTitle className="flex items-center gap-[5px] overflow-visible">
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {transfer.description || t('addTx.transfer')}
@@ -179,13 +179,13 @@ export function ExpenseRow({
   const { t } = useTranslation('common')
   const isIncome = expense.expenseType === 'INCOME'
   return (
-    <LedgerRow onClick={() => onClick?.(expense)} dim={isScheduled(expense.expenseDate)}>
+    <LedgerRow onClick={onClick ? () => onClick(expense) : undefined} dim={isScheduled(expense.expenseDate)}>
       <CategoryChip
         name={expense.categoryName ?? t('others')}
         color={expense.categoryColor ?? null}
         icon={expense.categoryIcon ?? null}
       />
-      <LedgerRowMain>
+      <LedgerRowMain as={onClick ? 'button' : 'div'}>
         <LedgerRowTitle className="flex items-center gap-[5px] overflow-visible">
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {expense.merchant ?? expense.description ?? expense.categoryName ?? t('transaction')}
