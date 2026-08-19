@@ -139,7 +139,11 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex shrink-0 items-center justify-end gap-2 px-[22px] py-[14px]",
+      // spec dialog.md 114-116 — 모바일(<640px)은 각 button flex-1 균등 분배,
+      // 데스크탑(≥640px)은 우측 정렬. 모바일에서 우측 정렬 compact 로 두면
+      // 화면 구석의 작은 알약이 돼 한 손으로 누를 폭이 안 나온다.
+      "flex shrink-0 items-center gap-2 px-[22px] py-[14px]",
+      "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
     {...props}

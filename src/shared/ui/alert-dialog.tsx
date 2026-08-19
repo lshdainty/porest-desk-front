@@ -101,8 +101,13 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      // spec alert-dialog.md / preview .modal-actions: 항상 가로 우측 정렬 (반응형 세로 분기 없음).
-      "flex gap-[var(--spacing-sm)] justify-end mt-[var(--spacing-md)]",
+      // spec alert-dialog.md "ⓔ footer (모바일 < 640px)": 각 button flex-1 균등 분배.
+      // 데스크탑(≥640px)은 preview .modal-actions 그대로 우측 정렬.
+      //
+      // 모바일에서 우측 정렬 compact 로 두면 화면 구석의 작은 알약이 돼 한 손으로
+      // 누를 폭이 안 나온다 — dialog.md 114-116 · drawer.md footer 와 같은 규칙.
+      "flex gap-[var(--spacing-sm)] mt-[var(--spacing-md)]",
+      "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
     {...props}
@@ -146,7 +151,13 @@ const AlertDialogAction = React.forwardRef<
 >(({ className, loading = false, disabled, children, ...props }, ref) => (
   <AlertDialogPrimitive.Action
     ref={ref}
-    className={cn(buttonVariants(), className)}
+    className={cn(
+      buttonVariants(),
+      // spec alert-dialog.md footer(모바일 <640px) — size lg(48) 로 한 손 조작 폭 확보.
+      // 데스크탑은 buttonVariants() 기본(h-9) 유지.
+      "h-11 px-5 py-3 text-base [&_svg]:size-[18px] sm:h-9 sm:px-4 sm:py-[9px] sm:text-sm sm:[&_svg]:size-4",
+      className,
+    )}
     disabled={disabled || loading}
     aria-busy={loading || undefined}
     {...props}
@@ -174,7 +185,11 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       // 모달 footer 취소 통일 — 테두리 없는 회색 채움(spec alert-dialog.md).
+      // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
+      // (spec button.md Migration notes 2026-08).
       buttonVariants({ variant: "secondary" }),
+      // Action 과 같은 규칙 — 모바일 lg(48) / 데스크탑 기본.
+      "h-11 px-5 py-3 text-base [&_svg]:size-[18px] sm:h-9 sm:px-4 sm:py-[9px] sm:text-sm sm:[&_svg]:size-4",
       className,
     )}
     {...props}

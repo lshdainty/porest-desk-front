@@ -2464,9 +2464,26 @@ function RangePickerSheet({
     </>
   )
 
-  const cancelBtn = <Button variant="ghost" onClick={onCancel}>{tc('cancel')}</Button>
+  // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 —
+  // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
+  // (spec button.md Migration notes 2026-08). 폭 배분은 DrawerFooter 가 맡는다.
+  const cancelBtn = (
+    <Button
+      variant={mobile ? 'secondary' : 'ghost'}
+      size={mobile ? 'lg' : undefined}
+      onClick={onCancel}
+    >
+      {tc('cancel')}
+    </Button>
+  )
   const applyBtn = (
-    <Button disabled={!canApply} onClick={() => canApply && onConfirm({ from, to, segMode })}>{t('picker.apply')}</Button>
+    <Button
+      size={mobile ? 'lg' : undefined}
+      disabled={!canApply}
+      onClick={() => canApply && onConfirm({ from, to, segMode })}
+    >
+      {t('picker.apply')}
+    </Button>
   )
 
   // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
