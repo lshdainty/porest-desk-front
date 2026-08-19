@@ -564,7 +564,8 @@ export function TodoMobileLedger({
               >
                 {t('tdm.reset')}
               </Button>
-              <Button style={{ flex: 1.6 }} onClick={() => setFilterOpen(false)}>
+              {/* footer 액션은 화면 폭을 반씩 나눠 갖는다 — spec drawer.md "flex:1 평등 분배". */}
+              <Button style={{ flex: 1 }} onClick={() => setFilterOpen(false)}>
                 {t('tdm.apply')}
               </Button>
             </div>

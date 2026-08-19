@@ -311,18 +311,20 @@ export function MonthPicker({
     </div>
   )
 
-  const footerButtons = (
+  // 모바일(Drawer) 은 풀폭 반반 — spec drawer.md "flex:1 평등 분배".
+  // 데스크탑 팝오버는 260px 짜리 좁은 카드라 spacer 로 양끝에 붙인 현행을 유지한다.
+  const footerButtons = (equal: boolean) => (
     <>
       <button
         onClick={() => { onChange(`${curY}-${String(curM).padStart(2, '0')}`); setOpen(false) }}
-        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-brand-strong)', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-brand-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, ...(equal ? { flex: 1 } : null) }}
       >
         <LocateFixed size={12} /> {t('goToday')}
       </button>
-      <div style={{ flex: 1 }} />
+      {!equal && <div style={{ flex: 1 }} />}
       <button
         onClick={() => setOpen(false)}
-        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-secondary)' }}
+        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-secondary)', ...(equal ? { flex: 1 } : null) }}
       >
         {t('close')}
       </button>
@@ -351,8 +353,8 @@ export function MonthPicker({
               {yearNav}
               {monthGrid}
             </DrawerBody>
-            <DrawerFooter style={{ justifyContent: 'flex-start' }}>
-              {footerButtons}
+            <DrawerFooter>
+              {footerButtons(true)}
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
@@ -381,7 +383,7 @@ export function MonthPicker({
           {yearNav}
           {monthGrid}
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
-            {footerButtons}
+            {footerButtons(false)}
           </div>
         </div>
       )}

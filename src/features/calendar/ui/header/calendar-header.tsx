@@ -26,11 +26,14 @@ const MonthYearPickerContent = ({
   onSelect,
   onToday,
   onClose,
+  mobile = false,
 }: {
   selectedDate: Date
   onSelect: (date: Date) => void
   onToday: () => void
   onClose: () => void
+  /** 모바일(Drawer) 경로 — footer 액션을 풀폭 반반으로 나눈다. */
+  mobile?: boolean
 }) => {
   const { t } = useTranslation('calendar')
   const [pickerYear, setPickerYear] = useState(selectedDate.getFullYear())
@@ -84,8 +87,14 @@ const MonthYearPickerContent = ({
         })}
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t px-3 py-2">
+      {/* Footer — 모바일은 풀폭 반반(spec drawer.md "flex:1 평등 분배"),
+          데스크탑 Popover 는 좁은 카드라 양끝 정렬 유지. */}
+      <div
+        className={
+          'flex items-center border-t px-3 py-2 ' +
+          (mobile ? 'gap-2 [&>button]:flex-1 [&>button]:justify-center' : 'justify-between')
+        }
+      >
         <button
           // 오늘로 = primary-light(다크에서 --fg-brand-strong→primary-light swap)로 가독성 확보.
           // primary(--color-primary)는 다크 배경에서 잘 안 보임. 선택 월 박스는 bg-primary 유지.
@@ -156,6 +165,7 @@ const CalendarHeader = ({ events }: IProps) => {
               </DrawerHeader>
               <DrawerBody className="pb-6">
                 <MonthYearPickerContent
+                  mobile
                   selectedDate={selectedDate}
                   onSelect={setSelectedDate}
                   onToday={handleTodayClick}

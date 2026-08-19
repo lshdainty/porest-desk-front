@@ -380,11 +380,13 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </label>
           </SectionCard>
 
+          {/* 모바일 — 앱처럼 풀폭 반반(spec drawer.md "flex:1 평등 분배").
+              데스크톱은 양끝 정렬 유지. 형제 DataExportSection 과 같은 규칙. */}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <Button variant="outline" onClick={reset}>
+            <Button variant="outline" onClick={reset} style={mobile ? { flex: 1 } : undefined}>
               <ArrowLeft size={14} /> {t('import.prev')}
             </Button>
-            <Button onClick={runImport} loading={executing} disabled={!canExecute}>
+            <Button onClick={runImport} loading={executing} disabled={!canExecute} style={mobile ? { flex: 1 } : undefined}>
               <Download size={14} />{' '}
               {t('import.doImport', { count: dupSkip ? analysis.validRows - analysis.duplicateCount : analysis.validRows })}
             </Button>
