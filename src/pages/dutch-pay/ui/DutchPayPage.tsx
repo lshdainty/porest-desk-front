@@ -600,10 +600,11 @@ function SummaryCard({
 function SessionShell({ mobile, onClick, children }: { mobile: boolean; onClick?: () => void; children: React.ReactNode }) {
   if (mobile) {
     return (
+      // 좌우 여백 없음 — 행이 더 얹으면 위 요약 카드 모서리(24)와 어긋난다. 상하만 준다.
       <div
         onClick={onClick}
         className="hover:bg-[var(--bg-muted)] transition-colors"
-        style={{ padding: 14, cursor: 'pointer', borderRadius: 10 }}
+        style={{ padding: '14px 0', cursor: 'pointer', borderRadius: 10 }}
       >
         {children}
       </div>

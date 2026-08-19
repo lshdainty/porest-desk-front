@@ -1226,7 +1226,8 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
     return (
       <>
         <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ padding: '10px 20px 96px' }}>
+        {/* 실렌더 원장(Shell = spacing-xl 24)과 같은 좌우 여백 */}
+        <div style={{ padding: '10px 24px 96px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0 10px' }}>
             <SkeletonBase className="h-6 w-6 rounded-md" />
             <SkeletonBase className="h-5 w-12" />
