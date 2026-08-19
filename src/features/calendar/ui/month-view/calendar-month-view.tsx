@@ -167,40 +167,45 @@ const MonthDayCell = ({
       onMouseEnter={handleMouseEnter}
       onMouseUp={handleMouseUp}
     >
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-1 flex-1 min-w-0">
-          <button
-            onClick={handleClick}
-            className={cn(
-              'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
-              !currentMonth && 'opacity-20',
-              // 오늘 — 가계부 월그리드 선택 원 정합(--bg-brand, 다크 primary 고정. 사용자 결정)
-              isToday(date) && 'bg-[var(--bg-brand)] font-bold text-primary-foreground hover:bg-[var(--bg-brand)]'
-            )}
-            style={{
-              // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
-              color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
-            }}
-          >
-            {day}
-          </button>
+      {/* 날짜 숫자는 요일 헤더(justify-center)와 같이 셀 정중앙에 선다 — 앱 _DayCell ·
+          가계부 월그리드 정합. 1fr auto 1fr 로 좌우 트랙을 같게 잡아 가운데 열이 셀
+          중앙에 오고, 넘침(+N) 은 우측 트랙에 둔다. 절대배치는 쓰지 않는다 — 모바일
+          셀 폭이 ~55px 라 24px 원과 +N 이 겹친다. */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-1">
+        <span aria-hidden />
 
-          {/* 수입/지출 합계는 날짜 옆이 아닌 셀 본문에 큰 글씨로 표시
-              (좁은 모바일 셀에서 truncate 되지 않게 — 아래 본문 영역으로 옮김) */}
+        <button
+          onClick={handleClick}
+          className={cn(
+            'flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0',
+            !currentMonth && 'opacity-20',
+            // 오늘 — 가계부 월그리드 선택 원 정합(--bg-brand, 다크 primary 고정. 사용자 결정)
+            isToday(date) && 'bg-[var(--bg-brand)] font-bold text-primary-foreground hover:bg-[var(--bg-brand)]'
+          )}
+          style={{
+            // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
+            color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
+          }}
+        >
+          {day}
+        </button>
+
+        {/* 수입/지출 합계는 날짜 옆이 아닌 셀 본문에 큰 글씨로 표시
+            (좁은 모바일 셀에서 truncate 되지 않게 — 아래 본문 영역으로 옮김) */}
+        <div className="justify-self-end">
+          {cellEvents.length > maxVisibleEvents && (
+            <button
+              onClick={handleClick}
+              className={cn(
+                'text-xs font-semibold text-muted-foreground flex-shrink-0 px-0.5 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded',
+                !currentMonth && 'opacity-50'
+              )}
+            >
+              <span className="sm:hidden">+{cellEvents.length - maxVisibleEvents}</span>
+              <span className="hidden sm:inline">{t('monthView.more', { count: cellEvents.length - maxVisibleEvents })}</span>
+            </button>
+          )}
         </div>
-
-        {cellEvents.length > maxVisibleEvents && (
-          <button
-            onClick={handleClick}
-            className={cn(
-              'text-xs font-semibold text-muted-foreground flex-shrink-0 px-0.5 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded',
-              !currentMonth && 'opacity-50'
-            )}
-          >
-            <span className="sm:hidden">+{cellEvents.length - maxVisibleEvents}</span>
-            <span className="hidden sm:inline">{t('monthView.more', { count: cellEvents.length - maxVisibleEvents })}</span>
-          </button>
-        )}
       </div>
 
       <div className={cn('flex flex-col flex-1 min-h-0 gap-1', !currentMonth && 'opacity-50')}>

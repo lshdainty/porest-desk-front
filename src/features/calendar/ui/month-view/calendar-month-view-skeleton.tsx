@@ -14,10 +14,10 @@ const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 const DayCellSkeleton = ({ isSunday, chips, isMobile }: { isSunday: boolean; chips: number; isMobile: boolean }) => {
   return (
     <div className={`flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? 'lg:border-l-0' : ''}`}>
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-1 flex-1 min-w-0">
-          <Skeleton className="size-6 rounded-full" />
-        </div>
+      {/* 실제 MonthDayCell 과 같이 날짜 자리를 셀 정중앙에 둔다 — 다르면 로딩에서
+          데이터로 넘어갈 때 날짜 원이 좌우로 튄다. */}
+      <div className="flex items-center justify-center px-1">
+        <Skeleton className="size-6 rounded-full" />
       </div>
 
       <div className="flex flex-col flex-1 min-h-0 gap-1">
