@@ -13,6 +13,7 @@ import { Donut } from '@/shared/ui/porest/charts'
 import { Input } from '@/shared/ui/input'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { LightweightStockChart } from './LightweightStockChart'
 import type {
@@ -239,8 +240,33 @@ const RANGE_LABEL_KEY: Record<Range, string> = {
 
 // ---- 호가창 (토스 orderbook · 실데이터 전용) -------------------------------
 
-function OrderBook({ currency, lastPrice, book, changePct }: { currency: string; lastPrice: number | null; book: TossOrderbook; changePct: number }) {
+/** 호가 헤더행 — 라벨뿐인 정적 틀이라 로딩 중에도 그대로 렌더해야 해서 스켈레톤과 공용으로 뽑았다. */
+function OrderBookHead() {
   const { t } = useTranslation('stocks')
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 92px 1fr', fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
+      <span style={{ textAlign: 'right', paddingRight: 6 }}>{t('orderbook.bidVolume')}</span>
+      <span />
+      <span style={{ textAlign: 'left', paddingLeft: 6 }}>{t('orderbook.askVolume')}</span>
+    </div>
+  )
+}
+
+/** 호가 중앙 현재가 띠 — 값이 orderbook 이 아니라 시세 쿼리에서 오므로 호가 로딩 중에도 실값을 그린다. */
+function OrderBookMid({ currency, lastPrice, changePct }: { currency: string; lastPrice: number | null; changePct: number }) {
+  return (
+    <div style={{ borderTop: '1px dashed var(--border-subtle)', borderBottom: '1px dashed var(--border-subtle)', margin: '3px 0', padding: '5px 0', textAlign: 'center' }}>
+      <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 800, color: trendColor(changePct) }}>
+        {lastPrice != null ? fmtByCurrency(lastPrice, currency) : '—'}
+      </span>
+      <span style={{ marginLeft: 6 }}>
+        <PctBadge pct={changePct} size={11} />
+      </span>
+    </div>
+  )
+}
+
+function OrderBook({ currency, lastPrice, book, changePct }: { currency: string; lastPrice: number | null; book: TossOrderbook; changePct: number }) {
   const fmt = (p: number) => fmtByCurrency(p, currency)
   // asks=낮은가격순 → 상단(높은가격 위) 위해 5개 잘라 역순, bids=높은가격순 그대로.
   const asks = book.asks.slice(0, 5).map(e => ({ p: Number.parseFloat(e.price), q: Math.round(Number.parseFloat(e.volume)) })).reverse()
@@ -277,22 +303,11 @@ function OrderBook({ currency, lastPrice, book, changePct }: { currency: string;
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 92px 1fr', fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
-        <span style={{ textAlign: 'right', paddingRight: 6 }}>{t('orderbook.bidVolume')}</span>
-        <span />
-        <span style={{ textAlign: 'left', paddingLeft: 6 }}>{t('orderbook.askVolume')}</span>
-      </div>
+      <OrderBookHead />
       {asks.map((a, i) => (
         <Row key={`a${i}`} {...a} type="ask" />
       ))}
-      <div style={{ borderTop: '1px dashed var(--border-subtle)', borderBottom: '1px dashed var(--border-subtle)', margin: '3px 0', padding: '5px 0', textAlign: 'center' }}>
-        <span className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 800, color: trendColor(changePct) }}>
-          {lastPrice != null ? fmt(lastPrice) : '—'}
-        </span>
-        <span style={{ marginLeft: 6 }}>
-          <PctBadge pct={changePct} size={11} />
-        </span>
-      </div>
+      <OrderBookMid currency={currency} lastPrice={lastPrice} changePct={changePct} />
       {bids.map((b, i) => (
         <Row key={`b${i}`} {...b} type="bid" />
       ))}
@@ -304,6 +319,71 @@ function OrderBook({ currency, lastPrice, book, changePct }: { currency: string;
 
 function QuotesEmpty({ msg }: { msg: string }) {
   return <div style={{ padding: '36px 12px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{msg}</div>
+}
+
+/** 체결 테이프 헤더행 — 정적 라벨이라 로딩에도 그대로 렌더(스켈레톤·실렌더 공용). */
+function TradeTapeHead() {
+  const { t } = useTranslation('stocks')
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
+      <span>{t('quotes.tradeTime')}</span>
+      <span style={{ textAlign: 'right' }}>{t('quotes.tradePrice')}</span>
+      <span style={{ textAlign: 'right' }}>{t('quotes.tradeVolume')}</span>
+    </div>
+  )
+}
+
+// 잔량 바 폭 — 실렌더는 (q/maxQ)*100% 라 행마다 다르다. 리렌더마다 흔들리지 않게 5행치 고정.
+const OB_BAR_W = ['62%', '38%', '78%', '45%', '55%']
+
+/**
+ * 호가 로딩 — OrderBook 실렌더 정합: 헤더행 + 매도 5행 + 현재가 띠 + 매수 5행.
+ * 행은 Row 와 같은 grid '1fr 92px 1fr' · height 26 이고, 잔량 바는 Row 안 height 22 자리를 그대로 차지한다
+ * (바 radius 4 = SkeletonBase 기본 rounded-sm).
+ */
+function OrderBookSkeleton({ currency, lastPrice, changePct, label }: { currency: string; lastPrice: number | null; changePct: number; label: string }) {
+  const row = (key: string, type: 'ask' | 'bid', w: string) => (
+    <div key={key} style={{ display: 'grid', gridTemplateColumns: '1fr 92px 1fr', alignItems: 'center', height: 26 }}>
+      {type === 'bid' ? (
+        // 매수 잔량 바는 실렌더에서 right:0 기준이라 오른쪽 정렬
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <SkeletonBase className="h-[22px]" style={{ width: w }} />
+        </div>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <SkeletonBase className="h-3 w-14" />
+      </div>
+      {type === 'ask' ? <SkeletonBase className="h-[22px]" style={{ width: w }} /> : <span />}
+    </div>
+  )
+  return (
+    // 문구 로딩을 스켈레톤으로 바꾸면 스크린리더에 남는 안내가 없어진다 —
+    // 기존 로딩 문구를 aria-label 로 살려 둔다(skeleton.md Accessibility 절).
+    <div aria-busy aria-label={label}>
+      <OrderBookHead />
+      {OB_BAR_W.map((w, i) => row(`a${i}`, 'ask', w))}
+      <OrderBookMid currency={currency} lastPrice={lastPrice} changePct={changePct} />
+      {[...OB_BAR_W].reverse().map((w, i) => row(`b${i}`, 'bid', w))}
+    </div>
+  )
+}
+
+/** 체결 로딩 — 헤더행은 실제로 그리고, liveTradeFills 가 slice(0, 12) 라 데이터 12행(height 25)만 스켈레톤. */
+function TradeTapeSkeleton({ label }: { label: string }) {
+  return (
+    <div aria-busy aria-label={label}>
+      <TradeTapeHead />
+      {Array.from({ length: 12 }, (_, i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', alignItems: 'center', height: 25 }}>
+          <SkeletonBase className="h-3 w-12" />
+          <SkeletonBase className="h-3 w-14 ml-auto" />
+          <SkeletonBase className="h-3 w-10 ml-auto" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function QuotesCard({ symbol, currency, lastPrice, changePct }: { symbol: string; currency: string; lastPrice: number | null; changePct: number }) {
@@ -327,23 +407,19 @@ function QuotesCard({ symbol, currency, lastPrice, changePct }: { symbol: string
       </div>
       {tab === 'book' ? (
         orderbookQ.isLoading ? (
-          <QuotesEmpty msg={t('quotes.orderbookLoading')} />
+          <OrderBookSkeleton currency={currency} lastPrice={lastPrice} changePct={changePct} label={t('quotes.orderbookLoading')} />
         ) : hasBook ? (
           <OrderBook currency={currency} lastPrice={lastPrice} book={book} changePct={changePct} />
         ) : (
           <QuotesEmpty msg={t('quotes.orderbookEmpty')} />
         )
       ) : tradesQ.isLoading ? (
-        <QuotesEmpty msg={t('quotes.tradesLoading')} />
+        <TradeTapeSkeleton label={t('quotes.tradesLoading')} />
       ) : fills.length === 0 ? (
         <QuotesEmpty msg={t('quotes.tradesEmpty')} />
       ) : (
         <div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 4, padding: '0 2px' }}>
-            <span>{t('quotes.tradeTime')}</span>
-            <span style={{ textAlign: 'right' }}>{t('quotes.tradePrice')}</span>
-            <span style={{ textAlign: 'right' }}>{t('quotes.tradeVolume')}</span>
-          </div>
+          <TradeTapeHead />
           {fills.map((f, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', alignItems: 'center', height: 25, fontSize: 12 }}>
               <span className="num" style={{ color: 'var(--fg-tertiary)' }}>{f.time}</span>
@@ -377,6 +453,20 @@ function DailyQuoteTable({ symbol, currency }: { symbol: string; currency: strin
     return out.slice(0, 8)
   }, [q.data])
 
+  // 로딩 스켈레톤과 실렌더가 반드시 같은 컬럼비로 서야 해서 그리드 정의를 한 곳에 둔다
+  const gridCols = 'minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.3fr)'
+  // 스켈레톤 행 셀 — 실렌더 데이터 셀 정합.
+  // 높이를 명시하는 이유: 실렌더 행 높이는 텍스트 라인박스(12.5 x line-height 1.5 = 18.75)가
+  // 정하는데, 스켈레톤은 바 두께(14)가 정해 행마다 4.75px 씩 짧아진다. 8행이면 38px 이 밀린다.
+  // border-box 라 16(padding) + 1(border) 을 뺀 18.75 가 콘텐츠 높이로 남는다.
+  const skelCell = {
+    padding: '8px 0',
+    borderTop: '1px solid var(--border-subtle)',
+    height: 35.75,
+    display: 'flex',
+    alignItems: 'center',
+  } as const
+
   const headCell = (h: string, align: 'left' | 'right') => (
     <div key={h} style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, padding: '0 0 8px', textAlign: align, whiteSpace: 'nowrap' }}>
       {h}
@@ -386,11 +476,28 @@ function DailyQuoteTable({ symbol, currency }: { symbol: string; currency: strin
     <Card style={{ padding: 16 }}>
       <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 10 }}>{t('daily.title')}</div>
       {q.isLoading ? (
-        <QuotesEmpty msg={t('daily.loading')} />
+        // 헤더 4셀은 정적 틀이라 로딩에도 실제로 렌더하고, 서버 데이터가 들어갈 행만 스켈레톤.
+        // 행 8개는 실렌더 최대치(rows = 최근 9캔들 → out.slice(0, 8))와 동일.
+        // 문구 로딩을 걷어낸 대신 aria 로 스크린리더 안내를 남긴다.
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols }} aria-busy aria-label={t('daily.loading')}>
+          {headCell(t('daily.date'), 'left')}
+          {headCell(t('daily.close'), 'right')}
+          {headCell(t('daily.changeRate'), 'right')}
+          {headCell(t('daily.volume'), 'right')}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} style={{ display: 'contents' }}>
+              {/* 1~3열은 fontSize 12.5(h-3.5), 4열 거래량만 --text-badge(h-3) — 실렌더 셀 타이포 대응 */}
+              <div style={skelCell}><SkeletonBase className="h-3.5 w-10" /></div>
+              <div style={skelCell}><SkeletonBase className="h-3.5 w-14 ml-auto" /></div>
+              <div style={skelCell}><SkeletonBase className="h-3.5 w-12 ml-auto" /></div>
+              <div style={skelCell}><SkeletonBase className="h-3 w-16 ml-auto" /></div>
+            </div>
+          ))}
+        </div>
       ) : rows.length === 0 ? (
         <QuotesEmpty msg={t('daily.empty')} />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.3fr)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols }}>
           {headCell(t('daily.date'), 'left')}
           {headCell(t('daily.close'), 'right')}
           {headCell(t('daily.changeRate'), 'right')}
@@ -574,6 +681,37 @@ function RankRow({ item, name, index, active, onPick, mobile = false }: { item: 
   )
 }
 
+// 랭킹 로딩 스켈레톤 — RankRow/StockRow 의 골격(순위 22 + 배지 40 + 12px 상하 패딩 = 행 높이 64)을
+// 그대로 따라, 로딩→실데이터 전환에서 행 위치가 튀지 않게 한다.
+function RankRowsSkeleton({ mobile, label }: { mobile: boolean; label: string }) {
+  // 행 수는 useTossRankings 의 count: 10 과 동일.
+  const rows = Array.from({ length: 10 }, (_, i) => (
+    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: mobile ? 14 : 0 }}>
+      {/* 순위 컬럼 — RankRow 와 같은 width 22, 모바일 좌측 / 데스크톱 가운데 정렬. */}
+      <div style={{ width: 22, flexShrink: 0, display: 'flex', justifyContent: mobile ? 'flex-start' : 'center' }}>
+        <SkeletonBase className="h-3 w-3.5" />
+      </div>
+      {/* StockRow 자리 — padding/gap/배지 크기를 StockRow 에서 그대로 가져온다. */}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, padding: mobile ? '12px 0' : '12px 14px' }}>
+        <SkeletonBase className="h-10 w-10 shrink-0" style={{ borderRadius: tileRadius(40) }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <SkeletonBase className="h-4 w-1/2" />
+          <SkeletonBase className="h-3 w-1/4" style={{ marginTop: 3 }} />
+        </div>
+        {/* 가격·등락률 컬럼 — StockRow 의 minWidth 78 우측 정렬. */}
+        <div style={{ flexShrink: 0, minWidth: 78 }}>
+          <SkeletonBase className="h-4 w-16 ml-auto" />
+          <SkeletonBase className="h-3 w-12 ml-auto" style={{ marginTop: 3 }} />
+        </div>
+      </div>
+    </div>
+  ))
+  // 껍데기는 실렌더와 같은 분기 — 모바일은 맨몸 div, 데스크톱은 Card padding 6.
+  return mobile
+    ? <div aria-busy aria-label={label}>{rows}</div>
+    : <Card style={{ padding: 6 }} aria-busy aria-label={label}>{rows}</Card>
+}
+
 function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: string) => void; selected: string | null; mobile?: boolean }) {
   const { t } = useTranslation('stocks')
   const [market, setMarket] = useState<'KR' | 'US'>('KR')
@@ -614,7 +752,8 @@ function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: strin
         </div>
       </div>
       {q.isLoading ? (
-        <QuotesEmpty msg={t('discover.loading')} />
+        // 탭·시장 토글은 정적이라 그대로 렌더하고, 서버 데이터가 들어갈 행 영역만 스켈레톤으로 채운다.
+        <RankRowsSkeleton mobile={mobile} label={t('discover.loading')} />
       ) : rows.length === 0 ? (
         <QuotesEmpty msg={t('discover.empty')} />
       ) : mobile ? (

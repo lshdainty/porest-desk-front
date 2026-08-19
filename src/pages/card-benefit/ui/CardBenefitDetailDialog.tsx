@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { ChevronDown, ChevronUp, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
-import { Spinner } from '@/shared/ui/spinner'
+import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { decodeHtml } from '@/shared/lib'
 import { useCardCatalogDetail } from '@/features/card-catalog'
 import type { CardCatalogDetail, CardCatalogSummary } from '@/entities/card'
@@ -194,7 +194,11 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
   )
 }
 
-function StatCell({ label, value }: { label: string; value: string }) {
+/**
+ * 연회비 · 전월 실적 셀.
+ * value 를 ReactNode 로 둔 이유 — 로딩 중에도 같은 셸을 쓰고 값 자리에만 스켈레톤을 넣기 위해.
+ */
+function StatCell({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
       style={{
@@ -225,6 +229,17 @@ function StatCell({ label, value }: { label: string; value: string }) {
       </div>
     </div>
   )
+}
+
+/**
+ * 혜택 아코디언 행 셸 — 실렌더와 스켈레톤이 같은 값을 쓰도록 한 곳에 둔다.
+ * (스켈레톤이 따로 복제하면 셸만 어긋나 로딩 후 화면이 튄다)
+ */
+const benefitRowShell: CSSProperties = {
+  background: 'var(--bg-surface)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: 'var(--radius-md)',
+  overflow: 'hidden',
 }
 
 function DetailContent({ detail }: { detail: CardCatalogDetail }) {
@@ -339,15 +354,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                 (summary.performance.isRequired === 'Y' ? undefined : t('benefit.performanceNone'))
               const body = decodeHtml(b.detail ?? '')
               return (
-                <div
-                  key={b.rowId}
-                  style={{
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    overflow: 'hidden',
-                  }}
-                >
+                <div key={b.rowId} style={benefitRowShell}>
                   <button
                     type="button"
                     onClick={() => toggle(i)}
@@ -446,6 +453,81 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
   )
 }
 
+/**
+ * 상세 로딩 스켈레톤 — 위 DetailContent 실렌더 치수를 그대로 미러한다.
+ *
+ * - hero: CardHero 와 같은 aspectRatio 1.586/1 · maxHeight 220 · radius-lg · marginBottom 18
+ * - stat 2셀: 같은 grid(1fr 1fr, gap 10, marginBottom 18) + StatCell 셸. 라벨은 서버 데이터가
+ *   아니라 정적 틀이므로 로딩 중에도 실제 텍스트를 그린다(skeleton.md SoT).
+ * - 혜택 상세 헤더: 제목에 건수(서버 값)가 박혀 있어 라인 placeholder. "모두 펼치기" 버튼은
+ *   benefits.length > 0 조건부 + 펼칠 대상이 없어 생략.
+ * - 혜택 행 3개: 실렌더와 같은 benefitRowShell + padding '14px 16px' · gap 10 · 행 간 gap 8.
+ * - 주요 혜택 태그 섹션은 tags.length > 0 조건부라 생략(앱 `_DetailSkeleton` 과 동일).
+ */
+function DetailSkeleton() {
+  const { t } = useTranslation('card')
+  return (
+    <>
+      <SkeletonBase
+        className="w-full rounded-lg"
+        style={{ aspectRatio: '1.586 / 1', maxHeight: 220, marginBottom: 18 }}
+      />
+
+      {/* 연회비 · 전월 실적 */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 10,
+          marginBottom: 18,
+        }}
+      >
+        <StatCell label={t('benefit.statAnnualFee')} value={<SkeletonBase className="h-4 w-16" />} />
+        <StatCell
+          label={t('benefit.statPerformance')}
+          value={<SkeletonBase className="h-4 w-20" />}
+        />
+      </div>
+
+      {/* 혜택 상세 · N건 아코디언 */}
+      <div>
+        {/* 실렌더 헤더는 Button(size sm = h-8)이 행 높이를 32 로 잡는다 — 안 맞추면 아래 목록이 밀린다. */}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 32, marginBottom: 8 }}>
+          {/* 제목(13/700) 자리 */}
+          <SkeletonBase className="h-4 w-24" />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={benefitRowShell}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '14px 16px',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* 카테고리(14/700) */}
+                  <SkeletonBase className={i % 2 === 0 ? 'h-4 w-28' : 'h-4 w-24'} />
+                  {/* 혜택 값(12.5) + 조건 badge(10.5, radius-pill) — 실렌더는 marginTop 4 · gap 8 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                    <SkeletonBase className="h-3 w-20" />
+                    <SkeletonBase className="h-4 w-14 rounded-full" />
+                  </div>
+                </div>
+                {/* chevron 16px 자리 — 로딩 후 행 폭이 튀지 않게 잡아둔다 */}
+                <SkeletonBase className="h-4 w-4 shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function CardBenefitDetailDialog({
   rowId,
   onClose,
@@ -466,16 +548,7 @@ export function CardBenefitDetailDialog({
   return (
     <ModalShell title={t('benefit.detailTitle')} onClose={onClose} size="md" footer={footer} mobile={mobile}>
       {isLoading ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '60px 0',
-          }}
-        >
-          <Spinner size="lg" />
-        </div>
+        <DetailSkeleton />
       ) : isError || !detail ? (
         <div
           style={{
