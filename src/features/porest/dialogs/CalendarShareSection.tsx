@@ -393,19 +393,23 @@ function ShareListSkeleton({ mobile }: { mobile?: boolean }) {
       {[0, 1].map(i => (
         <div
           key={i}
+          // 실제 CalendarRow 와 같은 gap 12 · 아이콘 36.
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 14,
+            gap: 12,
             padding: settingsRowPadding(mobile),
             borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
           }}
         >
-          <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-          <div style={{ flex: 1 }}>
-            <SkeletonBase className="h-4 w-32 mb-1.5" />
-            <SkeletonBase className="h-3 w-16" />
+          <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SkeletonBase className="h-4 w-32" />
+            {/* 멤버 수 — 실렌더 caption, marginTop 2 */}
+            <SkeletonBase className="h-3 w-16" style={{ marginTop: 2 }} />
           </div>
+          {/* 진입 chevron */}
+          <SkeletonBase className="h-4 w-4 shrink-0" />
         </div>
       ))}
     </>

@@ -661,6 +661,8 @@ function useAssetPageData() {
 /** 자산 페이지 구조와 1:1 매칭되는 skeleton. */
 function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
+  // 예정 결제·저축목표는 자기 쿼리로 자기 스켈레톤을 그린다(제목·액션은 진짜) —
+  // 페이지가 따로 흉내내면 두 스켈레톤이 서로 어긋난다. 실컴포넌트를 그대로 쓴다.
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
@@ -668,6 +670,7 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
         <AssetSummarySkeleton mobile />
         <TypeGroupSkeleton mobile rows={3} />
         <TypeGroupSkeleton mobile rows={2} />
+        <SavingGoalsCard mobile />
       </div>
     )
   }
@@ -683,12 +686,12 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <AssetSummarySkeleton mobile={false} />
           <AssetCompositionSkeleton />
-          <UpcomingBillsSkeleton />
+          <UpcomingBillsCard />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <TypeGroupSkeleton rows={3} />
           <TypeGroupSkeleton rows={2} />
-          <SavingGoalsSkeleton />
+          <SavingGoalsCard mobile={false} />
         </div>
       </div>
     </div>
@@ -697,13 +700,15 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
 
 function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
   return (
+    // 실렌더 SummaryCard 와 같은 여백 — 라벨 6 / 금액 6 / 증감 14·18.
     <Card variant={mobile ? 'raised' : undefined}>
       <CardContent>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <SkeletonBase className="h-3 w-16" />
         </div>
-        <SkeletonBase className={mobile ? 'h-8 w-40 mb-2' : 'h-10 w-56 mb-2'} />
-        <SkeletonBase className="h-4 w-32 mb-4" />
+        {/* 순자산 금액 — 실렌더 28(모바일)/36 + lineHeight 1.15 */}
+        <SkeletonBase className={mobile ? 'h-8 w-40' : 'h-10 w-56'} style={{ marginBottom: 6 }} />
+        <SkeletonBase className="h-4 w-32" style={{ marginBottom: mobile ? 14 : 18 }} />
         <SkeletonBase className={mobile ? 'h-[140px] w-full' : 'h-[180px] w-full'} />
         <div
           style={{
@@ -714,7 +719,8 @@ function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
         >
           {[0, 1, 2].map(i => (
             <div key={i}>
-              <SkeletonBase className="h-3 w-12 mb-2" />
+              {/* 라벨 badge + 값 사이는 실렌더 2 */}
+              <SkeletonBase className="h-3 w-12" style={{ marginBottom: 2 }} />
               <SkeletonBase className="h-4 w-20" />
             </div>
           ))}
@@ -725,11 +731,16 @@ function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
 }
 
 function AssetCompositionSkeleton() {
+  const { t } = useTranslation('asset')
+  // 제목·기준일은 정적(로컬 계산)이라 로딩에도 실제 렌더 — 도넛·범례만 데이터 자리.
+  const dateLabel = t('date:asOf', { date: formatMonthDay(new Date()) })
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-20" />
-        <SkeletonBase className="h-3 w-20" />
+        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('composition')}</CardTitle>
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+          {dateLabel}
+        </span>
       </CardHeader>
       <CardContent>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
@@ -752,109 +763,39 @@ function AssetCompositionSkeleton() {
   )
 }
 
-function UpcomingBillsSkeleton() {
-  return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-40" />
-        <SkeletonBase className="h-4 w-16" />
-      </CardHeader>
-      <CardContent>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                padding: '16px 18px',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-              }}
-            >
-              <SkeletonBase className="h-4 w-24" />
-              <SkeletonBase className="h-5 w-20 shrink-0" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile?: boolean }) {
-  const list = (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div
-          key={i}
-          // 실렌더와 같은 여백 — 다르면 데이터가 오는 순간 행이 좌우로 튄다.
-          style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '12px 6px', margin: '0 -6px', borderRadius: 10,
-          }}
-        >
-          <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-            <SkeletonBase className="h-3 w-1/3" />
-          </div>
-          <SkeletonBase className="h-5 w-24 shrink-0" />
-        </div>
-      ))}
-    </div>
-  )
-  if (mobile) {
-    // 카드 다이어트 — flat-group 헤드 + 리스트.
-    return (
-      <section>
-        <div className="flat-group__head">
-          <SkeletonBase className="h-5 w-20" />
-          <SkeletonBase className="h-4 w-16 ml-auto" />
-        </div>
-        {list}
-      </section>
-    )
-  }
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-20" />
-        <SkeletonBase className="h-4 w-16 ml-auto" />
-      </CardHeader>
-      <CardContent>{list}</CardContent>
-    </Card>
-  )
-}
-
-function SavingGoalsSkeleton() {
-  return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <SkeletonBase className="h-5 w-20" />
-        <SkeletonBase className="h-7 w-20" />
-      </CardHeader>
-      <CardContent>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[0, 1].map(i => (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <SkeletonBase className="h-8 w-8 rounded-[10px] shrink-0" />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                  <SkeletonBase className="h-3 w-1/3" />
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <SkeletonBase className="h-4 w-10 mb-1 ml-auto" />
-                  <SkeletonBase className="h-3 w-16 ml-auto" />
-                </div>
+    // 껍데기는 실렌더와 같은 Section SoT — 자체 Card/flat-group 모방은 spec 변경 때 어긋난다.
+    <Section
+      mobile={mobile}
+      title={<SkeletonBase className="h-5 w-20" />}
+      total={<SkeletonBase className="h-4 w-16" />}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            // 실렌더(AssetCard)와 같은 여백 — 다르면 데이터가 오는 순간 행이 좌우로 튄다.
+            style={{
+              display: 'flex', flexDirection: 'column',
+              padding: '12px 6px', margin: '0 -6px', borderRadius: 10,
+            }}
+          >
+            {/* 발급사 — 행 맨 위, 아이콘과 같은 왼쪽 끝(caption + spacing-xs). */}
+            <SkeletonBase className="h-3 w-20" style={{ marginBottom: 'var(--spacing-xs)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <SkeletonBase className="h-4 w-1/2" />
+                {/* 서브라인(투자 요약·메모·결제일) — 실렌더 marginTop 1. */}
+                <SkeletonBase className="h-3 w-1/3" style={{ marginTop: 3 }} />
               </div>
-              <SkeletonBase className="h-1.5 w-full rounded-full" />
+              <SkeletonBase className="h-5 w-24 shrink-0" />
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        ))}
+      </div>
+    </Section>
   )
 }
 

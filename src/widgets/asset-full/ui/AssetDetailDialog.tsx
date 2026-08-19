@@ -345,12 +345,40 @@ function CardDetailBody({
   const viewAll = () => navigate(`/desk/expense?assetId=${asset.rowId}`)
 
   if (isLoading) {
+    // 실렌더(아래 히어로) 미러 — 회차 라벨+chevron / 금액 / 결제일 행 / 빠른 액션 타일.
+    // 액션 타일까지 자리를 잡아야 데이터가 오는 순간 아래가 통째로 밀리지 않는다.
     return (
-      <div style={{ padding: '2px 2px 16px' }}>
-        <SkeletonBase className="h-6 w-32 mb-3" />
-        <SkeletonBase className="h-9 w-44 mb-4" />
-        <SkeletonBase className="h-12 w-full" />
-      </div>
+      <>
+        <div style={{ padding: '2px 2px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <SkeletonBase className="h-6 w-32" />
+            <SkeletonBase className="h-6 w-6 rounded-full shrink-0" />
+          </div>
+          {/* 금액 display-md — 실렌더 marginTop 10 */}
+          <SkeletonBase className="h-9 w-44" style={{ marginTop: 10 }} />
+        </div>
+        <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 2px' }}>
+            <SkeletonBase className="h-4 shrink-0" style={{ width: 68 }} />
+            <SkeletonBase className="h-4 w-28" />
+            <SkeletonBase className="h-3 w-24 ml-auto" />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '14px 0 4px' }}>
+          {[0, 1].map(i => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                padding: '14px 4px', background: 'var(--bg-sunken)', borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <SkeletonBase className="h-[30px] w-[30px] rounded-[var(--radius-md)]" />
+              <SkeletonBase className="h-3 w-12" />
+            </div>
+          ))}
+        </div>
+      </>
     )
   }
 
@@ -1309,15 +1337,26 @@ export function AssetDetailDialog({
         </div>
         {/* 가계부 메인 리스트 미러 — 카드 제거, 날짜 그룹 헤더 + 플랫 행 */}
         {relatedLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0' }}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
-                  <SkeletonBase className="h-3 w-1/3" />
+          // 실렌더와 같은 날짜 그룹 구조 — 그룹 gap 16, 행은 LedgerRow(py-3, 칩 40).
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[0, 1].map(g => (
+              <div key={g}>
+                {/* DateGroupHeader 자리 — 날짜 + 요일 + 우측 일 합계 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <SkeletonBase className="h-4 w-12" />
+                  <SkeletonBase className="h-4 w-8" />
+                  <SkeletonBase className="h-4 w-16 ml-auto" />
                 </div>
-                <SkeletonBase className="h-4 w-20 shrink-0" />
+                {[0, 1].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 4px' }}>
+                    <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <SkeletonBase className="h-4 w-2/3" />
+                      <SkeletonBase className="h-3 w-1/3" style={{ marginTop: 2 }} />
+                    </div>
+                    <SkeletonBase className="h-4 w-20 shrink-0" />
+                  </div>
+                ))}
               </div>
             ))}
           </div>

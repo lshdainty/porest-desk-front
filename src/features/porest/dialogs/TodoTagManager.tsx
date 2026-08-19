@@ -256,9 +256,15 @@ function TagListSkeleton({ mobile }: { mobile?: boolean }) {
           }}
         >
           <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-          <div style={{ flex: 1 }}>
-            <SkeletonBase className="h-4 w-24 mb-1.5" />
-            <SkeletonBase className="h-3 w-32" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SkeletonBase className="h-4 w-24" />
+            {/* 사용 건수 — 실렌더 caption, marginTop 2 */}
+            <SkeletonBase className="h-3 w-20" style={{ marginTop: 2 }} />
+          </div>
+          {/* 삭제 버튼(icon h-9) + 편집 chevron 한 묶음 */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <SkeletonBase className="h-9 w-9 rounded-md" />
+            <SkeletonBase className="h-4 w-4 ml-1" />
           </div>
         </div>
       ))}
