@@ -335,7 +335,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   alignItems: 'center',
                   gap: mobile ? 12 : 16,
                   // 행 좌우 inset 4(사용자 결정) — 라벨·토글은 inset 0.
-                  padding: mobile ? '12px 4px' : '14px 20px',
+                  // 모바일 좌우 0 — 페이지가 24 를 쥔다(설정 리스트 공통 규칙).
+                  padding: mobile ? '12px 0' : '14px 20px',
                   borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
                 }}
               >

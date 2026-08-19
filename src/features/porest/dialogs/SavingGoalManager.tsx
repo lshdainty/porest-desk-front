@@ -42,8 +42,8 @@ function FlatItem({
     <div
       onClick={onTap}
       style={{
-        // 행 좌우 inset 4 — RecurringManager 목록 행과 같은 값.
-        padding: '12px 4px',
+        // 좌우 0 — 페이지가 24 를 쥔다. 행이 더 얹으면 위 '목표 목록 · N개' 와 어긋난다.
+        padding: '12px 0',
         borderTop: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
         cursor: onTap ? 'pointer' : undefined,
       }}
