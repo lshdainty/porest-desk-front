@@ -101,7 +101,11 @@ const DrawerFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-auto flex items-center justify-end gap-2 px-xl py-3",
+      // Drawer 는 모바일 전용이라 footer 는 언제나 균등 분배다
+      // (spec drawer.md Migration notes — `.drw-actions` SoT `[&>*]:flex-1`).
+      // 우측 정렬 compact 로 두면 화면 구석의 작은 알약이 돼 한 손으로 누를 폭이 안 나온다.
+      // 삭제처럼 좌측에 붙일 버튼은 className="mr-auto flex-none" 로 균등분배에서 뺀다.
+      "mt-auto flex items-center gap-2 px-xl py-3 [&>button]:flex-1",
       className,
     )}
     {...props}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useDeviceSize } from '@/shared/lib/porest/responsive'
 import {
   Dialog,
   DialogBody,
@@ -129,6 +130,10 @@ export function ConfirmDialog({
   onConfirm: () => void
 }) {
   const { t } = useTranslation('common')
+  // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 둔다 —
+  // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
+  // (spec button.md Migration notes 2026-08 · dialog.md 114-116). 폭 배분은 DialogFooter 가 맡는다.
+  const isMobile = useDeviceSize() === 'mobile'
   return (
     <Dialog
       open={true}
@@ -154,11 +159,16 @@ export function ConfirmDialog({
         </DialogBody>
         <DialogFooter>
           {/* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */}
-          <Button variant="ghost" onClick={onCancel}>
+          <Button
+            variant={isMobile ? 'secondary' : 'ghost'}
+            size={isMobile ? 'lg' : undefined}
+            onClick={onCancel}
+          >
             {cancelLabel ?? t('cancel')}
           </Button>
           <Button
             variant={danger ? 'destructive' : 'default'}
+            size={isMobile ? 'lg' : undefined}
             onClick={onConfirm}
             loading={loading}
           >
