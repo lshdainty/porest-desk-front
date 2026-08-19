@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Pin, Plus, Search, X, StickyNote, SearchX } from 'lucide-react'
+import { Pencil, Pin, Plus, Search, Trash2, X, StickyNote, SearchX } from 'lucide-react'
 import {
   useMemos,
   useCreateMemo,
@@ -12,6 +12,7 @@ import {
 import type { Memo, MemoFormValues } from '@/entities/memo'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import { SwipeActions } from '@/shared/ui/swipe-actions'
 import {
   LedgerDivider,
   LedgerRow,
@@ -441,7 +442,45 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       {items.map((m, i) => (
         <Fragment key={m.rowId}>
           {i > 0 && <LedgerDivider inset subtle />}
-          {MemoRow(m)}
+          {/* 고정/전체 두 섹션이 같은 groupTag 를 쓴다 — 섹션을 넘나들어도 하나만 열린다. */}
+          <SwipeActions
+            rowId={`memo-${m.rowId}`}
+            groupTag="memo-list"
+            rowLabel={m.title}
+            // 메모는 모바일·데스크톱이 같은 Body 를 쓰는 유일한 화면이다.
+            // 렌더 경로는 list/grid 로 갈라 뒀지만 여기서 한 번 더 못박는다.
+            enabled={mobile}
+            actions={[
+              {
+                // 슬롯이 48px 이라 "고정 해제"(4자)는 줄바꿈된다 — 스와이프 전용 2글자 라벨.
+                label: m.isPinned ? t('swipeUnpin') : t('swipePin'),
+                icon: <Pin />,
+                kind: 'neutral',
+                onSelect: () => togglePin.mutateAsync(m.rowId),
+              },
+              {
+                label: tc('edit'),
+                icon: <Pencil />,
+                kind: 'primary',
+                onSelect: () => setEditing(m),
+              },
+              {
+                label: tc('delete'),
+                icon: <Trash2 />,
+                kind: 'destructive',
+                confirm: {
+                  title: t('deleteConfirm.title'),
+                  message: t('deleteConfirm.message'),
+                  confirmLabel: t('deleteConfirm.confirm'),
+                  cancelLabel: t('deleteConfirm.cancel'),
+                  loading: deleteMemo.isPending,
+                },
+                onSelect: () => deleteMemo.mutateAsync(m.rowId),
+              },
+            ]}
+          >
+            {MemoRow(m)}
+          </SwipeActions>
         </Fragment>
       ))}
     </div>

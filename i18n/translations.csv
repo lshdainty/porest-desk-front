@@ -282,6 +282,8 @@ memo,createFirst,첫 번째 메모를 작성해 보세요,Create your first memo
 memo,pinned,고정됨,Pinned
 memo,pin,고정,Pin
 memo,unpin,고정 해제,Unpin
+memo,swipePin,고정,Pin
+memo,swipeUnpin,해제,Unpin
 memo,search,메모 검색,Search memos
 memo,searchPlaceholder,제목 또는 내용으로 검색,Search by title or content
 memo,allMemos,전체 메모,All Memos
