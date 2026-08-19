@@ -89,10 +89,11 @@ export function ModalFooter({
       {onDelete && (
         <Button
           type="button"
-          // 모바일은 옅은 빨강 채움(dangerSoft) + 균등 분배 — 좌측이 배경 없이 글씨만이면
-          // 두 버튼 중 한쪽이 빈자리처럼 보인다(spec button.md Migration notes 2026-08).
+          // 모바일은 error 솔리드 채움(destructive) + 균등 분배 — 삭제 확인 다이얼로그의
+          // 삭제 버튼과 같은 색이라, 같은 동작이 같은 색으로 이어진다. 옅은 채움
+          // (dangerSoft)은 다크에서 어두운 자주로 가라앉아 버렸다.
           // 데스크탑은 액션이 셋일 수 있어 기존대로 ghost + flush-left 분리.
-          variant={mobile ? 'dangerSoft' : 'ghost'}
+          variant={mobile ? 'destructive' : 'ghost'}
           size={size}
           flush={mobile ? undefined : 'left'}
           style={
@@ -185,8 +186,9 @@ export function ModalViewFooter({
       {onDelete ? (
         <Button
           type="button"
-          // 모바일은 옅은 빨강 채움 + 균등 분배, 데스크탑은 ghost + flush-left 분리.
-          variant={mobile ? 'dangerSoft' : 'ghost'}
+          // 폼 시트 footer 와 같은 규칙 — 모바일은 error 솔리드 채움 + 균등 분배,
+          // 데스크탑은 ghost + flush-left 분리.
+          variant={mobile ? 'destructive' : 'ghost'}
           size={size}
           flush={mobile ? undefined : 'left'}
           style={
