@@ -838,7 +838,7 @@ export const CardBenefitPage = () => {
       {mobile ? (
         <>
           <MobileBackHeader title={t('benefit.headerTitle')} />
-          <div style={{ padding: '16px 16px 24px' }}>{Controls}</div>
+          <div style={{ padding: '16px 24px 24px' }}>{Controls}</div>
         </>
       ) : (
         <div style={{ padding: 0 }}>

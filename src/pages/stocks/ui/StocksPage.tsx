@@ -153,6 +153,7 @@ function StockRow({
   changePct,
   right,
   active,
+  mobile = false,
 }: {
   stock: RowStock
   onClick: () => void
@@ -161,6 +162,7 @@ function StockRow({
   changePct?: number | null
   right?: React.ReactNode
   active?: boolean
+  mobile?: boolean
 }) {
   return (
     <button
@@ -171,7 +173,9 @@ function StockRow({
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        padding: '12px 14px',
+        // 모바일은 좌우를 페이지가 쥔다(24) — 행이 더 얹으면 탭 스트립과 어긋난다.
+        // 데스크톱은 Card 안이라 그대로.
+        padding: mobile ? '12px 0' : '12px 14px',
         border: 0,
         cursor: 'pointer',
         textAlign: 'left',
@@ -545,17 +549,20 @@ function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
 
 // ---- 발견(디스커버리) 랭킹 — 토스 rankings 실데이터 ---------------------------
 
-function RankRow({ item, name, index, active, onPick }: { item: TossRankingItem; name: string | undefined; index: number; active: boolean; onPick: (symbol: string) => void }) {
+function RankRow({ item, name, index, active, onPick, mobile = false }: { item: TossRankingItem; name: string | undefined; index: number; active: boolean; onPick: (symbol: string) => void; mobile?: boolean }) {
   const country = /^[A-Za-z]/.test(item.symbol) ? 'US' : 'KR'
   const last = num(item.price.lastPrice)
   const changePct = item.price.changeRate != null ? num(item.price.changeRate) * 100 : null
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <span className="num" style={{ width: 22, textAlign: 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: index < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
+    // 모바일은 행이 자체 좌우 여백을 갖지 않으므로 순위 컬럼과의 간격은 gap 이 맡고,
+    // 순위 숫자도 페이지 여백에서 시작한다(통계 가맹점 순위와 같은 결정).
+    <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 14 : 0 }}>
+      <span className="num" style={{ width: 22, textAlign: mobile ? 'left' : 'center', flexShrink: 0, fontSize: 'var(--text-label-sm)', fontWeight: 700, color: index < 3 ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>
         {item.rank}
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <StockRow
+          mobile={mobile}
           stock={{ symbol: item.symbol, name: name ?? item.symbol, countryCode: country, currency: item.currency }}
           active={active}
           onClick={() => onPick(item.symbol)}
@@ -585,7 +592,7 @@ function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: strin
   }, [infoQ.data])
 
   const rows = rankings.map((r, i) => (
-    <RankRow key={`${r.symbol}`} item={r} name={nameOf.get(r.symbol)} index={i} active={selected === r.symbol} onPick={onPick} />
+    <RankRow key={`${r.symbol}`} item={r} name={nameOf.get(r.symbol)} index={i} active={selected === r.symbol} onPick={onPick} mobile={mobile} />
   ))
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -912,6 +919,7 @@ function StockSearchDialog({ mobile, onPick, onClose }: { mobile: boolean; onPic
           ) : (
             results.map((s: StockMasterItem) => (
               <StockRow
+                mobile={mobile}
                 key={`${s.marketCode}:${s.symbol}`}
                 stock={{ symbol: s.symbol, name: s.nameKr, countryCode: s.countryCode, currency: s.currency }}
                 sub={`${t(`market.${s.marketCode}`, { defaultValue: s.marketCode })} · ${t(`securityType.${s.securityType}`, { defaultValue: s.securityType })}`}
@@ -1010,12 +1018,13 @@ function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: 
 
 // ---- 관심목록 행 (시세 + 전일대비 — 심볼 단위 조회) ---------------------------
 
-function WatchRowItem({ symbol, name, countryCode, currency, sub, priceMap, active, onClick }: { symbol: string; name: string; countryCode: string; currency: string; sub: string; priceMap: Map<string, number>; active: boolean; onClick: () => void }) {
+function WatchRowItem({ symbol, name, countryCode, currency, sub, priceMap, active, onClick, mobile = false }: { symbol: string; name: string; countryCode: string; currency: string; sub: string; priceMap: Map<string, number>; active: boolean; onClick: () => void; mobile?: boolean }) {
   const prevCloseQ = usePrevClose(symbol)
   const last = priceMap.get(symbol) ?? null
   const changePct = changePctOf(last, prevCloseQ.data)
   return (
     <StockRow
+      mobile={mobile}
       stock={{ symbol, name, countryCode, currency }}
       sub={sub}
       price={last}
@@ -1183,6 +1192,7 @@ export function StocksPage() {
               const heldUs = h.marketCountry.toUpperCase() === 'US' || h.currency.toUpperCase() === 'USD'
               return (
                 <StockRow
+                  mobile={mobile}
                   key={h.symbol}
                   stock={{ symbol: h.symbol, name: h.name || h.symbol, countryCode: heldUs ? 'US' : 'KR', currency: h.currency }}
                   active={selected === h.symbol}
@@ -1235,6 +1245,7 @@ export function StocksPage() {
             ) : (
               curGroup.items.map(i => (
                 <WatchRowItem
+                  mobile={mobile}
                   key={i.rowId}
                   symbol={i.symbol}
                   name={i.nameKr}
