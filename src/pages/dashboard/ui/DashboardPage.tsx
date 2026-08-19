@@ -1487,7 +1487,9 @@ function HomeMobile() {
             {budgetItems.map(b => {
               const palette = getPaletteByColor(b.color)
               return (
-                <div key={b.rowId} style={{ padding: '14px 10px', margin: '0 -2px', borderRadius: 10 }}>
+                // 좌우는 페이지가 쥔다(24). 행이 여기서 10 을 얹고 -2 로 당기면 순 8 이
+                // 남아, 제목만 24 에 서고 행은 32 에서 시작해 두 줄이 어긋나 보인다.
+                <div key={b.rowId} style={{ padding: '14px 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <span style={{
                       width: 40, height: 40, borderRadius: tileRadius(40),
