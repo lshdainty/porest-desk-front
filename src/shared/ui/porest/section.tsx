@@ -16,6 +16,7 @@ export function Section({
   action,
   children,
   cardStyle,
+  headGap,
 }: {
   mobile: boolean
   title: ReactNode
@@ -26,11 +27,17 @@ export function Section({
   action?: ReactNode
   children: ReactNode
   cardStyle?: CSSProperties
+  /**
+   * 모바일 헤드↔리스트 간격(px). 생략하면 `.flat-group__head` 의 8.
+   * 리스트 행이 자체 상단 패딩을 갖지 않는 화면은 여기서 전체 간격을 쥐어야
+   * 행에 패딩이 있는 화면(홈 예산: 14+14)과 같아 보인다.
+   */
+  headGap?: number
 }) {
   if (mobile) {
     return (
       <section>
-        <div className="flat-group__head">
+        <div className="flat-group__head" style={headGap != null ? { paddingBottom: headGap } : undefined}>
           <h2>{title}</h2>
           {total != null && (
             <span className="flat-group__total num" style={totalColor ? { color: totalColor } : undefined}>

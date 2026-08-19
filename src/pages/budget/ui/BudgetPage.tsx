@@ -836,6 +836,9 @@ export const BudgetPage = () => {
     <Section
       mobile={mobile}
       title={t('categoryBudgets')}
+      // 홈 예산 섹션과 같은 간격 — 홈은 sec-head 14 위에 행 자체 상단 14 가 얹혀
+      // 합 28 이다. 여기 행은 세로 패딩이 없어(행 사이 gap 18 뿐) 헤드가 28 을 다 쥔다.
+      headGap={28}
       action={
         <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
           {t('countSet', { count: categoryBudgets.length })}
