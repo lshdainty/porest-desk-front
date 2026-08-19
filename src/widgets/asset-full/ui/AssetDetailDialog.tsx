@@ -1064,7 +1064,6 @@ export function AssetDetailDialog({
         </Button>
       }
       onEdit={onEdit ? () => onEdit(asset) : undefined}
-      onConfirm={onClose}
     />
   )
 

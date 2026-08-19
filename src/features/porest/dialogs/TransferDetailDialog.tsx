@@ -88,7 +88,6 @@ export function TransferDetailDialog({
             deleteLabel={tc('delete')}
             onEdit={locked || !onEdit ? undefined : () => onEdit(transfer)}
             editLabel={tc('edit')}
-            onConfirm={onClose}
           />
         }
       >

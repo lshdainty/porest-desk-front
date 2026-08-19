@@ -7,6 +7,9 @@ import { useDeviceSize } from '@/shared/lib/porest/responsive'
 /**
  * 표준 모달/시트 footer — 좌측 삭제(opt) / 우측 취소 + 저장. 앱 `PSheetFooter` 미러.
  *
+ * **액션은 2개까지**(spec drawer.md 액션 구성) — 편집 폼은 `취소`·`저장` 이고 삭제를 두지
+ * 않는다(삭제는 상세에서). 좌측 보조 액션이 있는 화면은 `취소` 를 빼 우상단 X 에 맡긴다.
+ *
  * 웹은 ModalShell 이 footer 를 ReactNode prop 으로 받을 뿐 표준 footer 위젯이 없어
  * 각 다이얼로그가 동일 JSX(삭제 flush-left danger / 취소 ghost / 저장 primary)를 손으로
  * 복붙해 drift(flush 누락·아이콘 크기·variant 불일치)가 반복됐다. 이 컴포넌트로 수렴.
@@ -43,8 +46,12 @@ type ModalFooterProps = {
   saveDisabled?: boolean
   /** 저장 라벨 앞 아이콘 (내보내기 Download / 전송 Send 등). */
   saveIcon?: ReactNode
-  /** 취소/닫기 핸들러(보통 onClose). */
-  onCancel: () => void
+  /**
+   * 취소/닫기 핸들러 — **없으면 버튼 자체를 렌더하지 않는다**. 액션이 3개가 될 때
+   * (필터 `초기화`·분할 `분할 해제` 처럼 좌측 액션이 이미 있을 때) 취소를 빼고 우상단 X 에
+   * 맡긴다(spec drawer.md 액션 구성).
+   */
+  onCancel?: () => void
   cancelLabel?: string
   /** 좌측 삭제(파괴적) — 제공 시에만 렌더. flush-left + danger 색. */
   onDelete?: () => void
@@ -94,18 +101,20 @@ export function ModalFooter({
         </Button>
       )}
       {!onDelete && leftSlot && <div style={{ marginRight: 'auto' }}>{leftSlot}</div>}
-      <Button
-        type="button"
-        // 취소는 언제나 ghost — 전체 폭 버튼 둘이 테두리·채움으로 나란히 서면 위계가
-        // 흐려진다(spec button.md Migration notes 2026-08).
-        variant="ghost"
-        size={size}
-        onClick={onCancel}
-        disabled={busy}
-        style={fullWidth ? { flex: 1 } : undefined}
-      >
-        {cancelLabel ?? t('cancel')}
-      </Button>
+      {onCancel && (
+        <Button
+          type="button"
+          // 취소는 언제나 ghost — 전체 폭 버튼 둘이 테두리·채움으로 나란히 서면 위계가
+          // 흐려진다(spec button.md Migration notes 2026-08).
+          variant="ghost"
+          size={size}
+          onClick={onCancel}
+          disabled={busy}
+          style={fullWidth ? { flex: 1 } : undefined}
+        >
+          {cancelLabel ?? t('cancel')}
+        </Button>
+      )}
       <Button
         type="button"
         variant={saveVariant === 'destructive' ? 'destructive' : 'default'}
@@ -124,12 +133,17 @@ export function ModalFooter({
 
 /**
  * 뷰(읽기전용) 다이얼로그 footer — 좌측 삭제(danger) 또는 leftSlot(금액 토글 등) /
- * 우측 편집(opt) + 확인/닫기. 폼 제출이 없는 상세 다이얼로그용(거래·자산·카드 상세).
- * 앱 PViewFooter 미러.
+ * 우측 편집. 폼 제출이 없는 상세 다이얼로그용(거래·자산·카드 상세). 앱 PViewFooter 미러.
+ *
+ * **액션은 2개까지**(spec drawer.md 액션 구성). 상세는 `삭제`·`편집` 이고 `확인` 은 두지
+ * 않는다 — 우상단 X 가 같은 동작이라 입구가 둘이 된다. onConfirm 은 X 가 없는 특수 흐름용.
  */
 type ModalViewFooterProps = {
-  /** 우측 끝 확인/닫기 핸들러. */
-  onConfirm: () => void
+  /**
+   * 우측 끝 확인/닫기 핸들러 — **없으면 버튼 자체를 렌더하지 않는다**.
+   * 상세 footer 는 `삭제`·`편집` 만 둔다(우상단 X 가 이미 닫기 — spec drawer.md 액션 구성).
+   */
+  onConfirm?: () => void
   confirmLabel?: string
   /** 'default'(primary 확인) | 'ghost'(단일 닫기). */
   confirmVariant?: 'default' | 'ghost'
@@ -181,15 +195,17 @@ export function ModalViewFooter({
           <Pencil size={16} /> {editLabel ?? t('editAction')}
         </Button>
       )}
-      <Button
-        type="button"
-        variant={confirmVariant === 'ghost' ? 'ghost' : 'default'}
-        size={size}
-        onClick={onConfirm}
-        disabled={deleting}
-      >
-        {confirmLabel ?? t('confirm')}
-      </Button>
+      {onConfirm && (
+        <Button
+          type="button"
+          variant={confirmVariant === 'ghost' ? 'ghost' : 'default'}
+          size={size}
+          onClick={onConfirm}
+          disabled={deleting}
+        >
+          {confirmLabel ?? t('confirm')}
+        </Button>
+      )}
     </>
   )
 }

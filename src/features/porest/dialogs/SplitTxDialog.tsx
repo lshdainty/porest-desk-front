@@ -106,7 +106,6 @@ export function SplitTxDialog({
   onReconciled,
 }: Props) {
   const { t } = useTranslation('expense')
-  const { t: tc } = useTranslation('common')
   const persistedTotal = Math.abs(expense.amount)
   const targetTotal = overrideTotal ?? persistedTotal
   const isIncome = expense.expenseType === 'INCOME'
@@ -293,8 +292,6 @@ export function SplitTxDialog({
       saveLabel={t('splitTx.save')}
       saving={replaceMut.isPending}
       saveDisabled={!matched}
-      onCancel={onClose}
-      cancelLabel={tc('cancel')}
       onDelete={!reconcileMode && (splitsQ.data?.length ?? 0) > 0 ? handleDeleteAll : undefined}
       deleteLabel={t('splitTx.remove')}
       deleting={deleteAllMut.isPending}

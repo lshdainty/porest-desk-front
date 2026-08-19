@@ -424,6 +424,7 @@ function CalendarManageDialog({
   mobile: boolean
 }) {
   const { t } = useTranslation('calendar')
+  const { t: tc } = useTranslation('common')
   const { data: currentUser } = useCurrentUser()
   const { data: members, isLoading } = useCalendarMembers(calendar.rowId)
   const regenMut = useRegenerateCalendarInviteCode()
@@ -480,26 +481,27 @@ function CalendarManageDialog({
     )
   }
 
-  const Footer = (
-    <>
-      {isOwner && !calendar.isDefault && (
-        <Button
-          variant="ghost"
-          flush="left"
-          onClick={() => {
-            onRequestDelete(calendar)
-            onClose()
-          }}
-          style={{ color: 'var(--fg-expense)', marginRight: 'auto' }}
-        >
-          <Trash2 size={14} />{t('deleteCalendar')}
-        </Button>
-      )}
-      <Button variant="ghost" onClick={onClose}>
-        {t('close')}
-      </Button>
-    </>
-  )
+  // 관리 시트는 상세 화면이 따로 없어 폼이 곧 상세다 — 삭제를 여기 남기고 `취소/닫기` 는
+  // 우상단 X 에 맡긴다(spec drawer.md 액션 구성 · 상세 화면이 없는 흐름).
+  // 저장은 본문 인라인이 아니라 footer 로 — 폼의 주 액션은 footer 에 있어야 찾는다.
+  // 소유자가 아니면 바꿀 것도 지울 것도 없어 footer 자체를 두지 않는다.
+  const Footer = isOwner ? (
+    <ModalFooter
+      onSave={handleSaveMeta}
+      saveLabel={tc('save')}
+      saving={updateMut.isPending}
+      saveDisabled={!dirty || !name.trim()}
+      onDelete={
+        calendar.isDefault
+          ? undefined
+          : () => {
+              onRequestDelete(calendar)
+              onClose()
+            }
+      }
+      deleteLabel={t('deleteCalendar')}
+    />
+  ) : undefined
 
   return (
     <ModalShell title={`${calendar.calendarName} · ${t('shareSection.manageSuffix')}`} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
@@ -521,12 +523,6 @@ function CalendarManageDialog({
               options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
             />
           </Field>
-
-          {dirty && (
-            <Button size="sm" onClick={handleSaveMeta} loading={updateMut.isPending} style={{ marginBottom: 18 }}>
-              {t('shareSection.saveChanges')}
-            </Button>
-          )}
 
           {/* 초대 코드 */}
           <Field style={{ marginBottom: 18 }}>

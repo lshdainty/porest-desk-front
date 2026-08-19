@@ -278,9 +278,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       updateTodo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
     else createTodo.mutate(values, { onSuccess: () => setEditing(null) })
   }
-  const onDelete = (id: number) => {
-    deleteTodo.mutate(id, { onSuccess: () => setEditing(null) })
-  }
 
   // ── 밤하늘 진입점 — 스트립(데스크톱)·토글(모바일 원장). 상세는 오버레이 화면 ──
   const Strip = constellationTodayQ.data ? (
@@ -702,9 +699,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           tags={tagNames}
           onClose={() => setEditing(null)}
           onSave={onSave}
-          onDelete={onDelete}
           submitting={createTodo.isPending || updateTodo.isPending}
-          deleting={deleteTodo.isPending}
         />
       )}
     </>
@@ -819,7 +814,6 @@ function TodoDetailDialog({
       onDelete={() => setConfirmDelete(true)}
       deleting={deleting}
       onEdit={() => onEdit(todo)}
-      onConfirm={onClose}
     />
   )
 
@@ -993,9 +987,7 @@ function TodoEditDialog({
   tags,
   onClose,
   onSave,
-  onDelete,
   submitting,
-  deleting,
 }: {
   todo: Todo | null
   mobile: boolean
@@ -1003,9 +995,7 @@ function TodoEditDialog({
   tags: string[]
   onClose: () => void
   onSave: (values: TodoFormValues, id?: number) => void
-  onDelete: (id: number) => void
   submitting?: boolean
-  deleting?: boolean
 }) {
   const { t } = useTranslation('todo')
   const { t: tc } = useTranslation('common')
@@ -1040,8 +1030,6 @@ function TodoEditDialog({
       saveLabel={tc('save')}
       saving={submitting}
       onCancel={onClose}
-      onDelete={todo ? () => onDelete(todo.rowId) : undefined}
-      deleting={deleting}
     />
   )
 

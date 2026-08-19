@@ -224,9 +224,6 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     if (id != null) updateMemo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
     else createMemo.mutate(values, { onSuccess: () => setEditing(null) })
   }
-  const onDelete = (id: number) => {
-    deleteMemo.mutate(id, { onSuccess: () => setEditing(null) })
-  }
 
   const AddBtn = (
     <Button size="sm" onClick={() => setEditing({ _new: true })}>
@@ -470,9 +467,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           mobile={mobile}
           onClose={() => setEditing(null)}
           onSave={onSave}
-          onDelete={onDelete}
           submitting={createMemo.isPending || updateMemo.isPending}
-          deleting={deleteMemo.isPending}
         />
       )}
     </>
@@ -578,7 +573,6 @@ function MemoDetailDialog({
       onDelete={() => setConfirmDelete(true)}
       deleting={deleting}
       onEdit={() => onEdit(memo)}
-      onConfirm={onClose}
     />
   )
 
@@ -670,17 +664,13 @@ function MemoEditDialog({
   mobile,
   onClose,
   onSave,
-  onDelete,
   submitting,
-  deleting,
 }: {
   memo: Memo | null
   mobile: boolean
   onClose: () => void
   onSave: (values: MemoFormValues, id?: number) => void
-  onDelete: (id: number) => void
   submitting?: boolean
-  deleting?: boolean
 }) {
   const { t } = useTranslation('memo')
   const { t: tc } = useTranslation('common')
@@ -715,8 +705,6 @@ function MemoEditDialog({
       saveLabel={tc('save')}
       saving={submitting}
       onCancel={onClose}
-      onDelete={memo ? () => onDelete(memo.rowId) : undefined}
-      deleting={deleting}
     />
   )
 
