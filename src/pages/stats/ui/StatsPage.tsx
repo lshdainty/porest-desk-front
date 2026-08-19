@@ -887,9 +887,11 @@ export const StatsPage = () => {
               stroke={28}
             >
               <div className="lbl">{donutCenterLbl}</div>
+              {/* 도넛 구멍이 좁다(모바일 176 − 스트로크 28×2 = 120). 전체 자릿수를 쓰면
+                  구멍을 넘어 링 위에 얹힌다 — 1억만 넘어도 "102,176,580원" 이다.
+                  차트 축과 같은 축약을 쓴다(1.0억). 정확한 금액은 바로 아래 범례가 갖고 있다. */}
               <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
-                <MaskAmount>{wonPre()}{KRW(donutTotal)}</MaskAmount>
-                <WonUnit />
+                <MaskAmount>{formatChartAxis(donutTotal)}</MaskAmount>
               </div>
             </Donut>
           </div>
