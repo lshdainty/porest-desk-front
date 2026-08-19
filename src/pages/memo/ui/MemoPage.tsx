@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Pin, Plus, Search, X, StickyNote, SearchX } from 'lucide-react'
@@ -12,6 +12,14 @@ import {
 import type { Memo, MemoFormValues } from '@/entities/memo'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import {
+  LedgerDivider,
+  LedgerRow,
+  LedgerRowMain,
+  LedgerRowSep,
+  LedgerRowSub,
+  LedgerRowTitle,
+} from '@/shared/ui/porest/ledger'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import {
@@ -373,6 +381,72 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     )
   }
 
+  /**
+   * 모바일 전용 행 — 스와이프가 성립하려면 세로 리스트여야 한다(spec Migration notes).
+   *
+   * <p>MemoCard 는 그대로 둔다. 데스크톱과 공용이고, 그 안의 핀 버튼이 데스크톱에서
+   * 고정을 해제하는 유일한 경로다(상세 footer 에는 고정 액션이 없다).
+   *
+   * <p>색은 카드처럼 배경을 물들이지 않고 8px 점 하나로만 남긴다 — 행이 밀릴 때
+   * 색면이 통째로 따라 움직이면 트레이보다 행이 먼저 눈에 들어온다.
+   */
+  const MemoRow = (m: Memo) => {
+    const tone = resolveTone(m.color)
+    const tag = m.tag || DEFAULT_TAG
+    return (
+      <LedgerRow key={m.rowId} className="rounded-none" onClick={() => setViewing(m)}>
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: tone.swatch,
+            flexShrink: 0,
+          }}
+        />
+        <LedgerRowMain as="button">
+          <LedgerRowTitle>{m.title}</LedgerRowTitle>
+          <LedgerRowSub>
+            <span>{tag}</span>
+            {m.content && (
+              <>
+                <LedgerRowSep />
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    minWidth: 0,
+                  }}
+                >
+                  {m.content}
+                </span>
+              </>
+            )}
+          </LedgerRowSub>
+        </LedgerRowMain>
+        {/* 고정 표시 전용 — 토글은 스와이프 '고정' 액션이 맡는다(다음 단계). */}
+        {m.isPinned && (
+          <Pin size={13} strokeWidth={2.5} style={{ color: tone.swatch, flexShrink: 0 }} />
+        )}
+        <span style={{ fontSize: 11, color: 'var(--fg-tertiary)', flexShrink: 0 }}>
+          {formatStamp(m.modifyAt)}
+        </span>
+      </LedgerRow>
+    )
+  }
+
+  const list = (items: Memo[]) => (
+    <div>
+      {items.map((m, i) => (
+        <Fragment key={m.rowId}>
+          {i > 0 && <LedgerDivider inset subtle />}
+          {MemoRow(m)}
+        </Fragment>
+      ))}
+    </div>
+  )
+
   const grid = (items: Memo[]) => (
     <div
       style={{
@@ -432,7 +506,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           <section>
             {/* 앱과 동일 — 모바일에서도 개수 표시. */}
             <SectionLabel icon="pin" label={`${t('pin')} · ${pinned.length}`} />
-            {grid(pinned)}
+            {mobile ? list(pinned) : grid(pinned)}
           </section>
         )}
         {others.length > 0 && (
@@ -440,7 +514,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             {pinned.length > 0 && (
               <SectionLabel icon="note" label={`${t('allMemosSection')} · ${others.length}`} />
             )}
-            {grid(others)}
+            {mobile ? list(others) : grid(others)}
           </section>
         )}
       </div>
@@ -829,7 +903,21 @@ function MemoCardSkeleton() {
   )
 }
 
-/** Memo 페이지 구조 일치 skeleton — 검색카드 + 태그칩 + 카드 grid. */
+/** 모바일 리스트 행 skeleton — 점 + 제목/부제 + 우측 시각. */
+function MemoRowSkeleton() {
+  return (
+    <div className="flex items-center gap-3 px-1 -mx-1 py-3">
+      <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
+      <div className="flex-1 min-w-0">
+        <SkeletonBase className="h-4 w-2/5 mb-1.5" />
+        <SkeletonBase className="h-3 w-3/5" />
+      </div>
+      <SkeletonBase className="h-3 w-10 shrink-0" />
+    </div>
+  )
+}
+
+/** Memo 페이지 구조 일치 skeleton — 검색카드 + 태그칩 + (모바일)리스트 / (데스크톱)카드 grid. */
 function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('memo')
   const { t: tc } = useTranslation('common')
@@ -840,15 +928,23 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
       ))}
     </div>
   )
-  const Grid = (
+  // 본문만 리스트로 바꾸면 로딩 중엔 2열 168px 카드였다가 데이터가 오는 순간 화면이
+  // 통째로 튄다 — 스켈레톤도 같은 모양으로 간다(spec Migration notes).
+  const Grid = mobile ? (
+    <div>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <MemoRowSkeleton key={i} />
+      ))}
+    </div>
+  ) : (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(240px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
         gap: 12,
       }}
     >
-      {Array.from({ length: mobile ? 4 : 6 }).map((_, i) => (
+      {Array.from({ length: 6 }).map((_, i) => (
         <MemoCardSkeleton key={i} />
       ))}
     </div>
