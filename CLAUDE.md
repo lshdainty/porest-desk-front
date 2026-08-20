@@ -58,6 +58,27 @@
   - 예 ✓: `<Card variant="bordered" onClick={...}>` 또는 `<Card>` + 안의 `<Button>` — SoT 사용
   - shared 컴포넌트에 필요한 variant/prop 이 부족하면 spec 변경 + shared 컴포넌트 확장 (HOW 절차 1→2→3).
 
+## i18n 은 CSV 가 SoT — `src/locales/` 에 쓰지 마라
+
+번역 원본은 **`i18n/translations.csv`** 하나다. `src/locales/**` 는
+`npm run i18n:generate`(= `scripts/generate-i18n.mjs`)가 CSV 를 읽어 만드는 **생성물**이고
+`.gitignore:48` 이 통째로 제외한다.
+
+`src/locales/ko/*.json` 에 키를 넣으면 **다음 generate 에 조용히 날아간다.** 파일이 눈앞에
+있고 편집도 되니 되는 것처럼 보이는데, 커밋에는 안 들어가고 값만 사라진다.
+
+```
+i18n/translations.csv          ← 여기에 넣는다 (namespace,key,ko,en)
+npm run i18n:generate          ← 그 다음 생성
+```
+
+**키를 추가했으면 실제로 생성됐는지 확인한다** — `tsc` 는 i18n 키 누락을 못 잡는다.
+문자열이라 타입이 통과한다. 화면에서 키 이름이 그대로 보이고 나서야 안다.
+
+```bash
+python3 -c "import json,io;d=json.load(io.open('src/locales/ko/<ns>.json'));print('<key>' in d)"
+```
+
 ## SwipeActions 쓸 때
 
 - **`SwipeActionsProvider` 안에서만 동작한다.** AppLayout 모바일 두 셸(`.m-scroll`)에 하나씩
