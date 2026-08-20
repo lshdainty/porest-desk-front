@@ -67,6 +67,10 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
     recurring.endDate ?? addYears(startDay, 1),
   )
 
+  // 편집 금액 — 여기서 바꾼 값은 **앞으로 생성될 실행분**부터 적용된다.
+  // 이미 만들어진 거래는 별도 레코드라 소급되지 않는다.
+  const [amount, setAmount] = useState<string>(String(Math.abs(recurring.amount)))
+
   const [autoLog, setAutoLog] = useState<boolean>(recurring.autoLog)
   const [notifyDayBefore, setNotifyDayBefore] = useState<boolean>(recurring.notifyDayBefore)
 
@@ -77,6 +81,8 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
 
   const submitting = updateMut.isPending
   const ready = !!startDay
+    // 0 을 저장하면 앞으로의 실행분이 전부 0원이 된다.
+    && Number(amount) > 0
     && (endMode !== 'COUNT' || Number(endCount) > 0)
     && (endMode !== 'DATE' || !!endDate)
 
@@ -87,7 +93,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       assetRowId: recurring.assetRowId ?? undefined,
       sourceExpenseRowId: recurring.sourceExpenseRowId ?? undefined,
       expenseType: recurring.expenseType,
-      amount: Math.abs(recurring.amount),
+      amount: Number(amount),
       description: recurring.description ?? undefined,
       merchant: recurring.merchant ?? undefined,
       paymentMethod: recurring.paymentMethod ?? undefined,
@@ -165,6 +171,22 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           {money(Math.abs(recurring.amount))}
         </div>
       </div>
+
+      {/* 금액 — 편집에서 고칠 수 있다. 구독료가 오르면 지우고 새로 만들 필요 없이
+          여기서 바꾼다. 바뀐 값은 앞으로 생성될 실행분부터 적용된다(사용자 결정). */}
+      <Section title={t('amountTitle')}>
+        <Input
+          className="num"
+          value={amount}
+          onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+          inputMode="numeric"
+          placeholder="0"
+          style={{
+            fontWeight: 700,
+            color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
+          }}
+        />
+      </Section>
 
       <Section title={t('frequencyTitle')}>
         <Tabs
