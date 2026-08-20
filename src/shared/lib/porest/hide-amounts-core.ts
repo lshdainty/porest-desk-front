@@ -76,14 +76,24 @@ function commit(next: Set<HideCardKey>) {
 }
 
 /**
- * 이 카드가 가려져 있는가.
+ * 이 카드(들)가 가려져 있는가.
+ *
+ * <p>카드를 여러 개 넘기면 <b>하나라도 켜져 있으면</b> 가린다. 같은 금액이 두 카드에
+ * 걸치는 자리가 있다 — 캘린더 셀은 '캘린더 금액' 이면서 '거래 목록' 의 일별 합계이기도
+ * 하다. 한쪽으로 몰아 두면 다른 쪽을 켠 사람에게는 안 가려진다.
  *
  * <p>카드를 지정하지 않으면 <b>하나라도 가려져 있는지</b>를 돌려준다 — 눈 아이콘처럼
  * "지금 뭔가 가려진 상태인가" 만 알면 되는 자리용이다. 실제 금액을 가리는 곳은
  * 반드시 카드를 넘길 것. 안 넘기면 다른 카드를 가렸을 때 같이 가려진다.
  */
-export function useHideAmounts(card?: HideCardKey): boolean {
-  const read = () => (card ? current().has(card) : current().size > 0)
+export function useHideAmounts(card?: HideCardKey | HideCardKey[]): boolean {
+  // 배열 리터럴을 그대로 넘기는 호출부가 많다 — 매 렌더 새 배열이라 deps 로 못 쓴다.
+  const key = Array.isArray(card) ? card.join('|') : card
+  const read = () => {
+    const set = current()
+    if (Array.isArray(card)) return card.some(c => set.has(c))
+    return card ? set.has(card) : set.size > 0
+  }
   const [hidden, setHidden] = useState(read)
   useEffect(() => {
     const onChange = () => setHidden(read())
@@ -92,7 +102,7 @@ export function useHideAmounts(card?: HideCardKey): boolean {
     onChange()
     return () => window.removeEventListener(EVENT, onChange)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [card])
+  }, [key])
   return hidden
 }
 

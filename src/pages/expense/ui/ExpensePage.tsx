@@ -5,7 +5,7 @@ import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Pencil, Pl
 import { KRW, formatDay, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
+import { HIDE_AMOUNTS_MASK, useHideAmounts, wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { Button } from '@/shared/ui/button'
 import {
   LedgerCalendar,
@@ -57,6 +57,20 @@ import {
   useDeleteExpense,
 } from '@/features/expense'
 import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
+import type { HideCardKey } from '@/shared/lib/porest/hide-amounts-cards'
+
+/**
+ * 캘린더 셀의 일별 지출·수입은 두 카드에 걸친다 — '캘린더 금액' 이면서 '거래 목록' 의
+ * 일별 합계이기도 하다. 한쪽에만 걸면 다른 쪽을 켠 사람에게는 그대로 보인다.
+ */
+const CALENDAR_CELL_CARDS: HideCardKey[] = ['ledger.calendar', 'ledger.txList']
+
+/**
+ * 월 인사이트("지난달보다 N만원 덜 썼어요")는 가려진 월 지출 히어로 **바로 아래**에서
+ * 두 달의 차액을 평문으로 말한다 — 히어로를 가려도 여기서 크기가 드러난다.
+ * 모바일 히어로는 '거래 목록', 데스크톱 요약은 '월 합계' 카드를 쓰므로 둘 다에 건다.
+ */
+const INSIGHT_CARDS: HideCardKey[] = ['ledger.monthSummary', 'ledger.txList']
 import { useAsset, useAssets, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
 import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
@@ -1324,6 +1338,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const curRange = monthRange(month)
   const curSummaryQ = useRangeSummary(curRange.startDate, curRange.endDate)
 
+  const insightHidden = useHideAmounts(INSIGHT_CARDS)
   const insight = useMemo(() => {
     if (isLoadingList || isLoadingSummary) return null
     if (expenses.length === 0) return <>{t('txm.insightNone')}</>
@@ -1332,7 +1347,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       const diff = prevOut - monthOut
       const man = Math.abs(Math.round(diff / 10000))
       if (man < 1) return <>{t('txm.insightSame')}</>
-      const amount = isEn() ? `\u20a9${KRW(Math.abs(diff))}` : `${KRW(man)}만원`
+      // 문장은 남기고 금액만 가린다 — 방향(덜/더)은 크기가 아니라서 그대로 둔다.
+      const amount = insightHidden
+        ? HIDE_AMOUNTS_MASK
+        : isEn() ? `\u20a9${KRW(Math.abs(diff))}` : `${KRW(man)}만원`
       return (
         <Trans
           t={t}
@@ -1357,7 +1375,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       )
     }
     return null
-  }, [isLoadingList, isLoadingSummary, expenses.length, prevQ.data, curSummaryQ.data, monthOut, t])
+  }, [isLoadingList, isLoadingSummary, expenses.length, prevQ.data, curSummaryQ.data, monthOut, insightHidden, t])
 
   // 일별 합계 — 캘린더 셀 밑 금액.
   const byDay = useMemo(() => {
@@ -1551,10 +1569,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   </LedgerCellNum>
                   {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
                   {data && data.out > 0 && (
-                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-expense)' }}>-{KRW(data.out)}</LedgerCellAmt>
+                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-expense)' }}>
+                      <MaskAmount card={CALENDAR_CELL_CARDS} mask="••">-{KRW(data.out)}</MaskAmount>
+                    </LedgerCellAmt>
                   )}
                   {data && data.inn > 0 && (
-                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-brand)' }}>+{KRW(data.inn)}</LedgerCellAmt>
+                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-brand)' }}>
+                      <MaskAmount card={CALENDAR_CELL_CARDS} mask="••">+{KRW(data.inn)}</MaskAmount>
+                    </LedgerCellAmt>
                   )}
                   {!data && <LedgerCellAmt className="num" />}
                 </LedgerCell>

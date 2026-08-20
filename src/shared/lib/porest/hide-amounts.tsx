@@ -17,7 +17,9 @@ export function HideCard({ card, children }: { card: HideCardKey; children: Reac
 }
 
 /** 감싸는 카드가 있으면 그것, 없으면 넘긴 값. 둘 다 없으면 undefined. */
-export function useHideCard(card?: HideCardKey): HideCardKey | undefined {
+export function useHideCard(
+  card?: HideCardKey | HideCardKey[],
+): HideCardKey | HideCardKey[] | undefined {
   const ctx = useContext(HideCardContext)
   return card ?? ctx
 }
@@ -26,7 +28,7 @@ export function useHideCard(card?: HideCardKey): HideCardKey | undefined {
  * 통화 접미 단위 — 기존 `<HideUnit>원</HideUnit>` 대체.
  * ko: `원`(마스킹 시 숨김, 기존 동일) / en: 없음(접두 ₩ 로 대체됨).
  */
-export function WonUnit({ card }: { card?: HideCardKey } = {}) {
+export function WonUnit({ card }: { card?: HideCardKey | HideCardKey[] } = {}) {
   return <HideUnit card={card}>{isEn() ? '' : '원'}</HideUnit>
 }
 
@@ -37,7 +39,7 @@ export function MaskAmount({
 }: {
   children: ReactNode
   mask?: ReactNode
-  card?: HideCardKey
+  card?: HideCardKey | HideCardKey[]
 }) {
   const hidden = useHideAmounts(useHideCard(card))
   return (
@@ -48,7 +50,13 @@ export function MaskAmount({
   )
 }
 
-export function HideUnit({ children, card }: { children: ReactNode; card?: HideCardKey }) {
+export function HideUnit({
+  children,
+  card,
+}: {
+  children: ReactNode
+  card?: HideCardKey | HideCardKey[]
+}) {
   const hidden = useHideAmounts(useHideCard(card))
   return <Activity mode={hidden ? 'hidden' : 'visible'}>{children}</Activity>
 }

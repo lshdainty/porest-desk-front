@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
+import { HIDE_AMOUNTS_MASK, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
 import { KRW, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayDow } from '@/shared/lib/date'
 import { useDeleteTransfer } from '@/features/asset'
@@ -34,11 +35,15 @@ export function TransferDetailDialog({
   const [confirmDelete, setConfirmDelete] = useState(false)
   const deleteMut = useDeleteTransfer()
 
+  // 이체 상세는 지금까지 어떤 카드로도 가려지지 않았다 — 거래 상세와 같은 카드로 묶는다.
+  // 금액만 가리고 수수료를 남기면 `이체금액 = 출금총액 − 수수료` 로 좁혀지므로 한 덩어리로 본다.
+  const hidden = useHideAmounts('ledger.txDetail')
   const fee = transfer.fee ?? 0
   const interest = transfer.interestAmount ?? 0
   // 매수 충당·카드 결제로 생긴 이체는 원본과 금액이 묶여 있다.
   const locked = transfer.autoSource != null
-  const won = (v: number) => `${isEn() ? '₩' : ''}${KRW(v, { abs: true })}${isEn() ? '' : '원'}`
+  const won = (v: number) =>
+    hidden ? HIDE_AMOUNTS_MASK : `${isEn() ? '₩' : ''}${KRW(v, { abs: true })}${isEn() ? '' : '원'}`
 
   const handleConfirmDelete = () => {
     deleteMut.mutate(transfer.rowId, {
