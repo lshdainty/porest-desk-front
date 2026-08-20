@@ -1030,7 +1030,11 @@ function DutchCreateWizard({
 
   return (
     <ModalShell
-      title={step === 1 ? `${t('fromTx.createSettlement')} (1/2)` : `${t('pickParticipants')} (2/2)`}
+      title={t('stepTitle', {
+        title: step === 1 ? t('fromTx.createSettlement') : t('pickParticipants'),
+        step,
+        total: 2,
+      })}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -1324,7 +1328,7 @@ function DutchDetailDialog({
   )
 
   return (
-    <ModalShell title={d.title} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell title={t('detailTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
       {/* hero */}
       <div
         style={{
