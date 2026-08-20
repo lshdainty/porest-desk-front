@@ -124,17 +124,11 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       label: tc('delete'),
       icon: <Trash2 />,
       kind: 'destructive',
-      // 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
-      // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
+      // 본문은 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
+      // 어느 경로로 들어왔는지에 따라 다른 말이 나온다. 제목은 스와이프 공통 "삭제" 라
+      // 여기서 정하지 않는다(무엇을 지우는지는 본문이 이름으로 말한다).
       confirm: {
-        title:
-          groupOfAsset(asset) === 'account'
-            ? t('deleteConfirm.titleAccount')
-            : groupOfAsset(asset) === 'card'
-            ? t('deleteConfirm.titleCard')
-            : t('deleteConfirm.titleInvest'),
         message: t('deleteConfirm.messageDetail', { name: `"${asset.assetName}"` }),
-        confirmLabel: t('deleteConfirm.confirm'),
         loading: deleteAsset.isPending,
       },
       onSelect: () => deleteAsset.mutateAsync(asset.rowId),

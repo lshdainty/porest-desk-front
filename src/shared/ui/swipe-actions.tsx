@@ -152,14 +152,18 @@ const swipeActionVariants = cva(
   },
 )
 
+/**
+ * 확인 다이얼로그의 **제목과 확인 버튼은 액션 라벨을 그대로 쓴다** — 호출부가 정하지
+ * 않는다. 정하게 두었더니 화면마다 "거래 삭제"·"할일 삭제"·"계좌 삭제" 로 갈렸고,
+ * 앱은 같은 자리에서 전부 "삭제" 였다(앱 `PSwipeActions._run` 이 `action.label` 로
+ * 강제해 갈릴 수가 없다). 무엇을 지우는지는 [message] 가 말한다.
+ */
 export interface SwipeConfirm {
-  title: string
   /**
    * ConfirmDialog 는 `white-space` 지정 없는 `<p>` 에 넣는다 — `\n\n` 는 공백 하나로
    * 접히므로 줄을 나누려면 `<br />` 를 쓴다.
    */
   message: React.ReactNode
-  confirmLabel?: string
   cancelLabel?: string
   /**
    * 뮤테이션 pending. 기존 삭제 확인 3곳(거래·할일·메모 상세)이 전부 끝날 때까지
@@ -438,9 +442,10 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
             트레이가 접혀도 살아남는다. */}
         {pending?.confirm && (
           <ConfirmDialog
-            title={pending.confirm.title}
+            // 제목·확인 버튼은 액션 라벨 그대로 — 앱 PSwipeActions 와 같은 규칙이다.
+            title={pending.label}
             message={pending.confirm.message}
-            confirmLabel={pending.confirm.confirmLabel}
+            confirmLabel={pending.label}
             cancelLabel={pending.confirm.cancelLabel}
             danger={pending.kind === "destructive"}
             loading={running || pending.confirm.loading}
