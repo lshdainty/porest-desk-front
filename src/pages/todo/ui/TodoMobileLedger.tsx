@@ -121,7 +121,7 @@ export function TodoMobileLedger({
   pinTop: number
   onToggle: (todo: Todo) => void
   onRowClick: (todo: Todo) => void
-  /** 스와이프 '수정' — 상세 footer 의 편집과 같은 목적지. */
+  /** 스와이프 '수정' — 상세 footer 의 수정과 같은 목적지. */
   onEdit: (todo: Todo) => void
   /** 스와이프 '삭제' — Promise 를 돌려주면 확인 버튼이 끝날 때까지 스피너를 문다. */
   onDelete: (todo: Todo) => Promise<unknown> | void

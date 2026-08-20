@@ -218,7 +218,7 @@ export function ModalViewFooter({
           onClick={onEdit}
           disabled={deleting}
         >
-          <Pencil size={16} /> {editLabel ?? t('editAction')}
+          <Pencil size={16} /> {editLabel ?? t('edit')}
         </Button>
       )}
       {onConfirm && (

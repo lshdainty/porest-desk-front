@@ -16,7 +16,6 @@ common,next,다음,Next
 common,prev,이전,Previous
 common,searchComingSoon,검색 기능 준비 중,Search coming soon
 common,searchComingSoonDesc,v0.7 에 추가 예정,Coming in v0.7
-common,editAction,편집,Edit
 common,searchPlaceholder,검색...,Search...
 common,searchEmpty,검색 결과가 없어요,No results found
 common,totalCount,총 {{count}}건,{{count}} total
@@ -507,7 +506,7 @@ asset,group.account,계좌,Account
 asset,group.card,카드,Card
 asset,group.invest,투자,Investment
 asset,addAction,추가,Add
-asset,editAction,편집,Edit
+asset,editAction,수정,Edit
 asset,tab.accountDeposit,계좌·예금,Accounts & Deposits
 asset,manager.title,계좌·카드 관리,Account & Card Management
 asset,manager.description,"연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요.","Manage your linked assets. You can add or edit accounts, cards, and investment products."
@@ -1361,7 +1360,7 @@ category,expand,펼치기,Expand
 category,collapse,접기,Collapse
 category,hasSubcategories,하위 카테고리 있음,Has subcategories
 category,addSub,하위 추가,Add subcategory
-category,edit,편집,Edit
+category,edit,수정,Edit
 category,nameRequired,이름을 입력해 주세요.,Please enter a name.
 category,nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
 category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습니다.,A category with this name already exists in this location.
@@ -1802,7 +1801,7 @@ settings,groups.data,데이터,Data
 settings,groups.account,계정,Account
 settings,account.defaultName,사용자,User
 settings,account.profileMeta,내 정보 · 보안 · 연결된 계정,Profile · security · linked accounts
-settings,account.edit,편집,Edit
+settings,account.edit,수정,Edit
 settings,account.joined,가입 {{date}},Joined {{date}}
 settings,account.group.security,보안,Security
 settings,account.group.connected,연결된 계정,Linked Accounts
@@ -2147,7 +2146,7 @@ recurring,paused,일시정지,Paused
 recurring,pause,일시정지,Pause
 recurring,start,시작,Start
 recurring,resume,재개,Resume
-recurring,editAction,편집,Edit
+recurring,editAction,수정,Edit
 recurring,statActive,활성 반복,Active
 recurring,statMonthlyExpense,매월 고정 지출,Fixed monthly expense
 recurring,statMonthlyIncome,매월 고정 수입,Fixed monthly income

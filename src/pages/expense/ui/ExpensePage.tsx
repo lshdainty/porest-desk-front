@@ -1286,7 +1286,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       label: tc('edit'),
       icon: <Pencil />,
       kind: 'primary',
-      // 상세를 닫고 편집으로 — 상세 footer 의 편집과 같은 목적지(AddTxSheet).
+      // 상세를 닫고 수정으로 — 상세 footer 의 수정과 같은 목적지(AddTxSheet).
       onSelect: () => {
         setDetail(null)
         setEditing(e)

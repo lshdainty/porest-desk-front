@@ -114,7 +114,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       label: tc('edit'),
       icon: <Pencil />,
       kind: 'primary',
-      // 상세를 닫고 편집으로 — 상세 footer 의 편집과 같은 목적지.
+      // 상세를 닫고 수정으로 — 상세 footer 의 수정과 같은 목적지.
       onSelect: () => {
         setDetail(null)
         setEditing({ mode: 'edit', asset })
