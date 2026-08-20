@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
+import { Pencil, Plus, Trash2, Wallet } from 'lucide-react'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import type { Asset, AssetFormValues, AssetType, AssetUpdateFormValues } from '@/entities/asset'
 import { AssetLogo } from '@/entities/asset'
@@ -14,6 +14,7 @@ import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Button } from '@/shared/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
@@ -51,6 +52,7 @@ const NO_DIVIDER = { borderBottom: 'none' } as const
 
 export function AccountManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const groupLabel = (g: AssetGroup) =>
     g === 'account' ? t('group.account') : g === 'card' ? t('group.card') : t('group.invest')
   const { data: assetsData, isLoading } = useAssets()
@@ -104,6 +106,40 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       onSuccess: () => setConfirmDelete(null),
     })
   }
+
+  /** 스와이프 트레이의 액션 — 의미 순서 `[수정, 삭제]` 로 넘긴다(뒤집는 건 컴포넌트가 한다). */
+  const swipeActionsFor = (asset: Asset): SwipeAction[] => [
+    {
+      // 슬롯이 좁아 두 글자 라벨을 쓴다.
+      label: tc('edit'),
+      icon: <Pencil />,
+      kind: 'primary',
+      // 상세를 닫고 편집으로 — 상세 footer 의 편집과 같은 목적지.
+      onSelect: () => {
+        setDetail(null)
+        setEditing({ mode: 'edit', asset })
+      },
+    },
+    {
+      label: tc('delete'),
+      icon: <Trash2 />,
+      kind: 'destructive',
+      // 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
+      // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
+      confirm: {
+        title:
+          groupOfAsset(asset) === 'account'
+            ? t('deleteConfirm.titleAccount')
+            : groupOfAsset(asset) === 'card'
+            ? t('deleteConfirm.titleCard')
+            : t('deleteConfirm.titleInvest'),
+        message: t('deleteConfirm.messageDetail', { name: `"${asset.assetName}"` }),
+        confirmLabel: t('deleteConfirm.confirm'),
+        loading: deleteAsset.isPending,
+      },
+      onSelect: () => deleteAsset.mutateAsync(asset.rowId),
+    },
+  ]
 
   const isSubmitting = createAsset.isPending || updateAsset.isPending
 
@@ -182,8 +218,20 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                 // 0 은 부호·강조 없이 '0원' (−0원 방지).
                 const neg = (isCard ? -amt : balance) < 0
                 return (
-                  <div
+                  // 밀면 수정·삭제가 바로 나온다. 탭은 그대로 상세로 — 스와이프는
+                  // 지름길이지 유일한 경로가 아니다(spec swipe-actions.md · WCAG 2.1.1).
+                  // 데스크톱은 행에 인라인 편집·삭제 아이콘이 있어 통과시킨다.
+                  <SwipeActions
                     key={asset.rowId}
+                    rowId={`asset-${asset.rowId}`}
+                    // 탭마다 갈라 둔다 — 탭을 바꿔도 이전 탭에서 열어 둔 행이 남아
+                    // 있으면 엉뚱한 자산이 열린 것처럼 보인다.
+                    groupTag={`asset-${tab}-list`}
+                    rowLabel={asset.assetName}
+                    enabled={mobile}
+                    actions={swipeActionsFor(asset)}
+                  >
+                  <div
                     className={manageRowClass(mobile)}
                     style={{ cursor: 'pointer', ...(mobile ? NO_DIVIDER : null) }}
                     onClick={() => setDetail(asset)}
@@ -209,7 +257,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         )}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', marginRight: mobile ? -8 : 12 }}>
+                    <div style={{ textAlign: 'right', marginRight: mobile ? 0 : 12 }}>
                       <div
                         className="num"
                         style={{
@@ -232,7 +280,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                         </div>
                       )}
                     </div>
-                    {!mobile ? (
+                    {!mobile && (
                       <div className={MANAGE_ROW.actionsClassName} onClick={e => e.stopPropagation()}>
                         <Button
                           variant="ghost"
@@ -251,18 +299,9 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                           <Trash2 size={13} />
                         </Button>
                       </div>
-                    ) : (
-                      <button
-                        style={MANAGE_ROW.moreStyle}
-                        onClick={e => {
-                          e.stopPropagation()
-                          setDetail(asset)
-                        }}
-                      >
-                        <ChevronRight size={18} />
-                      </button>
                     )}
                   </div>
+                  </SwipeActions>
                 )
               })}
               {filtered.length === 0 && (
@@ -338,16 +377,14 @@ function AccountManagerSkeleton({ mobile }: { mobile: boolean }) {
             <SkeletonBase className="h-4 w-32 mb-1.5" />
             <SkeletonBase className="h-3 w-20" />
           </div>
-          <div style={{ textAlign: 'right', marginRight: mobile ? 8 : 12 }}>
+          <div style={{ textAlign: 'right', marginRight: mobile ? 0 : 12 }}>
             <SkeletonBase className="h-4 w-24 ml-auto" />
           </div>
-          {!mobile ? (
+          {!mobile && (
             <div className="flex gap-1">
               <SkeletonBase className="h-7 w-14 rounded-md" />
               <SkeletonBase className="h-7 w-7 rounded-md" />
             </div>
-          ) : (
-            <SkeletonBase className="h-5 w-5 rounded-md" />
           )}
         </div>
       ))}
