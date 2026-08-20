@@ -1703,7 +1703,7 @@ settings,hideAmounts.tabAll,전체,All
 settings,hideAmounts.selectAll,모두 선택,Select all
 settings,hideAmounts.clearAll,모두 해제,Clear all
 settings,hideAmounts.saved,저장했어요,Saved
-settings,hideAmounts.discardTitle,저장하지 않고 나갈까요?,Leave without saving?
+settings,hideAmounts.discardTitle,저장하지 않고 나가기,Leave without saving
 settings,hideAmounts.discardBody,고른 내용이 사라져요.,Your selection will be discarded.
 settings,hideAmounts.discardConfirm,나가기,Leave
 settings,hideAmounts.kindLabel,거래 종류,Transaction type
@@ -1826,7 +1826,7 @@ settings,account.logout.label,로그아웃,Log Out
 settings,account.logout.desc,이 기기에서만,This device only
 settings,account.withdraw.label,회원 탈퇴,Delete Account
 settings,account.withdraw.desc,영구 삭제,Permanent deletion
-settings,account.withdrawConfirm.title,정말 탈퇴하시겠습니까?,Delete your account?
+settings,account.withdrawConfirm.title,회원 탈퇴,Delete account
 settings,account.withdrawConfirm.desc,회원 탈퇴 시 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.,Deleting your account permanently erases all your data. This action cannot be undone.
 settings,account.withdrawConfirm.confirm,탈퇴하기,Delete Account
 settings,account.comingSoon,다음 단계에서 구현,Coming in a future update
@@ -2201,7 +2201,7 @@ subscription,toast.subscribed,Porest Pro 구독이 시작되었어요,Porest Pro
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled
 subscription,toast.cancelFailed,해지에 실패했어요,Cancellation failed
-subscription,cancelConfirmTitle,구독을 해지할까요?,Cancel your subscription?
+subscription,cancelConfirmTitle,구독 해지,Cancel subscription
 subscription,cancelConfirmDesc,해지하면 {{date}}부터 Free 플랜으로 전환되고 증권 탭이 잠겨요. 그 전까지는 Pro 기능을 계속 쓸 수 있어요.,After canceling you switch to the Free plan on {{date}} and the Securities tab locks. You keep Pro features until then.
 subscription,expiryDate,만료일,expiry date
 subscription,keepSub,유지하기,Keep
@@ -2385,8 +2385,8 @@ todo,tags.new,새 태그,New tag
 todo,tags.usage,{{count}}건에 사용 중,Used by {{count}} todos
 todo,tags.empty,태그가 없어요,No tags yet
 todo,tags.emptyHint,{{label}} 버튼으로 첫 태그를 만들어보세요.,Create your first tag with {{label}}.
-todo,tags.deleteTitle,'{{name}}' 태그를 삭제할까요?,Delete tag '{{name}}'?
-todo,tags.deleteMessage,이 태그를 쓰는 할 일 {{count}}건은 태그 없음으로 남아요.,{{count}} todos using it will be left untagged.
+todo,tags.deleteTitle,태그 삭제,Delete tag
+todo,tags.deleteMessage,'{{name}}' 태그를 삭제하면 이 태그를 쓰는 할 일 {{count}}건은 태그 없음으로 남아요.,Deleting '{{name}}' will leave {{count}} todos using it untagged.
 todo,tags.name,이름,Name
 todo,tags.namePlaceholder,예: 운동,e.g. Workout
 todo,tags.color,색상,Color
