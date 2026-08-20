@@ -469,9 +469,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
                 icon: <Trash2 />,
                 kind: 'destructive',
                 confirm: {
-                  title: t('deleteConfirm.title'),
                   message: t('deleteConfirm.message'),
-                  confirmLabel: t('deleteConfirm.confirm'),
                   cancelLabel: t('deleteConfirm.cancel'),
                   loading: deleteMemo.isPending,
                 },
