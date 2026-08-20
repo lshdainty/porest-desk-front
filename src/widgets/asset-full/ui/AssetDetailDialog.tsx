@@ -736,7 +736,7 @@ function HoldingRow({
       ? `${manualQty} · ${t('holdings.manualSub')}`
       : t('holdings.manualSub')
 
-  // 행 자체는 누르는 자리가 아니다. 종목을 고치는 건 하단 [편집] 로만 들어간다 —
+  // 행 자체는 누르는 자리가 아니다. 종목을 고치는 건 하단 [수정] 로만 들어간다 —
   // 매수·매도 버튼 옆에서 행을 누르면 편집이 열려, 어디를 눌렀는지에 따라 다른 일이
   // 벌어졌다. 앱도 버튼 둘만 두고 편집은 하단에서 받는다(사용자 결정).
   return (
@@ -1091,9 +1091,9 @@ export function AssetDetailDialog({
     navigate(`/desk/expense?assetId=${asset.rowId}`)
   }
 
-  // 모바일은 [삭제][편집](spec drawer.md: 상세 = 삭제·편집). 금액 가리기는 카드
+  // 모바일은 [삭제][수정](spec drawer.md: 상세 = 삭제·수정). 금액 가리기는 카드
   // 우상단 눈 버튼과 계정 > 보안에도 있어 여기서 뺀다. 데스크탑·태블릿은 목록 행에
-  // 삭제 아이콘이 따로 있어 [금액 가리기][편집] 그대로 둔다.
+  // 삭제 아이콘이 따로 있어 [금액 가리기][수정] 그대로 둔다.
   const Footer = (
     <ModalViewFooter
       leftSlot={
@@ -1219,7 +1219,7 @@ export function AssetDetailDialog({
       </div>
 
       {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
-      {/* 종목 편집은 하단 [편집] 로만 — 목록 행은 매수·매도 버튼만 받는다. */}
+      {/* 종목 수정은 하단 [수정] 로만 — 목록 행은 매수·매도 버튼만 받는다. */}
       {isInv && <HoldingsSection asset={asset} mobile={mobile} />}
 
       {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}

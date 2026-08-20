@@ -92,8 +92,7 @@ export function TransferDetailDialog({
             onDelete={locked ? undefined : () => setConfirmDelete(true)}
             deleteLabel={tc('delete')}
             onEdit={locked || !onEdit ? undefined : () => onEdit(transfer)}
-            editLabel={tc('edit')}
-          />
+                />
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
