@@ -501,11 +501,11 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           title={t('deleteConfirm.title')}
           message={
             (expense.refundCount ?? 0) > 0
-              ? `${t('txDetail.deleteMessage', { name: `"${displayMerchant}"` })}\n\n${t('addTx.deleteRefundWarn', {
+              ? `${t('txDetail.deleteMessage', { name: displayMerchant })}\n\n${t('addTx.deleteRefundWarn', {
                   count: expense.refundCount,
                   amount: KRW(expense.refundedAmount),
                 })}`
-              : t('txDetail.deleteMessage', { name: `"${displayMerchant}"` })
+              : t('txDetail.deleteMessage', { name: displayMerchant })
           }
           confirmLabel={tc('delete')}
           danger

@@ -1138,7 +1138,7 @@ function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: 
       {confirmDelete && group && (
         <ConfirmDialog
           title={t('watch.groupDelete')}
-          message={t('watch.groupDeleteConfirm')}
+          message={t('watch.groupDeleteConfirm', { name: group.groupName })}
           confirmLabel={t('watch.groupDelete')}
           danger
           loading={deleteMut.isPending}

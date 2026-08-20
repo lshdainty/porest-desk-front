@@ -107,6 +107,17 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
     })
   }
 
+  /**
+   * 삭제 확인창 제목 — 자산 종류를 따른다. 상세와 스와이프가 **같은 함수**를 부른다:
+   * spec `alert-dialog` 의 "같은 동작이면 어디서 불렀든 제목·설명이 같다".
+   */
+  const deleteTitleOf = (asset: Asset): string =>
+    groupOfAsset(asset) === 'account'
+      ? t('deleteConfirm.titleAccount')
+      : groupOfAsset(asset) === 'card'
+      ? t('deleteConfirm.titleCard')
+      : t('deleteConfirm.titleInvest')
+
   /** 스와이프 트레이의 액션 — 의미 순서 `[수정, 삭제]` 로 넘긴다(뒤집는 건 컴포넌트가 한다). */
   const swipeActionsFor = (asset: Asset): SwipeAction[] => [
     {
@@ -124,11 +135,11 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       label: tc('delete'),
       icon: <Trash2 />,
       kind: 'destructive',
-      // 본문은 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
-      // 어느 경로로 들어왔는지에 따라 다른 말이 나온다. 제목은 스와이프 공통 "삭제" 라
-      // 여기서 정하지 않는다(무엇을 지우는지는 본문이 이름으로 말한다).
+      // 제목도 본문도 아래 ConfirmDialog 와 같다 — 같은 삭제인데 문구가 갈리면
+      // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
       confirm: {
-        message: t('deleteConfirm.messageDetail', { name: `"${asset.assetName}"` }),
+        title: deleteTitleOf(asset),
+        message: t('deleteConfirm.messageDetail', { name: asset.assetName }),
         loading: deleteAsset.isPending,
       },
       onSelect: () => deleteAsset.mutateAsync(asset.rowId),
@@ -341,14 +352,8 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
       {confirmDelete && (
         <ConfirmDialog
-          title={
-            groupOfAsset(confirmDelete) === 'account'
-              ? t('deleteConfirm.titleAccount')
-              : groupOfAsset(confirmDelete) === 'card'
-              ? t('deleteConfirm.titleCard')
-              : t('deleteConfirm.titleInvest')
-          }
-          message={t('deleteConfirm.messageDetail', { name: `"${confirmDelete.assetName}"` })}
+          title={deleteTitleOf(confirmDelete)}
+          message={t('deleteConfirm.messageDetail', { name: confirmDelete.assetName })}
           confirmLabel={t('deleteConfirm.confirm')}
           danger
           loading={deleteAsset.isPending}

@@ -149,7 +149,7 @@ todo,form.category,카테고리,Category
 todo,form.categoryPlaceholder,카테고리를 입력하세요,Enter category
 todo,form.dueDate,마감일,Due Date
 todo,deleteConfirm.title,할 일 삭제,Delete todo
-todo,deleteConfirm.message,"이 할일을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this todo? This action cannot be undone."
+todo,deleteConfirm.message,"""{{name}}"" 할 일을 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" todo? This action cannot be undone."
 todo,deleteConfirm.cancel,취소,Cancel
 todo,deleteConfirm.confirm,삭제,Delete
 todo,project,프로젝트,Project
@@ -244,7 +244,7 @@ calendar,form.allDay,종일,All Day
 calendar,form.startDate,시작일,Start Date
 calendar,form.endDate,종료일,End Date
 calendar,deleteConfirm.title,일정 삭제,Delete event
-calendar,deleteConfirm.message,"이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this event? This action cannot be undone."
+calendar,deleteConfirm.message,"""{{name}}"" 일정을 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" event? This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
 calendar,deleteConfirm.confirm,삭제,Delete
 calendar,label,라벨,Label
@@ -296,7 +296,7 @@ memo,folder.delete,폴더 삭제,Delete Folder
 memo,folder.name,폴더 이름,Folder Name
 memo,folder.namePlaceholder,폴더 이름을 입력하세요,Enter folder name
 memo,deleteConfirm.title,메모 삭제,Delete memo
-memo,deleteConfirm.message,"이 메모를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this memo? This action cannot be undone."
+memo,deleteConfirm.message,"""{{name}}"" 메모를 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" memo? This action cannot be undone."
 memo,deleteConfirm.cancel,취소,Cancel
 memo,deleteConfirm.confirm,삭제,Delete
 memo,detailTitle,메모 상세,Memo details
@@ -499,7 +499,7 @@ asset,form.colorN,색상 {{n}},Color {{n}}
 asset,form.includeInTotal,전체 자산 합계에 포함,Include in total assets
 asset,form.includeInTotalDesc,순자산·총자산 계산에 반영됩니다,Reflected in net worth and total asset calculations
 asset,deleteConfirm.title,자산 삭제,Delete asset
-asset,deleteConfirm.message,"이 자산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this asset? This action cannot be undone."
+asset,deleteConfirm.message,"""{{name}}""을(를) 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete ""{{name}}""? This action cannot be undone."
 asset,deleteConfirm.cancel,취소,Cancel
 asset,deleteConfirm.confirm,삭제,Delete
 asset,group.account,계좌,Account
@@ -517,7 +517,7 @@ asset,excludedFromTotal,총액 제외,Excluded from total
 asset,deleteConfirm.titleAccount,계좌 삭제,Delete account
 asset,deleteConfirm.titleCard,카드 삭제,Delete card
 asset,deleteConfirm.titleInvest,투자 삭제,Delete investment
-asset,deleteConfirm.messageDetail,{{name}}을(를) 목록에서 제거합니다. 연결된 거래 내역은 유지됩니다.,{{name}} will be removed from the list. Linked transactions are kept.
+asset,deleteConfirm.messageDetail,"""{{name}}""을(를) 목록에서 제거합니다. 연결된 거래 내역은 유지됩니다.","""{{name}}"" will be removed from the list. Linked transactions are kept."
 asset,editDialog.titleAdd,{{group}} 추가,Add {{group}}
 asset,editDialog.titleEdit,{{group}} 수정,Edit {{group}}
 asset,editDialog.newCard,새 카드,New Card
@@ -623,7 +623,7 @@ asset,savingGoal.titleEdit,저축 목표 수정,Edit saving goal
 asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
 asset,savingGoal.colorSwatch,색상 {{n}},Color {{n}}
 asset,savingGoal.deleteTitle,저축 목표 삭제,Delete saving goal
-asset,savingGoal.deleteConfirm,'{{title}}' 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.,Delete the '{{title}}' goal? This can't be undone.
+asset,savingGoal.deleteConfirm,"""{{title}}"" 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.","Delete the ""{{title}}"" goal? This can't be undone."
 asset,savingGoal.overallProgress,전체 진행률,Overall progress
 asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
 asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
@@ -812,7 +812,7 @@ dutchPay,form.participants,참가자,Participants
 dutchPay,form.participantName,이름,Name
 dutchPay,form.addParticipant,참가자 추가,Add Participant
 dutchPay,deleteConfirm.title,더치페이 삭제,Delete Dutch Pay
-dutchPay,deleteConfirm.message,"이 더치페이를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this? This action cannot be undone."
+dutchPay,deleteConfirm.message,"""{{name}}"" 더치페이를 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" Dutch Pay? This action cannot be undone."
 notification,title,알림,Notifications
 notification,empty,알림이 없습니다,No notifications
 notification,markAllRead,모두 읽음,Mark all read
@@ -868,7 +868,7 @@ login,sso.redirecting,로그인 페이지로 이동 중...,Redirecting to login.
 login,authenticating,인증 중…,Authenticating…
 expense,budget.save,저장,Save
 expense,budget.deleteConfirm.title,예산 삭제,Delete Budget
-expense,budget.deleteConfirm.message,"이 예산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this budget? This action cannot be undone."
+expense,budget.deleteConfirm.message,이 예산을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.,Are you sure you want to delete this budget? This action cannot be undone.
 expense,form.icon,아이콘,Icon
 expense,form.iconPlaceholder,예: 이모지,e.g. emoji
 expense,form.color,색상,Color
@@ -1081,7 +1081,7 @@ calendar,shareSection.emptyShared,공유받은 캘린더가 없어요,No calenda
 calendar,shareSection.joinDesc,공유받은 초대 코드를 입력해 캘린더에 참여하세요.,Enter an invite code to join a calendar.
 calendar,shareSection.onlyMe,나만 사용,Only me
 calendar,shareSection.memberCount,멤버 {{count}}명,{{count}} members
-calendar,shareSection.deleteMessage,"{{name}} 캘린더를 삭제하시겠어요? 이 캘린더의 일정은 기본 캘린더로 이동하고, 모든 멤버의 접근 권한이 사라집니다.","Delete the {{name}} calendar? Its events move to your default calendar and all members lose access."
+calendar,shareSection.deleteMessage,"""{{name}}"" 캘린더를 삭제할까요? 일정은 기본 캘린더로 이동하고 모든 멤버의 접근 권한이 사라집니다.","Delete the ""{{name}}"" calendar? Events move to the default calendar and all members lose access."
 calendar,shareSection.permanentDelete,영구 삭제,Permanently Delete
 calendar,shareSection.manageSuffix,관리,Manage
 calendar,shareSection.namePlaceholder,캘린더 이름,Calendar name
@@ -1113,7 +1113,7 @@ calendar,labelsSection.infoDesc,일정에 라벨을 붙여 한눈에 분류할 �
 calendar,labelsSection.allLabels,전체 라벨,All Labels
 calendar,labelsSection.emptyHint,{{label}} 버튼으로 만들어보세요,Use the {{label}} button to create one
 calendar,labelsSection.deleteTitle,라벨 삭제,Delete label
-calendar,labelsSection.deleteMessage,{{name}} 라벨을 삭제하시겠어요? 이 라벨이 지정된 일정은 라벨 없음 상태가 됩니다.,Delete the {{name}} label? Events with this label will become unlabeled.
+calendar,labelsSection.deleteMessage,"""{{name}}"" 라벨을 삭제할까요? 이 라벨이 지정된 일정은 라벨 없음 상태가 됩니다.","Delete the ""{{name}}"" label? Events with this label will become unlabeled."
 calendar,labelsSection.namePlaceholder,"예: 중요, 마감일, 회의","e.g. Important, Deadline, Meeting"
 calendar,labelsSection.nameRequired,라벨 이름을 입력해주세요.,Please enter a label name.
 calendar,labelsSection.nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
@@ -1239,7 +1239,7 @@ budget,manager.emptyCategory,설정된 카테고리 예산이 없어요,No categ
 budget,manager.categoryFallback,카테고리 #{{id}},Category #{{id}}
 budget,manager.overLimit,한도 초과,Over limit by
 budget,manager.remaining,남은 예산,Remaining
-budget,deleteMessage,{{name}} 카테고리 예산을 삭제하시겠어요?,Delete the budget for {{name}} category?
+budget,deleteMessage,"""{{name}}"" 카테고리 예산을 삭제할까요?","Delete the budget for the ""{{name}}"" category?"
 budget,thisFallback,이,this
 budget,copyTitle,지난달 예산 복사,Copy last month's budget
 budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도({{count}}개)를 {{year}}년 {{month}}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.,Copy {{count}} budget limits from {{prevYear}}-{{prevMonth}} to {{year}}-{{month}}. Existing budgets this month will be overwritten.
@@ -1352,11 +1352,11 @@ category,noSearchResults,검색 결과가 없습니다.,No results found.
 category,parentFallback,상위 카테고리,Parent category
 category,deleteTitle,카테고리 삭제,Delete category
 category,deleteBlockedTitle,삭제 불가,Cannot delete
-category,deleteHasChildren,{{name}} 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.,The {{name}} category has subcategories and cannot be deleted. Please clear its subcategories first.
-category,deleteWithBudget,예산이 설정되어 있는 카테고리입니다. 삭제 시 예산도 함께 삭제됩니다. {{name}} 카테고리를 삭제하시겠습니까?,This category has a budget set. Deleting it will also delete the budget. Delete the {{name}} category?
-category,deleteConfirm,{{name}} 카테고리를 삭제하시겠어요?,Delete the {{name}} category?
+category,deleteHasChildren,"""{{name}}"" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.","The ""{{name}}"" category has subcategories and cannot be deleted. Clear them first."
+category,deleteWithBudget,"예산이 설정되어 있는 카테고리입니다. 삭제하면 예산도 함께 삭제됩니다. ""{{name}}"" 카테고리를 삭제할까요?","This category has a budget set. Deleting it will also delete the budget. Delete the ""{{name}}"" category?"
+category,deleteConfirm,"""{{name}}"" 카테고리를 삭제할까요?","Delete the ""{{name}}"" category?"
 category,overBudgetTitle,예산 초과 확인,Budget exceeded
-category,overBudgetMessage,이동하면 {{parent}} 예산을 {{amount}}원 초과합니다. 그래도 이동할까요?,Moving it will exceed the {{parent}} budget by {{amount}}원. Move anyway?
+category,overBudgetMessage,"이동하면 ""{{parent}}"" 예산을 {{amount}}원 초과합니다. 그래도 이동할까요?","Moving it will exceed the ""{{parent}}"" budget by {{amount}}원. Move anyway?"
 category,move,이동,Move
 category,dragReorder,드래그로 순서 변경,Drag to reorder
 category,expand,펼치기,Expand
@@ -1559,7 +1559,7 @@ expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}
 expense,txDetail.thisMonth,이번 달,This month
 expense,txDetail.countTimes,{{count}}회,{{count}} times
-expense,txDetail.deleteMessage,{{name}} 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the {{name}} transaction? The linked asset balance will be adjusted too.
+expense,txDetail.deleteMessage,"""{{name}}"" 거래를 삭제할까요? 연결된 자산 잔액이 함께 조정됩니다.","Delete the ""{{name}}"" transaction? The linked asset balance will be adjusted too."
 expense,splitTx.extraAmount,추가 금액,Extra amount
 expense,splitTx.strategy.prop.title,비례 배분,Proportional
 expense,splitTx.strategy.prop.desc,비중대로 자동 조정,Auto-adjust by weight
@@ -1632,7 +1632,7 @@ expense,preset.amountEmpty,금액 비움,Amount empty
 expense,preset.noCategory,카테고리 없음,No category
 expense,preset.usedTimes,{{count}}회 사용,Used {{count}} times
 expense,preset.deleteTitle,프리셋 삭제,Delete preset
-expense,preset.deleteConfirmMessage,“<strong>{{name}}</strong>” 프리셋을 삭제할까요? 이미 저장된 거래 내역에는 영향이 없습니다.,Delete the “<strong>{{name}}</strong>” preset? Already-saved transactions are unaffected.
+expense,preset.deleteConfirmMessage,"""{{name}}"" 프리셋을 삭제할까요? 이미 저장된 거래 내역에는 영향이 없습니다.","Delete the ""{{name}}"" preset? Already-saved transactions are unaffected."
 expense,preset.edit,프리셋 수정,Edit preset
 expense,preset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
 expense,preset.defaultMerchant,기본 내역,Default details
@@ -1969,7 +1969,7 @@ stocks,watch.groupAdd,그룹 추가,Add group
 stocks,watch.groupRename,그룹 이름 변경,Rename group
 stocks,watch.groupDelete,그룹 삭제,Delete group
 stocks,watch.groupNamePlaceholder,그룹 이름,Group name
-stocks,watch.groupDeleteConfirm,그룹과 담긴 종목이 함께 삭제됩니다. 계속할까요?,The group and its stocks will be removed. Continue?
+stocks,watch.groupDeleteConfirm,"""{{name}}"" 그룹과 담긴 종목이 함께 삭제됩니다. 계속할까요?","The ""{{name}}"" group and its stocks will be removed. Continue?"
 stocks,watch.groupSaveFail,관심목록 그룹 저장에 실패했어요,Failed to save watchlist group
 stocks,watch.addFail,관심 등록에 실패했어요,Failed to add to watchlist
 stocks,warning.LIQUIDATION_TRADING,정리매매,Liquidation trading
@@ -2170,7 +2170,7 @@ recurring,listTitle,전체 목록,All
 recurring,empty,해당하는 반복 거래가 없어요,No matching recurring transactions
 recurring,nextDate,다음 {{date}},Next {{date}}
 recurring,deleteTitle,반복 거래 삭제,Delete recurring transaction
-recurring,deleteConfirmMessage,“{{name}}” 반복 설정을 삭제할까요? 이미 기록된 거래는 그대로 남아요.,Delete the “{{name}}” recurring setting? Already-recorded transactions remain.
+recurring,deleteConfirmMessage,"""{{name}}"" 반복 설정을 삭제할까요? 이미 기록된 거래는 그대로 남아요.","Delete the ""{{name}}"" recurring setting? Already-recorded transactions remain."
 recurring,toastPaused,{{name}} 일시정지,{{name}} paused
 recurring,toastResumed,{{name}} 재개됨,{{name}} resumed
 recurring,toastDeleted,{{name}} 삭제됨,{{name}} deleted
@@ -2396,7 +2396,7 @@ todo,tags.usage,{{count}}건에 사용 중,Used by {{count}} todos
 todo,tags.empty,태그가 없어요,No tags yet
 todo,tags.emptyHint,{{label}} 버튼으로 첫 태그를 만들어보세요.,Create your first tag with {{label}}.
 todo,tags.deleteTitle,태그 삭제,Delete tag
-todo,tags.deleteMessage,'{{name}}' 태그를 삭제하면 이 태그를 쓰는 할 일 {{count}}건은 태그 없음으로 남아요.,Deleting '{{name}}' will leave {{count}} todos using it untagged.
+todo,tags.deleteMessage,"""{{name}}"" 태그를 삭제하면 이 태그를 쓰는 할 일 {{count}}건은 태그 없음으로 남아요.","Deleting ""{{name}}"" will leave {{count}} todos using it untagged."
 todo,tags.name,이름,Name
 todo,tags.namePlaceholder,예: 운동,e.g. Workout
 todo,tags.color,색상,Color

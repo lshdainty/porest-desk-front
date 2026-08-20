@@ -57,7 +57,14 @@ function parseCSVLine(line) {
     const char = line[i]
 
     if (char === '"') {
-      inQuotes = !inQuotes
+      // RFC4180 — 따옴표 안의 "" 는 리터럴 " 한 개다. 이 분기가 없으면 값에 들어간
+      // 큰따옴표가 통째로 사라진다(대상 이름을 감싸는 `"급여통장"` 이 그 경우다).
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
     } else if (char === ',' && !inQuotes) {
       result.push(current)
       current = ''

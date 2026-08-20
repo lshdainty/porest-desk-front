@@ -160,6 +160,12 @@ const swipeActionVariants = cva(
  */
 export interface SwipeConfirm {
   /**
+   * 확인창 제목. **같은 항목을 상세에서 지울 때와 같은 문자열을 넘긴다** —
+   * spec `alert-dialog` 의 "같은 동작이면 어디서 불렀든 제목·설명이 같다".
+   * 컴포넌트가 감싼 행이 무엇인지 모르므로 그 행을 아는 호출부가 정한다.
+   */
+  title: string
+  /**
    * ConfirmDialog 는 `white-space` 지정 없는 `<p>` 에 넣는다 — `\n\n` 는 공백 하나로
    * 접히므로 줄을 나누려면 `<br />` 를 쓴다.
    */
@@ -442,8 +448,9 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
             트레이가 접혀도 살아남는다. */}
         {pending?.confirm && (
           <ConfirmDialog
-            // 제목·확인 버튼은 액션 라벨 그대로 — 앱 PSwipeActions 와 같은 규칙이다.
-            title={pending.label}
+            // 제목은 호출부가 넘긴다 — 상세 경로와 같은 문구여야 한다(spec alert-dialog).
+            // 확인 버튼만 액션 라벨 그대로 — 방금 누른 버튼의 연장이라 경로와 무관하다.
+            title={pending.confirm.title}
             message={pending.confirm.message}
             confirmLabel={pending.label}
             cancelLabel={pending.confirm.cancelLabel}

@@ -250,7 +250,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
       {confirmDelete && (
         <ConfirmDialog
           title={t('labelsSection.deleteTitle')}
-          message={t('labelsSection.deleteMessage', { name: `"${confirmDelete.labelName}"` })}
+          message={t('labelsSection.deleteMessage', { name: confirmDelete.labelName })}
           confirmLabel={t('delete')}
           danger
           loading={deleteMut.isPending}

@@ -600,13 +600,12 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         <ConfirmDialog
           title={t('deleteTitle')}
           message={t('deleteMessage', {
-            name: `"${
+            name:
               (confirmDelete.categoryRowId != null
                 ? categoryMap.get(confirmDelete.categoryRowId)?.categoryName
                 : null) ??
               confirmDelete.categoryName ??
-              t('thisFallback')
-            }"`,
+              t('thisFallback'),
           })}
           confirmLabel={tCommon('delete')}
           danger
