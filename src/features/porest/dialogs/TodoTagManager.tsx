@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Plus, Tag, Tags, Trash2 } from 'lucide-react'
+import { ChevronRight, Pencil, Plus, Tag, Tags, Trash2 } from 'lucide-react'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
@@ -145,9 +146,28 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
               list.map((tag, i) => {
                 const palette = getPaletteByColor(tag.color)
                 const count = tag.usageCount ?? 0 // 서버 GROUP BY 집계(미배포 시 0)
+                // 밀면 수정·삭제. 모바일은 행의 🗑·> 를 걷었으므로 탭(편집)이
+                // 비제스처 경로다(spec swipe-actions.md · WCAG 2.1.1).
+                const swipeActions: SwipeAction[] = [
+                  { label: tc('edit'), icon: <Pencil />, kind: 'primary', onSelect: () => setEditing(tag) },
+                  {
+                    label: tc('delete'),
+                    icon: <Trash2 />,
+                    kind: 'destructive',
+                    confirm: { title: t('tags.deleteTitle'), message: t('tags.deleteMessage', { name: tag.tagName }) },
+                    onSelect: () => setConfirmDelete(tag),
+                  },
+                ]
                 return (
-                  <div
+                  <SwipeActions
                     key={tag.rowId}
+                    rowId={`todo-tag-${tag.rowId}`}
+                    groupTag="todo-tag-list"
+                    rowLabel={tag.tagName}
+                    enabled={mobile}
+                    actions={swipeActions}
+                  >
+                  <div
                     onClick={() => setEditing(tag)}
                     className="hover:bg-[var(--bg-muted)]"
                     style={{
@@ -193,23 +213,28 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                         {t('tags.usage', { count })}
                       </div>
                     </div>
-                    {/* 삭제+편집 진입 표시 — 한 묶음(행 gap 미적용, 앱 정합) */}
-                    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="!text-[var(--fg-expense)]"
-                        aria-label={tc('delete')}
-                        onClick={e => {
-                          e.stopPropagation()
-                          setConfirmDelete(tag)
-                        }}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                      <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)' }} />
-                    </div>
+                    {/* 모바일은 🗑·> 를 두지 않는다 — 밀면 수정·삭제, 탭하면 편집이라
+                        화살표가 있으면 '들어가서 보는 상세'가 따로 있는 것처럼 읽힌다
+                        (사용자 결정). 데스크톱은 그대로. */}
+                    {!mobile && (
+                      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="!text-[var(--fg-expense)]"
+                          aria-label={tc('delete')}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setConfirmDelete(tag)
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                        <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)' }} />
+                      </div>
+                    )}
                   </div>
+                  </SwipeActions>
                 )
               })
             )}

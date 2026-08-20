@@ -381,8 +381,15 @@ function CalendarRow({ cal, first, onManage, mobile }: { cal: UserCalendar; firs
           {t(`role.${cal.myRole}`)}
         </Badge>
       )}
-      {/* '관리' 버튼 제거 — 앱처럼 행 전체 탭(onClick)으로 진입, chevron 만 표시. */}
-      <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+      {/* 모바일은 chevron 을 두지 않는다 — 행 전체 탭으로 관리 화면에 들어간다
+          (사용자 결정, 다른 설정 목록과 같은 규칙). 데스크톱은 그대로.
+
+          이 행은 스와이프를 붙이지 않는다. 시스템 기본 캘린더라 삭제가 없고,
+          탭이 편집이 아니라 관리 화면(멤버·공유) 진입이라 '수정·삭제' 두 액션이
+          성립하지 않는다. */}
+      {!mobile && (
+        <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+      )}
     </div>
   )
 }
