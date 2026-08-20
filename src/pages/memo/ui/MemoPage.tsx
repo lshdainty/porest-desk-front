@@ -87,6 +87,15 @@ function resolveTone(color: string | null | undefined): ResolvedTone {
 }
 
 /** modifyAt('YYYY-MM-DD HH:MM[:SS]' 또는 ISO) → 'MM/DD · HH:MM'. */
+/**
+ * 메모가 리스트·상세·삭제 확인창에서 불릴 이름.
+ *
+ * 편집기가 빈 제목을 막지만(`save()` 의 `title.trim()` 검사) 서버에 이미 빈 것이
+ * 있으면 화면이 빈칸으로 뜬다 — 삭제 확인창에서는 `"" 메모를 삭제할까요?` 가 된다.
+ * 그때 뭐라고 부를지를 한 군데서 정한다. 앱 `memo_screen.dart` 의 `hasTitle` 과 같은 규칙.
+ */
+const memoLabel = (title: string, t: (k: string) => string) => title || t('untitled')
+
 function formatStamp(iso: string): string {
   if (!iso) return ''
   // slice(5,16): 'MM-DD HH:MM' → '/' · ' '→' · '
@@ -352,7 +361,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             textOverflow: 'ellipsis',
           }}
         >
-          {m.title}
+          {memoLabel(m.title, t)}
         </div>
         {m.content && (
           <div
@@ -406,7 +415,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           }}
         />
         <LedgerRowMain as="button">
-          <LedgerRowTitle>{m.title}</LedgerRowTitle>
+          <LedgerRowTitle>{memoLabel(m.title, t)}</LedgerRowTitle>
           <LedgerRowSub>
             <span>{tag}</span>
             {m.content && (
@@ -446,7 +455,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           <SwipeActions
             rowId={`memo-${m.rowId}`}
             groupTag="memo-list"
-            rowLabel={m.title}
+            rowLabel={memoLabel(m.title, t)}
             // 메모는 모바일·데스크톱이 같은 Body 를 쓰는 유일한 화면이다.
             // 렌더 경로는 list/grid 로 갈라 뒀지만 여기서 한 번 더 못박는다.
             enabled={mobile}
@@ -470,7 +479,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
                 kind: 'destructive',
                 confirm: {
                   title: t('deleteConfirm.title'),
-                  message: t('deleteConfirm.message', { name: m.title }),
+                  message: t('deleteConfirm.message', { name: memoLabel(m.title, t) }),
                   cancelLabel: t('deleteConfirm.cancel'),
                   loading: deleteMemo.isPending,
                 },
@@ -731,7 +740,7 @@ function MemoDetailDialog({
               overflowWrap: 'anywhere',
             }}
           >
-            {memo.title}
+            {memoLabel(memo.title, t)}
           </div>
           <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 8 }}>
             {formatStamp(memo.modifyAt)}
@@ -759,7 +768,7 @@ function MemoDetailDialog({
       {confirmDelete && (
         <ConfirmDialog
           title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message', { name: memo.title })}
+          message={t('deleteConfirm.message', { name: memoLabel(memo.title, t) })}
           confirmLabel={tc('delete')}
           danger
           loading={deleting}
