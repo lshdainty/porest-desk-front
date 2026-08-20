@@ -404,7 +404,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
               >
                 <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-                  {t('txDetail.sumLabel')} {money(Math.abs(expense.amount))}
+                  {t('txDetail.sumLabel')}{' '}
+                  <MaskAmount card="ledger.txDetail">{money(Math.abs(expense.amount))}</MaskAmount>
                 </span>
                 <span style={{ color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
                   {splitExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -440,7 +441,9 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
                       </div>
                       {/* 행 금액 중립색 — 가계부 리스트 정합(사용자 결정) */}
                       <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                        {isIncome ? '+' : '−'}{money(s.amount)}
+                        <MaskAmount card="ledger.txDetail">
+                          {isIncome ? '+' : '−'}{money(s.amount)}
+                        </MaskAmount>
                       </div>
                     </div>
                   )
