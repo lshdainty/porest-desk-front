@@ -6,6 +6,7 @@ import { formatOriginalAmount } from '@/shared/lib/porest/currency'
 import { DateGroupHeader } from '@/shared/ui/date-group-header'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
+import { kindOfExpense } from '@/shared/lib/porest/hide-amounts-cards'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import {
@@ -92,6 +93,8 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
   )
 
   const isIncome = expense.expenseType === 'INCOME'
+  // 종류는 부호가 아니라 타입으로 — 환불이 음수 지출이라 부호로 가르면 수입으로 샌다.
+  const txKind = kindOfExpense(expense.expenseType)
 
   // 같은 가맹점의 같은 달 거래 (상세 제외)
   const merchantKey = expense.merchant?.trim() ?? ''
@@ -211,7 +214,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           }
         >
           <span style={{ color: 'var(--fg-primary)' }}>
-            <MaskAmount card="ledger.txDetail">
+            <MaskAmount card="ledger.txDetail" kind={txKind}>
               {isIncome ? '+' : '−'}
               {wonPre()}
               {KRW(expense.amount, { abs: true })}
@@ -243,7 +246,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
           </DetailField>
           <DetailField label={t('form.amount')}>
             <span className="num" style={{ fontWeight: '700' }}>
-              <MaskAmount card="ledger.txDetail">
+              <MaskAmount card="ledger.txDetail" kind={txKind}>
                 {isIncome ? '+' : '−'}
                 {wonPre()}
                 {KRW(expense.amount, { abs: true })}
@@ -405,7 +408,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
               >
                 <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
                   {t('txDetail.sumLabel')}{' '}
-                  <MaskAmount card="ledger.txDetail">{money(Math.abs(expense.amount))}</MaskAmount>
+                  <MaskAmount card="ledger.txDetail" kind={txKind}>{money(Math.abs(expense.amount))}</MaskAmount>
                 </span>
                 <span style={{ color: 'var(--fg-tertiary)', display: 'inline-flex' }}>
                   {splitExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -441,7 +444,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
                       </div>
                       {/* 행 금액 중립색 — 가계부 리스트 정합(사용자 결정) */}
                       <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                        <MaskAmount card="ledger.txDetail">
+                        <MaskAmount card="ledger.txDetail" kind={txKind}>
                           {isIncome ? '+' : '−'}{money(s.amount)}
                         </MaskAmount>
                       </div>
@@ -467,7 +470,7 @@ export function TxDetailDialog({ expense, onClose, onEdit, onRefund, mobile }: P
                   label: t('txDetail.sumLabel'),
                   value: (
                     <>
-                      <MaskAmount card="ledger.txDetail">{isIncome ? '+' : '−'}{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
+                      <MaskAmount card="ledger.txDetail" kind={txKind}>{isIncome ? '+' : '−'}{wonPre()}{KRW(merchantMonthTotal)}</MaskAmount>
                       <WonUnit card="ledger.txDetail" />
                     </>
                   ),

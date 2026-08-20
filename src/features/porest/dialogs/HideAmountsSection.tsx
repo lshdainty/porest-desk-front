@@ -9,9 +9,10 @@ import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { HideAmountsUnlockDialog } from '@/features/porest/dialogs/HideAmountsUnlockDialog'
 import {
-  ALL_HIDE_CARDS,
   cardsOfPage,
+  HIDE_KIND_CARDS,
   HIDE_PAGES,
+  SCREEN_HIDE_CARDS,
   type HideCardKey,
   type HidePageKey,
 } from '@/shared/lib/porest/hide-amounts-cards'
@@ -52,8 +53,10 @@ export function HideAmountsSection({
   const [awaitingUnlock, setAwaitingUnlock] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
 
+  // 화면 탭은 화면 카드만 다룬다 — 종류 3장은 위 별도 영역이 맡는다.
+  const screenPages = useMemo(() => HIDE_PAGES.filter(p => p !== 'kind'), [])
   const tabCards = useMemo(
-    () => (tab === null ? ALL_HIDE_CARDS : cardsOfPage(tab)),
+    () => (tab === null ? SCREEN_HIDE_CARDS : cardsOfPage(tab)),
     [tab],
   )
   const allOnThisTab = tabCards.every(c => draft.has(c))
@@ -86,6 +89,10 @@ export function HideAmountsSection({
 
   const save = () => {
     // 푸는 게 하나라도 있으면 본인 확인 — 가리기만 늘리는 저장은 그냥 통과한다.
+    //
+    // 종류 카드가 화면 카드를 덮고 있을 때 화면 카드를 끄면 그 화면의 '다른 종류' 금액만
+    // 드러난다(지출을 가려 둔 채 거래 목록을 끄면 수입 행이 나온다). 드러나는 게 있으므로
+    // 인증은 그대로 받는다 — 카드를 끄는 건 어느 경우든 '푸는' 의도다.
     const revealing = [...saved].some(c => !draft.has(c))
     if (revealing) setAwaitingUnlock(true)
     else commit()
@@ -102,7 +109,7 @@ export function HideAmountsSection({
 
   // 탭 라벨에 개수를 붙인다 — tabs spec 에 badge 가 없어 별도 스타일을 만들지 않는다(앱 정합).
   const tabLabel = (page: HidePageKey | null) => {
-    const cards = page === null ? ALL_HIDE_CARDS : cardsOfPage(page)
+    const cards = page === null ? SCREEN_HIDE_CARDS : cardsOfPage(page)
     const on = cards.filter(c => draft.has(c)).length
     return on === 0 ? pageLabel(page) : `${pageLabel(page)} ${on}`
   }
@@ -123,7 +130,7 @@ export function HideAmountsSection({
           <TabsTrigger variant="pills" value="all">
             {tabLabel(null)}
           </TabsTrigger>
-          {HIDE_PAGES.map(page => (
+          {screenPages.map(page => (
             <TabsTrigger key={page} variant="pills" value={page}>
               {tabLabel(page)}
             </TabsTrigger>
@@ -146,16 +153,16 @@ export function HideAmountsSection({
   )
 
   // 카드 그리드 — 라벨이 길어 모바일 3열은 말줄임이 잦다(앱과 같은 2열).
-  const grid = (
+  const cardGrid = (cards: readonly HideCardKey[], columns: number) => (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${mobile ? 2 : 3}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: 'var(--spacing-sm)',
         gridAutoRows: 46,
       }}
     >
-      {tabCards.map(card => (
+      {cards.map(card => (
         <Chip
           key={card}
           shape="rounded"
@@ -166,6 +173,39 @@ export function HideAmountsSection({
           {t(`hideAmounts.card.${card}`)}
         </Chip>
       ))}
+    </div>
+  )
+
+  const grid = cardGrid(tabCards, mobile ? 2 : 3)
+
+  /**
+   * 거래 종류 — 화면 축과 다르므로 탭 줄에 끼우지 않고 맨 위 별도 영역으로 둔다.
+   * 탭에 넣으면 '화면' 목록에 화면이 아닌 게 섞이고, 어느 화면에서 왔든 늘 보여야 할
+   * 스위치가 탭 하나를 골라야 보이는 자리로 숨는다.
+   */
+  const kindSection = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+      <div
+        style={{
+          fontSize: 'var(--text-label-sm)',
+          fontWeight: 600,
+          color: 'var(--fg-secondary)',
+          letterSpacing: '-0.01em',
+        }}
+      >
+        {t('hideAmounts.kindLabel')}
+      </div>
+      {cardGrid(HIDE_KIND_CARDS, 3)}
+      <div
+        style={{
+          fontSize: 'var(--text-caption)',
+          color: 'var(--fg-tertiary)',
+          lineHeight: 1.55,
+        }}
+      >
+        {t('hideAmounts.kindNote')}
+      </div>
+      <div style={{ height: 1, background: 'var(--border-subtle)', marginTop: 'var(--spacing-xs)' }} />
     </div>
   )
 
@@ -219,6 +259,7 @@ export function HideAmountsSection({
           trailing={selectAllButton}
         />
         <div style={{ padding: '12px 20px 16px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)', flexShrink: 0 }}>
+          {kindSection}
           {tabs}
           {desc}
         </div>
@@ -255,6 +296,7 @@ export function HideAmountsSection({
           {t('sections.account.label')}
         </Button>
       </div>
+      {kindSection}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
         {tabs}
         <div style={{ marginLeft: 'auto', flexShrink: 0 }}>{selectAllButton}</div>

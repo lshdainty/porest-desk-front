@@ -97,7 +97,9 @@ const MonthDayCell = ({
   const { startSelection, updateSelection, endSelection, isDateInSelection } = useDragSelect()
   // 금액 숨김 — 셀 합계가 formatNumber 로 직접 렌더돼 마스킹이 누락되던 버그 fix.
   // masked 면 부호 없이 점(compact 4개)만 — 다른 화면 MaskAmount 정합.
-  const hideAmounts = useHideAmounts('ledger.calendar')
+  // 셀에 지출·수입이 각각 한 줄씩 나오므로 종류별로 따로 판정한다.
+  const hideExpense = useHideAmounts('ledger.calendar', 'expense')
+  const hideIncome = useHideAmounts('ledger.calendar', 'income')
 
   const { day, currentMonth, date } = cell
 
@@ -220,7 +222,7 @@ const MonthDayCell = ({
             {expenseSummary.expense !== 0 && (() => {
               // 환불이 더 많은 날은 순 −(음수) 라 부호가 뒤집힌다.
               const net = expenseSummary.expense
-              const text = hideAmounts
+              const text = hideExpense
                 ? '••••'
                 : `${net > 0 ? '−' : '+'}${formatNumber(Math.abs(net))}`
               // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
@@ -237,7 +239,7 @@ const MonthDayCell = ({
               )
             })()}
             {expenseSummary.income > 0 && (() => {
-              const text = hideAmounts ? '••••' : `+${formatNumber(expenseSummary.income)}`
+              const text = hideIncome ? '••••' : `+${formatNumber(expenseSummary.income)}`
               // 셀 폭 좁아 +3,500,000 (10) 9px 도 잘림 — 단계 한 칸씩 축소.
               const mobileFs =
                 text.length <= 6 ? 'text-[11px]' :

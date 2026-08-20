@@ -37,7 +37,7 @@ export function TransferDetailDialog({
 
   // 이체 상세는 지금까지 어떤 카드로도 가려지지 않았다 — 거래 상세와 같은 카드로 묶는다.
   // 금액만 가리고 수수료를 남기면 `이체금액 = 출금총액 − 수수료` 로 좁혀지므로 한 덩어리로 본다.
-  const hidden = useHideAmounts('ledger.txDetail')
+  const hidden = useHideAmounts('ledger.txDetail', 'transfer')
   const fee = transfer.fee ?? 0
   const interest = transfer.interestAmount ?? 0
   // 매수 충당·카드 결제로 생긴 이체는 원본과 금액이 묶여 있다.
