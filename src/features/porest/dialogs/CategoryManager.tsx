@@ -372,23 +372,33 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
           submitting={submitting}
         />
       )}
-      {confirmDelete && (
-        <ConfirmDialog
-          title={t('deleteTitle')}
-          message={
-            confirmDelete.hasChildren
-              ? t('deleteHasChildren', { name: `"${confirmDelete.categoryName}"` })
-              : budgetOf(confirmDelete.rowId) != null
-              ? t('deleteWithBudget', { name: `"${confirmDelete.categoryName}"` })
-              : t('deleteConfirm', { name: `"${confirmDelete.categoryName}"` })
-          }
-          confirmLabel={tc('delete')}
-          danger
-          loading={deleteMut.isPending}
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() => !confirmDelete.hasChildren && onDelete(confirmDelete)}
-        />
-      )}
+      {confirmDelete &&
+        // 하위 카테고리가 있으면 삭제가 아예 막힌다 — 고를 것이 없으니 확인 하나만
+        // 둔다(spec alert-dialog.md · acknowledge). 예전엔 여기서도 빨간 [삭제] 가
+        // 떴는데 눌러도 아무 일이 없었다.
+        (confirmDelete.hasChildren ? (
+          <ConfirmDialog
+            singleAction
+            title={t('deleteBlockedTitle')}
+            message={t('deleteHasChildren', { name: `"${confirmDelete.categoryName}"` })}
+            onCancel={() => setConfirmDelete(null)}
+            onConfirm={() => setConfirmDelete(null)}
+          />
+        ) : (
+          <ConfirmDialog
+            title={t('deleteTitle')}
+            message={
+              budgetOf(confirmDelete.rowId) != null
+                ? t('deleteWithBudget', { name: `"${confirmDelete.categoryName}"` })
+                : t('deleteConfirm', { name: `"${confirmDelete.categoryName}"` })
+            }
+            confirmLabel={tc('delete')}
+            danger
+            loading={deleteMut.isPending}
+            onCancel={() => setConfirmDelete(null)}
+            onConfirm={() => onDelete(confirmDelete)}
+          />
+        ))}
       {pendingMove && (
         <ConfirmDialog
           title={t('overBudgetTitle')}
