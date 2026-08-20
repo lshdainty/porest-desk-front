@@ -17,6 +17,7 @@ import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { BudgetEditDialog, MonthlyBudgetDialog, type BudgetDraft } from './BudgetEditDialog'
 import { getPaletteByColor } from './CategoryEditDialog'
@@ -442,9 +443,39 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
               const label = cat?.categoryName ?? b.categoryName ?? t('manager.categoryFallback', { id: catId })
               // 행 레이아웃 — 앱 _CategoryRow 정합:
               // [icon | 이름+상태(좌) | 사용액 위·/한도 아래(우)] + 하단 풀폭 진행바.
+              // 밀면 수정·삭제가 바로 나온다. 탭은 그대로 수정으로 — 스와이프는
+              // 지름길이지 유일한 경로가 아니다(spec swipe-actions.md · WCAG 2.1.1).
+              // 데스크톱은 행에 인라인 편집·삭제 아이콘이 있어 통과시킨다.
+              const swipeActions: SwipeAction[] = [
+                {
+                  label: tCommon('edit'),
+                  icon: <Pencil />,
+                  kind: 'primary',
+                  onSelect: () => setEditing(b),
+                },
+                {
+                  label: tCommon('delete'),
+                  icon: <Trash2 />,
+                  kind: 'destructive',
+                  // 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
+                  // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
+                  confirm: {
+                    message: t('deleteMessage', { name: `"${label}"` }),
+                    loading: deleteMut.isPending,
+                  },
+                  onSelect: () => deleteMut.mutateAsync(b.rowId),
+                },
+              ]
               return (
-                <div
+                <SwipeActions
                   key={b.rowId}
+                  rowId={`budget-${b.rowId}`}
+                  groupTag="budget-manager-list"
+                  rowLabel={label}
+                  enabled={mobile}
+                  actions={swipeActions}
+                >
+                <div
                   className={manageRowClass(mobile)}
                   style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 14, paddingBottom: 14, cursor: mobile ? 'pointer' : undefined }}
                   onClick={mobile ? () => setEditing(b) : undefined}
@@ -535,6 +566,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                     />
                   </div>
                 </div>
+                </SwipeActions>
               )
             })
           )}
@@ -551,14 +583,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           existing={categoryBudgets}
           onClose={() => setEditing(null)}
           onSave={saveCategoryBudget}
-          onDelete={
-            editing !== 'new'
-              ? () => {
-                  setConfirmDelete(editing)
-                  setEditing(null)
-                }
-              : undefined
-          }
           mobile={mobile}
           submitting={submitting}
         />

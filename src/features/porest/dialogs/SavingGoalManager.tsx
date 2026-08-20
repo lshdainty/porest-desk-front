@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Pencil, Plus, Target, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Target, Trash2 } from 'lucide-react'
+import { SwipeActions } from '@/shared/ui/swipe-actions'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { tileRadius } from '@/shared/lib'
@@ -72,6 +73,7 @@ function GoalCard({
   onDelete: (g: SavingGoal) => void
 }) {
   const { t } = useTranslation('asset')
+  const { t: tc } = useTranslation('common')
   const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
   // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다.
   // raw goal.color 를 그대로 쓰면 다크 모드에서 앱(resolveChartColor)과 색이 어긋난다.
@@ -84,6 +86,25 @@ function GoalCard({
     // 모바일 = 카드 탭이 곧 편집(디자인 GoalManager), 데스크톱 = 우측 편집/삭제 아이콘 버튼.
     // 모바일 카드 다이어트(RecurringManager 정합) — 항목마다 카드를 두지 않고 행 사이 divider 로만
     // 구분한다. 페이지 배경 위에 카드가 겹겹이 쌓이면 keep 카드(요약)의 위계가 죽는다.
+    // 밀면 수정·삭제가 바로 나온다. 탭은 그대로 수정으로 — 스와이프는 지름길이지
+    // 유일한 경로가 아니다(spec swipe-actions.md · WCAG 2.1.1).
+    <SwipeActions
+      rowId={`saving-goal-${goal.rowId}`}
+      groupTag="saving-goal-list"
+      rowLabel={goal.title}
+      enabled={mobile}
+      actions={[
+        { label: tc('edit'), icon: <Pencil />, kind: 'primary', onSelect: () => onEdit(goal) },
+        {
+          label: tc('delete'),
+          icon: <Trash2 />,
+          kind: 'destructive',
+          // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
+          confirm: { message: t('savingGoal.deleteConfirm', { title: goal.title }) },
+          onSelect: () => onDelete(goal),
+        },
+      ]}
+    >
     <FlatItem mobile={mobile} idx={idx} onTap={() => onEdit(goal)}>
       <MaybeContent mobile={mobile}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
@@ -127,9 +148,10 @@ function GoalCard({
               {formatDeadline(goal.deadlineDate) ?? t('savingGoal.noDeadline')}
             </div>
           </div>
-          {mobile ? (
-            <ChevronRight size={18} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
-          ) : (
+          {/* 모바일은 chevron 을 두지 않는다 — 밀면 수정·삭제가 나오고 탭하면 수정으로
+              가는데, 화살표가 있으면 '들어가서 보는 상세'가 따로 있는 것처럼 읽힌다
+              (사용자 결정). 데스크톱·태블릿은 인라인 편집·삭제 아이콘 그대로. */}
+          {mobile ? null : (
             <div className={MANAGE_ROW.actionsClassName} style={{ flexShrink: 0 }}>
               <Button variant="ghost" size="icon" onClick={() => onEdit(goal)}>
                 <Pencil size={13} />
@@ -168,6 +190,7 @@ function GoalCard({
         </div>
       </MaybeContent>
     </FlatItem>
+    </SwipeActions>
   )
 }
 
@@ -297,14 +320,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           goal={editing === 'new' ? null : editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
-          onDelete={
-            editing !== 'new'
-              ? () => {
-                  setConfirmDelete(editing)
-                  setEditing(null)
-                }
-              : undefined
-          }
         />
       )}
       {confirmDelete && (

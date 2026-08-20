@@ -47,10 +47,9 @@ interface SavingGoalAddDialogProps {
    * 삭제 — **모바일 footer 에서만 쓴다**. 모바일은 목록 행을 탭하면 바로 이 시트로
    * 들어오므로 삭제를 여기 둔다. 데스크탑·태블릿은 목록 행 아이콘이 담당.
    */
-  onDelete?: () => void
 }
 
-export function SavingGoalAddDialog({ goal, mobile, onClose, onDelete }: SavingGoalAddDialogProps) {
+export function SavingGoalAddDialog({ goal, mobile, onClose }: SavingGoalAddDialogProps) {
   const { t } = useTranslation('asset')
   const { t: tc } = useTranslation('common')
   const isEdit = !!goal
@@ -151,10 +150,10 @@ export function SavingGoalAddDialog({ goal, mobile, onClose, onDelete }: SavingG
       // 모바일 수정은 '수정'(앱 정합) — 데스크탑은 기존 '저장' 그대로.
       saveLabel={isEdit ? (mobile ? tc('edit') : tc('save')) : tc('add')}
       saving={createMut.isPending || updateMut.isPending || contributeMut.isPending}
-      // 모바일은 [삭제][수정], 데스크탑·태블릿은 [취소][저장].
-      onCancel={mobile ? undefined : onClose}
-      onDelete={mobile && isEdit ? onDelete : undefined}
-      deleteLabel={tc('delete')}
+      // 모바일도 [취소][수정] 이다. 목록 행을 밀면 삭제가 나오므로(SavingGoalManager
+      // SwipeActions) 이 시트가 유일한 삭제 경로가 아니게 됐다 — 수정하러 들어온
+      // 시트에 파괴적 액션을 같이 두지 않는다(사용자 결정).
+      onCancel={onClose}
     />
   )
 
