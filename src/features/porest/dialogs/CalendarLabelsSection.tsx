@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Plus, Tag, Trash2 } from 'lucide-react'
+import { ChevronRight, Pencil, Plus, Tag, Trash2 } from 'lucide-react'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
@@ -165,9 +166,31 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
               ) : (
                 list.map((label, i) => {
                   const palette = getPaletteByColor(label.color)
+                  // 밀면 수정·삭제. 모바일은 행의 🗑·> 를 걷었으므로 탭(편집)이
+                  // 비제스처 경로다(spec swipe-actions.md · WCAG 2.1.1).
+                  const swipeActions: SwipeAction[] = [
+                    { label: t('edit'), icon: <Pencil />, kind: 'primary', onSelect: () => setEditing(label) },
+                    {
+                      label: t('delete'),
+                      icon: <Trash2 />,
+                      kind: 'destructive',
+                      confirm: {
+                        title: t('labelsSection.deleteTitle'),
+                        message: t('labelsSection.deleteMessage', { name: label.labelName }),
+                      },
+                      onSelect: () => setConfirmDelete(label),
+                    },
+                  ]
                   return (
-                    <div
+                    <SwipeActions
                       key={label.rowId}
+                      rowId={`cal-label-${label.rowId}`}
+                      groupTag="cal-label-list"
+                      rowLabel={label.labelName}
+                      enabled={mobile}
+                      actions={swipeActions}
+                    >
+                    <div
                       onClick={() => setEditing(label)}
                       className="hover:bg-[var(--bg-muted)]"
                       style={{
@@ -214,23 +237,27 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                           {t('labels.usage', { count: label.usageCount ?? 0 })}
                         </div>
                       </div>
-                      {/* 삭제+편집 진입 표시 — 한 묶음(행 gap 미적용, 앱 정합) */}
-                      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="!text-[var(--fg-expense)]"
-                          aria-label={t('delete')}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setConfirmDelete(label)
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                        <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)' }} />
-                      </div>
+                      {/* 모바일은 🗑·> 를 두지 않는다 — 밀면 수정·삭제, 탭하면 편집
+                          (사용자 결정). 데스크톱은 그대로. */}
+                      {!mobile && (
+                        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="!text-[var(--fg-expense)]"
+                            aria-label={t('delete')}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setConfirmDelete(label)
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                          <ChevronRight size={15} style={{ color: 'var(--fg-tertiary)' }} />
+                        </div>
+                      )}
                     </div>
+                    </SwipeActions>
                   )
                 })
               )}
