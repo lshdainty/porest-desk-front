@@ -1349,6 +1349,7 @@ category,empty,카테고리가 없어요,No categories yet
 category,noSearchResults,검색 결과가 없습니다.,No results found.
 category,parentFallback,상위 카테고리,Parent category
 category,deleteTitle,카테고리 삭제,Delete Category
+category,deleteBlockedTitle,삭제 불가,Cannot delete
 category,deleteHasChildren,{{name}} 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.,The {{name}} category has subcategories and cannot be deleted. Please clear its subcategories first.
 category,deleteWithBudget,예산이 설정되어 있는 카테고리입니다. 삭제 시 예산도 함께 삭제됩니다. {{name}} 카테고리를 삭제하시겠습니까?,This category has a budget set. Deleting it will also delete the budget. Delete the {{name}} category?
 category,deleteConfirm,{{name}} 카테고리를 삭제하시겠어요?,Delete the {{name}} category?

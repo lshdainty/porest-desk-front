@@ -117,6 +117,7 @@ export function ConfirmDialog({
   cancelLabel,
   danger,
   loading,
+  singleAction,
   onCancel,
   onConfirm,
 }: {
@@ -126,6 +127,14 @@ export function ConfirmDialog({
   cancelLabel?: string
   danger?: boolean
   loading?: boolean
+  /**
+   * 확인 하나만 그린다 — 고를 것이 없는 차단 통지
+   * (spec alert-dialog.md Variants · acknowledge). 취소를 나란히 두면 두 버튼이
+   * 같은 일(닫기)을 한다. 제목은 결과 명사구(`삭제 불가`)로 쓴다.
+   *
+   * [onCancel] 은 그대로 필수다 — ESC·overlay 로 닫는 경로가 그걸 쓴다.
+   */
+  singleAction?: boolean
   onCancel: () => void
   onConfirm: () => void
 }) {
@@ -158,14 +167,16 @@ export function ConfirmDialog({
           </p>
         </DialogBody>
         <DialogFooter>
-          {/* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */}
-          <Button
-            variant={isMobile ? 'secondary' : 'ghost'}
-            size={isMobile ? 'lg' : undefined}
-            onClick={onCancel}
-          >
-            {cancelLabel ?? t('cancel')}
-          </Button>
+          {!singleAction && (
+            /* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */
+            <Button
+              variant={isMobile ? 'secondary' : 'ghost'}
+              size={isMobile ? 'lg' : undefined}
+              onClick={onCancel}
+            >
+              {cancelLabel ?? t('cancel')}
+            </Button>
+          )}
           <Button
             variant={danger ? 'destructive' : 'default'}
             size={isMobile ? 'lg' : undefined}
