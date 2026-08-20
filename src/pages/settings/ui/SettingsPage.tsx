@@ -72,6 +72,7 @@ import { ALL_HIDE_CARDS } from '@/shared/lib/porest/hide-amounts-cards'
 import { useHiddenCards } from '@/shared/lib/porest/hide-amounts-core'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { PasswordChangeDialog } from '@/widgets/sidebar/ui/PasswordChangeDialog'
+import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
@@ -590,6 +591,8 @@ function AccountSection({
   const { data: user } = useCurrentUser()
   const { logout } = useAuth()
   const [pwDialogOpen, setPwDialogOpen] = useState(false)
+  // 다시 로그인해야 돌아올 수 있다 — 앱은 이미 한 번 더 묻는다.
+  const [confirmLogout, setConfirmLogout] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
 
   const hiddenCount = useHiddenCards().size
@@ -826,7 +829,7 @@ function AccountSection({
           label={t('account.logout.label')}
           desc={t('account.logout.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
-          onClick={logout}
+          onClick={() => setConfirmLogout(true)}
         />
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -856,6 +859,16 @@ function AccountSection({
           </AlertDialogContent>
         </AlertDialog>
       </AccountGroup>
+
+      {confirmLogout && (
+        <ConfirmDialog
+          title={t('account.logout.label')}
+          message={t('account.logout.confirmMessage')}
+          confirmLabel={t('account.logout.label')}
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={logout}
+        />
+      )}
 
       {/* 비밀번호 변경 다이얼로그 */}
       <PasswordChangeDialog open={pwDialogOpen} onOpenChange={setPwDialogOpen} />

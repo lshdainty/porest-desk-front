@@ -1091,7 +1091,9 @@ calendar,shareSection.regenCode,초대 코드 재생성,Regenerate invite code
 calendar,shareSection.codeHint,이 코드를 공유하면 다른 사람이 캘린더에 참여할 수 있어요.,Share this code to let others join the calendar.
 calendar,shareSection.members,멤버,Members
 calendar,shareSection.you,(나),(me)
-calendar,shareSection.removeMember,멤버 제거,Remove member
+calendar,shareSection.removeMember,멤버 내보내기,Remove member
+calendar,shareSection.removeMemberConfirm,{{name}} 님을 캘린더에서 내보내시겠어요?,Remove {{name}} from this calendar?
+calendar,shareSection.removeMemberAction,내보내기,Remove
 calendar,shareSection.nameRequired,캘린더 이름을 입력해주세요.,Please enter a calendar name.
 calendar,shareSection.create,만들기,Create
 calendar,shareSection.createNamePlaceholder,"예: 가족, 업무, 운동 일정","e.g. Family, Work, Workout"
@@ -1467,6 +1469,9 @@ expense,paymentTransferFull,계좌이체,Bank transfer
 expense,dateTime,날짜·시간,Date · Time
 expense,memo,메모,Memo
 expense,splitTitle,내역 분할,Split transaction
+expense,splitRemove.title,분할 해제,Remove split
+expense,splitRemove.message,이 거래의 분할 내역을 모두 삭제하시겠습니까?,Delete all split items for this transaction?
+expense,splitRemove.confirm,해제,Remove
 expense,transaction,거래,Transaction
 expense,item,항목,Item
 expense,selectNone,선택 안 함,None
@@ -1828,6 +1833,7 @@ settings,account.provider.kakao,카카오,Kakao
 settings,account.provider.naver,네이버,Naver
 settings,account.logout.label,로그아웃,Log Out
 settings,account.logout.desc,이 기기에서만,This device only
+settings,account.logout.confirmMessage,정말 로그아웃 하시겠어요?,Log out of this device?
 settings,account.withdraw.label,회원 탈퇴,Delete Account
 settings,account.withdraw.desc,영구 삭제,Permanent deletion
 settings,account.withdrawConfirm.title,회원 탈퇴,Delete account

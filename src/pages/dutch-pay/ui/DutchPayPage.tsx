@@ -27,7 +27,7 @@ import { Fab } from '@/shared/ui/porest/fab'
 import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -168,6 +168,7 @@ export const DutchPayPage = () => {
 
 const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   const { t } = useTranslation('dutchPay')
+  const { t: tc } = useTranslation('common')
   const dutchPaysQ = useDutchPays()
   const createDutchPay = useCreateDutchPay()
   const markPaid = useMarkParticipantPaid()
@@ -237,9 +238,9 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   const onCreate = (values: DutchPayFormValues) => {
     createDutchPay.mutate(values, { onSuccess: () => setCreating(false) })
   }
-  const onDelete = (id: number) => {
-    deleteDutchPay.mutate(id, { onSuccess: () => setDetailId(null) })
-  }
+  // 정산과 참여자 기록이 통째로 사라진다 — 앱은 이미 한 번 더 묻는다.
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
+  const onDelete = (id: number) => setConfirmDelete(id)
   const onMarkPaid = (dutchPayId: number, participantId: number) => {
     markPaid.mutate({ dutchPayId, participantId })
   }
@@ -432,6 +433,24 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           markPaidPending={markPaid.isPending}
           settleAllPending={settleAll.isPending}
           deleting={deleteDutchPay.isPending}
+        />
+      )}
+      {confirmDelete != null && (
+        <ConfirmDialog
+          title={t('deleteConfirm.title')}
+          message={t('deleteConfirm.message')}
+          confirmLabel={tc('delete')}
+          danger
+          loading={deleteDutchPay.isPending}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() =>
+            deleteDutchPay.mutate(confirmDelete, {
+              onSuccess: () => {
+                setConfirmDelete(null)
+                setDetailId(null)
+              },
+            })
+          }
         />
       )}
     </>
