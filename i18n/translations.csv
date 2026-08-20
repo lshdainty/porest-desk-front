@@ -1632,6 +1632,8 @@ expense,preset.amountEmpty,금액 비움,Amount empty
 expense,preset.noCategory,카테고리 없음,No category
 expense,preset.usedTimes,{{count}}회 사용,Used {{count}} times
 expense,preset.deleteTitle,프리셋 삭제,Delete preset
+expense,preset.detailTitle,프리셋 상세,Preset detail
+expense,preset.typeLabel,유형,Type
 expense,preset.deleteConfirmMessage,"""{{name}}"" 프리셋을 삭제할까요? 이미 저장된 거래 내역에는 영향이 없습니다.","Delete the ""{{name}}"" preset? Already-saved transactions are unaffected."
 expense,preset.edit,프리셋 수정,Edit preset
 expense,preset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
