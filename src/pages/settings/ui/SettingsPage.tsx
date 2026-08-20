@@ -70,6 +70,7 @@ import {
 } from '@/shared/ui/alert-dialog'
 import { ALL_HIDE_CARDS } from '@/shared/lib/porest/hide-amounts-cards'
 import { useHiddenCards } from '@/shared/lib/porest/hide-amounts-core'
+import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { PasswordChangeDialog } from '@/widgets/sidebar/ui/PasswordChangeDialog'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 
@@ -131,6 +132,24 @@ const SECTIONS: SectionDef[] = [
   },
   // 계정 > 보안에서 들어오는 화면(화면의 눈 버튼도 여기로 온다). 목록에는 안 나온다.
   { id: 'hide-amounts', labelKey: 'hideAmounts.label', icon: Eye, descKey: 'hideAmounts.desc', hidden: true },
+]
+
+/**
+ * 데스크톱 우측 패널 제목을 여기서 그려 주는 섹션.
+ *
+ * 나머지 섹션은 각자 `ManagerHead` 를 갖고 있는데(카테고리·계좌·예산·저축목표·
+ * 캘린더 공유·캘린더 라벨·할일 태그·알림) 이 다섯은 없어서, 같은 자리에서 어떤
+ * 섹션은 제목+설명으로 시작하고 어떤 섹션은 본문이 바로 시작했다. 좌측 nav 로 위치는
+ * 알 수 있지만 패널 첫 줄의 리듬이 섹션마다 달랐다.
+ *
+ * 금액 가리기는 자기 뒤로가기 줄을 갖고 있어 제외한다.
+ */
+const NEEDS_DESKTOP_HEAD: SectionId[] = [
+  'recurring',
+  'presets',
+  'appearance',
+  'data',
+  'account',
 ]
 
 // 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다.
@@ -403,7 +422,19 @@ export const SettingsPage = () => {
             )
           })}
         </aside>
-        <div style={{ minWidth: 0 }}>{renderBody(false)}</div>
+        <div style={{ minWidth: 0 }}>
+          {activeSection && NEEDS_DESKTOP_HEAD.includes(activeSection.id) ? (
+            <ManagerShell>
+              <ManagerHead
+                title={t(activeSection.labelKey)}
+                description={t(activeSection.descKey)}
+              />
+              {renderBody(false)}
+            </ManagerShell>
+          ) : (
+            renderBody(false)
+          )}
+        </div>
       </div>
     </div>
   )
