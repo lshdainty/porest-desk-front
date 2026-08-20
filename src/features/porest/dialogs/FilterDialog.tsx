@@ -4,7 +4,6 @@ import type { Asset } from '@/entities/asset'
 import type { ExpenseCategory, ExpenseType } from '@/entities/expense'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { Button } from '@/shared/ui/button'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -140,13 +139,15 @@ export function FilterDialog({
   const customInvalid = period === 'custom'
     && startDate !== '' && endDate !== '' && startDate > endDate
 
+  // '초기화'는 leftSlot(내용 폭, marginRight:auto)이 아니라 취소 슬롯으로 둔다 —
+  // leftSlot 은 요약 텍스트용이라 균등 분배에서 빠지고, 좌측에 작은 글씨로 붙으면
+  // 버튼인지 알아보기 어렵다. 취소 슬롯은 모바일에서 secondary(테두리 없는 회색
+  // 채움) + lg 로 렌더돼 [초기화][필터 적용] 이 화면 폭을 반씩 나눠 갖는다
+  // (spec drawer.md "flex:1 평등 분배" · button.md Migration notes 2026-08).
   const Footer = (
     <ModalFooter
-      leftSlot={
-        <Button variant="ghost" size="md" flush="left" onClick={reset}>
-          {t('filter.reset')}
-        </Button>
-      }
+      onCancel={reset}
+      cancelLabel={t('filter.reset')}
       onSave={apply}
       saveLabel={t('filter.apply')}
       saveDisabled={customInvalid}
