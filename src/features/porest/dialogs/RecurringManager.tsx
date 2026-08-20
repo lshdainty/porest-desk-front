@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
   Bell,
-  MoreVertical,
   PauseCircle,
   Pause,
   Pencil,
@@ -30,6 +29,7 @@ import { useExpenseCategories } from '@/features/expense'
 import type { RecurringTransaction } from '@/entities/recurring-transaction'
 import { getPaletteByColor } from './CategoryEditDialog'
 import { RecurringAddDialog } from './RecurringAddDialog'
+import { RecurringDetailDialog } from './RecurringDetailDialog'
 import { RecurringEditDialog } from './RecurringEditDialog'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
@@ -37,13 +37,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 type FilterKey = 'all' | 'expense' | 'income' | 'paused'
 
-const DROP_ITEM_STYLE = {
-  display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)',
-  width: '100%', padding: '10px 14px',
-  border: 'none', background: 'transparent',
-  cursor: 'pointer', textAlign: 'left' as const, fontFamily: 'inherit',
-  fontSize: 'var(--text-body-sm)', color: 'var(--fg-primary)',
-}
 
 // 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
 function MaybeContent({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
@@ -73,6 +66,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   const [editing, setEditing] = useState<RecurringTransaction | null>(null)
   const [adding, setAdding] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  // 행 탭 → 상세. `⋮` 메뉴를 대신하는 비제스처 경로다 — 스와이프만 남기면
+  // 제스처 없이는 아무것도 못 한다(WCAG 2.1.1).
+  const [detail, setDetail] = useState<RecurringTransaction | null>(null)
   const [toast, setToast] = useState<string>('')
   const [pendingToggleId, setPendingToggleId] = useState<number | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
@@ -499,65 +495,6 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       >
                         <MaskAmount card="etc.recurring">{isExpense ? '−' : '+'}{KRW(Math.abs(it.amount))}</MaskAmount>
                       </span>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <button
-                          type="button"
-                          onClick={() => setOpenMenuId(openMenuId === it.rowId ? null : it.rowId)}
-                          style={{
-                            width: 32, height: 32,
-                            borderRadius: 'var(--radius-md)',
-                            border: 'none',
-                            background: openMenuId === it.rowId ? 'var(--bg-sunken)' : 'transparent',
-                            color: 'var(--fg-tertiary)',
-                            cursor: 'pointer',
-                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          }}
-                        >
-                          <MoreVertical size={16} strokeWidth={1.9} />
-                        </button>
-                        {openMenuId === it.rowId && (
-                          <div style={{
-                            position: 'absolute', right: 0, top: 36,
-                            background: 'var(--bg-surface)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-md)',
-                            zIndex: 51, minWidth: 140, overflow: 'hidden',
-                          }}>
-                            <button
-                              type="button"
-                              onClick={() => { togglePause(it); setOpenMenuId(null) }}
-                              style={DROP_ITEM_STYLE}
-                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-sunken)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                            >
-                              {isActive ? <Pause size={14} strokeWidth={1.9} /> : <Play size={14} strokeWidth={1.9} />}
-                              <span>{isActive ? t('pause') : t('start')}</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => { setEditing(it); setOpenMenuId(null) }}
-                              style={DROP_ITEM_STYLE}
-                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-sunken)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                            >
-                              <Pencil size={14} strokeWidth={1.9} />
-                              <span>{tCommon('edit')}</span>
-                            </button>
-                            <div style={{ height: 1, background: 'var(--border-subtle)' }} />
-                            <button
-                              type="button"
-                              onClick={() => { setConfirmDeleteId(it.rowId); setOpenMenuId(null) }}
-                              style={{ ...DROP_ITEM_STYLE, color: 'var(--fg-expense)' }}
-                              onMouseEnter={e => { e.currentTarget.style.background = 'color-mix(in oklch, var(--fg-expense) 8%, transparent)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                            >
-                              <Trash2 size={14} strokeWidth={1.9} />
-                              <span>{tCommon('delete')}</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
                     </>
                   ) : (
                     <>
@@ -593,6 +530,17 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       </FlatShell>
       </div>
 
+      {detail != null && (
+        <RecurringDetailDialog
+          item={detail}
+          categories={categories}
+          mobile={mobile}
+          onClose={() => setDetail(null)}
+          onEdit={() => { setEditing(detail); setDetail(null) }}
+          onToggle={() => { togglePause(detail); setDetail(null) }}
+          onDelete={() => { setConfirmDeleteId(detail.rowId); setDetail(null) }}
+        />
+      )}
       {editing && (
         <RecurringEditDialog
           recurring={editing}
@@ -830,7 +778,8 @@ function RecAction({
   )
 }
 
-function displayTitle(it: RecurringTransaction, t: TFunction): string {
+/** 행·상세가 같은 제목을 쓴다 — 갈라지면 같은 항목이 두 이름으로 보인다. */
+export function displayTitle(it: RecurringTransaction, t: TFunction): string {
   return it.merchant || it.description || it.categoryName || t('defaultTitle')
 }
 
@@ -840,7 +789,8 @@ function startOfDay(d: Date): Date {
   return c
 }
 
-function recurringSummary(it: RecurringTransaction, t: TFunction): string {
+/** 반복 규칙 한 줄 요약 — 행·상세가 같은 문장을 쓴다. */
+export function recurringSummary(it: RecurringTransaction, t: TFunction): string {
   let core = t(`freq.${it.frequency}`)
   if (it.frequency === 'WEEKLY' && it.dayOfWeek != null) {
     // 백엔드 ISO 1=월~7=일 → recurring dow 키 매핑

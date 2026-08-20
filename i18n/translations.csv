@@ -2139,6 +2139,9 @@ recurring,autoLogSub,해당 일자에 거래를 자동으로 추가합니다,Aut
 recurring,notifyDayBefore,하루 전 알림,Day-before alert
 recurring,notifyDayBeforeSub,결제·이체 예정일 전날 알림을 보냅니다,Sends an alert the day before the scheduled date
 recurring,nextDatesTitle,다음 예정일,Upcoming dates
+recurring,detailTitle,반복 거래 상세,Recurring detail
+recurring,categoryLabel,카테고리,Category
+recurring,assetLabel,계좌·카드,Account/Card
 recurring,intro,이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.,"Automatically repeats this transaction on a set schedule. Use it for subscriptions, rent, regular donations, etc."
 recurring,addTitle,반복 거래 추가,Add recurring transaction
 recurring,typeTitle,유형,Type
