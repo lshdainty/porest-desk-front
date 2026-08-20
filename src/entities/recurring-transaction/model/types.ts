@@ -20,6 +20,8 @@ export interface RecurringTransaction {
   intervalValue: number
   dayOfWeek: number | null
   dayOfMonth: number | null
+  /** 'HH:mm:ss' — 실행분을 만들 시각 [userClock] */
+  executionTime: string | null
   startDate: string
   endDate: string | null
   maxOccurrences: number | null
@@ -46,6 +48,8 @@ export interface RecurringTransactionFormValues {
   intervalValue?: number
   dayOfWeek?: number
   dayOfMonth?: number
+  /** 'HH:mm:ss' — 생략하면 서버가 09:00 을 쓴다 */
+  executionTime?: string
   startDate: string
   endDate?: string
   maxOccurrences?: number

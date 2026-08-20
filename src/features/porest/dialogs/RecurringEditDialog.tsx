@@ -4,6 +4,7 @@ import { Bell, Calendar, Zap } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Input } from '@/shared/ui/input'
+import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -67,6 +68,11 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
     recurring.endDate ?? addYears(startDay, 1),
   )
 
+  // 실행 시각 'HH:mm' — 이 시각으로 실행분이 만들어진다. 서버 기본값은 09:00.
+  const [executionTime, setExecutionTime] = useState<string>(
+    (recurring.executionTime ?? '09:00:00').slice(0, 5),
+  )
+
   // 편집 금액 — 여기서 바꾼 값은 **앞으로 생성될 실행분**부터 적용된다.
   // 이미 만들어진 거래는 별도 레코드라 소급되지 않는다.
   const [amount, setAmount] = useState<string>(String(Math.abs(recurring.amount)))
@@ -94,6 +100,7 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
       sourceExpenseRowId: recurring.sourceExpenseRowId ?? undefined,
       expenseType: recurring.expenseType,
       amount: Number(amount),
+      executionTime: `${executionTime}:00`,
       description: recurring.description ?? undefined,
       merchant: recurring.merchant ?? undefined,
       paymentMethod: recurring.paymentMethod ?? undefined,
@@ -186,6 +193,12 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
             color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)',
           }}
         />
+      </Section>
+
+      {/* 실행 시각 — 이 시각으로 실행분이 만들어진다. 예전에는 09:00 고정이었고
+          서버 컬럼 기본값도 09:00 이라 안 고르면 지금과 같다. */}
+      <Section title={t('executionTimeTitle')}>
+        <InputTimePicker value={executionTime} onValueChange={setExecutionTime} />
       </Section>
 
       <Section title={t('frequencyTitle')}>
