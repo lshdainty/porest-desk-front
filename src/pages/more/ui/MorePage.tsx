@@ -56,7 +56,9 @@ const GROUPS: NavGroup[] = [
     labelKey: 'group.system',
     items: [
       { labelKey: 'item.settings', path: '/desk/settings', descKey: 'desc.settings' },
-      { labelKey: 'item.notifications', path: '/desk/notifications', descKey: 'desc.notifications' },
+      // 알림 '목록' 이 아니라 알림 '설정' 이다 — 설명이 푸시·방해 금지를 말하고 있고,
+      // 목록은 헤더의 종 아이콘이 이미 연다. 앱 더보기도 설정으로 간다.
+      { labelKey: 'item.notifications', path: '/desk/settings?section=notifications', descKey: 'desc.notifications' },
       { labelKey: 'item.dataExport', path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
       { labelKey: 'item.account', path: '/desk/settings?section=account', descKey: 'desc.account' },
       // 앱 받기 — 로그인 밖 공개 페이지라 경로에 /desk 가 없다.
