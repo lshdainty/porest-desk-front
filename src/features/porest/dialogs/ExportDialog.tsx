@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Download, PieChart, Receipt, Target, Wallet } from 'lucide-react'
+import { CheckCircle2, PieChart, Receipt, Target, Wallet } from 'lucide-react'
 import { TX } from '@/shared/lib/porest/data'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
@@ -55,7 +55,6 @@ export function ExportDialog({ onClose, mobile }: { onClose: () => void; mobile:
       onCancel={onClose}
       onSave={onClose}
       saveLabel={t('dialog.exportAs', { format: format.toUpperCase() })}
-      saveIcon={<Download size={16} />}
     />
   )
 

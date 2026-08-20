@@ -7,7 +7,6 @@ import {
   Crown,
   Eye,
   Link,
-  LogIn,
   Pencil,
   Plus,
   RefreshCw,
@@ -755,7 +754,6 @@ function CalendarJoinDialog({
       saveLabel={t('join')}
       saving={submitting}
       saveDisabled={!valid}
-      saveIcon={<LogIn size={16} strokeWidth={2.2} />}
       onCancel={onClose}
     />
   )

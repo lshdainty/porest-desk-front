@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, Divide, ListOrdered, Percent, Send, UserPlus, X } from 'lucide-react'
+import { Check, Divide, ListOrdered, Percent, UserPlus, X } from 'lucide-react'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { DetailSourceTx } from '@/shared/ui/porest/detail'
@@ -191,7 +191,6 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
       onCancel={onClose}
       onSave={handleSave}
       saveLabel={t('fromTx.createSettlement')}
-      saveIcon={<Send size={16} />}
       saving={submitting}
       saveDisabled={!matched || participants.length === 0}
     />
