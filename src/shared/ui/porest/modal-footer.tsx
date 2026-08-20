@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import { useDeviceSize } from '@/shared/lib/porest/responsive'
@@ -22,8 +21,11 @@ import { useDeviceSize } from '@/shared/lib/porest/responsive'
  * 삭제만 `flex:none` 으로 균등분배에서 빠져 좌측에 붙는다 — spec drawer.md "액션 2개까지,
  * 삭제는 최좌측 flush-left 로 분리".
  *
- * leftSlot(필터 초기화·요약 텍스트 등 삭제가 아닌 좌측 요소)·saveIcon(내보내기/전송)
- * 같은 변형도 지원. 뷰(읽기전용) footer·위저드는 범위 밖(별도 패턴).
+ * leftSlot(필터 초기화·요약 텍스트 등 삭제가 아닌 좌측 요소) 변형도 지원.
+ * 뷰(읽기전용) footer·위저드는 범위 밖(별도 패턴).
+ *
+ * **버튼에 아이콘을 두지 않는다** — footer 는 액션이 둘뿐이고 둘 다 라벨을 갖고 있어
+ * 아이콘이 더 알려 줄 게 없다(spec drawer.md 액션 구성).
  */
 type ModalFooterProps = {
   /** 저장(주 액션) 핸들러 + 라벨. */
@@ -44,8 +46,6 @@ type ModalFooterProps = {
   saving?: boolean
   /** 저장 불가(폼 미충족 등). */
   saveDisabled?: boolean
-  /** 저장 라벨 앞 아이콘 (내보내기 Download / 전송 Send 등). */
-  saveIcon?: ReactNode
   /**
    * 취소/닫기 핸들러 — **없으면 버튼 자체를 렌더하지 않는다**. 액션이 3개가 될 때
    * (필터 `초기화`·분할 `분할 해제` 처럼 좌측 액션이 이미 있을 때) 취소를 빼고 우상단 X 에
@@ -71,7 +71,6 @@ export function ModalFooter({
   fullWidth = false,
   saving = false,
   saveDisabled = false,
-  saveIcon,
   onCancel,
   cancelLabel,
   onDelete,
@@ -105,7 +104,7 @@ export function ModalFooter({
           loading={deleting}
           disabled={saving}
         >
-          <Trash2 size={16} /> {deleteLabel ?? t('delete')}
+          {deleteLabel ?? t('delete')}
         </Button>
       )}
       {!onDelete && leftSlot && <div style={{ marginRight: 'auto' }}>{leftSlot}</div>}
@@ -132,7 +131,6 @@ export function ModalFooter({
         loading={saving}
         style={fullWidth ? { flex: 1 } : undefined}
       >
-        {saveIcon}
         {saveLabel}
       </Button>
     </>
@@ -204,7 +202,7 @@ export function ModalViewFooter({
           onClick={onDelete}
           loading={deleting}
         >
-          <Trash2 size={16} /> {deleteLabel ?? t('delete')}
+          {deleteLabel ?? t('delete')}
         </Button>
       ) : leftSlot ? (
         <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center' }}>{leftSlot}</div>
@@ -218,7 +216,7 @@ export function ModalViewFooter({
           onClick={onEdit}
           disabled={deleting}
         >
-          <Pencil size={16} /> {editLabel ?? t('edit')}
+          {editLabel ?? t('edit')}
         </Button>
       )}
       {onConfirm && (
