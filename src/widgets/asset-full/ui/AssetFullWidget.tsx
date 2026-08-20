@@ -208,7 +208,11 @@ export const AssetFullWidget = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {t('deleteConfirm.message', {
+                name: assets.find((a) => a.rowId === showDeleteConfirm)?.assetName ?? '',
+              })}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>

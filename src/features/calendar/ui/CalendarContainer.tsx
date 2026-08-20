@@ -344,7 +344,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('deleteConfirm.message')}</AlertDialogDescription>
+            <AlertDialogDescription>{t('deleteConfirm.message', { name: events.find((e) => e.id === deletingEventId)?.title ?? '' })}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>

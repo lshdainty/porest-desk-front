@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Bookmark, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
@@ -334,14 +334,7 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
       {confirmDelete && (
         <ConfirmDialog
           title={t('preset.deleteTitle')}
-          message={
-            <Trans
-              t={t}
-              i18nKey="preset.deleteConfirmMessage"
-              values={{ name: confirmDelete.templateName }}
-              components={{ strong: <strong /> }}
-            />
-          }
+          message={t('preset.deleteConfirmMessage', { name: confirmDelete.templateName })}
           confirmLabel={tCommon('delete')}
           danger
           loading={deleteMut.isPending}

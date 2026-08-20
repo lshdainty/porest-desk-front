@@ -438,7 +438,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       {confirmDelete != null && (
         <ConfirmDialog
           title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message')}
+          message={t('deleteConfirm.message', { name: list.find((d) => d.rowId === confirmDelete)?.title ?? '' })}
           confirmLabel={tc('delete')}
           danger
           loading={deleteDutchPay.isPending}

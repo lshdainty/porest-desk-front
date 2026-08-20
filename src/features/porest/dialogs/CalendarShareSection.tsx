@@ -253,7 +253,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
       {confirmDelete && (
         <ConfirmDialog
           title={t('deleteCalendar')}
-          message={t('shareSection.deleteMessage', { name: `"${confirmDelete.calendarName}"` })}
+          message={t('shareSection.deleteMessage', { name: confirmDelete.calendarName })}
           confirmLabel={t('shareSection.permanentDelete')}
           danger
           loading={deleteMut.isPending}

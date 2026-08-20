@@ -951,7 +951,7 @@ function TodoDetailDialog({
       {confirmDelete && (
         <ConfirmDialog
           title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message')}
+          message={t('deleteConfirm.message', { name: todo.title })}
           confirmLabel={tc('delete')}
           danger
           loading={deleting}

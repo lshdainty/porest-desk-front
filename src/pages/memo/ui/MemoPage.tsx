@@ -469,7 +469,8 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
                 icon: <Trash2 />,
                 kind: 'destructive',
                 confirm: {
-                  message: t('deleteConfirm.message'),
+                  title: t('deleteConfirm.title'),
+                  message: t('deleteConfirm.message', { name: m.title }),
                   cancelLabel: t('deleteConfirm.cancel'),
                   loading: deleteMemo.isPending,
                 },
@@ -758,7 +759,7 @@ function MemoDetailDialog({
       {confirmDelete && (
         <ConfirmDialog
           title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message')}
+          message={t('deleteConfirm.message', { name: memo.title })}
           confirmLabel={tc('delete')}
           danger
           loading={deleting}

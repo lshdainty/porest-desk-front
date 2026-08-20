@@ -447,7 +447,8 @@ export function TodoMobileLedger({
                             icon: <Trash2 />,
                             kind: 'destructive',
                             confirm: {
-                              message: t('deleteConfirm.message'),
+                              title: t('deleteConfirm.title'),
+                              message: t('deleteConfirm.message', { name: td.title }),
                               cancelLabel: t('deleteConfirm.cancel'),
                               loading: deleting,
                             },

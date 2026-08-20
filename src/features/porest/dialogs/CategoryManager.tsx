@@ -380,7 +380,7 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
           <ConfirmDialog
             singleAction
             title={t('deleteBlockedTitle')}
-            message={t('deleteHasChildren', { name: `"${confirmDelete.categoryName}"` })}
+            message={t('deleteHasChildren', { name: confirmDelete.categoryName })}
             onCancel={() => setConfirmDelete(null)}
             onConfirm={() => setConfirmDelete(null)}
           />
@@ -389,8 +389,8 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
             title={t('deleteTitle')}
             message={
               budgetOf(confirmDelete.rowId) != null
-                ? t('deleteWithBudget', { name: `"${confirmDelete.categoryName}"` })
-                : t('deleteConfirm', { name: `"${confirmDelete.categoryName}"` })
+                ? t('deleteWithBudget', { name: confirmDelete.categoryName })
+                : t('deleteConfirm', { name: confirmDelete.categoryName })
             }
             confirmLabel={tc('delete')}
             danger
@@ -402,7 +402,7 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
       {pendingMove && (
         <ConfirmDialog
           title={t('overBudgetTitle')}
-          message={t('overBudgetMessage', { parent: `"${pendingMove.parentName}"`, amount: KRW(pendingMove.over) })}
+          message={t('overBudgetMessage', { parent: pendingMove.parentName, amount: KRW(pendingMove.over) })}
           confirmLabel={t('move')}
           loading={updateMut.isPending}
           onCancel={() => setPendingMove(null)}

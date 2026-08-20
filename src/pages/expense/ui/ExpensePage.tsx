@@ -1297,11 +1297,12 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       icon: <Trash2 />,
       kind: 'destructive',
       confirm: {
+        title: t('deleteConfirm.title'),
         // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
         message:
           (e.refundCount ?? 0) > 0 ? (
             <>
-              {t('txDetail.deleteMessage', { name: `"${rowLabelOf(e)}"` })}
+              {t('txDetail.deleteMessage', { name: rowLabelOf(e) })}
               <br />
               <br />
               {t('addTx.deleteRefundWarn', {
@@ -1310,7 +1311,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               })}
             </>
           ) : (
-            t('txDetail.deleteMessage', { name: `"${rowLabelOf(e)}"` })
+            t('txDetail.deleteMessage', { name: rowLabelOf(e) })
           ),
         loading: deleteExpense.isPending,
       },
