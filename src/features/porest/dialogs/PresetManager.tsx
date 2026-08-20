@@ -10,7 +10,9 @@ import { KRW } from '@/shared/lib/porest/format'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { useDeleteExpenseTemplate, useExpenseCategories, useExpenseTemplates } from '@/features/expense'
 import type { ExpenseTemplate } from '@/entities/expense-template'
+import { PresetDetailDialog } from './PresetDetailDialog'
 import { PresetEditDialog } from './PresetEditDialog'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Card } from '@/shared/ui/card'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 
@@ -27,6 +29,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   const templatesQ = useExpenseTemplates()
   const categoriesQ = useExpenseCategories()
   const deleteMut = useDeleteExpenseTemplate()
+  // 행 탭 → 상세. 스와이프만 남기면 제스처 없이는 아무것도 못 한다(WCAG 2.1.1).
+  const [detail, setDetail] = useState<ExpenseTemplate | null>(null)
 
   const isLoading = templatesQ.isLoading || categoriesQ.isLoading
 
@@ -199,10 +203,37 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
             const palette = cat ? getPaletteByColor(cat.color) : null
             const lock = p.lockAmount === 'Y'
             const amountDisplay = lock && p.amount != null ? KRW(p.amount) : '—'
+            // 밀면 수정·삭제. 모바일은 행의 ✎·🗑 를 걷었으므로 탭(상세)이 비제스처
+            // 경로다. 데스크톱은 아이콘이 그대로 있어 스와이프를 통과시킨다.
+            const swipeActions: SwipeAction[] = [
+              { label: tCommon('edit'), icon: <Pencil />, kind: 'primary', onSelect: () => setEditing(p) },
+              {
+                label: tCommon('delete'),
+                icon: <Trash2 />,
+                kind: 'destructive',
+                // 아래 ConfirmDialog 와 같은 문구 — 경로에 따라 말이 갈리면 안 된다.
+                confirm: {
+                  title: t('preset.deleteTitle'),
+                  message: t('preset.deleteConfirmMessage', { name: p.templateName }),
+                  loading: deleteMut.isPending,
+                },
+                onSelect: () => setConfirmDelete(p),
+              },
+            ]
             return (
-              <div
+              <SwipeActions
                 key={p.rowId}
+                rowId={`preset-${p.rowId}`}
+                groupTag="preset-manager-list"
+                rowLabel={p.templateName}
+                enabled={mobile}
+                actions={swipeActions}
+              >
+              <div
+                onClick={mobile ? () => setDetail(p) : undefined}
+                role={mobile ? 'button' : undefined}
                 style={{
+                  cursor: mobile ? 'pointer' : undefined,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
@@ -313,17 +344,32 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                       : t('preset.usedTimes', { count: p.useCount })}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                  <PMIconBtn icon="pencil" onClick={() => setEditing(p)} title={tCommon('edit')} />
-                  <PMIconBtn icon="trash" tone="danger" onClick={() => setConfirmDelete(p)} title={tCommon('delete')} />
-                </div>
+                {/* 모바일은 아이콘을 두지 않는다 — 밀면 수정·삭제가 나오고 탭하면
+                    상세로 간다(사용자 결정). 데스크톱은 그대로. */}
+                {!mobile && (
+                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <PMIconBtn icon="pencil" onClick={() => setEditing(p)} title={tCommon('edit')} />
+                    <PMIconBtn icon="trash" tone="danger" onClick={() => setConfirmDelete(p)} title={tCommon('delete')} />
+                  </div>
+                )}
               </div>
+              </SwipeActions>
             )
           })
         )}
       </ListShell>
       </div>
 
+      {detail != null && (
+        <PresetDetailDialog
+          preset={detail}
+          categories={categories}
+          mobile={mobile}
+          onClose={() => setDetail(null)}
+          onEdit={() => { setEditing(detail); setDetail(null) }}
+          onDelete={() => { setConfirmDelete(detail); setDetail(null) }}
+        />
+      )}
       {editing != null && (
         <PresetEditDialog
           preset={editing === 'new' ? null : editing}
