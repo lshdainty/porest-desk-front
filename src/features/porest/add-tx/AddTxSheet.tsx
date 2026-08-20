@@ -533,7 +533,15 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
 
   return (
     <ModalShell
-      title={isEdit ? t('addTx.editTitle') : t('addTx.newTitle')}
+      // 환불은 '수입 추가' 와 입력 화면이 같아서, 제목이 같으면 무엇을 하는 중인지
+      // 구분이 안 된다(앱은 '환불 기록' 으로 갈라 둔다).
+      title={
+        isEdit
+          ? t('addTx.editTitle')
+          : isRefundMode
+            ? t('addTx.refundTitle')
+            : t('addTx.newTitle')
+      }
       onClose={onClose}
       size="md"
       footer={Footer}
