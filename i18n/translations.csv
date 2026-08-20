@@ -2123,6 +2123,7 @@ recurring,dow.thu,목,Thu
 recurring,dow.fri,금,Fri
 recurring,dow.sat,토,Sat
 recurring,amountTitle,금액,Amount
+recurring,executionTimeTitle,실행 시각,Execution time
 recurring,frequencyTitle,반복 주기,Frequency
 recurring,dowTitle,요일,Day of week
 recurring,dayOfMonthTitle,반복 일자,Day of month
