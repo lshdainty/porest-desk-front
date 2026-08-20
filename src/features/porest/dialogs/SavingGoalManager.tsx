@@ -100,7 +100,10 @@ function GoalCard({
           icon: <Trash2 />,
           kind: 'destructive',
           // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
-          confirm: { message: t('savingGoal.deleteConfirm', { title: goal.title }) },
+          confirm: {
+            title: t('savingGoal.deleteTitle'),
+            message: t('savingGoal.deleteConfirm', { title: goal.title }),
+          },
           onSelect: () => onDelete(goal),
         },
       ]}

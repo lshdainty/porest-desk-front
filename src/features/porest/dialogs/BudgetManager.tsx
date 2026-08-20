@@ -460,6 +460,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   // 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
                   // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
                   confirm: {
+                    title: t('deleteTitle'),
                     message: t('deleteMessage', { name: `"${label}"` }),
                     loading: deleteMut.isPending,
                   },

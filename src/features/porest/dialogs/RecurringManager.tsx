@@ -15,6 +15,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react'
+import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { renderIcon, tileRadius } from '@/shared/lib'
@@ -339,9 +340,46 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             const isExpense = it.expenseType === 'EXPENSE'
             const cat = categories.find(c => c.rowId === it.categoryRowId)
             const palette = getPaletteByColor(cat?.color)
+            // 밀면 일시정지·수정·삭제가 바로 나온다. ⋮ 메뉴는 그대로 둔다 —
+            // 스와이프는 지름길이지 유일한 경로가 아니다(spec swipe-actions.md ·
+            // WCAG 2.1.1). 데스크톱은 행에 인라인 액션이 있어 통과시킨다.
+            const swipeActions: SwipeAction[] = [
+              {
+                label: isActive ? t('pause') : t('start'),
+                icon: isActive ? <Pause /> : <Play />,
+                kind: 'neutral',
+                onSelect: () => togglePause(it),
+              },
+              {
+                label: tCommon('edit'),
+                icon: <Pencil />,
+                kind: 'primary',
+                onSelect: () => setEditing(it),
+              },
+              {
+                label: tCommon('delete'),
+                icon: <Trash2 />,
+                kind: 'destructive',
+                // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가
+                // 갈리면 안 된다.
+                confirm: {
+                  title: t('deleteTitle'),
+                  message: t('deleteConfirmMessage', { name: displayTitle(it, t) }),
+                  loading: deleteMut.isPending,
+                },
+                onSelect: () => deleteMut.mutateAsync(it.rowId),
+              },
+            ]
             return (
-              <div
+              <SwipeActions
                 key={it.rowId}
+                rowId={`recurring-${it.rowId}`}
+                groupTag="recurring-manager-list"
+                rowLabel={displayTitle(it, t)}
+                enabled={mobile}
+                actions={swipeActions}
+              >
+              <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: mobile ? '36px 1fr auto' : '36px 1fr auto auto',
@@ -548,6 +586,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   )}
                 </div>
               </div>
+              </SwipeActions>
             )
           })}
         </div>
