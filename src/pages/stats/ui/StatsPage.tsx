@@ -13,6 +13,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/char
 import { Card, CardContent } from '@/shared/ui/card'
 import { Section } from '@/shared/ui/porest/section'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { useSwipeNav } from '@/shared/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { CalendarClock, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
@@ -697,6 +698,19 @@ export const StatsPage = () => {
     { v: 'trend', l: t('tab.trend') },
     { v: 'compare', l: t('tab.compare') },
   ]
+
+  // 좌우로 밀어서 탭 이동 — 칩을 눌러야만 넘어가면 한 손으로 쓰기 불편하다.
+  // 앱(통계 화면 PageView)과 같은 동작. 양 끝에서는 순환하지 않는다.
+  const goTabBy = (step: number) => {
+    const i = TAB_ITEMS.findIndex(x => x.v === tab)
+    const next = TAB_ITEMS[i + step]
+    if (next) setTab(next.v)
+  }
+  const swipeNav = useSwipeNav({
+    enabled: mobile,
+    onPrev: () => goTabBy(-1),
+    onNext: () => goTabBy(1),
+  })
   // 모바일 = design .m-chip-tabs + .tg--pill (컴팩트 pill toggle, 선택=bg-brand 채움, 가로스크롤).
   // 데스크톱 = underline 탭 유지.
   // 가로 24 — 아래 본문과 같은 지점에서 시작해야 첫 칩과 첫 섹션 제목이 한 줄로 맞는다.
@@ -2318,7 +2332,11 @@ export const StatsPage = () => {
         <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
           {StatsTabs}
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide" style={{ padding: '20px 24px 24px' }}>
+        <div
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide"
+          style={{ padding: '20px 24px 24px', ...swipeNav.style }}
+          {...swipeNav.handlers}
+        >
           {content}
         </div>
       </div>
