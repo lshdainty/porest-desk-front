@@ -471,10 +471,19 @@ function CalendarManageDialog({
     })
   }
 
-  const handleRemove = (member: CalendarMember) => {
+  // 내보내면 그 사람은 캘린더를 잃는다 — 앱은 이미 한 번 더 묻는다.
+  const [confirmRemove, setConfirmRemove] = useState<CalendarMember | null>(null)
+  const handleRemove = (member: CalendarMember) => setConfirmRemove(member)
+
+  const doRemove = (member: CalendarMember) => {
     removeMut.mutate(
       { id: calendar.rowId, memberId: member.rowId },
-      { onSuccess: () => toast.success(t('shareSection.toast.memberRemoved'), { id: 'cal-member-remove' }) },
+      {
+        onSuccess: () => {
+          setConfirmRemove(null)
+          toast.success(t('shareSection.toast.memberRemoved'), { id: 'cal-member-remove' })
+        },
+      },
     )
   }
 
@@ -632,6 +641,17 @@ function CalendarManageDialog({
             )
           })}
         </div>
+      )}
+      {confirmRemove && (
+        <ConfirmDialog
+          title={t('shareSection.removeMember')}
+          message={t('shareSection.removeMemberConfirm', { name: confirmRemove.userName })}
+          confirmLabel={t('shareSection.removeMemberAction')}
+          danger
+          loading={removeMut.isPending}
+          onCancel={() => setConfirmRemove(null)}
+          onConfirm={() => doRemove(confirmRemove)}
+        />
       )}
     </ModalShell>
   )

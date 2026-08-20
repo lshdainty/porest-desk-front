@@ -14,7 +14,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -271,9 +271,9 @@ export function SplitTxDialog({
     )
   }
 
-  const handleDeleteAll = () => {
-    deleteAllMut.mutate(expense.rowId, { onSuccess: () => onClose() })
-  }
+  // 분할을 통째로 지우는 건 되돌릴 수 없다 — 앱은 이미 한 번 더 묻는다.
+  const [confirmRemoveSplit, setConfirmRemoveSplit] = useState(false)
+  const handleDeleteAll = () => setConfirmRemoveSplit(true)
 
   const submitting = replaceMut.isPending || deleteAllMut.isPending
 
@@ -607,6 +607,24 @@ export function SplitTxDialog({
           ))}
         </div>
       </div>
+      {confirmRemoveSplit && (
+        <ConfirmDialog
+          title={t('splitRemove.title')}
+          message={t('splitRemove.message')}
+          confirmLabel={t('splitRemove.confirm')}
+          danger
+          loading={deleteAllMut.isPending}
+          onCancel={() => setConfirmRemoveSplit(false)}
+          onConfirm={() =>
+            deleteAllMut.mutate(expense.rowId, {
+              onSuccess: () => {
+                setConfirmRemoveSplit(false)
+                onClose()
+              },
+            })
+          }
+        />
+      )}
     </ModalShell>
   )
 }
