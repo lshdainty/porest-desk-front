@@ -66,16 +66,16 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.income')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount card="home.monthExpense">{wonPre()}{KRW(income)}</MaskAmount>
-          <WonUnit card="home.monthExpense" />
+          <MaskAmount card="home.monthExpense" kind="income">{wonPre()}{KRW(income)}</MaskAmount>
+          <WonUnit card="home.monthExpense" kind="income" />
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
         <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
         <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.expense')}</span>
         <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount card="home.monthExpense">{wonPre()}{KRW(expense)}</MaskAmount>
-          <WonUnit card="home.monthExpense" />
+          <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(expense)}</MaskAmount>
+          <WonUnit card="home.monthExpense" kind="expense" />
         </span>
       </div>
       <div style={{
@@ -90,8 +90,8 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
           }}
         >
-          <MaskAmount card="home.monthExpense">{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
-          <WonUnit card="home.monthExpense" />
+          <MaskAmount card="home.monthExpense" kind="net">{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
+          <WonUnit card="home.monthExpense" kind="net" />
         </span>
       </div>
     </div>
@@ -770,7 +770,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount card="home.monthExpense">+{wonPre()}{KRW(income)}</MaskAmount><WonUnit card="home.monthExpense" /></>}
+                  : <><MaskAmount card="home.monthExpense" kind="income">+{wonPre()}{KRW(income)}</MaskAmount><WonUnit card="home.monthExpense" kind="income" /></>}
               </div>
             </div>
             <div>
@@ -778,7 +778,7 @@ function HomeDesktop() {
               <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
                 {monthlyQ.isLoading
                   ? '—'
-                  : <><MaskAmount card="home.monthExpense">−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit card="home.monthExpense" /></>}
+                  : <><MaskAmount card="home.monthExpense" kind="expense">−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit card="home.monthExpense" kind="expense" /></>}
               </div>
             </div>
             <div>
@@ -787,8 +787,8 @@ function HomeDesktop() {
                 {monthlyQ.isLoading
                   ? '—'
                   : <>
-                      <MaskAmount card="home.monthExpense">{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
-                      <WonUnit card="home.monthExpense" />
+                      <MaskAmount card="home.monthExpense" kind="net">{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
+                      <WonUnit card="home.monthExpense" kind="net" />
                     </>}
               </div>
             </div>
@@ -812,7 +812,7 @@ function HomeDesktop() {
           }}>
             {t('avg.dailyAverage')}{' '}
             <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-              <MaskAmount card="home.monthExpense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
+              <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
             </span>
             <WonUnit card="home.monthExpense" />
             {' '}{t('avg.spent')}
@@ -1366,13 +1366,13 @@ function HomeMobile() {
           <div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.income')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
-              <MaskAmount card="home.monthExpense">+{KRW(income)}</MaskAmount>
+              <MaskAmount card="home.monthExpense" kind="income">+{KRW(income)}</MaskAmount>
             </div>
           </div>
           <div>
             <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.expense')}</div>
             <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-expense)' }}>
-              <MaskAmount card="home.monthExpense">−{KRW(expense)}</MaskAmount>
+              <MaskAmount card="home.monthExpense" kind="expense">−{KRW(expense)}</MaskAmount>
             </div>
           </div>
         </div>
@@ -1384,7 +1384,7 @@ function HomeMobile() {
         }}>
           {t('avg.dailyAverage')}{' '}
           <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-            <MaskAmount card="home.monthExpense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
+            <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
           </span>
           <WonUnit card="home.monthExpense" />
           {' '}{t('avg.spent')}

@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react'
 import { isEn } from '@/shared/lib/porest/format'
 import {
   ALL_HIDE_CARDS,
+  cardsOfKind,
   cardsOfPage,
+  SCREEN_HIDE_CARDS,
   type HideCardKey,
+  type HideKind,
   type HidePageKey,
 } from '@/shared/lib/porest/hide-amounts-cards'
 
@@ -48,6 +51,10 @@ function load(): Set<HideCardKey> {
     if (!raw) return new Set()
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return new Set()
+    // 새로 생긴 카드(거래 종류 3장)는 저장 배열에 없으므로 자동으로 꺼진 채 시작한다.
+    // 켜 주지 않는다 — 사용자가 고른 적 없는 카드를 대신 켜는 셈이고, 화면 카드가 이미
+    // 그 자리를 덮고 있어 새는 것도 없다. 필터는 **버리는 방향**이라 기존 설정도 안전하다.
+    //
     // 없어진 카드 키는 버린다 — 남겨 두면 영영 못 지우는 유령이 된다.
     return new Set(parsed.filter((k): k is HideCardKey => typeof k === 'string' && valid.has(k)))
   } catch {
@@ -86,13 +93,25 @@ function commit(next: Set<HideCardKey>) {
  * "지금 뭔가 가려진 상태인가" 만 알면 되는 자리용이다. 실제 금액을 가리는 곳은
  * 반드시 카드를 넘길 것. 안 넘기면 다른 카드를 가렸을 때 같이 가려진다.
  */
-export function useHideAmounts(card?: HideCardKey | HideCardKey[]): boolean {
+export function useHideAmounts(
+  card?: HideCardKey | HideCardKey[],
+  kind?: HideKind,
+): boolean {
   // 배열 리터럴을 그대로 넘기는 호출부가 많다 — 매 렌더 새 배열이라 deps 로 못 쓴다.
-  const key = Array.isArray(card) ? card.join('|') : card
+  const key = `${Array.isArray(card) ? card.join('|') : card ?? ''}#${kind ?? ''}`
   const read = () => {
     const set = current()
+    // 화면 카드와 종류 카드는 합집합이다 — 카드는 "가리기" 스위치라, 켰는데 아무 일도
+    // 안 일어나는 조합이 있으면 안 된다. 켜는 방향으로만 넓어지므로 이미 가려진 게
+    // 풀리는 경우도 생기지 않는다.
+    if (kind && cardsOfKind(kind).some(c => set.has(c))) return true
     if (Array.isArray(card)) return card.some(c => set.has(c))
-    return card ? set.has(card) : set.size > 0
+    if (card) return set.has(card)
+    // 카드도 종류도 없는 자리는 "하나라도 가려졌나" — 눈 아이콘용이다.
+    // **종류 카드는 세지 않는다.** 세면 지출만 가린 사용자에게 예산·더치페이의 '원'
+    // 단위(카드 없이 부르는 자리들)까지 사라진다 — 종류 카드가 안 덮기로 한 화면이다.
+    if (kind) return false
+    return SCREEN_HIDE_CARDS.some(c => set.has(c))
   }
   const [hidden, setHidden] = useState(read)
   useEffect(() => {

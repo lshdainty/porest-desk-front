@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { KRW, isEn } from '@/shared/lib/porest/format'
 import { formatMonthDayDow } from '@/shared/lib/date'
 import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
+import { kindOfExpense } from '@/shared/lib/porest/hide-amounts-cards'
 import type { Expense } from '@/entities/expense/model/types'
 import type { AssetTransfer } from '@/entities/asset/model/types'
 import { getPaletteByColor } from '@/features/porest/dialogs'
@@ -127,12 +128,12 @@ export function TransferRow({
       </LedgerRowMain>
       <div>
         <LedgerRowAmt>
-          <MaskAmount card="ledger.txList">
+          <MaskAmount card="ledger.txList" kind="transfer">
             {signed == null ? '' : signed < 0 ? '-' : '+'}
             {isEn() ? '₩' : ''}
             {KRW(signed ?? transfer.amount, { abs: true })}
           </MaskAmount>
-          <HideUnit>{isEn() ? '' : '원'}</HideUnit>
+          <HideUnit card="ledger.txList" kind="transfer">{isEn() ? '' : '원'}</HideUnit>
         </LedgerRowAmt>
       </div>
     </LedgerRow>
@@ -227,8 +228,8 @@ export function ExpenseRow({
       <div>
         {right ?? (
           <LedgerRowAmt>
-            <MaskAmount card="ledger.txList">{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
-            <HideUnit>{isEn() ? '' : '원'}</HideUnit>
+            <MaskAmount card="ledger.txList" kind={kindOfExpense(expense.expenseType)}>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(expense.amount, { abs: true })}</MaskAmount>
+            <HideUnit card="ledger.txList" kind={kindOfExpense(expense.expenseType)}>{isEn() ? '' : '원'}</HideUnit>
           </LedgerRowAmt>
         )}
       </div>

@@ -111,7 +111,7 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
       </LedgerRowMain>
       <div>
         <LedgerRowAmt>
-          <MaskAmount card="ledger.txList">{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
+          <MaskAmount card="ledger.txList" kind={isIncome ? 'income' : 'expense'}>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
           <HideUnit>{isEn() ? '' : '원'}</HideUnit>
         </LedgerRowAmt>
       </div>
