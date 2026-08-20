@@ -1092,7 +1092,7 @@ calendar,shareSection.codeHint,이 코드를 공유하면 다른 사람이 캘�
 calendar,shareSection.members,멤버,Members
 calendar,shareSection.you,(나),(me)
 calendar,shareSection.removeMember,멤버 내보내기,Remove member
-calendar,shareSection.removeMemberConfirm,{{name}} 님을 캘린더에서 내보내시겠어요?,Remove {{name}} from this calendar?
+calendar,shareSection.removeMemberConfirm,"""{{name}}"" 님을 캘린더에서 내보내시겠어요?","Remove ""{{name}}"" from this calendar?"
 calendar,shareSection.removeMemberAction,내보내기,Remove
 calendar,shareSection.nameRequired,캘린더 이름을 입력해주세요.,Please enter a calendar name.
 calendar,shareSection.create,만들기,Create
