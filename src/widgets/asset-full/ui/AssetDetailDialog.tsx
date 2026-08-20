@@ -960,11 +960,19 @@ export function AssetDetailDialog({
   asset: assetProp,
   onClose,
   onEdit,
+  onDelete,
   mobile,
 }: {
   asset: Asset
   onClose: () => void
   onEdit?: (asset: Asset) => void
+  /**
+   * 삭제 — 자산을 지울 수 있는 화면만 넘긴다(계좌·카드 관리). 자산 페이지처럼
+   * 훑어보는 상세에서 켜면 목록으로 돌아갈 수도 없는 자리에서 자산이 사라진다.
+   * 데스크탑은 `leftSlot`(금액 가리기)이 좌측을 쥐고 목록 행에 삭제 아이콘이 있어
+   * 모바일에서만 그린다.
+   */
+  onDelete?: (asset: Asset) => void
   mobile: boolean
 }) {
   const { t } = useTranslation('asset')
@@ -1083,8 +1091,9 @@ export function AssetDetailDialog({
     navigate(`/desk/expense?assetId=${asset.rowId}`)
   }
 
-  // 모바일은 [편집] 하나 — 금액 가리기는 카드 우상단 눈 버튼과 계정 > 보안에도 있어
-  // 여기서 뺀다. 데스크탑·태블릿은 [금액 가리기][편집] 그대로 둔다.
+  // 모바일은 [삭제][편집](spec drawer.md: 상세 = 삭제·편집). 금액 가리기는 카드
+  // 우상단 눈 버튼과 계정 > 보안에도 있어 여기서 뺀다. 데스크탑·태블릿은 목록 행에
+  // 삭제 아이콘이 따로 있어 [금액 가리기][편집] 그대로 둔다.
   const Footer = (
     <ModalViewFooter
       leftSlot={
@@ -1095,6 +1104,7 @@ export function AssetDetailDialog({
           </Button>
         )
       }
+      onDelete={mobile && onDelete ? () => onDelete(asset) : undefined}
       onEdit={onEdit ? () => onEdit(asset) : undefined}
     />
   )
