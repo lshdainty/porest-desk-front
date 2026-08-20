@@ -339,13 +339,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             // 밀면 일시정지·수정·삭제가 바로 나온다. ⋮ 메뉴는 그대로 둔다 —
             // 스와이프는 지름길이지 유일한 경로가 아니다(spec swipe-actions.md ·
             // WCAG 2.1.1). 데스크톱은 행에 인라인 액션이 있어 통과시킨다.
+            // 액션 2개다. 셋을 넣으면 배지+라벨이 행 높이를 넘겨 트레이가 잘린다
+            // (앱에서 BOTTOM OVERFLOWED 로 실측). 일시정지는 상세 footer 에 있다.
             const swipeActions: SwipeAction[] = [
-              {
-                label: isActive ? t('pause') : t('start'),
-                icon: isActive ? <Pause /> : <Play />,
-                kind: 'neutral',
-                onSelect: () => togglePause(it),
-              },
               {
                 label: tCommon('edit'),
                 icon: <Pencil />,
