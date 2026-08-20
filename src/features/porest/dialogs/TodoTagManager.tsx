@@ -228,8 +228,11 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title={t('tags.deleteTitle', { name: confirmDelete.tagName })}
-          message={t('tags.deleteMessage', { count: confirmDelete.usageCount ?? 0 })}
+          title={t('tags.deleteTitle')}
+          message={t('tags.deleteMessage', {
+            name: confirmDelete.tagName,
+            count: confirmDelete.usageCount ?? 0,
+          })}
           confirmLabel={tc('delete')}
           danger
           loading={deleteMut.isPending}
