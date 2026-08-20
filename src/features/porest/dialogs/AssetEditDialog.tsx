@@ -162,11 +162,6 @@ export interface AssetEditDialogProps {
   onClose: () => void
   onCreate: (values: AssetFormValues) => void
   onUpdate: (values: AssetUpdateFormValues) => void
-  /**
-   * 삭제 — **모바일 footer 에서만 쓴다**. 모바일 목록엔 삭제 아이콘이 없고(`!mobile`)
-   * 상세도 [편집] 하나뿐이라, 이 시트가 유일한 삭제 경로다.
-   */
-  onDelete?: () => void
   mobile: boolean
   isSubmitting?: boolean
 }
@@ -177,7 +172,6 @@ export function AssetEditDialog({
   onClose,
   onCreate,
   onUpdate,
-  onDelete,
   mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
@@ -1328,19 +1322,16 @@ export function AssetEditDialog({
     </Fragment>
   )
 
-  // 데스크탑 footer 와 모바일 footer 모두 동일 구조 (삭제 좌측 / 취소+저장 우측)
+  // 어느 폭에서든 [취소][저장] — 삭제는 상세로 옮겼다
+  // (spec drawer.md: 상세 = 삭제·편집 / 편집 폼 = 취소·저장).
   const footerInner = (
     <ModalFooter
       onSave={handleSubmit}
       saveLabel={isNew ? t('addAction') : tCommon('save')}
       saving={isSubmitting}
       saveDisabled={!canSubmit}
-      // 모바일은 [삭제][저장] — 목록·상세에 삭제가 없어 여기가 유일한 경로다.
-      // 데스크탑·태블릿은 목록 행에 삭제 아이콘이 있어 [취소][저장] 그대로.
-      onCancel={mobile ? undefined : handleClose}
+      onCancel={handleClose}
       cancelLabel={tCommon('cancel')}
-      onDelete={mobile && !isNew ? onDelete : undefined}
-      deleteLabel={tCommon('delete')}
     />
   )
 

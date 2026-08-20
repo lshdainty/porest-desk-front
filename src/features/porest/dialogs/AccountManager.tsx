@@ -40,6 +40,15 @@ type EditingState =
   | { mode: 'edit'; asset: Asset }
   | null
 
+/**
+ * 모바일 행 구분선 제거 — 관리 리스트가 줄마다 선으로 잘려 보이던 걸 걷어낸다.
+ *
+ * `manageRowClass` 를 고치지 않는 이유: 카테고리·예산 관리가 같은 함수를 쓰는데
+ * 거기까지 선이 사라진다. Tailwind `border-b-0` 을 덧붙이는 방법은 같은 속성끼리
+ * 생성 순서로 이겨야 해서 클래스 나열 순서로는 보장되지 않는다 — inline 이 확실하다.
+ */
+const NO_DIVIDER = { borderBottom: 'none' } as const
+
 export function AccountManager({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('asset')
   const groupLabel = (g: AssetGroup) =>
@@ -176,7 +185,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                   <div
                     key={asset.rowId}
                     className={manageRowClass(mobile)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', ...(mobile ? NO_DIVIDER : null) }}
                     onClick={() => setDetail(asset)}
                   >
                     {/* 카드 정식 이미지 → 없으면 회사 primary 색 모노그램. AssetLogo 단일 표현. */}
@@ -276,14 +285,6 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           onClose={() => setEditing(null)}
           onCreate={handleCreate}
           onUpdate={handleUpdate}
-          onDelete={
-            editing.mode === 'edit'
-              ? () => {
-                  setConfirmDelete(editing.asset)
-                  setEditing(null)
-                }
-              : undefined
-          }
           mobile={mobile}
           isSubmitting={isSubmitting}
         />
@@ -295,6 +296,10 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
           onClose={() => setDetail(null)}
           onEdit={asset => {
             setEditing({ mode: 'edit', asset })
+            setDetail(null)
+          }}
+          onDelete={asset => {
+            setConfirmDelete(asset)
             setDetail(null)
           }}
           mobile={mobile}
@@ -327,7 +332,7 @@ function AccountManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className={manageRowClass(mobile)}>
+        <div key={i} className={manageRowClass(mobile)} style={mobile ? NO_DIVIDER : undefined}>
           <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
           <div style={MANAGE_ROW.textStyle}>
             <SkeletonBase className="h-4 w-32 mb-1.5" />
