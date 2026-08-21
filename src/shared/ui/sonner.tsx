@@ -5,7 +5,7 @@ import { useTheme } from "@/shared/ui/theme-provider"
  * Porest Sonner (Toaster) — porest-design specs/components/sonner.md SoT 기반.
  *
  * site preview SoT 정합:
- *   toast: surface-raised + border-default(1px) + radius-md + shadow-lg
+ *   toast: surface-raised + radius-md + shadow-md (테두리 없음)
  *   title: text-title-sm 600
  *   description: text-body-sm + text-secondary
  *   actionButton: button.md Size sm — h-8 + text-caption + radius-sm + bg-primary +
@@ -32,12 +32,13 @@ import { useTheme } from "@/shared/ui/theme-provider"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 // 다크에서 surface-default(#242938)는 bg-page(#1A1F2E)와 차이가 작고, 분리를 맡던
-// shadow-lg 는 검은 그림자라 검은 배경 위에서 효과가 거의 없다. 면을 한 단계 올려야
+// 검은 그림자는 검은 배경 위에서 효과가 거의 없다. 면을 한 단계 올려야
 // 실제로 뜬다(sonner.md 2026-08-21). 라이트에선 --bg-surface-raised 가
 // var(--color-surface-default) 라 변화 없다.
 const SURFACE = "var(--bg-surface-raised)"
 const TEXT = "var(--color-text-primary)"
-const BORDER = "var(--color-border-default)"
+// 테두리 없음(sonner.md) — sonner 의 --*-border 는 "none" 을 받는다.
+const BORDER = "none"
 
 /*
  * Kind icons — porest-design sonner-examples.mjs 와 1:1 동기.
@@ -119,9 +120,12 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
         style: {
           background: SURFACE,
           color: TEXT,
-          border: `1px solid ${BORDER}`,
+          // 테두리 없음 — 면과 그림자만으로 분리한다(sonner.md 2026-08-21).
+          border: "none",
           borderRadius: "var(--radius-md)",
-          boxShadow: "var(--shadow-lg)",
+          // 다크에서 lg 는 부드러운 번짐이 아니라 한 겹 더 어두운 띠로 읽힌다
+          // (그림자 색이 50~60% 검정인데 배경이 이미 거의 검정이라 경계가 안 뭉개진다).
+          boxShadow: "var(--shadow-md)",
         },
         classNames: {
           title: "group-[.toast]:text-title-sm group-[.toast]:font-semibold",
