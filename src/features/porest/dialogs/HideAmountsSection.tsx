@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Chip } from '@/shared/ui/chip'
@@ -83,7 +82,6 @@ export function HideAmountsSection({
 
   const commit = () => {
     setHiddenCards(draft)
-    toast.success(t('hideAmounts.saved'))
     onBack()
   }
 

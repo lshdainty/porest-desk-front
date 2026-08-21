@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
 import { HIDE_AMOUNTS_MASK, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
@@ -48,7 +47,6 @@ export function TransferDetailDialog({
   const handleConfirmDelete = () => {
     deleteMut.mutate(transfer.rowId, {
       onSuccess: () => {
-        toast.success(t('transferDeleted'))
         setConfirmDelete(false)
         onClose()
       },

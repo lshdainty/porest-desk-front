@@ -95,7 +95,6 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
       onSuccess: () => {
         setConfirmDelete(null)
         if (managingId === cal.rowId) setManagingId(null)
-        toast.success(t('shareSection.toast.deleted'), { id: 'cal-delete-success' })
       },
     })
   }
@@ -223,7 +222,6 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             createMut.mutate(values, {
               onSuccess: () => {
                 onDone()
-                toast.success(t('shareSection.toast.created'), { id: 'cal-create-success' })
               },
             })
           }
@@ -451,7 +449,6 @@ function CalendarManageDialog({
     if (!name.trim()) return
     updateMut.mutate(
       { id: calendar.rowId, data: { calendarName: name.trim(), color } },
-      { onSuccess: () => toast.success(t('shareSection.toast.updated'), { id: 'cal-update' }) },
     )
   }
 
@@ -487,7 +484,6 @@ function CalendarManageDialog({
       {
         onSuccess: () => {
           setConfirmRemove(null)
-          toast.success(t('shareSection.toast.memberRemoved'), { id: 'cal-member-remove' })
         },
       },
     )
@@ -496,7 +492,6 @@ function CalendarManageDialog({
   const handleChangeRole = (member: CalendarMember, permission: CalendarRole) => {
     roleMut.mutate(
       { id: calendar.rowId, memberId: member.rowId, permission },
-      { onSuccess: () => toast.success(t('shareSection.toast.roleChanged'), { id: 'cal-role-change' }) },
     )
   }
 
