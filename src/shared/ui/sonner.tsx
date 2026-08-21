@@ -5,7 +5,7 @@ import { useTheme } from "@/shared/ui/theme-provider"
  * Porest Sonner (Toaster) — porest-design specs/components/sonner.md SoT 기반.
  *
  * site preview SoT 정합:
- *   toast: surface-default + border-default(1px) + radius-md + shadow-lg
+ *   toast: surface-raised + border-default(1px) + radius-md + shadow-lg
  *   title: text-title-sm 600
  *   description: text-body-sm + text-secondary
  *   actionButton: button.md Size sm — h-8 + text-caption + radius-sm + bg-primary +
@@ -31,7 +31,11 @@ import { useTheme } from "@/shared/ui/theme-provider"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-const SURFACE = "var(--color-surface-default)"
+// 다크에서 surface-default(#242938)는 bg-page(#1A1F2E)와 차이가 작고, 분리를 맡던
+// shadow-lg 는 검은 그림자라 검은 배경 위에서 효과가 거의 없다. 면을 한 단계 올려야
+// 실제로 뜬다(sonner.md 2026-08-21). 라이트에선 --bg-surface-raised 가
+// var(--color-surface-default) 라 변화 없다.
+const SURFACE = "var(--bg-surface-raised)"
 const TEXT = "var(--color-text-primary)"
 const BORDER = "var(--color-border-default)"
 
