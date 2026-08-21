@@ -49,7 +49,11 @@ export const buttonVariants = cva(
         // sm 은 spec 매핑 그대로 (button.md Sizes: h-8 px-2 py-1 text-caption + BASE gap 8)
         // — 기존 호환층(px-3·13px·gap-5)이 앱 PButton sm 보다 커 보이던 문제 정리.
         sm:      "h-8 px-2 py-1 text-caption rounded-[var(--radius-sm)] [&_svg]:size-3.5",
-        md:      "h-10 px-3 py-2 text-sm [&_svg]:size-4",
+        // md 글자는 15px — button.md Sizes 표의 px. 표는 라벨을 body-lg 라 적었지만
+        // 토큰 표에서 15px 은 body-md 이고 body-lg 는 16px 이라 px 를 따른다.
+        // text-body-md 가 weight 400 을 물고 오지만, 생성 CSS 가
+        // font-weight:var(--tw-font-weight, ...) 라 base 의 font-medium(500)이 이긴다.
+        md:      "h-10 px-3 py-2 text-body-md [&_svg]:size-4",
         // lg 은 모바일 sheet/dialog footer 의 한 손 조작 폭 — 48×48(touch-comfortable),
         // radius md(8px). 앱 PButton lg 및 button.md Sizes 표와 같은 값이다.
         // 예전 h-11(44)·rounded-sm(4)·px-5 는 앱보다 납작하고 각졌다.
