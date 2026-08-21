@@ -127,7 +127,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
               <TagListSkeleton mobile={mobile} />
             ) : list.length === 0 ? (
               <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
-                <Tags size={28} strokeWidth={1.6} style={{ opacity: 0.5 }} />
+                <Tags size={28} strokeWidth={1.6} style={{ opacity: 0.5, margin: '0 auto' }} />
                 <div
                   style={{
                     fontSize: 'var(--text-body-sm)',

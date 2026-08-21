@@ -1476,7 +1476,7 @@ export function StocksPage() {
             <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={mc => toggleWatch(selected, mc)} mobile={false} />
           ) : (
             <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
-              <LineChart size={40} />
+              <LineChart size={40} style={{ margin: '0 auto' }} />
               <div style={{ marginTop: 12, fontSize: 'var(--text-body-sm)' }}>{t('detail.selectPrompt')}</div>
             </div>
           )}
