@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Check, KeyRound, Lock, ShieldCheck, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
@@ -179,7 +179,6 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
           <div className="grid gap-4">
           <div className="grid gap-1.5">
             <Label htmlFor="currentPassword" className="flex items-center gap-1.5">
-              <Lock className="h-4 w-4 text-muted-foreground" />
               {t('currentPassword')}
               <span className="text-destructive">*</span>
             </Label>
@@ -197,7 +196,6 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="newPassword" className="flex items-center gap-1.5">
-              <KeyRound className="h-4 w-4 text-muted-foreground" />
               {t('newPassword')}
               <span className="text-destructive">*</span>
             </Label>
@@ -217,7 +215,6 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="confirmPassword" className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
               {t('confirmPassword')}
               <span className="text-destructive">*</span>
             </Label>
