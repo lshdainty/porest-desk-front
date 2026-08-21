@@ -1,3 +1,4 @@
+import { getLocale } from "@/shared/lib"
 import { Button } from "@/shared/ui/button"
 import { Calendar } from "@/shared/ui/calendar"
 import { Input } from "@/shared/ui/input"
@@ -130,6 +131,10 @@ export function InputDatePicker({
             mode="single"
             selected={date}
             captionLayout="dropdown"
+            // locale 을 안 주면 react-day-picker 가 en 기본값으로 월·년 순으로
+            // 그린다. ko 는 라이브러리의 year-first 로케일이라 넘기기만 하면
+            // 년·월 순이 되고, 요일 헤더도 한글이 된다.
+            locale={getLocale()}
             month={month}
             onMonthChange={setMonth}
             onSelect={handleDateSelect}
