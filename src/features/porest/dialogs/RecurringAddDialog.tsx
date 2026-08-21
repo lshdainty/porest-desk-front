@@ -8,6 +8,7 @@ import { Field, FieldLabel } from '@/shared/ui/field'
 import { Textarea } from '@/shared/ui/textarea'
 import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
+import { InputTimePicker } from '@/shared/ui/input-time-picker'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import {
@@ -105,6 +106,8 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   const [endMode, setEndMode] = useState<EndMode>('NONE')
   const [endCount, setEndCount] = useState('12')
   const [endDate, setEndDate] = useState(addYears(todayIso(), 1))
+  // 실행 시각 — 이 시각으로 실행분이 만들어진다. 서버 컬럼 기본값도 09:00 이라 안 고르면 종전과 같다.
+  const [executionTime, setExecutionTime] = useState('09:00')
   const [autoLog, setAutoLog] = useState(true)
   const [notifyDayBefore, setNotifyDayBefore] = useState(true)
 
@@ -191,6 +194,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
       dayOfWeek: frequency === 'WEEKLY' ? (dayOfWeek === 0 ? 7 : dayOfWeek) : undefined,
       dayOfMonth: frequency === 'MONTHLY' || frequency === 'YEARLY' ? dayOfMonth : undefined,
       startDate,
+      executionTime: `${executionTime}:00`,
       endDate: endMode === 'DATE' ? endDate : undefined,
       maxOccurrences: endMode === 'COUNT' ? Number(endCount) : undefined,
       autoLog,
@@ -431,6 +435,11 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
           </div>
         </Section>
       )}
+
+      {/* 실행 시각 — 앱 드로어와 같은 자리(주기 다음, 종료 앞) */}
+      <Section title={t('executionTimeTitle')}>
+        <InputTimePicker value={executionTime} onValueChange={setExecutionTime} />
+      </Section>
 
       {/* 종료 */}
       <Section title={t('endTitle')}>
