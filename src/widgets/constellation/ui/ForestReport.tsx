@@ -200,7 +200,7 @@ export function ForestReport({ mobile, onClose }: { mobile: boolean; onClose: ()
 
       {isFuture ? (
         <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--fg-tertiary)' }}>
-          <Moon size={30} style={{ opacity: 0.6 }} />
+          <Moon size={30} style={{ opacity: 0.6, margin: '0 auto' }} />
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', marginTop: 10 }}>
             {t('report.future')}
           </div>

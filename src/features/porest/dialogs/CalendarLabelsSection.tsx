@@ -148,7 +148,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                     color: 'var(--fg-tertiary)',
                   }}
                 >
-                  <Tag size={28} strokeWidth={1.6} style={{ opacity: 0.5 }} />
+                  <Tag size={28} strokeWidth={1.6} style={{ opacity: 0.5, margin: '0 auto' }} />
                   <div
                     style={{
                       fontSize: 'var(--text-body-sm)',
