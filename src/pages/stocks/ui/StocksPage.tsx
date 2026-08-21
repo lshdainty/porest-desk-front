@@ -1001,10 +1001,10 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
 
       {/* 매매 (모의) — 매도=primary(파랑), 매수=destructive(빨강) — 국내 통념 */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <Button variant="default" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.sellToast', { name }))}>
+        <Button variant="default" size="lg" style={{ flex: 1 }} onClick={() => toast.info(t('trade.sellToast', { name }))}>
           {t('trade.sell')}
         </Button>
-        <Button variant="destructive" size="lg" style={{ flex: 1 }} onClick={() => toast(t('trade.buyToast', { name }))}>
+        <Button variant="destructive" size="lg" style={{ flex: 1 }} onClick={() => toast.info(t('trade.buyToast', { name }))}>
           {t('trade.buy')}
         </Button>
       </div>
