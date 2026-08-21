@@ -126,6 +126,12 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
           // 다크에서 lg 는 부드러운 번짐이 아니라 한 겹 더 어두운 띠로 읽힌다
           // (그림자 색이 50~60% 검정인데 배경이 이미 거의 검정이라 경계가 안 뭉개진다).
           boxShadow: "var(--shadow-md)",
+          // 패딩·최소 높이를 명시한다(sonner.md). 안 주면 sonner 라이브러리
+          // 기본값이 적용돼, 라이브러리가 바뀌면 조용히 따라 움직인다.
+          padding: "var(--spacing-md) var(--spacing-lg)",
+          minHeight: "52px",
+          boxSizing: "border-box",
+          alignItems: "center",
         },
         classNames: {
           title: "group-[.toast]:text-title-sm group-[.toast]:font-semibold",
