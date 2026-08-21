@@ -195,12 +195,6 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
         />
       </Section>
 
-      {/* 실행 시각 — 이 시각으로 실행분이 만들어진다. 예전에는 09:00 고정이었고
-          서버 컬럼 기본값도 09:00 이라 안 고르면 지금과 같다. */}
-      <Section title={t('executionTimeTitle')}>
-        <InputTimePicker value={executionTime} onValueChange={setExecutionTime} />
-      </Section>
-
       <Section title={t('frequencyTitle')}>
         <Tabs
           value={frequency}
@@ -255,6 +249,13 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
           </div>
         </Section>
       )}
+
+      {/* 실행 시각 — 이 시각으로 실행분이 만들어진다. 예전에는 09:00 고정이었고
+          서버 컬럼 기본값도 09:00 이라 안 고르면 지금과 같다.
+          자리는 앱 드로어와 맞춘다(주기 다음, 종료 앞). */}
+      <Section title={t('executionTimeTitle')}>
+        <InputTimePicker value={executionTime} onValueChange={setExecutionTime} />
+      </Section>
 
       <Section title={t('endTitle')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
