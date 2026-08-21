@@ -83,7 +83,7 @@ export function HideAmountsSection({
 
   const commit = () => {
     setHiddenCards(draft)
-    toast(t('hideAmounts.saved'))
+    toast.success(t('hideAmounts.saved'))
     onBack()
   }
 

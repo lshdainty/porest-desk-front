@@ -80,7 +80,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
   const onSubscribe = () =>
     subscribe.mutate(upgradePlan?.planCode ?? 'SECURITIES', {
       onSuccess: () => {
-        toast(t('toast.subscribed'))
+        toast.success(t('toast.subscribed'))
         onClose()
       },
       onError: () => toast.error(t('toast.subscribeFailed')),
@@ -88,7 +88,7 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
   const onCancel = () =>
     cancel.mutate(undefined, {
       onSuccess: () => {
-        toast(t('toast.canceled'))
+        toast.success(t('toast.canceled'))
         onClose()
       },
       onError: () => toast.error(t('toast.cancelFailed')),

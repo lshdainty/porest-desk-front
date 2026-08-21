@@ -38,7 +38,7 @@ export function TossConnectCard() {
       { clientId: clientId.trim(), clientSecret: clientSecret.trim() },
       {
         onSuccess: () => {
-          toast(t('toss.toastConnected'))
+          toast.success(t('toss.toastConnected'))
           setClientId('')
           setClientSecret('')
         },
@@ -48,7 +48,7 @@ export function TossConnectCard() {
   }
   const onDisconnect = () =>
     disconnect.mutate(undefined, {
-      onSuccess: () => toast(t('toss.toastDisconnected')),
+      onSuccess: () => toast.success(t('toss.toastDisconnected')),
       onError: () => toast.error(t('toss.toastDisconnectFailed')),
     })
 

@@ -226,7 +226,7 @@ export const SettingsPage = () => {
 
     if (linked) {
       const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? linked
-      toast(t('account.toast.linked', { name }))
+      toast.success(t('account.toast.linked', { name }))
       queryClient.invalidateQueries({ queryKey: oauthKeys.all })
     } else if (linkError) {
       toast.error(linkError || t('account.toast.linkError'))
@@ -629,7 +629,7 @@ function AccountSection({
   const onUnlinkGoogle = () => {
     unlinkGoogle.mutate('google', {
       // onSuccess 에서 provider 목록 재조회(invalidate) → 상태 자동 갱신.
-      onSuccess: () => toast(t('account.toast.unlinked')),
+      onSuccess: () => toast.success(t('account.toast.unlinked')),
     })
   }
 
