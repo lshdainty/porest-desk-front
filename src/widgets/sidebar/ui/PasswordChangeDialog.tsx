@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useChangePasswordMutation } from '@/features/user'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
+import { useIsMobile } from '@/shared/hooks'
 import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -105,6 +106,7 @@ type PasswordChangeFormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialogProps) => {
   const { t } = useTranslation('user')
+  const isMobile = useIsMobile()
   const { t: tc } = useTranslation('common')
   const changePasswordMutation = useChangePasswordMutation()
 
@@ -164,10 +166,10 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
     <ModalShell
       title={t('passwordChange')}
       onClose={() => onOpenChange(false)}
-      // 모바일에서도 drawer 가 아니라 dialog 로 띄운다 — 앱이 PFormAlertDialog
-      // (다이얼로그)라 등장 방식을 맞춘다. 폭은 DialogContent 가
-      // max-w-[calc(100%-40px)] 로 클램프해 좁은 화면에서도 넘치지 않는다.
-      mobile={false}
+      // 모바일은 drawer 로 둔다. 규칙 체크리스트(8자 이상·특수문자)와 불일치 문구가
+      // 입력 중에 붙었다 떨어졌다 하며 세로가 길어지는데, 가운데 뜨는 dialog 는
+      // 그때마다 위아래로 튄다. 시트는 아래에 붙어 있어 늘어나도 흔들리지 않는다.
+      mobile={isMobile}
       size="sm"
       footer={Footer}
     >
