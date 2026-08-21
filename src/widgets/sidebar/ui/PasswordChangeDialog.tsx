@@ -11,7 +11,6 @@ import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Form } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { useIsMobile } from '@/shared/hooks'
 import { PASSWORD_RULES, isPasswordValid } from '@/shared/lib'
 
 interface PasswordChangeDialogProps {
@@ -108,7 +107,6 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
   const { t } = useTranslation('user')
   const { t: tc } = useTranslation('common')
   const changePasswordMutation = useChangePasswordMutation()
-  const isMobile = useIsMobile()
 
   const form = useForm<PasswordChangeFormValues>({
     resolver: zodResolver(createFormSchema(t)),
@@ -166,7 +164,10 @@ export const PasswordChangeDialog = ({ open, onOpenChange }: PasswordChangeDialo
     <ModalShell
       title={t('passwordChange')}
       onClose={() => onOpenChange(false)}
-      mobile={isMobile}
+      // 모바일에서도 drawer 가 아니라 dialog 로 띄운다 — 앱이 PFormAlertDialog
+      // (다이얼로그)라 등장 방식을 맞춘다. 폭은 DialogContent 가
+      // max-w-[calc(100%-40px)] 로 클램프해 좁은 화면에서도 넘치지 않는다.
+      mobile={false}
       size="sm"
       footer={Footer}
     >
