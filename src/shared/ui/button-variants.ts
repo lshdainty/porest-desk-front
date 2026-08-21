@@ -7,7 +7,9 @@ import { cva } from "class-variance-authority"
 export const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-[var(--spacing-sm)] whitespace-nowrap select-none",
-    "rounded-sm font-sans font-medium tracking-[-0.005em] leading-none",
+    // button.md Sizes: md·lg = radius md(8px), xs·sm = radius sm(4px).
+    // 기본을 md 로 두고 작은 사이즈만 아래에서 sm 으로 덮는다(뒤에 오는 쪽이 이긴다).
+    "rounded-md font-sans font-medium tracking-[-0.005em] leading-none",
     "transition-[box-shadow,background-color,color,border-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
