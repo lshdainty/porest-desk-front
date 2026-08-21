@@ -50,7 +50,8 @@ const dialogContentVariants = cva(
     "fixed left-1/2 top-1/2 z-[101] -translate-x-1/2 -translate-y-1/2",
     "max-h-[86vh] max-w-[calc(100%-40px)]",
     "flex flex-col overflow-hidden",
-    "bg-[var(--bg-surface)] rounded-[var(--radius-xl)]",
+    // popup 은 radius-lg(12) — dialog.md. 안에 놓이는 버튼(radius-md 8)과 맞물린다.
+    "bg-[var(--bg-surface)] rounded-lg",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
     "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",

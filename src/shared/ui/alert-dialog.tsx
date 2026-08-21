@@ -53,8 +53,9 @@ const alertDialogContentVariants = cva(
     variants: {
       size: {
         sm: "[--dialog-max-w:384px] p-[var(--spacing-xl)] rounded-lg",
-        md: "[--dialog-max-w:480px] p-[var(--spacing-2xl)] rounded-xl",
-        lg: "[--dialog-max-w:640px] p-[var(--spacing-2xl)] rounded-xl",
+        // popup 은 세 사이즈 모두 radius-lg(12) — dialog.md. 시트/드로어(20)와 갈라 둔다.
+        md: "[--dialog-max-w:480px] p-[var(--spacing-2xl)] rounded-lg",
+        lg: "[--dialog-max-w:640px] p-[var(--spacing-2xl)] rounded-lg",
       },
     },
     defaultVariants: { size: "md" },
