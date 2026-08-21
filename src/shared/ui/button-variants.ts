@@ -7,9 +7,10 @@ import { cva } from "class-variance-authority"
 export const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-[var(--spacing-sm)] whitespace-nowrap select-none",
-    // button.md Sizes: md·lg = radius md(8px), xs·sm = radius sm(4px).
-    // 기본을 md 로 두고 작은 사이즈만 아래에서 sm 으로 덮는다(뒤에 오는 쪽이 이긴다).
-    "rounded-md font-sans font-medium tracking-[-0.005em] leading-none",
+    // specs/components/button.md: "container 는 radius-sm(4px) 고정".
+    // sm·md 는 4, lg·icon 만 아래에서 rounded-md(8) 로 덮고 iconLg 는 full.
+    // (DESIGN.desk.md 표에는 md 가 8 로 적혀 있으나 그쪽이 오래된 사본이다.)
+    "rounded-sm font-sans font-medium tracking-[-0.005em] leading-none",
     "transition-[box-shadow,background-color,color,border-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
@@ -57,7 +58,7 @@ export const buttonVariants = cva(
         // lg 은 모바일 sheet/dialog footer 의 한 손 조작 폭 — 48×48(touch-comfortable),
         // radius md(8px). 앱 PButton lg 및 button.md Sizes 표와 같은 값이다.
         // 예전 h-11(44)·rounded-sm(4)·px-5 는 앱보다 납작하고 각졌다.
-        lg:      "h-12 px-4 py-3 text-base rounded-md [&_svg]:size-[18px]",
+        lg:      "h-12 px-4 py-3 text-title-sm rounded-md [&_svg]:size-[18px]",
         icon:    "h-9 w-9 p-0 rounded-md [&_svg]:size-4",
         // 모바일 크롬 헤더(m-header) 전용 — 36×36 원형 + glyph 20px.
         // ghost 조합에서도 보조톤 약화 없이 중립(text-primary) 유지. button.md v97.
