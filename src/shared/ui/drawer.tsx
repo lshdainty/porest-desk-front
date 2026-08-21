@@ -16,7 +16,7 @@ import { cn } from "@/shared/lib"
  *
  * Porest 시각:
  *   - overlay: var(--overlay-dim-light) light / var(--overlay-dim-dark) dark
- *   - content: bg-[var(--bg-surface)] + rounded-t-[radius-xl] + shadow-xl inline
+ *   - content: bg-[var(--bg-surface)] + rounded-t-[radius-2xl] + shadow-xl inline
  *   - handle: 40×4 + bg-surface-input + rounded-full
  */
 
@@ -56,7 +56,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-xl)] bg-[var(--bg-surface)] outline-none",
+        "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-2xl)] bg-[var(--bg-surface)] outline-none",
         className,
       )}
       style={{ boxShadow: "var(--shadow-xl)", ...style }}
