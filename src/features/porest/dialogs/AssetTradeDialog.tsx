@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { ModalFooter } from '@/shared/ui/porest/modal-footer'
 import { Field, FieldLabel } from '@/shared/ui/field'
@@ -133,7 +132,6 @@ export function AssetTradeDialog({
       payload,
       {
         onSuccess: () => {
-          toast.success(isSell ? t('trade.sold') : t('trade.bought'))
           onClose()
         },
         // onError: 전역 인터셉터가 서버 메시지를 토스트로 노출(예수금 부족·수량 부족 등)

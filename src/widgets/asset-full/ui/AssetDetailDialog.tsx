@@ -333,7 +333,6 @@ function CardDetailBody({
     payCard.mutate({ id: asset.rowId, amount: payAmountNum }, {
       onSuccess: () => {
         setConfirmPay(false)
-        toast.success(t('assetDetail.toastPaid'))
       },
       onError: () => {
         setConfirmPay(false)
@@ -658,7 +657,6 @@ function CardDetailBody({
             cancelPayment.mutate(lastPayment.rowId, {
               onSuccess: () => {
                 setConfirmCancelPay(false)
-                toast.success(t('assetDetail.toastPaymentCancelled'))
               },
               onError: () => setConfirmCancelPay(false),
             })
@@ -875,7 +873,6 @@ function TradeHistory({ assetRowId }: { assetRowId: number }) {
           onConfirm={() =>
             deleteMut.mutate(confirmDelete, {
               onSuccess: () => {
-                toast.success(t('trade.deleted'))
                 setConfirmDelete(null)
               },
             })
