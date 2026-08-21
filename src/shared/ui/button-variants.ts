@@ -48,7 +48,10 @@ export const buttonVariants = cva(
         // — 기존 호환층(px-3·13px·gap-5)이 앱 PButton sm 보다 커 보이던 문제 정리.
         sm:      "h-8 px-2 py-1 text-caption rounded-[var(--radius-sm)] [&_svg]:size-3.5",
         md:      "h-10 px-3 py-2 text-sm [&_svg]:size-4",
-        lg:      "h-11 px-5 py-3 text-base [&_svg]:size-[18px]",
+        // lg 은 모바일 sheet/dialog footer 의 한 손 조작 폭 — 48×48(touch-comfortable),
+        // radius md(8px). 앱 PButton lg 및 button.md Sizes 표와 같은 값이다.
+        // 예전 h-11(44)·rounded-sm(4)·px-5 는 앱보다 납작하고 각졌다.
+        lg:      "h-12 px-4 py-3 text-base rounded-md [&_svg]:size-[18px]",
         icon:    "h-9 w-9 p-0 rounded-md [&_svg]:size-4",
         // 모바일 크롬 헤더(m-header) 전용 — 36×36 원형 + glyph 20px.
         // ghost 조합에서도 보조톤 약화 없이 중립(text-primary) 유지. button.md v97.
