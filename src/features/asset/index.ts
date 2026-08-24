@@ -23,8 +23,8 @@ export {
   useDeleteTrade,
 } from './model/useAssets'
 export {
-  useTossValuationMap,
+  useInvestValuationMap,
   useInvestValuation,
   holdingsOf,
   type InvestValuation,
-} from './model/useTossValuation'
+} from './model/useInvestValuation'

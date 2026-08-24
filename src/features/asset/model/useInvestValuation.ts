@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
+import { useSecuritiesPrices, useSecuritiesExchangeRate } from '@/features/stock/model/useSecuritiesPrices'
+import { usePrevCloses } from '@/features/stock/model/useTossStocks'
 import { qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
 
 /** 투자 자산의 라이브 평가 요약 — value(평가액), changeAmt/changePct(전일 대비, 연동 종목만). */
@@ -37,34 +38,51 @@ export function linkedSymbolsOf(assets: Asset[]): string[] {
 /**
  * 투자 자산들의 라이브 평가 맵 (assetRowId → {value, changeAmt, changePct}).
  *
- * - 평가액 = Σ 보유: 연동(linked) = 토스 현재가 × 수량(외화는 환율 환산),
+ * - 평가액 = Σ 보유: 연동(linked) = 현재가 × 수량(외화는 환율 환산),
  *   수동 = holdingValue 그대로.
- * - 프로(SECURITIES)+토스 연결이 아니거나, 연동 종목 시세가 하나라도 미확보면
+ * - 시세·환율은 **증권사 무관 경로**(/v1/securities/**)로 받는다. 서버가 사용자가 고른
+ *   기본 소스로 대신 조회하므로 여기서 증권사를 알 필요가 없다. 예전에는 토스 경로를
+ *   직접 불러 나무만 연결한 사용자의 평가액이 0/누락으로 보였다.
+ * - 프로(SECURITIES)+증권사 연결이 아니거나, 연동 종목 시세가 하나라도 미확보면
  *   그 자산은 맵에서 제외(DB balance 유지 — 0 왜곡 방지, 기존 단일 연동과 동일 정책).
  * - 등락(changeAmt/Pct)은 전일 종가가 확보된 연동 종목만 합산. 기준이 하나도 없으면 null.
- * - useTossPrices 10초 폴링 → 자산 화면 실시간 갱신.
+ * - 10초 폴링 → 자산 화면 실시간 갱신.
  */
 export function useInvestValuation(investAssets: Asset[]): Map<number, InvestValuation> {
   const { data: features } = useMyFeatures()
   const enabled =
     (features?.features?.includes('SECURITIES') ?? false) && ((features?.connectedBrokers?.length ?? 0) > 0)
   const symbols = useMemo(() => linkedSymbolsOf(investAssets), [investAssets])
-  // 토스 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자가 호출하면 403.
+  // 증권 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자가 호출하면 403.
   const active = enabled && symbols.length > 0
   const activeSymbols = useMemo(() => (active ? symbols : []), [active, symbols])
-  const pricesQ = useTossPrices(activeSymbols)
-  const fxQ = useTossExchangeRate(active) // USD→KRW
-  const prevCloses = usePrevCloses(activeSymbols)
+  const pricesQ = useSecuritiesPrices(activeSymbols)
+  const fxQ = useSecuritiesExchangeRate(active) // USD→KRW
+
+  // 전일 종가는 증권사마다 사정이 다르다. 나무는 시세 응답에 딸려 오고(위 pricesQ 에 들어 있다),
+  // 토스는 캔들을 종목마다 따로 받아야 한다. 그래서 토스가 기본 소스일 때만 캔들을 부른다 —
+  // 나무 사용자가 이걸 부르면 토스 크리덴셜이 없어 403 이다.
+  const needsCandleFallback = active && features?.primaryBroker === 'TOSS'
+  const candleSymbols = useMemo(
+    () => (needsCandleFallback ? activeSymbols : []),
+    [needsCandleFallback, activeSymbols],
+  )
+  const candlePrevCloses = usePrevCloses(candleSymbols)
 
   return useMemo(() => {
     const map = new Map<number, InvestValuation>()
     if (!active) return map
     const infoBySymbol = new Map<string, { price: number; currency: string }>()
+    // 응답에 전일 종가가 실려 오면 그걸 쓰고(나무), 없으면 캔들 폴백을 본다(토스).
+    const prevCloses = new Map<string, number>(candlePrevCloses)
     for (const p of pricesQ.data ?? []) {
-      const v = Number.parseFloat(p.lastPrice)
-      if (Number.isFinite(v)) infoBySymbol.set(p.symbol, { price: v, currency: p.currency })
+      if (!Number.isFinite(p.price)) continue
+      infoBySymbol.set(p.symbol, { price: p.price, currency: p.currency })
+      if (p.previousClose != null && Number.isFinite(p.previousClose)) {
+        prevCloses.set(p.symbol, p.previousClose)
+      }
     }
-    const fx = Number.parseFloat(fxQ.data?.rate ?? '')
+    const fx = fxQ.data?.rate ?? Number.NaN
     const toKrw = (price: number, currency: string): number | null => {
       if (currency === 'KRW') return price
       // 환율 미확보 외화는 제외(왜곡 방지).
@@ -109,14 +127,14 @@ export function useInvestValuation(investAssets: Asset[]): Map<number, InvestVal
       map.set(a.rowId, { value, changeAmt: hasChangeBase ? changeAmt : null, changePct })
     }
     return map
-  }, [active, investAssets, pricesQ.data, fxQ.data, prevCloses])
+  }, [active, investAssets, pricesQ.data, fxQ.data, candlePrevCloses])
 }
 
 /**
- * (하위호환) 토스 연동 투자 자산의 라이브 평가액(KRW) 맵 (assetRowId → 평가액).
+ * (하위호환) 연동 투자 자산의 라이브 평가액(KRW) 맵 (assetRowId → 평가액).
  * holdings 도입 후에도 기존 호출부(합계 보정 등)가 값만 쓰는 경우를 위해 유지.
  */
-export function useTossValuationMap(linkedAssets: Asset[]): Map<number, number> {
+export function useInvestValuationMap(linkedAssets: Asset[]): Map<number, number> {
   const full = useInvestValuation(linkedAssets)
   return useMemo(() => {
     const map = new Map<number, number>()
