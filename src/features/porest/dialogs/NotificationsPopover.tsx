@@ -3,6 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { useMarkAllRead, useMarkRead, useNotifications } from '@/features/notification'
+import { useNow } from '@/shared/hooks'
 import { NotificationRow } from '@/entities/notification'
 import type { Notification } from '@/entities/notification'
 
@@ -14,6 +15,9 @@ export function NotificationsPopover({
   onGoSettings?: () => void
 }) {
   const { t } = useTranslation('notification')
+  // 상대시각 기준점 — 벨·알림 페이지와 같은 훅. 팝오버는 오래 열어 두면 그 사이에도
+  // 시각이 흘러야 한다.
+  const now = useNow()
   const { data, isLoading } = useNotifications()
   const markRead = useMarkRead()
   const markAllRead = useMarkAllRead()
@@ -120,6 +124,7 @@ export function NotificationsPopover({
             <NotificationRow
               key={n.rowId}
               notification={n}
+              now={now}
               onClick={() => {
                 if (!n.isRead) markRead.mutate(n.rowId)
               }}

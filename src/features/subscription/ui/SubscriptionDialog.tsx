@@ -8,6 +8,7 @@ import { Badge } from '@/shared/ui/badge'
 import { Card } from '@/shared/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { KRW, money } from '@/shared/lib/porest/format'
+import { toLocalDateKey } from '@/shared/lib/date'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +69,15 @@ export function SubscriptionDialog({ onClose, mobile }: { onClose: () => void; m
 
   const isPro = featuresQ.data?.features?.includes('SECURITIES') ?? false
   const sub = subQ.data
-  const nextBill = sub?.currentPeriodEnd ? sub.currentPeriodEnd.slice(0, 10) : null
+  // currentPeriodEnd 는 서버가 시간대 없이 주는 `[UTC]` (백엔드 UserSubscription 의
+  // LocalDateTime). 자르면 UTC 날짜가 나와 KST(+9)에서 하루 이르게 보인다 —
+  // 설정 화면(SettingsPage)의 '다음 결제'와 같은 값이라 같은 방식으로 읽어야
+  // 두 화면이 다른 날짜를 말하지 않는다.
+  // 못 읽는 값이면 원문 앞 10자로 떨어뜨린다 — 앱(subscription_sheet.dart·account_screen.dart)과
+  // 같은 폴백이다. null 로 두면 날짜가 통째로 사라져 앱은 날짜를 보여 주는데 웹만 안 보여 준다.
+  const nextBill = sub?.currentPeriodEnd
+    ? (toLocalDateKey(sub.currentPeriodEnd) ?? sub.currentPeriodEnd.slice(0, 10))
+    : null
   const upgradePlan = plansQ.data?.[0]
 
   const proMonthly = 9_900

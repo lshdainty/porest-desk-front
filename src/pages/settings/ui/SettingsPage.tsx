@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isEn } from '@/shared/lib/porest/format'
+import { parseServerUtc, toLocalDateKey } from '@/shared/lib/date'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
@@ -615,9 +616,20 @@ function AccountSection({
   const featuresQ = useMyFeatures()
   const subQ = useMySubscription()
   const isPro = featuresQ.data?.features?.includes('SECURITIES') ?? false
-  const nextBill = subQ.data?.currentPeriodEnd ? subQ.data.currentPeriodEnd.slice(0, 10) : null
+  // currentPeriodEnd 는 서버가 시간대 없이 주는 `[UTC]` (백엔드 UserSubscription 의
+  // LocalDateTime). 문자열을 자르면 UTC 날짜가 그대로 나와, UTC 15:00 이후에 갱신된
+  // 구독은 KST(+9)에서 다음 결제일이 **항상 하루 이르게** 보인다. 로컬 날짜로 옮긴다.
+  // toLocalDateKey 는 null·빈 값·파싱 실패에 null 을 주므로 아래 null 분기가 그대로 산다.
+  // 못 읽는 값이면 원문 앞 10자로 떨어뜨린다 — 앱(subscription_sheet.dart·account_screen.dart)과
+  // 같은 폴백이다. null 로 두면 날짜가 통째로 사라져 앱은 날짜를 보여 주는데 웹만 안 보여 준다.
+  const periodEnd = subQ.data?.currentPeriodEnd
+  const nextBill = periodEnd ? (toLocalDateKey(periodEnd) ?? periodEnd.slice(0, 10)) : null
 
   const nameInitial = user?.userName ? user.userName.charAt(0) : '?'
+
+  // 가입 시각은 서버가 시간대 없이 주는 `[UTC]` — 그대로 읽으면 로컬로 둔갑해
+  // 월말·월초 가입자가 한 달 이른/늦은 달로 보인다.
+  const joinedAt = parseServerUtc(user?.joinedAt)
 
   // 소셜 계정 연동 — Google 만 서버 지원. provider 상태로 '연결/해제' 버튼과 desc 결정.
   const providersQ = useOAuthProviders()
@@ -704,12 +716,12 @@ function AccountSection({
             {isPro ? 'Pro' : 'Free'}
           </span>
         </div>
-        {user?.joinedAt && (
+        {joinedAt && (
           <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
             {t('account.joined', {
               date: isEn()
-                ? new Date(user.joinedAt).toLocaleDateString('en', { year: 'numeric', month: 'short' })
-                : `${new Date(user.joinedAt).getFullYear()}년 ${new Date(user.joinedAt).getMonth() + 1}월`,
+                ? joinedAt.toLocaleDateString('en', { year: 'numeric', month: 'short' })
+                : `${joinedAt.getFullYear()}년 ${joinedAt.getMonth() + 1}월`,
             })}
           </div>
         )}

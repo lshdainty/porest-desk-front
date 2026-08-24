@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { parseServerUtc } from '@/shared/lib/date'
+import { useNow } from '@/shared/hooks'
 import { useAuth } from '@/features/auth/model/useAuth'
 import {
   useDeviceSessions,
@@ -32,7 +33,11 @@ const KIND_ICON: Record<DeviceKind, typeof Monitor> = {
 export function DevicesSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('settings')
   const { logout } = useAuth()
-  const { data: devices = [], isLoading, isError, dataUpdatedAt } = useDeviceSessions()
+  const { data: devices = [], isLoading, isError } = useDeviceSessions()
+  // 흐르는 '지금' — 목록을 받아 온 시각(dataUpdatedAt)이 아니다. useDeviceSessions 에
+  // refetchInterval 이 없어 설정 화면을 열어 두면 그 값이 갱신되지 않아 '방금' 에 멈춘다.
+  // 앱(devices_screen.dart 의 nowTickProvider)과 같은 1분 해상도를 쓴다.
+  const now = useNow()
   const revoke = useRevokeDeviceMutation()
   const revokeAll = useRevokeAllDevicesMutation()
 
@@ -99,7 +104,7 @@ export function DevicesSection({ mobile }: { mobile: boolean }) {
           <DeviceRow
             key={d.sessionId}
             device={d}
-            now={dataUpdatedAt}
+            now={now}
             isFirst={i === 0}
             busy={revoke.isPending && revoke.variables === d.sessionId}
             onRevoke={() => setConfirming(d)}
@@ -227,8 +232,9 @@ function DeviceRow({
  * UTC 가 로컬로 둔갑해 KST 에서 9시간이 어긋난다.
  *
  * 기준점([now])을 인자로 받는다. 렌더 중에 `Date.now()` 를 부르면 같은 입력이
- * 렌더마다 다른 결과를 내 순수하지 않다(react-hooks/purity). 호출부는 react-query 의
- * `dataUpdatedAt` 을 넘기는데, 뜻도 그쪽이 맞다 — 이 목록은 그 순간의 스냅샷이다.
+ * 렌더마다 다른 결과를 내 순수하지 않다(react-hooks/purity). 호출부는 `useNow()` 가 주는
+ * **흐르는 '지금'** 을 넘긴다 — react-query 의 `dataUpdatedAt` 을 넘기면 안 된다.
+ * 그건 '목록을 받아 온 시각' 이라 재조회가 없는 동안 표시가 얼어붙는다.
  */
 function relativeTime(
   t: (key: string, opts?: { count: number }) => string,

@@ -12,10 +12,19 @@ import type { Notification } from '../model/types'
  */
 export function NotificationRow({
   notification,
+  now,
   onClick,
   trailing,
 }: {
   notification: Notification
+  /**
+   * 상대시각의 기준점 — 호출부에서 `useNow()` 로 받아 내린다.
+   *
+   * 기본값을 주지 않는다. 기본값이 있으면 안 넘긴 호출부가 조용히 다른 기준을 쓰게
+   * 되는데, 그래서 같은 알림이 벨과 알림 페이지에서 서로 다른 문구로 보였다.
+   * 필수로 두면 새 호출부가 생겨도 컴파일이 먼저 붙잡는다.
+   */
+  now: number
   onClick?: () => void
   /** 행 우측 끝 추가 액션(Page 삭제 버튼). 미지정 시 SoT(Popover) 3슬롯 그대로. */
   trailing?: ReactNode
@@ -36,7 +45,7 @@ export function NotificationRow({
         </div>
         <div className="notif-row__desc">{notification.message}</div>
       </div>
-      <div className="notif-row__time">{relativeTime(notification.createAt)}</div>
+      <div className="notif-row__time">{relativeTime(notification.createAt, now)}</div>
       {trailing}
     </div>
   )

@@ -4,6 +4,7 @@ import type { Asset, AssetTransferFormValues } from '@/entities/asset'
 import { Input } from '@/shared/ui/input'
 import { InputDatePicker } from '@/shared/ui/input-date-picker'
 import { Label } from '@/shared/ui/label'
+import { todayLocalKey } from '@/shared/lib/date'
 import {
   Select,
   SelectContent,
@@ -32,7 +33,9 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
   const [amount, setAmount] = useState('')
   const [fee, setFee] = useState('')
   const [description, setDescription] = useState('')
-  const [transferDate, setTransferDate] = useState(new Date().toISOString().split('T')[0] ?? '')
+  // transferDate 는 사용자가 고르는 벽시계라 UTC 로 잡으면 안 된다 — `toISOString()` 은
+  // UTC 날짜여서 KST 00:00~09:00 에 열면 하루 이른 거래일이 그대로 저장된다.
+  const [transferDate, setTransferDate] = useState(todayLocalKey)
 
   const handleSubmit = useCallback(() => {
     if (!fromAssetRowId || !toAssetRowId || !amount || fromAssetRowId === toAssetRowId) return

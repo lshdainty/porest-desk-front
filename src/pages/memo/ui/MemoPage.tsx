@@ -10,6 +10,7 @@ import {
   useDeleteMemo,
 } from '@/features/memo'
 import type { Memo, MemoFormValues } from '@/entities/memo'
+import { parseServerUtc } from '@/shared/lib/date'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { SwipeActions } from '@/shared/ui/swipe-actions'
@@ -96,12 +97,18 @@ function resolveTone(color: string | null | undefined): ResolvedTone {
  */
 const memoLabel = (title: string, t: (k: string) => string) => title || t('untitled')
 
+/**
+ * 리스트·상세의 수정 시각 도장 — 'MM/DD · HH:MM'.
+ *
+ * modifyAt 은 서버가 시간대 없이 주는 `[UTC]` 라 문자열을 그대로 자르면 KST(+9)에서
+ * 9시간 이른 시각이(자정 근처면 전날 날짜까지) 찍힌다. 그래서 파싱해 로컬로 옮긴다.
+ * 못 읽는 값은 예전처럼 빈 문자열 — 도장이 없는 게 틀린 시각보다 낫다.
+ */
 function formatStamp(iso: string): string {
-  if (!iso) return ''
-  // slice(5,16): 'MM-DD HH:MM' → '/' · ' '→' · '
-  const s = iso.replace('T', ' ').slice(5, 16)
-  if (s.length < 11) return s.replace('-', '/')
-  return `${s.slice(0, 5).replace('-', '/')} · ${s.slice(6)}`
+  const d = parseServerUtc(iso)
+  if (!d) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} · ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function SectionLabel({ icon, label }: { icon: 'pin' | 'note'; label: string }) {

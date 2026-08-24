@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { money } from '@/shared/lib/porest/format'
+import { todayLocalKey } from '@/shared/lib/date'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type { Expense } from '@/entities/expense'
@@ -18,7 +19,7 @@ import type {
   RecurringFrequency,
   RecurringTransactionFormValues,
 } from '@/entities/recurring-transaction'
-import { previewNextDates, addYears, todayIso, formatKoreanMonthDay } from './recurring-date'
+import { previewNextDates, addYears, formatKoreanMonthDay } from './recurring-date'
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
   { v: 'DAILY', lKey: 'freq.DAILY' },
@@ -44,7 +45,7 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   const categoriesQ = useExpenseCategories()
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
 
-  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayIso()
+  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayLocalKey()
   const baseDate = new Date(expenseDay)
   const baseDow = isNaN(baseDate.getTime()) ? 1 : baseDate.getDay() // 0=일~6=토 (UI 인덱스)
   const baseDom = isNaN(baseDate.getTime()) ? 1 : baseDate.getDate()
