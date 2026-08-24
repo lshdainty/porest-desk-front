@@ -5,6 +5,16 @@ import { useQuery } from '@tanstack/react-query'
 import { namuApi } from '../api/namuApi'
 import type { StockMasterItem } from '../api/stockApi'
 
+/** 나무 보유 종목. 통화가 KRW 면 국내, 그 밖이면 해외 — 서버가 엔드포인트를 가른다. */
+export function useNamuHoldings(currency: string) {
+  return useQuery({
+    queryKey: ['namu', 'holdings', currency],
+    queryFn: () => namuApi.getHoldings(currency),
+    retry: false,
+    staleTime: 30_000,
+  })
+}
+
 /** 선택 종목의 나무 현재가. 국내·해외 분기는 stock_master 의 국가코드가 정한다. */
 export function useNamuPrice(item: StockMasterItem | null) {
   return useQuery({
