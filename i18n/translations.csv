@@ -1988,6 +1988,15 @@ stocks,warning.VI_STATIC_AND_DYNAMIC,VI 발동,Volatility interruption
 stocks,warning.STOCK_WARRANTS,신주인수권,Stock warrants
 stocks,warning.ADMINISTRATIVE,관리종목,Administrative issue
 stocks,warning.ADJUSTMENT_OF_SHARES,주식병합·분할,Share adjustment
+stocks,broker.toss,토스증권,Toss Securities
+stocks,broker.namu,나무증권,NAMUH Securities
+stocks,broker.unsupported,아직 지원하지 않는 증권사예요. 잠시 후 다시 확인해 주세요.,That provider isn't supported yet. Please check back shortly.
+stocks,namu.searchPrompt,종목명이나 코드를 두 글자 이상 입력해 보세요,Type at least two characters of a name or code
+stocks,namu.scopeNotice,지금은 종목 검색과 현재가까지 볼 수 있어요. 나무증권 전용 정보는 순서대로 추가할게요.,For now you can search instruments and see current prices. Provider-specific data is coming next.
+stocks,namu.priceError,현재가를 불러오지 못했어요,Couldn't load the current price
+stocks,namu.priceEmpty,현재가가 없는 종목이에요,No current price for this instrument
+stocks,search.error,검색에 실패했어요,Search failed
+stocks,search.empty,검색 결과가 없어요,No results
 stats,page.title,통계·분석,Statistics
 stats,uncategorized,미분류,Uncategorized
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
