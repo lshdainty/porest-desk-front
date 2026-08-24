@@ -47,7 +47,7 @@ export function linkedSymbolsOf(assets: Asset[]): string[] {
 export function useInvestValuation(investAssets: Asset[]): Map<number, InvestValuation> {
   const { data: features } = useMyFeatures()
   const enabled =
-    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+    (features?.features?.includes('SECURITIES') ?? false) && ((features?.connectedBrokers?.length ?? 0) > 0)
   const symbols = useMemo(() => linkedSymbolsOf(investAssets), [investAssets])
   // 토스 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자가 호출하면 403.
   const active = enabled && symbols.length > 0

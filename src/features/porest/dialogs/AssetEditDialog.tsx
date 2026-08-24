@@ -234,7 +234,7 @@ export function AssetEditDialog({
   const debouncedStockQ = useDebounced(stockQ.trim(), 300)
   const { data: features } = useMyFeatures()
   const liveEnabled =
-    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+    (features?.features?.includes('SECURITIES') ?? false) && ((features?.connectedBrokers?.length ?? 0) > 0)
   const { data: stockMatches = [], isFetching: stockSearching } = useStockSearch(
     editingGroup === 'invest' ? debouncedStockQ : '',
   )

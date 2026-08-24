@@ -4,7 +4,7 @@ import { subscriptionApi } from '../api/subscriptionApi'
 
 const SECURITIES = 'SECURITIES'
 
-/** 내 기능권한 + 토스 연결상태. 메뉴 게이트·설정의 단일 소스. */
+/** 내 기능권한 + 증권사 연결상태. 메뉴 게이트·설정의 단일 소스. */
 export const useMyFeatures = () =>
   useQuery({
     queryKey: subscriptionKeys.myFeatures(),
@@ -52,32 +52,46 @@ export const useCancelSubscription = () => {
   })
 }
 
-export const useTossCredentialStatus = () =>
+/** 증권사를 하나라도 연결했는지 — 자산 연동·증권 화면 노출 판정. */
+export const useHasBrokerConnection = (): boolean => {
+  const { data } = useMyFeatures()
+  return (data?.connectedBrokers?.length ?? 0) > 0
+}
+
+/** 전 증권사 연결 상태(미연결 포함). 설정 화면이 목록을 그리는 소스. */
+export const useBrokerConnections = () =>
   useQuery({
-    queryKey: subscriptionKeys.tossCredential(),
-    queryFn: () => subscriptionApi.getTossCredentialStatus(),
+    queryKey: subscriptionKeys.brokerConnections(),
+    queryFn: () => subscriptionApi.getBrokerConnections(),
     staleTime: 60_000,
   })
 
-export const useRegisterTossCredential = () => {
+const invalidateBrokers = (qc: ReturnType<typeof useQueryClient>) => {
+  qc.invalidateQueries({ queryKey: subscriptionKeys.brokerConnections() })
+  qc.invalidateQueries({ queryKey: subscriptionKeys.myFeatures() })
+}
+
+export const useRegisterBrokerCredential = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ clientId, clientSecret }: { clientId: string; clientSecret: string }) =>
-      subscriptionApi.registerTossCredential(clientId, clientSecret),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionKeys.tossCredential() })
-      qc.invalidateQueries({ queryKey: subscriptionKeys.myFeatures() })
-    },
+    mutationFn: ({ broker, apiKey, apiSecret }: { broker: string; apiKey: string; apiSecret: string }) =>
+      subscriptionApi.registerBrokerCredential(broker, apiKey, apiSecret),
+    onSuccess: () => invalidateBrokers(qc),
   })
 }
 
-export const useDisconnectTossCredential = () => {
+export const useDisconnectBrokerCredential = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: () => subscriptionApi.disconnectTossCredential(),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionKeys.tossCredential() })
-      qc.invalidateQueries({ queryKey: subscriptionKeys.myFeatures() })
-    },
+    mutationFn: (broker: string) => subscriptionApi.disconnectBrokerCredential(broker),
+    onSuccess: () => invalidateBrokers(qc),
+  })
+}
+
+export const useSetPrimaryBroker = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (broker: string) => subscriptionApi.setPrimaryBroker(broker),
+    onSuccess: () => invalidateBrokers(qc),
   })
 }
