@@ -4,6 +4,7 @@
  */
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { stockKeys } from '@/shared/config'
+import { todayLocalKey } from '@/shared/lib/date'
 import { stockApi, type TossRankingDuration, type TossRankingType } from '../api/stockApi'
 
 const COMMON = { retry: false, refetchOnWindowFocus: false, staleTime: 15_000 } as const
@@ -161,6 +162,16 @@ export const useTossIndicatorPrices = (symbols: string[], enabled = true) =>
  * 전일 종가. 토스 /prices 에는 기준가·등락률이 없어 일봉 2개로 도출한다.
  * 오늘 날짜 캔들을 제외한 마지막 종가 = 전일 종가 (장 시작 전이면 마지막 캔들이 곧 전일).
  * 하루에 한 번 바뀌는 값이라 길게 캐시한다.
+ *
+ * '오늘' 은 로컬 날짜를 쓴다([todayLocalKey]) — 앱(`stocks_providers.dart:48`)이 쓰는 기준과
+ * 같게 맞춘 것이다. 예전에는 `new Date().toISOString().slice(0, 10)`(UTC)이라 KST 00:00~09:00
+ * 동안 앱과 웹이 서로 다른 전일 종가를 집었고, 그 값이 등락률(돈 숫자)로 화면에 나갔다.
+ *
+ * ⚠️ **캔들 `timestamp` 의 시간대는 확인되지 않았다.** 백엔드는 이 값을 가공하지 않고
+ * upstream 토스 응답을 그대로 흘린다(`TossMarketDto.Candle.timestamp` 는 raw `String` 이고
+ * 매핑·픽스처가 없다). 거래소 벽시계(KST)라면 지금이 맞지만, `Z`·오프셋이 붙어 온다면
+ * `slice(0, 10)` 이 UTC 날짜를 내므로 로컬 '오늘' 과 맞대는 게 또 다른 미스매치가 된다.
+ * **실제 응답 한 건으로 형식을 확인한 뒤 이 주석을 근거로 바꿔라** — 앱도 같은 가정 위에 있다.
  */
 export const usePrevClose = (symbol: string | null) =>
   useQuery({
@@ -169,7 +180,7 @@ export const usePrevClose = (symbol: string | null) =>
       const page = await stockApi.getCandles(symbol!, '1d', { count: 3 })
       const candles = page.candles
       if (candles.length === 0) return null
-      const today = new Date().toISOString().slice(0, 10)
+      const today = todayLocalKey()
       // 캔들은 최신이 마지막 — 오늘 봉을 빼고 남는 마지막 봉이 전일이다.
       const prev = [...candles].reverse().find(c => c.timestamp.slice(0, 10) !== today)
       const v = Number.parseFloat((prev ?? candles[0]!).closePrice)
@@ -192,7 +203,8 @@ export const usePrevCloses = (symbols: string[]): Map<string, number> => {
         const page = await stockApi.getCandles(symbol, '1d', { count: 3 })
         const candles = page.candles
         if (candles.length === 0) return null
-        const today = new Date().toISOString().slice(0, 10)
+        // usePrevClose 와 같은 이유로 로컬 날짜다 — UTC 면 KST 새벽에 그제 종가를 집는다.
+        const today = todayLocalKey()
         const prev = [...candles].reverse().find(c => c.timestamp.slice(0, 10) !== today)
         const v = Number.parseFloat((prev ?? candles[0]!).closePrice)
         return Number.isFinite(v) ? v : null

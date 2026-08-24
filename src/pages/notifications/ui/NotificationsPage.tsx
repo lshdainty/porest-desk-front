@@ -12,6 +12,7 @@ import {
   useNotifications,
   useUnreadCount,
 } from '@/features/notification'
+import { useNow } from '@/shared/hooks'
 import { NotificationRow } from '@/entities/notification'
 import type { Notification } from '@/entities/notification'
 
@@ -49,6 +50,9 @@ export function NotificationsPage() {
   const { t: tCommon } = useTranslation('common')
   const navigate = useNavigate()
   const { mobile } = useOutletContext<OutletCtx>()
+  // 상대시각 기준점 — 벨(NotificationBell)과 **같은 훅**을 쓴다. 기준이 갈리면 같은
+  // 알림이 여기선 "2시간 전", 벨에선 "방금" 으로 보인다(실제로 그랬다).
+  const now = useNow()
   const { data: notifications = [], isLoading } = useNotifications()
   const { data: unreadCount = 0 } = useUnreadCount()
   const markRead = useMarkRead()
@@ -89,6 +93,7 @@ export function NotificationsPage() {
           <NotificationRow
             key={n.rowId}
             notification={n}
+            now={now}
             onClick={() => handleClick(n)}
             trailing={
               <Button

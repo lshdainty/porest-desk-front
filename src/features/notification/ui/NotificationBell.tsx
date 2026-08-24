@@ -4,6 +4,8 @@ import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'l
 import { cn } from '@/shared/lib'
 import { Button } from '@/shared/ui/button'
 import { ScrollArea } from '@/shared/ui/scroll-area'
+import { useNow } from '@/shared/hooks'
+import { relativeTime } from '@/entities/notification'
 import type { Notification, NotificationType } from '@/entities/notification'
 import {
   useNotifications,
@@ -20,22 +22,16 @@ const notificationTypeIcons: Record<NotificationType, React.ReactNode> = {
   SYSTEM: <Info size={14} className="text-gray-500" />,
 }
 
-const formatTimeAgo = (dateStr: string): string => {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h`
-  const days = Math.floor(hours / 24)
-  return `${days}d`
-}
-
 export const NotificationBell = () => {
   const { t } = useTranslation('notification')
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // 상대시각의 기준점은 1분마다 흐르는 '지금'이다. react-query 의 `dataUpdatedAt`
+  // (= 목록을 받아 온 순간)을 쓰면 안 된다 — 벨은 영구 레이아웃에 붙어 언마운트되지
+  // 않고 `useNotifications` 에 refetchInterval 도 없어서, 포커스 복귀·SSE·읽음 처리가
+  // 없으면 그 값이 몇 시간이고 그대로다. 10:00 알림이 12:00 에도 "방금"이 된다.
+  const now = useNow()
   const { data: notifications = [] } = useNotifications()
   const { data: unreadCount = 0 } = useUnreadCount()
   const markRead = useMarkRead()
@@ -127,7 +123,7 @@ export const NotificationBell = () => {
                       {notification.message}
                     </p>
                     <span className="mt-1 text-[10px] text-muted-foreground">
-                      {formatTimeAgo(notification.createAt)}
+                      {relativeTime(notification.createAt, now)}
                     </span>
                   </div>
                   <Button

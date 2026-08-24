@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { KRW, money } from '@/shared/lib/porest/format'
+import { todayLocalKey } from '@/shared/lib/date'
 import { useCreateDutchPay } from '@/features/dutch-pay'
 import { useExpenseCategories } from '@/features/expense'
 import { useCurrentUser } from '@/features/user'
@@ -63,7 +64,8 @@ const SPLIT_METHODS: { v: SplitMethod; icon: React.ComponentType<{ size?: number
 export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Props) {
   const { t } = useTranslation('dutchPay')
   const totalAbs = Math.abs(expense.amount)
-  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || new Date().toISOString().slice(0, 10)
+  // 폴백은 로컬 오늘 — UTC 날짜면 KST 새벽에 하루 이른 정산일이 저장된다(벽시계 필드).
+  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayLocalKey()
   const expenseDateTime = (expense.expenseDate ?? '').slice(0, 16).replace('T', ' ')
 
   const createMut = useCreateDutchPay()

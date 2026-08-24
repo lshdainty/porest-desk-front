@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
+import { todayLocalKey } from '@/shared/lib/date'
 import { useExpenseCategories } from '@/features/expense'
 import { useAssets } from '@/features/asset'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
@@ -34,7 +35,6 @@ import { Section, RadioCard, ToggleRow } from './RecurringFromTxDialog'
 import {
   previewNextDates,
   addYears,
-  todayIso,
   formatKoreanMonthDay,
 } from './recurring-date'
 
@@ -96,7 +96,9 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   const [assetRowId, setAssetRowId] = useState<number | null>(null)
   const [description, setDescription] = useState('')
   // 날짜 = 반복 시작일 (공통)
-  const [startDate, setStartDate] = useState<string>(todayIso())
+  // 시작일은 다음 실행일 계산의 기준이라 로컬 '오늘' 이어야 한다 — UTC 날짜면 KST 새벽에
+  // 앱과 웹의 첫 실행일이 하루 갈린다.
+  const [startDate, setStartDate] = useState<string>(todayLocalKey)
 
   // 반복 설정
   const [frequency, setFrequency] = useState<RecurringFrequency>('MONTHLY')
@@ -105,7 +107,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   const [dayOfMonth, setDayOfMonth] = useState<number>(isNaN(startBase.getTime()) ? 1 : Math.min(31, startBase.getDate()))
   const [endMode, setEndMode] = useState<EndMode>('NONE')
   const [endCount, setEndCount] = useState('12')
-  const [endDate, setEndDate] = useState(addYears(todayIso(), 1))
+  const [endDate, setEndDate] = useState(() => addYears(todayLocalKey(), 1))
   // 실행 시각 — 이 시각으로 실행분이 만들어진다. 서버 컬럼 기본값도 09:00 이라 안 고르면 종전과 같다.
   const [executionTime, setExecutionTime] = useState('09:00')
   const [autoLog, setAutoLog] = useState(true)

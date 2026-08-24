@@ -3,10 +3,10 @@ import { formatMonthDay } from '@/shared/lib/date'
 
 // 반복 거래 다이얼로그 공용 date helpers — RecurringFromTxDialog / RecurringAddDialog 공유.
 // (컴포넌트 파일이 함수도 export하면 react-refresh 룰 위반이라 별도 .ts 로 분리)
-
-export function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
-}
+//
+// '오늘' 은 여기서 만들지 않는다 — 공용 `todayLocalKey()` 를 호출부가 넘긴다.
+// 아래 헬퍼들은 받은 'YYYY-MM-DD' 를 UTC 자정으로 읽어 UTC 날짜로 되찍는, 입력에 대해
+// 자기완결적인 변환이다. 시계를 읽지 않으므로 '오늘' 이 로컬로 바뀌어도 왕복은 그대로다.
 
 export function addYears(iso: string, years: number): string {
   const d = new Date(iso)

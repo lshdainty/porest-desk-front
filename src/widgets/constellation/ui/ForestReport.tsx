@@ -23,6 +23,7 @@ import {
   type CollectionEntry,
 } from '@/features/constellation'
 import { useTodos } from '@/features/todo'
+import { toLocalDateKey } from '@/shared/lib/date'
 import type { Todo, TodoPriority } from '@/entities/todo'
 import { ConstellationSVG } from './ConstellationSVG'
 
@@ -53,8 +54,15 @@ function mondayOf(iso: string): string {
   d.setDate(d.getDate() - shift)
   return isoOf(d)
 }
+/**
+ * 완료일 키 — 주간 스트립·일별 칸이 쓰는 로컬 'YYYY-MM-DD'.
+ *
+ * completedAt 은 서버가 주는 `[UTC]` 라 문자열을 자르면 UTC 날짜가 나온다. 이 키는
+ * [isoOf] 가 로컬 달력으로 만든 요일 컬럼과 맞대 보므로, KST 새벽에 끝낸 할일이
+ * 전날 칸으로 들어간다. 그래서 파싱해서 로컬 날짜로 만든다.
+ */
 function doneKey(t: Todo): string | null {
-  return t.status === 'COMPLETED' ? (t.completedAt ?? '').slice(0, 10) || null : null
+  return t.status === 'COMPLETED' ? toLocalDateKey(t.completedAt) : null
 }
 
 /**

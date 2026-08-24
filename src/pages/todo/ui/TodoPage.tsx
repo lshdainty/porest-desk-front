@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
+import { formatMonthDay, formatMonthDayDow, toLocalDateKey, toLocalDateTime, todayLocalKey } from '@/shared/lib/date'
 import { i18n } from '@/shared/i18n/config'
 import {
   Plus,
@@ -85,14 +85,6 @@ const PRIO_ORDER: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
 type FilterKey = 'today' | 'week' | 'all' | 'done'
 
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
-/** 로컬 오늘 'YYYY-MM-DD'. */
-function todayISO(): string {
-  const d = new Date()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${m}-${day}`
-}
-
 /** dueDate(날짜 또는 datetime) → 'YYYY-MM-DD'. nullable. */
 function dueKey(due: string | null | undefined): string | null {
   if (!due) return null
@@ -153,15 +145,17 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const todoTagsQ = useTodoTags()
 
   const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data])
-  const today = useMemo(() => todayISO(), [])
+  const today = useMemo(() => todayLocalKey(), [])
 
   // ── 별자리 게이미피케이션 — 할일 화면엔 스트립/토글 진입점만, 상세는 밤하늘 화면 ──
   const constellationTodayQ = useConstellationToday()
   // 모바일 원장 캘린더 마크(수집★/구름)용 — 이번 달 커버 확보(45일)
   const skyQ = useConstellationSky(45)
   // 오늘 완료 건수 — 완료 이벤트(completedAt) 기준 (히어로 캡션용)
+  // completedAt 은 서버가 주는 `[UTC]` 라 로컬 날짜로 바꿔서 비교한다. 문자열을 자르면
+  // UTC 날짜라, KST 새벽 0~9시에 끝낸 할일이 전날로 빠진다(today 는 로컬 날짜다).
   const doneToday = useMemo(
-    () => todos.filter(td => isDone(td) && (td.completedAt ?? '').slice(0, 10) === today).length,
+    () => todos.filter(td => isDone(td) && toLocalDateKey(td.completedAt) === today).length,
     [todos, today],
   )
 
@@ -924,7 +918,10 @@ function TodoDetailDialog({
               label={t('detail.completedAt')}
               value={
                 <span style={{ fontWeight: '500' }}>
-                  {todo.completedAt.replace('T', ' ').slice(0, 16)}
+                  {/* completedAt 은 `[UTC]` — 파싱해서 로컬 시각으로 찍는다.
+                      못 읽으면 원문을 그대로 보여 준다(앱 todo_detail_dialog 와 같은 폴백) —
+                      값 칸을 비우면 "완료 시각이 없다" 로 읽혀 서버가 준 값이 사라진다 */}
+                  {toLocalDateTime(todo.completedAt) ?? todo.completedAt}
                 </span>
               }
             />

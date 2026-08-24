@@ -7,6 +7,7 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Field, FieldLabel } from '@/shared/ui/field'
+import { toLocalDateKey } from '@/shared/lib/date'
 import type { BrokerConnection } from '@/features/subscription/api/subscriptionApi'
 import {
   useRegisterBrokerCredential,
@@ -127,8 +128,9 @@ export function BrokerConnectCard({
                 {t('broker.keyConnected', { broker: displayName })}
               </div>
               <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                {/* verifiedAt 은 서버 `[UTC]` — 자르면 UTC 날짜라 KST 새벽 검증이 전날로 찍힌다 */}
                 {verifiedAt
-                  ? t('broker.lastVerified', { date: verifiedAt.slice(0, 10) })
+                  ? t('broker.lastVerified', { date: toLocalDateKey(verifiedAt) ?? verifiedAt.slice(0, 10) })
                   : t('broker.autoCollecting')}
               </div>
             </div>
