@@ -37,6 +37,7 @@ import {
   CalendarShareSection,
   CategoryManager,
   DataExportSection,
+  DevicesSection,
   HideAmountsSection,
   NotificationsManager,
   PresetManager,
@@ -93,6 +94,7 @@ type SectionId =
   | 'account'
   | 'privacy'
   | 'hide-amounts'
+  | 'devices'
 
 interface SectionDef {
   id: SectionId
@@ -109,6 +111,11 @@ interface SectionDef {
    * 금액 가리기는 계정 > 보안 아래 있어 설정 목록에 두 번 나오면 안 된다.
    */
   hidden?: boolean
+  /**
+   * 되돌아갈 자리 — 목록이 아니라 다른 섹션에서 들어오는 화면용.
+   * 없으면 메뉴로 나간다. 계정 > 보안에서 들어온 화면이 메뉴로 튀면 한 단계를 건너뛴다.
+   */
+  parent?: SectionId
 }
 
 const SECTIONS: SectionDef[] = [
@@ -134,6 +141,8 @@ const SECTIONS: SectionDef[] = [
   },
   // 계정 > 보안에서 들어오는 화면(화면의 눈 버튼도 여기로 온다). 목록에는 안 나온다.
   { id: 'hide-amounts', labelKey: 'hideAmounts.label', icon: Eye, descKey: 'hideAmounts.desc', hidden: true },
+  // 계정 > 보안에서 들어온다. 목록에는 안 나온다.
+  { id: 'devices', labelKey: 'sections.devices.label', icon: Monitor, descKey: 'sections.devices.desc', hidden: true, parent: 'account' },
 ]
 
 /**
@@ -152,6 +161,7 @@ const NEEDS_DESKTOP_HEAD: SectionId[] = [
   'appearance',
   'data',
   'account',
+  'devices',
 ]
 
 // 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다.
@@ -280,8 +290,9 @@ export const SettingsPage = () => {
       case 'appearance':    return <AppearanceSection mobile={m} />
       case 'notifications': return <NotificationsManager mobile={m} />
       case 'data':          return <DataExportSection mobile={m} />
-      case 'account':       return <AccountSection mobile={m} onOpenHideAmounts={() => changeSection('hide-amounts')} />
+      case 'account':       return <AccountSection mobile={m} onOpenHideAmounts={() => changeSection('hide-amounts')} onOpenDevices={() => changeSection('devices')} />
       case 'hide-amounts':  return <HideAmountsSection mobile={m} onBack={() => changeSection('account')} />
+      case 'devices':       return <DevicesSection mobile={m} />
       default:              return <PlaceholderSection section={activeSection} />
     }
   }
@@ -316,7 +327,7 @@ export const SettingsPage = () => {
           }}
         >
           <button
-            onClick={() => changeSection('menu')}
+            onClick={() => changeSection(activeSection?.parent ?? 'menu')}
             style={{
               border: 0,
               background: 'transparent',
@@ -581,10 +592,12 @@ function MobileMenuView({
 function AccountSection({
   mobile,
   onOpenHideAmounts,
+  onOpenDevices,
 }: {
   mobile: boolean
   /** 보안 > 금액 가리기 — 카드 37장을 훑는 목록이라 자기 화면으로 보낸다. */
   onOpenHideAmounts: () => void
+  onOpenDevices: () => void
 }) {
   const { t } = useTranslation('settings')
   const { t: tu } = useTranslation('user')
@@ -747,6 +760,7 @@ function AccountSection({
           label={t('account.devices.label')}
           desc={t('account.devices.desc')}
           right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+          onClick={onOpenDevices}
         />
         <AccountRow
           mobile={mobile}

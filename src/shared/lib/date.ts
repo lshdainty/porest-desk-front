@@ -99,6 +99,24 @@ export const formatMonthShort = (input: Date | string | number, opts: { pad?: bo
   return opts.pad ? `${String(m).padStart(2, '0')}월` : `${m}월`
 }
 
+/**
+ * 서버가 준 `[UTC]` 시각을 [Date] 로 읽는다.
+ *
+ * 백엔드는 `LocalDateTime` 을 시간대 없이 직렬화한다 — `2026-08-24T10:30:00`.
+ * JS 는 시간대 표시가 없는 date-time 문자열을 **로컬**로 읽으므로(ES2015+),
+ * 그대로 `new Date(s)` 하면 UTC 값이 로컬 시각으로 둔갑해 KST(+9)에서는 방금
+ * 일어난 일이 "9시간 전" 으로 보인다. 그래서 UTC 로 못 박고 읽는다.
+ *
+ * 이미 `Z` 나 오프셋이 붙어 오면 그대로 존중한다 — 서버가 나중에 형식을 바꿔도
+ * 이 함수가 두 번 보정하지 않는다.
+ */
+export const parseServerUtc = (iso: string | null | undefined): Date | null => {
+  if (!iso) return null
+  const hasZone = iso.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(iso)
+  const d = new Date(hasZone ? iso : `${iso}Z`)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
 export {
   format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
