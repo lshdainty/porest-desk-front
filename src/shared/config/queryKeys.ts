@@ -147,7 +147,7 @@ export const subscriptionKeys = {
   all: ['subscription'] as const,
   myFeatures: () => [...subscriptionKeys.all, 'features'] as const,
   mySubscription: () => [...subscriptionKeys.all, 'me'] as const,
-  tossCredential: () => [...subscriptionKeys.all, 'toss-credential'] as const,
+  brokerConnections: () => [...subscriptionKeys.all, 'securities-credentials'] as const,
 }
 
 export const stockKeys = {

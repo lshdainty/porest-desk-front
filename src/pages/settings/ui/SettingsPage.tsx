@@ -9,6 +9,7 @@ import {
   CalendarCog,
   ChevronLeft,
   ChevronRight,
+  Link2,
   Download,
   Eye,
   EyeOff,
@@ -48,7 +49,7 @@ import { useTheme } from '@/shared/ui/theme-provider'
 import { useCurrentUser } from '@/features/user'
 import { useAuth } from '@/features/auth'
 import { SubscriptionDialog } from '@/features/subscription/ui/SubscriptionDialog'
-import { TossConnectCard } from '@/features/subscription/ui/TossConnectCard'
+import { SecuritiesLinkDialog } from '@/features/subscription/ui/SecuritiesLinkDialog'
 import { useMyFeatures, useMySubscription } from '@/features/subscription/model/useSubscription'
 import { oauthLinkApi, useOAuthProviders, useUnlinkOAuth } from '@/features/oauth-link'
 import { config, oauthKeys } from '@/shared/config'
@@ -594,6 +595,7 @@ function AccountSection({
   // 다시 로그인해야 돌아올 수 있다 — 앱은 이미 한 번 더 묻는다.
   const [confirmLogout, setConfirmLogout] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
+  const [securitiesOpen, setSecuritiesOpen] = useState(false)
 
   const hiddenCount = useHiddenCards().size
 
@@ -818,8 +820,20 @@ function AccountSection({
         <SubscriptionRow mobile={mobile} isPro={isPro} nextBill={nextBill} onClick={() => setSubOpen(true)} />
       </AccountGroup>
 
-      {/* 증권 데이터 연동 — 구독(Pro) 시에만 */}
-      {isPro && <TossConnectCard />}
+      {/* 증권 데이터 연동 — 구독(Pro) 시에만. 증권사가 둘 이상이라 다이얼로그로 분리했다. */}
+      {isPro && (
+        <AccountGroup mobile={mobile} label={t('account.group.securities')}>
+          <AccountRow
+            mobile={mobile}
+            icon={<Link2 size={20} style={{ color: 'var(--fg-secondary)' }} />}
+            label={t('account.securities.label')}
+            desc={t('account.securities.desc')}
+            right={<ChevronRight size={16} style={{ color: 'var(--fg-tertiary)' }} />}
+            onClick={() => setSecuritiesOpen(true)}
+            isLast
+          />
+        </AccountGroup>
+      )}
 
       {/* 계정 관리 */}
       <AccountGroup mobile={mobile} label={t('account.group.manage')}>
@@ -875,6 +889,7 @@ function AccountSection({
 
       {/* 구독 관리 다이얼로그 */}
       {subOpen && <SubscriptionDialog onClose={() => setSubOpen(false)} mobile={mobile} />}
+      {securitiesOpen && <SecuritiesLinkDialog onClose={() => setSecuritiesOpen(false)} mobile={mobile} />}
     </div>
   )
 }

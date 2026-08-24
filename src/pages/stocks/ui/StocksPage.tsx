@@ -54,7 +54,7 @@ import {
   useRenameWatchGroup,
   useWatchGroups,
 } from '@/features/stock/api/watchlistApi'
-import { useTossCredentialStatus } from '@/features/subscription/model/useSubscription'
+import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
@@ -1180,8 +1180,9 @@ export function StocksPage() {
   const { t } = useTranslation('stocks')
   const { mobile } = useOutletContext<OutletCtx>()
   // 개인키 연결 상태 — 미연결 시 페이지 전체를 '연결 유도'로 게이트.
-  const { data: credential, isLoading: credLoading } = useTossCredentialStatus()
-  const connected = credential?.connected ?? false
+  // 증권사 API 는 시세 포함 모든 조회가 개인키 토큰을 요구하므로, 어느 증권사든 하나는 연결돼야 한다.
+  const { data: features, isLoading: credLoading } = useMyFeatures()
+  const connected = (features?.connectedBrokers?.length ?? 0) > 0
   const [selected, setSelected] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [seg, setSeg] = useState<'holdings' | 'watch' | 'discover'>('holdings')

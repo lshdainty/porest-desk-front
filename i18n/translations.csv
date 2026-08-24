@@ -302,7 +302,7 @@ memo,deleteConfirm.confirm,삭제,Delete
 memo,detailTitle,메모 상세,Memo details
 memo,detail.noContent,내용 없음,No content
 memo,folderDeleteConfirm.title,폴더 삭제,Delete Folder
-memo,folderDeleteConfirm.message,"이 폴더를 삭제하시겠습니까? 폴더 내 메모는 이동됩니다.","Are you sure you want to delete this folder? Memos inside will be moved."
+memo,folderDeleteConfirm.message,이 폴더를 삭제하시겠습니까? 폴더 내 메모는 이동됩니다.,Are you sure you want to delete this folder? Memos inside will be moved.
 calculator,title,계산기,Calculator
 calculator,history,계산 기록,History
 calculator,clearHistory,기록 삭제,Clear History
@@ -388,7 +388,7 @@ expense,budget.exceeded,초과,Exceeded
 expense,budget.noBudget,설정된 예산이 없습니다,No budget set
 expense,categoryBreakdown,카테고리별 분석,Category Breakdown
 expense,deleteConfirm.title,거래 삭제,Delete transaction
-expense,deleteConfirm.message,"이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this transaction? This action cannot be undone."
+expense,deleteConfirm.message,이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.,Are you sure you want to delete this transaction? This action cannot be undone.
 expense,deleteConfirm.cancel,취소,Cancel
 expense,deleteConfirm.confirm,삭제,Delete
 expense,form.merchant,거래처,Merchant
@@ -469,8 +469,8 @@ asset,form.assetType,자산 유형,Asset Type
 asset,form.balance,잔액,Balance
 asset,form.currency,통화,Currency
 asset,form.exchangeRate,환율,Exchange rate
-asset,form.exchangeRatePlaceholder,"{{code}} 1당 원화",KRW per 1 {{code}}
-asset,form.exchangeRateHint,"순자산은 잔액 × 환율로 환산합니다. 비워 두면 환산 없이 그대로 더해집니다.",Net worth converts balance × rate. Left empty it is added without conversion.
+asset,form.exchangeRatePlaceholder,{{code}} 1당 원화,KRW per 1 {{code}}
+asset,form.exchangeRateHint,순자산은 잔액 × 환율로 환산합니다. 비워 두면 환산 없이 그대로 더해집니다.,Net worth converts balance × rate. Left empty it is added without conversion.
 asset,form.institution,금융기관,Institution
 asset,form.institutionPlaceholder,금융기관명을 입력하세요,Enter institution name
 asset,form.icon,아이콘,Icon
@@ -659,7 +659,7 @@ asset,assetDetail.billingLoadError,청구 정보를 불러오지 못했어요,Co
 asset,assetDetail.paymentDue,결제 예정,Payment due
 asset,assetDetail.payNow,지금 결제,Pay now
 asset,assetDetail.cancelPayment,결제 취소,Cancel payment
-asset,assetDetail.cancelPaymentConfirm,"{{date}}에 낸 {{amount}}원을 되돌려요. 통장 잔액과 카드 청구가 결제 전으로 돌아갑니다.","Reverts the {{amount}} KRW paid on {{date}}. The account balance and card billing return to the state before payment."
+asset,assetDetail.cancelPaymentConfirm,{{date}}에 낸 {{amount}}원을 되돌려요. 통장 잔액과 카드 청구가 결제 전으로 돌아갑니다.,Reverts the {{amount}} KRW paid on {{date}}. The account balance and card billing return to the state before payment.
 asset,assetDetail.toastPaymentCancelled,결제를 취소했어요,Payment cancelled
 asset,assetDetail.billedMonthly,매월 {{day}}일 결제,Billed on day {{day}} each month
 asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{end}}
@@ -854,7 +854,7 @@ group,form.description,설명,Description
 group,form.descriptionPlaceholder,설명을 입력하세요,Enter description
 group,form.groupType,그룹 유형,Group Type
 group,deleteConfirm.title,그룹 삭제,Delete Group
-group,deleteConfirm.message,"이 그룹을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.","Are you sure you want to delete this group? This action cannot be undone."
+group,deleteConfirm.message,이 그룹을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.,Are you sure you want to delete this group? This action cannot be undone.
 group,comment,댓글,Comment
 group,comments,댓글,Comments
 group,addComment,댓글 추가,Add Comment
@@ -877,7 +877,7 @@ expense,loadFromTemplate,템플릿에서 불러오기,Load from template
 expense,searchTemplatePlaceholder,템플릿 검색...,Search templates...
 expense,noTemplatesFound,템플릿이 없습니다,No templates found
 expense,addSubCategory,소분류 추가,Add Subcategory
-expense,cannotDeleteParentCategory,"하위 카테고리가 있는 대분류는 삭제할 수 없습니다. 먼저 하위 카테고리를 삭제해 주세요.","Cannot delete a category that has subcategories. Please delete the subcategories first."
+expense,cannotDeleteParentCategory,하위 카테고리가 있는 대분류는 삭제할 수 없습니다. 먼저 하위 카테고리를 삭제해 주세요.,Cannot delete a category that has subcategories. Please delete the subcategories first.
 expense,stats.period3m,3개월,3 months
 expense,stats.period6m,6개월,6 months
 expense,stats.period1y,1년,1 year
@@ -886,7 +886,7 @@ expense,stats.yearOverYear,전년 대비,Year over Year
 expense,stats.categoryTrend,카테고리 추이,Category Trend
 expense,stats.selectCategory,카테고리 선택,Select category
 expense,stats.budgetVsActual,예산 대비 지출,Budget vs Actual
-expense,stats.noBudgetSet,"설정된 예산이 없습니다. 예산 탭에서 설정해 주세요.","No budgets set. Configure budgets in the Budget tab."
+expense,stats.noBudgetSet,설정된 예산이 없습니다. 예산 탭에서 설정해 주세요.,No budgets set. Configure budgets in the Budget tab.
 expense,stats.merchantAnalysis,거래처 분석,Merchant Analysis
 expense,stats.noMerchantData,거래처 데이터가 없습니다,No merchant data available
 expense,stats.assetUsage,자산별 사용,Asset Usage
@@ -1168,7 +1168,7 @@ notification,rows.monthlyReport.title,월간 리포트,Monthly Report
 notification,rows.monthlyReport.desc,매월 1일 오전 9시,On the 1st of each month at 9 AM
 notification,threshold.title,예산 알림 임계값,Budget Alert Threshold
 notification,threshold.current,현재,Current
-notification,threshold.desc,"예산 사용률이 이 값을 넘으면 <warn>경고</warn> 상태로 표시되고 알림을 받습니다. 100%는 <over>초과</over>로 별도 알림이 발생합니다.","When usage exceeds this value it's shown as <warn>Warning</warn> and you get notified. At 100% a separate <over>Over</over> alert is sent."
+notification,threshold.desc,예산 사용률이 이 값을 넘으면 <warn>경고</warn> 상태로 표시되고 알림을 받습니다. 100%는 <over>초과</over>로 별도 알림이 발생합니다.,When usage exceeds this value it's shown as <warn>Warning</warn> and you get notified. At 100% a separate <over>Over</over> alert is sent.
 notification,quiet.title,방해 금지 시간,Do Not Disturb
 notification,quiet.subtitle,이 시간에는 알림이 소리·진동 없이 표시됩니다.,During these hours notifications appear without sound or vibration.
 notification,quiet.use.title,방해 금지 사용,Enable Do Not Disturb
@@ -1370,7 +1370,7 @@ category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습�
 category,moveTx.entry,거래 옮기기,Move transactions
 category,moveTx.entryDesc,거래가 달린 카테고리는 하위 분류를 만들 수 없어요. 거래를 옮기면 만들 수 있어요,A category with transactions cannot have subcategories. Move them to enable it
 category,moveTx.title,거래 옮기기,Move transactions
-category,moveTx.desc,"{{name}} 에 달린 거래·반복거래·분할을 모두 옮겨요","Moves all transactions, recurring and splits from {{name}}"
+category,moveTx.desc,{{name}} 에 달린 거래·반복거래·분할을 모두 옮겨요,"Moves all transactions, recurring and splits from {{name}}"
 category,moveTx.target,옮길 카테고리,Target category
 category,moveTx.targetPlaceholder,카테고리 선택,Select a category
 category,moveTx.hint,같은 유형의 말단 카테고리만 고를 수 있어요,Only leaf categories of the same type can be selected
@@ -1381,7 +1381,7 @@ category,moveTx.modeNew,새 하위 만들기,Create subcategory
 category,moveTx.modeExisting,기존 카테고리로,Move to existing
 category,moveTx.childName,만들 하위 이름,New subcategory name
 category,moveTx.childPlaceholder,예: 강의,e.g. Lectures
-category,moveTx.newHint,"{{name}} 아래에 만들고 거래를 모두 그리로 옮겨요. 그러면 다른 하위도 만들 수 있어요","Creates it under {{name}} and moves all transactions there, so you can add more subcategories"
+category,moveTx.newHint,{{name}} 아래에 만들고 거래를 모두 그리로 옮겨요. 그러면 다른 하위도 만들 수 있어요,"Creates it under {{name}} and moves all transactions there, so you can add more subcategories"
 category,editTitle,카테고리 수정,Edit category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category
@@ -1392,7 +1392,7 @@ category,parentCategory,상위 카테고리,Parent category
 category,optional,(선택),(optional)
 category,rootOption,— 최상위 카테고리로 두기 —,— Keep as top-level —
 category,selectParent,상위 카테고리 선택,Select parent category
-category,parentMoveHint,"다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 연결된 거래를 옮긴 뒤 새로 만들어 주세요.","You can move it under a different parent. To promote it to top-level, move its linked transactions and create it anew."
+category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 연결된 거래를 옮긴 뒤 새로 만들어 주세요.,"You can move it under a different parent. To promote it to top-level, move its linked transactions and create it anew."
 category,name,이름,Name
 category,namePlaceholder,"예: 반려동물, 부수입","e.g. Pets, Side income"
 category,colorN,색상 {{n}},Color {{n}}
@@ -1478,9 +1478,9 @@ expense,selectNone,선택 안 함,None
 expense,addTx.newTitle,거래 추가,Add transaction
 expense,addTx.refundTitle,환불 기록,Record refund
 expense,addTx.editTitle,거래 수정,Edit transaction
-expense,addTx.autoSource.TRADE_REALIZED,"주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.","Realized P/L from a sale. The amount is calculated from the trade."
-expense,addTx.autoSource.TRANSFER_INTEREST,"이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.","Interest on a transfer. The amount is calculated from the transfer."
-expense,addTx.autoSource.default,"자동으로 만들어진 거래예요. 원래 거래를 지우면 함께 사라집니다.","Created automatically. It disappears when the original is deleted."
+expense,addTx.autoSource.TRADE_REALIZED,주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.,Realized P/L from a sale. The amount is calculated from the trade.
+expense,addTx.autoSource.TRANSFER_INTEREST,이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.,Interest on a transfer. The amount is calculated from the transfer.
+expense,addTx.autoSource.default,자동으로 만들어진 거래예요. 원래 거래를 지우면 함께 사라집니다.,Created automatically. It disappears when the original is deleted.
 expense,addTx.transfer,이체,Transfer
 expense,addTx.add,추가,Add
 expense,addTx.saveSplitAndSave,분할 맞추고 저장,Adjust splits & save
@@ -1513,7 +1513,7 @@ expense,addTx.installmentHint,매달 약 {{perMonth}}원씩 {{months}}회 청구
 expense,addTx.currency,통화,Currency
 expense,addTx.originalAmountPlaceholder,현지 금액,Local amount
 expense,addTx.exchangeRatePlaceholder,환율,Rate
-expense,addTx.fxHint,"{{original}} × {{rate}} = {{krw}}원",{{original}} × {{rate}} = {{krw}}
+expense,addTx.fxHint,{{original}} × {{rate}} = {{krw}}원,{{original}} × {{rate}} = {{krw}}
 expense,txDetail.foreignPayment,해외 결제,Foreign payment
 expense,addTx.fromAccount,출금 계좌,From account
 expense,addTx.selectPlaceholder,선택,Select
@@ -1525,17 +1525,17 @@ expense,addTx.interestSplit,원금 {{principal}}원 · 이자 {{interest}}원,Pr
 expense,transferFeePrefix,수수료,Fee
 expense,transferListTitle,이체 내역,Transfers
 expense,transferDeleteConfirm,이 이체를 삭제할까요? 양쪽 자산의 잔액이 되돌아갑니다,Delete this transfer? Both assets' balances will be restored.
-expense,transferAutoSource.TRADE_SETTLEMENT,"주식을 살 때 예수금이 모자라 자동으로 만들어진 이체예요. 매수를 취소하면 함께 사라집니다.","Created automatically to cover a shortfall when buying. It disappears when the purchase is cancelled."
-expense,transferAutoSource.CARD_PAYMENT,"카드 자동결제로 만들어진 이체예요. 청구 회차와 묶여 있어 따로 고칠 수 없습니다.","Created by a card auto-payment. It is tied to the billing cycle and cannot be edited separately."
-expense,transferAutoSource.CARD_REFUND,"카드에 남은 과납금을 결제계좌로 돌려준 이체예요. 카드 잔액을 직접 보정하면 다음 날 자동으로 다시 맞춰집니다.","Created to return a card overpayment to the payment account. Adjust the card balance directly and it reconciles automatically the next day."
-expense,transferAutoSource.default,"자동으로 만들어진 이체예요. 원래 거래를 지우면 함께 사라집니다.","Created automatically. It disappears when the original is deleted."
+expense,transferAutoSource.TRADE_SETTLEMENT,주식을 살 때 예수금이 모자라 자동으로 만들어진 이체예요. 매수를 취소하면 함께 사라집니다.,Created automatically to cover a shortfall when buying. It disappears when the purchase is cancelled.
+expense,transferAutoSource.CARD_PAYMENT,카드 자동결제로 만들어진 이체예요. 청구 회차와 묶여 있어 따로 고칠 수 없습니다.,Created by a card auto-payment. It is tied to the billing cycle and cannot be edited separately.
+expense,transferAutoSource.CARD_REFUND,카드에 남은 과납금을 결제계좌로 돌려준 이체예요. 카드 잔액을 직접 보정하면 다음 날 자동으로 다시 맞춰집니다.,Created to return a card overpayment to the payment account. Adjust the card balance directly and it reconciles automatically the next day.
+expense,transferAutoSource.default,자동으로 만들어진 이체예요. 원래 거래를 지우면 함께 사라집니다.,Created automatically. It disappears when the original is deleted.
 expense,transferEmpty,이체 내역이 없어요,No transfers yet
 expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
-expense,addTx.deleteRefundWarn,"이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요","{{count}} linked refund(s) ({{amount}} KRW) will also be deleted"
-expense,txDetail.refundLinked,"환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요","{{count}} refund(s) · {{amount}} KRW linked to this transaction"
+expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
+expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction
 expense,savePreset.title,프리셋으로 저장,Save as preset
 expense,savePreset.noMerchant,내역 없음,No details
 expense,savePreset.noCategory,카테고리 미선택,No category
@@ -1650,7 +1650,7 @@ export,dialog.exportAs,{{format}} 내보내기,Export {{format}}
 export,dialog.period,기간,Period
 export,dialog.includeLabel,포함할 내용,What to include
 export,dialog.noticePre,약,About
-export,dialog.noticePost,건의 거래가 내보내집니다.," transactions will be exported."
+export,dialog.noticePost,건의 거래가 내보내집니다., transactions will be exported.
 export,dialog.format.csv.d,Excel·Google 시트,Excel · Google Sheets
 export,dialog.format.xlsx.d,xlsx 형식,xlsx format
 export,dialog.format.pdf.d,요약 보고서,Summary report
@@ -1718,7 +1718,7 @@ settings,hideAmounts.discardTitle,저장하지 않고 나가기,Leave without sa
 settings,hideAmounts.discardBody,고른 내용이 사라져요.,Your selection will be discarded.
 settings,hideAmounts.discardConfirm,나가기,Leave
 settings,hideAmounts.kindLabel,거래 종류,Transaction type
-settings,hideAmounts.kindNote,"화면과 상관없이 그 종류의 거래 금액을 가려요. 수입이나 지출을 가리면 합계·잔액도 함께 가려집니다.","Hides amounts of that transaction type on every screen. Hiding income or expense also hides totals and balances."
+settings,hideAmounts.kindNote,화면과 상관없이 그 종류의 거래 금액을 가려요. 수입이나 지출을 가리면 합계·잔액도 함께 가려집니다.,Hides amounts of that transaction type on every screen. Hiding income or expense also hides totals and balances.
 settings,hideAmounts.card.kind.expense,지출 거래,Expense
 settings,hideAmounts.card.kind.income,수입 거래,Income
 settings,hideAmounts.card.kind.transfer,이체 거래,Transfers
@@ -2222,22 +2222,27 @@ subscription,cancelConfirmTitle,구독 해지,Cancel subscription
 subscription,cancelConfirmDesc,해지하면 {{date}}부터 Free 플랜으로 전환되고 증권 탭이 잠겨요. 그 전까지는 Pro 기능을 계속 쓸 수 있어요.,After canceling you switch to the Free plan on {{date}} and the Securities tab locks. You keep Pro features until then.
 subscription,expiryDate,만료일,expiry date
 subscription,keepSub,유지하기,Keep
-subscription,toss.title,증권 데이터 연동,Securities data connection
-subscription,toss.connectTitle,토스증권 연결,Connect Toss Securities
-subscription,toss.connectDesc,본인 API 키를 등록하면 보유 주식·시세를 자동으로 가져와요,Register your own API key to auto-import holdings and prices
-subscription,toss.connected,연결됨,Connected
-subscription,toss.keyConnected,토스증권 API 키 연결됨,Toss Securities API key connected
-subscription,toss.lastVerified,마지막 검증 · {{date}},Last verified · {{date}}
-subscription,toss.autoCollecting,보유 주식·시세 자동 수집 중,Auto-collecting holdings and prices
-subscription,toss.disconnect,연결 해제,Disconnect
-subscription,toss.clientIdPlaceholder,토스증권 개발자센터 발급 Client ID,Client ID from the Toss Securities Developer Center
-subscription,toss.toggleSecret,비밀 표시 전환,Toggle secret visibility
-subscription,toss.connect,연결하기,Connect
-subscription,toss.keyHint,"키는 서버에 암호화되어 저장되며, 본인만 사용합니다. 발급은 토스증권 개발자센터에서 받을 수 있어요.",Keys are stored encrypted on the server and used only by you. Get yours from the Toss Securities Developer Center.
-subscription,toss.toastConnected,토스증권이 연결되었어요,Toss Securities connected
-subscription,toss.toastInvalid,인증정보가 올바르지 않아요,Invalid credentials
-subscription,toss.toastDisconnected,토스증권 연결을 해제했어요,Toss Securities disconnected
-subscription,toss.toastDisconnectFailed,해제에 실패했어요,Disconnect failed
+subscription,broker.title,증권사 연동,Securities links
+subscription,broker.pageDesc,본인 API 키를 등록하면 보유 주식·시세를 자동으로 가져와요. 키는 서버에 암호화되어 저장되고 본인만 사용해요.,Register your own API key to auto-import holdings and prices. Keys are stored encrypted on the server and used only by you.
+subscription,broker.connectDesc,본인 API 키를 등록하면 보유 주식·시세를 가져와요,Register your API key to import holdings and prices
+subscription,broker.connected,연결됨,Connected
+subscription,broker.primary,기본,Primary
+subscription,broker.keyConnected,{{broker}} API 키 연결됨,{{broker}} API key connected
+subscription,broker.lastVerified,마지막 검증 · {{date}},Last verified · {{date}}
+subscription,broker.autoCollecting,보유 주식·시세 자동 수집 중,Auto-collecting holdings and prices
+subscription,broker.disconnect,연결 해제,Disconnect
+subscription,broker.connect,연결하기,Connect
+subscription,broker.toggleSecret,비밀 표시 전환,Toggle secret visibility
+subscription,broker.useAsPrimary,이 증권사 시세로 자산 평가하기,Value assets with this provider
+subscription,broker.primaryHint,가계부 자산은 여기서 고른 증권사 시세로 계산해요.,Your assets are valued using the provider selected here.
+subscription,broker.keyHint,키는 서버에 암호화되어 저장되며 본인만 사용합니다. 발급은 {{broker}} 개발자센터에서 받을 수 있어요.,Your key is stored encrypted on the server and used only by you. Get yours from the {{broker}} developer center.
+subscription,broker.loadFailed,증권사 목록을 불러오지 못했어요,Couldn't load the securities list
+subscription,broker.toastConnected,{{broker}} 계정을 연결했어요,Connected your {{broker}} account
+subscription,broker.toastInvalid,인증정보가 올바르지 않아요,Invalid credentials
+subscription,broker.toastDisconnected,{{broker}} 연결을 해제했어요,Disconnected from {{broker}}
+subscription,broker.toastDisconnectFailed,해제에 실패했어요,Disconnect failed
+subscription,broker.toastPrimaryChanged,이제 {{broker}} 시세로 자산을 평가해요,Assets are now valued with {{broker}}
+subscription,broker.toastPrimaryFailed,기본 증권사를 바꾸지 못했어요,Couldn't change the primary provider
 date,justNow,방금,Just now
 date,minutesAgo,{{count}}분 전,{{count}} min ago
 date,hoursAgo,{{count}}시간 전,{{count}} hr ago
@@ -2327,7 +2332,7 @@ export,import.dupBadge,중복?,Dup?
 export,import.optionsTitle,가져오기 옵션,Import options
 export,import.optDupSkip,중복 거래 건너뛰기,Skip duplicate transactions
 export,import.optDupSkipDesc,날짜·금액·내용이 같은 {{dup}}건을 제외해요,"Excludes {{dup}} rows with same date, amount & content"
-export,import.blockedTitle,"{{names}} 카테고리에 거래가 직접 등록돼 있어 하위 분류를 만들 수 없어요","Cannot create subcategories under {{names}} — it already has transactions"
+export,import.blockedTitle,{{names}} 카테고리에 거래가 직접 등록돼 있어 하위 분류를 만들 수 없어요,Cannot create subcategories under {{names}} — it already has transactions
 export,import.blockedDesc,해당 대분류를 쓰는 행은 저장에 실패해요. 그 카테고리의 거래를 하위로 옮기거나 파일의 분류를 바꿔주세요,Rows using it will fail. Move its transactions into a subcategory or change the category in the file
 export,import.optAutoCat,새 카테고리 자동 생성,Auto-create new categories
 export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요,Missing categories are created automatically
@@ -2449,6 +2454,9 @@ constellation,collection.viewLocked,미리보기,Preview
 constellation,collection.lockedDesc,별빛 {{count}}개를 하룻밤에 모으면 만날 수 있어요.,Collect {{count}} starlight in one night to meet it.
 settings,sections.todoTags.label,할 일 태그,Todo tags
 settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo tag names & colors
+settings,account.group.securities,증권 데이터 연동,Securities Data
+settings,account.securities.label,증권사 연동,Securities links
+settings,account.securities.desc,토스·나무 등 증권사 API 키를 연결해요,"Connect API keys for Toss, NAMUH, and more"
 calendar,labels.usage,{{count}}건에 사용 중,Used by {{count}} events
 asset,holdings.sectionTitle,보유 종목,Holdings
 asset,holdings.countLabel,보유 {{n}}종목,{{n}} holdings
@@ -2474,14 +2482,14 @@ asset,trade.date,거래 일시,Trade date
 asset,trade.memo,메모,Memo
 asset,trade.memoPlaceholder,선택 입력,Optional
 asset,trade.cashAfter,거래 후 예수금,Cash after trade
-asset,trade.settlement,"결제 계좌","Settlement account"
-asset,trade.settlementCash,"증권계좌 예수금","Brokerage cash"
-asset,trade.settlementCashHelp,"증권계좌 예수금에서 결제해요. 모자라면 예수금이 마이너스로 남아요.",Paid from the brokerage cash balance. It may go negative.
-asset,trade.settlementAccountHelp,"예수금이 모자라면 이 계좌에서 부족분만큼 자동으로 이체돼요.",A transfer covers any shortfall from this account.
-asset,trade.settlementDelta,"결제 계좌 변동","Settlement account change"
+asset,trade.settlement,결제 계좌,Settlement account
+asset,trade.settlementCash,증권계좌 예수금,Brokerage cash
+asset,trade.settlementCashHelp,증권계좌 예수금에서 결제해요. 모자라면 예수금이 마이너스로 남아요.,Paid from the brokerage cash balance. It may go negative.
+asset,trade.settlementAccountHelp,예수금이 모자라면 이 계좌에서 부족분만큼 자동으로 이체돼요.,A transfer covers any shortfall from this account.
+asset,trade.settlementDelta,결제 계좌 변동,Settlement account change
 asset,trade.realizedPreview,실현손익,Realized P/L
-asset,trade.fundingNotice,"예수금이 모자라 결제 계좌에서 {{amount}}원을 옮겨요","{{amount}} moves from the settlement account to cover the shortfall"
-asset,trade.insufficientCash,"예수금이 마이너스가 돼요. 그대로 기록됩니다.","Cash will go negative. It is recorded as is."
+asset,trade.fundingNotice,예수금이 모자라 결제 계좌에서 {{amount}}원을 옮겨요,{{amount}} moves from the settlement account to cover the shortfall
+asset,trade.insufficientCash,예수금이 마이너스가 돼요. 그대로 기록됩니다.,Cash will go negative. It is recorded as is.
 asset,trade.insufficientQty,보유 수량보다 많이 팔 수 없어요.,Cannot sell more than you hold.
 asset,trade.entryBuy,매수,Buy
 asset,trade.entrySell,매도,Sell
@@ -2489,11 +2497,11 @@ asset,trade.history,거래 내역,Trade history
 asset,trade.empty,아직 매수·매도 기록이 없어요,No trades recorded yet
 asset,trade.deleted,거래를 취소했어요,Trade cancelled
 asset,trade.deleteConfirm,이 거래를 취소하시겠어요? 예수금과 보유 수량이 거래 전으로 돌아가요.,Cancel this trade? Cash and quantity return to their pre-trade state.
-asset,trade.deleteTitle,"거래 취소","Cancel trade"
-asset,trade.deleteAction,"거래 취소","Cancel trade"
+asset,trade.deleteTitle,거래 취소,Cancel trade
+asset,trade.deleteAction,거래 취소,Cancel trade
 asset,holdings.avgPrice,평단가,Avg price
 asset,holdings.totalCost,매수원가,Cost basis
-asset,holdings.avgPriceInline,"평단가 {{avg}}원","avg {{avg}} KRW"
+asset,holdings.avgPriceInline,평단가 {{avg}}원,avg {{avg}} KRW
 asset,holdings.holdingBalance,평가금액,Holdings
 asset,holdings.emptySub,보유 종목 없음,No holdings
 asset,holdings.firstAndMore,{{name}} 외 {{n}}종목,{{name}} and {{n}} more
@@ -2506,7 +2514,7 @@ asset,holdings.editSummary,{{n}}종목 · {{total}}원,{{n}} holdings · ₩{{to
 asset,holdings.searchPlaceholder,"종목명·티커 검색 후 추가 (예: 삼성전자, NVDA)","Search name/ticker to add (e.g. Samsung, NVDA)"
 asset,holdings.addManual,"""{{name}}"" 직접 추가 — 평가액 입력","Add ""{{name}}"" manually — enter value"
 asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
-asset,holdings.editEmptyHelpManual,"위 버튼으로 보유분을 추가하세요. 시세 연동이 없어 평가액은 직접 입력합니다.",Add your holdings with the button above. No live price — enter the value yourself.
+asset,holdings.editEmptyHelpManual,위 버튼으로 보유분을 추가하세요. 시세 연동이 없어 평가액은 직접 입력합니다.,Add your holdings with the button above. No live price — enter the value yourself.
 asset,holdings.linkedBadge,연동,Linked
 asset,holdings.editLinkedSub,현재가 × 수량 연동,Live price × quantity
 asset,holdings.sharesUnitShort,주,sh
@@ -2525,7 +2533,7 @@ download,subtitleLoading,최신 버전을 확인하는 중…,Checking the lates
 download,subtitleNoRelease,아직 배포된 버전이 없어요,No release published yet
 download,subtitleWithVersion,{{version}} (빌드 {{build}}),{{version}} (build {{build}})
 download,android.title,안드로이드,Android
-download,android.desc,"내려받아서 바로 설치하면 돼요. 스토어를 거치지 않아 처음 설치할 때 "출처를 알 수 없는 앱" 허용이 필요할 수 있어요.","Download and install directly. Since it does not come from a store, you may need to allow installs from unknown sources the first time."
+download,android.desc,"내려받아서 바로 설치하면 돼요. 스토어를 거치지 않아 처음 설치할 때 출처를 알 수 없는 앱"" 허용이 필요할 수 있어요.""","Download and install directly. Since it does not come from a store, you may need to allow installs from unknown sources the first time."
 download,android.cta,APK 내려받기,Download APK
 download,android.note,기존에 깔려 있다면 지우지 않고 그대로 덮어써도 돼요. 데이터는 유지됩니다.,"If it is already installed, you can install over it — your data stays."
 download,ios.title,iOS,iOS
@@ -2533,7 +2541,7 @@ download,ios.warning,"이 파일은 서명이 없어 그대로는 설치되지 �
 download,ios.altstoreDesc,"AltStore 를 쓰시면 편해요. 아래 주소를 소스로 추가하면 새 버전을 AltStore 에서 바로 받을 수 있고, 컴퓨터를 켜 두면 7일 서명도 알아서 갱신됩니다.","AltStore makes this easier. Add the address below as a source to get new versions right from AltStore, and if your computer stays on, the 7-day signature renews on its own."
 download,ios.copy,주소 복사,Copy
 download,ios.copied,복사했어요,Copied
-download,ios.desc,"Sideloadly 처럼 IPA 를 직접 넣는 도구를 쓰신다면 아래에서 받으세요. 설치가 번거로우니 아이폰에서는 웹으로 쓰셔도 됩니다.","If you use a tool that takes the IPA directly, such as Sideloadly, download it below. Installing is fiddly, so using the web on iPhone is fine too."
+download,ios.desc,Sideloadly 처럼 IPA 를 직접 넣는 도구를 쓰신다면 아래에서 받으세요. 설치가 번거로우니 아이폰에서는 웹으로 쓰셔도 됩니다.,"If you use a tool that takes the IPA directly, such as Sideloadly, download it below. Installing is fiddly, so using the web on iPhone is fine too."
 download,ios.cta,IPA 내려받기,Download IPA
 download,webHint,앱 없이도 브라우저에서 모든 기능을 쓸 수 있어요.,Everything works in the browser without the app.
 expense,sms.pasteOpen,결제 문자 붙여넣기,Paste a payment text

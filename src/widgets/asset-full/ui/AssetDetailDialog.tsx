@@ -889,7 +889,7 @@ function HoldingsSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
   const [trade, setTrade] = useState<{ type: TradeType; holding: AssetHolding } | null>(null)
   const { data: features } = useMyFeatures()
   const live =
-    (features?.features?.includes('SECURITIES') ?? false) && (features?.tossConnected ?? false)
+    (features?.features?.includes('SECURITIES') ?? false) && ((features?.connectedBrokers?.length ?? 0) > 0)
   const hs = holdingsOf(asset)
   const symbols = useMemo(
     () => [...new Set(hs.filter(h => h.linked && h.tossSymbol).map(h => h.tossSymbol as string))],
