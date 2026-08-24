@@ -2009,6 +2009,12 @@ stocks,namu.priceError,현재가를 불러오지 못했어요,Couldn't load the 
 stocks,namu.priceEmpty,현재가가 없는 종목이에요,No current price for this instrument
 stocks,search.error,검색에 실패했어요,Search failed
 stocks,search.empty,검색 결과가 없어요,No results
+stocks,namu.tabDomestic,국내,Domestic
+stocks,namu.tabOverseas,해외,Overseas
+stocks,namu.holdingsTitle,보유 평가금액,Holdings value
+stocks,namu.holdingsEmpty,보유 중인 종목이 없어요,No holdings yet
+stocks,namu.holdingsError,보유 정보를 불러오지 못했어요. 계좌가 없거나 조회 권한이 없을 수 있어요.,Couldn't load holdings. There may be no account or no query permission.
+stocks,namu.holdingQty,{{qty}}주 보유,{{qty}} shares
 stats,page.title,통계·분석,Statistics
 stats,uncategorized,미분류,Uncategorized
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
