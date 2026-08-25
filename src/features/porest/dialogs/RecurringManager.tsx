@@ -18,6 +18,7 @@ import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
 import { renderIcon, tileRadius } from '@/shared/lib'
+import { parseLocalDate } from '@/shared/lib/date'
 import { KRW } from '@/shared/lib/porest/format'
 import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import {
@@ -100,7 +101,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
     const today = startOfDay(new Date())
     const next7 = active
       .filter(i => {
-        const due = startOfDay(new Date(i.nextExecutionDate))
+        const due = parseLocalDate(i.nextExecutionDate)
+        if (!due) return false
         const diff = Math.ceil((due.getTime() - today.getTime()) / 86400000)
         return diff >= 0 && diff <= 7
       })
@@ -193,7 +195,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
             {stats.next7.map(it => {
               const today = startOfDay(new Date())
-              const due = startOfDay(new Date(it.nextExecutionDate))
+              const due = parseLocalDate(it.nextExecutionDate) ?? today
               const days = Math.ceil((due.getTime() - today.getTime()) / 86400000)
               const isToday = days === 0
               const cat = categories.find(c => c.rowId === it.categoryRowId)

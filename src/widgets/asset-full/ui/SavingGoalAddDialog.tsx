@@ -16,15 +16,15 @@ import {
 } from '@/features/savingGoal'
 import type { SavingGoal } from '@/entities/savingGoal'
 import { tileRadius } from '@/shared/lib'
+import { parseLocalDate } from '@/shared/lib/date'
 import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
 import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { i18n } from '@/shared/i18n/config'
 
 // 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.
 function formatDeadlineLabel(iso: string): string {
-  if (!iso) return i18n.t('asset:savingGoal.noDeadline')
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return i18n.t('asset:savingGoal.noDeadline')
+  const d = parseLocalDate(iso)
+  if (!d) return i18n.t('asset:savingGoal.noDeadline')
   return new Intl.DateTimeFormat(i18n.language, { year: 'numeric', month: 'long' }).format(d)
 }
 

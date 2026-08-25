@@ -20,7 +20,10 @@ function formatDate(date: Date | undefined) {
 
 function parseDate(dateString: string | undefined): Date | undefined {
   if (!dateString) return undefined
-  const date = new Date(dateString)
+  // 'YYYY-MM-DD' 를 new Date 에 그대로 넣으면 UTC 자정 파싱이라 UTC 뒤쪽 타임존에서
+  // 팝오버가 전날을 하이라이트한다 — 날짜뿐인 입력은 로컬 자정으로 조립한다.
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString.trim())
+  const date = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(dateString)
   return isValidDate(date) ? date : undefined
 }
 
