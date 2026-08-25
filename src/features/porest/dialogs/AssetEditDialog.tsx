@@ -76,6 +76,8 @@ type EditHolding = {
   rowId?: number
   holdingType: HoldingType
   linked: boolean
+  /** 종목 검색이 준 시장코드 — 저장 때 그대로 돌려보낸다(같은 티커가 여러 시장에 걸린다) */
+  marketCode?: string
   tossSymbol?: string
   /** 소수 허용(코인 0.05·금 3.75g). 입력 중 상태를 보존하려 문자열로 다룬다 */
   quantity?: string
@@ -210,6 +212,7 @@ export function AssetEditDialog({
         // 구버전 응답(holdingType 없음)은 주식으로 본다.
         holdingType: h.holdingType ?? 'STOCK',
         linked: h.linked,
+        marketCode: h.marketCode ?? undefined,
         tossSymbol: h.tossSymbol ?? undefined,
         quantity: h.quantity ?? undefined,
         holdingName: h.holdingName ?? undefined,
@@ -223,6 +226,7 @@ export function AssetEditDialog({
           key: nextHoldingKey(),
           holdingType: 'STOCK' as HoldingType,
           linked: true,
+          marketCode: item.marketCode ?? undefined,
           tossSymbol: item.tossSymbol,
           quantity: String(item.tossQuantity),
         },
@@ -538,6 +542,7 @@ export function AssetEditDialog({
         rowId: h.rowId,
         holdingType: h.holdingType,
         linked: h.linked,
+        marketCode: h.linked ? h.marketCode ?? null : null,
         tossSymbol: h.linked ? h.tossSymbol ?? null : null,
         quantity: h.linked ? normalizeQty(h.quantity) ?? '0' : normalizeQty(h.quantity),
         holdingName: h.linked ? null : h.holdingName ?? '',
@@ -959,6 +964,9 @@ export function AssetEditDialog({
                                 key: nextHoldingKey(),
                                 holdingType: 'STOCK' as HoldingType,
                                 linked: true,
+                                // 검색 결과가 시장을 알고 있다 — 여기서 안 담으면 서버는
+                                // 심볼로 되짚어야 하고, 여러 시장에 걸리면 확정하지 못한다.
+                                marketCode: s.marketCode,
                                 tossSymbol: s.symbol,
                                 quantity: '1',
                                 displayName: s.nameKr,
