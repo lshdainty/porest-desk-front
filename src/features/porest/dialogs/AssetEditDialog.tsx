@@ -64,7 +64,7 @@ import {
   type YNType,
 } from '@/entities/asset'
 import { useStockSearch, useStockSymbolName } from '@/features/stock/model/useStockMaster'
-import { useTossPrices, useTossExchangeRate } from '@/features/stock/model/useTossStocks'
+import { useLivePrices } from '@/features/stock/model/useLivePrices'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { Button } from '@/shared/ui/button'
 
@@ -255,28 +255,15 @@ export function AssetEditDialog({
     () => (priceActive ? holdingSymbols : []),
     [priceActive, holdingSymbols],
   )
-  const holdingPricesQ = useTossPrices(activeHoldingSymbols)
-  const holdingFxQ = useTossExchangeRate(priceActive)
+  // 증권사 무관 경로 + 통화별 환율. 목록·상세와 같은 훅을 써야 한 화면에서 금액이 안 어긋난다.
+  const live = useLivePrices(activeHoldingSymbols, priceActive)
   const holdingValueOf = useMemo(() => {
-    const priceBySymbol = new Map<string, { price: number; currency: string }>()
-    for (const p of holdingPricesQ.data ?? []) {
-      const v = Number.parseFloat(p.lastPrice)
-      if (Number.isFinite(v)) priceBySymbol.set(p.symbol, { price: v, currency: p.currency })
-    }
-    const fx = Number.parseFloat(holdingFxQ.data?.rate ?? '')
     return (h: EditHolding): number | null => {
       if (!h.linked) return h.holdingValue ?? 0
-      const info = h.tossSymbol ? priceBySymbol.get(h.tossSymbol) : undefined
-      if (!info) return null
-      const krw =
-        info.currency === 'KRW'
-          ? info.price
-          : Number.isFinite(fx) && fx > 0
-            ? info.price * fx
-            : null
+      const krw = h.tossSymbol ? live.unitKrw(h.tossSymbol) : null
       return krw != null ? Math.round(krw * (qtyNumber(h.quantity) ?? 0)) : null
     }
-  }, [holdingPricesQ.data, holdingFxQ.data])
+  }, [live])
   // 합계 — 평가 불가 연동 항목은 0 취급하지 않고 '평가 가능분 합'으로 표기.
   const holdingsTotal = useMemo(
     () => holdings.reduce((s, h) => s + (holdingValueOf(h) ?? 0), 0),

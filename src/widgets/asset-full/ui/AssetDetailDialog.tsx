@@ -13,7 +13,7 @@ import type { Expense } from '@/entities/expense'
 import { isScheduledTx } from '@/shared/lib/porest/expense-aggregate'
 import { useAssetBalanceTrend, useAssets, useCancelCardPayment, useCardBilling, usePayCard, useInvestValuation, holdingsOf, useAssetTransfers } from '@/features/asset'
 import type { AssetTransfer } from '@/entities/asset'
-import { useTossPrices, useTossExchangeRate, usePrevCloses } from '@/features/stock/model/useTossStocks'
+import { useLivePrices } from '@/features/stock/model/useLivePrices'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
 import { useCardPerformance } from '@/features/card-performance'
@@ -676,16 +676,19 @@ function CardDetailBody({
 function HoldingRow({
   holding,
   price,
-  prevClose,
-  fx,
+  unitKrw,
+  prevUnitKrw,
   live,
   first,
   onTrade,
 }: {
   holding: AssetHolding
+  /** 원표기 견적 — 라벨 표시용. 환산값은 아래 두 prop 으로 받는다. */
   price: { price: number; currency: string } | null
-  prevClose: number | null
-  fx: number | null
+  /** 1주 원화 환산가. 환율을 못 구했으면 null */
+  unitKrw: number | null
+  /** 전일 종가의 원화 환산가. 없으면 등락을 감춘다 */
+  prevUnitKrw: number | null
   live: boolean
   first: boolean
   onTrade?: (type: TradeType) => void
@@ -696,10 +699,6 @@ function HoldingRow({
     ? masterName ?? holding.tossSymbol ?? ''
     : holding.holdingName ?? ''
 
-  const toKrw = (v: number, currency: string): number | null => {
-    if (currency === 'KRW') return v
-    return fx != null && fx > 0 ? v * fx : null
-  }
   // 수량은 정밀도 때문에 문자열로 온다 — 표시·미리보기 계산에서만 숫자로 푼다(저장은 서버 몫).
   const qty = qtyNumber(holding.quantity) ?? 0
   let value: number | null = null
@@ -707,12 +706,16 @@ function HoldingRow({
   let priceLabel: string | null = null
   if (holding.linked) {
     if (live && price) {
-      const krw = toKrw(price.price, price.currency)
-      if (krw != null) value = Math.round(krw * qty)
+      if (unitKrw != null) value = Math.round(unitKrw * qty)
+      // 통화를 하나로 가정하지 않는다 — 나무를 붙이며 JPY·HKD·CNY 가 들어왔다.
       priceLabel =
-        price.currency === 'USD' ? `$${price.price.toLocaleString()}` : `${KRW(price.price)}원`
-      if (prevClose != null && prevClose > 0) {
-        changePct = Math.round(((price.price - prevClose) / prevClose) * 1000) / 10
+        price.currency === 'KRW'
+          ? `${KRW(price.price)}원`
+          : price.currency === 'USD'
+            ? `$${price.price.toLocaleString()}`
+            : `${price.price.toLocaleString()} ${price.currency}`
+      if (unitKrw != null && prevUnitKrw != null && prevUnitKrw > 0) {
+        changePct = Math.round(((unitKrw - prevUnitKrw) / prevUnitKrw) * 1000) / 10
       }
     }
   } else {
@@ -897,18 +900,9 @@ function HoldingsSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
   )
   const active = live && symbols.length > 0
   const activeSymbols = useMemo(() => (active ? symbols : []), [active, symbols])
-  const pricesQ = useTossPrices(activeSymbols)
-  const fxQ = useTossExchangeRate(active)
-  const prevCloses = usePrevCloses(activeSymbols)
-  const priceBySymbol = useMemo(() => {
-    const m = new Map<string, { price: number; currency: string }>()
-    for (const p of pricesQ.data ?? []) {
-      const v = Number.parseFloat(p.lastPrice)
-      if (Number.isFinite(v)) m.set(p.symbol, { price: v, currency: p.currency })
-    }
-    return m
-  }, [pricesQ.data])
-  const fx = Number.parseFloat(fxQ.data?.rate ?? '')
+  // 증권사 무관 경로 + 통화별 환율. 목록(useInvestValuation)과 같은 훅이라 총액과
+  // 종목별 금액이 한 화면에서 어긋나지 않는다.
+  const prices = useLivePrices(activeSymbols, active)
 
   return (
     <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '14px 0 6px', marginBottom: 12 }}>
@@ -922,9 +916,9 @@ function HoldingsSection({ asset, mobile }: { asset: Asset; mobile: boolean }) {
         <HoldingRow
           key={h.rowId ?? `${h.tossSymbol ?? h.holdingName ?? ''}-${i}`}
           holding={h}
-          price={h.linked && h.tossSymbol ? priceBySymbol.get(h.tossSymbol) ?? null : null}
-          prevClose={h.linked && h.tossSymbol ? prevCloses.get(h.tossSymbol) ?? null : null}
-          fx={Number.isFinite(fx) && fx > 0 ? fx : null}
+          price={h.linked && h.tossSymbol ? prices.quoteOf(h.tossSymbol) ?? null : null}
+          unitKrw={h.linked && h.tossSymbol ? prices.unitKrw(h.tossSymbol) : null}
+          prevUnitKrw={h.linked && h.tossSymbol ? prices.prevUnitKrw(h.tossSymbol) : null}
           live={live}
           first={i === 0}
           onTrade={type => setTrade({ type, holding: h })}

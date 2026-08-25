@@ -30,12 +30,19 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const lang = localStorage.getItem('i18nextLng') || 'ko'
     config.headers['Accept-Language'] = lang
-    // 토스 시세·계좌 조회(GET /v1/toss/*)는 업스트림 간헐 오류가 있어도 몇 초 뒤
-    // 다음 폴링이 스스로 회복하고 화면엔 '—' 폴백이 있다 — 실패마다 전역 토스트를
-    // 띄우면 "토스증권 API 호출에 실패했습니다"가 뜬금없이 뜨는 노이즈만 남는다.
+    // 증권 시세·계좌 조회 GET 은 업스트림 간헐 오류가 있어도 몇 초 뒤 다음 폴링이 스스로
+    // 회복하고 화면엔 '—' 폴백이 있다 — 실패마다 전역 토스트를 띄우면 "증권사 API 호출에
+    // 실패했습니다"가 10초마다 뜨는 노이즈만 남는다.
+    // **접두사를 늘릴 때 여기도 늘려야 한다.** /v1/securities/ 를 새로 열고 자산 화면을
+    // 거기로 옮겼을 때 이 목록을 안 따라 고쳐 토스트가 되살아난 적이 있다.
     // 명시적으로 silent 를 지정한 요청은 그 값을 존중한다.
     const cfg = config as InternalAxiosRequestConfig & { silent?: boolean }
-    if (cfg.method === 'get' && cfg.url?.startsWith('/v1/toss/') && cfg.silent === undefined) {
+    const quietPrefixes = ['/v1/toss/', '/v1/namu/', '/v1/securities/']
+    if (
+      cfg.method === 'get' &&
+      cfg.silent === undefined &&
+      quietPrefixes.some(p => cfg.url?.startsWith(p))
+    ) {
       cfg.silent = true
     }
     return config
