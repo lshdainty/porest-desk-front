@@ -22,6 +22,14 @@ export interface AssetHolding {
   /** 구버전 응답이면 없음 — STOCK 으로 간주 */
   holdingType?: HoldingType
   linked: boolean
+  /**
+   * 종목 마스터 기준 시장코드(NAS·KOSPI …) — 선택.
+   *
+   * 같은 티커가 여러 시장에 걸린다(SPY·IVV·JEPI·SOXL). 종목 검색 응답이 이미 들고 있으니
+   * 저장할 때 그대로 돌려보내면 서버가 종목을 확정한다. 안 보내면 서버가 심볼로 해석하고,
+   * 여러 시장에 걸리면 비워 둔다.
+   */
+  marketCode?: string | null
   tossSymbol?: string | null
   /**
    * 코인 0.05·금 3.75g 등 소수 허용. 미연동도 기록 가능(선택).
@@ -120,6 +128,8 @@ export interface Asset {
   paymentDay?: number | null
   /** 결제 출금계좌 자산 rowId (CREDIT_CARD 전용, nullable) */
   paymentAssetRowId?: number | null
+  /** 연동 종목의 시장코드 (nullable) — 서버가 확정 못 했으면 없다 */
+  marketCode?: string | null
   /** 토스 연동 종목코드 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */
   tossSymbol?: string | null
   /** 토스 연동 보유수량 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */

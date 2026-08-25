@@ -18,7 +18,12 @@ export function holdingsOf(a: Asset): AssetHolding[] {
   if (a.holdings && a.holdings.length > 0) return a.holdings
   if (a.tossSymbol && a.tossQuantity != null) {
     // tossQuantity 는 구버전 bigint 컬럼(정수) — 문자열 수량 계약에 맞춰 넘긴다.
-    return [{ linked: true, tossSymbol: a.tossSymbol, quantity: String(a.tossQuantity) }]
+    return [{
+      linked: true,
+      marketCode: a.marketCode ?? null,
+      tossSymbol: a.tossSymbol,
+      quantity: String(a.tossQuantity),
+    }]
   }
   return []
 }
