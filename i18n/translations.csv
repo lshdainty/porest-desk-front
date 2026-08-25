@@ -1793,9 +1793,9 @@ settings,sections.calendarLabels.label,캘린더 라벨,Calendar labels
 settings,sections.calendarLabels.desc,전 캘린더 공용 라벨 관리,Manage labels shared across all calendars
 settings,sections.appearance.label,표시 설정,Display settings
 settings,sections.appearance.desc,테마·밀도·기본 통화,Theme · density · default currency
-settings,region.label,표시 기준 지역,Display region
+settings,region.label,기준 지역,Region
 settings,region.placeholder,지역 선택,Select a region
-settings,region.desc,선택한 지역 기준으로 날짜와 시간이 표시돼요,Dates and times are shown in the selected region
+settings,region.desc,'오늘'과 통계의 하루를 이 지역 기준으로 계산해요. 화면의 시간은 기기 시간대로 보여요,Days for 'today' and statistics are calculated in this region. On-screen times follow your device's time zone
 settings,sections.notifications.label,알림 설정,Notification settings
 settings,sections.notifications.desc,결제 예정·예산 초과 알림,Payment due and budget overage alerts
 settings,sections.data.label,데이터 내보내기,Export data
