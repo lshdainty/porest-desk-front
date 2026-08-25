@@ -7,7 +7,7 @@ import {
 import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
-import { formatMonthDay, formatYearMonth } from '@/shared/lib/date'
+import { formatMonthDay, formatYearMonth, parseLocalDate } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
 import { expenseSum } from '@/shared/lib/porest/expense-aggregate'
@@ -682,7 +682,7 @@ function HomeDesktop() {
     const recurrings = (recurringQ.data ?? [])
       .filter(r => r.isActive === 'Y' && r.expenseType === 'EXPENSE' && r.nextExecutionDate)
       .map(r => {
-        const next = new Date(r.nextExecutionDate as string)
+        const next = parseLocalDate(r.nextExecutionDate as string) ?? today
         const d = Math.max(0, Math.round((next.getTime() - today.getTime()) / 86_400_000))
         return {
           rowId: r.rowId,

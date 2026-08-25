@@ -10,7 +10,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { money } from '@/shared/lib/porest/format'
-import { formatMonthDay } from '@/shared/lib/date'
+import { parseLocalDate } from '@/shared/lib/date'
+import { addYears, formatKoreanMonthDay, previewNextDates } from './recurring-date'
 import { renderIcon, tileRadius } from '@/shared/lib'
 import { useUpdateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
@@ -47,13 +48,13 @@ export function RecurringEditDialog({ recurring, onClose, onSaved, mobile }: Pro
   const palette = getPaletteByColor(category?.color)
 
   const startDay = recurring.startDate.slice(0, 10)
-  const baseDate = new Date(startDay)
-  const baseDom = isNaN(baseDate.getTime()) ? 1 : baseDate.getDate()
+  const baseDate = parseLocalDate(startDay)
+  const baseDom = baseDate ? baseDate.getDate() : 1
   // backend stores ISO 1=월~7=일; UI uses 0=일~6=토
   const initialDow =
     recurring.dayOfWeek != null
       ? (recurring.dayOfWeek === 7 ? 0 : recurring.dayOfWeek)
-      : (isNaN(baseDate.getTime()) ? 1 : baseDate.getDay())
+      : (baseDate ? baseDate.getDay() : 1)
 
   const [frequency, setFrequency] = useState<RecurringFrequency>(recurring.frequency)
   const [dayOfWeek, setDayOfWeek] = useState<number>(initialDow)
@@ -476,54 +477,5 @@ function ToggleRow({
   )
 }
 
-function addYears(iso: string, years: number): string {
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  d.setFullYear(d.getFullYear() + years)
-  return d.toISOString().slice(0, 10)
-}
-
-function formatKoreanMonthDay(iso: string): string {
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  // ko "03월 15일"(pad) 유지 / en "Mar 15" — 중앙 formatMonthDay 로케일 위임
-  return formatMonthDay(d, { pad: true })
-}
-
-function previewNextDates(
-  startIso: string,
-  freq: RecurringFrequency,
-  dayOfWeekUi: number,
-  dayOfMonth: number,
-  count: number,
-): string[] {
-  const start = new Date(startIso)
-  if (isNaN(start.getTime())) return []
-  const out: string[] = []
-  const cursor = new Date(start)
-
-  if (freq === 'WEEKLY') {
-    const diff = (dayOfWeekUi - cursor.getDay() + 7) % 7
-    cursor.setDate(cursor.getDate() + diff)
-  } else if (freq === 'MONTHLY') {
-    cursor.setDate(Math.min(dayOfMonth, daysInMonth(cursor.getFullYear(), cursor.getMonth())))
-  }
-
-  for (let i = 0; i < count; i++) {
-    out.push(cursor.toISOString().slice(0, 10))
-    if (freq === 'DAILY') cursor.setDate(cursor.getDate() + 1)
-    else if (freq === 'WEEKLY') cursor.setDate(cursor.getDate() + 7)
-    else if (freq === 'MONTHLY') {
-      const ny = cursor.getFullYear()
-      const nm = cursor.getMonth() + 1
-      const nd = Math.min(dayOfMonth, daysInMonth(ny, nm))
-      cursor.setFullYear(ny, nm, nd)
-    }
-    else if (freq === 'YEARLY') cursor.setFullYear(cursor.getFullYear() + 1)
-  }
-  return out
-}
-
-function daysInMonth(year: number, monthIdx: number): number {
-  return new Date(year, monthIdx + 1, 0).getDate()
-}
+// addYears · formatKoreanMonthDay · previewNextDates 는 './recurring-date' 공용을 쓴다 —
+// 예전에 여기 있던 복사본은 UTC 왕복 버그까지 함께 복제돼 한쪽만 고치면 갈라졌다.

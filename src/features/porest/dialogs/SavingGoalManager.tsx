@@ -17,11 +17,11 @@ import { MANAGE_ROW } from '@/shared/ui/porest/manage-row-tokens'
 import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
 import { SavingGoalAddDialog } from '@/widgets/asset-full/ui/SavingGoalAddDialog'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+import { parseLocalDate } from '@/shared/lib/date'
 
 const formatDeadline = (deadline: string | null): string | null => {
-  if (!deadline) return null
-  const d = new Date(deadline)
-  if (isNaN(d.getTime())) return null
+  const d = parseLocalDate(deadline)
+  if (!d) return null
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 

@@ -180,6 +180,25 @@ export const todayLocalKey = (): string => {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
+/**
+ * `'YYYY-MM-DD'`(벽시계 LocalDate) → **로컬** 자정 Date. 못 읽으면 null.
+ *
+ * `new Date('YYYY-MM-DD')` 는 스펙상 UTC 자정 파싱이라, 이어지는 로컬 getter
+ * (getDay/getDate/setDate)와 축이 어긋난다 — UTC 뒤쪽 타임존에서 하루 밀리고
+ * KST 에서만 우연히 맞는다. 벽시계 날짜 문자열을 Date 로 읽을 때는 이걸 쓴다.
+ */
+export const parseLocalDate = (iso: string | null | undefined): Date | null => {
+  if (!iso) return null
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
+  if (!y || !m || !d) return null
+  const dt = new Date(y, m - 1, d)
+  return Number.isNaN(dt.getTime()) ? null : dt
+}
+
+/** Date → 로컬 달력 'YYYY-MM-DD'. [todayLocalKey] 의 임의 시점 판. */
+export const localDateKey = (d: Date): string =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+
 export {
   format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,

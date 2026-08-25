@@ -10,7 +10,7 @@ import type { IconName } from 'lucide-react/dynamic'
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { tileRadius } from '@/shared/lib'
 import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
-import { formatYearMonth, formatMonthShort, formatMonthDay } from '@/shared/lib/date'
+import { formatYearMonth, formatMonthShort, formatMonthDay, parseLocalDate } from '@/shared/lib/date'
 import { niceAxis } from '@/shared/lib/porest/chartAxis'
 import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
 import { HideCard, HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
@@ -389,7 +389,7 @@ function UpcomingBillsCard() {
   const items = (recurringQ.data ?? [])
     .filter(r => !!r.nextExecutionDate)
     .map(r => {
-      const next = new Date(r.nextExecutionDate as string)
+      const next = parseLocalDate(r.nextExecutionDate as string) ?? today
       const daysLeft = Math.round((next.getTime() - today.getTime()) / 86_400_000)
       return {
         rowId: r.rowId,
@@ -489,9 +489,8 @@ function UpcomingBillsCard() {
 }
 
 function formatDeadline(deadline: string | null): string | null {
-  if (!deadline) return null
-  const d = new Date(deadline)
-  if (isNaN(d.getTime())) return null
+  const d = parseLocalDate(deadline)
+  if (!d) return null
   return formatYearMonth(d)
 }
 

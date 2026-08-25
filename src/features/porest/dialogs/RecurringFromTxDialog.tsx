@@ -11,7 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Switch } from '@/shared/ui/switch'
 import { money } from '@/shared/lib/porest/format'
-import { todayLocalKey } from '@/shared/lib/date'
+import { parseLocalDate, todayLocalKey } from '@/shared/lib/date'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
 import { useExpenseCategories } from '@/features/expense'
 import type { Expense } from '@/entities/expense'
@@ -46,9 +46,9 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
   const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
 
   const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayLocalKey()
-  const baseDate = new Date(expenseDay)
-  const baseDow = isNaN(baseDate.getTime()) ? 1 : baseDate.getDay() // 0=일~6=토 (UI 인덱스)
-  const baseDom = isNaN(baseDate.getTime()) ? 1 : baseDate.getDate()
+  const baseDate = parseLocalDate(expenseDay)
+  const baseDow = baseDate ? baseDate.getDay() : 1 // 0=일~6=토 (UI 인덱스)
+  const baseDom = baseDate ? baseDate.getDate() : 1
 
   const [frequency, setFrequency] = useState<RecurringFrequency>('MONTHLY')
   const [dayOfWeek, setDayOfWeek] = useState<number>(baseDow) // 0~6 (UI 인덱스, 백엔드는 1~7 ISO)

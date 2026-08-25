@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import { todayLocalKey } from '@/shared/lib/date'
+import { parseLocalDate, todayLocalKey } from '@/shared/lib/date'
 import { useExpenseCategories } from '@/features/expense'
 import { useAssets } from '@/features/asset'
 import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
@@ -102,9 +102,9 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
   // 반복 설정
   const [frequency, setFrequency] = useState<RecurringFrequency>('MONTHLY')
-  const startBase = new Date(startDate)
-  const [dayOfWeek, setDayOfWeek] = useState<number>(isNaN(startBase.getTime()) ? 1 : startBase.getDay()) // 0=일~6=토 (UI)
-  const [dayOfMonth, setDayOfMonth] = useState<number>(isNaN(startBase.getTime()) ? 1 : Math.min(31, startBase.getDate()))
+  const startBase = parseLocalDate(startDate)
+  const [dayOfWeek, setDayOfWeek] = useState<number>(startBase ? startBase.getDay() : 1) // 0=일~6=토 (UI)
+  const [dayOfMonth, setDayOfMonth] = useState<number>(startBase ? Math.min(31, startBase.getDate()) : 1)
   const [endMode, setEndMode] = useState<EndMode>('NONE')
   const [endCount, setEndCount] = useState('12')
   const [endDate, setEndDate] = useState(() => addYears(todayLocalKey(), 1))
