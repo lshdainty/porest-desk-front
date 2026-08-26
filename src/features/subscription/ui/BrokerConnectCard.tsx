@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { CircleCheck, Eye, EyeOff, Link2 } from 'lucide-react'
+import { CircleCheck, Link2 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Input } from '@/shared/ui/input'
-import { Field, FieldLabel } from '@/shared/ui/field'
+import { SecretField } from '@/features/subscription/ui/SecretField'
 import { toLocalDateKey } from '@/shared/lib/date'
 import type { BrokerConnection } from '@/features/subscription/api/subscriptionApi'
 import {
@@ -39,7 +38,6 @@ export function BrokerConnectCard({
 
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
-  const [showSecret, setShowSecret] = useState(false)
 
   const { broker, displayName, connected, primary, verifiedAt } = connection
   const canConnect = apiKey.trim().length > 0 && apiSecret.trim().length > 0
@@ -160,42 +158,19 @@ export function BrokerConnectCard({
       ) : (
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* 라벨은 서버가 준다 — 회사마다 같은 자리를 다르게 부른다. */}
-          <Field>
-            <FieldLabel>{connection.keyLabel}</FieldLabel>
-            <Input
-              value={apiKey}
-              onChange={e => setApiKey(e.target.value)}
-              placeholder={connection.keyLabel}
-              autoComplete="off"
-              spellCheck={false}
-              className="w-full"
-            />
-          </Field>
-          <Field>
-            <FieldLabel>{connection.secretLabel}</FieldLabel>
-            <div style={{ position: 'relative' }}>
-              <Input
-                type={showSecret ? 'text' : 'password'}
-                value={apiSecret}
-                onChange={e => setApiSecret(e.target.value)}
-                placeholder={connection.secretLabel}
-                autoComplete="off"
-                spellCheck={false}
-                className="w-full"
-                style={{ paddingRight: 40 }}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSecret(v => !v)}
-                aria-label={t('broker.toggleSecret')}
-                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32 }}
-              >
-                {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
-              </Button>
-            </div>
-          </Field>
+          {/* 키도 시크릿과 같은 자격증명의 반쪽이라 같은 칸을 쓴다. */}
+          <SecretField
+            label={connection.keyLabel}
+            value={apiKey}
+            onChange={setApiKey}
+            toggleAriaLabel={t('broker.toggleReveal', { field: connection.keyLabel })}
+          />
+          <SecretField
+            label={connection.secretLabel}
+            value={apiSecret}
+            onChange={setApiSecret}
+            toggleAriaLabel={t('broker.toggleReveal', { field: connection.secretLabel })}
+          />
           <Button
             size="md"
             onClick={onConnect}
