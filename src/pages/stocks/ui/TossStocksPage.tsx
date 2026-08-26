@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useOutletContext, Link } from 'react-router-dom'
-import { AlertTriangle, ChevronDown, ChevronUp, Info, LineChart, Pencil, Plus, Search, Star } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
+import { AlertTriangle, Info, LineChart, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { tileRadius } from '@/shared/lib'
@@ -9,15 +9,19 @@ import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Donut } from '@/shared/ui/porest/charts'
 import { Input } from '@/shared/ui/input'
-import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
+import { ModalShell } from '@/shared/ui/porest/dialogs'
 import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { LightweightStockChart } from './LightweightStockChart'
+import { fmtByCurrency, num, trendColor } from '@/features/stock/lib/format'
+import { ListWrap, PanelEmpty, PctBadge, StockBadge, StockRow, WatchStar } from '@/features/stock/ui/stock-row'
+import { StockChartCard } from '@/features/stock/ui/stock-chart-card'
+import { StockSearchDialog, WatchGroupDialog } from '@/features/stock/ui/stock-dialogs'
+import { HoldingsEmpty, PortfolioDonut } from '@/features/stock/ui/portfolio-donut'
+import { WatchlistPanel } from '@/features/stock/ui/watchlist-panel'
+import { useWatchlist } from '@/features/stock/model/useWatchlist'
 import type {
-  StockMasterItem,
   TossHoldingsItem,
   TossMarketSession,
   TossOrderbook,
@@ -29,6 +33,7 @@ import type {
 import {
   changePctOf,
   usePrevClose,
+  usePrevCloses,
   useTossAccounts,
   useTossCandles,
   useTossExchangeRate,
@@ -44,37 +49,10 @@ import {
   useTossStockWarnings,
   useTossTrades,
 } from '@/features/stock/model/useTossStocks'
-import { useStockBySymbol, useStockSearch } from '@/features/stock/model/useStockMaster'
-import {
-  findWatchEntries,
-  useAddWatchItem,
-  useCreateWatchGroup,
-  useDeleteWatchGroup,
-  useRemoveWatchItem,
-  useRenameWatchGroup,
-  useWatchGroups,
-} from '@/features/stock/api/watchlistApi'
+import { useStockBySymbol } from '@/features/stock/model/useStockMaster'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
 
-// ---- 시세 포맷 ----------------------------------------------------------
-
-/** 통화별 가격 표기 — KRW 는 원화 포맷, USD 는 $, 그 외(CNY·JPY 등)는 통화코드 병기. */
-function fmtByCurrency(price: number, currency: string): string {
-  if (currency === 'USD') return `$${price.toFixed(2)}`
-  if (currency === 'KRW') return money(Math.round(price))
-  return `${price.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`
-}
-
-/** 상승/하락 색 — 국내 증권 통념: 상승=빨강(error), 하락=파랑(primary). */
-function trendColor(pct: number): string {
-  return pct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)'
-}
-
-/** 서버가 String 으로 내려주는 금액/비율을 숫자로 파싱. */
-function num(s: string | null | undefined): number {
-  return s == null ? 0 : Number(s) || 0
-}
 
 /** 라이브 체결 테이프 변환 (토스 trades). dir=직전 체결가 대비 방향. */
 function liveTradeFills(trades?: TossTrade[]): { time: string; p: number; q: number; dir: number }[] {
@@ -87,157 +65,9 @@ function liveTradeFills(trades?: TossTrade[]): { time: string; p: number; q: num
   })
 }
 
-// ---- 등락률 배지 (색 + 부호 + 아이콘 3중 병기 — A11y 1.4.1) ----------------
 
-function PctBadge({ pct, size = 13 }: { pct: number; size?: number }) {
-  const up = pct >= 0
-  const Chevron = up ? ChevronUp : ChevronDown
-  return (
-    <span
-      className="num"
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 2, color: trendColor(pct), fontWeight: 700, fontSize: size }}
-    >
-      <Chevron size={size + 2} strokeWidth={2.6} />
-      {up ? '+' : ''}
-      {pct.toFixed(2)}%
-    </span>
-  )
-}
 
-// ---- 종목 심볼 배지 — 국가별 색 (다크 자동 light swap) -----------------------
 
-const COUNTRY_TONE: Record<string, string> = {
-  KR: 'var(--color-cat-blue)',
-  US: 'var(--color-cat-violet)',
-  CN: 'var(--color-cat-orange)',
-  JP: 'var(--color-cat-pink)',
-  HK: 'var(--color-cat-green)',
-  VN: 'var(--color-cat-indigo)',
-}
-
-function StockBadge({ name, symbol, countryCode, size = 40 }: { name: string; symbol: string; countryCode: string; size?: number }) {
-  const tone = COUNTRY_TONE[countryCode] ?? 'var(--color-cat-blue)'
-  // 한글명은 첫 글자, 알파벳 심볼은 앞 2글자.
-  const initial = /^[A-Za-z]/.test(symbol) ? symbol.slice(0, 2) : name.slice(0, 1)
-  return (
-    <span
-      style={{
-        width: size,
-        height: size,
-        borderRadius: tileRadius(size),
-        flexShrink: 0,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: size * 0.34,
-        fontWeight: 800,
-        letterSpacing: '-0.02em',
-        background: `color-mix(in oklab, ${tone} 16%, var(--bg-surface))`,
-        color: `color-mix(in oklab, ${tone} 72%, var(--fg-primary))`,
-      }}
-    >
-      {initial}
-    </span>
-  )
-}
-
-// ---- 종목 리스트 행 (표시 전용 — 데이터는 각 패널이 공급) ---------------------
-
-type RowStock = { symbol: string; name: string; countryCode: string; currency: string }
-
-function StockRow({
-  stock,
-  onClick,
-  sub,
-  price,
-  changePct,
-  right,
-  active,
-  mobile = false,
-}: {
-  stock: RowStock
-  onClick: () => void
-  sub?: string
-  price?: number | null
-  changePct?: number | null
-  right?: React.ReactNode
-  active?: boolean
-  mobile?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        // 모바일은 좌우를 페이지가 쥔다(24) — 행이 더 얹으면 탭 스트립과 어긋난다.
-        // 데스크톱은 Card 안이라 그대로.
-        padding: mobile ? '12px 0' : '12px 14px',
-        border: 0,
-        cursor: 'pointer',
-        textAlign: 'left',
-        background: active ? 'var(--bg-muted)' : 'transparent',
-        borderRadius: 'var(--radius-md)',
-        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
-        fontFamily: 'inherit',
-      }}
-      onMouseEnter={e => {
-        if (!active) e.currentTarget.style.background = 'var(--bg-muted)'
-      }}
-      onMouseLeave={e => {
-        if (!active) e.currentTarget.style.background = 'transparent'
-      }}
-    >
-      <StockBadge name={stock.name} symbol={stock.symbol} countryCode={stock.countryCode} size={40} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {stock.name}
-        </div>
-        <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', display: 'flex', alignItems: 'center', gap: 5, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          <span style={{ fontWeight: 600 }}>{stock.symbol}</span>
-          {sub && (
-            <>
-              <span>·</span>
-              <span style={{ whiteSpace: 'nowrap' }}>{sub}</span>
-            </>
-          )}
-        </div>
-      </div>
-      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 78 }}>
-        {right ?? (
-          <>
-            <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-              {price != null ? fmtByCurrency(price, stock.currency) : '—'}
-            </div>
-            {changePct != null && (
-              <div style={{ marginTop: 1 }}>
-                <PctBadge pct={changePct} size={11.5} />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </button>
-  )
-}
-
-// ---- 차트 기간 탭 (캔들 차트는 LightweightStockChart 가 담당) -----------------
-
-const RANGES = ['1D', '1주', '1개월', '3개월', '1년'] as const
-type Range = (typeof RANGES)[number]
-// 기간 값은 LightweightStockChart·임베드 querystring 의 식별자이므로 보존하고, 표시 라벨만 i18n.
-const RANGE_LABEL_KEY: Record<Range, string> = {
-  '1D': 'range.1d',
-  '1주': 'range.1w',
-  '1개월': 'range.1m',
-  '3개월': 'range.3m',
-  '1년': 'range.1y',
-}
-
-// ---- 호가창 (토스 orderbook · 실데이터 전용) -------------------------------
 
 /** 호가 헤더행 — 라벨뿐인 정적 틀이라 로딩 중에도 그대로 렌더해야 해서 스켈레톤과 공용으로 뽑았다. */
 function OrderBookHead() {
@@ -316,9 +146,6 @@ function OrderBook({ currency, lastPrice, book, changePct }: { currency: string;
 
 // ---- 호가 / 체결 탭 카드 (실데이터 전용 · 로딩/빈 상태) -----------------------
 
-function QuotesEmpty({ msg }: { msg: string }) {
-  return <div style={{ padding: '36px 12px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{msg}</div>
-}
 
 /** 체결 테이프 헤더행 — 정적 라벨이라 로딩에도 그대로 렌더(스켈레톤·실렌더 공용). */
 function TradeTapeHead() {
@@ -410,12 +237,12 @@ function QuotesCard({ symbol, currency, lastPrice, changePct }: { symbol: string
         ) : hasBook ? (
           <OrderBook currency={currency} lastPrice={lastPrice} book={book} changePct={changePct} />
         ) : (
-          <QuotesEmpty msg={t('quotes.orderbookEmpty')} />
+          <PanelEmpty msg={t('quotes.orderbookEmpty')} />
         )
       ) : tradesQ.isLoading ? (
         <TradeTapeSkeleton label={t('quotes.tradesLoading')} />
       ) : fills.length === 0 ? (
-        <QuotesEmpty msg={t('quotes.tradesEmpty')} />
+        <PanelEmpty msg={t('quotes.tradesEmpty')} />
       ) : (
         <div>
           <TradeTapeHead />
@@ -494,7 +321,7 @@ function DailyQuoteTable({ symbol, currency }: { symbol: string; currency: strin
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <QuotesEmpty msg={t('daily.empty')} />
+        <PanelEmpty msg={t('daily.empty')} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: gridCols }}>
           {headCell(t('daily.date'), 'left')}
@@ -591,69 +418,6 @@ function MarketStatusBar({ mobile }: { mobile: boolean }) {
 
 // ---- 포트폴리오 구성 도넛 (데스크톱) ----------------------------------------
 
-const DONUT_PALETTE = [
-  'var(--color-cat-blue)',
-  'var(--color-cat-green)',
-  'var(--color-cat-violet)',
-  'var(--color-cat-orange)',
-  'var(--color-cat-pink)',
-  'var(--color-cat-indigo)',
-  'var(--color-cat-brown)',
-]
-
-/** 종목 리스트 래퍼 — 모바일 카드 다이어트(플랫: 행 hover 가 구분 담당) / 데스크톱 Card(padding 6). */
-function ListWrap({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
-  if (mobile) return <div>{children}</div>
-  return <Card style={{ padding: 6 }}>{children}</Card>
-}
-
-function HoldingsEmpty({ mobile = false }: { mobile?: boolean }) {
-  const { t } = useTranslation('stocks')
-  const body = (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
-      <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)' }}>{t('connect.holdingsDesc')}</div>
-      <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-        <Link to="/desk/settings">{t('connect.action')}</Link>
-      </Button>
-    </div>
-  )
-  // 모바일 카드 다이어트 — 빈 상태도 배경 위 플랫.
-  if (mobile) return <div style={{ padding: '32px 20px' }}>{body}</div>
-  return <Card style={{ padding: '32px 20px' }}>{body}</Card>
-}
-
-function PortfolioDonut({ holdings }: { holdings: TossHoldingsItem[] }) {
-  const { t } = useTranslation('stocks')
-  const rows = holdings
-    .map((h, i) => ({ name: h.name || h.symbol, value: num(h.marketValue.amount), color: DONUT_PALETTE[i % DONUT_PALETTE.length]! }))
-    .sort((a, b) => b.value - a.value)
-  const total = rows.reduce((sum, r) => sum + r.value, 0) || 1
-  return (
-    <Card style={{ padding: 22 }}>
-      <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 16 }}>{t('portfolio.title')}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        <Donut size={132} stroke={20} segments={rows.map(r => ({ value: r.value, color: r.color }))}>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{t('portfolio.stocksLabel')}</div>
-          <div className="num" style={{ fontSize: 15, fontWeight: 800, color: 'var(--fg-primary)' }}>{t('unit.count', { count: rows.length })}</div>
-        </Donut>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9, minWidth: 0 }}>
-          {rows.map(r => (
-            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-xs)', background: r.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
-              <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--fg-secondary)' }}>
-                <MaskAmount card="stocks.summary">{`${((r.value / total) * 100).toFixed(1)}%`}</MaskAmount>
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </Card>
-  )
-}
-
-// ---- 발견(디스커버리) 랭킹 — 토스 rankings 실데이터 ---------------------------
 
 function RankRow({ item, name, index, active, onPick, mobile = false }: { item: TossRankingItem; name: string | undefined; index: number; active: boolean; onPick: (symbol: string) => void; mobile?: boolean }) {
   const country = /^[A-Za-z]/.test(item.symbol) ? 'US' : 'KR'
@@ -754,7 +518,7 @@ function DiscoverPanel({ onPick, selected, mobile = false }: { onPick: (t: strin
         // 탭·시장 토글은 정적이라 그대로 렌더하고, 서버 데이터가 들어갈 행 영역만 스켈레톤으로 채운다.
         <RankRowsSkeleton mobile={mobile} label={t('discover.loading')} />
       ) : rows.length === 0 ? (
-        <QuotesEmpty msg={t('discover.empty')} />
+        <PanelEmpty msg={t('discover.empty')} />
       ) : mobile ? (
         <div>{rows}</div>
       ) : (
@@ -825,7 +589,6 @@ function StockInfoCard({ symbol, currency, info, lastPrice, fxRate }: { symbol: 
 
 function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { ticker: string; holding: TossHoldingsItem | null; watched: boolean; onToggleWatch: (marketCode?: string) => void; mobile: boolean }) {
   const { t } = useTranslation('stocks')
-  const [range, setRange] = useState<Range>('1D')
   // 종목 정체성: 마스터(이름·시장·통화) + 토스 종목정보 병행. 마스터에 없는 심볼(보유 이관 등)은 토스 정보로 폴백.
   const masterQ = useStockBySymbol(ticker)
   const infoQ = useTossStockInfo([ticker])
@@ -870,27 +633,7 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => onToggleWatch(master?.marketCode)}
-          title={watched ? t('watch.remove') : t('watch.add')}
-          aria-pressed={watched}
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: tileRadius(38),
-            flexShrink: 0,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: watched ? 'color-mix(in oklab, var(--color-cat-yellow) 18%, var(--bg-surface))' : 'var(--bg-sunken)',
-            border: '1px solid var(--border-subtle)',
-            color: watched ? 'color-mix(in oklab, var(--color-cat-yellow) 62%, var(--fg-primary))' : 'var(--fg-tertiary)',
-          }}
-        >
-          <Star size={18} strokeWidth={2} style={{ fill: watched ? 'currentColor' : 'none' }} />
-        </button>
+        <WatchStar watched={watched} onToggle={() => onToggleWatch(master?.marketCode)} />
       </div>
 
       {/* 현재가 (토스 prices — KR/US 만 제공. 그 외 시장은 미지원 안내) */}
@@ -935,22 +678,7 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
       )}
 
       {/* 차트 (토스 candles) + 기간 세그먼트 */}
-      <Card style={{ padding: mobile ? '14px 14px 14px' : '16px 18px 16px' }}>
-        <div style={{ height: mobile ? 168 : 200 }}>
-          <LightweightStockChart symbol={ticker} isUs={isUs} range={range} height={mobile ? 168 : 200} />
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <Tabs value={range} onValueChange={v => setRange(v as Range)}>
-            <TabsList variant="pill" size="sm" style={{ width: '100%' }}>
-              {RANGES.map(r => (
-                <TabsTrigger key={r} variant="pill" value={r} style={{ flex: 1 }}>
-                  {t(RANGE_LABEL_KEY[r])}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      </Card>
+      <StockChartCard symbol={ticker} isUs={isUs} mobile={mobile} />
 
       {/* 내 보유 (보유 종목일 때) */}
       {holding &&
@@ -1025,155 +753,8 @@ function StockDetailBody({ ticker, holding, watched, onToggleWatch, mobile }: { 
   )
 }
 
-// ---- 종목 검색 다이얼로그 (서버 stock_master — 국내 + 해외 6개국) -------------
 
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
-}
 
-function StockSearchDialog({ mobile, onPick, onClose }: { mobile: boolean; onPick: (ticker: string) => void; onClose: () => void }) {
-  const { t } = useTranslation('stocks')
-  const [q, setQ] = useState('')
-  const debounced = useDebounced(q.trim(), 300)
-  const { data: results = [], isFetching } = useStockSearch(debounced, 20)
-  const searched = debounced.length > 0 && !isFetching && q.trim() === debounced
-  return (
-    <ModalShell title={t('search.label')} onClose={onClose} mobile={mobile} mobileMinHeight="85dvh">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-tertiary)', pointerEvents: 'none' }} />
-          <Input search autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder={t('search.placeholder')} className="w-full pl-9" />
-        </div>
-        <div style={{ maxHeight: mobile ? undefined : '56vh', overflowY: 'auto' }}>
-          {q.trim().length === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('search.hint')}</div>
-          ) : searched && results.length === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('search.noResults', { query: q })}</div>
-          ) : (
-            results.map((s: StockMasterItem) => (
-              <StockRow
-                mobile={mobile}
-                key={`${s.marketCode}:${s.symbol}`}
-                stock={{ symbol: s.symbol, name: s.nameKr, countryCode: s.countryCode, currency: s.currency }}
-                sub={`${t(`market.${s.marketCode}`, { defaultValue: s.marketCode })} · ${t(`securityType.${s.securityType}`, { defaultValue: s.securityType })}`}
-                right={<span />}
-                onClick={() => {
-                  onPick(s.symbol)
-                  onClose()
-                }}
-              />
-            ))
-          )}
-        </div>
-      </div>
-    </ModalShell>
-  )
-}
-
-// ---- 관심목록 그룹 편집 다이얼로그 ------------------------------------------
-
-function WatchGroupDialog({ mobile, group, onClose }: { mobile: boolean; group: WatchGroup | null; onClose: () => void }) {
-  const { t } = useTranslation('stocks')
-  const { t: tc } = useTranslation('common')
-  const [name, setName] = useState(group?.groupName ?? '')
-  const createMut = useCreateWatchGroup()
-  const renameMut = useRenameWatchGroup()
-  const deleteMut = useDeleteWatchGroup()
-  // 브라우저 confirm 은 앱 테마를 안 따르고 문구도 못 꾸민다 — 프로젝트 다이얼로그를 쓴다.
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const busy = createMut.isPending || renameMut.isPending || deleteMut.isPending
-  const canSave = name.trim().length > 0 && !busy
-
-  const save = () => {
-    const groupName = name.trim()
-    if (!groupName) return
-    if (group) {
-      renameMut.mutate({ groupId: group.rowId, groupName }, {
-        onSuccess: onClose,
-        onError: () => toast.error(t('watch.groupSaveFail')),
-      })
-    } else {
-      createMut.mutate(groupName, {
-        onSuccess: onClose,
-        onError: () => toast.error(t('watch.groupSaveFail')),
-      })
-    }
-  }
-
-  return (
-    <ModalShell title={group ? t('watch.groupRename') : t('watch.groupAdd')} onClose={onClose} mobile={mobile}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Input
-          autoFocus
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder={t('watch.groupNamePlaceholder')}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && canSave) save()
-          }}
-        />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button size="sm" disabled={!canSave} onClick={save} style={{ flex: 1 }}>
-            {tc('save')}
-          </Button>
-          {group && (
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={busy}
-              onClick={() => setConfirmDelete(true)}
-            >
-              {t('watch.groupDelete')}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {confirmDelete && group && (
-        <ConfirmDialog
-          title={t('watch.groupDelete')}
-          message={t('watch.groupDeleteConfirm', { name: group.groupName })}
-          confirmLabel={t('watch.groupDelete')}
-          danger
-          loading={deleteMut.isPending}
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={() =>
-            deleteMut.mutate(group.rowId, {
-              onSuccess: onClose,
-              onError: () => toast.error(t('watch.groupSaveFail')),
-            })
-          }
-        />
-      )}
-    </ModalShell>
-  )
-}
-
-// ---- 관심목록 행 (시세 + 전일대비 — 심볼 단위 조회) ---------------------------
-
-function WatchRowItem({ symbol, name, countryCode, currency, sub, priceMap, active, onClick, mobile = false }: { symbol: string; name: string; countryCode: string; currency: string; sub: string; priceMap: Map<string, number>; active: boolean; onClick: () => void; mobile?: boolean }) {
-  const prevCloseQ = usePrevClose(symbol)
-  const last = priceMap.get(symbol) ?? null
-  const changePct = changePctOf(last, prevCloseQ.data)
-  return (
-    <StockRow
-      mobile={mobile}
-      stock={{ symbol, name, countryCode, currency }}
-      sub={sub}
-      price={last}
-      changePct={changePct}
-      active={active}
-      onClick={onClick}
-    />
-  )
-}
-
-// ---- 메인 화면 -----------------------------------------------------------
 
 /**
  * 토스증권 본문.
@@ -1190,23 +771,9 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [seg, setSeg] = useState<'holdings' | 'watch' | 'discover'>('holdings')
 
-  // 관심목록 — 서버 영속(stock-watch). 그룹 탭 + 별 토글.
-  const watchQ = useWatchGroups()
-  const watchGroups = useMemo(() => watchQ.data ?? [], [watchQ.data])
-  const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
+  // 관심목록 — 서버 영속(stock-watch). 그룹 탭 + 별 토글. 증권사와 무관해 나무와 공용이다.
+  const watchlist = useWatchlist()
   const [groupDialog, setGroupDialog] = useState<{ open: boolean; group: WatchGroup | null }>({ open: false, group: null })
-  useEffect(() => {
-    if (watchGroups.length === 0) {
-      setActiveGroupId(null)
-      return
-    }
-    if (activeGroupId == null || !watchGroups.some(g => g.rowId === activeGroupId)) {
-      setActiveGroupId(watchGroups[0]!.rowId)
-    }
-  }, [watchGroups, activeGroupId])
-  const createGroupMut = useCreateWatchGroup()
-  const addItemMut = useAddWatchItem()
-  const removeItemMut = useRemoveWatchItem()
 
   // 보유자산 — 키 연결 시 실데이터(/toss/accounts→/toss/holdings), 미연결 시 빈 상태.
   const { data: accounts } = useTossAccounts()
@@ -1225,39 +792,23 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile, holdingItems.length])
 
-  const watchedSymbols = useMemo(() => new Set(watchGroups.flatMap(g => g.items.map(i => i.symbol))), [watchGroups])
-  const isWatched = (sym: string) => watchedSymbols.has(sym)
-  const toggleWatch = (sym: string, marketCode?: string) => {
-    const entries = findWatchEntries(watchGroups, sym)
-    if (entries.length > 0) {
-      // 별 해제 = 모든 그룹에서 제거 (기존 UX 유지)
-      for (const e of entries) removeItemMut.mutate(e.item.rowId)
-      return
-    }
-    if (watchGroups.length === 0) {
-      // 첫 관심 등록이면 기본 그룹부터 만든다.
-      createGroupMut.mutate(t('watch.defaultGroupName'), {
-        onSuccess: g => addItemMut.mutate({ groupId: g.rowId, symbol: sym, marketCode }),
-        onError: () => toast.error(t('watch.addFail')),
-      })
-      return
-    }
-    const groupId = activeGroupId ?? watchGroups[0]!.rowId
-    addItemMut.mutate({ groupId, symbol: sym, marketCode }, { onError: () => toast.error(t('watch.addFail')) })
-  }
 
   // 요약 (서버 계산값)
   const totalEval = holdings ? num(holdings.marketValue.amount.krw) : 0
   const totalCost = holdings ? num(holdings.totalPurchaseAmount.krw) : 0
   const totalPnl = holdings ? num(holdings.profitLoss.amount.krw) : 0
   const totalPnlPct = holdings ? num(holdings.profitLoss.rate) : 0
-  const curGroup = watchGroups.find(g => g.rowId === activeGroupId) ?? watchGroups[0] ?? null
+  const curGroup = watchlist.activeGroup
   const selHolding = selected ? holdingItems.find(h => h.symbol === selected) ?? null : null
   const fxRate = fxQ.data ? num(fxQ.data.rate) : null
 
-  // 관심 탭 시세 — 현재 그룹 심볼 배치 1콜 (10초 폴링은 useTossPrices 공통)
-  const watchSymbols = useMemo(() => (curGroup ? curGroup.items.map(i => i.symbol) : []), [curGroup])
-  const watchPricesQ = useTossPrices(seg === 'watch' ? watchSymbols : [])
+  // 관심 탭 시세 — 현재 그룹 심볼 배치 1콜 (10초 폴링은 useTossPrices 공통).
+  // 전일 종가는 토스가 시세에 안 실어 줘 종목마다 일봉을 따로 받는다(usePrevCloses 는
+  // usePrevClose 와 같은 쿼리키라 상세 화면과 캐시가 겹친다). 나무는 이 조달이 달라
+  // 패널이 시세를 직접 안 부르고 priceOf 로 주입받는다.
+  const watchSymbols = useMemo(() => (seg === 'watch' && curGroup ? curGroup.items.map(i => i.symbol) : []), [seg, curGroup])
+  const watchPricesQ = useTossPrices(watchSymbols)
+  const watchPrevCloses = usePrevCloses(watchSymbols)
   const watchPriceMap = useMemo(() => {
     const map = new Map<string, number>()
     for (const p of watchPricesQ.data ?? []) {
@@ -1312,7 +863,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
       <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
         <TabsList variant="pill" size="sm">
           <TabsTrigger variant="pill" value="holdings">{t('segments.holdings', { count: holdingItems.length })}</TabsTrigger>
-          <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchedSymbols.size })}</TabsTrigger>
+          <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchlist.watchedSymbols.size })}</TabsTrigger>
           <TabsTrigger variant="pill" value="discover">{t('segments.discover')}</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -1358,58 +909,24 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
           </ListWrap>
         )
       ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {watchGroups.length > 0 && (
-            <Tabs value={String(activeGroupId ?? '')} onValueChange={val => val && setActiveGroupId(Number(val))}>
-              <TabsList variant="pill" size="sm">
-                {watchGroups.map(g => (
-                  <TabsTrigger key={g.rowId} variant="pill" value={String(g.rowId)}>
-                    {g.groupName} <span style={{ opacity: 0.7 }}>{g.items.length}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          )}
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-              {curGroup && (
-                <Button variant="ghost" size="icon" title={t('watch.groupRename')} onClick={() => setGroupDialog({ open: true, group: curGroup })}>
-                  <Pencil size={14} />
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" title={t('watch.groupAdd')} onClick={() => setGroupDialog({ open: true, group: null })}>
-                <Plus size={15} />
-              </Button>
-            </div>
-          </div>
-          <ListWrap mobile={mobile}>
-            {!curGroup || curGroup.items.length === 0 ? (
-              <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('watch.empty')}</div>
-            ) : (
-              curGroup.items.map(i => (
-                <WatchRowItem
-                  mobile={mobile}
-                  key={i.rowId}
-                  symbol={i.symbol}
-                  name={i.nameKr}
-                  countryCode={i.countryCode}
-                  currency={i.currency}
-                  sub={t(`market.${i.marketCode}`, { defaultValue: i.marketCode })}
-                  priceMap={watchPriceMap}
-                  active={selected === i.symbol}
-                  onClick={() => setSelected(i.symbol)}
-                />
-              ))
-            )}
-          </ListWrap>
-        </>
+        <WatchlistPanel
+          watchlist={watchlist}
+          mobile={mobile}
+          selected={selected}
+          onSelect={setSelected}
+          onEditGroup={group => setGroupDialog({ open: true, group })}
+          priceOf={sym => ({
+            price: watchPriceMap.get(sym) ?? null,
+            changePct: changePctOf(watchPriceMap.get(sym) ?? null, watchPrevCloses.get(sym)),
+          })}
+        />
       )}
     </div>
   )
 
   const dialogs = (
     <>
-      {searchOpen && <StockSearchDialog mobile={mobile} onPick={sym => setSelected(sym)} onClose={() => setSearchOpen(false)} />}
+      {searchOpen && <StockSearchDialog mobile={mobile} onPick={item => setSelected(item.symbol)} onClose={() => setSearchOpen(false)} />}
       {groupDialog.open && <WatchGroupDialog mobile={mobile} group={groupDialog.group} onClose={() => setGroupDialog({ open: false, group: null })} />}
     </>
   )
@@ -1426,7 +943,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
           {listPanel}
           {selected && (
             <ModalShell title={t('detail.sheetTitle')} onClose={() => setSelected(null)} mobile mobileMinHeight="88dvh">
-              <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={mc => toggleWatch(selected, mc)} mobile />
+              <StockDetailBody ticker={selected} holding={selHolding} watched={watchlist.isWatched(selected)} onToggleWatch={mc => watchlist.toggleWatch(selected, mc)} mobile />
             </ModalShell>
           )}
           {dialogs}
@@ -1445,12 +962,12 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 400px) minmax(0, 1fr)', gap: 20, alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {summary}
-          {holdings && holdingItems.length > 0 && <PortfolioDonut holdings={holdingItems} />}
+          {holdings && holdingItems.length > 0 && <PortfolioDonut slices={holdingItems.map(h => ({ name: h.name || h.symbol, value: num(h.marketValue.amount) }))} />}
           {listPanel}
         </div>
         <Card style={{ padding: 24 }}>
           {selected ? (
-            <StockDetailBody ticker={selected} holding={selHolding} watched={isWatched(selected)} onToggleWatch={mc => toggleWatch(selected, mc)} mobile={false} />
+            <StockDetailBody ticker={selected} holding={selHolding} watched={watchlist.isWatched(selected)} onToggleWatch={mc => watchlist.toggleWatch(selected, mc)} mobile={false} />
           ) : (
             <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
               <LineChart size={40} style={{ margin: '0 auto' }} />

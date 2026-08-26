@@ -24,7 +24,7 @@ import {
   type TossCandleCursorPage,
   type TossCandlePage,
 } from '@/features/stock/api/stockApi'
-import { LightweightStockChart, type CandleFetcher } from './LightweightStockChart'
+import { LightweightStockChart, type CandleFetcher } from '@/features/stock/ui/LightweightStockChart'
 
 type Range = '1D' | '1주' | '1개월' | '3개월' | '1년'
 type Theme = 'light' | 'dark'
