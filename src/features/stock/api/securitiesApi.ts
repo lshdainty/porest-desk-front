@@ -24,6 +24,42 @@ export interface BrokerQuote {
   previousClose: number | null
 }
 
+/**
+ * 캔들 한 봉. **필드 이름이 토스 응답과 같은 것은 의도된 것이다** — 백엔드가 증권사 무관
+ * 경로에서도 같은 모양으로 내려 주므로 차트는 고칠 게 없다.
+ *
+ * 금액이 문자열인 이유 — 증권사마다 소수 자릿수가 다르다(원화 0자리 · 달러 2자리).
+ * 숫자로 받으면 뒤 0 이 잘린다. 파싱은 차트가 한다.
+ */
+export interface BrokerCandle {
+  /** 오프셋이 붙은 ISO-8601(`2026-08-26T09:00:00+09:00`). 거래소 현지시각 기준이다. */
+  timestamp: string
+  openPrice: string
+  highPrice: string
+  lowPrice: string
+  closePrice: string
+  volume: string
+  currency: string
+}
+
+/** 백엔드 원형 — porest-core `CursorResponse<SecuritiesCandle>`. */
+export interface BrokerCandleCursorPage {
+  content: BrokerCandle[]
+  meta: { size: number; hasNext: boolean; nextCursor: string | null }
+}
+
+/** 클라 내부 정규화 (content→candles, meta.nextCursor→nextBefore). */
+export interface BrokerCandlePage {
+  candles: BrokerCandle[]
+  nextBefore: string | null
+}
+
+/**
+ * 한 페이지의 봉 수 상한. 서버도 같은 값으로 자르므로 넘겨 봐야 잘린다 —
+ * 더 필요하면 `nextBefore` 로 이어 받는다(차트가 그렇게 동작한다).
+ */
+const CANDLE_PAGE_MAX = 200
+
 export interface BrokerExchangeRate {
   base: string
   quote: string
@@ -38,6 +74,33 @@ export const securitiesApi = {
       params: { symbols: symbols.join(',') },
     })
     return resp.data ?? []
+  },
+
+  /**
+   * 캔들 한 페이지. **증권사는 서버가 고른다.**
+   *
+   * 예전엔 차트가 `/v1/toss/candles` 를 직접 불러 **나무만 연결한 사용자는 차트를 아예
+   * 못 봤다**(토스 키가 없으면 403). 이제 사용자가 고른 소스로 서버가 대신 조회하고,
+   * 그 소스가 캔들을 못 주면 연결된 다른 증권사로 넘어간다.
+   *
+   * `커서`(= 직전 응답의 `nextBefore`)의 **뜻은 증권사가 정한다** — 토스는 자기가 준 불투명
+   * 문자열, 나무는 날짜다. 클라이언트는 받은 것을 그대로 돌려주기만 한다.
+   */
+  getCandles: async (
+    symbol: string,
+    interval: '1m' | '1d',
+    opts?: { count?: number; before?: string; adjusted?: boolean },
+  ): Promise<BrokerCandlePage> => {
+    const resp: ApiResponse<BrokerCandleCursorPage> = await apiClient.get('/v1/securities/candles', {
+      params: {
+        symbol,
+        interval,
+        size: opts?.count ? Math.min(opts.count, CANDLE_PAGE_MAX) : undefined,
+        cursor: opts?.before,
+        adjusted: opts?.adjusted,
+      },
+    })
+    return { candles: resp.data?.content ?? [], nextBefore: resp.data?.meta?.nextCursor ?? null }
   },
 
   getExchangeRate: async (base = 'USD', quote = 'KRW'): Promise<BrokerExchangeRate> => {

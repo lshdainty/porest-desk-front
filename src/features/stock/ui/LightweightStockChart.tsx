@@ -2,8 +2,12 @@
  * 증권 상세 캔들 차트 — TradingView Lightweight Charts(Apache-2.0) 기반.
  * 캔들스틱 + 거래량 + 이동평균(MA5/MA20) + 크로스헤어 레전드, 줌/팬 내장.
  * 데이터는 viewport 커서 lazy-load: 초기 1페이지(≤200)만 받고, 과거로 팬해 좌측 끝
- * (logicalRange.from)이 임계치 아래로 떨어지면 백엔드 nextCursor(= 토스 nextBefore)로
- * 다음 과거 페이지를 당겨 prepend 한다. (백엔드 candle = porest-core CursorResponse 단일 페이지)
+ * (logicalRange.from)이 임계치 아래로 떨어지면 백엔드 nextCursor 로 다음 과거 페이지를 당겨
+ * prepend 한다. (백엔드 candle = porest-core CursorResponse 단일 페이지)
+ *
+ * 데이터는 **증권사 무관 경로**(`/v1/securities/candles`)에서 온다 — 사용자가 고른 소스로
+ * 서버가 대신 조회한다. 커서의 뜻은 증권사가 정하므로(토스=불투명 문자열, 나무=날짜)
+ * 여기서는 받은 값을 그대로 되돌려 주기만 한다.
  */
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -25,14 +29,17 @@ import {
   type Time,
 } from 'lightweight-charts'
 import { useTheme } from '@/shared/ui/theme-provider'
-import { stockApi, type TossCandle, type TossCandlePage } from '@/features/stock/api/stockApi'
+import { securitiesApi, type BrokerCandle, type BrokerCandlePage } from '@/features/stock/api/securitiesApi'
 
-/** 캔들 페이지를 가져오는 함수. 기본은 stockApi.getCandles, 임베드 컨텍스트는 Bearer 토큰 client 주입. */
+/**
+ * 캔들 페이지를 가져오는 함수. 기본은 `securitiesApi.getCandles`(= 증권사 무관 경로),
+ * 임베드 컨텍스트는 Bearer 토큰 client 주입.
+ */
 export type CandleFetcher = (
   symbol: string,
   interval: '1m' | '1d',
   opts: { count: number; before?: string },
-) => Promise<TossCandlePage>
+) => Promise<BrokerCandlePage>
 
 type Range = '1D' | '1주' | '1개월' | '3개월' | '1년'
 
@@ -74,7 +81,7 @@ function cssVar(name: string, fallback: string): string {
   return v || fallback
 }
 
-function toBar(c: TossCandle): Bar | null {
+function toBar(c: BrokerCandle): Bar | null {
   const t = Date.parse(c.timestamp)
   const open = Number.parseFloat(c.openPrice)
   const high = Number.parseFloat(c.highPrice)
@@ -139,7 +146,7 @@ export function LightweightStockChart({
   isUs,
   range,
   height,
-  fetcher = (symbol, interval, opts) => stockApi.getCandles(symbol, interval, opts),
+  fetcher = (symbol, interval, opts) => securitiesApi.getCandles(symbol, interval, opts),
 }: {
   symbol: string
   isUs: boolean
@@ -147,7 +154,7 @@ export function LightweightStockChart({
   /** 차트 높이 — number(px) 또는 '100%'(부모 크기 따라감, embed 풀블리드용). */
   height: number | '100%'
   /**
-   * 캔들 페치 함수. 기본=stockApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입.
+   * 캔들 페치 함수. 기본=securitiesApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입.
    * 인증 컨텍스트를 담는 fetcher 는 useMemo 로 안정화할 것 — effect deps 는 [symbol, interval] 이라
    * identity 변경만으로는 재로드/무효화가 트리거되지 않는다(폴링 틱은 ref 로 최신 fetcher 사용).
    */
@@ -162,7 +169,7 @@ export function LightweightStockChart({
   const ma20Ref = useRef<ISeriesApi<'Line'> | null>(null)
   const barsRef = useRef<Bar[]>([])
   const palRef = useRef<Palette | null>(null)
-  const cursorRef = useRef<string | null>(null) // 다음 과거 페이지 커서(= 토스 nextBefore)
+  const cursorRef = useRef<string | null>(null) // 다음 과거 페이지 커서(증권사가 뜻을 정한다)
   const loadingRef = useRef(false)
   const noMoreRef = useRef(false)
   const reqIdRef = useRef(0) // symbol/interval 변경 시 진행 중 비동기 무효화

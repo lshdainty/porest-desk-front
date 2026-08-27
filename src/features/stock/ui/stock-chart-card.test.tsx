@@ -1,9 +1,11 @@
-// 캔들은 `/api/v1/toss/candles` 하나뿐이라 **토스 크리덴셜이 있어야** 그려진다.
-// 여기서 지키는 건 셋이다.
+// 캔들은 이제 `/api/v1/securities/candles` 로 가고, 어느 증권사로 조회할지는 서버가 정한다.
+// 그래서 조건이 "토스가 연결됐나" 에서 **"증권사가 하나라도 연결됐나"** 로 바뀌었다.
+// 여기서 지키는 건 넷이다.
 //  ① 토스 연결 → 차트를 그린다 (기존 토스 화면 동작 — 공용화하며 깨지면 안 된다)
-//  ② 토스 미연결(나무만) → 실패할 요청을 내지 않고 이유를 보여준다
-//  ③ 아직 모름 → 둘 다 하지 않는다. 여기서 ②로 뭉개면 토스 사용자가 첫 프레임마다
-//     "토스를 연결하세요" 를 본다
+//  ② 나무만 연결 → **이제도 그린다.** 이게 이번 변경의 핵심이다
+//  ③ 미연결 → 실패할 요청을 내지 않고 이유를 보여준다
+//  ④ 아직 모름 → 둘 다 하지 않는다. 여기서 ③으로 뭉개면 연결한 사용자가 첫 프레임마다
+//     "증권사를 연결하세요" 를 본다
 import { act, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -57,7 +59,7 @@ const render = () =>
   act(() => root.render(<StockChartCard symbol="005930" isUs={false} mobile={false} />))
 
 const chart = () => container.querySelector('[data-testid="chart"]')
-const notice = () => container.textContent?.includes('chart.tossOnly') ?? false
+const notice = () => container.textContent?.includes('chart.brokerRequired') ?? false
 
 describe('StockChartCard 의 캔들 게이트', () => {
   it('토스가 연결돼 있으면 차트를 그린다', () => {
@@ -67,20 +69,27 @@ describe('StockChartCard 의 캔들 게이트', () => {
     expect(notice()).toBe(false)
   })
 
-  it('나무만 연결돼 있으면 차트를 마운트하지 않고 이유를 보여준다', () => {
+  it('나무만 연결돼 있어도 그린다 — 서버가 나무 기간별시세로 대신 조회한다', () => {
     features.current = { connectedBrokers: ['NAMU'] }
     render()
-    expect(chart()).toBeNull()
-    expect(notice()).toBe(true)
+    expect(chart()).not.toBeNull()
+    expect(notice()).toBe(false)
   })
 
-  it('나무·토스를 함께 연결했으면 나무 종목에서도 그린다 — 캔들이 요구하는 건 종목이 아니라 크리덴셜이다', () => {
+  it('나무·토스를 함께 연결했으면 당연히 그린다', () => {
     features.current = { connectedBrokers: ['NAMU', 'TOSS'] }
     render()
     expect(chart()).not.toBeNull()
   })
 
-  it('연결 정보가 오기 전에는 안내를 띄우지 않는다 (토스 사용자에게 번쩍이면 안 된다)', () => {
+  it('증권사를 하나도 연결하지 않았으면 요청을 내지 않고 이유를 보여준다', () => {
+    features.current = { connectedBrokers: [] }
+    render()
+    expect(chart()).toBeNull()
+    expect(notice()).toBe(true)
+  })
+
+  it('연결 정보가 오기 전에는 안내를 띄우지 않는다 (연결한 사용자에게 번쩍이면 안 된다)', () => {
     features.loading = true
     render()
     expect(notice()).toBe(false)
@@ -88,7 +97,7 @@ describe('StockChartCard 의 캔들 게이트', () => {
   })
 
   it('못 그릴 때는 기간 탭도 숨긴다 — 누를 곳이 남으면 고장으로 읽힌다', () => {
-    features.current = { connectedBrokers: ['NAMU'] }
+    features.current = { connectedBrokers: [] }
     render()
     expect(container.querySelector('[data-testid="ranges"]')).toBeNull()
   })
