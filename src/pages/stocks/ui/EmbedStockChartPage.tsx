@@ -21,9 +21,9 @@ import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import type { ApiResponse } from '@/shared/types'
 import {
-  type TossCandleCursorPage,
-  type TossCandlePage,
-} from '@/features/stock/api/stockApi'
+  type BrokerCandleCursorPage,
+  type BrokerCandlePage,
+} from '@/features/stock/api/securitiesApi'
 import { LightweightStockChart, type CandleFetcher } from '@/features/stock/ui/LightweightStockChart'
 
 type Range = '1D' | '1주' | '1개월' | '3개월' | '1년'
@@ -159,10 +159,11 @@ export function EmbedStockChartPage() {
     if (!hasToken) return undefined
     const client = createEmbedClient(() => tokenRef.current)
     return async (sym, interval, opts) => {
-      const resp: ApiResponse<TossCandleCursorPage> = await client.get('/v1/toss/candles', {
+      // 증권사 무관 경로 — 토스 키가 없는 사용자도 차트가 뜬다.
+      const resp: ApiResponse<BrokerCandleCursorPage> = await client.get('/v1/securities/candles', {
         params: { symbol: sym, interval, size: opts.count, cursor: opts.before },
       })
-      const page: TossCandlePage = {
+      const page: BrokerCandlePage = {
         candles: resp.data?.content ?? [],
         nextBefore: resp.data?.meta?.nextCursor ?? null,
       }

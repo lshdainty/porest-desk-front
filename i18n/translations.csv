@@ -1949,7 +1949,7 @@ stocks,fee.us,미국주식 매매수수료 0.1% · 환전 수수료 별도 적�
 stocks,fee.kr,국내주식 매매수수료 무료 (2026.6까지) · 이후 KRX 0.015% / NXT 0.014%,Korean stocks: free trading (until Jun 2026) · then KRX 0.015% / NXT 0.014%
 stocks,disclaimer.line1,토스증권 Open API 연동 시 실시간 호가·체결가가 반영됩니다.,Real-time quotes and trades appear when Toss Securities Open API is connected.
 stocks,disclaimer.line2,시세는 투자 참고용이며 실제 주문은 약관 동의 후 가능합니다.,Quotes are for reference only; actual orders require agreeing to the terms.
-stocks,chart.tossOnly,차트는 토스증권을 연결하면 볼 수 있어요,Connect Toss Securities to see the chart
+stocks,chart.brokerRequired,차트는 증권사를 연결하면 볼 수 있어요,Connect a brokerage to see the chart
 stocks,range.1d,1D,1D
 stocks,range.1w,1주,1W
 stocks,range.1m,1개월,1M
