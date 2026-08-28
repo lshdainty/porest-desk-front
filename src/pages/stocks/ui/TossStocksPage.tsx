@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { AlertTriangle, Info, LineChart, Search } from 'lucide-react'
+import { AlertTriangle, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { tileRadius } from '@/shared/lib'
@@ -9,16 +9,17 @@ import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Input } from '@/shared/ui/input'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { fmtByCurrency, num, trendColor } from '@/features/stock/lib/format'
-import { ListWrap, PanelEmpty, PctBadge, StockBadge, StockRow, WatchStar } from '@/features/stock/ui/stock-row'
+import { ListWrap, PanelEmpty, PctBadge, StockBadge, StockRow, StockSearchTrigger, WatchStar } from '@/features/stock/ui/stock-row'
 import { StockChartCard } from '@/features/stock/ui/stock-chart-card'
 import { StockSearchDialog, WatchGroupDialog } from '@/features/stock/ui/stock-dialogs'
-import { HoldingsEmpty, PortfolioDonut } from '@/features/stock/ui/portfolio-donut'
+import { HoldingsEmpty } from '@/features/stock/ui/portfolio-donut'
+import { DailyQuoteTable } from '@/features/stock/ui/daily-quote-table'
+import { PortfolioOverview, type OverviewRow } from '@/features/stock/ui/portfolio-overview'
+import { DetailPane, ListPanel, StocksShell } from '@/features/stock/ui/stocks-shell'
+import { MarketStatusLine, SummaryStrip, type StatTile } from '@/features/stock/ui/summary-strip'
 import { WatchlistPanel } from '@/features/stock/ui/watchlist-panel'
 import { useWatchlist } from '@/features/stock/model/useWatchlist'
 import type {
@@ -35,7 +36,6 @@ import {
   usePrevClose,
   usePrevCloses,
   useTossAccounts,
-  useTossCandles,
   useTossExchangeRate,
   useTossHoldings,
   useTossIndicatorPrices,
@@ -52,6 +52,9 @@ import {
 import { useStockBySymbol } from '@/features/stock/model/useStockMaster'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
+
+/** 선택 상태 — 종목 심볼이거나 '전체 포트폴리오'(개요). 나무 화면과 같은 규칙이다. */
+const OVERVIEW = '__overview__' as const
 
 
 /** 라이브 체결 테이프 변환 (토스 trades). dir=직전 체결가 대비 방향. */
@@ -261,90 +264,6 @@ function QuotesCard({ symbol, currency, lastPrice, changePct }: { symbol: string
 
 // ---- 일별 시세 표 (토스 candles 1d) ---------------------------------------
 
-function DailyQuoteTable({ symbol, currency }: { symbol: string; currency: string }) {
-  const { t } = useTranslation('stocks')
-  const q = useTossCandles(symbol, '1d', 252)
-  const fmt = (v: number) => fmtByCurrency(v, currency)
-  const rows = useMemo(() => {
-    const asc = [...(q.data?.candles ?? [])].sort((a, b) => a.timestamp.localeCompare(b.timestamp))
-    const recent = asc.slice(-9)
-    const out: { date: string; close: number; chg: number; vol: number }[] = []
-    for (let i = recent.length - 1; i >= 1; i--) {
-      const c = recent[i]!
-      const prev = Number.parseFloat(recent[i - 1]!.closePrice)
-      const close = Number.parseFloat(c.closePrice)
-      const chg = prev > 0 ? ((close - prev) / prev) * 100 : 0
-      out.push({ date: c.timestamp.slice(5, 10).replace('-', '.'), close, chg, vol: Math.round(Number.parseFloat(c.volume)) })
-    }
-    return out.slice(0, 8)
-  }, [q.data])
-
-  // 로딩 스켈레톤과 실렌더가 반드시 같은 컬럼비로 서야 해서 그리드 정의를 한 곳에 둔다
-  const gridCols = 'minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.3fr)'
-  // 스켈레톤 행 셀 — 실렌더 데이터 셀 정합.
-  // 높이를 명시하는 이유: 실렌더 행 높이는 텍스트 라인박스(12.5 x line-height 1.5 = 18.75)가
-  // 정하는데, 스켈레톤은 바 두께(14)가 정해 행마다 4.75px 씩 짧아진다. 8행이면 38px 이 밀린다.
-  // border-box 라 16(padding) + 1(border) 을 뺀 18.75 가 콘텐츠 높이로 남는다.
-  const skelCell = {
-    padding: '8px 0',
-    borderTop: '1px solid var(--border-subtle)',
-    height: 35.75,
-    display: 'flex',
-    alignItems: 'center',
-  } as const
-
-  const headCell = (h: string, align: 'left' | 'right') => (
-    <div key={h} style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, padding: '0 0 8px', textAlign: align, whiteSpace: 'nowrap' }}>
-      {h}
-    </div>
-  )
-  return (
-    <Card style={{ padding: 16 }}>
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-secondary)', marginBottom: 10 }}>{t('daily.title')}</div>
-      {q.isLoading ? (
-        // 헤더 4셀은 정적 틀이라 로딩에도 실제로 렌더하고, 서버 데이터가 들어갈 행만 스켈레톤.
-        // 행 8개는 실렌더 최대치(rows = 최근 9캔들 → out.slice(0, 8))와 동일.
-        // 문구 로딩을 걷어낸 대신 aria 로 스크린리더 안내를 남긴다.
-        <div style={{ display: 'grid', gridTemplateColumns: gridCols }} aria-busy aria-label={t('daily.loading')}>
-          {headCell(t('daily.date'), 'left')}
-          {headCell(t('daily.close'), 'right')}
-          {headCell(t('daily.changeRate'), 'right')}
-          {headCell(t('daily.volume'), 'right')}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} style={{ display: 'contents' }}>
-              {/* 1~3열은 fontSize 12.5(h-3.5), 4열 거래량만 --text-badge(h-3) — 실렌더 셀 타이포 대응 */}
-              <div style={skelCell}><SkeletonBase className="h-3.5 w-10" /></div>
-              <div style={skelCell}><SkeletonBase className="h-3.5 w-14 ml-auto" /></div>
-              <div style={skelCell}><SkeletonBase className="h-3.5 w-12 ml-auto" /></div>
-              <div style={skelCell}><SkeletonBase className="h-3 w-16 ml-auto" /></div>
-            </div>
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
-        <PanelEmpty msg={t('daily.empty')} />
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: gridCols }}>
-          {headCell(t('daily.date'), 'left')}
-          {headCell(t('daily.close'), 'right')}
-          {headCell(t('daily.changeRate'), 'right')}
-          {headCell(t('daily.volume'), 'right')}
-          {rows.map(r => (
-            <div key={r.date} style={{ display: 'contents' }}>
-              <div className="num" style={{ fontSize: 12.5, color: 'var(--fg-secondary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>{r.date}</div>
-              <div className="num" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-primary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}>{fmt(r.close)}</div>
-              <div className="num" style={{ fontSize: 12.5, fontWeight: 700, color: trendColor(r.chg), padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                {r.chg >= 0 ? '+' : ''}
-                {r.chg.toFixed(2)}%
-              </div>
-              <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', padding: '8px 0', borderTop: '1px solid var(--border-subtle)', textAlign: 'right', whiteSpace: 'nowrap' }}>{r.vol.toLocaleString()}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  )
-}
-
 // ---- 장 상태 바 (토스 market-calendar + 국내 지수) --------------------------
 
 /** 'HH:MM:SS' → 'HH:MM' */
@@ -370,21 +289,26 @@ function marketState(session: TossMarketSession | null | undefined, tz: string):
   return { open: false, labelKey: 'market.afterClose' }
 }
 
-function MarketStatusBar({ mobile }: { mobile: boolean }) {
+/**
+ * 장 상태 점 — 상태 줄 왼쪽에 선다.
+ *
+ * 지수는 예전엔 여기 같이 붙어 있었는데 **요약 스트립 타일로 올렸다**. 지수는 "지금 열려
+ * 있나" 와 성격이 다른 값이고, 얇은 줄 안에서는 숫자가 눈에 안 들어왔다.
+ *
+ * **나무엔 이 줄이 없다** — 나무 스펙에 휴장일·영업일 캘린더가 아예 없다.
+ */
+function MarketOpenState({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation('stocks')
   const krQ = useTossMarketCalendarKr()
   const usQ = useTossMarketCalendarUs()
-  // 국내 지수 현재가 (토스 시장지표 — KOSPI·KOSDAQ 포인트)
-  const idxQ = useTossIndicatorPrices(['KOSPI', 'KOSDAQ'])
   const kr = marketState(krQ.data?.today.integrated?.regularMarket, 'Asia/Seoul')
   const us = marketState(usQ.data?.today.regularMarket, 'America/New_York')
   const markets = [
     { name: mobile ? t('market.krShort') : t('market.krFull'), ...kr },
     { name: mobile ? t('market.usShort') : t('market.usFull'), ...us },
   ]
-  const indices = (idxQ.data ?? []).filter(i => num(i.lastPrice) > 0)
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 16, flexWrap: 'wrap' }}>
+    <>
       {markets.map(m => (
         <div
           key={m.name}
@@ -401,18 +325,7 @@ function MarketStatusBar({ mobile }: { mobile: boolean }) {
           <span style={{ fontSize: 'var(--text-caption)', color: m.open ? 'var(--fg-secondary)' : 'var(--fg-tertiary)' }}>{t(m.labelKey, m.time ? { time: m.time } : undefined)}</span>
         </div>
       ))}
-      {indices.map(i => (
-        <div key={i.symbol} style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-secondary)' }}>
-            {i.symbol === 'KOSPI' ? t('market.KOSPI') : t('market.KOSDAQ')}
-          </span>
-          <span className="num" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-primary)' }}>
-            {num(i.lastPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-          </span>
-        </div>
-      ))}
-      {!mobile && <span style={{ marginLeft: 'auto', fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>{t('market.dataNotice')}</span>}
-    </div>
+    </>
   )
 }
 
@@ -783,23 +696,27 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
     () => (holdings ? [...holdings.items].sort((a, b) => num(b.marketValue.amount) - num(a.marketValue.amount)) : []),
     [holdings],
   )
-  // 환율 (요약 카드 + 상세 원화 환산)
+  // 환율 (요약 타일 + 상세 원화 환산)
   const fxQ = useTossExchangeRate()
+  // 국내 지수 현재가 (토스 시장지표 — KOSPI·KOSDAQ 포인트). 나무엔 대응 API 가 없다.
+  const idxQ = useTossIndicatorPrices(['KOSPI', 'KOSDAQ'])
 
-  // 데스크톱: 기본 선택 = 첫 보유 종목
+  // 데스크톱: 기본 선택 = 첫 보유 종목. 보유가 없으면 개요를 띄운다(빈 안내문 대신).
   useEffect(() => {
-    if (!mobile && !selected && holdingItems.length > 0) setSelected(holdingItems[0]!.symbol)
+    if (mobile || selected) return
+    setSelected(holdingItems.length > 0 ? holdingItems[0]!.symbol : OVERVIEW)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile, holdingItems.length])
-
 
   // 요약 (서버 계산값)
   const totalEval = holdings ? num(holdings.marketValue.amount.krw) : 0
   const totalCost = holdings ? num(holdings.totalPurchaseAmount.krw) : 0
   const totalPnl = holdings ? num(holdings.profitLoss.amount.krw) : 0
   const totalPnlPct = holdings ? num(holdings.profitLoss.rate) : 0
+  const dailyPnl = holdings ? num(holdings.dailyProfitLoss.amount.krw) : 0
+  const dailyPnlPct = holdings ? num(holdings.dailyProfitLoss.rate) : 0
   const curGroup = watchlist.activeGroup
-  const selHolding = selected ? holdingItems.find(h => h.symbol === selected) ?? null : null
+  const selHolding = selected && selected !== OVERVIEW ? holdingItems.find(h => h.symbol === selected) ?? null : null
   const fxRate = fxQ.data ? num(fxQ.data.rate) : null
 
   // 관심 탭 시세 — 현재 그룹 심볼 배치 1콜 (10초 폴링은 useTossPrices 공통).
@@ -818,96 +735,134 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
     return map
   }, [watchPricesQ.data])
 
-  // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 투자 요약 (design StocksScreen).
-  const summary = !holdings ? (
+  // ---- 1층: 요약 스트립 -----------------------------------------------------
+  //
+  // **있는 타일만 만든다.** 지수는 토스 카탈로그 8종 안에 있는 것만 온다.
+  const tiles: StatTile[] = []
+  if (holdings) {
+    tiles.push({
+      id: 'total',
+      hero: true,
+      label: t('summary.title'),
+      value: <MaskAmount card="stocks.holdings">{`${KRW(totalEval)}원`}</MaskAmount>,
+      sub: (
+        <MaskAmount card="stocks.holdings">
+          {`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })} · ${totalPnlPct >= 0 ? '+' : ''}${totalPnlPct.toFixed(2)}% · ${t('holding.purchaseAmount')} ${money(totalCost)}`}
+        </MaskAmount>
+      ),
+    })
+    tiles.push({
+      id: 'daily',
+      label: t('holding.dailyPnl'),
+      tone: trendColor(dailyPnl),
+      value: <MaskAmount card="stocks.holdings">{`${dailyPnl >= 0 ? '+' : '−'}${money(dailyPnl, { abs: true })}`}</MaskAmount>,
+      sub: `${dailyPnlPct >= 0 ? '+' : ''}${dailyPnlPct.toFixed(2)}% · ${t('summary.holdingsCount')} ${t('unit.count', { count: holdingItems.length })}`,
+    })
+  }
+  for (const i of idxQ.data ?? []) {
+    if (num(i.lastPrice) <= 0) continue
+    tiles.push({
+      id: i.symbol,
+      label: i.symbol === 'KOSPI' ? t('market.KOSPI') : t('market.KOSDAQ'),
+      value: num(i.lastPrice).toLocaleString(undefined, { maximumFractionDigits: 2 }),
+      sub: t('market.indexPoint'),
+    })
+  }
+  if (fxRate != null && fxRate > 0) {
+    tiles.push({
+      id: 'fx',
+      label: t('summary.fxRate'),
+      value: `₩${Math.round(fxRate).toLocaleString()}`,
+      sub: t('market.fxBase'),
+    })
+  }
+
+  const strip = !holdings ? (
     <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
       <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('summary.title')}</div>
       <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', marginTop: 8 }}>{t('summary.connectPrompt')}</div>
     </Card>
   ) : (
-    <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
-      <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('summary.title')}</div>
-      <div className="num" style={{ fontSize: mobile ? 28 : 32, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg-primary)', marginTop: 4 }}>
-        <MaskAmount card="stocks.holdings">{KRW(totalEval)}</MaskAmount>원
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-        <span className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: trendColor(totalPnl), whiteSpace: 'nowrap' }}>
-          <MaskAmount card="stocks.holdings">{`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })}`}</MaskAmount>
-        </span>
-        <PctBadge pct={totalPnlPct} size={13} />
-      </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
-        {(
-          [
-            [t('holding.purchaseAmount'), <MaskAmount card="stocks.holdings" key="c">{money(totalCost)}</MaskAmount>],
-            [t('summary.holdingsCount'), t('unit.count', { count: holdingItems.length })],
-            [t('summary.fxRate'), fxRate != null ? `₩${Math.round(fxRate).toLocaleString()}` : '—'],
-          ] as Array<[string, React.ReactNode]>
-        ).map(([k, v]) => (
-          <div key={k} style={{ flex: 1 }}>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginBottom: 2 }}>{k}</div>
-            <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>{v}</div>
-          </div>
-        ))}
-      </div>
-    </Card>
+    <SummaryStrip tiles={tiles} mobile={mobile} />
   )
 
-  const listPanel = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ position: 'relative' }}>
-        <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-tertiary)', pointerEvents: 'none' }} />
-        <Input search readOnly placeholder={t('search.label')} className="w-full pl-9" style={{ cursor: 'pointer' }} onClick={() => setSearchOpen(true)} />
-      </div>
+  const statusLine = (
+    <MarketStatusLine mobile={mobile} notice={t('market.dataNotice')}>
+      <MarketOpenState mobile={mobile} />
+    </MarketStatusLine>
+  )
 
-      <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
-        <TabsList variant="pill" size="sm">
-          <TabsTrigger variant="pill" value="holdings">{t('segments.holdings', { count: holdingItems.length })}</TabsTrigger>
-          <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchlist.watchedSymbols.size })}</TabsTrigger>
-          <TabsTrigger variant="pill" value="discover">{t('segments.discover')}</TabsTrigger>
-        </TabsList>
-      </Tabs>
+  // ---- 3층 좌: 목록 --------------------------------------------------------
+  const holdingsList = !holdings ? (
+    <HoldingsEmpty mobile={mobile} />
+  ) : holdingItems.length === 0 ? (
+    <ListWrap mobile={mobile} fill={!mobile}>
+      <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('holdings.empty')}</div>
+    </ListWrap>
+  ) : (
+    <ListWrap mobile={mobile} fill={!mobile}>
+      {/* 전체 포트폴리오 — 우측을 구성 도넛 + 비중 표 + 랭킹으로 바꾼다. */}
+      <StockRow
+        mobile={mobile}
+        stock={{ symbol: OVERVIEW, name: t('portfolio.allTitle'), countryCode: 'ALL', currency: 'KRW' }}
+        hideSymbol
+        active={selected === OVERVIEW}
+        onClick={() => setSelected(OVERVIEW)}
+        sub={t('portfolio.allSub')}
+        right={
+          <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+            <MaskAmount card="stocks.holdings">{money(totalEval)}</MaskAmount>
+          </div>
+        }
+      />
+      {holdingItems.map(h => {
+        const ev = num(h.marketValue.amount)
+        const pnl = num(h.profitLoss.amount)
+        const pct = num(h.profitLoss.rate)
+        const heldUs = h.marketCountry.toUpperCase() === 'US' || h.currency.toUpperCase() === 'USD'
+        return (
+          <StockRow
+            mobile={mobile}
+            key={h.symbol}
+            stock={{ symbol: h.symbol, name: h.name || h.symbol, countryCode: heldUs ? 'US' : 'KR', currency: h.currency }}
+            active={selected === h.symbol}
+            onClick={() => setSelected(h.symbol)}
+            sub={t('holding.sharesHeld', { count: h.quantity })}
+            right={
+              <>
+                <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
+                  <MaskAmount card="stocks.holdings">{money(ev)}</MaskAmount>
+                </div>
+                <div className="num" style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: trendColor(pnl), marginTop: 1 }}>
+                  {pnl >= 0 ? '+' : ''}
+                  {pct.toFixed(2)}%
+                </div>
+              </>
+            }
+          />
+        )
+      })}
+    </ListWrap>
+  )
 
+  const list = (
+    <ListPanel
+      mobile={mobile}
+      search={<StockSearchTrigger onClick={() => setSearchOpen(true)} />}
+      segments={
+        <Tabs value={seg} onValueChange={v => setSeg(v as 'holdings' | 'watch' | 'discover')}>
+          <TabsList variant="pill" size="sm">
+            <TabsTrigger variant="pill" value="holdings">{t('segments.holdings', { count: holdingItems.length })}</TabsTrigger>
+            <TabsTrigger variant="pill" value="watch">{t('segments.watch', { count: watchlist.watchedSymbols.size })}</TabsTrigger>
+            <TabsTrigger variant="pill" value="discover">{t('segments.discover')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      }
+    >
       {seg === 'discover' ? (
         <DiscoverPanel onPick={setSelected} selected={selected} mobile={mobile} />
       ) : seg === 'holdings' ? (
-        !holdings ? (
-          <HoldingsEmpty mobile={mobile} />
-        ) : holdingItems.length === 0 ? (
-          <ListWrap mobile={mobile}>
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>{t('holdings.empty')}</div>
-          </ListWrap>
-        ) : (
-          <ListWrap mobile={mobile}>
-            {holdingItems.map(h => {
-              const ev = num(h.marketValue.amount)
-              const pnl = num(h.profitLoss.amount)
-              const pct = num(h.profitLoss.rate)
-              const heldUs = h.marketCountry.toUpperCase() === 'US' || h.currency.toUpperCase() === 'USD'
-              return (
-                <StockRow
-                  mobile={mobile}
-                  key={h.symbol}
-                  stock={{ symbol: h.symbol, name: h.name || h.symbol, countryCode: heldUs ? 'US' : 'KR', currency: h.currency }}
-                  active={selected === h.symbol}
-                  onClick={() => setSelected(h.symbol)}
-                  sub={t('holding.sharesHeld', { count: h.quantity })}
-                  right={
-                    <>
-                      <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                        <MaskAmount card="stocks.holdings">{money(ev)}</MaskAmount>
-                      </div>
-                      <div className="num" style={{ fontSize: 'var(--text-badge)', fontWeight: 700, color: trendColor(pnl), marginTop: 1 }}>
-                        {pnl >= 0 ? '+' : ''}
-                        {pct.toFixed(2)}%
-                      </div>
-                    </>
-                  }
-                />
-              )
-            })}
-          </ListWrap>
-        )
+        holdingsList
       ) : (
         <WatchlistPanel
           watchlist={watchlist}
@@ -921,8 +876,39 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
           })}
         />
       )}
-    </div>
+    </ListPanel>
   )
+
+  // ---- 3층 우: 상세 또는 개요 ------------------------------------------------
+  const overviewRows: OverviewRow[] = holdingItems.map(h => ({
+    symbol: h.symbol,
+    name: h.name || h.symbol,
+    amountText: money(num(h.marketValue.amount)),
+    weightPct: totalEval > 0 ? (num(h.marketValue.amount) / totalEval) * 100 : null,
+    profitPct: num(h.profitLoss.rate),
+  }))
+
+  const detailBody =
+    selected === OVERVIEW || (selected == null && !mobile) ? (
+      <PortfolioOverview
+        mobile={mobile}
+        title={t('portfolio.allTitle')}
+        totalText={`${KRW(totalEval)}원`}
+        subText={`${totalPnl >= 0 ? '+' : '−'}${money(totalPnl, { abs: true })} · ${totalPnlPct >= 0 ? '+' : ''}${totalPnlPct.toFixed(2)}%`}
+        slices={holdingItems.map(h => ({ name: h.name || h.symbol, value: num(h.marketValue.amount) }))}
+        rows={overviewRows}
+        // 토스에만 랭킹이 있다 — 개요 아래에 붙여 우측 단을 끝까지 채운다.
+        extra={<DiscoverPanel onPick={setSelected} selected={selected} mobile={mobile} />}
+      />
+    ) : selected ? (
+      <StockDetailBody
+        ticker={selected}
+        holding={selHolding}
+        watched={watchlist.isWatched(selected)}
+        onToggleWatch={mc => watchlist.toggleWatch(selected, mc)}
+        mobile={mobile}
+      />
+    ) : null
 
   const dialogs = (
     <>
@@ -931,52 +917,17 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
     </>
   )
 
-  // ---- 모바일: 풀스크린(← 헤더) + 스택 + 상세 시트 ----
-  if (mobile) {
-    return (
-      <>
-        <MobileBackHeader title={t('nav.title')} />
-        <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {header}
-          <MarketStatusBar mobile />
-          {summary}
-          {listPanel}
-          {selected && (
-            <ModalShell title={t('detail.sheetTitle')} onClose={() => setSelected(null)} mobile mobileMinHeight="88dvh">
-              <StockDetailBody ticker={selected} holding={selHolding} watched={watchlist.isWatched(selected)} onToggleWatch={mc => watchlist.toggleWatch(selected, mc)} mobile />
-            </ModalShell>
-          )}
-          {dialogs}
-        </div>
-      </>
-    )
-  }
-
-  // ---- 데스크톱/태블릿: 2-pane ----
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
-        {header}
-        <MarketStatusBar mobile={false} />
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 400px) minmax(0, 1fr)', gap: 20, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {summary}
-          {holdings && holdingItems.length > 0 && <PortfolioDonut slices={holdingItems.map(h => ({ name: h.name || h.symbol, value: num(h.marketValue.amount) }))} />}
-          {listPanel}
-        </div>
-        <Card style={{ padding: 24 }}>
-          {selected ? (
-            <StockDetailBody ticker={selected} holding={selHolding} watched={watchlist.isWatched(selected)} onToggleWatch={mc => watchlist.toggleWatch(selected, mc)} mobile={false} />
-          ) : (
-            <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--fg-tertiary)' }}>
-              <LineChart size={40} style={{ margin: '0 auto' }} />
-              <div style={{ marginTop: 12, fontSize: 'var(--text-body-sm)' }}>{t('detail.selectPrompt')}</div>
-            </div>
-          )}
-        </Card>
-      </div>
-      {dialogs}
-    </div>
+    <StocksShell
+      mobile={mobile}
+      header={header}
+      strip={strip}
+      statusLine={statusLine}
+      list={list}
+      detail={<DetailPane mobile={mobile}>{detailBody}</DetailPane>}
+      detailOpen={selected != null}
+      onCloseDetail={() => setSelected(null)}
+      dialogs={dialogs}
+    />
   )
 }

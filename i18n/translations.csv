@@ -2006,7 +2006,7 @@ stocks,warning.ADJUSTMENT_OF_SHARES,주식병합·분할,Share adjustment
 stocks,broker.toss,토스증권,Toss Securities
 stocks,broker.namu,나무증권,NAMUH Securities
 stocks,broker.unsupported,아직 지원하지 않는 증권사예요. 잠시 후 다시 확인해 주세요.,That provider isn't supported yet. Please check back shortly.
-stocks,namu.scopeNotice,나무증권은 호가·체결·일별 시세를 주지 않아 이 화면엔 없어요.,Namu doesn't provide order book, trade tape, or daily quotes, so they're not shown here.
+stocks,namu.scopeNotice,나무증권은 호가·체결을 주지 않아 이 화면엔 없어요.,Namu doesn't provide order book or trade tape so they're not shown here.
 stocks,namu.priceEmpty,현재가가 없는 종목이에요,No current price for this instrument
 stocks,search.error,검색에 실패했어요,Search failed
 stocks,search.empty,검색 결과가 없어요,No results
@@ -2579,3 +2579,24 @@ expense,sms.cancelNotice,취소 문자예요. 자동 기록은 지원하지 않�
 expense,sms.lowConfidence,일부 항목을 읽지 못했어요. 확인하고 채워 주세요.,Some fields could not be read. Please review and fill them in.
 expense,sms.parseFailed,문자를 읽지 못했어요. 잠시 후 다시 시도해 주세요.,Could not read the text. Please try again in a moment.
 expense,sms.rememberCard,이 카드를 기억해서 다음부터 자동으로 연결하기,Remember this card and link it automatically next time
+stocks,namu.domesticValue,국내 평가금액 (KRW),Domestic value (KRW)
+stocks,namu.overseasValue,해외 평가금액 (USD),Overseas value (USD)
+stocks,namu.countSplit,국내 {{kr}} · 해외 {{us}},KR {{kr}} · US {{us}}
+stocks,namu.krwTotal,원화 환산 합계,Total in KRW
+stocks,namu.fxApplied,환율 {{rate}} 적용,At FX {{rate}}
+stocks,namu.fxBase,매매기준율,Base rate
+stocks,namu.fxUnavailable,환율을 못 받아 원화 합계를 못 냈어요. 통화별 금액은 정확해요,FX rate unavailable so the KRW total is not shown. Per-currency amounts are exact
+stocks,namu.fxUnavailableShort,환율 없음,No FX rate
+stocks,namu.donutNeedsFx,환율을 못 받아 구성 비중을 낼 수 없어요,Cannot compute weights without an FX rate
+stocks,namu.dataNotice,나무증권 Open API · 시세 지연 표시,NAMUH Open API · delayed quotes
+stocks,namu.filterAll,전체,All
+stocks,namu.filterEmpty,이 시장에 보유 종목이 없어요,No holdings in this market
+stocks,portfolio.allTitle,전체 포트폴리오,Entire portfolio
+stocks,portfolio.allSub,구성 비중 · 통화별 합계,Weights · totals by currency
+stocks,portfolio.breakdownTitle,보유 비중,Holdings breakdown
+stocks,portfolio.colName,종목,Stock
+stocks,portfolio.colAmount,평가금액,Value
+stocks,portfolio.colWeight,비중,Weight
+stocks,portfolio.colReturn,수익률,Return
+stocks,market.indexPoint,지수,Index
+stocks,market.fxBase,매매기준율,Base rate

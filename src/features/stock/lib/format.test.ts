@@ -49,3 +49,18 @@ describe('fmtByCurrency', () => {
     expect(fmtByCurrency(1234.5, 'JPY')).toBe('1,234.5 JPY')
   })
 })
+
+describe('fmtByCurrency — 달러 천단위', () => {
+  it('네 자리 이상 달러는 천단위를 끊는다', () => {
+    expect(fmtByCurrency(11514.3, 'USD')).toBe('$11,514.30')
+  })
+
+  it('소수 두 자리를 유지한다', () => {
+    expect(fmtByCurrency(7412.1, 'USD')).toBe('$7,412.10')
+    expect(fmtByCurrency(9.5, 'USD')).toBe('$9.50')
+  })
+
+  it('로케일과 무관하게 같은 표기 — en-US 고정', () => {
+    expect(fmtByCurrency(1234567.891, 'USD')).toBe('$1,234,567.89')
+  })
+})

@@ -24,7 +24,9 @@ export function trendColor(pct: number): string {
  * en `₩10,000`). 여기서 `toLocaleString()+'원'` 으로 손수 만들면 영어 화면에만 원이 붙는다.
  */
 export function fmtByCurrency(price: number, currency: string): string {
-  if (currency === 'USD') return `$${price.toFixed(2)}`
+  // 달러도 천단위를 끊는다. `toFixed(2)` 만 쓰면 `$11514.30` 이 되는데, 요약 스트립처럼
+  // 큰 금액이 서는 자리에서는 자릿수를 눈으로 못 센다(원화는 money() 가 이미 끊는다).
+  if (currency === 'USD') return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   if (currency === 'KRW') return money(Math.round(price))
   return `${price.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`
 }
