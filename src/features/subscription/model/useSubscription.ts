@@ -58,12 +58,19 @@ export const useHasBrokerConnection = (): boolean => {
   return (data?.connectedBrokers?.length ?? 0) > 0
 }
 
-/** 전 증권사 연결 상태(미연결 포함). 설정 화면이 목록을 그리는 소스. */
-export const useBrokerConnections = () =>
+/**
+ * 전 증권사 연결 상태(미연결 포함). 설정 화면이 목록을 그리는 소스이자,
+ * 사이드바·증권 화면이 표시명(`displayName`)을 가져오는 곳.
+ *
+ * `enabled` 는 사이드바 때문에 있다 — 사이드바는 모든 페이지에 떠 있으므로 증권 구독이
+ * 없는 사용자에게까지 이 조회를 걸면 아무도 안 보는 요청이 매 세션 나간다.
+ */
+export const useBrokerConnections = (enabled = true) =>
   useQuery({
     queryKey: subscriptionKeys.brokerConnections(),
     queryFn: () => subscriptionApi.getBrokerConnections(),
     staleTime: 60_000,
+    enabled,
   })
 
 const invalidateBrokers = (qc: ReturnType<typeof useQueryClient>) => {

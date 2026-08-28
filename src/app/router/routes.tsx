@@ -47,7 +47,11 @@ export const AppRouter = () => {
             <Route element={<AppLayout />}>
               <Route path="/desk" element={<DashboardPage />} />
               <Route path="/desk/asset" element={<AssetPage />} />
+              {/* 증권사는 경로가 고른다 — 사이드바 하위 메뉴가 가리키는 자리.
+                  부모 `/desk/stocks` 는 남긴다(기존 북마크 · 모바일 전체 메뉴 ·
+                  AppLayout FULLSCREEN_PATHS 접두사) — 들어오면 StocksPage 가 기본 증권사로 넘긴다. */}
               <Route path="/desk/stocks" element={<SecuritiesGate><StocksPage /></SecuritiesGate>} />
+              <Route path="/desk/stocks/:broker" element={<SecuritiesGate><StocksPage /></SecuritiesGate>} />
               <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/stats" element={<StatsPage />} />
               <Route path="/desk/budget" element={<BudgetPage />} />
