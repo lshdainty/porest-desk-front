@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, SquareCheckBig,
@@ -14,10 +14,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from '@/shared/ui/sidebar'
 import { useCurrentUser } from '@/features/user'
-import { useHasSecurities } from '@/features/subscription/model/useSubscription'
+import { useHasSecurities, useMyFeatures } from '@/features/subscription/model/useSubscription'
+import { brokerPath, useBrokerLabel } from '@/features/stock/lib/broker'
 import { BrandMark } from '@/shared/ui/brand-mark'
 
 export interface NavItem {
@@ -27,7 +31,10 @@ export interface NavItem {
   path: string
 }
 
-// NAV 는 MobileHeader/MorePage 가 import 하는 공용 상수 — 컴포넌트 파일에서 함께 export.
+// NAV 는 MobileHeader 가 import 하는 공용 상수 — 컴포넌트 파일에서 함께 export.
+// **하위 메뉴는 여기 담지 않는다.** 증권의 하위(증권사)는 연결 상태에 따라 사용자마다
+// 달라지는 값이라 정적 상수에 못 들어가고, NAV 를 쓰는 다른 곳(모바일 헤더 제목)은
+// 하위를 볼 일이 없다. 사이드바만 자기 자리에서 붙인다.
 // label 은 layout ns i18n 키(labelKey) — 렌더 시 t(labelKey) 로 해석.
 // (Fast Refresh 경고는 의도된 것이라 이 줄만 예외 처리. button.tsx buttonVariants 와 동일 관례.)
 // eslint-disable-next-line react-refresh/only-export-components
@@ -52,6 +59,16 @@ export function PorestSidebar() {
   const hasSecurities = useHasSecurities()
   // 증권 메뉴는 구독(SECURITIES) 보유 시에만 노출. slice 후 필터(그룹 경계 보존).
   const gate = (items: NavItem[]) => (hasSecurities ? items : items.filter(n => n.id !== 'stocks'))
+  const { data: features } = useMyFeatures()
+  const brokerLabelOf = useBrokerLabel(hasSecurities)
+
+  // **연결한 증권사만 하위에 둔다.** 사이드바는 갈 수 있는 곳을 나열하는 자리고,
+  // 미연결 증권사를 넣으면 누를 때마다 "연결해 주세요" 로 되돌아오는 막다른 길이 된다.
+  // 연결이 하나뿐이면 하위를 접는다 — 고를 게 없는 트리는 정보를 주지 않는다.
+  // (페이지 안 탭도 `connected.length > 1` 에서만 떴다 — 같은 규칙을 자리만 옮긴 것.)
+  const connectedBrokers = hasSecurities ? (features?.connectedBrokers ?? []) : []
+  const brokerChildren = connectedBrokers.length > 1 ? connectedBrokers : []
+
   const { data: currentUser } = useCurrentUser()
   const userName = currentUser?.userName ?? ''
   const userEmail = currentUser?.userEmail ?? ''
@@ -66,6 +83,7 @@ export function PorestSidebar() {
       <SidebarMenu>
         {items.map(it => {
           const IconComp = it.icon
+          const children = it.id === 'stocks' ? brokerChildren : []
           return (
             <SidebarMenuItem key={it.id}>
               <SidebarMenuButton
@@ -76,6 +94,24 @@ export function PorestSidebar() {
                 <IconComp />
                 <span>{t(it.labelKey)}</span>
               </SidebarMenuButton>
+              {/* 접었다 펴는 토글을 두지 않는다 — 항목이 둘뿐인데 상태를 하나 더 만들면
+                  부모를 눌러 화면으로 갈 길이 막힌다(토글이 클릭을 먹는다).
+                  아이콘 모드에선 SidebarMenuSub 가 스스로 숨는다. */}
+              {children.length > 0 && (
+                <SidebarMenuSub>
+                  {children.map(b => (
+                    <SidebarMenuSubItem key={b}>
+                      {/* asChild + Link — 진짜 <a> 라야 가운데클릭·새 탭이 산다.
+                          부모 항목은 기존 onClick 방식을 그대로 둔다(동작 변경 없음). */}
+                      <SidebarMenuSubButton asChild isActive={location.pathname === brokerPath(b)}>
+                        <Link to={brokerPath(b)}>
+                          <span>{brokerLabelOf(b)}</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              )}
             </SidebarMenuItem>
           )
         })}
