@@ -2,6 +2,7 @@
  * 토스증권 Open API 연동 react-query 훅.
  * 모든 쿼리는 `retry: false` — 키 미설정(503)·백엔드 미기동 시 즉시 실패시켜 호출부가 mock 으로 폴백한다.
  */
+import { useMemo } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { stockKeys } from '@/shared/config'
 import { todayLocalKey } from '@/shared/lib/date'
@@ -157,6 +158,47 @@ export const useTossIndicatorPrices = (symbols: string[], enabled = true) =>
     staleTime: 30_000,
     refetchInterval: 60_000,
   })
+
+/**
+ * 시장 지표 캔들 — 상단 지수 타일의 추이선(스파크라인).
+ *
+ * **지수 수만큼만 호출이 나간다**(코스피·코스닥 = 2콜). 종목 수에 비례하지 않으므로
+ * 유량과 무관하다. 지수는 하루 안에서만 움직이므로 1분봉을 받고, 캐시는 폴링 주기보다
+ * 길게 잡아 탭을 오가도 재요청이 안 나가게 한다.
+ *
+ * 실패해도 화면은 멀쩡하다 — 타일은 숫자만 남고 추이선만 사라진다(`retry: false`).
+ */
+export const useTossIndicatorCandles = (symbols: string[], enabled = true) => {
+  const results = useQueries({
+    queries: symbols.map(symbol => ({
+      queryKey: ['toss', 'indicator-candles', symbol],
+      queryFn: () => stockApi.getIndicatorCandles(symbol, '1m' as const, SPARKLINE_POINTS),
+      enabled: enabled && !!symbol,
+      retry: false,
+      refetchOnWindowFocus: false,
+      staleTime: 60_000,
+    })),
+  })
+  return useMemo(() => {
+    const map = new Map<string, number[]>()
+    results.forEach((r, i) => {
+      const sym = symbols[i]
+      if (!sym || !r.data) return
+      // 오름차순(과거→현재)으로 세워야 선이 왼쪽에서 오른쪽으로 흐른다.
+      const closes = [...r.data]
+        .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+        .map(c => Number.parseFloat(c.closePrice))
+        .filter(Number.isFinite)
+      // 점이 하나뿐이면 선이 아니라 점이다 — 그릴 게 없으므로 넣지 않는다.
+      if (closes.length >= 2) map.set(sym, closes)
+    })
+    return map
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results.map(r => r.dataUpdatedAt).join(','), symbols.join(',')])
+}
+
+/** 스파크라인 한 줄에 쓸 봉 수. 촘촘할수록 선이 자글거리고 적으면 추세가 안 보인다. */
+const SPARKLINE_POINTS = 60
 
 /**
  * 전일 종가. 토스 /prices 에는 기준가·등락률이 없어 일봉 2개로 도출한다.
