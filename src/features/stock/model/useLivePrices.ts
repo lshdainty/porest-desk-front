@@ -11,8 +11,7 @@
  */
 import { useMemo } from 'react'
 import { useQueries } from '@tanstack/react-query'
-import { securitiesApi } from '../api/securitiesApi'
-import { useSecuritiesPrices } from './useSecuritiesPrices'
+import { securitiesExchangeRateQuery, useSecuritiesPrices } from './useSecuritiesPrices'
 import { usePrevCloses } from './useTossStocks'
 import { useMyFeatures } from '@/features/subscription/model/useSubscription'
 
@@ -53,14 +52,10 @@ export function useLivePrices(symbols: string[], enabled: boolean): LivePrices {
     () => foreignCurrenciesOf((quotes ?? []).map(q => q.currency)),
     [quotes],
   )
+  // 설정은 useSecuritiesPrices 에 한 벌로 둔다 — 저기 USD 전용 훅과 queryKey 가 같아서,
+  // 옵션을 여기 따로 적으면 한쪽만 고쳐져도 아무 경고 없이 어긋난다.
   const rateQueries = useQueries({
-    queries: currencies.map(currency => ({
-      queryKey: ['securities', 'exchange-rate', currency, 'KRW'],
-      queryFn: () => securitiesApi.getExchangeRate(currency, 'KRW'),
-      retry: false,
-      refetchOnWindowFocus: false,
-      staleTime: 60_000,
-    })),
+    queries: currencies.map(securitiesExchangeRateQuery),
   })
   const rateByCurrency = useMemo(() => {
     const m = new Map<string, number>()

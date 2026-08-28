@@ -23,12 +23,35 @@ export const useSecuritiesPrices = (symbols: string[], refetchInterval = 10_000)
     refetchInterval,
   })
 
+/**
+ * 환율 쿼리 한 벌. **두 곳이 같은 queryKey 를 쓴다** — 아래 `useSecuritiesExchangeRate`(USD 고정)와
+ * `useLivePrices` 의 통화별 조회다. 옵션을 각자 적어 두면 한쪽만 고쳐져 조용히 어긋나므로
+ * 여기 한 곳에 둔다.
+ *
+ * **폴링하지 않는다**(`refetchInterval` 없음). 환율은 초 단위로 볼 값이 아니다.
+ *
+ * **`staleTime` 이 10분인 이유** — 서버가 주는 건 종목 가격이 아니라 **그날의 기준환율**이고
+ * (나무 잔고의 당일매매기준환율 · 해외현재가의 원화 환산 환율), 서버도 같은 10분을 캐시한다
+ * (`app.namu.fx-cache-ttl-seconds`). 그보다 짧게 조르면 캐시에 맞고 되돌아오는 요청만 늘 뿐
+ * 새 값이 나오지 않는다. 예전 60초가 그 상태였다 — 화면 하나가 분당 한 번씩 물었다.
+ *
+ * **`gcTime` 을 늘린 이유** — 기본 5분이라 화면을 옮겼다 돌아오면 캐시가 이미 버려져
+ * `staleTime` 이 아무 일도 못 했다. 값을 30분 들고 있으면 화면 사이를 오가도 다시 안 묻는다.
+ */
+const FX_STALE_TIME = 10 * 60_000
+const FX_GC_TIME = 30 * 60_000
+
+export const securitiesExchangeRateQuery = (currency: string) => ({
+  queryKey: ['securities', 'exchange-rate', currency, 'KRW'],
+  queryFn: () => securitiesApi.getExchangeRate(currency, 'KRW'),
+  ...COMMON,
+  staleTime: FX_STALE_TIME,
+  gcTime: FX_GC_TIME,
+})
+
 /** 원화 환산 환율. 못 구하면 rate 가 null 로 온다. */
 export const useSecuritiesExchangeRate = (enabled = true) =>
   useQuery({
-    queryKey: ['securities', 'exchange-rate', 'USD', 'KRW'],
-    queryFn: () => securitiesApi.getExchangeRate('USD', 'KRW'),
+    ...securitiesExchangeRateQuery('USD'),
     enabled,
-    ...COMMON,
-    staleTime: 60_000,
   })
