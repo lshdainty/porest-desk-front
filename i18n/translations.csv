@@ -76,6 +76,8 @@ layout,addRecord,내역 추가,Add Transaction
 layout,workspace,워크스페이스,Workspace
 layout,records,기록,Records
 layout,userFallback,사용자,User
+layout,expandSubmenu,{{name}} 하위 메뉴 펼치기,Expand {{name}} submenu
+layout,collapseSubmenu,{{name}} 하위 메뉴 접기,Collapse {{name}} submenu
 more,search,메뉴 검색,Search menu
 more,noResults,검색 결과가 없습니다,No search results
 more,group.money,돈 관리,Money
