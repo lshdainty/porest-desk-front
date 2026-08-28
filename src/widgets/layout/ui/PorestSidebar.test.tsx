@@ -99,10 +99,12 @@ const subLinks = () =>
 const subHrefs = () => subLinks().map(a => a.getAttribute('href'))
 /** 하위 메뉴 접기/펴기 셰브론. 하위가 없으면 아예 안 그린다. */
 const subToggle = () => container.querySelector<HTMLButtonElement>('[data-sidebar="menu-action"]')
-/** 부모 `증권` 버튼 — 번역 mock 이 키를 그대로 돌려주므로 라벨이 'stocks' 다. */
-const stocksButton = () =>
+/** 최상위 메뉴 버튼 — 번역 mock 이 키를 그대로 돌려주므로 라벨이 곧 labelKey 다. */
+const menuButton = (label: string) =>
   Array.from(container.querySelectorAll<HTMLElement>('[data-sidebar="menu-button"]'))
-    .find(b => b.textContent === 'stocks')
+    .find(b => b.textContent === label)
+/** 부모 `증권` 버튼. */
+const stocksButton = () => menuButton('stocks')
 
 describe('PorestSidebar 증권 하위 메뉴', () => {
   it('연결이 둘 이상이면 증권사별 하위 항목이 뜬다', () => {
@@ -204,7 +206,7 @@ describe('PorestSidebar 증권 하위 메뉴 접기/펴기', () => {
     click(stocksButton()!)
     // /desk/stocks 로 가면 라우터가 기본 증권사로 리다이렉트한다(PR #306).
     expect(currentPath()).toBe('/desk/stocks')
-    // 들어가면 하위도 따라 펼쳐진다 — 마운트 시점 한 번이 아니라 경로 파생이라 가능하다.
+    // 들어가면 하위도 따라 펼쳐진다.
     expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
   })
 
@@ -216,5 +218,71 @@ describe('PorestSidebar 증권 하위 메뉴 접기/펴기', () => {
     const hide = 'group-data-[collapsible=icon]:hidden'
     expect(subToggle()!.classList.contains(hide)).toBe(true)
     expect(container.querySelector('[data-sidebar="menu-sub"]')!.classList.contains(hide)).toBe(true)
+  })
+})
+
+// 부모 `증권` 클릭은 **이동 + 펼침**을 함께 한다. 경로 파생만으로도 증권 화면 밖에서
+// 누르면 펼쳐지지만, 셰브론으로 접어 둔 뒤엔 오버라이드가 `false` 로 남아 닫힌 채 이동했다.
+// 그래서 부모 클릭이 오버라이드를 펼침으로 되돌린다 — 접는 자리는 셰브론 하나로 둔다.
+describe('PorestSidebar 부모 증권 클릭 = 이동 + 펼침', () => {
+  beforeEach(() => {
+    state.connectedBrokers = ['TOSS', 'NAMU']
+  })
+
+  it('셰브론으로 접어 둔 뒤 부모를 누르면 이동하면서 다시 펼친다', () => {
+    // 경로 파생만으로는 안 되는 자리 — 여기가 이 변경의 핵심이다.
+    render('/desk')
+    click(subToggle()!) // 펼쳤다가
+    click(subToggle()!) // 다시 접는다 → 사용자 오버라이드가 '접힘' 으로 남는다
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('false')
+
+    click(stocksButton()!)
+    expect(currentPath()).toBe('/desk/stocks')
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+    expect(subHrefs()).toEqual(['/desk/stocks/toss', '/desk/stocks/namu'])
+  })
+
+  it('펼쳐진 채로 부모를 누르면 이동해도 펼침이 유지된다', () => {
+    render('/desk/stocks/toss')
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+    click(stocksButton()!)
+    expect(currentPath()).toBe('/desk/stocks')
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('이미 증권 화면이라 이동이 no-op 이어도 접히지 않는다 — 몇 번을 눌러도 펼침이다', () => {
+    // 토글로 만들면 같은 클릭이 갈 때는 열고 와 있을 때는 닫아 결과가 갈린다.
+    render('/desk/stocks')
+    click(stocksButton()!)
+    expect(currentPath()).toBe('/desk/stocks')
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+    click(stocksButton()!)
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('셰브론으로 접었다가 그 화면에서 부모를 누르면 다시 펼친다', () => {
+    render('/desk/stocks/namu')
+    click(subToggle()!)
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('false')
+    click(stocksButton()!)
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('부모로 펼친 뒤에도 셰브론은 그대로 독립 토글이다', () => {
+    render('/desk')
+    click(stocksButton()!)
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('true')
+    click(subToggle()!)
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('false')
+    // 셰브론은 여전히 이동시키지 않는다 — 부모 클릭으로 온 경로가 그대로다.
+    expect(currentPath()).toBe('/desk/stocks')
+  })
+
+  it('하위 없는 항목을 눌러도 증권 펼침은 건드리지 않는다', () => {
+    render('/desk/stocks/namu')
+    click(menuButton('home')!)
+    expect(currentPath()).toBe('/desk')
+    // 오버라이드가 안 생겼으니 경로 파생 그대로 — 증권 화면을 떠났으므로 접힌다.
+    expect(subToggle()?.getAttribute('aria-expanded')).toBe('false')
   })
 })

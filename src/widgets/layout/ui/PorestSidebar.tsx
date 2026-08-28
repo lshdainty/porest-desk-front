@@ -81,7 +81,7 @@ export function PorestSidebar() {
     path === '/desk' ? location.pathname === path : location.pathname.startsWith(path)
 
   // **접힘은 경로에서 파생한다.** 보고 있는 화면이 증권 하위면 펼쳐져 있어야 지금 어디에
-  // 있는지가 보인다. 사용자가 셰브론을 누른 뒤부터만 그 선택이 이긴다(`null` = 아직 안 건드림).
+  // 있는지가 보인다. 사용자가 직접 건드린 뒤부터만 그 선택이 이긴다(`null` = 아직 안 건드림).
   //
   // 쿠키에 남기지 않는다 — 사이드바 자체(`sidebar_state`)는 지금 화면이 알려 주는 게 없어
   // 쿠키가 유일한 근거지만, 하위 메뉴는 경로가 근거를 준다. 접힘을 저장해 두면 증권사 화면을
@@ -111,18 +111,33 @@ export function PorestSidebar() {
                 // "page" 로 두면 스크린리더가 현재 위치를 둘로 읽는다. 시각 강조(`data-active`)는
                 // 그대로 둬 부모가 활성인 건 보인다.
                 aria-current={parentActive && !activeChild ? 'page' : undefined}
-                onClick={() => navigate(it.path)}
+                // **부모는 이동과 펼침을 함께 한다.** 경로 파생만으로도 증권 화면 밖에서
+                // 누르면 따라 펼쳐지지만, 셰브론으로 한 번 접어 둔 뒤에는 오버라이드가
+                // `false` 로 남아 이동만 하고 닫힌 채였다 — 눌러서 들어간 곳의 형제 화면이
+                // 안 보인다. 그래서 여기서 오버라이드를 펼침으로 되돌린다.
+                //
+                // 이미 그 화면에 있어 이동이 no-op 일 때도 마찬가지로 **항상 펼친다.**
+                // 토글로 만들면 같은 클릭이 갈 때는 열고 와 있을 때는 닫아 결과가 갈린다 —
+                // 접는 자리는 셰브론 하나로 둔다.
+                onClick={() => {
+                  navigate(it.path)
+                  // 하위가 없는 항목(대부분)은 건드리지 않는다 — 홈을 눌렀다고 증권이 펼쳐지면 안 된다.
+                  if (children.length > 0) setStocksOpenOverride(true)
+                }}
               >
                 <IconComp />
                 <span>{itemLabel}</span>
               </SidebarMenuButton>
               {children.length > 0 && (
                 <>
-                  {/* **토글은 부모 버튼이 아니라 그 옆 셰브론이다.** 부모 버튼을
-                      CollapsibleTrigger 로 감싸면 토글이 클릭을 먹어 기본 증권사 화면으로 갈
-                      길이 막힌다 — 라벨은 이동, 셰브론은 접기/펴기로 자리를 나눈다.
+                  {/* **접는 자리는 셰브론뿐이다.** 부모 버튼을 CollapsibleTrigger 로 감싸면
+                      토글이 클릭을 먹어 기본 증권사 화면으로 갈 길이 막힌다(shadcn 예제가 그렇게
+                      하는 건 그쪽 부모가 `url: "#"` 인 껍데기라서다 — 우리 부모는 갈 화면이 있다).
+                      그래서 부모는 이동+펼침만, 접기는 셰브론이 맡는다. 둘은 형제 엘리먼트라
+                      셰브론 클릭이 부모 onClick 으로 올라가지 않는다 — stopPropagation 불필요.
                       SidebarMenuAction 은 이 용도로 이미 있는 것이라 새로 만들 게 없다:
-                      부모 버튼에 `pr-8` 을 넣어 라벨이 셰브론 밑으로 안 깔리게 하고,
+                      셰브론이 있으면 부모 버튼에 `pr-8` 이 자동으로 붙어 라벨이 밑에 안 깔리고
+                      (sidebarMenuButtonVariants 의 `group-has-[[data-sidebar=menu-action]]`),
                       아이콘 모드에선 SidebarMenuSub 와 함께 스스로 숨는다. */}
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction
@@ -139,7 +154,7 @@ export function PorestSidebar() {
                       {children.map(b => (
                         <SidebarMenuSubItem key={b}>
                           {/* asChild + Link — 진짜 <a> 라야 가운데클릭·새 탭이 산다.
-                              부모 항목은 기존 onClick 방식을 그대로 둔다(동작 변경 없음). */}
+                              부모 항목은 이동 말고 펼침도 해야 해서 onClick 으로 남는다. */}
                           <SidebarMenuSubButton
                             asChild
                             isActive={b === activeChild}
