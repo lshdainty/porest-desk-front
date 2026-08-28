@@ -251,6 +251,19 @@ export interface TossIndicatorPrice {
   lastPrice: string
 }
 
+/**
+ * 시장 지표 캔들 한 봉. 금액이 문자열인 이유는 종목 캔들과 같다 — 지표마다 소수 자릿수가
+ * 다르다(지수 2자리 · 국채 수익률 3자리). 숫자로 받으면 뒤 0 이 잘린다.
+ */
+export interface TossIndicatorCandle {
+  timestamp: string
+  openPrice: string
+  highPrice: string
+  lowPrice: string
+  closePrice: string
+  volume: string
+}
+
 // ---- 관심목록 (서버 stock-watch) -------------------------------------------
 
 export interface WatchItem {
@@ -422,6 +435,20 @@ export const stockApi = {
       { params: { symbols: symbols.join(',') } },
     )
     return resp.data
+  },
+
+  /**
+   * 시장 지표 캔들 — 상단 지수 타일의 추이선이 쓴다.
+   *
+   * **백엔드엔 예전부터 있었고 프론트만 안 부르고 있었다**(`TossApiController#getMarketIndicatorCandles`).
+   * 응답 봉투는 종목 캔들과 같은 `CursorResponse` 라 여기서도 `content` 를 편다.
+   */
+  getIndicatorCandles: async (symbol: string, interval: '1m' | '1d', count?: number): Promise<TossIndicatorCandle[]> => {
+    const resp: ApiResponse<{ content: TossIndicatorCandle[] }> = await apiClient.get(
+      `${BASE}/market-indicators/${symbol}/candles`,
+      { params: { interval, size: count } },
+    )
+    return resp.data?.content ?? []
   },
 
   // 관심목록 (게이트 없음 — 로그인만 필요)

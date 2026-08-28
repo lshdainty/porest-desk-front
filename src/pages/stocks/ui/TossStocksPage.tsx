@@ -9,6 +9,7 @@ import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import { Sparkline } from '@/shared/ui/porest/charts'
 import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { fmtByCurrency, num, trendColor } from '@/features/stock/lib/format'
@@ -38,6 +39,7 @@ import {
   useTossAccounts,
   useTossExchangeRate,
   useTossHoldings,
+  useTossIndicatorCandles,
   useTossIndicatorPrices,
   useTossMarketCalendarKr,
   useTossMarketCalendarUs,
@@ -52,6 +54,13 @@ import {
 import { useStockBySymbol } from '@/features/stock/model/useStockMaster'
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean }
+
+/**
+ * 상단 타일에 세울 지수. **토스 카탈로그 8종 안에서만 고른다** — 카탈로그엔 코스피·코스닥과
+ * 국채 수익률(2·3·5·10·20·30년)뿐이고 나스닥·S&P·VIX 는 없다. 국채는 지수와 성격이 달라
+ * (포인트가 아니라 %) 한 줄에 섞으면 자릿수가 안 맞는다.
+ */
+const INDEX_SYMBOLS: string[] = ['KOSPI', 'KOSDAQ']
 
 /** 선택 상태 — 종목 심볼이거나 '전체 포트폴리오'(개요). 나무 화면과 같은 규칙이다. */
 const OVERVIEW = '__overview__' as const
@@ -699,7 +708,9 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
   // 환율 (요약 타일 + 상세 원화 환산)
   const fxQ = useTossExchangeRate()
   // 국내 지수 현재가 (토스 시장지표 — KOSPI·KOSDAQ 포인트). 나무엔 대응 API 가 없다.
-  const idxQ = useTossIndicatorPrices(['KOSPI', 'KOSDAQ'])
+  const idxQ = useTossIndicatorPrices(INDEX_SYMBOLS)
+  // 지수 추이선. 지수 수만큼(2콜)만 나가고 실패해도 숫자 타일은 그대로다.
+  const idxCandles = useTossIndicatorCandles(INDEX_SYMBOLS)
 
   // 데스크톱: 기본 선택 = 첫 보유 종목. 보유가 없으면 개요를 띄운다(빈 안내문 대신).
   useEffect(() => {
@@ -761,11 +772,22 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
   }
   for (const i of idxQ.data ?? []) {
     if (num(i.lastPrice) <= 0) continue
+    const series = idxCandles.get(i.symbol)
+    // 추세 색은 **그 구간의 시작 대비 지금**으로 정한다 — 선이 올라가면 빨강, 내려가면 파랑.
+    const trendPct = series && series.length >= 2 && series[0]! > 0
+      ? ((series[series.length - 1]! - series[0]!) / series[0]!) * 100
+      : null
     tiles.push({
       id: i.symbol,
       label: i.symbol === 'KOSPI' ? t('market.KOSPI') : t('market.KOSDAQ'),
       value: num(i.lastPrice).toLocaleString(undefined, { maximumFractionDigits: 2 }),
-      sub: t('market.indexPoint'),
+      sub: trendPct != null
+        ? `${trendPct >= 0 ? '+' : ''}${trendPct.toFixed(2)}%`
+        : t('market.indexPoint'),
+      // 캔들을 못 받으면 추이선만 빠지고 숫자는 남는다.
+      graphic: series ? (
+        <Sparkline values={series} height={22} color={trendColor(trendPct ?? 0)} />
+      ) : undefined,
     })
   }
   if (fxRate != null && fxRate > 0) {
