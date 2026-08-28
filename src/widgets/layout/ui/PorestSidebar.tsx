@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  Calendar1, ChartPie, ChevronsUpDown, CreditCard, LayoutDashboard, SquareCheckBig,
+  Calendar1, ChartPie, ChevronRight, ChevronsUpDown, CreditCard, LayoutDashboard, SquareCheckBig,
   FileText, ReceiptText, FilePen, TrendingUp, Users, Wallet,
 } from 'lucide-react'
 import {
@@ -12,6 +13,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -19,6 +21,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from '@/shared/ui/sidebar'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/ui/collapsible'
 import { useCurrentUser } from '@/features/user'
 import { useHasSecurities, useMyFeatures } from '@/features/subscription/model/useSubscription'
 import { brokerPath, useBrokerLabel } from '@/features/stock/lib/broker'
@@ -77,6 +80,17 @@ export function PorestSidebar() {
   const isActive = (path: string) =>
     path === '/desk' ? location.pathname === path : location.pathname.startsWith(path)
 
+  // **접힘은 경로에서 파생한다.** 보고 있는 화면이 증권 하위면 펼쳐져 있어야 지금 어디에
+  // 있는지가 보인다. 사용자가 셰브론을 누른 뒤부터만 그 선택이 이긴다(`null` = 아직 안 건드림).
+  //
+  // 쿠키에 남기지 않는다 — 사이드바 자체(`sidebar_state`)는 지금 화면이 알려 주는 게 없어
+  // 쿠키가 유일한 근거지만, 하위 메뉴는 경로가 근거를 준다. 접힘을 저장해 두면 증권사 화면을
+  // 열었는데 하위가 닫힌 채 떠서 저장된 값이 화면과 어긋난다.
+  //
+  // 마운트 시점에 한 번 읽는 `defaultOpen` 이 아니라 매 렌더 파생인 이유: 부모 `증권` 을 눌러
+  // 증권 화면으로 들어가면 사이드바는 마운트된 채 경로만 바뀐다 — 파생이라야 그때 따라 펼쳐진다.
+  const [stocksOpenOverride, setStocksOpenOverride] = useState<boolean | null>(null)
+
   const renderGroup = (label: string, items: NavItem[]) => (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
@@ -84,35 +98,74 @@ export function PorestSidebar() {
         {items.map(it => {
           const IconComp = it.icon
           const children = it.id === 'stocks' ? brokerChildren : []
-          return (
-            <SidebarMenuItem key={it.id}>
+          const itemLabel = t(it.labelKey)
+          const parentActive = isActive(it.path)
+          const activeChild = children.find(b => location.pathname === brokerPath(b))
+          const subOpen = stocksOpenOverride ?? parentActive
+          const body = (
+            <>
               <SidebarMenuButton
-                tooltip={t(it.labelKey)}
-                isActive={isActive(it.path)}
+                tooltip={itemLabel}
+                isActive={parentActive}
+                // 지금 페이지가 하위 항목이면 `aria-current` 는 그 하나만 단다 — 조상까지
+                // "page" 로 두면 스크린리더가 현재 위치를 둘로 읽는다. 시각 강조(`data-active`)는
+                // 그대로 둬 부모가 활성인 건 보인다.
+                aria-current={parentActive && !activeChild ? 'page' : undefined}
                 onClick={() => navigate(it.path)}
               >
                 <IconComp />
-                <span>{t(it.labelKey)}</span>
+                <span>{itemLabel}</span>
               </SidebarMenuButton>
-              {/* 접었다 펴는 토글을 두지 않는다 — 항목이 둘뿐인데 상태를 하나 더 만들면
-                  부모를 눌러 화면으로 갈 길이 막힌다(토글이 클릭을 먹는다).
-                  아이콘 모드에선 SidebarMenuSub 가 스스로 숨는다. */}
               {children.length > 0 && (
-                <SidebarMenuSub>
-                  {children.map(b => (
-                    <SidebarMenuSubItem key={b}>
-                      {/* asChild + Link — 진짜 <a> 라야 가운데클릭·새 탭이 산다.
-                          부모 항목은 기존 onClick 방식을 그대로 둔다(동작 변경 없음). */}
-                      <SidebarMenuSubButton asChild isActive={location.pathname === brokerPath(b)}>
-                        <Link to={brokerPath(b)}>
-                          <span>{brokerLabelOf(b)}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
+                <>
+                  {/* **토글은 부모 버튼이 아니라 그 옆 셰브론이다.** 부모 버튼을
+                      CollapsibleTrigger 로 감싸면 토글이 클릭을 먹어 기본 증권사 화면으로 갈
+                      길이 막힌다 — 라벨은 이동, 셰브론은 접기/펴기로 자리를 나눈다.
+                      SidebarMenuAction 은 이 용도로 이미 있는 것이라 새로 만들 게 없다:
+                      부모 버튼에 `pr-8` 을 넣어 라벨이 셰브론 밑으로 안 깔리게 하고,
+                      아이콘 모드에선 SidebarMenuSub 와 함께 스스로 숨는다. */}
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuAction
+                      // `aria-expanded`·`aria-controls`·`data-state` 는 Radix 가 붙인다.
+                      // 아이콘뿐이라 이름이 없으므로 그것만 여기서 준다.
+                      aria-label={t(subOpen ? 'collapseSubmenu' : 'expandSubmenu', { name: itemLabel })}
+                      className="data-[state=open]:rotate-90"
+                    >
+                      <ChevronRight />
+                    </SidebarMenuAction>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {children.map(b => (
+                        <SidebarMenuSubItem key={b}>
+                          {/* asChild + Link — 진짜 <a> 라야 가운데클릭·새 탭이 산다.
+                              부모 항목은 기존 onClick 방식을 그대로 둔다(동작 변경 없음). */}
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={b === activeChild}
+                            aria-current={b === activeChild ? 'page' : undefined}
+                          >
+                            <Link to={brokerPath(b)}>
+                              <span>{brokerLabelOf(b)}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </>
               )}
-            </SidebarMenuItem>
+            </>
+          )
+          // 하위가 없으면 Collapsible 도 없다 — 고를 게 없는 트리에 토글만 남기지 않는다.
+          // `asChild` 로 li 자신이 Collapsible 루트가 된다: 셰브론이 부모 버튼의 형제로
+          // 남아야 SidebarMenuAction 의 `peer-*` 세로 정렬이 계속 맞는다.
+          return children.length > 0 ? (
+            <Collapsible key={it.id} asChild open={subOpen} onOpenChange={setStocksOpenOverride}>
+              <SidebarMenuItem>{body}</SidebarMenuItem>
+            </Collapsible>
+          ) : (
+            <SidebarMenuItem key={it.id}>{body}</SidebarMenuItem>
           )
         })}
       </SidebarMenu>
