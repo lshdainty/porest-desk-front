@@ -92,6 +92,20 @@ pipeline {
                         --restart unless-stopped \
                         --network ${env.DEV_NETWORK} \
                         ${IMAGE_NAME}:${env.APP_VERSION}
+
+                    # 헬스 게이트 — HEALTHCHECK 가 healthy 가 될 때까지 대기, 못 뜨면 배포 실패
+                    st=starting
+                    for i in \$(seq 1 30); do
+                        st=\$(docker inspect -f '{{.State.Health.Status}}' ${CONTAINER_NAME}-dev 2>/dev/null || echo none)
+                        [ "\$st" = healthy ] && break
+                        [ "\$st" = unhealthy ] && break
+                        sleep 2
+                    done
+                    if [ "\$st" != healthy ]; then
+                        echo "헬스 게이트 실패: 상태=\$st"
+                        docker logs --tail 40 ${CONTAINER_NAME}-dev || true
+                        exit 1
+                    fi
                 """
             }
         }
@@ -119,6 +133,20 @@ pipeline {
                         --restart unless-stopped \
                         --network ${env.PROD_NETWORK} \
                         ${IMAGE_NAME}:${env.APP_VERSION}
+
+                    # 헬스 게이트 — HEALTHCHECK 가 healthy 가 될 때까지 대기, 못 뜨면 배포 실패
+                    st=starting
+                    for i in \$(seq 1 30); do
+                        st=\$(docker inspect -f '{{.State.Health.Status}}' ${CONTAINER_NAME}-prod 2>/dev/null || echo none)
+                        [ "\$st" = healthy ] && break
+                        [ "\$st" = unhealthy ] && break
+                        sleep 2
+                    done
+                    if [ "\$st" != healthy ]; then
+                        echo "헬스 게이트 실패: 상태=\$st"
+                        docker logs --tail 40 ${CONTAINER_NAME}-prod || true
+                        exit 1
+                    fi
                 """
             }
         }
