@@ -11,6 +11,7 @@ import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
 import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
 import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
 import { useEventLabels } from '@/features/event-label'
+import { useHideCardsSync } from '@/features/hide-amounts'
 
 // money group 4 페이지 — 진입 시 MoneyTabBar 표시 (← / 가계부 / 자산 / 통계 / 예산).
 const MONEY_PATHS = ['/desk/expense', '/desk/asset', '/desk/stats', '/desk/budget']
@@ -45,6 +46,8 @@ export const AppLayout = () => {
   const [addOpen, setAddOpen] = useState(false)
   const [calendarAddOpen, setCalendarAddOpen] = useState(false)
   const location = useLocation()
+  // 금액 가리기를 계정 설정과 맞춘다 — 아래 mobile 조기 반환보다 위여야 한다(훅 규칙).
+  useHideCardsSync()
 
   if (size === 'mobile') {
     const isMoney = MONEY_PATHS.some(p => location.pathname.startsWith(p))
