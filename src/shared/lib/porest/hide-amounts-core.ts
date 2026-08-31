@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { hideCardsApi } from '@/features/hide-amounts/api/hideCardsApi'
 import { isEn } from '@/shared/lib/porest/format'
 import {
   ALL_HIDE_CARDS,
@@ -28,6 +29,15 @@ export const wonPre = (): string => (isEn() ? '₩' : '')
 /** 예전 단일 스위치. 값이 있으면 한 번 읽어 카드 전체로 펼치고 지운다. */
 const LEGACY_KEY = 'pd-hide'
 const STORAGE_KEY = 'pd-hide-cards'
+/**
+ * 로컬 캐시가 **누구 것인지**. 서버 동기화가 붙으면서 필요해졌다.
+ *
+ * 같은 브라우저에서 A 가 로그아웃하고 B 가 로그인하면 localStorage 에는 A 의 목록이
+ * 그대로 남는다. 그 상태로 B 의 서버 값이 `null`(아직 안 올림)이면 **A 의 가림 설정이
+ * B 의 계정으로 올라간다.** 세션 만료처럼 로그아웃을 안 거치는 경로도 있어서 지우는
+ * 것만으로는 못 막는다 — 그래서 값에 주인을 적어 두고 대조한다.
+ */
+const OWNER_KEY = 'pd-hide-cards-user'
 const EVENT = 'pd-hide-amounts'
 
 declare global {
@@ -76,10 +86,82 @@ function current(): Set<HideCardKey> {
   return window.__pdHideCards
 }
 
-function commit(next: Set<HideCardKey>) {
+/** 로컬에만 반영한다. 서버에서 받아온 값을 되쏘지 않으려고 갈라 뒀다. */
+function commitLocal(next: Set<HideCardKey>) {
   window.__pdHideCards = next
   save(next)
   window.dispatchEvent(new CustomEvent(EVENT, { detail: next }))
+}
+
+/**
+ * 서버로 올린다 — 실패해도 로컬은 되돌리지 않는다.
+ *
+ * 사용자는 이미 [저장]을 눌러 화면이 바뀐 걸 봤다. 거기서 되돌리면 "저장했는데 안 됐다"
+ * 가 아니라 "저장했는데 원래대로 튀었다" 가 되어 더 헷갈린다. 실패는 전역 인터셉터가
+ * 서버 메시지로 띄우고(비-GET), 다음 저장이 서버를 따라잡는다.
+ */
+function push(next: Set<HideCardKey>) {
+  void hideCardsApi.put([...next]).catch(() => {
+    /* 전역 인터셉터가 이미 사용자에게 알린다 */
+  })
+}
+
+function commit(next: Set<HideCardKey>) {
+  commitLocal(next)
+  push(next)
+}
+
+/** 이 브라우저 캐시의 주인. 다르면 남의 설정이므로 올려서는 안 된다. */
+function cacheOwner(): string | null {
+  try {
+    return localStorage.getItem(OWNER_KEY)
+  } catch {
+    return null
+  }
+}
+
+function setCacheOwner(userId: string) {
+  try {
+    localStorage.setItem(OWNER_KEY, userId)
+  } catch {
+    /* 저장 못 해도 화면은 돌아야 한다 */
+  }
+}
+
+/**
+ * 로그인 직후 서버와 맞춘다.
+ *
+ * <p><b>서버가 `null` 이면 내려받지 않고 로컬을 올린다.</b> `null` 은 "아직 한 번도 안 올림"
+ * 이라 그걸 빈 목록으로 받아 덮으면, 이 기능이 나가는 순간 **가려 뒀던 금액이 통째로 드러난다.**
+ * 사용자가 실제로 다 푼 상태는 `[]` 로 따로 온다.
+ *
+ * <p>다른 사용자가 쓰던 브라우저면 로컬을 올리지 않는다 — 남의 가림 설정이 내 계정에 붙는다.
+ *
+ * @param userId 지금 로그인한 사용자
+ */
+export async function syncHideCardsFromServer(userId: string): Promise<void> {
+  const mine = cacheOwner() === userId
+  let server: string[] | null
+  try {
+    server = await hideCardsApi.get()
+  } catch {
+    // 못 받아왔으면 로컬 그대로 둔다 — 여기서 비우면 금액이 드러난다.
+    return
+  }
+
+  if (server === null) {
+    // 첫 동기화는 **업로드**다. 단, 남의 브라우저 캐시는 올리지 않는다.
+    const local = mine ? current() : new Set<HideCardKey>()
+    setCacheOwner(userId)
+    if (!mine) commitLocal(local)
+    push(local)
+    return
+  }
+
+  const valid = new Set<string>(ALL_HIDE_CARDS)
+  setCacheOwner(userId)
+  // 서버에서 받은 값은 되쏘지 않는다 — 부르자마자 PUT 이 나가는 왕복이 생긴다.
+  commitLocal(new Set(server.filter((k): k is HideCardKey => valid.has(k))))
 }
 
 /**
