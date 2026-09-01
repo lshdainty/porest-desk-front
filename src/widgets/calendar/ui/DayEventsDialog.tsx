@@ -90,7 +90,7 @@ export function DayEventsDialog({
           const tappable = e.sourceType !== "holiday";
           return (
             <div
-              key={e.id}
+              key={`${e.id}-${e.startDate}`}
               role={tappable ? "button" : undefined}
               tabIndex={tappable ? 0 : undefined}
               onClick={tappable ? () => onTapEvent(e) : undefined}
