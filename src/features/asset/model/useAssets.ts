@@ -122,6 +122,21 @@ export const useCancelCardPayment = (cardRowId: number) => {
   });
 };
 
+/** 할부 중도 전액 상환/취소 — 예정액이 바뀌므로 청구를 비운다. */
+export const useInstallmentPayoff = (cardRowId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ expenseId, undo }: { expenseId: number; undo?: boolean }) =>
+      undo
+        ? assetApi.cancelInstallmentPayoff(cardRowId, expenseId)
+        : assetApi.payoffInstallment(cardRowId, expenseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.billing(cardRowId) });
+    },
+  });
+};
+
 export const useReorderAssets = () => {
   const queryClient = useQueryClient();
 

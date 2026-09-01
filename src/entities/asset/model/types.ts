@@ -222,6 +222,8 @@ export interface InstallmentDue {
   sequence: number;
   /** 이번 회차에 빠지는 금액. 나머지는 1회차에 몰린다(카드사 관행). */
   amount: number;
+  /** 중도 전액 상환으로 남은 원금을 몰아 받은 회차인지 — "정리됨" 배지 + 되돌리기를 그린다. */
+  paidOff: boolean;
 }
 
 export interface CardBilling {

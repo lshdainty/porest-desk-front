@@ -101,6 +101,28 @@ export const assetApi = {
     return resp.data;
   },
 
+  /** 할부 중도 전액 상환 — 남은 원금을 다가오는 청구 회차에 몰아 청구한다. */
+  payoffInstallment: async (
+    cardId: number,
+    expenseId: number,
+  ): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.post(
+      `/v1/asset/${cardId}/installments/${expenseId}/payoff`,
+    );
+    return resp.data;
+  },
+
+  /** 할부 상환 취소 — 정상 분할로 되돌린다. */
+  cancelInstallmentPayoff: async (
+    cardId: number,
+    expenseId: number,
+  ): Promise<void> => {
+    const resp: ApiResponse<void> = await apiClient.delete(
+      `/v1/asset/${cardId}/installments/${expenseId}/payoff`,
+    );
+    return resp.data;
+  },
+
   /** 카드 결제 취소 — 결제로 만든 이체를 무르면 잔액·청구가 그 연쇄로 되돌아간다. */
   cancelCardPayment: async (billingRowId: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(
