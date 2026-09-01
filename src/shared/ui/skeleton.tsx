@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Skeleton — porest-design specs/components/skeleton.md SoT 기반.
@@ -17,7 +17,7 @@ function Skeleton({
       className={cn("animate-pulse rounded-sm bg-surface-input", className)}
       {...props}
     />
-  )
+  );
 }
 
 /**
@@ -30,12 +30,15 @@ function SkeletonShimmer({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("relative overflow-hidden rounded-sm bg-surface-input", className)}
+      className={cn(
+        "relative overflow-hidden rounded-sm bg-surface-input",
+        className,
+      )}
       {...props}
     >
       <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] to-transparent animate-[shimmer_var(--motion-duration-loop)_linear_infinite]" />
     </div>
-  )
+  );
 }
 
-export { Skeleton, SkeletonShimmer }
+export { Skeleton, SkeletonShimmer };

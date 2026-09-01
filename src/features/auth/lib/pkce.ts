@@ -8,51 +8,54 @@
  * 콜백(?code=)에서 token 교환에 사용한 뒤 즉시 삭제한다(영구 저장 금지).
  */
 
-const VERIFIER_KEY = 'pkce_code_verifier'
-const STATE_KEY = 'pkce_state'
+const VERIFIER_KEY = "pkce_code_verifier";
+const STATE_KEY = "pkce_state";
 
 /** Uint8Array → base64url (padding 제거). */
 function toBase64Url(bytes: Uint8Array): string {
-  let binary = ''
-  for (const b of bytes) binary += String.fromCharCode(b)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 /** code_verifier 생성 (32바이트 → base64url ≈ 43자). */
 export function generateCodeVerifier(): string {
-  const bytes = new Uint8Array(32)
-  crypto.getRandomValues(bytes)
-  return toBase64Url(bytes)
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return toBase64Url(bytes);
 }
 
 /** code_challenge = base64url(SHA-256(verifier)). */
 export async function codeChallenge(verifier: string): Promise<string> {
-  const data = new TextEncoder().encode(verifier)
-  const digest = await crypto.subtle.digest('SHA-256', data)
-  return toBase64Url(new Uint8Array(digest))
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return toBase64Url(new Uint8Array(digest));
 }
 
 /** state 생성 (16바이트 → base64url). */
 export function generateState(): string {
-  const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
-  return toBase64Url(bytes)
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return toBase64Url(bytes);
 }
 
 export function savePkce(verifier: string, state: string): void {
-  sessionStorage.setItem(VERIFIER_KEY, verifier)
-  sessionStorage.setItem(STATE_KEY, state)
+  sessionStorage.setItem(VERIFIER_KEY, verifier);
+  sessionStorage.setItem(STATE_KEY, state);
 }
 
 export function getCodeVerifier(): string | null {
-  return sessionStorage.getItem(VERIFIER_KEY)
+  return sessionStorage.getItem(VERIFIER_KEY);
 }
 
 export function getSavedState(): string | null {
-  return sessionStorage.getItem(STATE_KEY)
+  return sessionStorage.getItem(STATE_KEY);
 }
 
 export function clearPkce(): void {
-  sessionStorage.removeItem(VERIFIER_KEY)
-  sessionStorage.removeItem(STATE_KEY)
+  sessionStorage.removeItem(VERIFIER_KEY);
+  sessionStorage.removeItem(STATE_KEY);
 }

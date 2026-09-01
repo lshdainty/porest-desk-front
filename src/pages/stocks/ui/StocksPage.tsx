@@ -1,16 +1,27 @@
-import { useTranslation } from 'react-i18next'
-import { Link, Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
-import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { brokerFromSlug, brokerPath, defaultBroker, useBrokerLabel } from '@/features/stock/lib/broker'
-import { TossStocksPage } from './TossStocksPage'
-import { NamuStocksPage } from './NamuStocksPage'
+import { useTranslation } from "react-i18next";
+import {
+  Link,
+  Navigate,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router-dom";
+import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { useMyFeatures } from "@/features/subscription/model/useSubscription";
+import {
+  brokerFromSlug,
+  brokerPath,
+  defaultBroker,
+  useBrokerLabel,
+} from "@/features/stock/lib/broker";
+import { TossStocksPage } from "./TossStocksPage";
+import { NamuStocksPage } from "./NamuStocksPage";
 
 interface OutletCtx {
-  mobile: boolean
+  mobile: boolean;
 }
 
 /**
@@ -32,29 +43,29 @@ interface OutletCtx {
  * 가계부 자산은 반대다 — 필요한 게 시세뿐이라 사용자가 고른 기본 소스 하나로 통합돼 있다.
  */
 export function StocksPage() {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const navigate = useNavigate()
-  const { broker: brokerSlug } = useParams()
-  const { data: features, isLoading } = useMyFeatures()
-  const brokerLabelOf = useBrokerLabel()
+  const { mobile } = useOutletContext<OutletCtx>();
+  const navigate = useNavigate();
+  const { broker: brokerSlug } = useParams();
+  const { data: features, isLoading } = useMyFeatures();
+  const brokerLabelOf = useBrokerLabel();
 
-  const connected = features?.connectedBrokers ?? []
+  const connected = features?.connectedBrokers ?? [];
 
   // 아직 모른다 — 여기서 리다이렉트하면 기본 증권사가 정해지기 전에 URL 이 굳는다.
   // (SecuritiesGate 가 같은 쿼리를 먼저 기다리므로 보통 여기 오면 이미 결정돼 있다.)
-  if (isLoading) return null
+  if (isLoading) return null;
 
   // 개인키 미연결 시 전 화면 연결 유도 (mock 노출 금지).
   // 증권사 API 는 시세 포함 모든 조회가 개인키 토큰을 요구하므로, 어느 증권사든 하나는 연결돼야 한다.
-  if (connected.length === 0) return <ConnectGate mobile={mobile} />
+  if (connected.length === 0) return <ConnectGate mobile={mobile} />;
 
-  const requested = brokerFromSlug(brokerSlug)
+  const requested = brokerFromSlug(brokerSlug);
 
   // 부모 경로이거나, 끊긴/모르는 증권사를 가리키는 링크 → 기본 소스 → 첫 연결 순으로 되돌린다.
   // (`defaultBroker` 는 connected 안에서만 고르므로 이 리다이렉트는 한 번에 끝난다.)
   if (!requested || !connected.includes(requested)) {
-    const fallback = defaultBroker(connected, features?.primaryBroker)
-    return <Navigate to={fallback ? brokerPath(fallback) : '/desk'} replace />
+    const fallback = defaultBroker(connected, features?.primaryBroker);
+    return <Navigate to={fallback ? brokerPath(fallback) : "/desk"} replace />;
   }
 
   // **모바일엔 사이드바가 없다** — 탭을 지우면 증권사를 바꿀 길이 사라진다. 그래서 데스크톱만
@@ -62,67 +73,109 @@ export function StocksPage() {
   // 경로를 바꾼다 — 선택이 사는 곳이 한 군데여야 뒤로가기가 말이 된다.
   const header =
     mobile && connected.length > 1 ? (
-      <Tabs value={requested} onValueChange={b => navigate(brokerPath(b), { replace: true })}>
-        <TabsList style={{ width: '100%' }}>
-          {connected.map(b => (
+      <Tabs
+        value={requested}
+        onValueChange={(b) => navigate(brokerPath(b), { replace: true })}
+      >
+        <TabsList style={{ width: "100%" }}>
+          {connected.map((b) => (
             <TabsTrigger key={b} value={b} style={{ flex: 1 }}>
               {brokerLabelOf(b)}
             </TabsTrigger>
           ))}
         </TabsList>
       </Tabs>
-    ) : undefined
+    ) : undefined;
 
   // 모르는 증권사 코드는 서버가 앞서 나갔다는 뜻이다 — 빈 화면 대신 안내를 띄운다.
-  if (requested === 'NAMU') return <NamuStocksPage header={header} />
-  if (requested === 'TOSS') return <TossStocksPage header={header} />
-  return <UnsupportedBroker mobile={mobile} header={header} />
+  if (requested === "NAMU") return <NamuStocksPage header={header} />;
+  if (requested === "TOSS") return <TossStocksPage header={header} />;
+  return <UnsupportedBroker mobile={mobile} header={header} />;
 }
 
-function UnsupportedBroker({ mobile, header }: { mobile: boolean; header?: React.ReactNode }) {
-  const { t } = useTranslation('stocks')
+function UnsupportedBroker({
+  mobile,
+  header,
+}: {
+  mobile: boolean;
+  header?: React.ReactNode;
+}) {
+  const { t } = useTranslation("stocks");
   const body = (
     <>
       {header}
-      <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-body-sm)' }}>
-        {t('broker.unsupported')}
+      <div
+        style={{
+          padding: "40px 24px",
+          textAlign: "center",
+          color: "var(--fg-tertiary)",
+          fontSize: "var(--text-body-sm)",
+        }}
+      >
+        {t("broker.unsupported")}
       </div>
     </>
-  )
+  );
   return mobile ? (
     <>
-      <MobileBackHeader title={t('nav.title')} />
-      <div style={{ padding: '16px 24px 24px' }}>{body}</div>
+      <MobileBackHeader title={t("nav.title")} />
+      <div style={{ padding: "16px 24px 24px" }}>{body}</div>
     </>
   ) : (
     <div style={{ padding: 24 }}>{body}</div>
-  )
+  );
 }
 
 /** 개인키 미연결: 전 화면 연결 유도. */
 function ConnectGate({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('stocks')
+  const { t } = useTranslation("stocks");
   const gateBody = (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8 }}>
-      <div style={{ fontSize: 'var(--text-body-md)', fontWeight: 700, color: 'var(--fg-primary)' }}>{t('connect.title')}</div>
-      <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>{t('connect.gateDesc')}</div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        gap: 8,
+      }}
+    >
+      <div
+        style={{
+          fontSize: "var(--text-body-md)",
+          fontWeight: 700,
+          color: "var(--fg-primary)",
+        }}
+      >
+        {t("connect.title")}
+      </div>
+      <div
+        style={{
+          fontSize: "var(--text-body-sm)",
+          color: "var(--fg-tertiary)",
+          lineHeight: 1.5,
+        }}
+      >
+        {t("connect.gateDesc")}
+      </div>
       <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-        <Link to="/desk/settings">{t('connect.action')}</Link>
+        <Link to="/desk/settings">{t("connect.action")}</Link>
       </Button>
     </div>
-  )
+  );
   // 모바일 카드 다이어트 — 안내도 배경 위 플랫.
   const gate = mobile ? (
-    <div style={{ padding: '40px 24px' }}>{gateBody}</div>
+    <div style={{ padding: "40px 24px" }}>{gateBody}</div>
   ) : (
-    <Card style={{ padding: '40px 24px', maxWidth: 430, margin: '0 auto' }}>{gateBody}</Card>
-  )
+    <Card style={{ padding: "40px 24px", maxWidth: 430, margin: "0 auto" }}>
+      {gateBody}
+    </Card>
+  );
   return mobile ? (
     <>
-      <MobileBackHeader title={t('nav.title')} />
-      <div style={{ padding: '16px 24px 24px' }}>{gate}</div>
+      <MobileBackHeader title={t("nav.title")} />
+      <div style={{ padding: "16px 24px 24px" }}>{gate}</div>
     </>
   ) : (
     <div style={{ padding: 24 }}>{gate}</div>
-  )
+  );
 }

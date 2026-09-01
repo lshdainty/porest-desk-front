@@ -1,1 +1,6 @@
-export type { UserCalendar, UserCalendarFormValues, CalendarRole, CalendarMember } from './model/types'
+export type {
+  UserCalendar,
+  UserCalendarFormValues,
+  CalendarRole,
+  CalendarMember,
+} from "./model/types";

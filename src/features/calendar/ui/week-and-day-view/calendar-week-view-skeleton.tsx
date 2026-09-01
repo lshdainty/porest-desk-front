@@ -1,13 +1,13 @@
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
 
-const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
+const WEEK_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEK_DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
 const CalendarWeekViewSkeleton = () => {
-  const { i18n } = useTranslation()
-  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
+  const { i18n } = useTranslation();
+  const weekDays = i18n.language.startsWith("ko") ? WEEK_DAYS_KO : WEEK_DAYS_EN;
 
-  const hours = Array.from({ length: 11 }, (_, i) => i + 8)
+  const hours = Array.from({ length: 11 }, (_, i) => i + 8);
 
   return (
     <div className="w-full h-full">
@@ -25,7 +25,9 @@ const CalendarWeekViewSkeleton = () => {
             <div className="grid flex-1 grid-cols-7 divide-x border-l">
               {weekDays.map((_, index) => (
                 <div key={index} className="p-1">
-                  {index % 3 === 0 && <div className="h-5 w-full rounded bg-muted animate-pulse" />}
+                  {index % 3 === 0 && (
+                    <div className="h-5 w-full rounded bg-muted animate-pulse" />
+                  )}
                 </div>
               ))}
             </div>
@@ -37,17 +39,28 @@ const CalendarWeekViewSkeleton = () => {
           <div className="w-18" />
           <div className="grid flex-1 grid-cols-7 divide-x border-l">
             {weekDays.map((day, index) => {
-              const isSunday = index === 0
-              const isSaturday = index === 6
+              const isSunday = index === 0;
+              const isSaturday = index === 6;
 
               return (
-                <div key={index} className="py-2 text-center text-xs font-medium">
-                  <span style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}>
+                <div
+                  key={index}
+                  className="py-2 text-center text-xs font-medium"
+                >
+                  <span
+                    style={{
+                      color: isSunday
+                        ? "var(--fg-expense)"
+                        : isSaturday
+                          ? "var(--fg-brand)"
+                          : undefined,
+                    }}
+                  >
                     {day}
                   </span>
                   <div className="h-4 w-4 mx-auto mt-1 rounded bg-muted animate-pulse" />
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -57,9 +70,11 @@ const CalendarWeekViewSkeleton = () => {
           <div className="flex h-full">
             <div className="relative w-18">
               {hours.map((hour, index) => (
-                <div key={hour} className="relative" style={{ height: '96px' }}>
+                <div key={hour} className="relative" style={{ height: "96px" }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
-                    {index !== 0 && <div className="h-3 w-10 bg-muted animate-pulse rounded" />}
+                    {index !== 0 && (
+                      <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -70,8 +85,14 @@ const CalendarWeekViewSkeleton = () => {
                 {weekDays.map((_, dayIndex) => (
                   <div key={dayIndex} className="relative">
                     {hours.map((hour, index) => (
-                      <div key={hour} className="relative" style={{ height: '96px' }}>
-                        {index !== 0 && <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />}
+                      <div
+                        key={hour}
+                        className="relative"
+                        style={{ height: "96px" }}
+                      >
+                        {index !== 0 && (
+                          <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />
+                        )}
                         <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed" />
                       </div>
                     ))}
@@ -94,7 +115,7 @@ const CalendarWeekViewSkeleton = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarWeekViewSkeleton }
+export { CalendarWeekViewSkeleton };

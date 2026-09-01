@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Input — porest-design specs/components/input.md SoT 기반.
@@ -15,29 +15,30 @@ import { cn } from "@/shared/lib/index"
  * - 사이즈 예외 필요 시 사용처 className으로 (예: `className="h-12 text-title-md"`)
  */
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input"> & { search?: boolean }>(
-  ({ className, type, search = false, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        ref={ref}
-        className={cn(
-          "flex h-10 w-full min-w-0 rounded-sm border border-border-default bg-surface-input px-[var(--spacing-md)] py-[var(--spacing-sm)] font-sans text-body-lg text-text-primary placeholder:text-text-tertiary",
-          "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-text-primary",
-          "transition-[color,box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-          "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
-          "aria-invalid:border-error aria-invalid:ring-2 aria-invalid:ring-error/30",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          // search variant — 헤더(top__search) 정합: compact·radius-md·테두리 없음·filled·label-sm
-          search &&
-            "h-9 rounded-[var(--radius-md)] border-transparent bg-[var(--bg-muted)] text-label-sm focus-visible:bg-[var(--bg-surface)] focus-visible:ring-0",
-          className,
-        )}
-        {...props}
-      />
-    )
-  },
-)
-Input.displayName = "Input"
+const Input = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<"input"> & { search?: boolean }
+>(({ className, type, search = false, ...props }, ref) => {
+  return (
+    <input
+      type={type}
+      ref={ref}
+      className={cn(
+        "flex h-10 w-full min-w-0 rounded-sm border border-border-default bg-surface-input px-[var(--spacing-md)] py-[var(--spacing-sm)] font-sans text-body-lg text-text-primary placeholder:text-text-tertiary",
+        "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-text-primary",
+        "transition-[color,box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
+        "aria-invalid:border-error aria-invalid:ring-2 aria-invalid:ring-error/30",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        // search variant — 헤더(top__search) 정합: compact·radius-md·테두리 없음·filled·label-sm
+        search &&
+          "h-9 rounded-[var(--radius-md)] border-transparent bg-[var(--bg-muted)] text-label-sm focus-visible:bg-[var(--bg-surface)] focus-visible:ring-0",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
+Input.displayName = "Input";
 
-export { Input }
+export { Input };

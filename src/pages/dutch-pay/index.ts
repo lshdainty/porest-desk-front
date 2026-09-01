@@ -1,1 +1,1 @@
-export { DutchPayPage } from './ui/DutchPayPage'
+export { DutchPayPage } from "./ui/DutchPayPage";

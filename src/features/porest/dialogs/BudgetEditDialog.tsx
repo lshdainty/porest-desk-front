@@ -1,23 +1,23 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Icon } from '@/shared/ui/porest/primitives'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
-import { Input } from '@/shared/ui/input'
-import { Field, FieldLabel } from '@/shared/ui/field'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { money, isEn } from '@/shared/lib/porest/format'
-import { tileRadius } from '@/shared/lib'
-import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
-import { getPaletteByColor } from './CategoryEditDialog'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Icon } from "@/shared/ui/porest/primitives";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import { Input } from "@/shared/ui/input";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { money, isEn } from "@/shared/lib/porest/format";
+import { tileRadius } from "@/shared/lib";
+import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
+import { getPaletteByColor } from "./CategoryEditDialog";
 
 export interface BudgetDraft {
-  categoryRowId: number
-  budgetAmount: number
+  categoryRowId: number;
+  budgetAmount: number;
 }
 
-const PRESETS = [100_000, 200_000, 300_000, 500_000, 800_000, 1_000_000]
+const PRESETS = [100_000, 200_000, 300_000, 500_000, 800_000, 1_000_000];
 
 export function BudgetEditDialog({
   budget,
@@ -28,61 +28,64 @@ export function BudgetEditDialog({
   mobile,
   submitting,
 }: {
-  budget: ExpenseBudget | null
-  categories: ExpenseCategory[]
-  existing: ExpenseBudget[]
-  onClose: () => void
-  onSave: (draft: BudgetDraft) => void
-  mobile: boolean
-  submitting?: boolean
+  budget: ExpenseBudget | null;
+  categories: ExpenseCategory[];
+  existing: ExpenseBudget[];
+  onClose: () => void;
+  onSave: (draft: BudgetDraft) => void;
+  mobile: boolean;
+  submitting?: boolean;
 }) {
-  const { t } = useTranslation('budget')
-  const { t: tCommon } = useTranslation('common')
-  const isNew = !budget
+  const { t } = useTranslation("budget");
+  const { t: tCommon } = useTranslation("common");
+  const isNew = !budget;
 
   // 선택 가능한 카테고리 = EXPENSE 타입의 **부모 카테고리(top-level)** 만.
   // 자식 leaf 는 현재 허용 안 함 — 자식의 지출은 부모로 roll-up 되어 집계됨.
   // 향후 leaf 단위 예산 요청 들어오면 제한을 풀면 됨.
   const selectableCats = categories.filter(
-    c => c.expenseType === 'EXPENSE' && c.parentRowId == null,
-  )
+    (c) => c.expenseType === "EXPENSE" && c.parentRowId == null,
+  );
 
   const usedCatIds = new Set(
     existing
-      .filter(b => b.categoryRowId !== null)
-      .map(b => b.categoryRowId as number),
-  )
+      .filter((b) => b.categoryRowId !== null)
+      .map((b) => b.categoryRowId as number),
+  );
 
   const initialCatId: number | null =
     budget?.categoryRowId ??
-    selectableCats.find(c => !usedCatIds.has(c.rowId))?.rowId ??
+    selectableCats.find((c) => !usedCatIds.has(c.rowId))?.rowId ??
     selectableCats[0]?.rowId ??
-    null
+    null;
 
-  const [categoryRowId, setCategoryRowId] = useState<number | null>(initialCatId)
-  const [limit, setLimit] = useState(String(budget?.budgetAmount ?? 300_000))
-  const [touched, setTouched] = useState(false)
+  const [categoryRowId, setCategoryRowId] = useState<number | null>(
+    initialCatId,
+  );
+  const [limit, setLimit] = useState(String(budget?.budgetAmount ?? 300_000));
+  const [touched, setTouched] = useState(false);
 
-  const selectedCat = categories.find(c => c.rowId === categoryRowId) ?? null
-  const palette = getPaletteByColor(selectedCat?.color)
+  const selectedCat = categories.find((c) => c.rowId === categoryRowId) ?? null;
+  const palette = getPaletteByColor(selectedCat?.color);
 
-  const dupCat = isNew && categoryRowId != null && usedCatIds.has(categoryRowId)
-  const valid = categoryRowId != null && !dupCat && parseInt(limit) > 0
+  const dupCat =
+    isNew && categoryRowId != null && usedCatIds.has(categoryRowId);
+  const valid = categoryRowId != null && !dupCat && parseInt(limit) > 0;
 
   const save = () => {
-    setTouched(true)
-    if (!valid || categoryRowId == null) return
-    onSave({ categoryRowId, budgetAmount: parseInt(limit) || 0 })
-  }
+    setTouched(true);
+    if (!valid || categoryRowId == null) return;
+    onSave({ categoryRowId, budgetAmount: parseInt(limit) || 0 });
+  };
 
   const availableCats = isNew
-    ? selectableCats.filter(c => !usedCatIds.has(c.rowId))
-    : selectableCats
+    ? selectableCats.filter((c) => !usedCatIds.has(c.rowId))
+    : selectableCats;
 
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={isNew ? t('add') : tCommon('save')}
+      saveLabel={isNew ? t("add") : tCommon("save")}
       saving={submitting}
       saveDisabled={touched && !valid}
       // 모바일도 [취소][저장] 이다. 목록 행을 밀면 삭제가 나오므로(BudgetManager
@@ -90,11 +93,11 @@ export function BudgetEditDialog({
       // 시트에 파괴적 액션을 같이 두지 않는다(사용자 결정).
       onCancel={onClose}
     />
-  )
+  );
 
   return (
     <ModalShell
-      title={isNew ? t('edit.addTitle') : t('edit.editTitle')}
+      title={isNew ? t("edit.addTitle") : t("edit.editTitle")}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -102,12 +105,12 @@ export function BudgetEditDialog({
     >
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 12,
           padding: 14,
-          background: 'var(--bg-muted)',
-          borderRadius: 'var(--radius-tile)',
+          background: "var(--bg-muted)",
+          borderRadius: "var(--radius-tile)",
           marginBottom: 20,
         }}
       >
@@ -116,50 +119,56 @@ export function BudgetEditDialog({
             width: 44,
             height: 44,
             borderRadius: tileRadius(44),
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
             background: palette.bg,
             color: palette.color,
           }}
         >
-          <Icon name={selectedCat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
+          <Icon name={selectedCat?.icon ?? "tag"} size={18} strokeWidth={1.9} />
         </span>
         <div>
           <div
             style={{
-              font: '700 15px/1.3 var(--font-sans)',
-              color: 'var(--fg-primary)',
-              letterSpacing: '-0.012em',
+              font: "700 15px/1.3 var(--font-sans)",
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.012em",
             }}
           >
-            {selectedCat?.categoryName ?? t('edit.selectCategory')}
+            {selectedCat?.categoryName ?? t("edit.selectCategory")}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('edit.monthlyLimitPreview')} {money(parseInt(limit) || 0)}
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 2,
+            }}
+          >
+            {t("edit.monthlyLimitPreview")} {money(parseInt(limit) || 0)}
           </div>
         </div>
       </div>
 
       {isNew && (
         <Field style={{ marginBottom: 14 }}>
-          <FieldLabel>{t('edit.categoryLabel')}</FieldLabel>
+          <FieldLabel>{t("edit.categoryLabel")}</FieldLabel>
           {availableCats.length === 0 ? (
             <div
               style={{
                 padding: 12,
-                background: 'var(--bg-muted)',
-                borderRadius: 'var(--radius-tile)',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--fg-secondary)',
+                background: "var(--bg-muted)",
+                borderRadius: "var(--radius-tile)",
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
               }}
             >
-              {t('edit.allBudgeted')}
+              {t("edit.allBudgeted")}
             </div>
           ) : (
             <CategoryGrid>
-              {availableCats.map(c => (
+              {availableCats.map((c) => (
                 <CategoryTile
                   key={c.rowId}
                   name={c.categoryName}
@@ -175,13 +184,13 @@ export function BudgetEditDialog({
       )}
 
       <Field style={{ marginBottom: 10 }}>
-        <FieldLabel>{t('edit.monthlyLimitField')}</FieldLabel>
+        <FieldLabel>{t("edit.monthlyLimitField")}</FieldLabel>
         <Input
           className="num"
           value={limit}
-          onChange={e => {
-            setLimit(e.target.value.replace(/[^0-9]/g, ''))
-            setTouched(true)
+          onChange={(e) => {
+            setLimit(e.target.value.replace(/[^0-9]/g, ""));
+            setTouched(true);
           }}
           inputMode="numeric"
         />
@@ -189,7 +198,7 @@ export function BudgetEditDialog({
       <ToggleGroup
         type="single"
         size="sm"
-        value={PRESETS.includes(parseInt(limit)) ? limit : ''}
+        value={PRESETS.includes(parseInt(limit)) ? limit : ""}
         onValueChange={(v) => v && setLimit(v)}
         className="mb-2.5 flex-wrap justify-start"
       >
@@ -200,7 +209,7 @@ export function BudgetEditDialog({
         ))}
       </ToggleGroup>
     </ModalShell>
-  )
+  );
 }
 
 export function MonthlyBudgetDialog({
@@ -210,36 +219,42 @@ export function MonthlyBudgetDialog({
   mobile,
   submitting,
 }: {
-  value: number
-  onClose: () => void
-  onSave: (v: number) => void
-  mobile: boolean
-  submitting?: boolean
+  value: number;
+  onClose: () => void;
+  onSave: (v: number) => void;
+  mobile: boolean;
+  submitting?: boolean;
 }) {
-  const { t } = useTranslation('budget')
-  const { t: tCommon } = useTranslation('common')
-  const [v, setV] = useState(String(value))
-  const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000]
+  const { t } = useTranslation("budget");
+  const { t: tCommon } = useTranslation("common");
+  const [v, setV] = useState(String(value));
+  const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000];
 
   const Footer = (
     <ModalFooter
       onSave={() => onSave(parseInt(v) || 0)}
-      saveLabel={tCommon('save')}
+      saveLabel={tCommon("save")}
       saving={submitting}
       saveDisabled={(parseInt(v) || 0) <= 0}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
-    <ModalShell title={t('edit.monthlyTitle')} onClose={onClose} size="sm" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("edit.monthlyTitle")}
+      onClose={onClose}
+      size="sm"
+      footer={Footer}
+      mobile={mobile}
+    >
       <Field style={{ marginBottom: 10 }}>
-        <FieldLabel>{t('edit.monthlyTotalField')}</FieldLabel>
+        <FieldLabel>{t("edit.monthlyTotalField")}</FieldLabel>
         <Input
           className="num"
-          style={{ fontSize: 'var(--text-title-lg)', fontWeight: '700' }}
+          style={{ fontSize: "var(--text-title-lg)", fontWeight: "700" }}
           value={v}
-          onChange={e => setV(e.target.value.replace(/[^0-9]/g, ''))}
+          onChange={(e) => setV(e.target.value.replace(/[^0-9]/g, ""))}
           inputMode="numeric"
           autoFocus
         />
@@ -247,7 +262,7 @@ export function MonthlyBudgetDialog({
       <ToggleGroup
         type="single"
         size="sm"
-        value={presets.includes(parseInt(v)) ? v : ''}
+        value={presets.includes(parseInt(v)) ? v : ""}
         onValueChange={(val) => val && setV(val)}
         className="flex-wrap justify-start"
       >
@@ -258,5 +273,5 @@ export function MonthlyBudgetDialog({
         ))}
       </ToggleGroup>
     </ModalShell>
-  )
+  );
 }

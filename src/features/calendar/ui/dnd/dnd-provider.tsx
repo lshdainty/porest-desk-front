@@ -4,11 +4,11 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from '@dnd-kit/core'
-import type { ReactNode } from 'react'
+} from "@dnd-kit/core";
+import type { ReactNode } from "react";
 
 interface DndProviderWrapperProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const DndProviderWrapper = ({ children }: DndProviderWrapperProps) => {
@@ -17,18 +17,18 @@ const DndProviderWrapper = ({ children }: DndProviderWrapperProps) => {
       activationConstraint: {
         distance: 8,
       },
-    })
-  )
+    }),
+  );
 
   const handleDragEnd = (_event: DragEndEvent) => {
     // TODO: Implement drag-and-drop event rescheduling
-  }
+  };
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       {children}
     </DndContext>
-  )
-}
+  );
+};
 
-export { DndProviderWrapper }
+export { DndProviderWrapper };

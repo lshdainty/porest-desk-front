@@ -1,4 +1,4 @@
-import { cva } from "class-variance-authority"
+import { cva } from "class-variance-authority";
 
 /*
  * Button cva — button.tsx 에서 분리(Fast Refresh: 컴포넌트 파일은 컴포넌트만 export).
@@ -39,36 +39,34 @@ export const buttonVariants = cva(
           "bg-transparent text-text-primary hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
         accent:
           "bg-transparent text-[var(--fg-brand)] hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
-        link:
-          "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px] active:brightness-90",
-        warm:
-          "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-surface-input",
+        link: "bg-transparent border-0 px-0.5 text-[var(--fg-link)] hover:text-[var(--fg-link-hover)] hover:underline underline-offset-[3px] active:brightness-90",
+        warm: "bg-[var(--bg-section-warm)] text-[var(--fg-on-warm)] hover:bg-surface-input",
       },
       size: {
         default: "h-9 px-4 py-[9px] text-sm [&_svg]:size-4",
-        xs:      "h-6 px-2 py-1 text-xs gap-1 rounded-[var(--radius-sm)] [&_svg]:size-3.5",
+        xs: "h-6 px-2 py-1 text-xs gap-1 rounded-[var(--radius-sm)] [&_svg]:size-3.5",
         // sm 은 spec 매핑 그대로 (button.md Sizes: h-8 px-2 py-1 text-caption + BASE gap 8)
         // — 기존 호환층(px-3·13px·gap-5)이 앱 PButton sm 보다 커 보이던 문제 정리.
-        sm:      "h-8 px-2 py-1 text-caption rounded-[var(--radius-sm)] [&_svg]:size-3.5",
+        sm: "h-8 px-2 py-1 text-caption rounded-[var(--radius-sm)] [&_svg]:size-3.5",
         // md 글자는 15px — button.md Sizes 표의 px. 표는 라벨을 body-lg 라 적었지만
         // 토큰 표에서 15px 은 body-md 이고 body-lg 는 16px 이라 px 를 따른다.
         // text-body-md 가 weight 400 을 물고 오지만, 생성 CSS 가
         // font-weight:var(--tw-font-weight, ...) 라 base 의 font-medium(500)이 이긴다.
-        md:      "h-10 px-3 py-2 text-body-md [&_svg]:size-4",
+        md: "h-10 px-3 py-2 text-body-md [&_svg]:size-4",
         // lg 은 모바일 sheet/dialog footer 의 한 손 조작 폭 — 48×48(touch-comfortable),
         // radius md(8px). 앱 PButton lg 및 button.md Sizes 표와 같은 값이다.
         // 예전 h-11(44)·rounded-sm(4)·px-5 는 앱보다 납작하고 각졌다.
-        lg:      "h-12 px-4 py-3 text-title-sm rounded-md [&_svg]:size-[18px]",
-        icon:    "h-9 w-9 p-0 rounded-md [&_svg]:size-4",
+        lg: "h-12 px-4 py-3 text-title-sm rounded-md [&_svg]:size-[18px]",
+        icon: "h-9 w-9 p-0 rounded-md [&_svg]:size-4",
         // 모바일 크롬 헤더(m-header) 전용 — 36×36 원형 + glyph 20px.
         // ghost 조합에서도 보조톤 약화 없이 중립(text-primary) 유지. button.md v97.
-        iconLg:  "h-9 w-9 p-0 rounded-full [&_svg]:size-5",
+        iconLg: "h-9 w-9 p-0 rounded-full [&_svg]:size-5",
       },
       // flush — 컨테이너 edge 에 붙는 ghost 버튼의 광학 정렬용. 해당 방향 좌/우 padding 만
       // 제거해 글자/아이콘이 edge 에 flush(box·hover 영역 위치는 그대로). footer 좌측
       // 삭제 버튼 등 ghost 가 채워진 버튼과 edge 가 안 맞아 보이던 문제용.
       flush: {
-        left:  "pl-0",
+        left: "pl-0",
         right: "pr-0",
       },
     },
@@ -83,4 +81,4 @@ export const buttonVariants = cva(
       size: "default",
     },
   },
-)
+);

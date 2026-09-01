@@ -1,7 +1,7 @@
-import * as React from "react"
-import * as SwitchPrimitive from "@radix-ui/react-switch"
+import * as React from "react";
+import * as SwitchPrimitive from "@radix-ui/react-switch";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Switch — porest-design specs/components/switch.md SoT 기반.
@@ -36,7 +36,7 @@ const Switch = React.forwardRef<
       )}
     />
   </SwitchPrimitive.Root>
-))
-Switch.displayName = SwitchPrimitive.Root.displayName
+));
+Switch.displayName = SwitchPrimitive.Root.displayName;
 
-export { Switch }
+export { Switch };

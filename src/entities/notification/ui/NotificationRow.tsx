@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import { notificationVisual } from '../lib/notificationVisual'
-import { relativeTime } from '../lib/relativeTime'
-import type { Notification } from '../model/types'
+import type { ReactNode } from "react";
+import { notificationVisual } from "../lib/notificationVisual";
+import { relativeTime } from "../lib/relativeTime";
+import type { Notification } from "../model/types";
 
 /**
  * 알림 행 — Popover·Page 공용 single source(SoT 정합).
@@ -16,7 +16,7 @@ export function NotificationRow({
   onClick,
   trailing,
 }: {
-  notification: Notification
+  notification: Notification;
   /**
    * 상대시각의 기준점 — 호출부에서 `useNow()` 로 받아 내린다.
    *
@@ -24,15 +24,15 @@ export function NotificationRow({
    * 되는데, 그래서 같은 알림이 벨과 알림 페이지에서 서로 다른 문구로 보였다.
    * 필수로 두면 새 호출부가 생겨도 컴파일이 먼저 붙잡는다.
    */
-  now: number
-  onClick?: () => void
+  now: number;
+  onClick?: () => void;
   /** 행 우측 끝 추가 액션(Page 삭제 버튼). 미지정 시 SoT(Popover) 3슬롯 그대로. */
-  trailing?: ReactNode
+  trailing?: ReactNode;
 }) {
-  const { Icon, bg, fg } = notificationVisual(notification.notificationType)
+  const { Icon, bg, fg } = notificationVisual(notification.notificationType);
   return (
     <div
-      className={`notif-row ${notification.isRead ? '' : 'unread'}`}
+      className={`notif-row ${notification.isRead ? "" : "unread"}`}
       onClick={onClick}
     >
       <span className="notif-row__icon" style={{ background: bg, color: fg }}>
@@ -45,8 +45,10 @@ export function NotificationRow({
         </div>
         <div className="notif-row__desc">{notification.message}</div>
       </div>
-      <div className="notif-row__time">{relativeTime(notification.createAt, now)}</div>
+      <div className="notif-row__time">
+        {relativeTime(notification.createAt, now)}
+      </div>
       {trailing}
     </div>
-  )
+  );
 }

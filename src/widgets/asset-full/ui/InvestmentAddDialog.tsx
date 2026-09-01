@@ -1,240 +1,271 @@
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Search } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
-import { useIsMobile } from '@/shared/hooks'
-import { KRW } from '@/shared/lib/porest/format'
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Search } from "lucide-react";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { useIsMobile } from "@/shared/hooks";
+import { KRW } from "@/shared/lib/porest/format";
 import {
   getBrandColor,
   BANK_ENTRIES_BY_CATEGORY,
   INVEST_CATEGORIES,
   type BankCategory,
   type BankEntry,
-} from '@/shared/lib/porest/bank-colors'
-import { useCreateAsset } from '@/features/asset'
+} from "@/shared/lib/porest/bank-colors";
+import { useCreateAsset } from "@/features/asset";
 
 const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
-  cat => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
-)
+  (cat) => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
+);
 
 /** 기관 분류 라벨 키 — 카테고리 자체는 한국 금융권 분류라 한글이 원문이지만,
  *  화면 라벨은 로케일을 따른다(영어 사용자에게 '시중은행' 이 그대로 나오면 안 된다). */
 const CATEGORY_LABEL_KEY: Record<BankCategory, string> = {
-  '시중은행': 'editDialog.category.commercialBank',
-  '인터넷은행': 'editDialog.category.internetBank',
-  '지방은행': 'editDialog.category.localBank',
-  '특수은행': 'editDialog.category.specialBank',
-  '저축기관': 'editDialog.category.savingsInstitution',
-  '외국계': 'editDialog.category.foreignBank',
-  '기타': 'editDialog.category.other',
-  '증권사': 'editDialog.category.brokerage',
-  '상품거래소': 'editDialog.category.commodityExchange',
-  '가상자산': 'editDialog.category.cryptoExchange',
-}
+  시중은행: "editDialog.category.commercialBank",
+  인터넷은행: "editDialog.category.internetBank",
+  지방은행: "editDialog.category.localBank",
+  특수은행: "editDialog.category.specialBank",
+  저축기관: "editDialog.category.savingsInstitution",
+  외국계: "editDialog.category.foreignBank",
+  기타: "editDialog.category.other",
+  증권사: "editDialog.category.brokerage",
+  상품거래소: "editDialog.category.commodityExchange",
+  가상자산: "editDialog.category.cryptoExchange",
+};
 
 interface InvestmentAddDialogProps {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
 }
 
-export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps) {
-  const { t } = useTranslation('asset')
-  const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
-  const [brand, setBrand] = useState<string>(INVEST_BRANDS[0]?.name ?? '삼성증권')
-  const [query, setQuery] = useState('')
-  const [productName, setProductName] = useState('')
-  const [balanceStr, setBalanceStr] = useState('0')
+export function InvestmentAddDialog({
+  open,
+  onClose,
+}: InvestmentAddDialogProps) {
+  const { t } = useTranslation("asset");
+  const { t: tc } = useTranslation("common");
+  const isMobile = useIsMobile();
+  const [brand, setBrand] = useState<string>(
+    INVEST_BRANDS[0]?.name ?? "삼성증권",
+  );
+  const [query, setQuery] = useState("");
+  const [productName, setProductName] = useState("");
+  const [balanceStr, setBalanceStr] = useState("0");
 
-  const createMut = useCreateAsset()
+  const createMut = useCreateAsset();
 
   const matchesQuery = (e: BankEntry, q: string) => {
-    if (!q) return true
-    const needle = q.toLowerCase().replace(/\s+/g, '')
-    if (e.name.toLowerCase().replace(/\s+/g, '').includes(needle)) return true
-    return (e.aliases ?? []).some(a => a.toLowerCase().replace(/\s+/g, '').includes(needle))
-  }
+    if (!q) return true;
+    const needle = q.toLowerCase().replace(/\s+/g, "");
+    if (e.name.toLowerCase().replace(/\s+/g, "").includes(needle)) return true;
+    return (e.aliases ?? []).some((a) =>
+      a.toLowerCase().replace(/\s+/g, "").includes(needle),
+    );
+  };
 
   const filteredByCategory = useMemo(() => {
-    const result: [BankCategory, BankEntry[]][] = []
+    const result: [BankCategory, BankEntry[]][] = [];
     for (const cat of INVEST_CATEGORIES) {
-      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter(e => matchesQuery(e, query))
-      if (list.length > 0) result.push([cat, list])
+      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter((e) =>
+        matchesQuery(e, query),
+      );
+      if (list.length > 0) result.push([cat, list]);
     }
-    return result
-  }, [query])
+    return result;
+  }, [query]);
 
-  const filteredCount = filteredByCategory.reduce((sum, [, list]) => sum + list.length, 0)
+  const filteredCount = filteredByCategory.reduce(
+    (sum, [, list]) => sum + list.length,
+    0,
+  );
 
-  const brandColor = useMemo(() => getBrandColor(brand), [brand])
-  const previewName = productName.trim() || t('investAdd.newProduct')
-  const previewLetter = (brand[0] ?? '?').trim()
-  const previewBg = brandColor?.bg ?? 'var(--border-brand)'
-  const previewFg = brandColor?.fg ?? '#fff'
+  const brandColor = useMemo(() => getBrandColor(brand), [brand]);
+  const previewName = productName.trim() || t("investAdd.newProduct");
+  const previewLetter = (brand[0] ?? "?").trim();
+  const previewBg = brandColor?.bg ?? "var(--border-brand)";
+  const previewFg = brandColor?.fg ?? "#fff";
 
   const reset = () => {
-    setBrand(INVEST_BRANDS[0]?.name ?? '삼성증권')
-    setQuery('')
-    setProductName('')
-    setBalanceStr('0')
-  }
+    setBrand(INVEST_BRANDS[0]?.name ?? "삼성증권");
+    setQuery("");
+    setProductName("");
+    setBalanceStr("0");
+  };
 
   const handleClose = () => {
-    if (createMut.isPending) return
-    reset()
-    onClose()
-  }
+    if (createMut.isPending) return;
+    reset();
+    onClose();
+  };
 
   const handleSubmit = () => {
-    const name = productName.trim() || `${brand} 투자`
-    const balance = Number(balanceStr.replace(/[^\d-]/g, '')) || 0
+    const name = productName.trim() || `${brand} 투자`;
+    const balance = Number(balanceStr.replace(/[^\d-]/g, "")) || 0;
     createMut.mutate(
       {
         assetName: name,
-        assetType: 'INVESTMENT',
+        assetType: "INVESTMENT",
         balance,
-        currency: 'KRW',
+        currency: "KRW",
         institution: brand,
         color: brandColor?.bg,
       },
       {
         onSuccess: () => {
-          reset()
-          onClose()
+          reset();
+          onClose();
         },
       },
-    )
-  }
+    );
+  };
 
-  if (!open) return null
+  if (!open) return null;
 
   const bodyContent = (
     <div className="flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <span
-              className="inline-flex items-center justify-center rounded-[var(--radius-md)] font-bold text-base flex-shrink-0"
-              style={{ background: previewBg, color: previewFg, width: 52, height: 52 }}
-            >
-              {previewLetter}
-            </span>
-            <div className="min-w-0">
-              <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">{previewName}</div>
-              <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">{brand} · {t('assetForm.preview')}</div>
-            </div>
+      <div className="flex items-center gap-3">
+        <span
+          className="inline-flex items-center justify-center rounded-[var(--radius-md)] font-bold text-base flex-shrink-0"
+          style={{
+            background: previewBg,
+            color: previewFg,
+            width: 52,
+            height: 52,
+          }}
+        >
+          {previewLetter}
+        </span>
+        <div className="min-w-0">
+          <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">
+            {previewName}
           </div>
+          <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">
+            {brand} · {t("assetForm.preview")}
+          </div>
+        </div>
+      </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-[13px] font-medium">{t('editDialog.brokerExchange')}</Label>
-              <span className="text-[11px] text-[var(--fg-tertiary)]">{t('assetForm.entryCount', { count: INVEST_BRANDS.length })}</span>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-[13px] font-medium">
+            {t("editDialog.brokerExchange")}
+          </Label>
+          <span className="text-[11px] text-[var(--fg-tertiary)]">
+            {t("assetForm.entryCount", { count: INVEST_BRANDS.length })}
+          </span>
+        </div>
+        <div className="relative mb-2">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
+          />
+          <Input
+            search
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("investAdd.searchPlaceholder")}
+            className="pl-9"
+          />
+        </div>
+        <div
+          className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
+          style={{ maxHeight: 260, overflowY: "auto" }}
+        >
+          {filteredCount === 0 ? (
+            <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
+              {t("assetForm.noResults")}
             </div>
-            <div className="relative mb-2">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-              />
-              <Input
-                search
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={t('investAdd.searchPlaceholder')}
-                className="pl-9"
-              />
-            </div>
-            <div
-              className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-              style={{ maxHeight: 260, overflowY: 'auto' }}
-            >
-              {filteredCount === 0 ? (
-                <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                  {t('assetForm.noResults')}
+          ) : (
+            filteredByCategory.map(([cat, list]) => (
+              <div key={cat}>
+                <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
+                  {t(CATEGORY_LABEL_KEY[cat])}
                 </div>
-              ) : (
-                filteredByCategory.map(([cat, list]) => (
-                  <div key={cat}>
-                    <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                      {t(CATEGORY_LABEL_KEY[cat])}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                      {list.map(e => {
-                        const active = e.name === brand
-                        return (
-                          <button
-                            key={e.name}
-                            type="button"
-                            onClick={() => setBrand(e.name)}
-                            className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
-                            style={
-                              active
-                                ? {
-                                    background: e.color.bg,
-                                    color: e.color.fg ?? '#fff',
-                                    borderColor: 'transparent',
-                                  }
-                                : {
-                                    background: 'var(--bg-muted)',
-                                    color: 'var(--fg-secondary)',
-                                    borderColor: 'transparent',
-                                  }
-                            }
-                          >
-                            {e.name}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+                <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                  {list.map((e) => {
+                    const active = e.name === brand;
+                    return (
+                      <button
+                        key={e.name}
+                        type="button"
+                        onClick={() => setBrand(e.name)}
+                        className="inline-flex items-center justify-center rounded-full border text-[12.5px] font-medium transition-colors h-7 px-3"
+                        style={
+                          active
+                            ? {
+                                background: e.color.bg,
+                                color: e.color.fg ?? "#fff",
+                                borderColor: "transparent",
+                              }
+                            : {
+                                background: "var(--bg-muted)",
+                                color: "var(--fg-secondary)",
+                                borderColor: "transparent",
+                              }
+                        }
+                      >
+                        {e.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-          <div>
-            <Label htmlFor="investment-product" className="text-[13px] font-medium mb-2 block">
-              {t('investAdd.productName')}
-            </Label>
-            <Input
-              id="investment-product"
-              value={productName}
-              onChange={e => setProductName(e.target.value)}
-              placeholder={t('investAdd.productPlaceholder')}
-            />
-          </div>
+      <div>
+        <Label
+          htmlFor="investment-product"
+          className="text-[13px] font-medium mb-2 block"
+        >
+          {t("investAdd.productName")}
+        </Label>
+        <Input
+          id="investment-product"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+          placeholder={t("investAdd.productPlaceholder")}
+        />
+      </div>
 
-          <div>
-            <Label htmlFor="investment-balance" className="text-[13px] font-medium mb-2 block">
-              {t('investAdd.valuation')}
-            </Label>
-            <Input
-              id="investment-balance"
-              inputMode="numeric"
-              value={balanceStr}
-              onChange={e => setBalanceStr(e.target.value.replace(/[^\d-]/g, ''))}
-              onBlur={() => {
-                const n = Number(balanceStr) || 0
-                setBalanceStr(n ? KRW(n) : '0')
-              }}
-              onFocus={() => setBalanceStr(prev => prev.replace(/,/g, ''))}
-            />
-          </div>
+      <div>
+        <Label
+          htmlFor="investment-balance"
+          className="text-[13px] font-medium mb-2 block"
+        >
+          {t("investAdd.valuation")}
+        </Label>
+        <Input
+          id="investment-balance"
+          inputMode="numeric"
+          value={balanceStr}
+          onChange={(e) => setBalanceStr(e.target.value.replace(/[^\d-]/g, ""))}
+          onBlur={() => {
+            const n = Number(balanceStr) || 0;
+            setBalanceStr(n ? KRW(n) : "0");
+          }}
+          onFocus={() => setBalanceStr((prev) => prev.replace(/,/g, ""))}
+        />
+      </div>
     </div>
-  )
+  );
 
   const footerButtons = (
     <ModalFooter
       onSave={handleSubmit}
-      saveLabel={tc('add')}
+      saveLabel={tc("add")}
       saving={createMut.isPending}
       onCancel={handleClose}
     />
-  )
+  );
 
   return (
     <ModalShell
-      title={t('investAdd.title')}
+      title={t("investAdd.title")}
       onClose={handleClose}
       mobile={isMobile}
       size="md"
@@ -242,5 +273,5 @@ export function InvestmentAddDialog({ open, onClose }: InvestmentAddDialogProps)
     >
       {bodyContent}
     </ModalShell>
-  )
+  );
 }

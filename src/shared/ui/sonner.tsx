@@ -1,5 +1,5 @@
-import { Toaster as Sonner } from "sonner"
-import { useTheme } from "@/shared/ui/theme-provider"
+import { Toaster as Sonner } from "sonner";
+import { useTheme } from "@/shared/ui/theme-provider";
 
 /*
  * Porest Sonner (Toaster) — porest-design specs/components/sonner.md SoT 기반.
@@ -29,16 +29,16 @@ import { useTheme } from "@/shared/ui/theme-provider"
  *   toast.error("저장 실패", { id: "save-error" })  // id 옵션으로 중복 방지
  */
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 // 다크에서 surface-default(#242938)는 bg-page(#1A1F2E)와 차이가 작고, 분리를 맡던
 // 검은 그림자는 검은 배경 위에서 효과가 거의 없다. 면을 한 단계 올려야
 // 실제로 뜬다(sonner.md 2026-08-21). 라이트에선 --bg-surface-raised 가
 // var(--color-surface-default) 라 변화 없다.
-const SURFACE = "var(--bg-surface-raised)"
-const TEXT = "var(--color-text-primary)"
+const SURFACE = "var(--bg-surface-raised)";
+const TEXT = "var(--color-text-primary)";
 // 테두리 없음(sonner.md) — sonner 의 --*-border 는 "none" 을 받는다.
-const BORDER = "none"
+const BORDER = "none";
 
 /*
  * Kind icons — porest-design sonner-examples.mjs 와 1:1 동기.
@@ -53,38 +53,38 @@ const iconBaseProps = {
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   style: { flexShrink: 0, marginTop: 2 } as React.CSSProperties,
-}
+};
 
 const SuccessIcon = () => (
   <svg {...iconBaseProps} stroke="var(--color-success)">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
-)
+);
 const ErrorIcon = () => (
   <svg {...iconBaseProps} stroke="var(--color-error)">
     <circle cx="12" cy="12" r="10" />
     <line x1="15" y1="9" x2="9" y2="15" />
     <line x1="9" y1="9" x2="15" y2="15" />
   </svg>
-)
+);
 const WarningIcon = () => (
   <svg {...iconBaseProps} stroke="var(--color-warning)">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
     <line x1="12" y1="9" x2="12" y2="13" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
-)
+);
 const InfoIcon = () => (
   <svg {...iconBaseProps} stroke="var(--color-info)">
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="16" x2="12" y2="12" />
     <line x1="12" y1="8" x2="12.01" y2="8" />
   </svg>
-)
+);
 
 export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
 
   const rootStyle = {
     ...(styleProp ?? {}),
@@ -103,7 +103,7 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
     "--info-bg": SURFACE,
     "--info-text": TEXT,
     "--info-border": BORDER,
-  } as React.CSSProperties
+  } as React.CSSProperties;
 
   return (
     <Sonner
@@ -144,5 +144,5 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
       }}
       {...rest}
     />
-  )
-}
+  );
+};

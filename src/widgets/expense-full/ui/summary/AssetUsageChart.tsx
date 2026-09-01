@@ -1,72 +1,85 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell } from 'recharts'
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { PieChart, Pie, Cell } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from '@/shared/ui/chart'
-import { formatCurrency } from '@/shared/lib'
-import { isEn, formatChartAxis } from '@/shared/lib/porest/format'
-import type { AssetExpenseSummary } from '@/entities/expense'
+} from "@/shared/ui/chart";
+import { formatCurrency } from "@/shared/lib";
+import { isEn, formatChartAxis } from "@/shared/lib/porest/format";
+import type { AssetExpenseSummary } from "@/entities/expense";
 
 // porest chart palette 10색 의미 기반(red/orange/yellow/green/blue/indigo/violet/pink/brown/gray)
 const COLORS = [
-  'var(--color-chart-blue)', 'var(--color-chart-green)', 'var(--color-chart-orange)',
-  'var(--color-chart-violet)', 'var(--color-chart-pink)', 'var(--color-chart-indigo)',
-  'var(--color-chart-red)', 'var(--color-chart-yellow)', 'var(--color-chart-brown)',
-  'var(--color-chart-gray)',
-]
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-red)",
+  "var(--color-chart-yellow)",
+  "var(--color-chart-brown)",
+  "var(--color-chart-gray)",
+];
 
-const RADIAN = Math.PI / 180
+const RADIAN = Math.PI / 180;
 
 const formatCompactAmount = (value: number): string => {
-  if (isEn()) return formatChartAxis(value)
+  if (isEn()) return formatChartAxis(value);
   if (value >= 1000000) {
-    return `${Math.round(value / 10000)}만`
+    return `${Math.round(value / 10000)}만`;
   }
   if (value >= 10000) {
-    const man = value / 10000
-    return man % 1 === 0 ? `${man}만` : `${man.toFixed(1)}만`
+    const man = value / 10000;
+    return man % 1 === 0 ? `${man}만` : `${man.toFixed(1)}만`;
   }
-  return value.toLocaleString()
-}
+  return value.toLocaleString();
+};
 
 const renderCustomizedLabel = (props: {
-  cx?: number
-  cy?: number
-  midAngle?: number
-  outerRadius?: number
-  value?: number
-  percent?: number
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  outerRadius?: number;
+  value?: number;
+  percent?: number;
 }) => {
-  const { cx = 0, cy = 0, midAngle = 0, outerRadius = 0, value = 0, percent = 0 } = props
-  if (percent < 0.01) return null
+  const {
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    outerRadius = 0,
+    value = 0,
+    percent = 0,
+  } = props;
+  if (percent < 0.01) return null;
 
-  const radius = outerRadius + 28
-  const x = cx + radius * Math.cos(-midAngle * RADIAN)
-  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+  const radius = outerRadius + 28;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
     <text
       x={x}
       y={y}
-      textAnchor={x > cx ? 'start' : 'end'}
+      textAnchor={x > cx ? "start" : "end"}
       dominantBaseline="central"
       className="fill-foreground text-[11px] font-medium"
     >
       {formatCompactAmount(value)}
     </text>
-  )
-}
+  );
+};
 
 interface AssetUsageChartProps {
-  assets: AssetExpenseSummary[]
+  assets: AssetExpenseSummary[];
 }
 
 export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
-  const { t } = useTranslation('expense')
+  const { t } = useTranslation("expense");
 
   const displayData = useMemo(() => {
     return assets
@@ -76,31 +89,36 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
         value: a.totalAmount,
         count: a.count,
         fill: `var(--color-asset-${index})`,
-      }))
-  }, [assets])
+      }));
+  }, [assets]);
 
   const chartConfig = useMemo(() => {
-    const config: ChartConfig = {}
+    const config: ChartConfig = {};
     assets.forEach((a, index) => {
       config[`asset-${index}`] = {
         label: a.assetName,
         color: COLORS[index % COLORS.length],
-      }
-    })
-    return config
-  }, [assets])
+      };
+    });
+    return config;
+  }, [assets]);
 
   if (assets.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center">
-        <p className="text-sm text-muted-foreground">{t('stats.noAssetData')}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("stats.noAssetData")}
+        </p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="w-full">
-      <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[280px]">
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square h-[280px]"
+      >
         <PieChart margin={{ top: 25, right: 50, bottom: 25, left: 50 }}>
           <Pie
             data={displayData}
@@ -114,7 +132,10 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
             label={renderCustomizedLabel}
           >
             {displayData.map((_entry, index) => (
-              <Cell key={`cell-${index}`} fill={`var(--color-asset-${index})`} />
+              <Cell
+                key={`cell-${index}`}
+                fill={`var(--color-asset-${index})`}
+              />
             ))}
           </Pie>
           <ChartTooltip
@@ -127,8 +148,13 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
                     <div
                       className="h-2.5 w-2.5 shrink-0 rounded-[var(--radius-xs)]"
                       style={{
-                        backgroundColor: (item as unknown as Record<string, unknown>)?.payload
-                          ? ((item as unknown as Record<string, unknown>).payload as Record<string, string>).fill
+                        backgroundColor: (
+                          item as unknown as Record<string, unknown>
+                        )?.payload
+                          ? (
+                              (item as unknown as Record<string, unknown>)
+                                .payload as Record<string, string>
+                            ).fill
                           : undefined,
                       }}
                     />
@@ -159,5 +185,5 @@ export const AssetUsageChart = ({ assets }: AssetUsageChartProps) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};

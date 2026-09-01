@@ -1,11 +1,11 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { type VariantProps } from "class-variance-authority";
 
-import { buttonVariants } from "@/shared/ui/button-variants"
+import { buttonVariants } from "@/shared/ui/button-variants";
 
-import { cn } from "@/shared/lib/index"
-import { Spinner } from "@/shared/ui/spinner"
+import { cn } from "@/shared/lib/index";
+import { Spinner } from "@/shared/ui/spinner";
 
 /*
  * Porest Button — porest-design SoT(specs/components/button.md) 기반.
@@ -28,11 +28,12 @@ import { Spinner } from "@/shared/ui/spinner"
  */
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+  asChild?: boolean;
   /** true면 좌측에 spinner 표시 + disabled 처리. asChild와는 함께 쓰지 말 것 (Slot 단일 child). */
-  loading?: boolean
+  loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -59,7 +60,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         >
           {children}
         </Slot>
-      )
+      );
     }
     return (
       <button
@@ -76,16 +77,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             // 버튼 내부 spinner는 버튼 텍스트 색(currentColor) 상속해 모든 variant 일관 시각.
             // default/destructive(filled bg-primary/bg-error)에선 white spinner, outline/ghost(흰 bg)에선 primary spinner.
             style={{
-              borderColor: 'color-mix(in srgb, currentColor 30%, transparent)',
-              borderTopColor: 'currentColor',
+              borderColor: "color-mix(in srgb, currentColor 30%, transparent)",
+              borderTopColor: "currentColor",
             }}
           />
         )}
         {children}
       </button>
-    )
+    );
   },
-)
-Button.displayName = "Button"
+);
+Button.displayName = "Button";
 
-export { Button }
+export { Button };

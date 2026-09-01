@@ -1,8 +1,8 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { useTranslation } from "react-i18next"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { useTranslation } from "react-i18next";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Spinner — porest-design specs/components/spinner.md SoT 기반.
@@ -36,17 +36,18 @@ const spinnerVariants = cva(
       size: "md",
     },
   },
-)
+);
 
 export interface SpinnerProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof spinnerVariants> {
-  label?: string
+  label?: string;
 }
 
 const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(
   ({ className, size, label, ...props }, ref) => {
-    const { t } = useTranslation("common")
+    const { t } = useTranslation("common");
     return (
       <span
         ref={ref}
@@ -57,9 +58,9 @@ const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(
       >
         <span className="sr-only">{label ?? t("loadingShort")}</span>
       </span>
-    )
+    );
   },
-)
-Spinner.displayName = "Spinner"
+);
+Spinner.displayName = "Spinner";
 
-export { Spinner }
+export { Spinner };

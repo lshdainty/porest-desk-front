@@ -1,1 +1,1 @@
-export type { ReferenceType, FileAttachment } from './model/types'
+export type { ReferenceType, FileAttachment } from "./model/types";

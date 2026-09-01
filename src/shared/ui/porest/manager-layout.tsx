@@ -1,5 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import type { CSSProperties, ReactNode } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 /**
  * ManagerLayout: 설정 화면(카테고리/계좌/예산/알림 등) 상단 영역 공통 spec.
@@ -7,68 +7,68 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
  * 시각 spec 그대로 보존. 본문은 page 별 children 으로 자유 구성.
  */
 
-const SHELL_CLS = 'flex flex-col gap-4'
+const SHELL_CLS = "flex flex-col gap-4";
 
 export const MANAGER_LAYOUT = {
   shellClassName: SHELL_CLS,
   headStyle: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     gap: 20,
   } as CSSProperties,
   titleStyle: {
-    font: '700 20px/1.3 var(--font-sans)',
-    letterSpacing: '-0.022em',
-    margin: '0 0 4px',
-    color: 'var(--fg-primary)',
+    font: "700 20px/1.3 var(--font-sans)",
+    letterSpacing: "-0.022em",
+    margin: "0 0 4px",
+    color: "var(--fg-primary)",
   } as CSSProperties,
   subStyle: {
-    fontSize: 'var(--text-label-sm)',
-    color: 'var(--fg-tertiary)',
+    fontSize: "var(--text-label-sm)",
+    color: "var(--fg-tertiary)",
     margin: 0,
-    maxWidth: '52ch',
-    lineHeight: '1.5',
+    maxWidth: "52ch",
+    lineHeight: "1.5",
   } as CSSProperties,
   toolbarStyle: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: 12,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   } as CSSProperties,
   searchWrapStyle: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
   } as CSSProperties,
   searchIconStyle: {
-    position: 'absolute',
+    position: "absolute",
     left: 10,
-    color: 'var(--fg-tertiary)',
-    pointerEvents: 'none' as const,
+    color: "var(--fg-tertiary)",
+    pointerEvents: "none" as const,
   } as CSSProperties,
   searchInputStyle: {
-    padding: '8px 12px 8px 30px',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-md)',
-    font: '13px/1 var(--font-sans)',
-    background: 'var(--bg-surface)',
-    color: 'var(--fg-primary)',
+    padding: "8px 12px 8px 30px",
+    border: "1px solid var(--border-subtle)",
+    borderRadius: "var(--radius-md)",
+    font: "13px/1 var(--font-sans)",
+    background: "var(--bg-surface)",
+    color: "var(--fg-primary)",
     minWidth: 220,
-    outline: 'none',
-    fontFamily: 'inherit',
+    outline: "none",
+    fontFamily: "inherit",
   } as CSSProperties,
-} as const
+} as const;
 
 export function ManagerShell({
-  className = '',
+  className = "",
   children,
 }: {
-  className?: string
-  children: ReactNode
+  className?: string;
+  children: ReactNode;
 }) {
-  return <div className={`${SHELL_CLS} ${className}`}>{children}</div>
+  return <div className={`${SHELL_CLS} ${className}`}>{children}</div>;
 }
 
 /**
@@ -80,9 +80,9 @@ export function ManagerHead({
   description,
   actions,
 }: {
-  title: string
-  description?: ReactNode
-  actions?: ReactNode
+  title: string;
+  description?: ReactNode;
+  actions?: ReactNode;
 }) {
   return (
     <div style={MANAGER_LAYOUT.headStyle}>
@@ -92,7 +92,7 @@ export function ManagerHead({
       </div>
       {actions}
     </div>
-  )
+  );
 }
 
 /**
@@ -110,21 +110,29 @@ export function ManagerTabs<T extends string>({
   onChange,
   fill = false,
 }: {
-  value: T
-  options: { value: T; label: ReactNode; count?: number }[]
-  onChange: (v: T) => void
+  value: T;
+  options: { value: T; label: ReactNode; count?: number }[];
+  onChange: (v: T) => void;
   /** true 면 가로 전체를 균등 분할 (앱 PToggleGroup expanded 톤). 모바일에서 사용. */
-  fill?: boolean
+  fill?: boolean;
 }) {
   return (
     <Tabs
       value={value}
-      onValueChange={v => v && onChange(v as T)}
-      className={fill ? 'w-full' : 'w-fit self-start'}
+      onValueChange={(v) => v && onChange(v as T)}
+      className={fill ? "w-full" : "w-fit self-start"}
     >
-      <TabsList variant="pills" size="sm" className={fill ? 'flex w-full' : undefined}>
-        {options.map(o => (
-          <TabsTrigger key={o.value} value={o.value} className={fill ? 'flex-1' : undefined}>
+      <TabsList
+        variant="pills"
+        size="sm"
+        className={fill ? "flex w-full" : undefined}
+      >
+        {options.map((o) => (
+          <TabsTrigger
+            key={o.value}
+            value={o.value}
+            className={fill ? "flex-1" : undefined}
+          >
             {o.label}
             {o.count != null && (
               <span className="ml-1.5 opacity-70">{o.count}</span>
@@ -133,5 +141,5 @@ export function ManagerTabs<T extends string>({
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }

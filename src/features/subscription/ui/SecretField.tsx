@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Field, FieldLabel } from '@/shared/ui/field'
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Field, FieldLabel } from "@/shared/ui/field";
 
 /**
  * 자격증명 한 칸 — 기본은 가려져 있고 눈 아이콘으로 잠깐 벗겨 본다.
@@ -23,22 +23,22 @@ export function SecretField({
   toggleAriaLabel,
 }: {
   /** 서버가 준 라벨. 라벨이자 placeholder 다. */
-  label: string
-  value: string
-  onChange: (v: string) => void
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
   /** 칸이 둘이라 토글 이름도 달라야 스크린리더가 구분한다. */
-  toggleAriaLabel: string
+  toggleAriaLabel: string;
 }) {
-  const [revealed, setRevealed] = useState(false)
+  const [revealed, setRevealed] = useState(false);
 
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         <Input
-          type={revealed ? 'text' : 'password'}
+          type={revealed ? "text" : "password"}
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           placeholder={label}
           // 브라우저·확장에 자격증명이 남지 않게 — 붙여넣기는 그대로 둔다.
           autoComplete="off"
@@ -50,14 +50,21 @@ export function SecretField({
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => setRevealed(v => !v)}
+          onClick={() => setRevealed((v) => !v)}
           aria-label={toggleAriaLabel}
           aria-pressed={revealed}
-          style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32 }}
+          style={{
+            position: "absolute",
+            right: 4,
+            top: "50%",
+            transform: "translateY(-50%)",
+            height: 32,
+            width: 32,
+          }}
         >
           {revealed ? <EyeOff size={16} /> : <Eye size={16} />}
         </Button>
       </div>
     </Field>
-  )
+  );
 }

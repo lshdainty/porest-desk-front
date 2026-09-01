@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Alert — porest-design specs/components/alert.md SoT 기반.
@@ -22,21 +22,27 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "border border-border-default bg-surface-default text-text-primary",
+        default:
+          "border border-border-default bg-surface-default text-text-primary",
         info: "border-l-4 border-l-info bg-[color-mix(in_srgb,var(--color-info)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-info",
-        success: "border-l-4 border-l-success bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-success",
-        warning: "border-l-4 border-l-warning bg-[color-mix(in_srgb,var(--color-warning)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-warning",
-        error: "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+        success:
+          "border-l-4 border-l-success bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-success",
+        warning:
+          "border-l-4 border-l-warning bg-[color-mix(in_srgb,var(--color-warning)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-warning",
+        error:
+          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
         // 호환 별칭 — desk-front 사용처 보존
-        danger: "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
-        destructive: "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+        danger:
+          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+        destructive:
+          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
       },
     },
     defaultVariants: {
       variant: "default",
     },
   },
-)
+);
 
 const Alert = React.forwardRef<
   HTMLDivElement,
@@ -45,15 +51,18 @@ const Alert = React.forwardRef<
   <div
     ref={ref}
     role={
-      variant === "error" || variant === "warning" || variant === "danger" || variant === "destructive"
+      variant === "error" ||
+      variant === "warning" ||
+      variant === "danger" ||
+      variant === "destructive"
         ? "alert"
         : "status"
     }
     className={cn(alertVariants({ variant }), className)}
     {...props}
   />
-))
-Alert.displayName = "Alert"
+));
+Alert.displayName = "Alert";
 
 /* Body wrapper — title + description 묶음. flex-1 + gap-xs. */
 const AlertBody = React.forwardRef<
@@ -68,8 +77,8 @@ const AlertBody = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertBody.displayName = "AlertBody"
+));
+AlertBody.displayName = "AlertBody";
 
 const AlertTitle = React.forwardRef<
   HTMLHeadingElement,
@@ -83,8 +92,8 @@ const AlertTitle = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertTitle.displayName = "AlertTitle"
+));
+AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -98,7 +107,7 @@ const AlertDescription = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertDescription.displayName = "AlertDescription"
+));
+AlertDescription.displayName = "AlertDescription";
 
-export { Alert, AlertBody, AlertTitle, AlertDescription }
+export { Alert, AlertBody, AlertTitle, AlertDescription };

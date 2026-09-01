@@ -1,8 +1,8 @@
-import * as React from 'react'
-import * as RadioGroupPrimitive from '@radix-ui/react-radio-group'
-import { Check } from 'lucide-react'
+import * as React from "react";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
+import { Check } from "lucide-react";
 
-import { cn } from '@/shared/lib/index'
+import { cn } from "@/shared/lib/index";
 
 /*
  * ColorSwatch — porest-design spec color-swatch.md SoT 정합.
@@ -11,19 +11,19 @@ import { cn } from '@/shared/lib/index'
  */
 
 type ColorSwatchOption = {
-  value: string
-  bg: string
-  fg: string
-  label?: string
-}
+  value: string;
+  bg: string;
+  fg: string;
+  label?: string;
+};
 
 type ColorSwatchGroupProps = Omit<
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
-  'children'
+  "children"
 > & {
-  options: ColorSwatchOption[]
-  columns?: number
-}
+  options: ColorSwatchOption[];
+  columns?: number;
+};
 
 const ColorSwatchGroup = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
@@ -31,16 +31,19 @@ const ColorSwatchGroup = React.forwardRef<
 >(({ options, columns = 5, className, style, ...props }, ref) => (
   <RadioGroupPrimitive.Root
     ref={ref}
-    className={cn('grid gap-[var(--spacing-sm)]', className)}
-    style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, ...style }}
+    className={cn("grid gap-[var(--spacing-sm)]", className)}
+    style={{
+      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+      ...style,
+    }}
     {...props}
   >
-    {options.map(opt => (
+    {options.map((opt) => (
       <ColorSwatchItem key={opt.value} option={opt} />
     ))}
   </RadioGroupPrimitive.Root>
-))
-ColorSwatchGroup.displayName = 'ColorSwatchGroup'
+));
+ColorSwatchGroup.displayName = "ColorSwatchGroup";
 
 const ColorSwatchItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
@@ -51,12 +54,12 @@ const ColorSwatchItem = React.forwardRef<
     value={option.value}
     aria-label={option.label ?? option.value}
     className={cn(
-      'relative aspect-square w-full rounded-[var(--radius-tile)]',
-      'border-2 border-transparent transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
-      'hover:scale-[1.05]',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-      'data-[state=checked]:border-[currentColor]',
-      'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
+      "relative aspect-square w-full rounded-[var(--radius-tile)]",
+      "border-2 border-transparent transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+      "hover:scale-[1.05]",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "data-[state=checked]:border-[currentColor]",
+      "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
     )}
     style={{ background: option.bg, color: option.fg }}
     {...props}
@@ -65,8 +68,8 @@ const ColorSwatchItem = React.forwardRef<
       <Check size={14} strokeWidth={2.6} />
     </RadioGroupPrimitive.Indicator>
   </RadioGroupPrimitive.Item>
-))
-ColorSwatchItem.displayName = 'ColorSwatchItem'
+));
+ColorSwatchItem.displayName = "ColorSwatchItem";
 
-export { ColorSwatchGroup, ColorSwatchItem }
-export type { ColorSwatchOption }
+export { ColorSwatchGroup, ColorSwatchItem };
+export type { ColorSwatchOption };

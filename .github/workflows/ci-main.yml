@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   # 손으로 돌릴 수 있게 열어 둔다. 머지했는데 실행이 안 잡히는 일이 실제로 있었고
   # (2026-08-07 Actions 장애 — push 이벤트가 통째로 유실됐다) 그때 다시 굴릴 방법이
   # 없었다. 배포만 다시 태우고 싶을 때도 쓴다.
@@ -23,8 +23,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install Dependencies
         run: npm ci

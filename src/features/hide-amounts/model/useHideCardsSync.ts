@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
-import { useCurrentUser } from '@/features/user'
-import { syncHideCardsFromServer } from '@/shared/lib/porest/hide-amounts-core'
+import { useEffect, useRef } from "react";
+import { useCurrentUser } from "@/features/user";
+import { syncHideCardsFromServer } from "@/shared/lib/porest/hide-amounts-core";
 
 /**
  * 로그인한 뒤 금액 가리기 설정을 서버와 한 번 맞춘다.
@@ -11,13 +11,13 @@ import { syncHideCardsFromServer } from '@/shared/lib/porest/hide-amounts-core'
  * 그대로 보이면 안 된다.
  */
 export function useHideCardsSync(): void {
-  const { data: user } = useCurrentUser()
-  const syncedFor = useRef<string | null>(null)
+  const { data: user } = useCurrentUser();
+  const syncedFor = useRef<string | null>(null);
 
   useEffect(() => {
-    const userId = user?.userId
-    if (!userId || syncedFor.current === userId) return
-    syncedFor.current = userId
-    void syncHideCardsFromServer(userId)
-  }, [user?.userId])
+    const userId = user?.userId;
+    if (!userId || syncedFor.current === userId) return;
+    syncedFor.current = userId;
+    void syncHideCardsFromServer(userId);
+  }, [user?.userId]);
 }

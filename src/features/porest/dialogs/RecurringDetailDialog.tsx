@@ -1,17 +1,22 @@
-import { Calendar } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
-import { DetailHero, DetailField, DetailFieldGroup, DetailSection } from '@/shared/ui/porest/detail'
-import { MaskAmount } from '@/shared/lib/porest/hide-amounts'
-import { KRW } from '@/shared/lib/porest/format'
-import { renderIcon, tileRadius } from '@/shared/lib'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import type { ExpenseCategory } from '@/entities/expense'
-import type { RecurringTransaction } from '@/entities/recurring-transaction'
-import { previewNextDates, formatKoreanMonthDay } from './recurring-date'
-import { displayTitle, recurringSummary } from './RecurringManager'
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import {
+  DetailHero,
+  DetailField,
+  DetailFieldGroup,
+  DetailSection,
+} from "@/shared/ui/porest/detail";
+import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { KRW } from "@/shared/lib/porest/format";
+import { renderIcon, tileRadius } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import type { ExpenseCategory } from "@/entities/expense";
+import type { RecurringTransaction } from "@/entities/recurring-transaction";
+import { previewNextDates, formatKoreanMonthDay } from "./recurring-date";
+import { displayTitle, recurringSummary } from "./RecurringManager";
 
 /**
  * 반복 거래 상세 — 행 탭 → 읽기 전용 상세 → footer 에서 삭제·수정·일시정지.
@@ -29,21 +34,21 @@ export function RecurringDetailDialog({
   onToggle,
   onDelete,
 }: {
-  item: RecurringTransaction
-  categories: ExpenseCategory[]
-  mobile: boolean
-  onClose: () => void
-  onEdit: () => void
-  onToggle: () => void
-  onDelete: () => void
+  item: RecurringTransaction;
+  categories: ExpenseCategory[];
+  mobile: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
 }) {
-  const { t } = useTranslation('recurring')
-  const { t: tCommon } = useTranslation('common')
+  const { t } = useTranslation("recurring");
+  const { t: tCommon } = useTranslation("common");
 
-  const isExpense = item.expenseType === 'EXPENSE'
-  const isActive = item.isActive === 'Y'
-  const cat = categories.find(c => c.rowId === item.categoryRowId)
-  const palette = getPaletteByColor(cat?.color)
+  const isExpense = item.expenseType === "EXPENSE";
+  const isActive = item.isActive === "Y";
+  const cat = categories.find((c) => c.rowId === item.categoryRowId);
+  const palette = getPaletteByColor(cat?.color);
 
   // 기준은 서버가 준 nextExecutionDate 다. 오늘부터 세면 서버 스케줄과 어긋난다.
   // 백엔드 dayOfWeek 는 ISO 1=월~7=일, previewNextDates 는 0=일~6=토.
@@ -55,20 +60,24 @@ export function RecurringDetailDialog({
         item.dayOfMonth ?? Number(item.nextExecutionDate.slice(8, 10)),
         3,
       )
-    : []
+    : [];
 
   return (
-    <ModalShell title={t('detailTitle')} onClose={onClose} mobile={mobile} size="md"
+    <ModalShell
+      title={t("detailTitle")}
+      onClose={onClose}
+      mobile={mobile}
+      size="md"
       footer={
         // [삭제] … [수정][일시정지/시작] — 상세 footer 는 보통 액션 2개까지지만
         // 여기서는 `⋮` 가 갖고 있던 셋을 그대로 옮긴다(사용자 결정).
         <ModalViewFooter
           onDelete={onDelete}
-          deleteLabel={tCommon('delete')}
+          deleteLabel={tCommon("delete")}
           onEdit={onEdit}
-          editLabel={tCommon('edit')}
+          editLabel={tCommon("edit")}
           onConfirm={onToggle}
-          confirmLabel={isActive ? t('pause') : t('start')}
+          confirmLabel={isActive ? t("pause") : t("start")}
         />
       }
     >
@@ -76,30 +85,53 @@ export function RecurringDetailDialog({
         icon={
           <span
             style={{
-              width: 32, height: 32, borderRadius: tileRadius(32),
-              background: palette.bg, color: palette.color,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              width: 32,
+              height: 32,
+              borderRadius: tileRadius(32),
+              background: palette.bg,
+              color: palette.color,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
             }}
           >
-            {renderIcon(cat?.icon ?? 'tag', cat?.categoryName?.charAt(0) ?? '·', 16)}
+            {renderIcon(
+              cat?.icon ?? "tag",
+              cat?.categoryName?.charAt(0) ?? "·",
+              16,
+            )}
           </span>
         }
         title={displayTitle(item, t)}
         meta={recurringSummary(item, t)}
       >
-        <span className="num" style={{ color: isExpense ? 'var(--fg-expense)' : 'var(--fg-income)' }}>
+        <span
+          className="num"
+          style={{
+            color: isExpense ? "var(--fg-expense)" : "var(--fg-income)",
+          }}
+        >
           <MaskAmount card="etc.recurring">
-            {isExpense ? '−' : '+'}{KRW(Math.abs(item.amount))}
+            {isExpense ? "−" : "+"}
+            {KRW(Math.abs(item.amount))}
           </MaskAmount>
         </span>
       </DetailHero>
 
       <DetailFieldGroup>
-        <DetailField label={t('categoryLabel')}>{item.categoryName ?? '-'}</DetailField>
-        <DetailField label={t('assetLabel')}>{item.assetName ?? t('noAccount')}</DetailField>
+        <DetailField label={t("categoryLabel")}>
+          {item.categoryName ?? "-"}
+        </DetailField>
+        <DetailField label={t("assetLabel")}>
+          {item.assetName ?? t("noAccount")}
+        </DetailField>
         {item.maxOccurrences != null && (
-          <DetailField label={t('endCountTitle')}>
-            {t('occurrencesBadge', { done: item.executedCount, total: item.maxOccurrences })}
+          <DetailField label={t("endCountTitle")}>
+            {t("occurrencesBadge", {
+              done: item.executedCount,
+              total: item.maxOccurrences,
+            })}
           </DetailField>
         )}
       </DetailFieldGroup>
@@ -109,24 +141,26 @@ export function RecurringDetailDialog({
       {nextDates.length > 0 && (
         <DetailSection
           title={
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+            >
               <Calendar size={13} />
-              {t('nextDatesTitle')}
+              {t("nextDatesTitle")}
             </span>
           }
         >
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {nextDates.map((d, i) => (
               <span
                 key={i}
                 className="num"
                 style={{
-                  padding: '6px 12px',
-                  background: 'var(--bg-sunken)',
-                  borderRadius: 'var(--radius-pill)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: '600',
-                  color: 'var(--fg-primary)',
+                  padding: "6px 12px",
+                  background: "var(--bg-sunken)",
+                  borderRadius: "var(--radius-pill)",
+                  fontSize: "var(--text-caption)",
+                  fontWeight: "600",
+                  color: "var(--fg-primary)",
                 }}
               >
                 {formatKoreanMonthDay(d)}
@@ -136,5 +170,5 @@ export function RecurringDetailDialog({
         </DetailSection>
       )}
     </ModalShell>
-  )
+  );
 }

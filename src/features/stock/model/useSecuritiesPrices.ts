@@ -1,10 +1,10 @@
 /**
  * 증권사 무관 시세 훅. 자산 화면이 쓴다 — 증권사를 몰라도 된다.
  */
-import { useQuery } from '@tanstack/react-query'
-import { securitiesApi } from '../api/securitiesApi'
+import { useQuery } from "@tanstack/react-query";
+import { securitiesApi } from "../api/securitiesApi";
 
-const COMMON = { retry: false, refetchOnWindowFocus: false } as const
+const COMMON = { retry: false, refetchOnWindowFocus: false } as const;
 
 /**
  * 보유 종목 현재가. 기본 10초 폴링 — 자산 화면이 라이브로 갱신된다.
@@ -14,14 +14,17 @@ const COMMON = { retry: false, refetchOnWindowFocus: false } as const
  * 캐시에 맞고 절반은 그대로 상류로 나가면서 요청 수만 두 배가 된다. 종목이 많은 화면
  * (관심목록)은 TTL 보다 긴 주기를 줘서 한 주기에 한 번만 나가게 한다.
  */
-export const useSecuritiesPrices = (symbols: string[], refetchInterval = 10_000) =>
+export const useSecuritiesPrices = (
+  symbols: string[],
+  refetchInterval = 10_000,
+) =>
   useQuery({
-    queryKey: ['securities', 'prices', [...symbols].sort()],
+    queryKey: ["securities", "prices", [...symbols].sort()],
     queryFn: () => securitiesApi.getPrices(symbols),
     enabled: symbols.length > 0,
     ...COMMON,
     refetchInterval,
-  })
+  });
 
 /**
  * 환율 쿼리 한 벌. **두 곳이 같은 queryKey 를 쓴다** — 아래 `useSecuritiesExchangeRate`(USD 고정)와
@@ -38,20 +41,20 @@ export const useSecuritiesPrices = (symbols: string[], refetchInterval = 10_000)
  * **`gcTime` 을 늘린 이유** — 기본 5분이라 화면을 옮겼다 돌아오면 캐시가 이미 버려져
  * `staleTime` 이 아무 일도 못 했다. 값을 30분 들고 있으면 화면 사이를 오가도 다시 안 묻는다.
  */
-const FX_STALE_TIME = 10 * 60_000
-const FX_GC_TIME = 30 * 60_000
+const FX_STALE_TIME = 10 * 60_000;
+const FX_GC_TIME = 30 * 60_000;
 
 export const securitiesExchangeRateQuery = (currency: string) => ({
-  queryKey: ['securities', 'exchange-rate', currency, 'KRW'],
-  queryFn: () => securitiesApi.getExchangeRate(currency, 'KRW'),
+  queryKey: ["securities", "exchange-rate", currency, "KRW"],
+  queryFn: () => securitiesApi.getExchangeRate(currency, "KRW"),
   ...COMMON,
   staleTime: FX_STALE_TIME,
   gcTime: FX_GC_TIME,
-})
+});
 
 /** 원화 환산 환율. 못 구하면 rate 가 null 로 온다. */
 export const useSecuritiesExchangeRate = (enabled = true) =>
   useQuery({
-    ...securitiesExchangeRateQuery('USD'),
+    ...securitiesExchangeRateQuery("USD"),
     enabled,
-  })
+  });

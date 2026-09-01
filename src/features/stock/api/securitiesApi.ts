@@ -8,20 +8,20 @@
  * 증권사별 조회(`/v1/toss/**` · `/v1/namu/**`)는 증권 화면이 그대로 쓴다 — 증권사마다
  * 보여주는 게 달라 합칠 수 없다.
  */
-import { apiClient } from '@/shared/api'
-import type { ApiResponse } from '@/shared/types'
+import { apiClient } from "@/shared/api";
+import type { ApiResponse } from "@/shared/types";
 
 /** 증권사 무관 현재가. 금액은 JSON 숫자로 온다(서버가 BigDecimal 로 계산해 내린다). */
 export interface BrokerQuote {
-  symbol: string
-  price: number
-  currency: string
+  symbol: string;
+  price: number;
+  currency: string;
   /**
    * 전일 종가. **못 주는 증권사가 있어 null 이 될 수 있다** — 나무는 시세 응답에 전일대비가
    * 딸려 와 공짜로 채우지만, 토스는 캔들을 종목마다 따로 받아야 해서 비어 온다.
    * 등락 표시에만 쓰이고 평가액에는 영향이 없다.
    */
-  previousClose: number | null
+  previousClose: number | null;
 }
 
 /**
@@ -33,47 +33,50 @@ export interface BrokerQuote {
  */
 export interface BrokerCandle {
   /** 오프셋이 붙은 ISO-8601(`2026-08-26T09:00:00+09:00`). 거래소 현지시각 기준이다. */
-  timestamp: string
-  openPrice: string
-  highPrice: string
-  lowPrice: string
-  closePrice: string
-  volume: string
-  currency: string
+  timestamp: string;
+  openPrice: string;
+  highPrice: string;
+  lowPrice: string;
+  closePrice: string;
+  volume: string;
+  currency: string;
 }
 
 /** 백엔드 원형 — porest-core `CursorResponse<SecuritiesCandle>`. */
 export interface BrokerCandleCursorPage {
-  content: BrokerCandle[]
-  meta: { size: number; hasNext: boolean; nextCursor: string | null }
+  content: BrokerCandle[];
+  meta: { size: number; hasNext: boolean; nextCursor: string | null };
 }
 
 /** 클라 내부 정규화 (content→candles, meta.nextCursor→nextBefore). */
 export interface BrokerCandlePage {
-  candles: BrokerCandle[]
-  nextBefore: string | null
+  candles: BrokerCandle[];
+  nextBefore: string | null;
 }
 
 /**
  * 한 페이지의 봉 수 상한. 서버도 같은 값으로 자르므로 넘겨 봐야 잘린다 —
  * 더 필요하면 `nextBefore` 로 이어 받는다(차트가 그렇게 동작한다).
  */
-const CANDLE_PAGE_MAX = 200
+const CANDLE_PAGE_MAX = 200;
 
 export interface BrokerExchangeRate {
-  base: string
-  quote: string
+  base: string;
+  quote: string;
   /** 못 구하면 null — 나무는 해당 통화 보유 종목이 있어야 환율이 나온다. */
-  rate: number | null
+  rate: number | null;
 }
 
 export const securitiesApi = {
   getPrices: async (symbols: string[]): Promise<BrokerQuote[]> => {
-    if (symbols.length === 0) return []
-    const resp: ApiResponse<BrokerQuote[]> = await apiClient.get('/v1/securities/prices', {
-      params: { symbols: symbols.join(',') },
-    })
-    return resp.data ?? []
+    if (symbols.length === 0) return [];
+    const resp: ApiResponse<BrokerQuote[]> = await apiClient.get(
+      "/v1/securities/prices",
+      {
+        params: { symbols: symbols.join(",") },
+      },
+    );
+    return resp.data ?? [];
   },
 
   /**
@@ -88,25 +91,37 @@ export const securitiesApi = {
    */
   getCandles: async (
     symbol: string,
-    interval: '1m' | '1d',
+    interval: "1m" | "1d",
     opts?: { count?: number; before?: string; adjusted?: boolean },
   ): Promise<BrokerCandlePage> => {
-    const resp: ApiResponse<BrokerCandleCursorPage> = await apiClient.get('/v1/securities/candles', {
-      params: {
-        symbol,
-        interval,
-        size: opts?.count ? Math.min(opts.count, CANDLE_PAGE_MAX) : undefined,
-        cursor: opts?.before,
-        adjusted: opts?.adjusted,
+    const resp: ApiResponse<BrokerCandleCursorPage> = await apiClient.get(
+      "/v1/securities/candles",
+      {
+        params: {
+          symbol,
+          interval,
+          size: opts?.count ? Math.min(opts.count, CANDLE_PAGE_MAX) : undefined,
+          cursor: opts?.before,
+          adjusted: opts?.adjusted,
+        },
       },
-    })
-    return { candles: resp.data?.content ?? [], nextBefore: resp.data?.meta?.nextCursor ?? null }
+    );
+    return {
+      candles: resp.data?.content ?? [],
+      nextBefore: resp.data?.meta?.nextCursor ?? null,
+    };
   },
 
-  getExchangeRate: async (base = 'USD', quote = 'KRW'): Promise<BrokerExchangeRate> => {
-    const resp: ApiResponse<BrokerExchangeRate> = await apiClient.get('/v1/securities/exchange-rate', {
-      params: { base, quote },
-    })
-    return resp.data
+  getExchangeRate: async (
+    base = "USD",
+    quote = "KRW",
+  ): Promise<BrokerExchangeRate> => {
+    const resp: ApiResponse<BrokerExchangeRate> = await apiClient.get(
+      "/v1/securities/exchange-rate",
+      {
+        params: { base, quote },
+      },
+    );
+    return resp.data;
   },
-}
+};

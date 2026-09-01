@@ -1,6 +1,6 @@
-import { Check } from "lucide-react"
+import { Check } from "lucide-react";
 
-import type { ExpenseType } from "@/entities/expense"
+import type { ExpenseType } from "@/entities/expense";
 
 /**
  * 거래 종류 토글 chip — `FilterDialog`/`AddTxSheet`/`PresetEditDialog` 공용.
@@ -13,22 +13,22 @@ import type { ExpenseType } from "@/entities/expense"
  */
 
 export type TxTypeOption = {
-  value: ExpenseType
-  label: string
-}
+  value: ExpenseType;
+  label: string;
+};
 
 const SEMANTIC_FG: Record<ExpenseType, string> = {
   EXPENSE: "var(--fg-expense)",
   INCOME: "var(--fg-income)",
-}
+};
 
 export interface TxTypeToggleProps {
-  options: TxTypeOption[]
+  options: TxTypeOption[];
   /** multi 일 때는 배열, single 일 때는 단일 값. */
-  value: ExpenseType[] | ExpenseType
-  onChange: (next: ExpenseType[] | ExpenseType) => void
-  mode?: "multi" | "single"
-  disabled?: boolean
+  value: ExpenseType[] | ExpenseType;
+  onChange: (next: ExpenseType[] | ExpenseType) => void;
+  mode?: "multi" | "single";
+  disabled?: boolean;
 }
 
 export function TxTypeToggle({
@@ -39,23 +39,23 @@ export function TxTypeToggle({
   disabled = false,
 }: TxTypeToggleProps) {
   const isActive = (v: ExpenseType): boolean =>
-    mode === "multi" ? (value as ExpenseType[]).includes(v) : value === v
+    mode === "multi" ? (value as ExpenseType[]).includes(v) : value === v;
 
   const toggle = (v: ExpenseType): void => {
-    if (disabled) return
+    if (disabled) return;
     if (mode === "multi") {
-      const arr = value as ExpenseType[]
-      onChange(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v])
+      const arr = value as ExpenseType[];
+      onChange(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
     } else {
-      onChange(v)
+      onChange(v);
     }
-  }
+  };
 
   return (
     <div style={{ display: "flex", gap: 8 }}>
-      {options.map(o => {
-        const active = isActive(o.value)
-        const fg = SEMANTIC_FG[o.value]
+      {options.map((o) => {
+        const active = isActive(o.value);
+        const fg = SEMANTIC_FG[o.value];
         return (
           <button
             key={o.value}
@@ -72,8 +72,8 @@ export function TxTypeToggle({
                 ? "1px solid var(--border-brand)"
                 : "1px solid var(--border-subtle)",
               borderRadius: "var(--radius-sm)",
-              fontWeight: '700',
-              fontSize: 'var(--text-label-sm)',
+              fontWeight: "700",
+              fontSize: "var(--text-label-sm)",
               cursor: disabled ? "not-allowed" : "pointer",
               opacity: disabled ? 0.6 : 1,
               color: active ? fg : "var(--fg-tertiary)",
@@ -87,8 +87,8 @@ export function TxTypeToggle({
             {active && mode === "multi" && <Check size={12} />}
             {o.label}
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

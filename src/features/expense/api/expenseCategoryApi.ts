@@ -1,26 +1,43 @@
-import { apiClient } from '@/shared/api'
-import type { ApiResponse } from '@/shared/types'
-import type { ExpenseCategory, ExpenseCategoryFormValues } from '@/entities/expense'
+import { apiClient } from "@/shared/api";
+import type { ApiResponse } from "@/shared/types";
+import type {
+  ExpenseCategory,
+  ExpenseCategoryFormValues,
+} from "@/entities/expense";
 
 export const expenseCategoryApi = {
-  createCategory: async (data: ExpenseCategoryFormValues): Promise<ExpenseCategory> => {
-    const resp: ApiResponse<ExpenseCategory> = await apiClient.post('/v1/expense/category', data)
-    return resp.data
+  createCategory: async (
+    data: ExpenseCategoryFormValues,
+  ): Promise<ExpenseCategory> => {
+    const resp: ApiResponse<ExpenseCategory> = await apiClient.post(
+      "/v1/expense/category",
+      data,
+    );
+    return resp.data;
   },
 
   getCategories: async (): Promise<ExpenseCategory[]> => {
-    const resp: ApiResponse<{ categories: ExpenseCategory[] }> = await apiClient.get('/v1/expense/categories')
-    return resp.data.categories
+    const resp: ApiResponse<{ categories: ExpenseCategory[] }> =
+      await apiClient.get("/v1/expense/categories");
+    return resp.data.categories;
   },
 
-  updateCategory: async (id: number, data: ExpenseCategoryFormValues): Promise<ExpenseCategory> => {
-    const resp: ApiResponse<ExpenseCategory> = await apiClient.put(`/v1/expense/category/${id}`, data)
-    return resp.data
+  updateCategory: async (
+    id: number,
+    data: ExpenseCategoryFormValues,
+  ): Promise<ExpenseCategory> => {
+    const resp: ApiResponse<ExpenseCategory> = await apiClient.put(
+      `/v1/expense/category/${id}`,
+      data,
+    );
+    return resp.data;
   },
 
   deleteCategory: async (id: number): Promise<void> => {
-    const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/category/${id}`)
-    return resp.data
+    const resp: ApiResponse<void> = await apiClient.delete(
+      `/v1/expense/category/${id}`,
+    );
+    return resp.data;
   },
 
   /**
@@ -31,9 +48,14 @@ export const expenseCategoryApi = {
     id: number,
     targetCategoryRowId: number,
   ): Promise<{ expenses: number; recurring: number; splits: number }> => {
-    const resp: ApiResponse<{ expenses: number; recurring: number; splits: number }> =
-      await apiClient.post(`/v1/expense/category/${id}/move-transactions`, { targetCategoryRowId })
-    return resp.data
+    const resp: ApiResponse<{
+      expenses: number;
+      recurring: number;
+      splits: number;
+    }> = await apiClient.post(`/v1/expense/category/${id}/move-transactions`, {
+      targetCategoryRowId,
+    });
+    return resp.data;
   },
 
   /**
@@ -44,15 +66,28 @@ export const expenseCategoryApi = {
     id: number,
     body: { childName: string; icon: string; color: string },
   ): Promise<{ expenses: number; recurring: number; splits: number }> => {
-    const resp: ApiResponse<{ expenses: number; recurring: number; splits: number }> =
-      await apiClient.post(`/v1/expense/category/${id}/split-into-child`, body)
-    return resp.data
+    const resp: ApiResponse<{
+      expenses: number;
+      recurring: number;
+      splits: number;
+    }> = await apiClient.post(
+      `/v1/expense/category/${id}/split-into-child`,
+      body,
+    );
+    return resp.data;
   },
 
   reorderCategories: async (
-    items: { categoryRowId: number; sortOrder: number; parentRowId: number | null }[],
+    items: {
+      categoryRowId: number;
+      sortOrder: number;
+      parentRowId: number | null;
+    }[],
   ): Promise<void> => {
-    const resp: ApiResponse<void> = await apiClient.patch('/v1/expense/categories/reorder', { items })
-    return resp.data
+    const resp: ApiResponse<void> = await apiClient.patch(
+      "/v1/expense/categories/reorder",
+      { items },
+    );
+    return resp.data;
   },
-}
+};

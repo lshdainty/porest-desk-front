@@ -27,31 +27,31 @@
  *
  * 모바일은 그대로 스택 + 상세 시트다 — 좁은 화면에서 2단을 접을 자리가 없다.
  */
-import type { ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Card } from '@/shared/ui/card'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
+import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { Card } from "@/shared/ui/card";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 
 /** 좌측 단 고정 폭. 종목명 + 평가금액 + 등락률이 줄바꿈 없이 들어가는 최소치다. */
-const LIST_COL_WIDTH = 352
+const LIST_COL_WIDTH = 352;
 
 export interface StocksShellProps {
-  mobile: boolean
+  mobile: boolean;
   /** 셸이 끼워 넣는 증권사 탭(모바일 전용). 연결이 하나뿐이면 없다. */
-  header?: ReactNode
+  header?: ReactNode;
   /** 1층 — 요약 타일 줄. */
-  strip: ReactNode
+  strip: ReactNode;
   /** 2층 — 장 상태·출처 한 줄. */
-  statusLine?: ReactNode
+  statusLine?: ReactNode;
   /** 3층 좌 — 검색·세그먼트·목록. {@link ListPanel} 로 감싸 넘긴다. */
-  list: ReactNode
+  list: ReactNode;
   /** 3층 우 — 종목 상세 또는 포트폴리오 개요. */
-  detail: ReactNode
+  detail: ReactNode;
   /** 모바일에서 상세 시트를 띄울지. 데스크톱은 항상 우측에 그린다. */
-  detailOpen?: boolean
-  onCloseDetail?: () => void
-  dialogs?: ReactNode
+  detailOpen?: boolean;
+  onCloseDetail?: () => void;
+  dialogs?: ReactNode;
 }
 
 export function StocksShell({
@@ -65,44 +65,59 @@ export function StocksShell({
   onCloseDetail,
   dialogs,
 }: StocksShellProps) {
-  const { t } = useTranslation('stocks')
+  const { t } = useTranslation("stocks");
 
   // ---- 모바일: 풀스크린(← 헤더) + 스택 + 상세 시트 ----
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t('nav.title')} />
-        <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <MobileBackHeader title={t("nav.title")} />
+        <div
+          style={{
+            padding: "16px 24px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
           {header}
           {strip}
           {statusLine}
           {list}
           {detailOpen && (
-            <ModalShell title={t('detail.sheetTitle')} onClose={() => onCloseDetail?.()} mobile mobileMinHeight="88dvh">
+            <ModalShell
+              title={t("detail.sheetTitle")}
+              onClose={() => onCloseDetail?.()}
+              mobile
+              mobileMinHeight="88dvh"
+            >
               {detail}
             </ModalShell>
           )}
           {dialogs}
         </div>
       </>
-    )
+    );
   }
 
   // ---- 데스크톱/태블릿: viewport fit 2단 ----
   return (
-    <div className="flex flex-col flex-1 min-h-0" style={{ padding: 24, gap: 12 }}>
+    <div
+      className="flex flex-col flex-1 min-h-0"
+      style={{ padding: 24, gap: 12 }}
+    >
       {header}
       {strip}
       {statusLine}
       <div
         style={{
-          display: 'grid',
+          display: "grid",
           gridTemplateColumns: `${LIST_COL_WIDTH}px minmax(0, 1fr)`,
           // 행을 못 박아 둔다. 지금은 자식들이 `min-height: 0` 을 들고 있어 기본 `auto` 행으로도
           // 안 넘치지만(실측 확인), 자식 하나가 그걸 잃는 순간 `auto` 행이 콘텐츠만큼 늘어나
           // 화면 전체가 통짜로 스크롤하는 예전 상태로 조용히 되돌아간다. 그 회귀는 눈으로만
           // 보이고 테스트에 안 걸려서, 여기서 막아 둔다.
-          gridTemplateRows: 'minmax(0, 1fr)',
+          gridTemplateRows: "minmax(0, 1fr)",
           gap: 16,
           flex: 1,
           minHeight: 0,
@@ -113,7 +128,7 @@ export function StocksShell({
       </div>
       {dialogs}
     </div>
-  )
+  );
 }
 
 /**
@@ -129,42 +144,64 @@ export function ListPanel({
   filter,
   children,
 }: {
-  mobile: boolean
-  search: ReactNode
-  segments: ReactNode
+  mobile: boolean;
+  search: ReactNode;
+  segments: ReactNode;
   /** 시장 필터 칩(나무 전용 — 국내/해외 축이 여기로 내려왔다). */
-  filter?: ReactNode
-  children: ReactNode
+  filter?: ReactNode;
+  children: ReactNode;
 }) {
   // 모바일은 페이지가 통째로 스크롤한다 — 목록에 따로 스크롤을 주면 스크롤이 겹친다.
   if (mobile) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {search}
         {segments}
         {filter}
         {children}
       </div>
-    )
+    );
   }
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 11, minHeight: 0 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 11,
+        minHeight: 0,
+      }}
+    >
       {search}
       {segments}
       {filter}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{children}</div>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {children}
+      </div>
     </div>
-  )
+  );
 }
 
 /**
  * 우측 상세 단. 데스크톱은 카드 안에서 스크롤하고, 모바일은 시트 본문이라 껍데기가 없다.
  */
-export function DetailPane({ mobile, children }: { mobile: boolean; children: ReactNode }) {
-  if (mobile) return <>{children}</>
+export function DetailPane({
+  mobile,
+  children,
+}: {
+  mobile: boolean;
+  children: ReactNode;
+}) {
+  if (mobile) return <>{children}</>;
   return (
-    <Card style={{ padding: 24, minHeight: 0, overflowY: 'auto' }}>
+    <Card style={{ padding: 24, minHeight: 0, overflowY: "auto" }}>
       {children}
     </Card>
-  )
+  );
 }

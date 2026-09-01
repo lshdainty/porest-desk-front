@@ -1,116 +1,122 @@
-import { ExternalLink } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { Badge } from '@/shared/ui/badge'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Separator } from '@/shared/ui/separator'
-import { decodeHtml } from '@/shared/lib'
-import { money } from '@/shared/lib/porest/format'
-import type { CardCatalogDetail } from '@/entities/card'
+import { ExternalLink } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Separator } from "@/shared/ui/separator";
+import { decodeHtml } from "@/shared/lib";
+import { money } from "@/shared/lib/porest/format";
+import type { CardCatalogDetail } from "@/entities/card";
 
 interface Props {
-  detail: CardCatalogDetail
+  detail: CardCatalogDetail;
   /** 모바일 카드 다이어트 — 셸 카드 벗기고 플랫 섹션 (아트워크·배지·연회비 dl 은 유지) */
-  mobile?: boolean
+  mobile?: boolean;
 }
 
 export function CardInfoHeader({ detail, mobile = false }: Props) {
-  const { t } = useTranslation('card')
-  const s = detail.summary
-  const cardName = decodeHtml(s.cardName)
-  const companyName = decodeHtml(s.company?.name ?? '')
+  const { t } = useTranslation("card");
+  const s = detail.summary;
+  const cardName = decodeHtml(s.cardName);
+  const companyName = decodeHtml(s.company?.name ?? "");
 
   const body = (
     <div className="flex flex-col gap-5 sm:flex-row">
-        {s.imgUrl && (
-          <div className="relative shrink-0 self-center sm:self-start">
-            <img
-              src={s.imgUrl}
-              alt={cardName}
-              className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-black/5"
-            />
-          </div>
-        )}
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              {s.company?.logoUrl && (
-                <img
-                  src={s.company.logoUrl}
-                  alt=""
-                  className="h-5 w-5 rounded object-contain"
-                />
-              )}
-              <span className="text-sm font-medium text-muted-foreground">
-                {companyName}
-              </span>
-              {s.isDiscontinued === 'Y' && (
-                <Badge variant="destructive" className="ml-auto">
-                  {t('detail.discontinued')}
-                </Badge>
-              )}
-            </div>
-            <h2 className="truncate text-xl font-semibold leading-tight sm:text-2xl">
-              {cardName}
-            </h2>
-            <div className="flex flex-wrap gap-1.5">
-              <Badge variant="secondary">
-                {s.cardType === 'CREDIT' ? t('detail.credit') : t('detail.check')}
+      {s.imgUrl && (
+        <div className="relative shrink-0 self-center sm:self-start">
+          <img
+            src={s.imgUrl}
+            alt={cardName}
+            className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-black/5"
+          />
+        </div>
+      )}
+      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            {s.company?.logoUrl && (
+              <img
+                src={s.company.logoUrl}
+                alt=""
+                className="h-5 w-5 rounded object-contain"
+              />
+            )}
+            <span className="text-sm font-medium text-muted-foreground">
+              {companyName}
+            </span>
+            {s.isDiscontinued === "Y" && (
+              <Badge variant="destructive" className="ml-auto">
+                {t("detail.discontinued")}
               </Badge>
-              <Badge variant="outline">
-                {s.benefitType === 'DISCOUNT'
-                  ? t('detail.benefitTypeDiscount')
-                  : s.benefitType === 'MILEAGE'
-                    ? t('detail.benefitTypeMileage')
-                    : t('detail.benefitTypePoint')}
-              </Badge>
-              {detail.brands.map((b) => (
-                <Badge key={b} variant="outline" className="font-normal">
-                  {b}
-                </Badge>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Separator className="mb-3" />
-            <dl className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-0.5">
-                <dt className="text-xs text-muted-foreground">{t('benefit.statAnnualFee')}</dt>
-                <dd className="font-semibold tabular-nums">
-                  {!s.annualFee
-                    ? t('benefit.feeUnknown')
-                    : s.annualFee.amount > 0
-                      ? money(s.annualFee.amount)
-                      : (s.annualFee.label ?? t('benefit.feeFree'))}
-                </dd>
-              </div>
-              <div className="space-y-0.5">
-                <dt className="text-xs text-muted-foreground">{t('benefit.statPerformance')}</dt>
-                <dd className="font-semibold tabular-nums">
-                  {s.performance.isRequired === 'Y'
-                    ? t('detail.performanceAtLeast', { amount: money(s.performance.requiredAmount) })
-                    : t('benefit.performanceNone')}
-                </dd>
-              </div>
-            </dl>
-            {s.detailUrl && (
-              <a
-                href={s.detailUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                {t('detail.sourceLink')}
-                <ExternalLink className="h-3 w-3" />
-              </a>
             )}
           </div>
+          <h2 className="truncate text-xl font-semibold leading-tight sm:text-2xl">
+            {cardName}
+          </h2>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="secondary">
+              {s.cardType === "CREDIT" ? t("detail.credit") : t("detail.check")}
+            </Badge>
+            <Badge variant="outline">
+              {s.benefitType === "DISCOUNT"
+                ? t("detail.benefitTypeDiscount")
+                : s.benefitType === "MILEAGE"
+                  ? t("detail.benefitTypeMileage")
+                  : t("detail.benefitTypePoint")}
+            </Badge>
+            {detail.brands.map((b) => (
+              <Badge key={b} variant="outline" className="font-normal">
+                {b}
+              </Badge>
+            ))}
+          </div>
         </div>
+        <div>
+          <Separator className="mb-3" />
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-0.5">
+              <dt className="text-xs text-muted-foreground">
+                {t("benefit.statAnnualFee")}
+              </dt>
+              <dd className="font-semibold tabular-nums">
+                {!s.annualFee
+                  ? t("benefit.feeUnknown")
+                  : s.annualFee.amount > 0
+                    ? money(s.annualFee.amount)
+                    : (s.annualFee.label ?? t("benefit.feeFree"))}
+              </dd>
+            </div>
+            <div className="space-y-0.5">
+              <dt className="text-xs text-muted-foreground">
+                {t("benefit.statPerformance")}
+              </dt>
+              <dd className="font-semibold tabular-nums">
+                {s.performance.isRequired === "Y"
+                  ? t("detail.performanceAtLeast", {
+                      amount: money(s.performance.requiredAmount),
+                    })
+                  : t("benefit.performanceNone")}
+              </dd>
+            </div>
+          </dl>
+          {s.detailUrl && (
+            <a
+              href={s.detailUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              {t("detail.sourceLink")}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      </div>
     </div>
-  )
-  if (mobile) return <section>{body}</section>
+  );
+  if (mobile) return <section>{body}</section>;
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-5">{body}</CardContent>
     </Card>
-  )
+  );
 }

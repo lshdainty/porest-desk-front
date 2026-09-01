@@ -1,122 +1,197 @@
-import { useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Input } from '@/shared/ui/input'
-import { useHasSecurities } from '@/features/subscription/model/useSubscription'
-import { Search, SearchX } from 'lucide-react'
+import { useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Input } from "@/shared/ui/input";
+import { useHasSecurities } from "@/features/subscription/model/useSubscription";
+import { Search, SearchX } from "lucide-react";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 interface NavItem {
-  labelKey: string
-  path: string
-  descKey: string
+  labelKey: string;
+  path: string;
+  descKey: string;
 }
 
 interface NavGroup {
-  labelKey: string
-  items: NavItem[]
+  labelKey: string;
+  items: NavItem[];
 }
 
 // K뱅크 톤 전체 메뉴 — 카드·아이콘·설명 행 없이 그룹 라벨 + 2열 텍스트 링크
 // (design chrome.jsx MoreScreen SoT — 모바일 카드 다이어트).
 const GROUPS: NavGroup[] = [
   {
-    labelKey: 'group.money',
+    labelKey: "group.money",
     items: [
-      { labelKey: 'item.expense', path: '/desk/expense', descKey: 'desc.expense' },
-      { labelKey: 'item.asset', path: '/desk/asset', descKey: 'desc.asset' },
-      { labelKey: 'item.stocks', path: '/desk/stocks', descKey: 'desc.stocks' },
-      { labelKey: 'item.budget', path: '/desk/budget', descKey: 'desc.budget' },
-      { labelKey: 'item.savingGoal', path: '/desk/settings?section=goals', descKey: 'desc.savingGoal' },
-      { labelKey: 'item.stats', path: '/desk/stats', descKey: 'desc.stats' },
-      { labelKey: 'item.recurring', path: '/desk/settings?section=recurring', descKey: 'desc.recurring' },
-      { labelKey: 'item.accounts', path: '/desk/settings?section=accounts', descKey: 'desc.accounts' },
+      {
+        labelKey: "item.expense",
+        path: "/desk/expense",
+        descKey: "desc.expense",
+      },
+      { labelKey: "item.asset", path: "/desk/asset", descKey: "desc.asset" },
+      { labelKey: "item.stocks", path: "/desk/stocks", descKey: "desc.stocks" },
+      { labelKey: "item.budget", path: "/desk/budget", descKey: "desc.budget" },
+      {
+        labelKey: "item.savingGoal",
+        path: "/desk/settings?section=goals",
+        descKey: "desc.savingGoal",
+      },
+      { labelKey: "item.stats", path: "/desk/stats", descKey: "desc.stats" },
+      {
+        labelKey: "item.recurring",
+        path: "/desk/settings?section=recurring",
+        descKey: "desc.recurring",
+      },
+      {
+        labelKey: "item.accounts",
+        path: "/desk/settings?section=accounts",
+        descKey: "desc.accounts",
+      },
     ],
   },
   {
-    labelKey: 'group.daily',
+    labelKey: "group.daily",
     items: [
-      { labelKey: 'item.calendar', path: '/desk/calendar', descKey: 'desc.calendar' },
-      { labelKey: 'item.todo', path: '/desk/todo', descKey: 'desc.todo' },
-      { labelKey: 'item.memo', path: '/desk/memo', descKey: 'desc.memo' },
-      { labelKey: 'item.dutchPay', path: '/desk/dutch-pay', descKey: 'desc.dutchPay' },
-      { labelKey: 'item.cardBenefit', path: '/desk/card-benefit', descKey: 'desc.cardBenefit' },
+      {
+        labelKey: "item.calendar",
+        path: "/desk/calendar",
+        descKey: "desc.calendar",
+      },
+      { labelKey: "item.todo", path: "/desk/todo", descKey: "desc.todo" },
+      { labelKey: "item.memo", path: "/desk/memo", descKey: "desc.memo" },
+      {
+        labelKey: "item.dutchPay",
+        path: "/desk/dutch-pay",
+        descKey: "desc.dutchPay",
+      },
+      {
+        labelKey: "item.cardBenefit",
+        path: "/desk/card-benefit",
+        descKey: "desc.cardBenefit",
+      },
     ],
   },
   {
-    labelKey: 'group.personal',
+    labelKey: "group.personal",
     items: [
-      { labelKey: 'item.categories', path: '/desk/settings?section=categories', descKey: 'desc.categories' },
-      { labelKey: 'item.presets', path: '/desk/settings?section=presets', descKey: 'desc.presets' },
-      { labelKey: 'item.appearance', path: '/desk/settings?section=appearance', descKey: 'desc.appearance' },
+      {
+        labelKey: "item.categories",
+        path: "/desk/settings?section=categories",
+        descKey: "desc.categories",
+      },
+      {
+        labelKey: "item.presets",
+        path: "/desk/settings?section=presets",
+        descKey: "desc.presets",
+      },
+      {
+        labelKey: "item.appearance",
+        path: "/desk/settings?section=appearance",
+        descKey: "desc.appearance",
+      },
     ],
   },
   {
-    labelKey: 'group.system',
+    labelKey: "group.system",
     items: [
-      { labelKey: 'item.settings', path: '/desk/settings', descKey: 'desc.settings' },
+      {
+        labelKey: "item.settings",
+        path: "/desk/settings",
+        descKey: "desc.settings",
+      },
       // 알림 '목록' 이 아니라 알림 '설정' 이다 — 설명이 푸시·방해 금지를 말하고 있고,
       // 목록은 헤더의 종 아이콘이 이미 연다. 앱 더보기도 설정으로 간다.
-      { labelKey: 'item.notifications', path: '/desk/settings?section=notifications', descKey: 'desc.notifications' },
-      { labelKey: 'item.dataExport', path: '/desk/settings?section=data', descKey: 'desc.dataExport' },
-      { labelKey: 'item.account', path: '/desk/settings?section=account', descKey: 'desc.account' },
+      {
+        labelKey: "item.notifications",
+        path: "/desk/settings?section=notifications",
+        descKey: "desc.notifications",
+      },
+      {
+        labelKey: "item.dataExport",
+        path: "/desk/settings?section=data",
+        descKey: "desc.dataExport",
+      },
+      {
+        labelKey: "item.account",
+        path: "/desk/settings?section=account",
+        descKey: "desc.account",
+      },
       // 앱 받기 — 로그인 밖 공개 페이지라 경로에 /desk 가 없다.
-      { labelKey: 'item.appDownload', path: '/download', descKey: 'desc.appDownload' },
+      {
+        labelKey: "item.appDownload",
+        path: "/download",
+        descKey: "desc.appDownload",
+      },
     ],
   },
-]
+];
 
 export const MorePage = () => {
-  const navigate = useNavigate()
-  const { t } = useTranslation('more')
-  useOutletContext<OutletCtx>()
-  const [query, setQuery] = useState('')
-  const hasSecurities = useHasSecurities()
+  const navigate = useNavigate();
+  const { t } = useTranslation("more");
+  useOutletContext<OutletCtx>();
+  const [query, setQuery] = useState("");
+  const hasSecurities = useHasSecurities();
 
   // 증권 메뉴는 구독(SECURITIES) 보유 시에만 노출
   const visibleGroups: NavGroup[] = hasSecurities
     ? GROUPS
-    : GROUPS.map(g => ({ ...g, items: g.items.filter(i => i.path !== '/desk/stocks') }))
+    : GROUPS.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.path !== "/desk/stocks"),
+      }));
 
   // 검색 — 그룹 구조를 유지한 채 항목 필터 (design MoreScreen 정합)
-  const q = query.trim().toLowerCase()
+  const q = query.trim().toLowerCase();
   const filtered = q
     ? visibleGroups
-        .map(g => ({
+        .map((g) => ({
           ...g,
           items: g.items.filter(
-            item =>
+            (item) =>
               t(item.labelKey).toLowerCase().includes(q) ||
               t(item.descKey).toLowerCase().includes(q),
           ),
         }))
-        .filter(g => g.items.length > 0)
-    : visibleGroups
+        .filter((g) => g.items.length > 0)
+    : visibleGroups;
 
   return (
-    <div style={{ padding: 'var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)' }}>
+    <div
+      style={{
+        padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
+      }}
+    >
       {/* 검색바 */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg-surface)', paddingBottom: 'var(--spacing-sm)' }}>
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 5,
+          background: "var(--bg-surface)",
+          paddingBottom: "var(--spacing-sm)",
+        }}
+      >
         {/* 아이콘 세로 중앙 기준은 input 높이 — sticky wrapper의 paddingBottom에 안 끌리도록 분리 */}
         <div className="relative">
           <Search
             size={16}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--fg-tertiary)',
-              pointerEvents: 'none',
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--fg-tertiary)",
+              pointerEvents: "none",
             }}
           />
           <Input
             search
             type="text"
             value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={t('search')}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("search")}
             className="w-full pl-9"
           />
         </div>
@@ -125,26 +200,42 @@ export const MorePage = () => {
       {filtered.length === 0 ? (
         <div
           style={{
-            padding: '60px 0',
-            textAlign: 'center',
-            color: 'var(--fg-tertiary)',
+            padding: "60px 0",
+            textAlign: "center",
+            color: "var(--fg-tertiary)",
           }}
         >
-          <SearchX size={28} style={{ display: 'inline-block' }} />
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600, marginTop: 8 }}>{t('noResults')}</div>
+          <SearchX size={28} style={{ display: "inline-block" }} />
+          <div
+            style={{
+              fontSize: "var(--text-label-sm)",
+              fontWeight: 600,
+              marginTop: 8,
+            }}
+          >
+            {t("noResults")}
+          </div>
         </div>
       ) : (
         filtered.map((group, gi) => (
           <div key={group.labelKey}>
             {/* 그룹 사이 헤어라인 (design .flat-div) */}
-            {gi > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 0' }} />}
+            {gi > 0 && (
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--border-subtle)",
+                  margin: "14px 0",
+                }}
+              />
+            )}
             <div
               style={{
-                fontSize: 'var(--text-body-lg)',
+                fontSize: "var(--text-body-lg)",
                 fontWeight: 700,
-                color: 'var(--fg-primary)',
-                letterSpacing: '-0.01em',
-                padding: '14px 0 2px',
+                color: "var(--fg-primary)",
+                letterSpacing: "-0.01em",
+                padding: "14px 0 2px",
               }}
             >
               {t(group.labelKey)}
@@ -152,45 +243,45 @@ export const MorePage = () => {
             {/* K뱅크 스타일 — 카드 없이 2열 텍스트 링크 */}
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                padding: '6px 0 4px',
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                padding: "6px 0 4px",
                 columnGap: 16,
               }}
             >
-              {group.items.map(item => (
+              {group.items.map((item) => (
                 <button
                   key={item.path}
                   type="button"
                   onClick={() => navigate(item.path)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '13px 0',
-                    background: 'transparent',
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "13px 0",
+                    background: "transparent",
                     border: 0,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontSize: 'var(--text-body-md)',
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "var(--text-body-md)",
                     fontWeight: 500,
-                    letterSpacing: '-0.01em',
-                    color: 'var(--fg-primary)',
-                    fontFamily: 'inherit',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    letterSpacing: "-0.01em",
+                    color: "var(--fg-primary)",
+                    fontFamily: "inherit",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
-                  onTouchStart={e => {
-                    e.currentTarget.style.opacity = '0.55'
+                  onTouchStart={(e) => {
+                    e.currentTarget.style.opacity = "0.55";
                   }}
-                  onTouchEnd={e => {
-                    e.currentTarget.style.opacity = '1'
+                  onTouchEnd={(e) => {
+                    e.currentTarget.style.opacity = "1";
                   }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.opacity = '0.7'
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = "0.7";
                   }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.opacity = '1'
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = "1";
                   }}
                 >
                   {t(item.labelKey)}
@@ -201,5 +292,5 @@ export const MorePage = () => {
         ))
       )}
     </div>
-  )
-}
+  );
+};

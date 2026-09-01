@@ -1,18 +1,18 @@
-import { DynamicIcon, iconNames } from 'lucide-react/dynamic'
-import type { IconName } from 'lucide-react/dynamic'
+import { DynamicIcon, iconNames } from "lucide-react/dynamic";
+import type { IconName } from "lucide-react/dynamic";
 
 /**
  * 전체 Lucide 아이콘 이름 목록 re-export (검색/선택용)
  * lucide-react/dynamic의 iconNames를 그대로 노출
  */
-export { iconNames }
-export type { IconName }
+export { iconNames };
+export type { IconName };
 
-const iconNameSet = new Set<string>(iconNames)
+const iconNameSet = new Set<string>(iconNames);
 
 /** DB에 저장된 이름이 현재 lucide 카탈로그에 존재하는지 검사. */
 export const isIconName = (name: string | null | undefined): name is IconName =>
-  !!name && iconNameSet.has(name)
+  !!name && iconNameSet.has(name);
 
 /**
  * 아이콘 이름을 JSX 요소로 렌더링 (lazy load)
@@ -28,6 +28,6 @@ export const renderIcon = (
   fallback: string,
   size = 16,
 ) => {
-  if (!isIconName(iconName)) return <span>{fallback}</span>
-  return <DynamicIcon name={iconName} size={size} />
-}
+  if (!isIconName(iconName)) return <span>{fallback}</span>;
+  return <DynamicIcon name={iconName} size={size} />;
+};

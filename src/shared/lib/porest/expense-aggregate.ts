@@ -1,4 +1,4 @@
-import type { Expense } from '@/entities/expense'
+import type { Expense } from "@/entities/expense";
 
 /*
  * 거래 집계의 단 하나의 규칙 — 백엔드 `ExpenseAggregates` 미러.
@@ -15,25 +15,25 @@ import type { Expense } from '@/entities/expense'
 
 /** 아직 오지 않은 거래인가 — 서버도 이 기준으로 오늘까지만 센다. */
 export function isScheduledTx(date: string | null | undefined): boolean {
-  if (!date) return false
-  return new Date(date.length === 10 ? `${date}T23:59:59` : date) > new Date()
+  if (!date) return false;
+  return new Date(date.length === 10 ? `${date}T23:59:59` : date) > new Date();
 }
 
 /** 환불 = 수입으로 기록하되 원거래에 묶인 것. 수입이 아니라 지출을 깎는다. */
 export function isRefundTx(e: Expense): boolean {
-  return e.expenseType === 'INCOME' && e.refundOfExpenseRowId != null
+  return e.expenseType === "INCOME" && e.refundOfExpenseRowId != null;
 }
 
 /** 집계 대상만 남긴다. */
 export function countableTx(all: Expense[]): Expense[] {
-  return all.filter(e => !isScheduledTx(e.expenseDate))
+  return all.filter((e) => !isScheduledTx(e.expenseDate));
 }
 
 /** 수입 합계 — 환불 제외. */
 export function incomeSum(all: Expense[]): number {
   return countableTx(all)
-    .filter(e => e.expenseType === 'INCOME' && !isRefundTx(e))
-    .reduce((s, e) => s + Math.abs(e.amount), 0)
+    .filter((e) => e.expenseType === "INCOME" && !isRefundTx(e))
+    .reduce((s, e) => s + Math.abs(e.amount), 0);
 }
 
 /** 지출 합계 — 환불이 음수로 상계된다. */
@@ -43,9 +43,9 @@ export function expenseSum(all: Expense[]): number {
       s +
       (isRefundTx(e)
         ? -Math.abs(e.amount)
-        : e.expenseType === 'EXPENSE'
+        : e.expenseType === "EXPENSE"
           ? Math.abs(e.amount)
           : 0),
     0,
-  )
+  );
 }

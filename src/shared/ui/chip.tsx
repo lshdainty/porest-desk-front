@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Chip — 눌러서 켜고 끄는 선택 칩 (다중선택 목록·필터).
@@ -53,16 +53,20 @@ const chipVariants = cva(
       fullWidth: false,
     },
   },
-)
+);
 
 export interface ChipProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">,
+  extends
+    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">,
     VariantProps<typeof chipVariants> {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
-  ({ className, shape, size, selected, fullWidth, children, ...props }, ref) => (
+  (
+    { className, shape, size, selected, fullWidth, children, ...props },
+    ref,
+  ) => (
     <button
       ref={ref}
       type="button"
@@ -81,7 +85,7 @@ const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
       )}
     </button>
   ),
-)
-Chip.displayName = "Chip"
+);
+Chip.displayName = "Chip";
 
-export { Chip }
+export { Chip };

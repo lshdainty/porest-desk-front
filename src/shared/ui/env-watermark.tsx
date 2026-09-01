@@ -1,4 +1,4 @@
-import { config } from '@/shared/config/env'
+import { config } from "@/shared/config/env";
 
 /**
  * 개발 환경 워터마크 컴포넌트
@@ -10,7 +10,7 @@ import { config } from '@/shared/config/env'
  * 노출됐다. 도메인·서브도메인이 바뀌어도 안 깨지도록 env 기준으로 전환.)
  */
 export const EnvWatermark = () => {
-  if (config.isProd) return null
+  if (config.isProd) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[9999] overflow-hidden">
@@ -18,5 +18,5 @@ export const EnvWatermark = () => {
         DEVELOPMENT
       </span>
     </div>
-  )
-}
+  );
+};

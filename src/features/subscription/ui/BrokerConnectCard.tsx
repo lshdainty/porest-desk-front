@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { CircleCheck, Link2 } from 'lucide-react'
-import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
-import { SecretField } from '@/features/subscription/ui/SecretField'
-import { toLocalDateKey } from '@/shared/lib/date'
-import type { BrokerConnection } from '@/features/subscription/api/subscriptionApi'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { CircleCheck, Link2 } from "lucide-react";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
+import { SecretField } from "@/features/subscription/ui/SecretField";
+import { toLocalDateKey } from "@/shared/lib/date";
+import type { BrokerConnection } from "@/features/subscription/api/subscriptionApi";
 import {
   useRegisterBrokerCredential,
   useDisconnectBrokerCredential,
   useSetPrimaryBroker,
-} from '@/features/subscription/model/useSubscription'
+} from "@/features/subscription/model/useSubscription";
 
 /**
  * 증권사 한 곳의 연결 카드 — 키 등록 / 해제 / 기본 시세 소스 지정.
@@ -27,113 +27,166 @@ export function BrokerConnectCard({
   connection,
   showPrimaryAction,
 }: {
-  connection: BrokerConnection
+  connection: BrokerConnection;
   /** 기본 시세 소스 지정 버튼 노출 여부. 연결이 하나뿐이면 고를 게 없어 감춘다. */
-  showPrimaryAction: boolean
+  showPrimaryAction: boolean;
 }) {
-  const { t } = useTranslation('subscription')
-  const register = useRegisterBrokerCredential()
-  const disconnect = useDisconnectBrokerCredential()
-  const setPrimary = useSetPrimaryBroker()
+  const { t } = useTranslation("subscription");
+  const register = useRegisterBrokerCredential();
+  const disconnect = useDisconnectBrokerCredential();
+  const setPrimary = useSetPrimaryBroker();
 
-  const [apiKey, setApiKey] = useState('')
-  const [apiSecret, setApiSecret] = useState('')
+  const [apiKey, setApiKey] = useState("");
+  const [apiSecret, setApiSecret] = useState("");
 
-  const { broker, displayName, connected, primary, verifiedAt } = connection
-  const canConnect = apiKey.trim().length > 0 && apiSecret.trim().length > 0
+  const { broker, displayName, connected, primary, verifiedAt } = connection;
+  const canConnect = apiKey.trim().length > 0 && apiSecret.trim().length > 0;
 
   const onConnect = () => {
-    if (!canConnect) return
+    if (!canConnect) return;
     register.mutate(
       { broker, apiKey: apiKey.trim(), apiSecret: apiSecret.trim() },
       {
         onSuccess: () => {
-          toast.success(t('broker.toastConnected', { broker: displayName }))
-          setApiKey('')
-          setApiSecret('')
+          toast.success(t("broker.toastConnected", { broker: displayName }));
+          setApiKey("");
+          setApiSecret("");
         },
-        onError: () => toast.error(t('broker.toastInvalid')),
+        onError: () => toast.error(t("broker.toastInvalid")),
       },
-    )
-  }
+    );
+  };
 
   const onDisconnect = () =>
     disconnect.mutate(broker, {
-      onSuccess: () => toast.success(t('broker.toastDisconnected', { broker: displayName })),
-      onError: () => toast.error(t('broker.toastDisconnectFailed')),
-    })
+      onSuccess: () =>
+        toast.success(t("broker.toastDisconnected", { broker: displayName })),
+      onError: () => toast.error(t("broker.toastDisconnectFailed")),
+    });
 
   const onSetPrimary = () =>
     setPrimary.mutate(broker, {
-      onSuccess: () => toast.success(t('broker.toastPrimaryChanged', { broker: displayName })),
-      onError: () => toast.error(t('broker.toastPrimaryFailed')),
-    })
+      onSuccess: () =>
+        toast.success(t("broker.toastPrimaryChanged", { broker: displayName })),
+      onError: () => toast.error(t("broker.toastPrimaryFailed")),
+    });
 
   return (
-    <Card variant="bordered" style={{ padding: 0, overflow: 'hidden' }}>
+    <Card variant="bordered" style={{ padding: 0, overflow: "hidden" }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 16px 14px' }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 12,
+          padding: "16px 16px 14px",
+        }}
+      >
         <span
           style={{
             width: 40,
             height: 40,
-            borderRadius: 'var(--radius-md)',
+            borderRadius: "var(--radius-md)",
             flexShrink: 0,
-            background: 'var(--bg-brand-subtle)',
-            color: 'var(--fg-brand)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            background: "var(--bg-brand-subtle)",
+            color: "var(--fg-brand)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Link2 size={18} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)', letterSpacing: '-0.01em' }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.01em",
+            }}
+          >
             {displayName}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 3, lineHeight: 1.5 }}>
-            {t('broker.connectDesc')}
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--fg-secondary)",
+              marginTop: 3,
+              lineHeight: 1.5,
+            }}
+          >
+            {t("broker.connectDesc")}
           </div>
         </div>
         {primary ? (
           /* 앱은 softBrand 를 쓰지만 front Badge spec 에는 soft-brand 가 없다 — solid default 로 둔다. */
           <Badge variant="default" style={{ flexShrink: 0 }}>
-            {t('broker.primary')}
+            {t("broker.primary")}
           </Badge>
         ) : connected ? (
           <Badge variant="success" style={{ flexShrink: 0 }}>
-            {t('broker.connected')}
+            {t("broker.connected")}
           </Badge>
         ) : null}
       </div>
 
       {connected ? (
-        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div
+          style={{
+            padding: "0 16px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 12,
-              padding: '12px 14px',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-canvas)',
+              padding: "12px 14px",
+              borderRadius: "var(--radius-md)",
+              background: "var(--bg-canvas)",
             }}
           >
-            <CircleCheck size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
+            <CircleCheck
+              size={18}
+              style={{ color: "var(--status-success-fg)", flexShrink: 0 }}
+            />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-primary)' }}>
-                {t('broker.keyConnected', { broker: displayName })}
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--fg-primary)",
+                }}
+              >
+                {t("broker.keyConnected", { broker: displayName })}
               </div>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
                 {/* verifiedAt 은 서버 `[UTC]` — 자르면 UTC 날짜라 KST 새벽 검증이 전날로 찍힌다 */}
                 {verifiedAt
-                  ? t('broker.lastVerified', { date: toLocalDateKey(verifiedAt) ?? verifiedAt.slice(0, 10) })
-                  : t('broker.autoCollecting')}
+                  ? t("broker.lastVerified", {
+                      date:
+                        toLocalDateKey(verifiedAt) ?? verifiedAt.slice(0, 10),
+                    })
+                  : t("broker.autoCollecting")}
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={onDisconnect} loading={disconnect.isPending}>
-              {t('broker.disconnect')}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDisconnect}
+              loading={disconnect.isPending}
+            >
+              {t("broker.disconnect")}
             </Button>
           </div>
 
@@ -145,46 +198,69 @@ export function BrokerConnectCard({
                 size="md"
                 onClick={onSetPrimary}
                 loading={setPrimary.isPending}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               >
-                {t('broker.useAsPrimary')}
+                {t("broker.useAsPrimary")}
               </Button>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-                {t('broker.primaryHint')}
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  lineHeight: 1.5,
+                }}
+              >
+                {t("broker.primaryHint")}
               </div>
             </>
           )}
         </div>
       ) : (
-        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div
+          style={{
+            padding: "0 16px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}
+        >
           {/* 라벨은 서버가 준다 — 회사마다 같은 자리를 다르게 부른다. */}
           {/* 키도 시크릿과 같은 자격증명의 반쪽이라 같은 칸을 쓴다. */}
           <SecretField
             label={connection.keyLabel}
             value={apiKey}
             onChange={setApiKey}
-            toggleAriaLabel={t('broker.toggleReveal', { field: connection.keyLabel })}
+            toggleAriaLabel={t("broker.toggleReveal", {
+              field: connection.keyLabel,
+            })}
           />
           <SecretField
             label={connection.secretLabel}
             value={apiSecret}
             onChange={setApiSecret}
-            toggleAriaLabel={t('broker.toggleReveal', { field: connection.secretLabel })}
+            toggleAriaLabel={t("broker.toggleReveal", {
+              field: connection.secretLabel,
+            })}
           />
           <Button
             size="md"
             onClick={onConnect}
             loading={register.isPending}
             disabled={!canConnect}
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           >
-            {t('broker.connect')}
+            {t("broker.connect")}
           </Button>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-            {t('broker.keyHint', { broker: displayName })}
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              lineHeight: 1.5,
+            }}
+          >
+            {t("broker.keyHint", { broker: displayName })}
           </div>
         </div>
       )}
     </Card>
-  )
+  );
 }

@@ -1,58 +1,69 @@
-import { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Bell, CheckCheck, Trash2, Calendar, Wallet, CheckSquare, Info } from 'lucide-react'
-import { cn } from '@/shared/lib'
-import { Button } from '@/shared/ui/button'
-import { ScrollArea } from '@/shared/ui/scroll-area'
-import { useNow } from '@/shared/hooks'
-import { relativeTime } from '@/entities/notification'
-import type { Notification, NotificationType } from '@/entities/notification'
+import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  Calendar,
+  Wallet,
+  CheckSquare,
+  Info,
+} from "lucide-react";
+import { cn } from "@/shared/lib";
+import { Button } from "@/shared/ui/button";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { useNow } from "@/shared/hooks";
+import { relativeTime } from "@/entities/notification";
+import type { Notification, NotificationType } from "@/entities/notification";
 import {
   useNotifications,
   useUnreadCount,
   useMarkRead,
   useMarkAllRead,
   useDeleteNotification,
-} from '../model/useNotifications'
+} from "../model/useNotifications";
 
 const notificationTypeIcons: Record<NotificationType, React.ReactNode> = {
   EVENT_REMINDER: <Calendar size={14} className="text-blue-500" />,
   BUDGET_ALERT: <Wallet size={14} className="text-red-500" />,
   TODO_REMINDER: <CheckSquare size={14} className="text-green-500" />,
   SYSTEM: <Info size={14} className="text-gray-500" />,
-}
+};
 
 export const NotificationBell = () => {
-  const { t } = useTranslation('notification')
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation("notification");
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 상대시각의 기준점은 1분마다 흐르는 '지금'이다. react-query 의 `dataUpdatedAt`
   // (= 목록을 받아 온 순간)을 쓰면 안 된다 — 벨은 영구 레이아웃에 붙어 언마운트되지
   // 않고 `useNotifications` 에 refetchInterval 도 없어서, 포커스 복귀·SSE·읽음 처리가
   // 없으면 그 값이 몇 시간이고 그대로다. 10:00 알림이 12:00 에도 "방금"이 된다.
-  const now = useNow()
-  const { data: notifications = [] } = useNotifications()
-  const { data: unreadCount = 0 } = useUnreadCount()
-  const markRead = useMarkRead()
-  const markAllRead = useMarkAllRead()
-  const deleteNotification = useDeleteNotification()
+  const now = useNow();
+  const { data: notifications = [] } = useNotifications();
+  const { data: unreadCount = 0 } = useUnreadCount();
+  const markRead = useMarkRead();
+  const markAllRead = useMarkAllRead();
+  const deleteNotification = useDeleteNotification();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleItemClick = (notification: Notification) => {
     if (!notification.isRead) {
-      markRead.mutate(notification.rowId)
+      markRead.mutate(notification.rowId);
     }
-  }
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -60,13 +71,13 @@ export const NotificationBell = () => {
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={t('title')}
+        aria-label={t("title")}
         className="relative h-8 w-8 rounded-md hover:bg-muted"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </Button>
@@ -74,7 +85,7 @@ export const NotificationBell = () => {
       {isOpen && (
         <div className="absolute right-0 top-full z-[200] mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
           <div className="flex items-center justify-between border-b px-4 py-3">
-            <h3 className="text-sm font-semibold">{t('title')}</h3>
+            <h3 className="text-sm font-semibold">{t("title")}</h3>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -84,7 +95,7 @@ export const NotificationBell = () => {
                 className="text-primary hover:bg-transparent hover:text-primary hover:underline"
               >
                 {!markAllRead.isPending && <CheckCheck size={12} />}
-                {t('markAllRead')}
+                {t("markAllRead")}
               </Button>
             )}
           </div>
@@ -92,16 +103,16 @@ export const NotificationBell = () => {
           <ScrollArea className="max-h-80">
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                {t('empty')}
+                {t("empty")}
               </div>
             ) : (
-              notifications.map(notification => (
+              notifications.map((notification) => (
                 <div
                   key={notification.rowId}
                   onClick={() => handleItemClick(notification)}
                   className={cn(
-                    'flex cursor-pointer gap-3 border-b px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0',
-                    !notification.isRead && 'bg-primary/5'
+                    "flex cursor-pointer gap-3 border-b px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0",
+                    !notification.isRead && "bg-primary/5",
                   )}
                 >
                   <div className="mt-0.5 shrink-0">
@@ -109,10 +120,12 @@ export const NotificationBell = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={cn(
-                        'text-sm',
-                        !notification.isRead && 'font-medium'
-                      )}>
+                      <p
+                        className={cn(
+                          "text-sm",
+                          !notification.isRead && "font-medium",
+                        )}
+                      >
                         {notification.title}
                       </p>
                       {!notification.isRead && (
@@ -131,8 +144,8 @@ export const NotificationBell = () => {
                     size="icon"
                     loading={deleteNotification.isPending}
                     onClick={(e) => {
-                      e.stopPropagation()
-                      deleteNotification.mutate(notification.rowId)
+                      e.stopPropagation();
+                      deleteNotification.mutate(notification.rowId);
                     }}
                     className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-destructive"
                     aria-label="delete"
@@ -146,5 +159,5 @@ export const NotificationBell = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

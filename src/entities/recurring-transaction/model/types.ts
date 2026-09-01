@@ -1,58 +1,58 @@
-import type { ExpenseType } from '@/entities/expense'
+import type { ExpenseType } from "@/entities/expense";
 
-export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
-export type YNType = 'Y' | 'N'
+export type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+export type YNType = "Y" | "N";
 
 export interface RecurringTransaction {
-  rowId: number
-  userRowId: number
-  categoryRowId: number | null
-  categoryName: string | null
-  assetRowId: number | null
-  assetName: string | null
-  sourceExpenseRowId: number | null
-  expenseType: ExpenseType
-  amount: number
-  description: string | null
-  merchant: string | null
-  paymentMethod: string | null
-  frequency: RecurringFrequency
-  intervalValue: number
-  dayOfWeek: number | null
-  dayOfMonth: number | null
+  rowId: number;
+  userRowId: number;
+  categoryRowId: number | null;
+  categoryName: string | null;
+  assetRowId: number | null;
+  assetName: string | null;
+  sourceExpenseRowId: number | null;
+  expenseType: ExpenseType;
+  amount: number;
+  description: string | null;
+  merchant: string | null;
+  paymentMethod: string | null;
+  frequency: RecurringFrequency;
+  intervalValue: number;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
   /** 'HH:mm:ss' — 실행분을 만들 시각 [userClock] */
-  executionTime: string | null
-  startDate: string
-  endDate: string | null
-  maxOccurrences: number | null
-  executedCount: number
-  nextExecutionDate: string
-  lastExecutedAt: string | null
-  isActive: YNType
-  autoLog: boolean
-  notifyDayBefore: boolean
-  createAt: string
-  modifyAt: string
+  executionTime: string | null;
+  startDate: string;
+  endDate: string | null;
+  maxOccurrences: number | null;
+  executedCount: number;
+  nextExecutionDate: string;
+  lastExecutedAt: string | null;
+  isActive: YNType;
+  autoLog: boolean;
+  notifyDayBefore: boolean;
+  createAt: string;
+  modifyAt: string;
 }
 
 export interface RecurringTransactionFormValues {
-  categoryRowId?: number
-  assetRowId?: number
-  sourceExpenseRowId?: number
-  expenseType: ExpenseType
-  amount: number
-  description?: string
-  merchant?: string
-  paymentMethod?: string
-  frequency: RecurringFrequency
-  intervalValue?: number
-  dayOfWeek?: number
-  dayOfMonth?: number
+  categoryRowId?: number;
+  assetRowId?: number;
+  sourceExpenseRowId?: number;
+  expenseType: ExpenseType;
+  amount: number;
+  description?: string;
+  merchant?: string;
+  paymentMethod?: string;
+  frequency: RecurringFrequency;
+  intervalValue?: number;
+  dayOfWeek?: number;
+  dayOfMonth?: number;
   /** 'HH:mm:ss' — 생략하면 서버가 09:00 을 쓴다 */
-  executionTime?: string
-  startDate: string
-  endDate?: string
-  maxOccurrences?: number
-  autoLog?: boolean
-  notifyDayBefore?: boolean
+  executionTime?: string;
+  startDate: string;
+  endDate?: string;
+  maxOccurrences?: number;
+  autoLog?: boolean;
+  notifyDayBefore?: boolean;
 }

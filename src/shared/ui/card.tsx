@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Card — porest-design specs/components/card.md SoT 기반.
@@ -33,7 +33,8 @@ const cardVariants = cva(
         shadow: "bg-surface-default",
         bordered: "bg-surface-default border border-border-subtle",
         muted: "bg-[var(--bg-muted)]",
-        brand: "bg-[var(--bg-brand-subtle)] border border-[var(--border-brand)]",
+        brand:
+          "bg-[var(--bg-brand-subtle)] border border-[var(--border-brand)]",
         // v7 raised: 모바일 카드 다이어트의 keep(강조 요약/히어로) 카드 — 페이지 배경이
         // surface 로 올라와 일반 카드는 플랫으로 벗겨지고, 유지가 필요한 요약만
         // surface-raised(다크 #2d3346 패널 / 라이트 흰 카드) + shadow-lg 로 확실히 띄운다.
@@ -45,7 +46,7 @@ const cardVariants = cva(
       variant: "shadow",
     },
   },
-)
+);
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -68,8 +69,8 @@ const Card = React.forwardRef<
     }}
     {...props}
   />
-))
-Card.displayName = "Card"
+));
+Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
@@ -84,8 +85,8 @@ const CardHeader = React.forwardRef<
     )}
     {...props}
   />
-))
-CardHeader.displayName = "CardHeader"
+));
+CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<
   HTMLHeadingElement,
@@ -99,8 +100,8 @@ const CardTitle = React.forwardRef<
     )}
     {...props}
   />
-))
-CardTitle.displayName = "CardTitle"
+));
+CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -111,8 +112,8 @@ const CardDescription = React.forwardRef<
     className={cn("text-body-sm text-text-secondary", className)}
     {...props}
   />
-))
-CardDescription.displayName = "CardDescription"
+));
+CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
@@ -127,8 +128,8 @@ const CardContent = React.forwardRef<
     )}
     {...props}
   />
-))
-CardContent.displayName = "CardContent"
+));
+CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<
   HTMLDivElement,
@@ -143,8 +144,8 @@ const CardFooter = React.forwardRef<
     )}
     {...props}
   />
-))
-CardFooter.displayName = "CardFooter"
+));
+CardFooter.displayName = "CardFooter";
 
 export {
   Card,
@@ -153,4 +154,4 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
-}
+};

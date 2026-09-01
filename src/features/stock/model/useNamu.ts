@@ -1,18 +1,18 @@
 /**
  * 나무증권 조회 훅. 토스와 나눠 둔다 — 두 증권사가 주는 데이터가 겹치지 않는다.
  */
-import { useQuery } from '@tanstack/react-query'
-import { namuApi } from '../api/namuApi'
-import type { StockMasterItem } from '../api/stockApi'
+import { useQuery } from "@tanstack/react-query";
+import { namuApi } from "../api/namuApi";
+import type { StockMasterItem } from "../api/stockApi";
 
 /** 나무 보유 종목. 통화가 KRW 면 국내, 그 밖이면 해외 — 서버가 엔드포인트를 가른다. */
 export function useNamuHoldings(currency: string) {
   return useQuery({
-    queryKey: ['namu', 'holdings', currency],
+    queryKey: ["namu", "holdings", currency],
     queryFn: () => namuApi.getHoldings(currency),
     retry: false,
     staleTime: 30_000,
-  })
+  });
 }
 
 /**
@@ -25,11 +25,13 @@ export function useNamuHoldings(currency: string) {
  */
 export function useNamuPrice(item: StockMasterItem | null) {
   return useQuery({
-    queryKey: ['namu', 'price', item?.marketCode, item?.symbol],
+    queryKey: ["namu", "price", item?.marketCode, item?.symbol],
     queryFn: () =>
-      item!.countryCode === 'KR' ? namuApi.getKrPrice(item!.symbol) : namuApi.getGbPrice(item!.symbol),
+      item!.countryCode === "KR"
+        ? namuApi.getKrPrice(item!.symbol)
+        : namuApi.getGbPrice(item!.symbol),
     enabled: !!item,
     retry: false,
     staleTime: 10_000,
-  })
+  });
 }

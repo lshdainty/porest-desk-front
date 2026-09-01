@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import { X } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { useDeviceSize } from '@/shared/lib/porest/responsive'
+import type { ReactNode } from "react";
+import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useDeviceSize } from "@/shared/lib/porest/responsive";
 import {
   Dialog,
   DialogBody,
@@ -10,17 +10,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog'
+} from "@/shared/ui/dialog";
 import {
   Drawer,
   DrawerBody,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-} from '@/shared/ui/drawer'
-import { Button } from '@/shared/ui/button'
+} from "@/shared/ui/drawer";
+import { Button } from "@/shared/ui/button";
 
-export type ModalSize = 'sm' | 'md' | 'lg'
+export type ModalSize = "sm" | "md" | "lg";
 
 /**
  * Porest 디자인 시스템 모달 래퍼.
@@ -32,29 +32,29 @@ export type ModalSize = 'sm' | 'md' | 'lg'
 export function ModalShell({
   title,
   onClose,
-  size = 'md',
+  size = "md",
   footer,
   children,
   mobile,
   mobileMinHeight,
 }: {
-  title: ReactNode
-  onClose: () => void
-  size?: ModalSize
-  footer?: ReactNode
-  children?: ReactNode
-  mobile: boolean
+  title: ReactNode;
+  onClose: () => void;
+  size?: ModalSize;
+  footer?: ReactNode;
+  children?: ReactNode;
+  mobile: boolean;
   /** 모바일 drawer 최소 높이 (예: '85dvh') — 앱 showPSheet initialChildSize 0.85 정합.
    *  미지정 시 기존처럼 content 높이. */
-  mobileMinHeight?: string
+  mobileMinHeight?: string;
 }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation("common");
   if (mobile) {
     return (
       <Drawer
         open={true}
-        onOpenChange={open => {
-          if (!open) onClose()
+        onOpenChange={(open) => {
+          if (!open) onClose();
         }}
       >
         <DrawerContent
@@ -66,7 +66,7 @@ export function ModalShell({
             <button
               type="button"
               onClick={onClose}
-              aria-label={t('close')}
+              aria-label={t("close")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
             >
               <X size={18} />
@@ -83,21 +83,21 @@ export function ModalShell({
           )}
         </DrawerContent>
       </Drawer>
-    )
+    );
   }
 
   return (
     <Dialog
       open={true}
-      onOpenChange={open => {
-        if (!open) onClose()
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent size={size}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogClose
-            aria-label={t('close')}
+            aria-label={t("close")}
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
           >
             <X size={18} />
@@ -107,7 +107,7 @@ export function ModalShell({
         {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 export function ConfirmDialog({
@@ -121,12 +121,12 @@ export function ConfirmDialog({
   onCancel,
   onConfirm,
 }: {
-  title: string
-  message: ReactNode
-  confirmLabel?: string
-  cancelLabel?: string
-  danger?: boolean
-  loading?: boolean
+  title: string;
+  message: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  loading?: boolean;
   /**
    * 확인 하나만 그린다 — 고를 것이 없는 차단 통지
    * (spec alert-dialog.md Variants · acknowledge). 취소를 나란히 두면 두 버튼이
@@ -134,20 +134,20 @@ export function ConfirmDialog({
    *
    * [onCancel] 은 그대로 필수다 — ESC·overlay 로 닫는 경로가 그걸 쓴다.
    */
-  singleAction?: boolean
-  onCancel: () => void
-  onConfirm: () => void
+  singleAction?: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
 }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation("common");
   // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 둔다 —
   // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
   // (spec button.md Migration notes 2026-08 · dialog.md 114-116). 폭 배분은 DialogFooter 가 맡는다.
-  const isMobile = useDeviceSize() === 'mobile'
+  const isMobile = useDeviceSize() === "mobile";
   return (
     <Dialog
       open={true}
-      onOpenChange={open => {
-        if (!open) onCancel()
+      onOpenChange={(open) => {
+        if (!open) onCancel();
       }}
     >
       <DialogContent size="sm">
@@ -157,9 +157,9 @@ export function ConfirmDialog({
         <DialogBody>
           <p
             style={{
-              fontSize: 'var(--text-body-sm)',
-              color: 'var(--fg-secondary)',
-              lineHeight: '1.7',
+              fontSize: "var(--text-body-sm)",
+              color: "var(--fg-secondary)",
+              lineHeight: "1.7",
               margin: 0,
             }}
           >
@@ -170,23 +170,23 @@ export function ConfirmDialog({
           {!singleAction && (
             /* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */
             <Button
-              variant={isMobile ? 'secondary' : 'ghost'}
-              size={isMobile ? 'lg' : undefined}
+              variant={isMobile ? "secondary" : "ghost"}
+              size={isMobile ? "lg" : undefined}
               onClick={onCancel}
             >
-              {cancelLabel ?? t('cancel')}
+              {cancelLabel ?? t("cancel")}
             </Button>
           )}
           <Button
-            variant={danger ? 'destructive' : 'default'}
-            size={isMobile ? 'lg' : undefined}
+            variant={danger ? "destructive" : "default"}
+            size={isMobile ? "lg" : undefined}
             onClick={onConfirm}
             loading={loading}
           >
-            {confirmLabel ?? t('confirm')}
+            {confirmLabel ?? t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

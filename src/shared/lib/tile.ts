@@ -8,4 +8,4 @@
  * round(size × 0.3): 28→8 / 32→10 / 36→11 / 38→11 / 40→12 / 44→13 / 48→14.
  * (기존 CategoryChip 의 10/12/14 설계와 동일.)
  */
-export const tileRadius = (size: number): number => Math.round(size * 0.3)
+export const tileRadius = (size: number): number => Math.round(size * 0.3);

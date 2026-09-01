@@ -6,4 +6,4 @@ export type {
   EventReminderInfo,
   Holiday,
   HolidayType,
-} from './model/types'
+} from "./model/types";

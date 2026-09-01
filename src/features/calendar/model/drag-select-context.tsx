@@ -1,126 +1,154 @@
-import { createContext, useCallback, useContext, useState } from 'react'
-import { isBefore, startOfDay, isAfter, isSameDay, format } from 'date-fns'
-import { useTranslation } from 'react-i18next'
-import { CalendarDays, Wallet } from 'lucide-react'
+import { createContext, useCallback, useContext, useState } from "react";
+import { isBefore, startOfDay, isAfter, isSameDay, format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { CalendarDays, Wallet } from "lucide-react";
 
-import { useCreateEvent } from '@/features/calendar/model/useCalendarEvents'
-import { useEventLabels } from '@/features/event-label'
-import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
-import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
-import { useIsMobile } from '@/shared/hooks'
-import type { CalendarEventFormValues } from '@/entities/calendar'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+import { useCreateEvent } from "@/features/calendar/model/useCalendarEvents";
+import { useEventLabels } from "@/features/event-label";
+import { AddTxSheet } from "@/features/porest/add-tx/AddTxSheet";
+import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
+import { useIsMobile } from "@/shared/hooks";
+import type { CalendarEventFormValues } from "@/entities/calendar";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
 
-type SelectionMode = 'choose' | 'event' | 'expense'
+type SelectionMode = "choose" | "event" | "expense";
 
 interface DragSelectContextType {
-  isDragSelecting: boolean
-  selectionStart: Date | null
-  selectionEnd: Date | null
-  startSelection: (date: Date) => void
-  updateSelection: (date: Date) => void
-  endSelection: () => void
-  isDateInSelection: (date: Date) => boolean
+  isDragSelecting: boolean;
+  selectionStart: Date | null;
+  selectionEnd: Date | null;
+  startSelection: (date: Date) => void;
+  updateSelection: (date: Date) => void;
+  endSelection: () => void;
+  isDateInSelection: (date: Date) => boolean;
 }
 
-const DragSelectContext = createContext<DragSelectContextType | null>(null)
+const DragSelectContext = createContext<DragSelectContextType | null>(null);
 
 export const useDragSelect = () => {
-  const context = useContext(DragSelectContext)
+  const context = useContext(DragSelectContext);
   if (!context) {
-    throw new Error('useDragSelect must be used within a DragSelectProvider')
+    throw new Error("useDragSelect must be used within a DragSelectProvider");
   }
-  return context
-}
+  return context;
+};
 
-export const DragSelectProvider = ({ children }: { children: React.ReactNode }) => {
-  const { t } = useTranslation('calendar')
-  const isMobile = useIsMobile()
-  const [isDragSelecting, setIsDragSelecting] = useState(false)
-  const [selectionStart, setSelectionStart] = useState<Date | null>(null)
-  const [selectionEnd, setSelectionEnd] = useState<Date | null>(null)
+export const DragSelectProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { t } = useTranslation("calendar");
+  const isMobile = useIsMobile();
+  const [isDragSelecting, setIsDragSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<Date | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<Date | null>(null);
 
-  const [selectionMode, setSelectionMode] = useState<SelectionMode | null>(null)
-  const [dialogDateRange, setDialogDateRange] = useState<{ start: Date; end: Date } | null>(null)
+  const [selectionMode, setSelectionMode] = useState<SelectionMode | null>(
+    null,
+  );
+  const [dialogDateRange, setDialogDateRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
 
   // Event (schedule) dependencies
-  const createEvent = useCreateEvent()
-  const { data: labels = [] } = useEventLabels()
+  const createEvent = useCreateEvent();
+  const { data: labels = [] } = useEventLabels();
 
   const startSelection = useCallback((date: Date) => {
-    setIsDragSelecting(true)
-    setSelectionStart(date)
-    setSelectionEnd(date)
-  }, [])
+    setIsDragSelecting(true);
+    setSelectionStart(date);
+    setSelectionEnd(date);
+  }, []);
 
-  const updateSelection = useCallback((date: Date) => {
-    if (isDragSelecting) {
-      setSelectionEnd(date)
-    }
-  }, [isDragSelecting])
+  const updateSelection = useCallback(
+    (date: Date) => {
+      if (isDragSelecting) {
+        setSelectionEnd(date);
+      }
+    },
+    [isDragSelecting],
+  );
 
   const endSelection = useCallback(() => {
     if (isDragSelecting && selectionStart && selectionEnd) {
-      setIsDragSelecting(false)
+      setIsDragSelecting(false);
 
       // Calculate actual start and end (handle reverse drag)
-      const start = isBefore(selectionStart, selectionEnd) || isSameDay(selectionStart, selectionEnd)
-        ? selectionStart
-        : selectionEnd
-      const end = isBefore(selectionStart, selectionEnd) || isSameDay(selectionStart, selectionEnd)
-        ? selectionEnd
-        : selectionStart
+      const start =
+        isBefore(selectionStart, selectionEnd) ||
+        isSameDay(selectionStart, selectionEnd)
+          ? selectionStart
+          : selectionEnd;
+      const end =
+        isBefore(selectionStart, selectionEnd) ||
+        isSameDay(selectionStart, selectionEnd)
+          ? selectionEnd
+          : selectionStart;
 
       // Open selection menu instead of directly opening EventForm
-      setDialogDateRange({ start, end })
-      setSelectionMode('choose')
+      setDialogDateRange({ start, end });
+      setSelectionMode("choose");
 
       // Reset selection visual state
-      setSelectionStart(null)
-      setSelectionEnd(null)
+      setSelectionStart(null);
+      setSelectionEnd(null);
     } else {
-      setIsDragSelecting(false)
-      setSelectionStart(null)
-      setSelectionEnd(null)
+      setIsDragSelecting(false);
+      setSelectionStart(null);
+      setSelectionEnd(null);
     }
-  }, [isDragSelecting, selectionStart, selectionEnd])
+  }, [isDragSelecting, selectionStart, selectionEnd]);
 
-  const isDateInSelection = useCallback((date: Date) => {
-    if (!selectionStart || !selectionEnd) return false
+  const isDateInSelection = useCallback(
+    (date: Date) => {
+      if (!selectionStart || !selectionEnd) return false;
 
-    const cellDate = startOfDay(date)
-    const start = isBefore(selectionStart, selectionEnd) || isSameDay(selectionStart, selectionEnd)
-      ? startOfDay(selectionStart)
-      : startOfDay(selectionEnd)
-    const end = isBefore(selectionStart, selectionEnd) || isSameDay(selectionStart, selectionEnd)
-      ? startOfDay(selectionEnd)
-      : startOfDay(selectionStart)
+      const cellDate = startOfDay(date);
+      const start =
+        isBefore(selectionStart, selectionEnd) ||
+        isSameDay(selectionStart, selectionEnd)
+          ? startOfDay(selectionStart)
+          : startOfDay(selectionEnd);
+      const end =
+        isBefore(selectionStart, selectionEnd) ||
+        isSameDay(selectionStart, selectionEnd)
+          ? startOfDay(selectionEnd)
+          : startOfDay(selectionStart);
 
-    return (isSameDay(cellDate, start) || isAfter(cellDate, start)) &&
-           (isSameDay(cellDate, end) || isBefore(cellDate, end))
-  }, [selectionStart, selectionEnd])
+      return (
+        (isSameDay(cellDate, start) || isAfter(cellDate, start)) &&
+        (isSameDay(cellDate, end) || isBefore(cellDate, end))
+      );
+    },
+    [selectionStart, selectionEnd],
+  );
 
-  const handleCreateEvent = useCallback((data: CalendarEventFormValues) => {
-    createEvent.mutate(data, {
-      onSuccess: () => {
-        setSelectionMode(null)
-        setDialogDateRange(null)
-      },
-    })
-  }, [createEvent])
+  const handleCreateEvent = useCallback(
+    (data: CalendarEventFormValues) => {
+      createEvent.mutate(data, {
+        onSuccess: () => {
+          setSelectionMode(null);
+          setDialogDateRange(null);
+        },
+      });
+    },
+    [createEvent],
+  );
 
   const handleClose = useCallback(() => {
-    setSelectionMode(null)
-    setDialogDateRange(null)
-  }, [])
+    setSelectionMode(null);
+    setDialogDateRange(null);
+  }, []);
 
   const handleChooseEvent = useCallback(() => {
-    setSelectionMode('event')
-  }, [])
+    setSelectionMode("event");
+  }, []);
 
   const handleChooseExpense = useCallback(() => {
-    setSelectionMode('expense')
-  }, [])
+    setSelectionMode("expense");
+  }, []);
 
   return (
     <DragSelectContext.Provider
@@ -137,8 +165,13 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
       {children}
 
       {/* Quick Add Selection Menu */}
-      {selectionMode === 'choose' && dialogDateRange && (
-        <ModalShell title={t('quickAdd.title')} onClose={handleClose} mobile={isMobile} size="sm">
+      {selectionMode === "choose" && dialogDateRange && (
+        <ModalShell
+          title={t("quickAdd.title")}
+          onClose={handleClose}
+          mobile={isMobile}
+          size="sm"
+        >
           <div className="grid gap-2">
             <button
               onClick={handleChooseEvent}
@@ -148,8 +181,12 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
                 <CalendarDays size={20} />
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-medium">{t('quickAdd.addSchedule')}</div>
-                <div className="text-xs text-muted-foreground">{t('quickAdd.scheduleDesc')}</div>
+                <div className="text-sm font-medium">
+                  {t("quickAdd.addSchedule")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("quickAdd.scheduleDesc")}
+                </div>
               </div>
             </button>
             <button
@@ -160,8 +197,12 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
                 <Wallet size={20} />
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-medium">{t('quickAdd.addTransaction')}</div>
-                <div className="text-xs text-muted-foreground">{t('quickAdd.transactionDesc')}</div>
+                <div className="text-sm font-medium">
+                  {t("quickAdd.addTransaction")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("quickAdd.transactionDesc")}
+                </div>
               </div>
             </button>
           </div>
@@ -169,7 +210,7 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
       )}
 
       {/* Event Form Dialog */}
-      {selectionMode === 'event' && dialogDateRange && (
+      {selectionMode === "event" && dialogDateRange && (
         <EventForm
           selectedDate={dialogDateRange.start}
           selectedEndDate={dialogDateRange.end}
@@ -181,13 +222,13 @@ export const DragSelectProvider = ({ children }: { children: React.ReactNode }) 
       )}
 
       {/* Expense Form Dialog */}
-      {selectionMode === 'expense' && dialogDateRange && (
+      {selectionMode === "expense" && dialogDateRange && (
         <AddTxSheet
           mobile={isMobile}
-          defaultDate={format(dialogDateRange.start, 'yyyy-MM-dd')}
+          defaultDate={format(dialogDateRange.start, "yyyy-MM-dd")}
           onClose={handleClose}
         />
       )}
     </DragSelectContext.Provider>
-  )
-}
+  );
+};

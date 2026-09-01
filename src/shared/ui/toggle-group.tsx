@@ -1,9 +1,9 @@
-import * as React from "react"
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
-import { type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
+import { type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
-import { toggleVariants } from "@/shared/ui/toggle-variants"
+import { cn } from "@/shared/lib/index";
+import { toggleVariants } from "@/shared/ui/toggle-variants";
 
 /*
  * Porest ToggleGroup — porest-design specs/components/toggle-group.md SoT 기반.
@@ -20,7 +20,7 @@ const ToggleGroupContext = React.createContext<
 >({
   size: "default",
   variant: "default",
-})
+});
 
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -33,7 +33,7 @@ const ToggleGroup = React.forwardRef<
   const wrapper =
     variant === "segmented" || variant === "segmented-subtle"
       ? "inline-flex w-full gap-0 rounded-[var(--radius-md)] border border-border-default bg-[var(--bg-canvas)] p-0.5"
-      : "flex items-center justify-center gap-1"
+      : "flex items-center justify-center gap-1";
   return (
     <ToggleGroupPrimitive.Root
       ref={ref}
@@ -44,17 +44,17 @@ const ToggleGroup = React.forwardRef<
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
-  )
-})
+  );
+});
 
-ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
+ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
     VariantProps<typeof toggleVariants>
 >(({ className, children, variant, size, ...props }, ref) => {
-  const context = React.useContext(ToggleGroupContext)
+  const context = React.useContext(ToggleGroupContext);
 
   return (
     <ToggleGroupPrimitive.Item
@@ -70,9 +70,9 @@ const ToggleGroupItem = React.forwardRef<
     >
       {children}
     </ToggleGroupPrimitive.Item>
-  )
-})
+  );
+});
 
-ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName
+ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
 
-export { ToggleGroup, ToggleGroupItem }
+export { ToggleGroup, ToggleGroupItem };

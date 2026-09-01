@@ -1,27 +1,37 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
-import { ChevronLeft, ChevronRight, CreditCard, Search, SearchX, X } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Input } from '@/shared/ui/input'
-import { Checkbox } from '@/shared/ui/checkbox'
-import { Skeleton } from '@/shared/ui/skeleton'
-import { Spinner } from '@/shared/ui/spinner'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
-import { decodeHtml } from '@/shared/lib'
-import { useCardCatalogs, useInfiniteCardCatalogs } from '@/features/card-catalog'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Search,
+  SearchX,
+  X,
+} from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { Spinner } from "@/shared/ui/spinner";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { decodeHtml } from "@/shared/lib";
+import {
+  useCardCatalogs,
+  useInfiniteCardCatalogs,
+} from "@/features/card-catalog";
 import type {
   CardBenefitType,
   CardCatalogSummary,
   CardType,
-} from '@/entities/card'
-import { getCardBrand } from '@/entities/card'
-import { CardBenefitDetailDialog } from './CardBenefitDetailDialog'
+} from "@/entities/card";
+import { getCardBrand } from "@/entities/card";
+import { CardBenefitDetailDialog } from "./CardBenefitDetailDialog";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 /**
  * 카드 혜택 라이브러리 — porest-design `card-benefits.jsx` CardBenefitsScreen SoT 정합.
@@ -33,30 +43,34 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean }
  * 신규 API 금지 — useCardCatalogs(params) 만 사용.
  */
 
-const PAGE_SIZE = 60
+const PAGE_SIZE = 60;
 
-type TypeKey = 'all' | 'CREDIT' | 'CHECK'
+type TypeKey = "all" | "CREDIT" | "CHECK";
 
 /** 혜택 필터 — UI 라벨 5개, benefitType 매핑. 적립·캐시백 둘 다 POINT 전송. */
-const BENEFIT_FILTERS: { key: string; labelKey: string; type: CardBenefitType | undefined }[] = [
-  { key: 'all', labelKey: 'benefitType.all', type: undefined },
-  { key: 'discount', labelKey: 'benefitType.discount', type: 'DISCOUNT' },
-  { key: 'point', labelKey: 'benefitType.point', type: 'POINT' },
-  { key: 'cashback', labelKey: 'benefitType.cashback', type: 'POINT' },
-  { key: 'mileage', labelKey: 'benefitType.mileage', type: 'MILEAGE' },
-]
+const BENEFIT_FILTERS: {
+  key: string;
+  labelKey: string;
+  type: CardBenefitType | undefined;
+}[] = [
+  { key: "all", labelKey: "benefitType.all", type: undefined },
+  { key: "discount", labelKey: "benefitType.discount", type: "DISCOUNT" },
+  { key: "point", labelKey: "benefitType.point", type: "POINT" },
+  { key: "cashback", labelKey: "benefitType.cashback", type: "POINT" },
+  { key: "mileage", labelKey: "benefitType.mileage", type: "MILEAGE" },
+];
 
 function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
+  const [debounced, setDebounced] = useState(value);
   useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
 }
 
 function formatKRW(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(n)
+  return new Intl.NumberFormat("ko-KR").format(n);
 }
 
 /**
@@ -67,20 +81,28 @@ function formatKRW(n: number) {
  * 지금은 백엔드가 amount=0 이고 label 도 없으면 annualFee 자체를 null 로 내린다.
  */
 function annualFeeText(s: CardCatalogSummary, t: TFunction) {
-  if (!s.annualFee) return t('benefit.annualFeeLabel', { label: t('benefit.feeUnknown') })
-  if (s.annualFee.amount > 0) return t('benefit.annualFeeAmount', { amount: formatKRW(s.annualFee.amount) })
-  return t('benefit.annualFeeLabel', { label: s.annualFee.label ?? t('benefit.feeFree') })
+  if (!s.annualFee)
+    return t("benefit.annualFeeLabel", { label: t("benefit.feeUnknown") });
+  if (s.annualFee.amount > 0)
+    return t("benefit.annualFeeAmount", {
+      amount: formatKRW(s.annualFee.amount),
+    });
+  return t("benefit.annualFeeLabel", {
+    label: s.annualFee.label ?? t("benefit.feeFree"),
+  });
 }
 
 /** 전월 실적 표기: isRequired==='Y' → "실적 N원/월", 아니면 "실적 무관". */
 function performanceText(s: CardCatalogSummary, t: TFunction) {
-  if (s.performance.isRequired === 'Y' && s.performance.requiredAmount > 0) {
-    return t('benefit.performanceAmount', { amount: formatKRW(s.performance.requiredAmount) })
+  if (s.performance.isRequired === "Y" && s.performance.requiredAmount > 0) {
+    return t("benefit.performanceAmount", {
+      amount: formatKRW(s.performance.requiredAmount),
+    });
   }
-  if (s.performance.isRequired === 'Y' && s.performance.requiredText) {
-    return s.performance.requiredText
+  if (s.performance.isRequired === "Y" && s.performance.requiredText) {
+    return s.performance.requiredText;
   }
-  return t('benefit.performanceNone')
+  return t("benefit.performanceNone");
 }
 
 /** 필터 pill 1행 — 단일 선택. Tabs(pills/sm) 사용. */
@@ -89,22 +111,24 @@ function FilterPills<T extends string>({
   value,
   onChange,
 }: {
-  options: { key: T; label: string; count?: number }[]
-  value: T
-  onChange: (k: T) => void
+  options: { key: T; label: string; count?: number }[];
+  value: T;
+  onChange: (k: T) => void;
 }) {
   return (
     <Tabs
       value={value}
-      onValueChange={v => v && onChange(v as T)}
-      style={{ maxWidth: '100%', overflowX: 'auto', scrollbarWidth: 'none' }}
+      onValueChange={(v) => v && onChange(v as T)}
+      style={{ maxWidth: "100%", overflowX: "auto", scrollbarWidth: "none" }}
     >
       <TabsList variant="pills" size="sm">
-        {options.map(o => (
+        {options.map((o) => (
           <TabsTrigger key={o.key} variant="pills" size="sm" value={o.key}>
             {o.label}
             {o.count != null && (
-              <span style={{ fontVariantNumeric: 'tabular-nums', opacity: 0.85 }}>
+              <span
+                style={{ fontVariantNumeric: "tabular-nums", opacity: 0.85 }}
+              >
                 {o.count}
               </span>
             )}
@@ -112,119 +136,137 @@ function FilterPills<T extends string>({
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }
 
 /** 데스크탑 카드 아트워크 타일. */
-function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick: () => void }) {
-  const { t } = useTranslation('card')
-  const { t: tAsset } = useTranslation('asset')
-  const cardName = decodeHtml(card.cardName)
-  const companyName = decodeHtml(card.company?.name ?? '')
-  const discontinued = card.isDiscontinued === 'Y'
+function CardArtworkTile({
+  card,
+  onClick,
+}: {
+  card: CardCatalogSummary;
+  onClick: () => void;
+}) {
+  const { t } = useTranslation("card");
+  const { t: tAsset } = useTranslation("asset");
+  const cardName = decodeHtml(card.cardName);
+  const companyName = decodeHtml(card.company?.name ?? "");
+  const discontinued = card.isDiscontinued === "Y";
 
   // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 아트워크 / 미상 → 중립.
-  const [imgError, setImgError] = useState(false)
-  const showImg = !!card.imgUrl && !imgError
-  const brand = getCardBrand(companyName)
+  const [imgError, setImgError] = useState(false);
+  const showImg = !!card.imgUrl && !imgError;
+  const brand = getCardBrand(companyName);
 
   return (
     <button
       type="button"
       onClick={onClick}
       style={{
-        background: 'var(--bg-surface)',
+        background: "var(--bg-surface)",
         border: 0,
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
+        borderRadius: "var(--radius-lg)",
+        boxShadow: "var(--shadow-sm)",
         padding: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: 'pointer',
-        textAlign: 'left',
+        display: "flex",
+        flexDirection: "column",
+        cursor: "pointer",
+        textAlign: "left",
         opacity: discontinued ? 0.65 : 1,
-        overflow: 'hidden',
-        fontFamily: 'inherit',
+        overflow: "hidden",
+        fontFamily: "inherit",
         transition:
-          'box-shadow var(--motion-duration-fast) var(--motion-ease-out), transform var(--motion-duration-fast) var(--motion-ease-out)',
+          "box-shadow var(--motion-duration-fast) var(--motion-ease-out), transform var(--motion-duration-fast) var(--motion-ease-out)",
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = 'var(--shadow-md)'
-        e.currentTarget.style.transform = 'translateY(-2px)'
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "var(--shadow-md)";
+        e.currentTarget.style.transform = "translateY(-2px)";
       }}
-      onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-        e.currentTarget.style.transform = 'none'
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+        e.currentTarget.style.transform = "none";
       }}
     >
       {/* 아트워크 — showImg 면 <img>, 아니면 브랜드 색(or 중립) 아트워크 */}
       {showImg ? (
         <div
           style={{
-            width: '100%',
-            aspectRatio: '1.586 / 1',
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'var(--bg-sunken)',
+            width: "100%",
+            aspectRatio: "1.586 / 1",
+            position: "relative",
+            overflow: "hidden",
+            background: "var(--bg-sunken)",
           }}
         >
           <img
             src={card.imgUrl ?? undefined}
             alt={cardName}
             onError={() => setImgError(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
           />
           {discontinued && (
             <span
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 12,
                 right: 12,
                 fontSize: 9.5,
                 fontWeight: 700,
-                padding: '2px 6px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0,0,0,0.55)',
-                color: 'var(--fg-on-brand)',
+                padding: "2px 6px",
+                borderRadius: "var(--radius-sm)",
+                background: "rgba(0,0,0,0.55)",
+                color: "var(--fg-on-brand)",
               }}
             >
-              {tAsset('editDialog.discontinued')}
+              {tAsset("editDialog.discontinued")}
             </span>
           )}
         </div>
       ) : (
         <div
           style={{
-            width: '100%',
-            aspectRatio: '1.586 / 1',
+            width: "100%",
+            aspectRatio: "1.586 / 1",
             background: brand.bg,
             color: brand.fg,
-            padding: '16px 18px',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
+            padding: "16px 18px",
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
           }}
         >
           <span
             style={{
-              position: 'absolute',
+              position: "absolute",
               inset: 0,
               background:
-                'linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
-              pointerEvents: 'none',
+                "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)",
+              pointerEvents: "none",
             }}
           />
           <div
             style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: '0.06em' }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                opacity: 0.85,
+                letterSpacing: "0.06em",
+              }}
+            >
               {companyName}
             </span>
             {discontinued && (
@@ -232,23 +274,23 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
                 style={{
                   fontSize: 9.5,
                   fontWeight: 700,
-                  padding: '2px 6px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0,0,0,0.3)',
-                  color: 'var(--fg-on-brand)',
+                  padding: "2px 6px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "rgba(0,0,0,0.3)",
+                  color: "var(--fg-on-brand)",
                 }}
               >
-                {tAsset('editDialog.discontinued')}
+                {tAsset("editDialog.discontinued")}
               </span>
             )}
           </div>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: "relative" }}>
             <div
               style={{
                 fontSize: 16,
                 fontWeight: 800,
-                letterSpacing: '-0.01em',
-                wordBreak: 'keep-all',
+                letterSpacing: "-0.01em",
+                wordBreak: "keep-all",
                 lineHeight: 1.25,
               }}
             >
@@ -261,9 +303,9 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
       {/* 메타 */}
       <div
         style={{
-          padding: '16px 18px',
-          display: 'flex',
-          flexDirection: 'column',
+          padding: "16px 18px",
+          display: "flex",
+          flexDirection: "column",
           gap: 10,
           flex: 1,
         }}
@@ -273,45 +315,54 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
             style={{
               fontSize: 13.5,
               fontWeight: 700,
-              color: 'var(--fg-primary)',
-              letterSpacing: '-0.01em',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.01em",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             {cardName}
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            flexWrap: "wrap",
+          }}
+        >
           <span
             style={{
               fontSize: 11,
               fontWeight: 600,
-              color: 'var(--fg-primary)',
-              padding: '2px 8px',
-              background: 'var(--bg-sunken)',
-              borderRadius: 'var(--radius-pill)',
+              color: "var(--fg-primary)",
+              padding: "2px 8px",
+              background: "var(--bg-sunken)",
+              borderRadius: "var(--radius-pill)",
             }}
           >
-            {card.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')}
+            {card.cardType === "CREDIT"
+              ? tAsset("cardTypeShort.credit")
+              : tAsset("cardTypeShort.check")}
           </span>
-          <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>
+          <span style={{ fontSize: 11.5, color: "var(--fg-tertiary)" }}>
             {annualFeeText(card, t)}
           </span>
           <span
             style={{
               width: 2,
               height: 2,
-              borderRadius: 'var(--radius-pill)',
-              background: 'var(--fg-tertiary)',
+              borderRadius: "var(--radius-pill)",
+              background: "var(--fg-tertiary)",
             }}
           />
           <span
             style={{
               fontSize: 11.5,
-              color: 'var(--fg-tertiary)',
-              fontVariantNumeric: 'tabular-nums',
+              color: "var(--fg-tertiary)",
+              fontVariantNumeric: "tabular-nums",
             }}
           >
             {performanceText(card, t)}
@@ -319,21 +370,27 @@ function CardArtworkTile({ card, onClick }: { card: CardCatalogSummary; onClick:
         </div>
       </div>
     </button>
-  )
+  );
 }
 
 /** 모바일 가로형 리스트 타일. */
-function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: () => void }) {
-  const { t } = useTranslation('card')
-  const { t: tAsset } = useTranslation('asset')
-  const cardName = decodeHtml(card.cardName)
-  const companyName = decodeHtml(card.company?.name ?? '')
-  const discontinued = card.isDiscontinued === 'Y'
+function CardListTile({
+  card,
+  onClick,
+}: {
+  card: CardCatalogSummary;
+  onClick: () => void;
+}) {
+  const { t } = useTranslation("card");
+  const { t: tAsset } = useTranslation("asset");
+  const cardName = decodeHtml(card.cardName);
+  const companyName = decodeHtml(card.company?.name ?? "");
+  const discontinued = card.isDiscontinued === "Y";
 
   // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 / 미상 → 중립.
-  const [imgError, setImgError] = useState(false)
-  const showImg = !!card.imgUrl && !imgError
-  const brand = getCardBrand(companyName)
+  const [imgError, setImgError] = useState(false);
+  const showImg = !!card.imgUrl && !imgError;
+  const brand = getCardBrand(companyName);
 
   return (
     // 모바일 카드 다이어트 — 카드 시각(배경+그림자) 벗기고 플랫 행 (hover 면이 구분).
@@ -342,18 +399,18 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
       onClick={onClick}
       className="hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)] transition-colors"
       style={{
-        background: 'transparent',
+        background: "transparent",
         border: 0,
         borderRadius: 10,
-        padding: '12px 10px',
-        margin: '0 -2px',
-        display: 'flex',
-        alignItems: 'center',
+        padding: "12px 10px",
+        margin: "0 -2px",
+        display: "flex",
+        alignItems: "center",
         gap: 14,
-        cursor: 'pointer',
-        textAlign: 'left',
+        cursor: "pointer",
+        textAlign: "left",
         opacity: discontinued ? 0.6 : 1,
-        fontFamily: 'inherit',
+        fontFamily: "inherit",
       }}
     >
       {/* 미니 카드 비주얼 — showImg 면 <img>, 아니면 브랜드 색(or 중립) 아트워크 */}
@@ -363,12 +420,12 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
           height: 36,
           borderRadius: 6,
           flexShrink: 0,
-          position: 'relative',
-          overflow: 'hidden',
-          background: showImg ? 'var(--bg-sunken)' : brand.bg,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: "relative",
+          overflow: "hidden",
+          background: showImg ? "var(--bg-sunken)" : brand.bg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         {showImg ? (
@@ -376,47 +433,59 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
             src={card.imgUrl ?? undefined}
             alt={cardName}
             onError={() => setImgError(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
           />
         ) : (
           <>
             <span
               style={{
-                position: 'absolute',
+                position: "absolute",
                 inset: 0,
                 background:
-                  'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)',
+                  "linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)",
               }}
             />
             <span
               style={{
-                position: 'relative',
-                textAlign: 'center',
-                padding: '0 4px',
+                position: "relative",
+                textAlign: "center",
+                padding: "0 4px",
                 lineHeight: 1.1,
                 fontSize: 9,
                 fontWeight: 700,
-                letterSpacing: '0.05em',
+                letterSpacing: "0.05em",
                 color: brand.fg,
               }}
             >
-              {companyName.replace('카드', '').slice(0, 4)}
+              {companyName.replace("카드", "").slice(0, 4)}
             </span>
           </>
         )}
       </span>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 2,
+          }}
+        >
           <span
             style={{
               fontSize: 13.5,
               fontWeight: 700,
-              color: 'var(--fg-primary)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              letterSpacing: '-0.01em',
+              color: "var(--fg-primary)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              letterSpacing: "-0.01em",
             }}
           >
             {cardName}
@@ -426,58 +495,65 @@ function CardListTile({ card, onClick }: { card: CardCatalogSummary; onClick: ()
               style={{
                 fontSize: 9.5,
                 fontWeight: 700,
-                color: 'var(--fg-tertiary)',
-                background: 'var(--bg-sunken)',
-                padding: '1px 5px',
-                borderRadius: 'var(--radius-sm)',
+                color: "var(--fg-tertiary)",
+                background: "var(--bg-sunken)",
+                padding: "1px 5px",
+                borderRadius: "var(--radius-sm)",
                 flexShrink: 0,
               }}
             >
-              {tAsset('editDialog.discontinued')}
+              {tAsset("editDialog.discontinued")}
             </span>
           )}
         </div>
         <div
           style={{
             fontSize: 11.5,
-            color: 'var(--fg-tertiary)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            color: "var(--fg-tertiary)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {companyName} · {card.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')} · {annualFeeText(card, t)}
+          {companyName} ·{" "}
+          {card.cardType === "CREDIT"
+            ? tAsset("cardTypeShort.credit")
+            : tAsset("cardTypeShort.check")}{" "}
+          · {annualFeeText(card, t)}
         </div>
         <div
           style={{
             fontSize: 11,
-            color: 'var(--fg-tertiary)',
+            color: "var(--fg-tertiary)",
             marginTop: 1,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
           {performanceText(card, t)}
         </div>
       </div>
-      <ChevronRight size={14} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+      <ChevronRight
+        size={14}
+        style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+      />
     </button>
-  )
+  );
 }
 
 function GridSkeleton({ mobile }: { mobile: boolean }) {
   if (mobile) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
         {Array.from({ length: 5 }).map((_, i) => (
           // 카드 다이어트 — 실렌더 플랫 행과 동일.
           <div
             key={i}
             style={{
-              padding: '12px 10px',
-              display: 'flex',
-              alignItems: 'center',
+              padding: "12px 10px",
+              display: "flex",
+              alignItems: "center",
               gap: 14,
             }}
           >
@@ -489,13 +565,13 @@ function GridSkeleton({ mobile }: { mobile: boolean }) {
           </div>
         ))}
       </div>
-    )
+    );
   }
   return (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
         gap: 16,
       }}
     >
@@ -503,38 +579,41 @@ function GridSkeleton({ mobile }: { mobile: boolean }) {
         <div
           key={i}
           style={{
-            background: 'var(--bg-surface)',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-sm)',
-            overflow: 'hidden',
+            background: "var(--bg-surface)",
+            borderRadius: "var(--radius-lg)",
+            boxShadow: "var(--shadow-sm)",
+            overflow: "hidden",
           }}
         >
-          <Skeleton className="w-full rounded-none" style={{ aspectRatio: '1.586 / 1' }} />
-          <div style={{ padding: '16px 18px' }}>
+          <Skeleton
+            className="w-full rounded-none"
+            style={{ aspectRatio: "1.586 / 1" }}
+          />
+          <div style={{ padding: "16px 18px" }}>
             <Skeleton className="h-4 w-3/4 mb-3" />
             <Skeleton className="h-3 w-1/2" />
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function EmptyState() {
-  const { t } = useTranslation('card')
+  const { t } = useTranslation("card");
   return (
     <Card>
-      <CardContent style={{ padding: '60px 20px', textAlign: 'center' }}>
+      <CardContent style={{ padding: "60px 20px", textAlign: "center" }}>
         <div
           style={{
             width: 48,
             height: 48,
-            borderRadius: 'var(--radius-pill)',
-            background: 'var(--bg-sunken)',
-            color: 'var(--fg-tertiary)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            borderRadius: "var(--radius-pill)",
+            background: "var(--bg-sunken)",
+            color: "var(--fg-tertiary)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             marginBottom: 12,
           }}
         >
@@ -544,123 +623,140 @@ function EmptyState() {
           style={{
             fontSize: 14,
             fontWeight: 700,
-            color: 'var(--fg-primary)',
+            color: "var(--fg-primary)",
             marginBottom: 4,
           }}
         >
-          {t('benefit.emptyTitle')}
+          {t("benefit.emptyTitle")}
         </div>
-        <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)' }}>
-          {t('benefit.emptyDesc')}
+        <div style={{ fontSize: 12.5, color: "var(--fg-tertiary)" }}>
+          {t("benefit.emptyDesc")}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export const CardBenefitPage = () => {
-  const { t } = useTranslation('card')
-  const { t: tAsset } = useTranslation('asset')
-  const { t: tCommon } = useTranslation('common')
-  const { mobile } = useOutletContext<OutletCtx>()
+  const { t } = useTranslation("card");
+  const { t: tAsset } = useTranslation("asset");
+  const { t: tCommon } = useTranslation("common");
+  const { mobile } = useOutletContext<OutletCtx>();
 
-  const [query, setQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState<TypeKey>('all')
-  const [benefitKey, setBenefitKey] = useState<string>('all')
-  const [includeDiscontinued, setIncludeDiscontinued] = useState(false)
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null)
-  const [page, setPage] = useState(0)
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeKey>("all");
+  const [benefitKey, setBenefitKey] = useState<string>("all");
+  const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
 
-  const debouncedQuery = useDebounced(query.trim(), 300)
+  const debouncedQuery = useDebounced(query.trim(), 300);
 
   const benefitType = useMemo(
-    () => BENEFIT_FILTERS.find(f => f.key === benefitKey)?.type,
+    () => BENEFIT_FILTERS.find((f) => f.key === benefitKey)?.type,
     [benefitKey],
-  )
+  );
 
   // 검색/필터 변경 시 데스크탑 페이지를 첫 페이지로 리셋 (render 중 상태 조정 — effect 불필요).
-  const filterSig = `${debouncedQuery}|${typeFilter}|${benefitType ?? ''}|${includeDiscontinued}`
-  const [prevFilterSig, setPrevFilterSig] = useState(filterSig)
+  const filterSig = `${debouncedQuery}|${typeFilter}|${benefitType ?? ""}|${includeDiscontinued}`;
+  const [prevFilterSig, setPrevFilterSig] = useState(filterSig);
   if (filterSig !== prevFilterSig) {
-    setPrevFilterSig(filterSig)
-    setPage(0)
+    setPrevFilterSig(filterSig);
+    setPage(0);
   }
 
   const baseParams = {
     keyword: debouncedQuery || undefined,
-    cardType: typeFilter === 'all' ? undefined : (typeFilter as CardType),
+    cardType: typeFilter === "all" ? undefined : (typeFilter as CardType),
     benefitType,
     includeDiscontinued,
     size: PAGE_SIZE,
-  }
+  };
 
   // 데스크탑/태블릿: 페이지네이션. 모바일: 인피니티 스크롤. 활성 쿼리만 enabled.
-  const pageQ = useCardCatalogs({ ...baseParams, page }, { enabled: !mobile })
-  const infQ = useInfiniteCardCatalogs(baseParams, { enabled: mobile })
+  const pageQ = useCardCatalogs({ ...baseParams, page }, { enabled: !mobile });
+  const infQ = useInfiniteCardCatalogs(baseParams, { enabled: mobile });
 
   const cards = mobile
-    ? (infQ.data?.pages.flatMap(p => p.content) ?? [])
-    : (pageQ.data?.content ?? [])
+    ? (infQ.data?.pages.flatMap((p) => p.content) ?? [])
+    : (pageQ.data?.content ?? []);
   const total = mobile
     ? (infQ.data?.pages[0]?.meta.totalElements ?? cards.length)
-    : (pageQ.data?.meta.totalElements ?? cards.length)
-  const isLoading = mobile ? infQ.isLoading : pageQ.isLoading
-  const isFetching = mobile ? infQ.isFetching : pageQ.isFetching
-  const totalPages = pageQ.data?.meta.totalPages ?? 1
+    : (pageQ.data?.meta.totalElements ?? cards.length);
+  const isLoading = mobile ? infQ.isLoading : pageQ.isLoading;
+  const isFetching = mobile ? infQ.isFetching : pageQ.isFetching;
+  const totalPages = pageQ.data?.meta.totalPages ?? 1;
 
   // 모바일 인피니티 스크롤 sentinel observer.
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const { hasNextPage, isFetchingNextPage, fetchNextPage } = infQ
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = infQ;
   useEffect(() => {
-    if (!mobile) return
-    const el = sentinelRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(entries => {
+    if (!mobile) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
       if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage()
+        fetchNextPage();
       }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [mobile, hasNextPage, isFetchingNextPage, fetchNextPage, cards.length])
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mobile, hasNextPage, isFetchingNextPage, fetchNextPage, cards.length]);
 
-  const benefitOptions = BENEFIT_FILTERS.map(f => ({ key: f.key, label: t(f.labelKey) }))
+  const benefitOptions = BENEFIT_FILTERS.map((f) => ({
+    key: f.key,
+    label: t(f.labelKey),
+  }));
   const typeOptions: { key: TypeKey; label: string }[] = [
-    { key: 'all', label: t('benefit.typeAll') },
-    { key: 'CREDIT', label: tAsset('cardTypeShort.credit') },
-    { key: 'CHECK', label: tAsset('cardTypeShort.check') },
-  ]
+    { key: "all", label: t("benefit.typeAll") },
+    { key: "CREDIT", label: tAsset("cardTypeShort.credit") },
+    { key: "CHECK", label: tAsset("cardTypeShort.check") },
+  ];
 
   const Body = isLoading ? (
     <GridSkeleton mobile={mobile} />
   ) : cards.length === 0 ? (
     <EmptyState />
   ) : mobile ? (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
-        {cards.map(c => (
-          <CardListTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 2 }}>
+        {cards.map((c) => (
+          <CardListTile
+            key={c.rowId}
+            card={c}
+            onClick={() => setSelectedRowId(c.rowId)}
+          />
         ))}
       </div>
       {/* 인피니티 스크롤 sentinel + 더보기 로딩 */}
       <div ref={sentinelRef} style={{ height: 1 }} />
       {infQ.isFetchingNextPage && (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 4px' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "8px 0 4px",
+          }}
+        >
           <Spinner size="sm" />
         </div>
       )}
     </div>
   ) : (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: 16,
         }}
       >
-        {cards.map(c => (
-          <CardArtworkTile key={c.rowId} card={c} onClick={() => setSelectedRowId(c.rowId)} />
+        {cards.map((c) => (
+          <CardArtworkTile
+            key={c.rowId}
+            card={c}
+            onClick={() => setSelectedRowId(c.rowId)}
+          />
         ))}
       </div>
 
@@ -668,9 +764,9 @@ export const CardBenefitPage = () => {
       {totalPages > 1 && (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             gap: 8,
           }}
         >
@@ -680,20 +776,20 @@ export const CardBenefitPage = () => {
             size="sm"
             disabled={page <= 0}
             onClick={() => {
-              setPage(p => Math.max(0, p - 1))
-              window.scrollTo({ top: 0, behavior: 'smooth' })
+              setPage((p) => Math.max(0, p - 1));
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             <ChevronLeft size={14} />
-            {tCommon('prev')}
+            {tCommon("prev")}
           </Button>
           <span
             style={{
               fontSize: 12.5,
-              color: 'var(--fg-tertiary)',
-              fontVariantNumeric: 'tabular-nums',
+              color: "var(--fg-tertiary)",
+              fontVariantNumeric: "tabular-nums",
               minWidth: 56,
-              textAlign: 'center',
+              textAlign: "center",
             }}
           >
             {page + 1} / {totalPages}
@@ -704,53 +800,64 @@ export const CardBenefitPage = () => {
             size="sm"
             disabled={page >= totalPages - 1}
             onClick={() => {
-              setPage(p => Math.min(totalPages - 1, p + 1))
-              window.scrollTo({ top: 0, behavior: 'smooth' })
+              setPage((p) => Math.min(totalPages - 1, p + 1));
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
-            {tCommon('next')}
+            {tCommon("next")}
             <ChevronRight size={14} />
           </Button>
         </div>
       )}
     </div>
-  )
+  );
 
   const Controls = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* Hero 안내 — 데스크탑만 */}
       {!mobile && (
         <Card>
           <CardContent
-            style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 14 }}
+            style={{
+              padding: 20,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+            }}
           >
             <span
               style={{
                 width: 44,
                 height: 44,
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--bg-brand-muted)',
-                color: 'var(--fg-brand)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                borderRadius: "var(--radius-md)",
+                background: "var(--bg-brand-muted)",
+                color: "var(--fg-brand)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
                 flexShrink: 0,
               }}
             >
               <CreditCard size={20} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-primary)' }}>
-                {t('benefit.heroTitle')}
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "var(--fg-primary)",
+                }}
+              >
+                {t("benefit.heroTitle")}
               </div>
               <div
                 style={{
                   fontSize: 12.5,
-                  color: 'var(--fg-tertiary)',
+                  color: "var(--fg-tertiary)",
                   marginTop: 2,
                 }}
               >
-                {t('benefit.heroDesc')}
+                {t("benefit.heroDesc")}
               </div>
             </div>
           </CardContent>
@@ -758,23 +865,23 @@ export const CardBenefitPage = () => {
       )}
 
       {/* 검색 — 헤더(top__search) 스타일 정합: filled·radius-md·테두리 없음·compact */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         <Search
           size={15}
           style={{
-            position: 'absolute',
+            position: "absolute",
             left: 10,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--fg-tertiary)',
-            pointerEvents: 'none',
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "var(--fg-tertiary)",
+            pointerEvents: "none",
           }}
         />
         <Input
           search
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder={t('benefit.searchPlaceholder')}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("benefit.searchPlaceholder")}
           className="pl-9 pr-9"
         />
         {query && (
@@ -782,8 +889,8 @@ export const CardBenefitPage = () => {
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={t('benefit.clearAria')}
-            onClick={() => setQuery('')}
+            aria-label={t("benefit.clearAria")}
+            onClick={() => setQuery("")}
             className="absolute right-1.5 top-1/2 h-7 w-7 -translate-y-1/2"
           >
             <X size={14} />
@@ -792,63 +899,90 @@ export const CardBenefitPage = () => {
       </div>
 
       {/* 필터 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <FilterPills options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-        <FilterPills options={benefitOptions} value={benefitKey} onChange={setBenefitKey} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <FilterPills
+          options={typeOptions}
+          value={typeFilter}
+          onChange={setTypeFilter}
+        />
+        <FilterPills
+          options={benefitOptions}
+          value={benefitKey}
+          onChange={setBenefitKey}
+        />
       </div>
 
       {/* 결과 카운트 + 단종 포함 토글 — 한 줄(좌: 총 N건 / 우: 단종 체크박스) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 4px' }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "0 4px",
+        }}
+      >
         <span
           style={{
             fontSize: 12,
-            color: 'var(--fg-tertiary)',
-            fontVariantNumeric: 'tabular-nums',
+            color: "var(--fg-tertiary)",
+            fontVariantNumeric: "tabular-nums",
             opacity: isFetching ? 0.6 : 1,
           }}
         >
-          {t('benefit.resultCount', { count: formatKRW(total) })}
+          {t("benefit.resultCount", { count: formatKRW(total) })}
         </span>
         <label
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
+            display: "inline-flex",
+            alignItems: "center",
             gap: 6,
             fontSize: 13,
-            color: 'var(--fg-secondary)',
-            cursor: 'pointer',
-            marginLeft: 'auto',
+            color: "var(--fg-secondary)",
+            cursor: "pointer",
+            marginLeft: "auto",
           }}
         >
           <Checkbox
             size="sm"
             checked={includeDiscontinued}
-            onCheckedChange={v => setIncludeDiscontinued(v === true)}
+            onCheckedChange={(v) => setIncludeDiscontinued(v === true)}
           />
-          {t('benefit.includeDiscontinued')}
+          {t("benefit.includeDiscontinued")}
         </label>
       </div>
 
       {Body}
     </div>
-  )
+  );
 
   return (
     <>
       {mobile ? (
         <>
-          <MobileBackHeader title={t('benefit.headerTitle')} />
-          <div style={{ padding: '16px 24px 24px' }}>{Controls}</div>
+          <MobileBackHeader title={t("benefit.headerTitle")} />
+          <div style={{ padding: "16px 24px 24px" }}>{Controls}</div>
         </>
       ) : (
         <div style={{ padding: 0 }}>
-          <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+          <div
+            className="page__head"
+            style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+          >
             <div>
-              <h1>{t('benefit.headerTitle')}</h1>
-              <div className="sub">{t('benefit.headerSub')}</div>
+              <h1>{t("benefit.headerTitle")}</h1>
+              <div className="sub">{t("benefit.headerSub")}</div>
             </div>
           </div>
-          <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>{Controls}</div>
+          <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+            {Controls}
+          </div>
         </div>
       )}
 
@@ -860,5 +994,5 @@ export const CardBenefitPage = () => {
         />
       )}
     </>
-  )
-}
+  );
+};

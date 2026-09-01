@@ -1,136 +1,200 @@
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Check, Divide, ListOrdered, Percent, UserPlus, X } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { DetailSourceTx } from '@/shared/ui/porest/detail'
-import { CategoryChip } from '@/shared/ui/porest/expense-row'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Textarea } from '@/shared/ui/textarea'
-import { KRW, money } from '@/shared/lib/porest/format'
-import { todayLocalKey } from '@/shared/lib/date'
-import { useCreateDutchPay } from '@/features/dutch-pay'
-import { useExpenseCategories } from '@/features/expense'
-import { useCurrentUser } from '@/features/user'
-import type { Expense } from '@/entities/expense'
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Check, Divide, ListOrdered, Percent, UserPlus, X } from "lucide-react";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { DetailSourceTx } from "@/shared/ui/porest/detail";
+import { CategoryChip } from "@/shared/ui/porest/expense-row";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@/shared/ui/textarea";
+import { KRW, money } from "@/shared/lib/porest/format";
+import { todayLocalKey } from "@/shared/lib/date";
+import { useCreateDutchPay } from "@/features/dutch-pay";
+import { useExpenseCategories } from "@/features/expense";
+import { useCurrentUser } from "@/features/user";
+import type { Expense } from "@/entities/expense";
 import type {
   DutchPayFormValues,
   ParticipantFormValues,
   SplitMethod,
-} from '@/entities/dutch-pay'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+} from "@/entities/dutch-pay";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 // 더치페이 참가자별 시각 구분 — porest chart palette 10색
 const PARTICIPANT_PALETTE = [
-  { color: 'var(--color-chart-blue)',   bg: 'color-mix(in oklch, var(--color-chart-blue) 18%, transparent)' },
-  { color: 'var(--color-chart-green)',  bg: 'color-mix(in oklch, var(--color-chart-green) 18%, transparent)' },
-  { color: 'var(--color-chart-orange)', bg: 'color-mix(in oklch, var(--color-chart-orange) 18%, transparent)' },
-  { color: 'var(--color-chart-violet)', bg: 'color-mix(in oklch, var(--color-chart-violet) 18%, transparent)' },
-  { color: 'var(--color-chart-pink)',   bg: 'color-mix(in oklch, var(--color-chart-pink) 18%, transparent)' },
-  { color: 'var(--color-chart-indigo)', bg: 'color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)' },
-  { color: 'var(--color-chart-red)',    bg: 'color-mix(in oklch, var(--color-chart-red) 18%, transparent)' },
-  { color: 'var(--color-chart-yellow)', bg: 'color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)' },
-  { color: 'var(--color-chart-brown)',  bg: 'color-mix(in oklch, var(--color-chart-brown) 18%, transparent)' },
-  { color: 'var(--color-chart-gray)',   bg: 'color-mix(in oklch, var(--color-chart-gray) 18%, transparent)' },
-]
+  {
+    color: "var(--color-chart-blue)",
+    bg: "color-mix(in oklch, var(--color-chart-blue) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-green)",
+    bg: "color-mix(in oklch, var(--color-chart-green) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-orange)",
+    bg: "color-mix(in oklch, var(--color-chart-orange) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-violet)",
+    bg: "color-mix(in oklch, var(--color-chart-violet) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-pink)",
+    bg: "color-mix(in oklch, var(--color-chart-pink) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-indigo)",
+    bg: "color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-red)",
+    bg: "color-mix(in oklch, var(--color-chart-red) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-yellow)",
+    bg: "color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-brown)",
+    bg: "color-mix(in oklch, var(--color-chart-brown) 18%, transparent)",
+  },
+  {
+    color: "var(--color-chart-gray)",
+    bg: "color-mix(in oklch, var(--color-chart-gray) 18%, transparent)",
+  },
+];
 
-const ME_PALETTE = { color: 'var(--fg-brand)', bg: 'var(--bg-brand-subtle)' }
+const ME_PALETTE = { color: "var(--fg-brand)", bg: "var(--bg-brand-subtle)" };
 
 type Participant = {
-  uid: string
-  userRowId: number | null
-  name: string
-  isMe: boolean
-  customAmount: string // for CUSTOM mode
-  ratio: string // for RATIO mode (percentage)
-}
+  uid: string;
+  userRowId: number | null;
+  name: string;
+  isMe: boolean;
+  customAmount: string; // for CUSTOM mode
+  ratio: string; // for RATIO mode (percentage)
+};
 
-const newUid = () => Math.random().toString(36).slice(2, 9)
+const newUid = () => Math.random().toString(36).slice(2, 9);
 
 type Props = {
-  expense: Expense
-  onClose: () => void
-  onCreated?: (dutchPayRowId: number) => void
-  mobile: boolean
-}
+  expense: Expense;
+  onClose: () => void;
+  onCreated?: (dutchPayRowId: number) => void;
+  mobile: boolean;
+};
 
-const SPLIT_METHODS: { v: SplitMethod; icon: React.ComponentType<{ size?: number }>; titleKey: string; subKey: string }[] = [
-  { v: 'EQUAL', icon: Divide, titleKey: 'fromTx.split.equal.title', subKey: 'fromTx.split.equal.sub' },
-  { v: 'RATIO', icon: Percent, titleKey: 'fromTx.split.ratio.title', subKey: 'fromTx.split.ratio.sub' },
-  { v: 'CUSTOM', icon: ListOrdered, titleKey: 'fromTx.split.custom.title', subKey: 'fromTx.split.custom.sub' },
-]
+const SPLIT_METHODS: {
+  v: SplitMethod;
+  icon: React.ComponentType<{ size?: number }>;
+  titleKey: string;
+  subKey: string;
+}[] = [
+  {
+    v: "EQUAL",
+    icon: Divide,
+    titleKey: "fromTx.split.equal.title",
+    subKey: "fromTx.split.equal.sub",
+  },
+  {
+    v: "RATIO",
+    icon: Percent,
+    titleKey: "fromTx.split.ratio.title",
+    subKey: "fromTx.split.ratio.sub",
+  },
+  {
+    v: "CUSTOM",
+    icon: ListOrdered,
+    titleKey: "fromTx.split.custom.title",
+    subKey: "fromTx.split.custom.sub",
+  },
+];
 
-export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Props) {
-  const { t } = useTranslation('dutchPay')
-  const totalAbs = Math.abs(expense.amount)
+export function DutchPayFromTxDialog({
+  expense,
+  onClose,
+  onCreated,
+  mobile,
+}: Props) {
+  const { t } = useTranslation("dutchPay");
+  const totalAbs = Math.abs(expense.amount);
   // 폴백은 로컬 오늘 — UTC 날짜면 KST 새벽에 하루 이른 정산일이 저장된다(벽시계 필드).
-  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayLocalKey()
-  const expenseDateTime = (expense.expenseDate ?? '').slice(0, 16).replace('T', ' ')
+  const expenseDay =
+    (expense.expenseDate ?? "").slice(0, 10) || todayLocalKey();
+  const expenseDateTime = (expense.expenseDate ?? "")
+    .slice(0, 16)
+    .replace("T", " ");
 
-  const createMut = useCreateDutchPay()
-  const categoriesQ = useExpenseCategories()
-  const currentUserQ = useCurrentUser()
+  const createMut = useCreateDutchPay();
+  const categoriesQ = useExpenseCategories();
+  const currentUserQ = useCurrentUser();
 
-  const isLoading = categoriesQ.isLoading || currentUserQ.isLoading
+  const isLoading = categoriesQ.isLoading || currentUserQ.isLoading;
 
-  const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
-  const meName = currentUserQ.data?.userName ?? t('fromTx.me')
-  const meRowId = currentUserQ.data?.rowId ?? null
+  const category = (categoriesQ.data ?? []).find(
+    (c) => c.rowId === expense.categoryRowId,
+  );
+  const meName = currentUserQ.data?.userName ?? t("fromTx.me");
+  const meRowId = currentUserQ.data?.rowId ?? null;
 
-  const defaultTitle = expense.merchant || expense.description || t('title')
+  const defaultTitle = expense.merchant || expense.description || t("title");
 
-  const [splitMethod, setSplitMethod] = useState<SplitMethod>('EQUAL')
-  const [includeMyself, setIncludeMyself] = useState(true)
-  const [requestMessage, setRequestMessage] = useState('')
-  const [manualName, setManualName] = useState('')
+  const [splitMethod, setSplitMethod] = useState<SplitMethod>("EQUAL");
+  const [includeMyself, setIncludeMyself] = useState(true);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [manualName, setManualName] = useState("");
 
   // 참여자: '나'는 includeMyself 가 true 일 때만 포함
-  const [others, setOthers] = useState<Participant[]>([])
+  const [others, setOthers] = useState<Participant[]>([]);
 
   const participants = useMemo<Participant[]>(() => {
-    if (!includeMyself) return others
+    if (!includeMyself) return others;
     const me: Participant = {
-      uid: 'me',
+      uid: "me",
       userRowId: meRowId,
       name: meName,
       isMe: true,
-      customAmount: '',
-      ratio: '1',
-    }
-    return [me, ...others]
-  }, [includeMyself, others, meName, meRowId])
+      customAmount: "",
+      ratio: "1",
+    };
+    return [me, ...others];
+  }, [includeMyself, others, meName, meRowId]);
 
   // 균등 분배 시 1인당 금액
-  const perPersonAmount = participants.length > 0 ? Math.floor(totalAbs / participants.length) : 0
-  const perPersonRemainder = totalAbs - perPersonAmount * participants.length
+  const perPersonAmount =
+    participants.length > 0 ? Math.floor(totalAbs / participants.length) : 0;
+  const perPersonRemainder = totalAbs - perPersonAmount * participants.length;
 
   // 비율 분배 시 합계 (나는 항상 1)
-  const ratioSum = participants.reduce((s, p) => s + (Number(p.ratio) || 0), 0)
+  const ratioSum = participants.reduce((s, p) => s + (Number(p.ratio) || 0), 0);
 
   // 개별 금액: 다른 참여자가 입력한 합. 나는 (총액 - others 합) 으로 자동 채움.
-  const othersCustomTotal = others.reduce((s, p) => s + (Number(p.customAmount) || 0), 0)
+  const othersCustomTotal = others.reduce(
+    (s, p) => s + (Number(p.customAmount) || 0),
+    0,
+  );
 
   const computeAmount = (p: Participant, idx: number): number => {
-    if (splitMethod === 'EQUAL') {
-      return idx === 0 ? perPersonAmount + perPersonRemainder : perPersonAmount
+    if (splitMethod === "EQUAL") {
+      return idx === 0 ? perPersonAmount + perPersonRemainder : perPersonAmount;
     }
-    if (splitMethod === 'RATIO') {
-      if (ratioSum <= 0) return 0
-      return Math.round(totalAbs * ((Number(p.ratio) || 0) / ratioSum))
+    if (splitMethod === "RATIO") {
+      if (ratioSum <= 0) return 0;
+      return Math.round(totalAbs * ((Number(p.ratio) || 0) / ratioSum));
     }
-    if (p.isMe) return Math.max(0, totalAbs - othersCustomTotal)
-    return Number(p.customAmount) || 0
-  }
+    if (p.isMe) return Math.max(0, totalAbs - othersCustomTotal);
+    return Number(p.customAmount) || 0;
+  };
 
-  const computedAmounts = participants.map((p, i) => computeAmount(p, i))
-  const sumAmount = computedAmounts.reduce((s, a) => s + a, 0)
-  const remainder = totalAbs - sumAmount
-  const matched = remainder === 0 && participants.length >= 1
+  const computedAmounts = participants.map((p, i) => computeAmount(p, i));
+  const sumAmount = computedAmounts.reduce((s, a) => s + a, 0);
+  const remainder = totalAbs - sumAmount;
+  const matched = remainder === 0 && participants.length >= 1;
 
   const addManual = () => {
-    const name = manualName.trim()
-    if (!name) return
+    const name = manualName.trim();
+    if (!name) return;
     setOthers([
       ...others,
       {
@@ -139,143 +203,192 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
         name,
         isMe: false,
         customAmount: String(perPersonAmount),
-        ratio: '1',
+        ratio: "1",
       },
-    ])
-    setManualName('')
-  }
+    ]);
+    setManualName("");
+  };
 
   const removeOther = (uid: string) => {
-    setOthers(others.filter(p => p.uid !== uid))
-  }
+    setOthers(others.filter((p) => p.uid !== uid));
+  };
 
   const updateOther = (uid: string, patch: Partial<Participant>) => {
-    setOthers(others.map(p => (p.uid === uid ? { ...p, ...patch } : p)))
-  }
+    setOthers(others.map((p) => (p.uid === uid ? { ...p, ...patch } : p)));
+  };
 
   const handleSave = () => {
-    if (!matched) return
+    if (!matched) return;
     const payload: ParticipantFormValues[] = participants.map((p, i) => ({
       userRowId: p.userRowId ?? null,
       participantName: p.name.trim(),
       amount: computedAmounts[i] ?? 0,
-    }))
+    }));
     const data: DutchPayFormValues = {
       sourceExpenseRowId: expense.rowId,
       title: defaultTitle,
       description: requestMessage.trim() || undefined,
       totalAmount: totalAbs,
-      currency: 'KRW',
+      currency: "KRW",
       splitMethod,
       dutchPayDate: expenseDay,
       participants: payload,
-    }
+    };
     createMut.mutate(data, {
-      onSuccess: created => {
-        onCreated?.(created.rowId)
-        onClose()
+      onSuccess: (created) => {
+        onCreated?.(created.rowId);
+        onClose();
       },
-    })
-  }
+    });
+  };
 
-  const submitting = createMut.isPending
+  const submitting = createMut.isPending;
 
   const Footer = (
     <ModalFooter
       leftSlot={
-        <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>
-          {t('fromTx.perPerson')}{' '}
-          <b className="num" style={{ color: 'var(--fg-primary)', fontWeight: '800' }}>
+        <span
+          style={{
+            fontSize: "var(--text-label-sm)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("fromTx.perPerson")}{" "}
+          <b
+            className="num"
+            style={{ color: "var(--fg-primary)", fontWeight: "800" }}
+          >
             {money(perPersonAmount)}
           </b>
         </span>
       }
       onCancel={onClose}
       onSave={handleSave}
-      saveLabel={t('fromTx.createSettlement')}
+      saveLabel={t("fromTx.createSettlement")}
       saving={submitting}
       saveDisabled={!matched || participants.length === 0}
     />
-  )
+  );
 
   if (isLoading) {
     return (
-      <ModalShell title={t('fromTx.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+      <ModalShell
+        title={t("fromTx.title")}
+        onClose={onClose}
+        size="md"
+        footer={Footer}
+        mobile={mobile}
+      >
         <DutchPayFromTxSkeleton />
       </ModalShell>
-    )
+    );
   }
 
   return (
-    <ModalShell title={t('fromTx.title')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("fromTx.title")}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       {/* 기준 거래 — 플랫 행 */}
       <DetailSourceTx
-        icon={<CategoryChip color={category?.color} icon={category?.icon} size="sm" />}
+        icon={
+          <CategoryChip
+            color={category?.color}
+            icon={category?.icon}
+            size="sm"
+          />
+        }
         title={defaultTitle}
-        sub={`${expenseDateTime || expenseDay} · ${t('fromTx.sourceSub')}`}
+        sub={`${expenseDateTime || expenseDay} · ${t("fromTx.sourceSub")}`}
         amount={money(totalAbs)}
       />
 
       {/* 분배 방식 */}
-      <Section title={t('fromTx.splitSection')}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-          {SPLIT_METHODS.map(m => {
-            const Icon = m.icon
-            const active = splitMethod === m.v
+      <Section title={t("fromTx.splitSection")}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 8,
+          }}
+        >
+          {SPLIT_METHODS.map((m) => {
+            const Icon = m.icon;
+            const active = splitMethod === m.v;
             return (
               <button
                 key={m.v}
                 type="button"
                 onClick={() => setSplitMethod(m.v)}
                 style={{
-                  padding: '11px 10px',
-                  background: active ? 'var(--bg-brand-subtle)' : 'var(--bg-sunken)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-lg)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
+                  padding: "11px 10px",
+                  background: active
+                    ? "var(--bg-brand-subtle)"
+                    : "var(--bg-sunken)",
+                  border: "none",
+                  borderRadius: "var(--radius-lg)",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                   gap: 4,
-                  fontFamily: 'inherit',
-                  textAlign: 'left',
-                  transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  transition:
+                    "background var(--motion-duration-fast) var(--motion-ease-out)",
                 }}
               >
                 <span
                   style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
+                    display: "inline-flex",
+                    alignItems: "center",
                     gap: 6,
-                    fontWeight: '700',
-                    fontSize: 'var(--text-label-sm)',
-                    color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
+                    fontWeight: "700",
+                    fontSize: "var(--text-label-sm)",
+                    color: active
+                      ? "var(--fg-brand-strong)"
+                      : "var(--fg-primary)",
                   }}
                 >
                   <Icon size={14} />
                   {t(m.titleKey)}
                 </span>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t(m.subKey)}</span>
+                <span
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                  }}
+                >
+                  {t(m.subKey)}
+                </span>
               </button>
-            )
+            );
           })}
         </div>
       </Section>
 
       {/* 나도 포함 */}
       <div
-        onClick={() => setIncludeMyself(v => !v)}
+        onClick={() => setIncludeMyself((v) => !v)}
         role="checkbox"
         aria-checked={includeMyself}
         tabIndex={0}
-        onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setIncludeMyself(v => !v) } }}
+        onKeyDown={(e) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            setIncludeMyself((v) => !v);
+          }
+        }}
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 10,
-          padding: '11px 2px',
+          padding: "11px 2px",
           marginBottom: 10,
-          cursor: 'pointer',
+          cursor: "pointer",
         }}
       >
         <span
@@ -283,103 +396,154 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           style={{
             width: 17,
             height: 17,
-            borderRadius: 'var(--radius-xs)',
-            border: `2px solid ${includeMyself ? 'var(--bg-brand)' : 'var(--border-default)'}`,
-            background: includeMyself ? 'var(--bg-brand)' : 'transparent',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--fg-on-brand)',
+            borderRadius: "var(--radius-xs)",
+            border: `2px solid ${includeMyself ? "var(--bg-brand)" : "var(--border-default)"}`,
+            background: includeMyself ? "var(--bg-brand)" : "transparent",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--fg-on-brand)",
             flexShrink: 0,
           }}
         >
           {includeMyself && <Check size={12} strokeWidth={3} />}
         </span>
-        <span style={{ flex: 1, fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{t('fromTx.includeMe')}</span>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          {includeMyself ? t('fromTx.includeMeHint') : t('fromTx.includeMeHintOff')}
+        <span
+          style={{
+            flex: 1,
+            fontSize: "var(--text-body-sm)",
+            fontWeight: "600",
+          }}
+        >
+          {t("fromTx.includeMe")}
+        </span>
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {includeMyself
+            ? t("fromTx.includeMeHint")
+            : t("fromTx.includeMeHintOff")}
         </span>
       </div>
 
       {/* 참여자 */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)' }}>{t('fromTx.participants')}</span>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
-          ({participants.length}{t('participants')})
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("fromTx.participants")}
+        </span>
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            marginLeft: 6,
+          }}
+        >
+          ({participants.length}
+          {t("participants")})
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", marginBottom: 12 }}
+      >
         {participants.map((p, idx) => {
           const palette = p.isMe
             ? ME_PALETTE
-            : PARTICIPANT_PALETTE[(idx - (includeMyself ? 1 : 0) + PARTICIPANT_PALETTE.length) % PARTICIPANT_PALETTE.length]!
-          const amt = computedAmounts[idx] ?? 0
+            : PARTICIPANT_PALETTE[
+                (idx - (includeMyself ? 1 : 0) + PARTICIPANT_PALETTE.length) %
+                  PARTICIPANT_PALETTE.length
+              ]!;
+          const amt = computedAmounts[idx] ?? 0;
           return (
             <div
               key={p.uid}
               style={{
-                display: 'flex',
-                alignItems: 'center',
+                display: "flex",
+                alignItems: "center",
                 gap: 11,
-                padding: '10px 0',
+                padding: "10px 0",
               }}
             >
               <span
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 'var(--radius-pill)',
+                  borderRadius: "var(--radius-pill)",
                   background: palette.bg,
                   color: palette.color,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: '700',
-                  fontSize: 'var(--text-label-sm)',
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "700",
+                  fontSize: "var(--text-label-sm)",
                   flexShrink: 0,
                 }}
               >
                 {p.name.charAt(0)}
               </span>
 
-              <span style={{ flex: 1, minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontWeight: '600', fontSize: 'var(--text-body-sm)' }}>{p.name}</span>
+              <span
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{ fontWeight: "600", fontSize: "var(--text-body-sm)" }}
+                >
+                  {p.name}
+                </span>
                 {p.isMe && (
                   <span
                     style={{
-                      fontSize: 'var(--text-badge)',
-                      fontWeight: '700',
-                      padding: '2px 7px',
-                      borderRadius: 'var(--radius-pill)',
-                      background: 'var(--bg-brand-subtle)',
-                      color: 'var(--fg-brand-strong)',
+                      fontSize: "var(--text-badge)",
+                      fontWeight: "700",
+                      padding: "2px 7px",
+                      borderRadius: "var(--radius-pill)",
+                      background: "var(--bg-brand-subtle)",
+                      color: "var(--fg-brand-strong)",
                     }}
                   >
-                    {t('fromTx.me')}
+                    {t("fromTx.me")}
                   </span>
                 )}
               </span>
 
-              {splitMethod === 'CUSTOM' && !p.isMe && (
-                <div style={{ position: 'relative', width: 110 }}>
+              {splitMethod === "CUSTOM" && !p.isMe && (
+                <div style={{ position: "relative", width: 110 }}>
                   <Input
                     className="num"
                     value={p.customAmount}
-                    onChange={e => updateOther(p.uid, { customAmount: e.target.value.replace(/[^0-9]/g, '') })}
+                    onChange={(e) =>
+                      updateOther(p.uid, {
+                        customAmount: e.target.value.replace(/[^0-9]/g, ""),
+                      })
+                    }
                     inputMode="numeric"
                     placeholder="0"
-                    style={{ paddingRight: 26, textAlign: 'right' }}
+                    style={{ paddingRight: 26, textAlign: "right" }}
                   />
                   <span
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       right: 10,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: 'var(--text-caption)',
-                      color: 'var(--fg-tertiary)',
-                      pointerEvents: 'none',
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-tertiary)",
+                      pointerEvents: "none",
                     }}
                   >
                     원
@@ -387,31 +551,38 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 </div>
               )}
 
-              {splitMethod === 'CUSTOM' && p.isMe && (
-                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
+              {splitMethod === "CUSTOM" && p.isMe && (
+                <span
+                  className="num"
+                  style={{ fontWeight: "700", fontSize: "var(--text-body-sm)" }}
+                >
                   {money(amt)}
                 </span>
               )}
 
-              {splitMethod === 'RATIO' && !p.isMe && (
-                <div style={{ position: 'relative', width: 84 }}>
+              {splitMethod === "RATIO" && !p.isMe && (
+                <div style={{ position: "relative", width: 84 }}>
                   <Input
                     className="num"
                     value={p.ratio}
-                    onChange={e => updateOther(p.uid, { ratio: e.target.value.replace(/[^0-9.]/g, '') })}
+                    onChange={(e) =>
+                      updateOther(p.uid, {
+                        ratio: e.target.value.replace(/[^0-9.]/g, ""),
+                      })
+                    }
                     inputMode="decimal"
                     placeholder="1"
-                    style={{ paddingRight: 22, textAlign: 'right' }}
+                    style={{ paddingRight: 22, textAlign: "right" }}
                   />
                   <span
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       right: 10,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: 'var(--text-caption)',
-                      color: 'var(--fg-tertiary)',
-                      pointerEvents: 'none',
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-tertiary)",
+                      pointerEvents: "none",
                     }}
                   >
                     %
@@ -419,14 +590,25 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 </div>
               )}
 
-              {splitMethod === 'RATIO' && (
-                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)', minWidth: 80, textAlign: 'right' }}>
+              {splitMethod === "RATIO" && (
+                <span
+                  className="num"
+                  style={{
+                    fontWeight: "700",
+                    fontSize: "var(--text-body-sm)",
+                    minWidth: 80,
+                    textAlign: "right",
+                  }}
+                >
                   {money(amt)}
                 </span>
               )}
 
-              {splitMethod === 'EQUAL' && (
-                <span className="num" style={{ fontWeight: '700', fontSize: 'var(--text-body-sm)' }}>
+              {splitMethod === "EQUAL" && (
+                <span
+                  className="num"
+                  style={{ fontWeight: "700", fontSize: "var(--text-body-sm)" }}
+                >
                   {money(amt)}
                 </span>
               )}
@@ -437,7 +619,7 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                   variant="ghost"
                   size="icon"
                   onClick={() => removeOther(p.uid)}
-                  aria-label={t('fromTx.removeParticipant')}
+                  aria-label={t("fromTx.removeParticipant")}
                   className="h-7 w-7 rounded-full text-[var(--fg-tertiary)]"
                 >
                   <X size={14} />
@@ -446,17 +628,22 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
                 <span style={{ width: 28, height: 28 }} />
               )}
             </div>
-          )
+          );
         })}
       </div>
 
       {/* 추가 input */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <Input
           value={manualName}
-          onChange={e => setManualName(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addManual() } }}
-          placeholder={t('fromTx.addNamePlaceholder')}
+          onChange={(e) => setManualName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addManual();
+            }
+          }}
+          placeholder={t("fromTx.addNamePlaceholder")}
           disabled={submitting}
           style={{ flex: 1 }}
         />
@@ -466,31 +653,37 @@ export function DutchPayFromTxDialog({ expense, onClose, onCreated, mobile }: Pr
           onClick={addManual}
           disabled={submitting || !manualName.trim()}
         >
-          <UserPlus size={14} /> {t('fromTx.add')}
+          <UserPlus size={14} /> {t("fromTx.add")}
         </Button>
       </div>
 
       {/* 요청 메시지 */}
-      <Section title={t('fromTx.requestMessage')} tightTop>
+      <Section title={t("fromTx.requestMessage")} tightTop>
         <Textarea
           value={requestMessage}
-          onChange={e => setRequestMessage(e.target.value)}
-          placeholder={t('fromTx.requestMessagePlaceholder')}
+          onChange={(e) => setRequestMessage(e.target.value)}
+          placeholder={t("fromTx.requestMessagePlaceholder")}
           rows={3}
           disabled={submitting}
-          style={{ resize: 'vertical', minHeight: 64, fontFamily: 'inherit' }}
+          style={{ resize: "vertical", minHeight: 64, fontFamily: "inherit" }}
         />
       </Section>
 
       {!matched && (
-        <p style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', marginTop: 8 }}>
+        <p
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-expense)",
+            marginTop: 8,
+          }}
+        >
           {remainder > 0
-            ? t('fromTx.shortfall', { amount: KRW(remainder) })
-            : t('fromTx.excess', { amount: KRW(-remainder) })}
+            ? t("fromTx.shortfall", { amount: KRW(remainder) })
+            : t("fromTx.excess", { amount: KRW(-remainder) })}
         </p>
       )}
     </ModalShell>
-  )
+  );
 }
 
 /** DutchPayFromTx skeleton — 기준 거래 플랫 행 + 분배 방식 + 참여자 리스트 + 메시지. */
@@ -500,11 +693,11 @@ function DutchPayFromTxSkeleton() {
       {/* 기준 거래 — 플랫 행 */}
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 12,
-          padding: '2px 2px 16px',
-          borderBottom: '1px solid var(--border-subtle)',
+          padding: "2px 2px 16px",
+          borderBottom: "1px solid var(--border-subtle)",
           marginBottom: 16,
         }}
       >
@@ -518,7 +711,14 @@ function DutchPayFromTxSkeleton() {
 
       {/* 분배 방식 */}
       <SkeletonBase className="h-3 w-16 mb-2" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 14 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 6,
+          marginBottom: 14,
+        }}
+      >
         {Array.from({ length: 3 }).map((_, i) => (
           <SkeletonBase key={i} className="h-16 w-full rounded-md" />
         ))}
@@ -529,15 +729,17 @@ function DutchPayFromTxSkeleton() {
 
       {/* 참여자 */}
       <SkeletonBase className="h-3 w-16 mb-2" />
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", marginBottom: 12 }}
+      >
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 11,
-              padding: '10px 0',
+              padding: "10px 0",
             }}
           >
             <SkeletonBase className="h-9 w-9 rounded-full shrink-0" />
@@ -549,7 +751,7 @@ function DutchPayFromTxSkeleton() {
         ))}
       </div>
     </>
-  )
+  );
 }
 
 function Section({
@@ -557,16 +759,23 @@ function Section({
   tightTop,
   children,
 }: {
-  title: string
-  tightTop?: boolean
-  children: React.ReactNode
+  title: string;
+  tightTop?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <div style={{ marginBottom: 16, marginTop: tightTop ? 4 : 0 }}>
-      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div
+        style={{
+          fontSize: "var(--text-caption)",
+          fontWeight: "700",
+          color: "var(--fg-secondary)",
+          marginBottom: 8,
+        }}
+      >
         {title}
       </div>
       {children}
     </div>
-  )
+  );
 }

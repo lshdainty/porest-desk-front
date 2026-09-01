@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -10,19 +10,19 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/shared/ui/nav-main"
-import { NavProjects } from "@/shared/ui/nav-projects"
-import { NavUser } from "@/shared/ui/nav-user"
-import { TeamSwitcher } from "@/shared/ui/team-switcher"
+import { NavMain } from "@/shared/ui/nav-main";
+import { NavProjects } from "@/shared/ui/nav-projects";
+import { NavUser } from "@/shared/ui/nav-user";
+import { TeamSwitcher } from "@/shared/ui/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/shared/ui/sidebar"
+} from "@/shared/ui/sidebar";
 
 // This is sample data.
 const data = {
@@ -152,7 +152,7 @@ const data = {
       icon: Map,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -169,5 +169,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Badge — porest-design specs/components/badge.md SoT 기반.
@@ -33,8 +33,7 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-error text-text-on-accent hover:brightness-105",
         // soft (semantic, color-mix 16% bg) — 텍스트는 status-*-fg (다크에서 light variant, 앱 statusXxxFg 정합)
-        info:
-          "border-transparent bg-[color-mix(in_srgb,var(--color-info)_16%,transparent)] text-[color:var(--status-info-fg)] hover:bg-[color-mix(in_srgb,var(--color-info)_24%,transparent)]",
+        info: "border-transparent bg-[color-mix(in_srgb,var(--color-info)_16%,transparent)] text-[color:var(--status-info-fg)] hover:bg-[color-mix(in_srgb,var(--color-info)_24%,transparent)]",
         success:
           "border-transparent bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-[color:var(--status-success-fg)] hover:bg-[color-mix(in_srgb,var(--color-success)_24%,transparent)]",
         warning:
@@ -58,19 +57,17 @@ const badgeVariants = cva(
       variant: "default",
     },
   },
-)
+);
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <div
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  )
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  );
 }
 
-export { Badge }
+export { Badge };

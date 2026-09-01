@@ -1,35 +1,55 @@
-import { useTranslation } from 'react-i18next'
-import { useCardCatalogDetail } from '@/features/card-catalog'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { CardInfoHeader } from './CardInfoHeader'
-import { CardPerformanceSection } from './CardPerformanceSection'
-import { AvailableBenefitsList } from './AvailableBenefitsList'
-import { CardCautionList } from './CardCautionList'
-import { CardSearchTagsSection } from './CardSearchTagsSection'
+import { useTranslation } from "react-i18next";
+import { useCardCatalogDetail } from "@/features/card-catalog";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { CardInfoHeader } from "./CardInfoHeader";
+import { CardPerformanceSection } from "./CardPerformanceSection";
+import { AvailableBenefitsList } from "./AvailableBenefitsList";
+import { CardCautionList } from "./CardCautionList";
+import { CardSearchTagsSection } from "./CardSearchTagsSection";
 
 // 모바일 카드 다이어트 — 스켈레톤 셸: 모바일은 카드 없이, 데스크톱은 Card.
 // (렌더 중 컴포넌트 생성 금지 — React Compiler 룰 — 로 모듈 레벨 정의.)
-function Shell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
-  return mobile ? <div>{children}</div> : <Card><CardContent className="p-5">{children}</CardContent></Card>
+function Shell({
+  mobile,
+  children,
+}: {
+  mobile: boolean;
+  children: React.ReactNode;
+}) {
+  return mobile ? (
+    <div>{children}</div>
+  ) : (
+    <Card>
+      <CardContent className="p-5">{children}</CardContent>
+    </Card>
+  );
 }
 
 interface Props {
   /** Asset.cardCatalog.rowId 또는 직접 전달된 카드 row id */
-  cardCatalogRowId: number
+  cardCatalogRowId: number;
   /** 실적 섹션 표시에 필요 — asset.rowId */
-  assetRowId?: number
+  assetRowId?: number;
   /** 모바일 카드 다이어트 — 하위 섹션들의 셸 카드를 벗기고 플랫 렌더 */
-  mobile?: boolean
+  mobile?: boolean;
 }
 
-export function CardDetailWidget({ cardCatalogRowId, assetRowId, mobile = false }: Props) {
-  const { t } = useTranslation('card')
-  const { data: detail, isLoading, error } = useCardCatalogDetail(cardCatalogRowId)
+export function CardDetailWidget({
+  cardCatalogRowId,
+  assetRowId,
+  mobile = false,
+}: Props) {
+  const { t } = useTranslation("card");
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useCardCatalogDetail(cardCatalogRowId);
 
   if (isLoading) {
     return (
-      <div className={mobile ? 'space-y-9' : 'space-y-4'}>
+      <div className={mobile ? "space-y-9" : "space-y-4"}>
         {/* CardInfoHeader: 카드 이미지(h-32 w-52) + 회사명/카드명/배지 */}
         <Shell mobile={mobile}>
           <div className="flex flex-col gap-5 sm:flex-row">
@@ -59,7 +79,7 @@ export function CardDetailWidget({ cardCatalogRowId, assetRowId, mobile = false 
         <Shell mobile={mobile}>
           <div className="space-y-3">
             <SkeletonBase className="h-5 w-32" />
-            {[0, 1, 2].map(i => (
+            {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center gap-3">
                 <SkeletonBase className="h-8 w-8 shrink-0 rounded" />
                 <div className="flex-1 space-y-1.5">
@@ -71,23 +91,31 @@ export function CardDetailWidget({ cardCatalogRowId, assetRowId, mobile = false 
           </div>
         </Shell>
       </div>
-    )
+    );
   }
 
   if (error || !detail) {
-    return <div className="text-sm text-destructive">{t('detail.loadError')}</div>
+    return (
+      <div className="text-sm text-destructive">{t("detail.loadError")}</div>
+    );
   }
 
   return (
     // 모바일 카드 다이어트 — 섹션 gap 36 이 카드 대신 구분 담당.
-    <div className={mobile ? 'space-y-9' : 'space-y-4'}>
+    <div className={mobile ? "space-y-9" : "space-y-4"}>
       <CardInfoHeader detail={detail} mobile={mobile} />
-      {assetRowId != null && <CardPerformanceSection assetRowId={assetRowId} mobile={mobile} />}
+      {assetRowId != null && (
+        <CardPerformanceSection assetRowId={assetRowId} mobile={mobile} />
+      )}
       <AvailableBenefitsList benefits={detail.benefits} mobile={mobile} />
       {detail.searchBenefits.length > 0 && (
-        <CardSearchTagsSection groups={detail.searchBenefits} title={t('detail.searchTagsTitle')} mobile={mobile} />
+        <CardSearchTagsSection
+          groups={detail.searchBenefits}
+          title={t("detail.searchTagsTitle")}
+          mobile={mobile}
+        />
       )}
       <CardCautionList cautions={detail.cautions} mobile={mobile} />
     </div>
-  )
+  );
 }

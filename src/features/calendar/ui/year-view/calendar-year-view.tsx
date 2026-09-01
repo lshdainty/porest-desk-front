@@ -1,20 +1,29 @@
-import { addMonths, format, getDaysInMonth, isSameDay, isToday, parseISO, startOfMonth, startOfYear } from 'date-fns'
-import { enUS, ko } from 'date-fns/locale'
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import {
+  addMonths,
+  format,
+  getDaysInMonth,
+  isSameDay,
+  isToday,
+  parseISO,
+  startOfMonth,
+  startOfYear,
+} from "date-fns";
+import { enUS, ko } from "date-fns/locale";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { cn } from '@/shared/lib'
-import { eventBadgeColor } from '@/features/calendar/lib/helpers'
+import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { cn } from "@/shared/lib";
+import { eventBadgeColor } from "@/features/calendar/lib/helpers";
 
-import type { IEvent } from '@/features/calendar/model/interfaces'
+import type { IEvent } from "@/features/calendar/model/interfaces";
 
 interface IProps {
-  allEvents: IEvent[]
+  allEvents: IEvent[];
 }
 
-const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const WEEK_DAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
+const WEEK_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEK_DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
 // ---- Year view day cell ---- //
 
@@ -23,22 +32,22 @@ const YearViewDayCell = ({
   date,
   events,
 }: {
-  day: number
-  date: Date
-  events: IEvent[]
+  day: number;
+  date: Date;
+  events: IEvent[];
 }) => {
-  const { setSelectedDate, setView } = useCalendar()
+  const { setSelectedDate, setView } = useCalendar();
 
-  const maxIndicators = 3
-  const eventCount = events.length
-  const isSunday = date.getDay() === 0
-  const isSaturday = date.getDay() === 6
-  const isHoliday = events.some(e => e.sourceType === 'holiday')
+  const maxIndicators = 3;
+  const eventCount = events.length;
+  const isSunday = date.getDay() === 0;
+  const isSaturday = date.getDay() === 6;
+  const isHoliday = events.some((e) => e.sourceType === "holiday");
 
   const handleClick = () => {
-    setSelectedDate(date)
-    setView('day')
-  }
+    setSelectedDate(date);
+    setView("day");
+  };
 
   return (
     <button
@@ -48,11 +57,17 @@ const YearViewDayCell = ({
     >
       <div
         className={cn(
-          'flex size-6 items-center justify-center rounded-full text-xs font-medium',
-          isToday(date) && 'bg-primary font-semibold text-primary-foreground'
+          "flex size-6 items-center justify-center rounded-full text-xs font-medium",
+          isToday(date) && "bg-primary font-semibold text-primary-foreground",
         )}
         style={{
-          color: isToday(date) ? undefined : (isHoliday || isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined),
+          color: isToday(date)
+            ? undefined
+            : isHoliday || isSunday
+              ? "var(--fg-expense)"
+              : isSaturday
+                ? "var(--fg-brand)"
+                : undefined,
         }}
       >
         {day}
@@ -61,7 +76,7 @@ const YearViewDayCell = ({
       {eventCount > 0 && (
         <div className="mt-0.5 flex gap-0.5">
           {eventCount <= maxIndicators ? (
-            events.map(event => (
+            events.map((event) => (
               <div
                 key={event.id}
                 className="size-1.5 rounded-full"
@@ -74,14 +89,16 @@ const YearViewDayCell = ({
                 className="size-1.5 rounded-full"
                 style={{ backgroundColor: eventBadgeColor(events[0]) }}
               />
-              <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>
+              <span className="text-[7px] text-muted-foreground">
+                +{eventCount - 1}
+              </span>
             </>
           )}
         </div>
       )}
     </button>
-  )
-}
+  );
+};
 
 // ---- Year view month card ---- //
 
@@ -89,30 +106,30 @@ const YearViewMonth = ({
   month,
   events,
 }: {
-  month: Date
-  events: IEvent[]
+  month: Date;
+  events: IEvent[];
 }) => {
-  const { i18n } = useTranslation()
-  const { setSelectedDate, setView } = useCalendar()
+  const { i18n } = useTranslation();
+  const { setSelectedDate, setView } = useCalendar();
 
-  const locale = i18n.language.startsWith('ko') ? ko : enUS
-  const weekDays = i18n.language.startsWith('ko') ? WEEK_DAYS_KO : WEEK_DAYS_EN
-  const monthName = format(month, 'MMMM', { locale })
+  const locale = i18n.language.startsWith("ko") ? ko : enUS;
+  const weekDays = i18n.language.startsWith("ko") ? WEEK_DAYS_KO : WEEK_DAYS_EN;
+  const monthName = format(month, "MMMM", { locale });
 
   const daysInMonth = useMemo(() => {
-    const totalDays = getDaysInMonth(month)
-    const firstDay = startOfMonth(month).getDay()
+    const totalDays = getDaysInMonth(month);
+    const firstDay = startOfMonth(month).getDay();
 
-    const days = Array.from({ length: totalDays }, (_, i) => i + 1)
-    const blanks = Array(firstDay).fill(null)
+    const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+    const blanks = Array(firstDay).fill(null);
 
-    return [...blanks, ...days]
-  }, [month])
+    return [...blanks, ...days];
+  }, [month]);
 
   const handleClick = () => {
-    setSelectedDate(new Date(month.getFullYear(), month.getMonth(), 1))
-    setView('month')
-  }
+    setSelectedDate(new Date(month.getFullYear(), month.getMonth(), 1));
+    setView("month");
+  };
 
   return (
     <div className="flex flex-col">
@@ -127,57 +144,77 @@ const YearViewMonth = ({
       <div className="flex-1 space-y-2 rounded-b-lg border border-t-0 p-3">
         <div className="grid grid-cols-7 gap-x-0.5 text-center">
           {weekDays.map((day, index) => {
-            const isSunday = index === 0
-            const isSaturday = index === 6
+            const isSunday = index === 0;
+            const isSaturday = index === 6;
 
             return (
               <div
                 key={index}
                 className="text-xs font-medium"
-                style={{ color: isSunday ? 'var(--fg-expense)' : isSaturday ? 'var(--fg-brand)' : undefined }}
+                style={{
+                  color: isSunday
+                    ? "var(--fg-expense)"
+                    : isSaturday
+                      ? "var(--fg-brand)"
+                      : undefined,
+                }}
               >
                 {day}
               </div>
-            )
+            );
           })}
         </div>
 
         <div className="grid grid-cols-7 gap-x-0.5 gap-y-2">
           {daysInMonth.map((day, index) => {
-            if (day === null) return <div key={`blank-${index}`} className="h-10" />
+            if (day === null)
+              return <div key={`blank-${index}`} className="h-10" />;
 
-            const date = new Date(month.getFullYear(), month.getMonth(), day)
-            const dayEvents = events.filter(event =>
-              isSameDay(parseISO(event.startDate), date) || isSameDay(parseISO(event.endDate), date)
-            )
+            const date = new Date(month.getFullYear(), month.getMonth(), day);
+            const dayEvents = events.filter(
+              (event) =>
+                isSameDay(parseISO(event.startDate), date) ||
+                isSameDay(parseISO(event.endDate), date),
+            );
 
-            return <YearViewDayCell key={`day-${day}`} day={day} date={date} events={dayEvents} />
+            return (
+              <YearViewDayCell
+                key={`day-${day}`}
+                day={day}
+                date={date}
+                events={dayEvents}
+              />
+            );
           })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ---- Main year view ---- //
 
 const CalendarYearView = ({ allEvents }: IProps) => {
-  const { selectedDate } = useCalendar()
+  const { selectedDate } = useCalendar();
 
   const months = useMemo(() => {
-    const yearStart = startOfYear(selectedDate)
-    return Array.from({ length: 12 }, (_, i) => addMonths(yearStart, i))
-  }, [selectedDate])
+    const yearStart = startOfYear(selectedDate);
+    return Array.from({ length: 12 }, (_, i) => addMonths(yearStart, i));
+  }, [selectedDate]);
 
   return (
     <div className="w-full h-full overflow-y-auto scrollbar-hide p-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {months.map(month => (
-          <YearViewMonth key={month.toString()} month={month} events={allEvents} />
+        {months.map((month) => (
+          <YearViewMonth
+            key={month.toString()}
+            month={month}
+            events={allEvents}
+          />
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarYearView }
+export { CalendarYearView };

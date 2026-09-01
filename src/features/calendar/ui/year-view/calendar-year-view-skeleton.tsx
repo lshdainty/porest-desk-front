@@ -11,14 +11,17 @@ const MonthSkeleton = () => {
 
       <div className="grid grid-cols-7 gap-1">
         {Array.from({ length: 42 }).map((_, i) => (
-          <div key={i} className="aspect-square flex items-center justify-center">
+          <div
+            key={i}
+            className="aspect-square flex items-center justify-center"
+          >
             <div className="h-6 w-6 rounded-full bg-muted animate-pulse" />
           </div>
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const CalendarYearViewSkeleton = () => {
   return (
@@ -29,7 +32,7 @@ const CalendarYearViewSkeleton = () => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarYearViewSkeleton }
+export { CalendarYearViewSkeleton };

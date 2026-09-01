@@ -4,4 +4,4 @@ export type {
   SavingGoalUpdateFormValues,
   SavingGoalContributeValues,
   SavingGoalReorderItem,
-} from './model/types'
+} from "./model/types";

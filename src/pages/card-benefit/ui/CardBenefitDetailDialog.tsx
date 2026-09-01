@@ -1,15 +1,20 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
-import { ChevronDown, ChevronUp, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalViewFooter } from '@/shared/ui/porest/modal-footer'
-import { Button } from '@/shared/ui/button'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { decodeHtml } from '@/shared/lib'
-import { useCardCatalogDetail } from '@/features/card-catalog'
-import type { CardCatalogDetail, CardCatalogSummary } from '@/entities/card'
-import { getCardBrand } from '@/entities/card'
+import { useState, type CSSProperties, type ReactNode } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { Button } from "@/shared/ui/button";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { decodeHtml } from "@/shared/lib";
+import { useCardCatalogDetail } from "@/features/card-catalog";
+import type { CardCatalogDetail, CardCatalogSummary } from "@/entities/card";
+import { getCardBrand } from "@/entities/card";
 
 /**
  * 카드 혜택 상세 모달 — porest-design `card-benefits.jsx` CardBenefitDialog SoT 정합.
@@ -26,7 +31,7 @@ import { getCardBrand } from '@/entities/card'
  */
 
 function formatKRW(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(n)
+  return new Intl.NumberFormat("ko-KR").format(n);
 }
 
 /**
@@ -34,142 +39,161 @@ function formatKRW(n: number) {
  * annualFee 가 null 이면 백엔드가 "연회비 정보를 모른다"고 알려준 것이다.
  */
 function annualFeeText(s: CardCatalogSummary, t: TFunction) {
-  if (!s.annualFee) return t('benefit.feeUnknown')
-  if (s.annualFee.amount > 0) return t('benefit.annualFeeDomestic', { amount: formatKRW(s.annualFee.amount) })
-  return s.annualFee.label ?? t('benefit.feeFree')
+  if (!s.annualFee) return t("benefit.feeUnknown");
+  if (s.annualFee.amount > 0)
+    return t("benefit.annualFeeDomestic", {
+      amount: formatKRW(s.annualFee.amount),
+    });
+  return s.annualFee.label ?? t("benefit.feeFree");
 }
 
 /** 전월 실적 표기: isRequired==='Y' → requiredText ?? "N원 이상", 아니면 "실적 무관". */
 function performanceText(s: CardCatalogSummary, t: TFunction) {
-  if (s.performance.isRequired === 'Y') {
+  if (s.performance.isRequired === "Y") {
     if (s.performance.requiredAmount > 0) {
-      return t('benefit.performanceAtLeast', { amount: formatKRW(s.performance.requiredAmount) })
+      return t("benefit.performanceAtLeast", {
+        amount: formatKRW(s.performance.requiredAmount),
+      });
     }
-    return s.performance.requiredText ?? t('benefit.performanceNone')
+    return s.performance.requiredText ?? t("benefit.performanceNone");
   }
-  return t('benefit.performanceNone')
+  return t("benefit.performanceNone");
 }
 
 /** topBenefits[].tags 를 flatten 해 중복 제거한 주요 혜택 태그. */
 function flattenTopTags(detail: CardCatalogDetail): string[] {
-  const seen = new Set<string>()
-  const out: string[] = []
+  const seen = new Set<string>();
+  const out: string[] = [];
   for (const g of detail.topBenefits) {
     for (const t of g.tags) {
-      const v = decodeHtml(t)
+      const v = decodeHtml(t);
       if (v && !seen.has(v)) {
-        seen.add(v)
-        out.push(v)
+        seen.add(v);
+        out.push(v);
       }
     }
   }
-  return out
+  return out;
 }
 
 function CardHero({ summary }: { summary: CardCatalogSummary }) {
-  const { t: tAsset } = useTranslation('asset')
-  const cardName = decodeHtml(summary.cardName)
-  const companyName = decodeHtml(summary.company?.name ?? '')
-  const discontinued = summary.isDiscontinued === 'Y'
+  const { t: tAsset } = useTranslation("asset");
+  const cardName = decodeHtml(summary.cardName);
+  const companyName = decodeHtml(summary.company?.name ?? "");
+  const discontinued = summary.isDiscontinued === "Y";
 
   // 3단계 fallback: imgUrl 로드 성공 → <img> / 실패·없음 → 브랜드 색 / 미상 → 중립.
-  const [imgError, setImgError] = useState(false)
-  const showImg = !!summary.imgUrl && !imgError
-  const brand = getCardBrand(companyName)
+  const [imgError, setImgError] = useState(false);
+  const showImg = !!summary.imgUrl && !imgError;
+  const brand = getCardBrand(companyName);
 
   if (showImg) {
     return (
       <div
         style={{
-          width: '100%',
-          aspectRatio: '1.586 / 1',
+          width: "100%",
+          aspectRatio: "1.586 / 1",
           maxHeight: 220,
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
+          borderRadius: "var(--radius-lg)",
+          overflow: "hidden",
           marginBottom: 18,
-          position: 'relative',
-          background: 'var(--bg-sunken)',
-          boxShadow: 'var(--shadow-sm)',
+          position: "relative",
+          background: "var(--bg-sunken)",
+          boxShadow: "var(--shadow-sm)",
         }}
       >
         <img
           src={summary.imgUrl ?? undefined}
           alt={cardName}
           onError={() => setImgError(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
         />
         {discontinued && (
           <span
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 12,
               right: 12,
               fontSize: 10,
               fontWeight: 700,
-              padding: '3px 8px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0,0,0,0.55)',
-              color: 'var(--fg-on-brand)',
+              padding: "3px 8px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(0,0,0,0.55)",
+              color: "var(--fg-on-brand)",
             }}
           >
-            {tAsset('editDialog.discontinued')}
+            {tAsset("editDialog.discontinued")}
           </span>
         )}
       </div>
-    )
+    );
   }
 
   // imgUrl 없음·로드 실패 → 브랜드 색(or 중립) 아트워크 + 브랜드명/카드명 오버레이
   return (
     <div
       style={{
-        width: '100%',
-        aspectRatio: '1.586 / 1',
+        width: "100%",
+        aspectRatio: "1.586 / 1",
         maxHeight: 220,
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: "var(--radius-lg)",
         background: brand.bg,
         color: brand.fg,
         padding: 22,
         marginBottom: 18,
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
       <span
         style={{
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
           background:
-            'linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
-          pointerEvents: 'none',
+            "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)",
+          pointerEvents: "none",
         }}
       />
       <div
         style={{
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.85, letterSpacing: '0.06em' }}>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            opacity: 0.85,
+            letterSpacing: "0.06em",
+          }}
+        >
           {companyName}
         </span>
         <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.6 }}>
-          {summary.cardType === 'CREDIT' ? tAsset('cardTypeShort.credit') : tAsset('cardTypeShort.check')}
+          {summary.cardType === "CREDIT"
+            ? tAsset("cardTypeShort.credit")
+            : tAsset("cardTypeShort.check")}
         </span>
       </div>
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         <div
           style={{
             fontSize: 18,
             fontWeight: 800,
-            letterSpacing: '-0.01em',
+            letterSpacing: "-0.01em",
             marginBottom: 4,
-            wordBreak: 'keep-all',
+            wordBreak: "keep-all",
             lineHeight: 1.25,
           }}
         >
@@ -180,18 +204,18 @@ function CardHero({ summary }: { summary: CardCatalogSummary }) {
             style={{
               fontSize: 10,
               fontWeight: 700,
-              padding: '3px 8px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0,0,0,0.3)',
-              color: 'var(--fg-on-brand)',
+              padding: "3px 8px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(0,0,0,0.3)",
+              color: "var(--fg-on-brand)",
             }}
           >
-            {tAsset('editDialog.discontinued')}
+            {tAsset("editDialog.discontinued")}
           </span>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -202,15 +226,15 @@ function StatCell({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
       style={{
-        padding: '12px 14px',
-        background: 'var(--bg-sunken)',
-        borderRadius: 'var(--radius-md)',
+        padding: "12px 14px",
+        background: "var(--bg-sunken)",
+        borderRadius: "var(--radius-md)",
       }}
     >
       <div
         style={{
           fontSize: 11,
-          color: 'var(--fg-tertiary)',
+          color: "var(--fg-tertiary)",
           fontWeight: 600,
           marginBottom: 4,
         }}
@@ -221,14 +245,14 @@ function StatCell({ label, value }: { label: string; value: ReactNode }) {
         style={{
           fontSize: 14,
           fontWeight: 700,
-          color: 'var(--fg-primary)',
-          fontVariantNumeric: 'tabular-nums',
+          color: "var(--fg-primary)",
+          fontVariantNumeric: "tabular-nums",
         }}
       >
         {value}
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -236,29 +260,29 @@ function StatCell({ label, value }: { label: string; value: ReactNode }) {
  * (스켈레톤이 따로 복제하면 셸만 어긋나 로딩 후 화면이 튄다)
  */
 const benefitRowShell: CSSProperties = {
-  background: 'var(--bg-surface)',
-  border: '1px solid var(--border-subtle)',
-  borderRadius: 'var(--radius-md)',
-  overflow: 'hidden',
-}
+  background: "var(--bg-surface)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: "var(--radius-md)",
+  overflow: "hidden",
+};
 
 function DetailContent({ detail }: { detail: CardCatalogDetail }) {
-  const { t } = useTranslation('card')
-  const summary = detail.summary
-  const tags = flattenTopTags(detail)
-  const benefits = detail.benefits
+  const { t } = useTranslation("card");
+  const summary = detail.summary;
+  const tags = flattenTopTags(detail);
+  const benefits = detail.benefits;
 
-  const [expanded, setExpanded] = useState<Set<number>>(new Set())
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const toggle = (i: number) =>
-    setExpanded(prev => {
-      const next = new Set(prev)
-      if (next.has(i)) next.delete(i)
-      else next.add(i)
-      return next
-    })
-  const expandAll = () => setExpanded(new Set(benefits.map((_, i) => i)))
-  const collapseAll = () => setExpanded(new Set())
-  const allOpen = benefits.length > 0 && expanded.size === benefits.length
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  const expandAll = () => setExpanded(new Set(benefits.map((_, i) => i)));
+  const collapseAll = () => setExpanded(new Set());
+  const allOpen = benefits.length > 0 && expanded.size === benefits.length;
 
   return (
     <>
@@ -267,14 +291,20 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
       {/* 연회비 · 전월 실적 */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: 10,
           marginBottom: 18,
         }}
       >
-        <StatCell label={t('benefit.statAnnualFee')} value={annualFeeText(summary, t)} />
-        <StatCell label={t('benefit.statPerformance')} value={performanceText(summary, t)} />
+        <StatCell
+          label={t("benefit.statAnnualFee")}
+          value={annualFeeText(summary, t)}
+        />
+        <StatCell
+          label={t("benefit.statPerformance")}
+          value={performanceText(summary, t)}
+        />
       </div>
 
       {/* 주요 혜택 태그 */}
@@ -284,24 +314,24 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
             style={{
               fontSize: 13,
               fontWeight: 700,
-              color: 'var(--fg-primary)',
+              color: "var(--fg-primary)",
               marginBottom: 8,
             }}
           >
-            {t('benefit.topTagsTitle')}
+            {t("benefit.topTagsTitle")}
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {tags.map(tag => (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {tags.map((tag) => (
               <span
                 key={tag}
                 style={{
-                  padding: '4px 10px',
-                  background: 'var(--bg-brand-subtle)',
-                  color: 'var(--fg-brand)',
+                  padding: "4px 10px",
+                  background: "var(--bg-brand-subtle)",
+                  color: "var(--fg-brand)",
                   fontSize: 12,
                   fontWeight: 600,
-                  borderRadius: 'var(--radius-pill)',
-                  letterSpacing: '-0.005em',
+                  borderRadius: "var(--radius-pill)",
+                  letterSpacing: "-0.005em",
                 }}
               >
                 {tag}
@@ -313,19 +343,29 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
 
       {/* 혜택 상세 · N건 아코디언 */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-primary)' }}>
-            {t('benefit.detailCount', { count: benefits.length })}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "var(--fg-primary)",
+            }}
+          >
+            {t("benefit.detailCount", { count: benefits.length })}
           </span>
           {benefits.length > 0 && (
             <Button
               variant="accent"
               size="sm"
               onClick={allOpen ? collapseAll : expandAll}
-              style={{ marginLeft: 'auto' }}
+              style={{ marginLeft: "auto" }}
             >
-              {allOpen ? <ChevronsDownUp size={12} /> : <ChevronsUpDown size={12} />}
-              {allOpen ? t('benefit.collapseAll') : t('benefit.expandAll')}
+              {allOpen ? (
+                <ChevronsDownUp size={12} />
+              ) : (
+                <ChevronsUpDown size={12} />
+              )}
+              {allOpen ? t("benefit.collapseAll") : t("benefit.expandAll")}
             </Button>
           )}
         </div>
@@ -333,42 +373,44 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
         {benefits.length === 0 ? (
           <div
             style={{
-              padding: '24px 16px',
-              textAlign: 'center',
+              padding: "24px 16px",
+              textAlign: "center",
               fontSize: 13,
-              color: 'var(--fg-tertiary)',
-              background: 'var(--bg-sunken)',
-              borderRadius: 'var(--radius-md)',
+              color: "var(--fg-tertiary)",
+              background: "var(--bg-sunken)",
+              borderRadius: "var(--radius-md)",
             }}
           >
-            {t('benefit.noBenefits')}
+            {t("benefit.noBenefits")}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {benefits.map((b, i) => {
-              const open = expanded.has(i)
-              const title = decodeHtml(b.category)
-              const value = decodeHtml(b.summary ?? b.title ?? '')
+              const open = expanded.has(i);
+              const title = decodeHtml(b.category);
+              const value = decodeHtml(b.summary ?? b.title ?? "");
               const condition =
                 summary.performance.requiredText ??
-                (summary.performance.isRequired === 'Y' ? undefined : t('benefit.performanceNone'))
-              const body = decodeHtml(b.detail ?? '')
+                (summary.performance.isRequired === "Y"
+                  ? undefined
+                  : t("benefit.performanceNone"));
+              const body = decodeHtml(b.detail ?? "");
               return (
                 <div key={b.rowId} style={benefitRowShell}>
                   <button
                     type="button"
                     onClick={() => toggle(i)}
                     style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
                       gap: 10,
-                      padding: '14px 16px',
-                      background: 'transparent',
+                      padding: "14px 16px",
+                      background: "transparent",
                       border: 0,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontFamily: "inherit",
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -376,19 +418,19 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                         style={{
                           fontSize: 14,
                           fontWeight: 700,
-                          color: 'var(--fg-primary)',
-                          letterSpacing: '-0.01em',
+                          color: "var(--fg-primary)",
+                          letterSpacing: "-0.01em",
                         }}
                       >
                         {title}
                       </div>
                       <div
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
+                          display: "flex",
+                          alignItems: "center",
                           gap: 8,
                           marginTop: 4,
-                          flexWrap: 'wrap',
+                          flexWrap: "wrap",
                         }}
                       >
                         {value && (
@@ -396,7 +438,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                             style={{
                               fontSize: 12.5,
                               fontWeight: 700,
-                              color: 'var(--fg-brand)',
+                              color: "var(--fg-brand)",
                             }}
                           >
                             {value}
@@ -407,11 +449,11 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                             style={{
                               fontSize: 10.5,
                               fontWeight: 600,
-                              color: 'var(--fg-tertiary)',
+                              color: "var(--fg-tertiary)",
                               // 앱 badge(bgSunken: 다크 #1A1F2E) 정합 — bg-canvas 가 다크에서 #1A1F2E.
-                              background: 'var(--bg-canvas)',
-                              padding: '2px 7px',
-                              borderRadius: 'var(--radius-pill)',
+                              background: "var(--bg-canvas)",
+                              padding: "2px 7px",
+                              borderRadius: "var(--radius-pill)",
                             }}
                           >
                             {condition}
@@ -420,37 +462,40 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                       </div>
                     </div>
                     {open ? (
-                      <ChevronUp size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+                      <ChevronUp
+                        size={16}
+                        style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+                      />
                     ) : (
                       <ChevronDown
                         size={16}
-                        style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }}
+                        style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
                       />
                     )}
                   </button>
                   {open && body && (
                     <div
                       style={{
-                        padding: '14px 16px 16px',
+                        padding: "14px 16px 16px",
                         fontSize: 13,
-                        color: 'var(--fg-secondary)',
+                        color: "var(--fg-secondary)",
                         lineHeight: 1.6,
-                        letterSpacing: '-0.003em',
-                        whiteSpace: 'pre-wrap',
-                        borderTop: '1px solid var(--border-subtle)',
+                        letterSpacing: "-0.003em",
+                        whiteSpace: "pre-wrap",
+                        borderTop: "1px solid var(--border-subtle)",
                       }}
                     >
                       {body}
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </div>
     </>
-  )
+  );
 }
 
 /**
@@ -465,26 +510,29 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
  * - 주요 혜택 태그 섹션은 tags.length > 0 조건부라 생략(앱 `_DetailSkeleton` 과 동일).
  */
 function DetailSkeleton() {
-  const { t } = useTranslation('card')
+  const { t } = useTranslation("card");
   return (
     <>
       <SkeletonBase
         className="w-full rounded-lg"
-        style={{ aspectRatio: '1.586 / 1', maxHeight: 220, marginBottom: 18 }}
+        style={{ aspectRatio: "1.586 / 1", maxHeight: 220, marginBottom: 18 }}
       />
 
       {/* 연회비 · 전월 실적 */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: 10,
           marginBottom: 18,
         }}
       >
-        <StatCell label={t('benefit.statAnnualFee')} value={<SkeletonBase className="h-4 w-16" />} />
         <StatCell
-          label={t('benefit.statPerformance')}
+          label={t("benefit.statAnnualFee")}
+          value={<SkeletonBase className="h-4 w-16" />}
+        />
+        <StatCell
+          label={t("benefit.statPerformance")}
           value={<SkeletonBase className="h-4 w-20" />}
         />
       </div>
@@ -492,27 +540,43 @@ function DetailSkeleton() {
       {/* 혜택 상세 · N건 아코디언 */}
       <div>
         {/* 실렌더 헤더는 Button(size sm = h-8)이 행 높이를 32 로 잡는다 — 안 맞추면 아래 목록이 밀린다. */}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 32, marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            minHeight: 32,
+            marginBottom: 8,
+          }}
+        >
           {/* 제목(13/700) 자리 */}
           <SkeletonBase className="h-4 w-24" />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} style={benefitRowShell}>
               <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 10,
-                  padding: '14px 16px',
+                  padding: "14px 16px",
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {/* 카테고리(14/700) */}
-                  <SkeletonBase className={i % 2 === 0 ? 'h-4 w-28' : 'h-4 w-24'} />
+                  <SkeletonBase
+                    className={i % 2 === 0 ? "h-4 w-28" : "h-4 w-24"}
+                  />
                   {/* 혜택 값(12.5) + 조건 badge(10.5, radius-pill) — 실렌더는 marginTop 4 · gap 8 */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 4,
+                    }}
+                  >
                     <SkeletonBase className="h-3 w-20" />
                     <SkeletonBase className="h-4 w-14 rounded-full" />
                   </div>
@@ -525,7 +589,7 @@ function DetailSkeleton() {
         </div>
       </div>
     </>
-  )
+  );
 }
 
 export function CardBenefitDetailDialog({
@@ -533,38 +597,48 @@ export function CardBenefitDetailDialog({
   onClose,
   mobile,
 }: {
-  rowId: number
-  onClose: () => void
-  mobile: boolean
+  rowId: number;
+  onClose: () => void;
+  mobile: boolean;
 }) {
-  const { t } = useTranslation('card')
-  const { t: tCommon } = useTranslation('common')
-  const { data: detail, isLoading, isError } = useCardCatalogDetail(rowId)
+  const { t } = useTranslation("card");
+  const { t: tCommon } = useTranslation("common");
+  const { data: detail, isLoading, isError } = useCardCatalogDetail(rowId);
 
   // 단일 닫기는 secondary(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
   // 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
   const footer = (
-    <ModalViewFooter confirmLabel={tCommon('close')} confirmVariant="secondary" onConfirm={onClose} />
-  )
+    <ModalViewFooter
+      confirmLabel={tCommon("close")}
+      confirmVariant="secondary"
+      onConfirm={onClose}
+    />
+  );
 
   return (
-    <ModalShell title={t('benefit.detailTitle')} onClose={onClose} size="md" footer={footer} mobile={mobile}>
+    <ModalShell
+      title={t("benefit.detailTitle")}
+      onClose={onClose}
+      size="md"
+      footer={footer}
+      mobile={mobile}
+    >
       {isLoading ? (
         <DetailSkeleton />
       ) : isError || !detail ? (
         <div
           style={{
-            padding: '60px 20px',
-            textAlign: 'center',
+            padding: "60px 20px",
+            textAlign: "center",
             fontSize: 13,
-            color: 'var(--fg-tertiary)',
+            color: "var(--fg-tertiary)",
           }}
         >
-          {t('benefit.loadFail')}
+          {t("benefit.loadFail")}
         </div>
       ) : (
         <DetailContent detail={detail} />
       )}
     </ModalShell>
-  )
+  );
 }

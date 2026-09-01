@@ -1,1 +1,1 @@
-export type { TodoTag, TodoTagFormValues } from './model/types'
+export type { TodoTag, TodoTagFormValues } from "./model/types";

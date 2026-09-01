@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Plus } from 'lucide-react'
+import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { Plus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/ui/alert-dialog'
+} from "@/shared/ui/alert-dialog";
 import {
   useAssets,
   useAssetSummary,
@@ -20,86 +20,109 @@ import {
   useAssetTransfers,
   useCreateTransfer,
   useDeleteTransfer,
-} from '@/features/asset'
-import type { Asset, AssetFormValues, AssetUpdateFormValues, AssetTransferFormValues } from '@/entities/asset'
-import { useIsMobile } from '@/shared/hooks'
-import { Button } from '@/shared/ui/button'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { ScrollArea } from '@/shared/ui/scroll-area'
-import { AssetList } from './AssetList'
-import { AssetForm } from './AssetForm'
-import { AssetSummaryCard } from './AssetSummaryCard'
-import { AssetTransferList } from './AssetTransferList'
-import { AssetTransferForm } from './AssetTransferForm'
-import { AssetDetailDialog } from './AssetDetailDialog'
+} from "@/features/asset";
+import type {
+  Asset,
+  AssetFormValues,
+  AssetUpdateFormValues,
+  AssetTransferFormValues,
+} from "@/entities/asset";
+import { useIsMobile } from "@/shared/hooks";
+import { Button } from "@/shared/ui/button";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { AssetList } from "./AssetList";
+import { AssetForm } from "./AssetForm";
+import { AssetSummaryCard } from "./AssetSummaryCard";
+import { AssetTransferList } from "./AssetTransferList";
+import { AssetTransferForm } from "./AssetTransferForm";
+import { AssetDetailDialog } from "./AssetDetailDialog";
 
-type TabType = 'assets' | 'transfers'
+type TabType = "assets" | "transfers";
 
 export const AssetFullWidget = () => {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
 
-  const [activeTab, setActiveTab] = useState<TabType>('assets')
-  const [showForm, setShowForm] = useState(false)
-  const [showTransferForm, setShowTransferForm] = useState(false)
-  const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
-  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
-  const isMobile = useIsMobile()
+  const [activeTab, setActiveTab] = useState<TabType>("assets");
+  const [showForm, setShowForm] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
+    null,
+  );
+  const isMobile = useIsMobile();
 
-  const { data: assetsData, isLoading } = useAssets()
-  const { data: summary, isLoading: isSummaryLoading } = useAssetSummary()
-  const { data: transfersData, isLoading: isTransfersLoading } = useAssetTransfers()
-  const createAsset = useCreateAsset()
-  const updateAsset = useUpdateAsset()
-  const deleteAsset = useDeleteAsset()
-  const createTransfer = useCreateTransfer()
-  const deleteTransfer = useDeleteTransfer()
+  const { data: assetsData, isLoading } = useAssets();
+  const { data: summary, isLoading: isSummaryLoading } = useAssetSummary();
+  const { data: transfersData, isLoading: isTransfersLoading } =
+    useAssetTransfers();
+  const createAsset = useCreateAsset();
+  const updateAsset = useUpdateAsset();
+  const deleteAsset = useDeleteAsset();
+  const createTransfer = useCreateTransfer();
+  const deleteTransfer = useDeleteTransfer();
 
-  const assets = assetsData?.assets ?? []
-  const transfers = transfersData?.transfers ?? []
+  const assets = assetsData?.assets ?? [];
+  const transfers = transfersData?.transfers ?? [];
 
-  const handleCreate = useCallback((data: AssetFormValues) => {
-    createAsset.mutate(data, {
-      onSuccess: () => setShowForm(false),
-    })
-  }, [createAsset])
+  const handleCreate = useCallback(
+    (data: AssetFormValues) => {
+      createAsset.mutate(data, {
+        onSuccess: () => setShowForm(false),
+      });
+    },
+    [createAsset],
+  );
 
-  const handleUpdate = useCallback((data: AssetUpdateFormValues) => {
-    if (!editingAsset) return
-    updateAsset.mutate({ id: editingAsset.rowId, data }, {
-      onSuccess: () => {
-        setEditingAsset(null)
-        setShowForm(false)
-      },
-    })
-  }, [editingAsset, updateAsset])
+  const handleUpdate = useCallback(
+    (data: AssetUpdateFormValues) => {
+      if (!editingAsset) return;
+      updateAsset.mutate(
+        { id: editingAsset.rowId, data },
+        {
+          onSuccess: () => {
+            setEditingAsset(null);
+            setShowForm(false);
+          },
+        },
+      );
+    },
+    [editingAsset, updateAsset],
+  );
 
   const handleEdit = useCallback((asset: Asset) => {
-    setEditingAsset(asset)
-    setShowForm(true)
-  }, [])
+    setEditingAsset(asset);
+    setShowForm(true);
+  }, []);
 
   const handleDelete = useCallback((id: number) => {
-    setShowDeleteConfirm(id)
-  }, [])
+    setShowDeleteConfirm(id);
+  }, []);
 
   const confirmDelete = useCallback(() => {
     if (showDeleteConfirm) {
       deleteAsset.mutate(showDeleteConfirm, {
         onSuccess: () => setShowDeleteConfirm(null),
-      })
+      });
     }
-  }, [showDeleteConfirm, deleteAsset])
+  }, [showDeleteConfirm, deleteAsset]);
 
-  const handleCreateTransfer = useCallback((data: AssetTransferFormValues) => {
-    createTransfer.mutate(data, {
-      onSuccess: () => setShowTransferForm(false),
-    })
-  }, [createTransfer])
+  const handleCreateTransfer = useCallback(
+    (data: AssetTransferFormValues) => {
+      createTransfer.mutate(data, {
+        onSuccess: () => setShowTransferForm(false),
+      });
+    },
+    [createTransfer],
+  );
 
-  const handleDeleteTransfer = useCallback((id: number) => {
-    deleteTransfer.mutate(id)
-  }, [deleteTransfer])
+  const handleDeleteTransfer = useCallback(
+    (id: number) => {
+      deleteTransfer.mutate(id);
+    },
+    [deleteTransfer],
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -113,29 +136,32 @@ export const AssetFullWidget = () => {
 
         <div className="flex items-center gap-2 border-b">
           <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'assets' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('assets')}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === "assets" ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setActiveTab("assets")}
           >
-            {t('assets')}
+            {t("assets")}
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'transfers' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('transfers')}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === "transfers" ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setActiveTab("transfers")}
           >
-            {t('transfers')}
+            {t("transfers")}
           </button>
-          {activeTab === 'assets' && (
+          {activeTab === "assets" && (
             <Button
               variant="ghost"
               size="xs"
-              onClick={() => { setEditingAsset(null); setShowForm(true) }}
+              onClick={() => {
+                setEditingAsset(null);
+                setShowForm(true);
+              }}
               className="ml-auto gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <Plus size={12} />
-              {t('addAsset')}
+              {t("addAsset")}
             </Button>
           )}
-          {activeTab === 'transfers' && (
+          {activeTab === "transfers" && (
             <Button
               variant="ghost"
               size="xs"
@@ -143,7 +169,7 @@ export const AssetFullWidget = () => {
               className="ml-auto gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <Plus size={12} />
-              {t('addTransfer')}
+              {t("addTransfer")}
             </Button>
           )}
         </div>
@@ -151,8 +177,8 @@ export const AssetFullWidget = () => {
 
       {/* 스크롤: 리스트 */}
       <ScrollArea className="mt-4 min-h-0 flex-1">
-        {activeTab === 'assets' && (
-          isLoading ? (
+        {activeTab === "assets" &&
+          (isLoading ? (
             <AssetRowsSkeleton />
           ) : (
             <AssetList
@@ -161,16 +187,18 @@ export const AssetFullWidget = () => {
               onDelete={handleDelete}
               onRowClick={(asset) => setDetailAsset(asset)}
             />
-          )
-        )}
+          ))}
 
-        {activeTab === 'transfers' && (
-          isTransfersLoading ? (
+        {activeTab === "transfers" &&
+          (isTransfersLoading ? (
             <AssetRowsSkeleton />
           ) : (
-            <AssetTransferList transfers={transfers} onDelete={handleDeleteTransfer} isDeleting={deleteTransfer.isPending} />
-          )
-        )}
+            <AssetTransferList
+              transfers={transfers}
+              onDelete={handleDeleteTransfer}
+              isDeleting={deleteTransfer.isPending}
+            />
+          ))}
       </ScrollArea>
 
       {detailAsset && (
@@ -179,9 +207,9 @@ export const AssetFullWidget = () => {
           mobile={isMobile}
           onClose={() => setDetailAsset(null)}
           onEdit={(asset) => {
-            setDetailAsset(null)
-            setEditingAsset(asset)
-            setShowForm(true)
+            setDetailAsset(null);
+            setEditingAsset(asset);
+            setShowForm(true);
           }}
         />
       )}
@@ -190,7 +218,10 @@ export const AssetFullWidget = () => {
         <AssetForm
           asset={editingAsset}
           onSubmit={editingAsset ? handleUpdate : handleCreate}
-          onClose={() => { setShowForm(false); setEditingAsset(null) }}
+          onClose={() => {
+            setShowForm(false);
+            setEditingAsset(null);
+          }}
           isLoading={createAsset.isPending || updateAsset.isPending}
         />
       )}
@@ -204,31 +235,36 @@ export const AssetFullWidget = () => {
         />
       )}
 
-      <AlertDialog open={showDeleteConfirm !== null} onOpenChange={() => setShowDeleteConfirm(null)}>
+      <AlertDialog
+        open={showDeleteConfirm !== null}
+        onOpenChange={() => setShowDeleteConfirm(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('deleteConfirm.message', {
-                name: assets.find((a) => a.rowId === showDeleteConfirm)?.assetName ?? '',
+              {t("deleteConfirm.message", {
+                name:
+                  assets.find((a) => a.rowId === showDeleteConfirm)
+                    ?.assetName ?? "",
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               loading={deleteAsset.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {t('deleteConfirm.confirm')}
+              {t("deleteConfirm.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-}
+  );
+};
 
 /** AssetSummaryCard skeleton — Hero 카드 + 도넛+타입 breakdown grid 자리. */
 function AssetSummaryCardSkeleton() {
@@ -243,7 +279,10 @@ function AssetSummaryCardSkeleton() {
           <div className="w-full md:w-1/2">
             <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
+                <div
+                  key={i}
+                  className="flex items-start gap-2 rounded-md bg-muted/50 p-2"
+                >
                   <SkeletonBase className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <SkeletonBase className="h-3 w-12" />
@@ -256,7 +295,7 @@ function AssetSummaryCardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /** 자산/이체 리스트 행 skeleton — 아이콘 + 이름/메타 + 금액 행 × 5. */
@@ -264,7 +303,10 @@ function AssetRowsSkeleton() {
   return (
     <div className="space-y-2">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-md border px-3 py-2.5">
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-md border px-3 py-2.5"
+        >
           <SkeletonBase className="h-9 w-9 shrink-0 rounded-md" />
           <div className="flex-1 space-y-1.5">
             <SkeletonBase className="h-4 w-32" />
@@ -274,5 +316,5 @@ function AssetRowsSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }

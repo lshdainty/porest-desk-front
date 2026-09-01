@@ -1,4 +1,4 @@
-export { userCalendarApi } from './api/userCalendarApi'
+export { userCalendarApi } from "./api/userCalendarApi";
 export {
   useUserCalendars,
   useCreateUserCalendar,
@@ -10,4 +10,4 @@ export {
   useJoinCalendar,
   useRemoveCalendarMember,
   useChangeCalendarMemberRole,
-} from './model/useUserCalendars'
+} from "./model/useUserCalendars";

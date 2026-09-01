@@ -1,36 +1,43 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Icon } from '@/shared/ui/porest/primitives'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
-import { IconPicker } from '@/shared/ui/icon-picker'
-import { Input } from '@/shared/ui/input'
-import { Field, FieldLabel } from '@/shared/ui/field'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Icon } from "@/shared/ui/porest/primitives";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
+import { IconPicker } from "@/shared/ui/icon-picker";
+import { Input } from "@/shared/ui/input";
+import { Field, FieldLabel } from "@/shared/ui/field";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CAT_PALETTE, getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import type { ExpenseCategory, ExpenseCategoryFormValues, ExpenseType } from '@/entities/expense'
+} from "@/shared/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+  CAT_PALETTE,
+  getPaletteByColor,
+} from "@/shared/lib/porest/chart-palette";
+import type {
+  ExpenseCategory,
+  ExpenseCategoryFormValues,
+  ExpenseType,
+} from "@/entities/expense";
 
 // 호환 re-export — 호출처가 `@/features/porest/dialogs` 에서 import 한다.
 // eslint-disable-next-line react-refresh/only-export-components
-export { CAT_PALETTE, getPaletteByColor }
+export { CAT_PALETTE, getPaletteByColor };
 
 /** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
 export interface CategoryItem {
-  id: string
-  label: string
-  icon: string
-  color: string
-  bg: string
-  kind: 'expense' | 'income'
-  count: number
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  bg: string;
+  kind: "expense" | "income";
+  count: number;
 }
 
 export function CategoryEditDialog({
@@ -45,74 +52,75 @@ export function CategoryEditDialog({
   existing,
   submitting,
 }: {
-  cat: ExpenseCategory | null
-  defaultKind: ExpenseType
-  defaultParentRowId?: number | null
-  onClose: () => void
-  onSave: (values: ExpenseCategoryFormValues) => void
+  cat: ExpenseCategory | null;
+  defaultKind: ExpenseType;
+  defaultParentRowId?: number | null;
+  onClose: () => void;
+  onSave: (values: ExpenseCategoryFormValues) => void;
   /**
    * 삭제 — **모바일 footer 에서만 쓴다**. 데스크탑·태블릿은 관리 목록 행에 삭제
    * 아이콘이 있지만 모바일 목록엔 없고 행을 탭하면 바로 이 시트로 들어와,
    * 여기에 없으면 지울 방법이 사라진다.
    */
-  onDelete?: () => void
+  onDelete?: () => void;
   /** 거래를 다른 카테고리로 옮기기 — 거래가 달려 하위를 만들 수 없을 때의 탈출구. */
-  onMoveTx?: () => void
-  mobile: boolean
-  existing: ExpenseCategory[]
-  submitting?: boolean
+  onMoveTx?: () => void;
+  mobile: boolean;
+  existing: ExpenseCategory[];
+  submitting?: boolean;
 }) {
-  const { t } = useTranslation('category')
-  const { t: tc } = useTranslation('common')
-  const { t: te } = useTranslation('expense')
-  const isNew = !cat
-  const [label, setLabel] = useState(cat?.categoryName || '')
-  const [kind, setKind] = useState<ExpenseType>(cat?.expenseType || defaultKind)
-  const [icon, setIcon] = useState(cat?.icon || 'tag')
+  const { t } = useTranslation("category");
+  const { t: tc } = useTranslation("common");
+  const { t: te } = useTranslation("expense");
+  const isNew = !cat;
+  const [label, setLabel] = useState(cat?.categoryName || "");
+  const [kind, setKind] = useState<ExpenseType>(
+    cat?.expenseType || defaultKind,
+  );
+  const [icon, setIcon] = useState(cat?.icon || "tag");
   const [paletteIdx, setPaletteIdx] = useState(() => {
-    if (!cat?.color) return 0
-    const idx = CAT_PALETTE.findIndex(p => p.baseHex === cat.color)
-    return idx >= 0 ? idx : 0
-  })
+    if (!cat?.color) return 0;
+    const idx = CAT_PALETTE.findIndex((p) => p.baseHex === cat.color);
+    return idx >= 0 ? idx : 0;
+  });
   const [parentRowId, setParentRowId] = useState<number | null>(
     cat?.parentRowId ?? defaultParentRowId ?? null,
-  )
-  const [touched, setTouched] = useState(false)
+  );
+  const [touched, setTouched] = useState(false);
 
-  const palette = CAT_PALETTE[paletteIdx]!
-  const labelTrim = label.trim()
+  const palette = CAT_PALETTE[paletteIdx]!;
+  const labelTrim = label.trim();
   // 이름 중복 — 서버 규칙과 동일 범위: 같은 상위(부모) · 같은 타입 안에서만 금지.
   // (지출 '이자'와 수입 '이자', '생활>관리비'와 '주거>관리비' 처럼 위치·타입이 다르면 허용)
   const duplicate = existing.some(
-    c =>
+    (c) =>
       c.categoryName === labelTrim &&
       c.rowId !== cat?.rowId &&
       c.expenseType === kind &&
       (c.parentRowId ?? null) === parentRowId,
-  )
-  const valid = labelTrim.length > 0 && labelTrim.length <= 12 && !duplicate
+  );
+  const valid = labelTrim.length > 0 && labelTrim.length <= 12 && !duplicate;
   const err =
     touched && !valid
       ? labelTrim.length === 0
-        ? t('nameRequired')
+        ? t("nameRequired")
         : labelTrim.length > 12
-        ? t('nameTooLong')
-        : duplicate
-        ? t('nameDuplicate')
-        : null
-      : null
+          ? t("nameTooLong")
+          : duplicate
+            ? t("nameDuplicate")
+            : null
+      : null;
 
   // 상위 카테고리 후보: 같은 expenseType의 최상위(parentRowId=null)이고 본인 자신 제외.
   // (자식 보유 부모는 애초에 '상위 카테고리' 필드를 숨기므로 여기서 따로 막지 않음.)
-  const parentOptions = existing.filter(c =>
-    c.expenseType === kind &&
-    c.parentRowId == null &&
-    c.rowId !== cat?.rowId
-  )
+  const parentOptions = existing.filter(
+    (c) =>
+      c.expenseType === kind && c.parentRowId == null && c.rowId !== cat?.rowId,
+  );
 
   const save = () => {
-    setTouched(true)
-    if (!valid) return
+    setTouched(true);
+    if (!valid) return;
     const values: ExpenseCategoryFormValues = {
       categoryName: labelTrim,
       icon,
@@ -120,28 +128,28 @@ export function CategoryEditDialog({
       expenseType: kind,
       sortOrder: cat?.sortOrder,
       parentRowId: parentRowId,
-    }
-    onSave(values)
-  }
+    };
+    onSave(values);
+  };
 
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={isNew ? t('add') : tc('save')}
+      saveLabel={isNew ? t("add") : tc("save")}
       saving={submitting}
       saveDisabled={touched && !valid}
       // 모바일은 [삭제][저장] — 목록에 삭제가 없어 여기가 유일한 경로다.
       // 데스크탑·태블릿은 목록 행에 삭제 아이콘이 있어 [취소][저장] 그대로 둔다.
       onCancel={mobile ? undefined : onClose}
       onDelete={mobile ? onDelete : undefined}
-      deleteLabel={tc('delete')}
+      deleteLabel={tc("delete")}
       deleting={submitting}
     />
-  )
+  );
 
   return (
     <ModalShell
-      title={isNew ? te('addCategory') : t('editTitle')}
+      title={isNew ? te("addCategory") : t("editTitle")}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -149,12 +157,12 @@ export function CategoryEditDialog({
     >
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 12,
           padding: 14,
-          background: 'var(--bg-muted)',
-          borderRadius: 'var(--radius-tile)',
+          background: "var(--bg-muted)",
+          borderRadius: "var(--radius-tile)",
           marginBottom: 20,
         }}
       >
@@ -162,10 +170,10 @@ export function CategoryEditDialog({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 'var(--radius-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            borderRadius: "var(--radius-lg)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
             background: palette.bg,
             color: palette.color,
@@ -176,28 +184,39 @@ export function CategoryEditDialog({
         <div>
           <div
             style={{
-              font: '700 15px/1.3 var(--font-sans)',
-              color: 'var(--fg-primary)',
-              letterSpacing: '-0.012em',
+              font: "700 15px/1.3 var(--font-sans)",
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.012em",
             }}
           >
-            {labelTrim || t('newCategory')}
+            {labelTrim || t("newCategory")}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {kind === 'EXPENSE' ? t('expenseCategory') : t('incomeCategory')} · {t('preview')}
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 2,
+            }}
+          >
+            {kind === "EXPENSE" ? t("expenseCategory") : t("incomeCategory")} ·{" "}
+            {t("preview")}
           </div>
         </div>
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t('type')}</FieldLabel>
+        <FieldLabel>{t("type")}</FieldLabel>
         <Tabs
           value={kind}
           onValueChange={(v) => v && setKind(v as ExpenseType)}
         >
           <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="EXPENSE" className="flex-1">{te('expense')}</TabsTrigger>
-            <TabsTrigger value="INCOME" className="flex-1">{te('income')}</TabsTrigger>
+            <TabsTrigger value="EXPENSE" className="flex-1">
+              {te("expense")}
+            </TabsTrigger>
+            <TabsTrigger value="INCOME" className="flex-1">
+              {te("income")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </Field>
@@ -209,22 +228,36 @@ export function CategoryEditDialog({
       {(isNew || cat?.parentRowId != null) && (
         <Field style={{ marginBottom: 14 }}>
           <FieldLabel>
-            {t('parentCategory')}
+            {t("parentCategory")}
             {isNew && (
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>{t('optional')}</span>
+              <span
+                style={{
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "400",
+                  marginLeft: 4,
+                }}
+              >
+                {t("optional")}
+              </span>
             )}
           </FieldLabel>
           <Select
-            value={parentRowId == null ? '__root__' : String(parentRowId)}
-            onValueChange={(v) => setParentRowId(v === '__root__' ? null : Number(v))}
+            value={parentRowId == null ? "__root__" : String(parentRowId)}
+            onValueChange={(v) =>
+              setParentRowId(v === "__root__" ? null : Number(v))
+            }
             disabled={parentOptions.length === 0}
           >
             <SelectTrigger>
-              <SelectValue placeholder={isNew ? t('rootOption') : t('selectParent')} />
+              <SelectValue
+                placeholder={isNew ? t("rootOption") : t("selectParent")}
+              />
             </SelectTrigger>
             <SelectContent>
-              {isNew && <SelectItem value="__root__">{t('rootOption')}</SelectItem>}
-              {parentOptions.map(p => (
+              {isNew && (
+                <SelectItem value="__root__">{t("rootOption")}</SelectItem>
+              )}
+              {parentOptions.map((p) => (
                 <SelectItem key={p.rowId} value={String(p.rowId)}>
                   {p.categoryName}
                 </SelectItem>
@@ -234,40 +267,40 @@ export function CategoryEditDialog({
           {!isNew && (
             <div
               style={{
-                fontSize: 'var(--text-badge)',
-                color: 'var(--fg-tertiary)',
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
                 marginTop: 4,
               }}
             >
-              {t('parentMoveHint')}
+              {t("parentMoveHint")}
             </div>
           )}
         </Field>
       )}
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t('name')}</FieldLabel>
+        <FieldLabel>{t("name")}</FieldLabel>
         <Input
           aria-invalid={!!err}
           value={label}
-          onChange={e => {
-            setLabel(e.target.value)
-            setTouched(true)
+          onChange={(e) => {
+            setLabel(e.target.value);
+            setTouched(true);
           }}
-          placeholder={t('namePlaceholder')}
+          placeholder={t("namePlaceholder")}
           maxLength={14}
           autoFocus
         />
         <div
           style={{
-            fontSize: 'var(--text-badge)',
-            color: 'var(--fg-tertiary)',
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-tertiary)",
             marginTop: 4,
-            textAlign: 'right',
+            textAlign: "right",
           }}
         >
           {err ? (
-            <span style={{ color: 'var(--fg-expense)' }}>{err}</span>
+            <span style={{ color: "var(--fg-expense)" }}>{err}</span>
           ) : (
             <span>{labelTrim.length}/12</span>
           )}
@@ -275,53 +308,65 @@ export function CategoryEditDialog({
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{te('form.color')}</FieldLabel>
+        <FieldLabel>{te("form.color")}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={String(paletteIdx)}
-          onValueChange={v => setPaletteIdx(Number(v))}
+          onValueChange={(v) => setPaletteIdx(Number(v))}
           options={CAT_PALETTE.map((p, i) => ({
             value: String(i),
             bg: p.bg,
             fg: p.color,
-            label: t('colorN', { n: i + 1 }),
+            label: t("colorN", { n: i + 1 }),
           }))}
         />
       </Field>
 
       <Field style={{ marginBottom: 4 }}>
-        <FieldLabel>{te('form.icon')}</FieldLabel>
+        <FieldLabel>{te("form.icon")}</FieldLabel>
         <IconPicker value={icon} onChange={setIcon} />
       </Field>
 
       {/* 거래 옮기기 — 거래가 직접 달린 카테고리는 하위 분류를 만들 수 없다.
           그걸 푸는 유일한 방법이라 편집 화면에서 바로 갈 수 있게 둔다. */}
       {onMoveTx && (
-        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+        <div
+          style={{
+            marginTop: 18,
+            paddingTop: 14,
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        >
           <button
             type="button"
             onClick={onMoveTx}
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
+              display: "inline-flex",
+              alignItems: "center",
               gap: 6,
-              background: 'none',
-              border: 'none',
+              background: "none",
+              border: "none",
               padding: 0,
-              cursor: 'pointer',
-              color: 'var(--fg-brand)',
-              fontSize: 'var(--text-label-sm)',
+              cursor: "pointer",
+              color: "var(--fg-brand)",
+              fontSize: "var(--text-label-sm)",
               fontWeight: 600,
             }}
           >
             <Icon name="arrow-right-left" size={14} />
-            {t('moveTx.entry')}
+            {t("moveTx.entry")}
           </button>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-            {t('moveTx.entryDesc')}
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              marginTop: 4,
+            }}
+          >
+            {t("moveTx.entryDesc")}
           </div>
         </div>
       )}
     </ModalShell>
-  )
+  );
 }

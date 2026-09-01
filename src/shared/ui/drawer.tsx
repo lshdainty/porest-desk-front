@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Drawer as DrawerPrimitive } from "vaul"
+import * as React from "react";
+import { Drawer as DrawerPrimitive } from "vaul";
 
-import { cn } from "@/shared/lib"
+import { cn } from "@/shared/lib";
 
 /*
  * Porest Drawer — porest-design specs/components/drawer.md SoT 기반.
@@ -24,13 +24,16 @@ const Drawer = ({
   shouldScaleBackground = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
-)
-Drawer.displayName = "Drawer"
+  <DrawerPrimitive.Root
+    shouldScaleBackground={shouldScaleBackground}
+    {...props}
+  />
+);
+Drawer.displayName = "Drawer";
 
-const DrawerTrigger = DrawerPrimitive.Trigger
-const DrawerPortal = DrawerPrimitive.Portal
-const DrawerClose = DrawerPrimitive.Close
+const DrawerTrigger = DrawerPrimitive.Trigger;
+const DrawerPortal = DrawerPrimitive.Portal;
+const DrawerClose = DrawerPrimitive.Close;
 
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
@@ -44,8 +47,8 @@ const DrawerOverlay = React.forwardRef<
     )}
     {...props}
   />
-))
-DrawerOverlay.displayName = "DrawerOverlay"
+));
+DrawerOverlay.displayName = "DrawerOverlay";
 
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
@@ -67,31 +70,31 @@ const DrawerContent = React.forwardRef<
       {children}
     </DrawerPrimitive.Content>
   </DrawerPortal>
-))
-DrawerContent.displayName = "DrawerContent"
+));
+DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      "flex items-center gap-3 px-xl pb-4 pt-2",
-      className,
-    )}
+    className={cn("flex items-center gap-3 px-xl pb-4 pt-2", className)}
     {...props}
   />
-)
-DrawerHeader.displayName = "DrawerHeader"
+);
+DrawerHeader.displayName = "DrawerHeader";
 
 const DrawerBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   // scrollbar-hide — 모바일 drawer 는 앱(Flutter 시트, 스크롤바 없음) 정합.
-  <div className={cn("flex-1 overflow-y-auto px-xl scrollbar-hide", className)} {...props} />
-)
-DrawerBody.displayName = "DrawerBody"
+  <div
+    className={cn("flex-1 overflow-y-auto px-xl scrollbar-hide", className)}
+    {...props}
+  />
+);
+DrawerBody.displayName = "DrawerBody";
 
 // 데스크탑 다이얼로그 footer 와 동일한 패턴: 우측 정렬 가로 배치.
 // 삭제 등 좌측 배치할 버튼은 className="mr-auto" 로 밀어내기.
@@ -110,8 +113,8 @@ const DrawerFooter = ({
     )}
     {...props}
   />
-)
-DrawerFooter.displayName = "DrawerFooter"
+);
+DrawerFooter.displayName = "DrawerFooter";
 
 const DrawerTitle = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Title>,
@@ -125,8 +128,8 @@ const DrawerTitle = React.forwardRef<
     )}
     {...props}
   />
-))
-DrawerTitle.displayName = "DrawerTitle"
+));
+DrawerTitle.displayName = "DrawerTitle";
 
 const DrawerDescription = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Description>,
@@ -137,8 +140,8 @@ const DrawerDescription = React.forwardRef<
     className={cn("text-xs text-[var(--fg-tertiary)] mt-0.5", className)}
     {...props}
   />
-))
-DrawerDescription.displayName = "DrawerDescription"
+));
+DrawerDescription.displayName = "DrawerDescription";
 
 export {
   Drawer,
@@ -152,4 +155,4 @@ export {
   DrawerFooter,
   DrawerTitle,
   DrawerDescription,
-}
+};

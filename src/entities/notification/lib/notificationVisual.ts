@@ -9,28 +9,40 @@
  * - EVENT_REMINDER→ CalendarClock  / info(subtle·fg)
  * - SYSTEM(기본)  → Bell           / sunken·secondary
  */
-import { AlertTriangle, Bell, CalendarClock, ListChecks } from 'lucide-react'
-import type { NotificationType } from '../model/types'
+import { AlertTriangle, Bell, CalendarClock, ListChecks } from "lucide-react";
+import type { NotificationType } from "../model/types";
 
 export interface NotificationVisual {
   /** lucide 아이콘 컴포넌트. */
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
   /** 아이콘 칩 배경 토큰. */
-  bg: string
+  bg: string;
   /** 아이콘 전경(글자) 색 토큰. */
-  fg: string
+  fg: string;
 }
 
 /** 알림 type → { Icon, bg, fg } tone 비주얼 매핑. */
 export function notificationVisual(type: NotificationType): NotificationVisual {
   switch (type) {
-    case 'BUDGET_ALERT':
-      return { Icon: AlertTriangle, bg: 'var(--status-warning-subtle)', fg: 'var(--status-warning-fg)' }
-    case 'TODO_REMINDER':
-      return { Icon: ListChecks, bg: 'var(--bg-brand-subtle)', fg: 'var(--fg-brand-strong)' }
-    case 'EVENT_REMINDER':
-      return { Icon: CalendarClock, bg: 'var(--status-info-subtle)', fg: 'var(--status-info-fg)' }
+    case "BUDGET_ALERT":
+      return {
+        Icon: AlertTriangle,
+        bg: "var(--status-warning-subtle)",
+        fg: "var(--status-warning-fg)",
+      };
+    case "TODO_REMINDER":
+      return {
+        Icon: ListChecks,
+        bg: "var(--bg-brand-subtle)",
+        fg: "var(--fg-brand-strong)",
+      };
+    case "EVENT_REMINDER":
+      return {
+        Icon: CalendarClock,
+        bg: "var(--status-info-subtle)",
+        fg: "var(--status-info-fg)",
+      };
     default:
-      return { Icon: Bell, bg: 'var(--bg-sunken)', fg: 'var(--fg-secondary)' }
+      return { Icon: Bell, bg: "var(--bg-sunken)", fg: "var(--fg-secondary)" };
   }
 }

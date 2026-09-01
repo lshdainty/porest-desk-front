@@ -1,5 +1,5 @@
-import { MaskAmount } from "@/shared/lib/porest/hide-amounts"
-import { money } from "@/shared/lib/porest/format"
+import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { money } from "@/shared/lib/porest/format";
 
 /**
  * 일자별 그룹 헤더 — 날짜·요일·합계 (지출 빨강 / 수입 브랜드).
@@ -9,13 +9,13 @@ import { money } from "@/shared/lib/porest/format"
  */
 export interface DateGroupHeaderProps {
   /** 표시 라벨 (예: "5월 7일"). */
-  date: string
+  date: string;
   /** 요일 (예: "수"). */
-  weekday: string
+  weekday: string;
   /** 일자 합계 — 지출 (양수). */
-  expense?: number
+  expense?: number;
   /** 일자 합계 — 수입 (양수). */
-  income?: number
+  income?: number;
 }
 
 export function DateGroupHeader({
@@ -30,10 +30,10 @@ export function DateGroupHeader({
         display: "flex",
         alignItems: "center",
         gap: 8,
-        fontSize: 'var(--text-label-sm)',
+        fontSize: "var(--text-label-sm)",
       }}
     >
-      <span style={{ fontWeight: '700', color: "var(--fg-primary)" }}>
+      <span style={{ fontWeight: "700", color: "var(--fg-primary)" }}>
         {date}
       </span>
       <span style={{ color: "var(--fg-tertiary)" }}>{weekday}</span>
@@ -42,16 +42,22 @@ export function DateGroupHeader({
         style={{ marginLeft: "auto", display: "inline-flex", gap: 8 }}
       >
         {expense > 0 && (
-          <span style={{ color: "var(--fg-expense)", fontWeight: '600' }}>
-            <MaskAmount card="ledger.txList" kind="expense">{`−${money(expense)}`}</MaskAmount>
+          <span style={{ color: "var(--fg-expense)", fontWeight: "600" }}>
+            <MaskAmount
+              card="ledger.txList"
+              kind="expense"
+            >{`−${money(expense)}`}</MaskAmount>
           </span>
         )}
         {income > 0 && (
-          <span style={{ color: "var(--fg-income)", fontWeight: '600' }}>
-            <MaskAmount card="ledger.txList" kind="income">{`+${money(income)}`}</MaskAmount>
+          <span style={{ color: "var(--fg-income)", fontWeight: "600" }}>
+            <MaskAmount
+              card="ledger.txList"
+              kind="income"
+            >{`+${money(income)}`}</MaskAmount>
           </span>
         )}
       </span>
     </div>
-  )
+  );
 }

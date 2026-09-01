@@ -1,5 +1,5 @@
-export { assetApi } from './api/assetApi'
-export type { TransferListParams } from './api/assetApi'
+export { assetApi } from "./api/assetApi";
+export type { TransferListParams } from "./api/assetApi";
 export {
   useAssets,
   useAsset,
@@ -21,10 +21,10 @@ export {
   useTradePreview,
   useAssetTrades,
   useDeleteTrade,
-} from './model/useAssets'
+} from "./model/useAssets";
 export {
   useInvestValuationMap,
   useInvestValuation,
   holdingsOf,
   type InvestValuation,
-} from './model/useInvestValuation'
+} from "./model/useInvestValuation";

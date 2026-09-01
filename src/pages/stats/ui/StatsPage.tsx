@@ -1,22 +1,64 @@
-import { Fragment, useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts'
-import { KRW, money, isEn, formatChartAxis, formatChartAmount } from '@/shared/lib/porest/format'
-import { formatYearMonth, formatYear, formatYearQuarter } from '@/shared/lib/date'
-import { niceAxis, niceCeil } from '@/shared/lib/porest/chartAxis'
-import { isRefundTx, isScheduledTx } from '@/shared/lib/porest/expense-aggregate'
-import { HideCard, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { Donut } from '@/shared/ui/porest/charts'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Section } from '@/shared/ui/porest/section'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { useSwipeNav } from '@/shared/hooks'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { CalendarClock, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  KRW,
+  money,
+  isEn,
+  formatChartAxis,
+  formatChartAmount,
+} from "@/shared/lib/porest/format";
+import {
+  formatYearMonth,
+  formatYear,
+  formatYearQuarter,
+} from "@/shared/lib/date";
+import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
+import {
+  isRefundTx,
+  isScheduledTx,
+} from "@/shared/lib/porest/expense-aggregate";
+import {
+  HideCard,
+  MaskAmount,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
+import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
+import { Donut } from "@/shared/ui/porest/charts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/shared/ui/chart";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Section } from "@/shared/ui/porest/section";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { useSwipeNav } from "@/shared/hooks";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+  CalendarClock,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogBody,
@@ -24,7 +66,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog'
+} from "@/shared/ui/dialog";
 import {
   Drawer,
   DrawerBody,
@@ -33,156 +75,231 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from '@/shared/ui/drawer'
-import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
+} from "@/shared/ui/drawer";
+import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import {
   useRangeSummary,
   useMerchantSummary,
   useExpenseHeatmap,
   useExpenseCategories,
   useExpenses,
-} from '@/features/expense'
-import type { CategoryBreakdown, HeatmapCell, ExpenseCategory } from '@/entities/expense'
-import { renderIcon, tileRadius } from '@/shared/lib'
+} from "@/features/expense";
+import type {
+  CategoryBreakdown,
+  HeatmapCell,
+  ExpenseCategory,
+} from "@/entities/expense";
+import { renderIcon, tileRadius } from "@/shared/lib";
 
-type OutletCtx = { mobile: boolean }
-type TabKey = 'cat' | 'trend' | 'compare'
-type SegMode = 'm' | 'q' | 'y' | 'custom'
-type RangeState = { from: Date; to: Date; segMode: SegMode }
+type OutletCtx = { mobile: boolean };
+type TabKey = "cat" | "trend" | "compare";
+type SegMode = "m" | "q" | "y" | "custom";
+type RangeState = { from: Date; to: Date; segMode: SegMode };
 
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+const startOfDay = (d: Date) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const fmt = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 const monthRangeOf = (now: Date): RangeState => ({
   from: new Date(now.getFullYear(), now.getMonth(), 1),
   to: new Date(now.getFullYear(), now.getMonth() + 1, 0),
-  segMode: 'm',
-})
+  segMode: "m",
+});
 const quarterRangeOf = (now: Date): RangeState => {
-  const q = Math.floor(now.getMonth() / 3)
+  const q = Math.floor(now.getMonth() / 3);
   return {
     from: new Date(now.getFullYear(), q * 3, 1),
     to: new Date(now.getFullYear(), q * 3 + 3, 0),
-    segMode: 'q',
-  }
-}
+    segMode: "q",
+  };
+};
 const yearRangeOf = (now: Date): RangeState => ({
   from: new Date(now.getFullYear(), 0, 1),
   to: new Date(now.getFullYear(), 11, 31),
-  segMode: 'y',
-})
+  segMode: "y",
+});
 
-const previousRange = ({ from, to, segMode }: RangeState): { from: Date; to: Date } => {
-  if (segMode === 'm') {
+const previousRange = ({
+  from,
+  to,
+  segMode,
+}: RangeState): { from: Date; to: Date } => {
+  if (segMode === "m") {
     return {
       from: new Date(from.getFullYear(), from.getMonth() - 1, 1),
       to: new Date(from.getFullYear(), from.getMonth(), 0),
-    }
+    };
   }
-  if (segMode === 'q') {
+  if (segMode === "q") {
     return {
       from: new Date(from.getFullYear(), from.getMonth() - 3, 1),
       to: new Date(from.getFullYear(), from.getMonth(), 0),
-    }
+    };
   }
-  if (segMode === 'y') {
+  if (segMode === "y") {
     return {
       from: new Date(from.getFullYear() - 1, 0, 1),
       to: new Date(from.getFullYear() - 1, 11, 31),
-    }
+    };
   }
   // custom: 같은 길이 직전 윈도우
-  const days = Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000) + 1
-  const t = new Date(from); t.setDate(t.getDate() - 1)
-  const f = new Date(t); f.setDate(f.getDate() - days + 1)
-  return { from: f, to: t }
-}
+  const days =
+    Math.round(
+      (startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000,
+    ) + 1;
+  const t = new Date(from);
+  t.setDate(t.getDate() - 1);
+  const f = new Date(t);
+  f.setDate(f.getDate() - days + 1);
+  return { from: f, to: t };
+};
 
 const periodLabel = ({ from, to, segMode }: RangeState): string => {
-  if (segMode === 'm') return formatYearMonth(from)
-  if (segMode === 'q') return formatYearQuarter(from)
-  if (segMode === 'y') return formatYear(from)
-  const sameYear = from.getFullYear() === to.getFullYear()
+  if (segMode === "m") return formatYearMonth(from);
+  if (segMode === "q") return formatYearQuarter(from);
+  if (segMode === "y") return formatYear(from);
+  const sameYear = from.getFullYear() === to.getFullYear();
   return sameYear
     ? `${from.getMonth() + 1}/${from.getDate()} ~ ${to.getMonth() + 1}/${to.getDate()}`
-    : `${fmt(from)} ~ ${fmt(to)}`
-}
+    : `${fmt(from)} ~ ${fmt(to)}`;
+};
 
 const labelsOf = ({ segMode }: RangeState) =>
-  segMode === 'm'
-    ? { now: 'period.m.now', prev: 'period.m.prev', mom: 'period.m.mom', noPrev: 'period.m.noPrev', avg: 'period.m.avg' }
-    : segMode === 'q'
-      ? { now: 'period.q.now', prev: 'period.q.prev', mom: 'period.q.mom', noPrev: 'period.q.noPrev', avg: 'period.q.avg' }
-      : segMode === 'y'
-        ? { now: 'period.y.now', prev: 'period.y.prev', mom: 'period.y.mom', noPrev: 'period.y.noPrev', avg: 'period.y.avg' }
-        : { now: 'period.custom.now', prev: 'period.custom.prev', mom: 'period.custom.mom', noPrev: 'period.custom.noPrev', avg: 'period.custom.avg' }
+  segMode === "m"
+    ? {
+        now: "period.m.now",
+        prev: "period.m.prev",
+        mom: "period.m.mom",
+        noPrev: "period.m.noPrev",
+        avg: "period.m.avg",
+      }
+    : segMode === "q"
+      ? {
+          now: "period.q.now",
+          prev: "period.q.prev",
+          mom: "period.q.mom",
+          noPrev: "period.q.noPrev",
+          avg: "period.q.avg",
+        }
+      : segMode === "y"
+        ? {
+            now: "period.y.now",
+            prev: "period.y.prev",
+            mom: "period.y.mom",
+            noPrev: "period.y.noPrev",
+            avg: "period.y.avg",
+          }
+        : {
+            now: "period.custom.now",
+            prev: "period.custom.prev",
+            mom: "period.custom.mom",
+            noPrev: "period.custom.noPrev",
+            avg: "period.custom.avg",
+          };
 
 // porest chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
 // `--color-cat-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
-  'var(--color-cat-blue)',
-  'var(--color-cat-green)',
-  'var(--color-cat-orange)',
-  'var(--color-cat-violet)',
-  'var(--color-cat-pink)',
-  'var(--color-cat-indigo)',
-  'var(--color-cat-red)',
-  'var(--color-cat-yellow)',
-  'var(--color-cat-brown)',
-  'var(--color-cat-gray)',
-]
+  "var(--color-cat-blue)",
+  "var(--color-cat-green)",
+  "var(--color-cat-orange)",
+  "var(--color-cat-violet)",
+  "var(--color-cat-pink)",
+  "var(--color-cat-indigo)",
+  "var(--color-cat-red)",
+  "var(--color-cat-yellow)",
+  "var(--color-cat-brown)",
+  "var(--color-cat-gray)",
+];
 
 // 6-step heatmap palette (empty → deep mossy).
 // color-mix 로 --mossy-500 을 투명도 다르게 섞어 라이트/다크 양쪽에서 자동 적응.
 // 레벨 0 은 semantic muted bg 로 두어 "빈 셀" 구분 명확.
 const HEAT_PALETTE: { bg: string; fg: string }[] = [
-  { bg: 'var(--bg-muted)',                                                 fg: 'var(--fg-tertiary)' },    // 0 empty
-  { bg: 'color-mix(in oklch, var(--border-brand) 18%, transparent)',          fg: 'var(--fg-primary)' },     // 1
-  { bg: 'color-mix(in oklch, var(--border-brand) 35%, transparent)',          fg: 'var(--fg-primary)' },     // 2
-  { bg: 'color-mix(in oklch, var(--border-brand) 55%, transparent)',          fg: 'var(--fg-on-brand)' },    // 3
-  { bg: 'color-mix(in oklch, var(--border-brand) 75%, transparent)',          fg: 'var(--fg-on-brand)' },    // 4
-  { bg: 'var(--border-brand)',                                                fg: 'var(--fg-on-brand)' },    // 5 peak
-]
+  { bg: "var(--bg-muted)", fg: "var(--fg-tertiary)" }, // 0 empty
+  {
+    bg: "color-mix(in oklch, var(--border-brand) 18%, transparent)",
+    fg: "var(--fg-primary)",
+  }, // 1
+  {
+    bg: "color-mix(in oklch, var(--border-brand) 35%, transparent)",
+    fg: "var(--fg-primary)",
+  }, // 2
+  {
+    bg: "color-mix(in oklch, var(--border-brand) 55%, transparent)",
+    fg: "var(--fg-on-brand)",
+  }, // 3
+  {
+    bg: "color-mix(in oklch, var(--border-brand) 75%, transparent)",
+    fg: "var(--fg-on-brand)",
+  }, // 4
+  { bg: "var(--border-brand)", fg: "var(--fg-on-brand)" }, // 5 peak
+];
 
 // 행(시간대 구간) 정의 — 각 구간은 4시간 범위
 // 하루 흐름: 아침 → 점심 → 오후 → 저녁 → 심야 → 새벽
 const HEAT_ROWS: { labelKey: string; subKey: string; hours: number[] }[] = [
-  { labelKey: 'heatRow.morning', subKey: 'heatRow.morningSub', hours: [6, 7, 8, 9] },
-  { labelKey: 'heatRow.lunch', subKey: 'heatRow.lunchSub', hours: [10, 11, 12, 13] },
-  { labelKey: 'heatRow.afternoon', subKey: 'heatRow.afternoonSub', hours: [14, 15, 16, 17] },
-  { labelKey: 'heatRow.evening', subKey: 'heatRow.eveningSub', hours: [18, 19, 20, 21] },
-  { labelKey: 'heatRow.night', subKey: 'heatRow.nightSub', hours: [22, 23, 0, 1] },
-  { labelKey: 'heatRow.dawn', subKey: 'heatRow.dawnSub', hours: [2, 3, 4, 5] },
-]
+  {
+    labelKey: "heatRow.morning",
+    subKey: "heatRow.morningSub",
+    hours: [6, 7, 8, 9],
+  },
+  {
+    labelKey: "heatRow.lunch",
+    subKey: "heatRow.lunchSub",
+    hours: [10, 11, 12, 13],
+  },
+  {
+    labelKey: "heatRow.afternoon",
+    subKey: "heatRow.afternoonSub",
+    hours: [14, 15, 16, 17],
+  },
+  {
+    labelKey: "heatRow.evening",
+    subKey: "heatRow.eveningSub",
+    hours: [18, 19, 20, 21],
+  },
+  {
+    labelKey: "heatRow.night",
+    subKey: "heatRow.nightSub",
+    hours: [22, 23, 0, 1],
+  },
+  { labelKey: "heatRow.dawn", subKey: "heatRow.dawnSub", hours: [2, 3, 4, 5] },
+];
 
 // 열(요일) — Java DayOfWeek: 1=월 ~ 7=일
 const HEAT_COLS: { labelKey: string; dow: number }[] = [
-  { labelKey: 'dow.mon', dow: 1 },
-  { labelKey: 'dow.tue', dow: 2 },
-  { labelKey: 'dow.wed', dow: 3 },
-  { labelKey: 'dow.thu', dow: 4 },
-  { labelKey: 'dow.fri', dow: 5 },
-  { labelKey: 'dow.sat', dow: 6 },
-  { labelKey: 'dow.sun', dow: 7 },
-]
+  { labelKey: "dow.mon", dow: 1 },
+  { labelKey: "dow.tue", dow: 2 },
+  { labelKey: "dow.wed", dow: 3 },
+  { labelKey: "dow.thu", dow: 4 },
+  { labelKey: "dow.fri", dow: 5 },
+  { labelKey: "dow.sat", dow: 6 },
+  { labelKey: "dow.sun", dow: 7 },
+];
 
-const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!
+const colorFor = (idx: number) => DONUT_COLORS[idx % DONUT_COLORS.length]!;
 
 // 카테고리 자체 색 1순위 + 인덱스 fallback. 앱 `_donutColor` 정합.
 const segmentColor = (idx: number, rawColor: string | null | undefined) => {
-  if (rawColor && rawColor.trim() !== '') return getPaletteByColor(rawColor).color
-  return colorFor(idx)
-}
+  if (rawColor && rawColor.trim() !== "")
+    return getPaletteByColor(rawColor).color;
+  return colorFor(idx);
+};
 
 type TrendTooltipPayload = {
-  dataKey?: string | number
-  value?: number
-  color?: string
-  payload?: { month?: string }
-}
-type TrendTooltipProps = { active?: boolean; payload?: TrendTooltipPayload[]; label?: string }
+  dataKey?: string | number;
+  value?: number;
+  color?: string;
+  payload?: { month?: string };
+};
+type TrendTooltipProps = {
+  active?: boolean;
+  payload?: TrendTooltipPayload[];
+  label?: string;
+};
 
 function PorestChartTooltip({
   active,
@@ -190,77 +307,99 @@ function PorestChartTooltip({
   label,
   rows,
 }: TrendTooltipProps & {
-  rows: { dataKey: string; label: string; color: string | ((v: number) => string); border?: string; format?: (v: number) => string }[]
+  rows: {
+    dataKey: string;
+    label: string;
+    color: string | ((v: number) => string);
+    border?: string;
+    format?: (v: number) => string;
+  }[];
 }) {
-  if (!active || !payload || payload.length === 0) return null
+  if (!active || !payload || payload.length === 0) return null;
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-tile)',
-        boxShadow: 'var(--shadow-md)',
-        padding: '10px 12px',
-        fontSize: 'var(--text-caption)',
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-tile)",
+        boxShadow: "var(--shadow-md)",
+        padding: "10px 12px",
+        fontSize: "var(--text-caption)",
         minWidth: 150,
       }}
     >
       <div
         style={{
-          fontSize: 'var(--text-badge)',
-          color: 'var(--fg-tertiary)',
-          fontWeight: '600',
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-tertiary)",
+          fontWeight: "600",
           marginBottom: 6,
         }}
       >
         {label}
       </div>
-      {rows.map(row => {
-        const item = payload.find(p => p.dataKey === row.dataKey)
-        if (!item) return null
-        const v = Number(item.value ?? 0)
-        const swatch = typeof row.color === 'function' ? row.color(v) : row.color
+      {rows.map((row) => {
+        const item = payload.find((p) => p.dataKey === row.dataKey);
+        if (!item) return null;
+        const v = Number(item.value ?? 0);
+        const swatch =
+          typeof row.color === "function" ? row.color(v) : row.color;
         return (
           <div
             key={row.dataKey}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 2,
+            }}
           >
             <span
               style={{
                 width: 10,
                 height: 10,
-                borderRadius: 'var(--radius-xs)',
+                borderRadius: "var(--radius-xs)",
                 background: swatch,
                 // 트랙(회색)처럼 배경과 비슷한 시리즈 구분용 — 범례와 동일 시각.
                 border: row.border ? `1px solid ${row.border}` : undefined,
-                boxSizing: 'border-box',
+                boxSizing: "border-box",
                 flexShrink: 0,
               }}
             />
-            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{row.label}</span>
+            <span
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
+              }}
+            >
+              {row.label}
+            </span>
             <span
               className="num"
               style={{
-                marginLeft: 'auto',
-                fontSize: 'var(--text-label-sm)',
-                fontWeight: '700',
-                color: 'var(--fg-primary)',
+                marginLeft: "auto",
+                fontSize: "var(--text-label-sm)",
+                fontWeight: "700",
+                color: "var(--fg-primary)",
               }}
             >
               {row.format ? (
                 <MaskAmount>{row.format(v)}</MaskAmount>
               ) : (
                 <>
-                  <MaskAmount>{wonPre()}{KRW(v)}</MaskAmount>
+                  <MaskAmount>
+                    {wonPre()}
+                    {KRW(v)}
+                  </MaskAmount>
                   <WonUnit />
                 </>
               )}
             </span>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 /** Stats 페이지 구조에 맞춘 skeleton — 탭별로 다른 컨텐츠. */
@@ -268,25 +407,39 @@ function PorestChartTooltip({
 // 여기선 서버 데이터(카테고리/추이/비교) 자리만 채운다.
 // 모바일 카드 다이어트 — 소형 스탯/KPI 타일: 카드 벗기고 콘텐츠만 (design Stats p-card 플랫).
 // (렌더 중 컴포넌트 생성 금지 — React Compiler 룰 — 로 모듈 레벨 정의.)
-function MTile({ mobile, children, style }: { mobile: boolean; children: React.ReactNode; style?: React.CSSProperties }) {
+function MTile({
+  mobile,
+  children,
+  style,
+}: {
+  mobile: boolean;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
   return mobile ? (
     <div style={style}>{children}</div>
   ) : (
     <Card style={style}>
       <CardContent>{children}</CardContent>
     </Card>
-  )
+  );
 }
 
 function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
   const CategorySkeleton = (
     // 실제 Content(2149~) 정합 — 한 덩어리(flex-col gap)에 4섹션 균일 gap.
     // mobile 은 도넛/가맹점도 부모 gap 을 그대로 받게 display:contents, desktop 만 grid 2열.
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: mobile ? "var(--spacing-2xl)" : 20,
+      }}
+    >
       <div
         style={{
-          display: mobile ? 'contents' : 'grid',
-          gridTemplateColumns: mobile ? undefined : '1.4fr 1fr',
+          display: mobile ? "contents" : "grid",
+          gridTemplateColumns: mobile ? undefined : "1.4fr 1fr",
           gap: mobile ? undefined : 20,
         }}
       >
@@ -298,18 +451,42 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         >
           <div
             style={{
-              display: 'flex',
-              flexDirection: mobile ? 'column' : 'row',
+              display: "flex",
+              flexDirection: mobile ? "column" : "row",
               gap: mobile ? 0 : 32,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
-            <div style={{ height: mobile ? 240 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <SkeletonBase className={mobile ? 'h-[176px] w-[176px] rounded-full' : 'h-[200px] w-[200px] rounded-full'} />
+            <div
+              style={{
+                height: mobile ? 240 : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <SkeletonBase
+                className={
+                  mobile
+                    ? "h-[176px] w-[176px] rounded-full"
+                    : "h-[200px] w-[200px] rounded-full"
+                }
+              />
             </div>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[0, 1, 2, 3, 4].map(i => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
                   <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
                   <SkeletonBase className="h-3 flex-1" />
                   <SkeletonBase className="h-3 w-10 shrink-0" />
@@ -323,14 +500,35 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         <Section
           mobile={mobile}
           title={<SkeletonBase className="h-5 w-44" />}
-          cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          cardStyle={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
         >
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
-            {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                style={{ display: "flex", alignItems: "center", gap: 12 }}
+              >
                 <SkeletonBase className="h-4 w-6 shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 6,
+                    }}
+                  >
                     <SkeletonBase className="h-4 w-1/3" />
                     <SkeletonBase className="h-3 w-10 ml-auto" />
                   </div>
@@ -349,15 +547,22 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
           {/* 실제 heatmap grid 정합: 56px 라벨열 + 7 요일열, 헤더 행 + 6 데이터 행, 정사각형 셀 */}
           <div
             style={{
-              display: 'grid',
+              display: "grid",
               gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
               gap: 6,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             <span />
-            {HEAT_COLS.map(col => (
-              <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
+            {HEAT_COLS.map((col) => (
+              <div
+                key={col.dow}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  paddingBottom: 4,
+                }}
+              >
                 <SkeletonBase className="h-3 w-3" />
               </div>
             ))}
@@ -367,8 +572,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
                   <SkeletonBase className="h-3.5 w-8 mb-1" />
                   <SkeletonBase className="h-2.5 w-12" />
                 </div>
-                {HEAT_COLS.map(col => (
-                  <SkeletonBase key={`${rIdx}-${col.dow}`} className="w-full rounded-sm" style={{ aspectRatio: '1' }} />
+                {HEAT_COLS.map((col) => (
+                  <SkeletonBase
+                    key={`${rIdx}-${col.dow}`}
+                    className="w-full rounded-sm"
+                    style={{ aspectRatio: "1" }}
+                  />
                 ))}
               </Fragment>
             ))}
@@ -378,16 +587,23 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
       {/* HighlightsGrid — MTile 3개 (실제 1285·1301~1326 미러: 라벨 + 40px 아이콘 + 값/서브) */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
+          display: "grid",
+          gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
           gap: 12,
         }}
       >
-        {[0, 1, 2].map(i => (
+        {[0, 1, 2].map((i) => (
           <MTile key={i} mobile={mobile}>
             <SkeletonBase className="h-3 w-24" style={{ marginBottom: 10 }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <SkeletonBase className="shrink-0" style={{ width: 40, height: 40, borderRadius: 'var(--radius-tile)' }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <SkeletonBase
+                className="shrink-0"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "var(--radius-tile)",
+                }}
+              />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <SkeletonBase className="h-5 w-24" />
                 <SkeletonBase className="h-3 w-16" style={{ marginTop: 2 }} />
@@ -397,42 +613,97 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         ))}
       </div>
     </div>
-  )
+  );
 
   const TrendSkeleton = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: mobile ? "var(--spacing-2xl)" : 20,
+      }}
+    >
       {/* TrendBig 프레임(Section) + 차트 로딩 (실제 1424·1428~1437 미러) */}
       <Section
         mobile={mobile}
         title={<SkeletonBase className="h-5 w-44" />}
         action={<SkeletonBase className="h-8 w-40" />}
       >
-        <SkeletonBase className="w-full rounded-lg" style={{ height: mobile ? 200 : 260 }} />
-        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+        <SkeletonBase
+          className="w-full rounded-lg"
+          style={{ height: mobile ? 200 : 260 }}
+        />
+        <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
           <SkeletonBase className="h-3 w-12" />
           <SkeletonBase className="h-3 w-12" />
         </div>
       </Section>
       {/* TrendStats — 저축률 도넛 링 게이지(108px) + 구성 비율바 + 3행 (실제 1547~1596 미러). 이전 4칸 stat 타일 스켈레톤 교체. */}
       <MTile mobile={mobile}>
-        <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'center', gap: mobile ? 20 : 32 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: mobile ? "column" : "row",
+            alignItems: mobile ? "stretch" : "center",
+            gap: mobile ? 20 : 32,
+          }}
+        >
           {/* 저축률 도넛 게이지 자리 (108px 링) + (모바일) 인사이트 텍스트 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: mobile ? 'center' : 'flex-start', flexShrink: 0 }}>
-            <SkeletonBase className="rounded-full shrink-0" style={{ width: 108, height: 108 }} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              justifyContent: mobile ? "center" : "flex-start",
+              flexShrink: 0,
+            }}
+          >
+            <SkeletonBase
+              className="rounded-full shrink-0"
+              style={{ width: 108, height: 108 }}
+            />
             {mobile && <SkeletonBase className="h-6 flex-1" />}
           </div>
           {/* 구성 비율바 + 항목 3행 */}
           <div style={{ flex: 1, minWidth: 0 }}>
             {!mobile && <SkeletonBase className="h-5 w-2/3 mb-3.5" />}
-            <SkeletonBase className="w-full rounded-full" style={{ height: 10 }} />
-            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, auto)', gap: mobile ? 10 : 28, marginTop: 14, justifyContent: mobile ? 'stretch' : 'start' }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: mobile ? 'space-between' : 'flex-start' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <SkeletonBase
+              className="w-full rounded-full"
+              style={{ height: 10 }}
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: mobile ? "1fr" : "repeat(3, auto)",
+                gap: mobile ? 10 : 28,
+                marginTop: 14,
+                justifyContent: mobile ? "stretch" : "start",
+              }}
+            >
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    justifyContent: mobile ? "space-between" : "flex-start",
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
                     <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
                     <SkeletonBase className="h-3 w-16" />
                   </span>
-                  <SkeletonBase className="h-3 w-14" style={{ marginLeft: mobile ? 0 : 8 }} />
+                  <SkeletonBase
+                    className="h-3 w-14"
+                    style={{ marginLeft: mobile ? 0 : 8 }}
+                  />
                 </div>
               ))}
             </div>
@@ -445,45 +716,101 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-24" />}
       >
-        <SkeletonBase className="w-full rounded-lg" style={{ height: mobile ? 180 : 220 }} />
+        <SkeletonBase
+          className="w-full rounded-lg"
+          style={{ height: mobile ? 180 : 220 }}
+        />
       </Section>
     </div>
-  )
+  );
 
   const CompareSkeleton = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: mobile ? "var(--spacing-2xl)" : 20,
+      }}
+    >
       {/* CompareSummary — MTile 요약(기간 지출 + 증감칩 + vs 문구 + 이번/이전 막대 2행) (실제 1817~1860 미러) */}
       <MTile mobile={mobile}>
         {/* 기간 지출 라벨 */}
         <SkeletonBase className="h-3 w-28" />
         {/* 합계 금액 + 증감칩 */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
-          <SkeletonBase className={mobile ? 'h-6 w-36' : 'h-7 w-44'} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 10,
+            flexWrap: "wrap",
+            marginTop: 4,
+          }}
+        >
+          <SkeletonBase className={mobile ? "h-6 w-36" : "h-7 w-44"} />
           <SkeletonBase className="h-5 w-14 rounded-full" />
         </div>
         {/* vs 전기간 문구 */}
         <SkeletonBase className="h-4 w-1/2" style={{ marginTop: 10 }} />
         {/* 이번/이전 막대 2행 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
-          {[0, 1].map(i => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            marginTop: 18,
+          }}
+        >
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
               <SkeletonBase className="h-3 shrink-0" style={{ width: 44 }} />
-              <SkeletonBase className="flex-1 rounded-full" style={{ height: 14 }} />
-              <SkeletonBase className="h-3 shrink-0" style={{ width: mobile ? 82 : 96 }} />
+              <SkeletonBase
+                className="flex-1 rounded-full"
+                style={{ height: 14 }}
+              />
+              <SkeletonBase
+                className="h-3 shrink-0"
+                style={{ width: mobile ? 82 : 96 }}
+              />
             </div>
           ))}
         </div>
       </MTile>
       {/* CompareMetrics — MTile 3개 그리드 (실제 미러: 라벨+값 / 증감(윗줄)+지난기간(아랫줄) 2줄) */}
-      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
-        {[0, 1, 2].map(i => (
-          <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
+          gap: 12,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <MTile
+            key={i}
+            mobile={mobile}
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
             <div>
               <SkeletonBase className="h-3 w-16 mb-2" />
               {/* 값 title-lg(20) 정합 */}
               <SkeletonBase className="h-5 w-28" />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: 4,
+                flexShrink: 0,
+              }}
+            >
               <SkeletonBase className="h-3 w-12" />
               <SkeletonBase className="h-3 w-20" />
             </div>
@@ -496,25 +823,46 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-16" />}
       >
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {[0, 1, 2, 3].map(i => (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               style={{
-                display: 'flex',
-                alignItems: 'center',
+                display: "flex",
+                alignItems: "center",
                 gap: 12,
-                padding: '12px 0',
-                borderBottom: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+                padding: "12px 0",
+                borderBottom: i < 3 ? "1px solid var(--border-subtle)" : "none",
               }}
             >
               <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
                 <SkeletonBase className="h-3.5 w-24" />
                 <SkeletonBase className="h-3 w-32" />
               </div>
-              {!mobile && <SkeletonBase className="h-2 rounded-full shrink-0" style={{ width: 180 }} />}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+              {!mobile && (
+                <SkeletonBase
+                  className="h-2 rounded-full shrink-0"
+                  style={{ width: 180 }}
+                />
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  alignItems: "flex-end",
+                  flexShrink: 0,
+                }}
+              >
                 <SkeletonBase className="h-4 w-16" />
                 <SkeletonBase className="h-3 w-10" />
               </div>
@@ -528,13 +876,54 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         title={<SkeletonBase className="h-5 w-28" />}
         action={<SkeletonBase className="h-3 w-32" />}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
-          {[0, 1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            gap: mobile ? 8 : 18,
+            height: mobile ? 140 : 170,
+            padding: "14px 2px 6px",
+          }}
+        >
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                minWidth: 0,
+              }}
+            >
               {/* now/prev 막대 쌍 자리 — height 는 데이터 대체 placeholder (실제 2084~2085 미러) */}
-              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
-                <SkeletonBase style={{ width: '42%', maxWidth: 16, height: '62%', borderRadius: '3px 3px 0 0' }} />
-                <SkeletonBase style={{ width: '42%', maxWidth: 16, height: '44%', borderRadius: '3px 3px 0 0' }} />
+              <div
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                  gap: 3,
+                }}
+              >
+                <SkeletonBase
+                  style={{
+                    width: "42%",
+                    maxWidth: 16,
+                    height: "62%",
+                    borderRadius: "3px 3px 0 0",
+                  }}
+                />
+                <SkeletonBase
+                  style={{
+                    width: "42%",
+                    maxWidth: 16,
+                    height: "44%",
+                    borderRadius: "3px 3px 0 0",
+                  }}
+                />
               </div>
               <SkeletonBase className="h-3 w-6" />
             </div>
@@ -542,107 +931,129 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
         </div>
       </Section>
     </div>
-  )
+  );
 
-  return tab === 'cat' ? CategorySkeleton : tab === 'trend' ? TrendSkeleton : CompareSkeleton
+  return tab === "cat"
+    ? CategorySkeleton
+    : tab === "trend"
+      ? TrendSkeleton
+      : CompareSkeleton;
 }
 
 export const StatsPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { t } = useTranslation('stats')
-  const { t: te } = useTranslation('expense')
-  const hidden = useHideAmounts('stats.category')
-  const [tab, setTab] = useState<TabKey>('cat')
-  const [period, setPeriod] = useState<RangeState>(() => monthRangeOf(new Date()))
-  const [activeParentId, setActiveParentId] = useState<number | null>(null)
-  const [pickerOpen, setPickerOpen] = useState(false)
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { t } = useTranslation("stats");
+  const { t: te } = useTranslation("expense");
+  const hidden = useHideAmounts("stats.category");
+  const [tab, setTab] = useState<TabKey>("cat");
+  const [period, setPeriod] = useState<RangeState>(() =>
+    monthRangeOf(new Date()),
+  );
+  const [activeParentId, setActiveParentId] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   // 카테고리 추이 막대 — 터치/호버 중인 월 index (상세 툴팁 노출용)
-  const [catActiveIdx, setCatActiveIdx] = useState<number | null>(null)
+  const [catActiveIdx, setCatActiveIdx] = useState<number | null>(null);
   // 비교 탭 요일별 지출 비교 — 수제 grouped bar 위 커스텀 툴팁(hover/터치 좌표 + 인덱스).
-  const [wkTip, setWkTip] = useState<{ i: number; x: number; y: number; w: number } | null>(null)
+  const [wkTip, setWkTip] = useState<{
+    i: number;
+    x: number;
+    y: number;
+    w: number;
+  } | null>(null);
 
   // 기간·탭 변경 시 드릴다운·툴팁 해제
   useEffect(() => {
-    setActiveParentId(null)
-    setCatActiveIdx(null)
-  }, [period.from, period.to, period.segMode, tab])
+    setActiveParentId(null);
+    setCatActiveIdx(null);
+  }, [period.from, period.to, period.segMode, tab]);
 
-  const startDate = fmt(period.from)
-  const endDate = fmt(period.to)
-  const prevR = useMemo(() => previousRange(period), [period])
-  const prevStart = fmt(prevR.from)
-  const prevEnd = fmt(prevR.to)
+  const startDate = fmt(period.from);
+  const endDate = fmt(period.to);
+  const prevR = useMemo(() => previousRange(period), [period]);
+  const prevStart = fmt(prevR.from);
+  const prevEnd = fmt(prevR.to);
 
-  const rangeQ = useRangeSummary(startDate, endDate)
+  const rangeQ = useRangeSummary(startDate, endDate);
   // 이전 동등 기간 — 비교 탭(전 기간 비교) 또는 월 모드(하루 평균 전월 대비)에서 필요.
   // 그 외 탭/모드에선 빈 인자로 query disabled.
-  const needPrev = tab === 'compare' || period.segMode === 'm'
-  const prevRangeQ = useRangeSummary(needPrev ? prevStart : '', needPrev ? prevEnd : '')
-  const categoriesQ = useExpenseCategories()
-  const merchantQ = useMerchantSummary(startDate, endDate)
+  const needPrev = tab === "compare" || period.segMode === "m";
+  const prevRangeQ = useRangeSummary(
+    needPrev ? prevStart : "",
+    needPrev ? prevEnd : "",
+  );
+  const categoriesQ = useExpenseCategories();
+  const merchantQ = useMerchantSummary(startDate, endDate);
   // 추이 탭 'month' 모드에서 일별 시리즈를 그리려면 해당 기간의 raw 거래 목록이 필요.
-  const monthExpensesQ = useExpenses({ startDate, endDate })
+  const monthExpensesQ = useExpenses({ startDate, endDate });
   // 비교 탭 요일별 비교 — 이전 기간 raw 거래(요일 집계용).
-  const prevMonthExpensesQ = useExpenses({ startDate: prevStart, endDate: prevEnd })
-  const heatmapQ = useExpenseHeatmap(startDate, endDate)
+  const prevMonthExpensesQ = useExpenses({
+    startDate: prevStart,
+    endDate: prevEnd,
+  });
+  const heatmapQ = useExpenseHeatmap(startDate, endDate);
 
   // 첫 진입 시 모든 데이터가 도착할 때까지 한 번만 skeleton — 이후 기간/탭 변경은 부분 로딩 표시.
   const initialLoading =
-    rangeQ.isLoading || categoriesQ.isLoading || merchantQ.isLoading
-    || monthExpensesQ.isLoading || heatmapQ.isLoading
-    || (needPrev && prevRangeQ.isLoading)
-  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+    rangeQ.isLoading ||
+    categoriesQ.isLoading ||
+    merchantQ.isLoading ||
+    monthExpensesQ.isLoading ||
+    heatmapQ.isLoading ||
+    (needPrev && prevRangeQ.isLoading);
+  const [hasEverLoaded, setHasEverLoaded] = useState(false);
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
-  if (!initialLoading && !hasEverLoaded) setHasEverLoaded(true)
-  const shouldShowSkeleton = initialLoading && !hasEverLoaded
+  if (!initialLoading && !hasEverLoaded) setHasEverLoaded(true);
+  const shouldShowSkeleton = initialLoading && !hasEverLoaded;
 
-  const periodLbl = periodLabel(period)
-  const labels = labelsOf(period)
+  const periodLbl = periodLabel(period);
+  const labels = labelsOf(period);
 
   const categoryBreakdown: CategoryBreakdown[] = useMemo(
     () => rangeQ.data?.categoryBreakdown ?? [],
     [rangeQ.data],
-  )
-  const totalExpense = rangeQ.data?.totalExpense ?? 0
-  const totalIncome = rangeQ.data?.totalIncome ?? 0
+  );
+  const totalExpense = rangeQ.data?.totalExpense ?? 0;
+  const totalIncome = rangeQ.data?.totalIncome ?? 0;
   const monthlyBuckets = useMemo(
     () => rangeQ.data?.monthlyBuckets ?? [],
     [rangeQ.data],
-  )
+  );
 
   // 카테고리 메타(rowId → 아이콘/색/이름) 룩업
   const categoryById = useMemo(() => {
-    const map = new Map<number, ExpenseCategory>()
-    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c)
-    return map
-  }, [categoriesQ.data])
+    const map = new Map<number, ExpenseCategory>();
+    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c);
+    return map;
+  }, [categoriesQ.data]);
 
   // 지출(EXPENSE) 카테고리만 필터
   const periodBreakdown = useMemo<CategoryBreakdown[]>(
-    () => categoryBreakdown.filter(c => c.expenseType === 'EXPENSE'),
+    () => categoryBreakdown.filter((c) => c.expenseType === "EXPENSE"),
     [categoryBreakdown],
-  )
+  );
 
   type DonutRow = {
     /** null = 미분류. 카테고리 메타가 없으므로 드릴다운도 없다. */
-    rowId: number | null
-    name: string
-    amount: number
-    icon: string | null
-    color: string | null
-    hasChildren: boolean
-  }
+    rowId: number | null;
+    name: string;
+    amount: number;
+    icon: string | null;
+    color: string | null;
+    hasChildren: boolean;
+  };
 
   // 부모 카테고리 집계 (드릴 전)
   const donutBreakdown = useMemo<DonutRow[]>(() => {
-    const map = new Map<number | null, DonutRow>()
+    const map = new Map<number | null, DonutRow>();
     for (const c of periodBreakdown) {
-      const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
+      const groupRowId = c.parentCategoryRowId ?? c.categoryRowId;
       // 미분류는 카테고리 메타가 없어 이름을 서버가 주지 않는다 — 여기서 라벨을 붙인다.
-      const groupName = c.parentCategoryName ?? c.categoryName ?? t('uncategorized')
-      let row = map.get(groupRowId)
+      const groupName =
+        c.parentCategoryName ?? c.categoryName ?? t("uncategorized");
+      let row = map.get(groupRowId);
       if (!row) {
-        const cat = groupRowId != null ? categoryById.get(groupRowId) : undefined
+        const cat =
+          groupRowId != null ? categoryById.get(groupRowId) : undefined;
         row = {
           rowId: groupRowId,
           name: groupName,
@@ -650,101 +1061,118 @@ export const StatsPage = () => {
           icon: cat?.icon ?? null,
           color: cat?.color ?? null,
           hasChildren: false,
-        }
-        map.set(groupRowId, row)
+        };
+        map.set(groupRowId, row);
       }
-      row.amount += c.totalAmount
-      if (c.parentCategoryRowId != null) row.hasChildren = true
+      row.amount += c.totalAmount;
+      if (c.parentCategoryRowId != null) row.hasChildren = true;
     }
-    return Array.from(map.values()).sort((a, b) => b.amount - a.amount)
-  }, [periodBreakdown, categoryById])
+    return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
+  }, [periodBreakdown, categoryById]);
 
   // 드릴 모드: 활성 부모의 자식 leaf 집계
   const drillBreakdown = useMemo<DonutRow[]>(() => {
-    if (activeParentId == null) return []
-    const map = new Map<number | null, DonutRow>()
+    if (activeParentId == null) return [];
+    const map = new Map<number | null, DonutRow>();
     for (const c of periodBreakdown) {
-      if (c.parentCategoryRowId !== activeParentId) continue
-      let row = map.get(c.categoryRowId)
+      if (c.parentCategoryRowId !== activeParentId) continue;
+      let row = map.get(c.categoryRowId);
       if (!row) {
-        const cat = c.categoryRowId != null ? categoryById.get(c.categoryRowId) : undefined
+        const cat =
+          c.categoryRowId != null
+            ? categoryById.get(c.categoryRowId)
+            : undefined;
         row = {
           rowId: c.categoryRowId,
-          name: c.categoryName ?? t('uncategorized'),
+          name: c.categoryName ?? t("uncategorized"),
           amount: 0,
           icon: cat?.icon ?? null,
           color: cat?.color ?? null,
           hasChildren: false,
-        }
-        map.set(c.categoryRowId, row)
+        };
+        map.set(c.categoryRowId, row);
       }
-      row.amount += c.totalAmount
+      row.amount += c.totalAmount;
     }
-    return Array.from(map.values()).sort((a, b) => b.amount - a.amount)
-  }, [activeParentId, periodBreakdown, categoryById])
+    return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
+  }, [activeParentId, periodBreakdown, categoryById]);
 
-  const activeParent = activeParentId != null
-    ? donutBreakdown.find(r => r.rowId === activeParentId) ?? null
-    : null
-  const isDrilled = activeParentId != null && drillBreakdown.length > 0
-  const donutView = isDrilled ? drillBreakdown : donutBreakdown
+  const activeParent =
+    activeParentId != null
+      ? (donutBreakdown.find((r) => r.rowId === activeParentId) ?? null)
+      : null;
+  const isDrilled = activeParentId != null && drillBreakdown.length > 0;
+  const donutView = isDrilled ? drillBreakdown : donutBreakdown;
 
   // 기간 총 지출
-  const periodTotalExpense = totalExpense
-  const donutLoading = rangeQ.isLoading
+  const periodTotalExpense = totalExpense;
+  const donutLoading = rangeQ.isLoading;
 
   const TAB_ITEMS: { v: TabKey; l: string }[] = [
-    { v: 'cat', l: t('tab.category') },
-    { v: 'trend', l: t('tab.trend') },
-    { v: 'compare', l: t('tab.compare') },
-  ]
+    { v: "cat", l: t("tab.category") },
+    { v: "trend", l: t("tab.trend") },
+    { v: "compare", l: t("tab.compare") },
+  ];
 
   // 좌우로 밀어서 탭 이동 — 칩을 눌러야만 넘어가면 한 손으로 쓰기 불편하다.
   // 앱(통계 화면 PageView)과 같은 동작. 양 끝에서는 순환하지 않는다.
   const goTabBy = (step: number) => {
-    const i = TAB_ITEMS.findIndex(x => x.v === tab)
-    const next = TAB_ITEMS[i + step]
-    if (next) setTab(next.v)
-  }
+    const i = TAB_ITEMS.findIndex((x) => x.v === tab);
+    const next = TAB_ITEMS[i + step];
+    if (next) setTab(next.v);
+  };
   const swipeNav = useSwipeNav({
     enabled: mobile,
     onPrev: () => goTabBy(-1),
     onNext: () => goTabBy(1),
-  })
+  });
   // 모바일 = design .m-chip-tabs + .tg--pill (컴팩트 pill toggle, 선택=bg-brand 채움, 가로스크롤).
   // 데스크톱 = underline 탭 유지.
   // 가로 24 — 아래 본문과 같은 지점에서 시작해야 첫 칩과 첫 섹션 제목이 한 줄로 맞는다.
   const StatsTabs = mobile ? (
-    <div className="scrollbar-hide" style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '12px 24px' }}>
+    <div
+      className="scrollbar-hide"
+      style={{
+        display: "flex",
+        gap: 4,
+        overflowX: "auto",
+        padding: "12px 24px",
+      }}
+    >
       {TAB_ITEMS.map(({ v, l }) => {
-        const on = tab === v
+        const on = tab === v;
         return (
           <button
             key={v}
             type="button"
             onClick={() => setTab(v)}
             style={{
-              padding: '4px 12px',
+              padding: "4px 12px",
               minHeight: 32,
-              borderRadius: 'var(--radius-md)',
+              borderRadius: "var(--radius-md)",
               border: 0,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontFamily: 'inherit',
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              fontFamily: "inherit",
               fontSize: 13,
               fontWeight: on ? 600 : 500,
-              background: on ? 'var(--bg-brand)' : 'transparent',
-              color: on ? 'var(--fg-on-brand)' : 'var(--fg-secondary)',
-              transition: 'color var(--motion-duration-fast), background var(--motion-duration-fast)',
+              background: on ? "var(--bg-brand)" : "transparent",
+              color: on ? "var(--fg-on-brand)" : "var(--fg-secondary)",
+              transition:
+                "color var(--motion-duration-fast), background var(--motion-duration-fast)",
             }}
           >
             {l}
           </button>
-        )
+        );
       })}
     </div>
   ) : (
-    <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} style={{ marginBottom: 20 }}>
+    <Tabs
+      value={tab}
+      onValueChange={(v) => setTab(v as TabKey)}
+      style={{ marginBottom: 20 }}
+    >
       <TabsList variant="underline">
         {TAB_ITEMS.map(({ v, l }) => (
           <TabsTrigger key={v} value={v} variant="underline">
@@ -753,7 +1181,7 @@ export const StatsPage = () => {
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 
   // 가계부 FilterDialog 패턴 정합 — 작은 trigger button (Calendar icon + periodLabel +
   // chevron). 클릭 시 RangePickerSheet 열림 — 안에서 ToggleGroup(월/분기/년/직접) + range
@@ -764,28 +1192,35 @@ export const StatsPage = () => {
         type="button"
         onClick={() => setPickerOpen(true)}
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
+          display: "inline-flex",
+          alignItems: "center",
           gap: 6,
-          padding: 'var(--spacing-xs) var(--spacing-md)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-surface)',
-          fontSize: 'var(--text-body-sm)',
-          fontWeight: '500',
-          color: 'var(--fg-primary)',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
+          padding: "var(--spacing-xs) var(--spacing-md)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-md)",
+          background: "var(--bg-surface)",
+          fontSize: "var(--text-body-sm)",
+          fontWeight: "500",
+          color: "var(--fg-primary)",
+          cursor: "pointer",
+          fontFamily: "inherit",
         }}
       >
-        <CalendarClock size={14} style={{ color: 'var(--fg-secondary)' }} />
+        <CalendarClock size={14} style={{ color: "var(--fg-secondary)" }} />
         {/* custom + 다른 year 시 'YYYY-MM-DD ~ YYYY-MM-DD' 너무 길어 wrap. ~ 다음에서 명시 break. */}
-        <span style={{ whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.3 }}>
-          {period.segMode === 'custom' && period.from.getFullYear() !== period.to.getFullYear()
+        <span
+          style={{
+            whiteSpace: "pre-line",
+            textAlign: "center",
+            lineHeight: 1.3,
+          }}
+        >
+          {period.segMode === "custom" &&
+          period.from.getFullYear() !== period.to.getFullYear()
             ? `${fmt(period.from)} ~\n${fmt(period.to)}`
             : periodLabel(period)}
         </span>
-        <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+        <ChevronDown size={12} style={{ color: "var(--fg-tertiary)" }} />
       </button>
       {pickerOpen && (
         <RangePickerSheet
@@ -793,36 +1228,37 @@ export const StatsPage = () => {
           initial={period}
           onCancel={() => setPickerOpen(false)}
           onConfirm={(r) => {
-            setPeriod(r)
-            setPickerOpen(false)
+            setPeriod(r);
+            setPickerOpen(false);
           }}
         />
       )}
     </>
-  )
+  );
 
   // '직접' 활성 시 segment 아래에 표시되는 선택 기간 카드.
   // ---------- LOADING / EMPTY HELPERS ----------
   const EmptyBox = ({ text }: { text: string }) => (
     <div
       style={{
-        padding: '32px 0',
-        textAlign: 'center',
-        color: 'var(--fg-tertiary)',
-        fontSize: 'var(--text-label-sm)',
+        padding: "32px 0",
+        textAlign: "center",
+        color: "var(--fg-tertiary)",
+        fontSize: "var(--text-label-sm)",
       }}
     >
       {text}
     </div>
-  )
+  );
 
   // ---------- CATEGORY TAB ----------
-  const donutTotal = donutView.reduce((s, x) => s + x.amount, 0)
+  const donutTotal = donutView.reduce((s, x) => s + x.amount, 0);
   // 도넛 센터 라벨은 항상 짧게 유지 — custom 모드의 full date range 가 도넛 안으로 침범하지 않도록.
-  const centerPeriodLbl = period.segMode === 'custom' ? t('period.custom.now') : periodLbl
+  const centerPeriodLbl =
+    period.segMode === "custom" ? t("period.custom.now") : periodLbl;
   const donutCenterLbl = isDrilled
-    ? t('category.drilledCenter', { name: activeParent?.name ?? '' })
-    : t('compare.periodExpense', { period: centerPeriodLbl })
+    ? t("category.drilledCenter", { name: activeParent?.name ?? "" })
+    : t("compare.periodExpense", { period: centerPeriodLbl });
 
   const DonutCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
@@ -835,23 +1271,25 @@ export const StatsPage = () => {
               type="button"
               onClick={() => setActiveParentId(null)}
               style={{
-                background: 'transparent',
+                background: "transparent",
                 border: 0,
-                color: 'var(--fg-secondary)',
-                cursor: 'pointer',
-                fontSize: 'var(--text-body-sm)',
-                fontWeight: '500',
+                color: "var(--fg-secondary)",
+                cursor: "pointer",
+                fontSize: "var(--text-body-sm)",
+                fontWeight: "500",
                 padding: 0,
-                fontFamily: 'inherit',
+                fontFamily: "inherit",
               }}
             >
-              {t('category.title')}
+              {t("category.title")}
             </button>
-            <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
+            <span style={{ color: "var(--fg-tertiary)", fontWeight: "500" }}>
+              ›
+            </span>
             <span>{activeParent?.name}</span>
           </>
         ) : (
-          t('category.title')
+          t("category.title")
         )
       }
       action={PeriodSeg}
@@ -859,21 +1297,43 @@ export const StatsPage = () => {
       {donutLoading ? (
         <div
           style={{
-            display: 'flex',
-            flexDirection: mobile ? 'column' : 'row',
+            display: "flex",
+            flexDirection: mobile ? "column" : "row",
             gap: mobile ? 0 : 32,
-            alignItems: 'center',
+            alignItems: "center",
           }}
         >
           {/* 도넛 스켈레톤도 200 박스 중앙 + 176 원 — 실제 렌더(앱 정합)와 동일 리듬(로딩 점프 방지). */}
-          <div style={{ height: mobile ? 240 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div
+            style={{
+              height: mobile ? 240 : undefined,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <SkeletonBase
-              className={mobile ? 'h-[176px] w-[176px] rounded-full' : 'h-[200px] w-[200px] rounded-full'}
+              className={
+                mobile
+                  ? "h-[176px] w-[176px] rounded-full"
+                  : "h-[200px] w-[200px] rounded-full"
+              }
             />
           </div>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
                 <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
                 <SkeletonBase className="h-3 flex-1" />
                 <SkeletonBase className="h-3 w-10 shrink-0" />
@@ -883,20 +1343,31 @@ export const StatsPage = () => {
           </div>
         </div>
       ) : donutView.length === 0 ? (
-        <EmptyBox text={t('empty.category')} />
+        <EmptyBox text={t("empty.category")} />
       ) : (
         <div
           style={{
-            display: 'flex',
-            flexDirection: mobile ? 'column' : 'row',
+            display: "flex",
+            flexDirection: mobile ? "column" : "row",
             gap: mobile ? 0 : 32,
-            alignItems: 'center',
+            alignItems: "center",
           }}
         >
           {/* 도넛을 200 높이 박스 중앙에 — 앱(_DonutCard SizedBox 200 + 도넛 176) 정합. 위·아래 12 여백 확보. */}
-          <div style={{ height: mobile ? 240 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div
+            style={{
+              height: mobile ? 240 : undefined,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <Donut
-              segments={donutView.map((s, i) => ({ value: s.amount, color: segmentColor(i, s.color) }))}
+              segments={donutView.map((s, i) => ({
+                value: s.amount,
+                color: segmentColor(i, s.color),
+              }))}
               size={mobile ? 176 : 200}
               stroke={28}
             >
@@ -904,46 +1375,79 @@ export const StatsPage = () => {
               {/* 도넛 구멍이 좁다(모바일 176 − 스트로크 28×2 = 120). 전체 자릿수를 쓰면
                   구멍을 넘어 링 위에 얹힌다 — 1억만 넘어도 "102,176,580원" 이다.
                   차트 축과 같은 축약을 쓴다(1.0억). 정확한 금액은 바로 아래 범례가 갖고 있다. */}
-              <div className="val num" style={{ fontSize: 'var(--text-title-lg)' }}>
+              <div
+                className="val num"
+                style={{ fontSize: "var(--text-title-lg)" }}
+              >
                 <MaskAmount>{formatChartAxis(donutTotal)}</MaskAmount>
               </div>
             </Donut>
           </div>
-          <div className="cat-legend" style={{ width: '100%' }}>
+          <div className="cat-legend" style={{ width: "100%" }}>
             {donutView.map((s, i) => {
-              const clickable = !isDrilled && s.hasChildren
+              const clickable = !isDrilled && s.hasChildren;
               return (
                 <div
                   key={s.rowId}
                   className="cat-legend__row"
-                  role={clickable ? 'button' : undefined}
+                  role={clickable ? "button" : undefined}
                   tabIndex={clickable ? 0 : undefined}
-                  onClick={clickable ? () => setActiveParentId(s.rowId) : undefined}
-                  onKeyDown={clickable ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setActiveParentId(s.rowId)
-                    }
-                  } : undefined}
+                  onClick={
+                    clickable ? () => setActiveParentId(s.rowId) : undefined
+                  }
+                  onKeyDown={
+                    clickable
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setActiveParentId(s.rowId);
+                          }
+                        }
+                      : undefined
+                  }
                   style={{
-                    cursor: clickable ? 'pointer' : 'default',
-                    borderRadius: 'var(--radius-md)',
-                    padding: clickable ? '4px 6px' : undefined,
-                    margin: clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+                    cursor: clickable ? "pointer" : "default",
+                    borderRadius: "var(--radius-md)",
+                    padding: clickable ? "4px 6px" : undefined,
+                    margin: clickable ? "0 -6px" : undefined,
+                    transition:
+                      "background var(--motion-duration-fast) var(--motion-ease-out)",
                   }}
-                  onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
-                  onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
-                  title={clickable ? t('category.drillHint') : undefined}
+                  onMouseEnter={
+                    clickable
+                      ? (e) => {
+                          e.currentTarget.style.background = "var(--bg-muted)";
+                        }
+                      : undefined
+                  }
+                  onMouseLeave={
+                    clickable
+                      ? (e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }
+                      : undefined
+                  }
+                  title={clickable ? t("category.drillHint") : undefined}
                 >
-                  <span className="cat-legend__sw" style={{ background: segmentColor(i, s.color) }} />
+                  <span
+                    className="cat-legend__sw"
+                    style={{ background: segmentColor(i, s.color) }}
+                  />
                   <span className="cat-legend__name">{s.name}</span>
                   <span className="cat-legend__pct num">
-                    {donutTotal > 0 ? ((s.amount / donutTotal) * 100).toFixed(1) : '0.0'}%
+                    {donutTotal > 0
+                      ? ((s.amount / donutTotal) * 100).toFixed(1)
+                      : "0.0"}
+                    %
                   </span>
                   <span
                     className="cat-legend__amt num"
-                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      gap: 4,
+                    }}
                   >
                     <MaskAmount mask="••••">{KRW(s.amount)}</MaskAmount>
                     {/* 하위 카테고리 있는 행 = 클릭 가능 표식 — 숫자 옆 밀착 (앱 chevronRight 정합).
@@ -951,41 +1455,66 @@ export const StatsPage = () => {
                         오른쪽으로 밀려 목록이 들쭉날쭉해진다. */}
                     <span
                       // 폭은 아이콘 크기와 같아야 해서 spacing 토큰이 아니라 그 값을 그대로 쓴다.
-                      style={{ width: 13, marginRight: -2, flexShrink: 0, display: 'inline-flex' }}
+                      style={{
+                        width: 13,
+                        marginRight: -2,
+                        flexShrink: 0,
+                        display: "inline-flex",
+                      }}
                       aria-hidden
                     >
                       {clickable && (
-                        <ChevronRight size={13} style={{ color: 'var(--fg-tertiary)' }} />
+                        <ChevronRight
+                          size={13}
+                          style={{ color: "var(--fg-tertiary)" }}
+                        />
                       )}
                     </span>
                   </span>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
       )}
     </Section>
-  )
+  );
 
-  const merchants = merchantQ.data?.merchants ?? []
-  const topMerchants = merchants.slice(0, 5)
-  const maxMerchantAmt = Math.max(1, ...topMerchants.map(m => m.totalAmount))
+  const merchants = merchantQ.data?.merchants ?? [];
+  const topMerchants = merchants.slice(0, 5);
+  const maxMerchantAmt = Math.max(1, ...topMerchants.map((m) => m.totalAmount));
 
   const TopMerchantsCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={t('merchant.title')}
-      cardStyle={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      title={t("merchant.title")}
+      cardStyle={{ display: "flex", flexDirection: "column", height: "100%" }}
     >
       {merchantQ.isLoading ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10 }}>
-          {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+            >
               <SkeletonBase className="h-4 w-6 shrink-0" />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: 6,
+                  }}
+                >
                   <SkeletonBase className="h-4 w-1/3" />
                   <SkeletonBase className="h-3 w-10 ml-auto" />
                 </div>
@@ -995,56 +1524,88 @@ export const StatsPage = () => {
           ))}
         </div>
       ) : topMerchants.length === 0 ? (
-        <EmptyBox text={t('empty.merchant')} />
+        <EmptyBox text={t("empty.merchant")} />
       ) : (
         <div
           style={{
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
             gap: 10,
           }}
         >
           {topMerchants.map((m, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              key={i}
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+            >
               {/* 순위는 왼쪽 정렬 — 가운데로 두면 한 자리 숫자가 24 컬럼 한복판에 놓여
                   섹션 제목보다 안쪽에서 시작한다. 폭은 두 자리 자리잡이라 그대로. */}
               <span
                 style={{
                   width: 24,
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: '700',
-                  color: i < 3 ? 'var(--fg-income)' : 'var(--fg-tertiary)',
+                  fontSize: "var(--text-caption)",
+                  fontWeight: "700",
+                  color: i < 3 ? "var(--fg-income)" : "var(--fg-tertiary)",
                 }}
               >
                 {i + 1}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{m.merchant}</span>
-                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginLeft: 6 }}>
-                    {t('unit.times', { count: m.count })}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    marginBottom: 4,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "var(--text-body-sm)",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {m.merchant}
                   </span>
-                  <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                    <MaskAmount>{wonPre()}{KRW(m.totalAmount)}</MaskAmount>
+                  <span
+                    style={{
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      marginLeft: 6,
+                    }}
+                  >
+                    {t("unit.times", { count: m.count })}
+                  </span>
+                  <span
+                    className="num"
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: "var(--text-label-sm)",
+                      fontWeight: "700",
+                    }}
+                  >
+                    <MaskAmount>
+                      {wonPre()}
+                      {KRW(m.totalAmount)}
+                    </MaskAmount>
                     <WonUnit />
                   </span>
                 </div>
                 <div
                   style={{
                     height: 4,
-                    background: 'var(--bg-sunken)',
-                    borderRadius: 'var(--radius-pill)',
-                    overflow: 'hidden',
+                    background: "var(--bg-sunken)",
+                    borderRadius: "var(--radius-pill)",
+                    overflow: "hidden",
                   }}
                 >
                   <div
                     style={{
                       width: `${(m.totalAmount / maxMerchantAmt) * 100}%`,
-                      height: '100%',
+                      height: "100%",
                       background: colorFor(i),
-                      borderRadius: 'var(--radius-pill)',
+                      borderRadius: "var(--radius-pill)",
                     }}
                   />
                 </div>
@@ -1054,42 +1615,43 @@ export const StatsPage = () => {
         </div>
       )}
     </Section>
-  )
+  );
 
   // ---------- HEATMAP (요일 × 시간대 구간) ----------
-  const heatmapCells: HeatmapCell[] = heatmapQ.data ?? []
+  const heatmapCells: HeatmapCell[] = heatmapQ.data ?? [];
   const heatmapMatrix = useMemo(() => {
     // rows: 6 시간대 × cols: 7 요일, value = sum of totalAmount
-    const matrix: number[][] = HEAT_ROWS.map(() => HEAT_COLS.map(() => 0))
+    const matrix: number[][] = HEAT_ROWS.map(() => HEAT_COLS.map(() => 0));
     for (const cell of heatmapCells) {
-      const colIdx = HEAT_COLS.findIndex(c => c.dow === cell.dayOfWeek)
-      const rowIdx = HEAT_ROWS.findIndex(r => r.hours.includes(cell.hour))
-      if (colIdx < 0 || rowIdx < 0) continue
-      matrix[rowIdx]![colIdx]! += cell.totalAmount
+      const colIdx = HEAT_COLS.findIndex((c) => c.dow === cell.dayOfWeek);
+      const rowIdx = HEAT_ROWS.findIndex((r) => r.hours.includes(cell.hour));
+      if (colIdx < 0 || rowIdx < 0) continue;
+      matrix[rowIdx]![colIdx]! += cell.totalAmount;
     }
-    return matrix
-  }, [heatmapCells])
+    return matrix;
+  }, [heatmapCells]);
 
   const heatmapMax = useMemo(
     () => heatmapMatrix.reduce((m, row) => Math.max(m, ...row), 0),
-    [heatmapMatrix]
-  )
+    [heatmapMatrix],
+  );
 
   const heatmapTotal = useMemo(
-    () => heatmapMatrix.reduce((s, row) => s + row.reduce((a, b) => a + b, 0), 0),
-    [heatmapMatrix]
-  )
+    () =>
+      heatmapMatrix.reduce((s, row) => s + row.reduce((a, b) => a + b, 0), 0),
+    [heatmapMatrix],
+  );
 
   /** 비선형 bucket (디자인 spec) — 상위값에 더 큰 대비 */
   const heatBucket = (value: number): number => {
-    if (heatmapMax <= 0 || value <= 0) return 0
-    const ratio = value / heatmapMax
-    if (ratio < 0.08) return 1
-    if (ratio < 0.22) return 2
-    if (ratio < 0.45) return 3
-    if (ratio < 0.75) return 4
-    return 5
-  }
+    if (heatmapMax <= 0 || value <= 0) return 0;
+    const ratio = value / heatmapMax;
+    if (ratio < 0.08) return 1;
+    if (ratio < 0.22) return 2;
+    if (ratio < 0.45) return 3;
+    if (ratio < 0.75) return 4;
+    return 5;
+  };
 
   /**
    * 히트맵 셀 라벨 — 좁은 칸에 들어갈 만큼 짧게.
@@ -1100,32 +1662,45 @@ export const StatsPage = () => {
    * 칸이 좁다).
    */
   const shortAmount = (v: number): string => {
-    if (v <= 0) return '—'
-    if (!isEn() && v < 10_000) return `${Math.round(v / 1000)}천`
-    return formatChartAxis(v)
-  }
+    if (v <= 0) return "—";
+    if (!isEn() && v < 10_000) return `${Math.round(v / 1000)}천`;
+    return formatChartAxis(v);
+  };
 
   const HeatmapCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
-    <Section mobile={mobile} title={t('heatmap.title')}>
-      <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginBottom: 16 }}>
-        {t('heatmap.subtitle')}
+    <Section mobile={mobile} title={t("heatmap.title")}>
+      <div
+        style={{
+          fontSize: "var(--text-caption)",
+          color: "var(--fg-tertiary)",
+          marginBottom: 16,
+        }}
+      >
+        {t("heatmap.subtitle")}
       </div>
       {heatmapQ.isLoading ? (
         // 실제 grid 정합: 56px 라벨열 + 7 요일열, 헤더 행(코너+요일) + 6 데이터 행.
         // 셀은 aspectRatio 1 정사각형 + radius-sm (로딩 후 컴포넌트와 1:1).
         <div
           style={{
-            display: 'grid',
+            display: "grid",
             gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
             gap: 6,
-            alignItems: 'center',
+            alignItems: "center",
           }}
         >
           {/* 헤더 행: 빈 코너 + 요일 라벨 placeholder */}
           <span />
-          {HEAT_COLS.map(col => (
-            <div key={col.dow} style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4 }}>
+          {HEAT_COLS.map((col) => (
+            <div
+              key={col.dow}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                paddingBottom: 4,
+              }}
+            >
               <SkeletonBase className="h-3 w-3" />
             </div>
           ))}
@@ -1136,11 +1711,11 @@ export const StatsPage = () => {
                 <SkeletonBase className="h-3.5 w-8 mb-1" />
                 <SkeletonBase className="h-2.5 w-12" />
               </div>
-              {HEAT_COLS.map(col => (
+              {HEAT_COLS.map((col) => (
                 <SkeletonBase
                   key={`${rIdx}-${col.dow}`}
                   className="w-full rounded-sm"
-                  style={{ aspectRatio: '1' }}
+                  style={{ aspectRatio: "1" }}
                 />
               ))}
             </Fragment>
@@ -1149,37 +1724,37 @@ export const StatsPage = () => {
       ) : heatmapTotal === 0 ? (
         <div
           style={{
-            padding: '40px 0',
-            textAlign: 'center',
-            color: 'var(--fg-tertiary)',
-            fontSize: 'var(--text-label-sm)',
-            background: 'var(--bg-sunken)',
-            borderRadius: 'var(--radius-lg)',
+            padding: "40px 0",
+            textAlign: "center",
+            color: "var(--fg-tertiary)",
+            fontSize: "var(--text-label-sm)",
+            background: "var(--bg-sunken)",
+            borderRadius: "var(--radius-lg)",
           }}
         >
-          {t('heatmap.empty')}
+          {t("heatmap.empty")}
         </div>
       ) : (
         <>
           <div
             style={{
-              display: 'grid',
+              display: "grid",
               // 앱과 동일 — 라벨 56px, 셀 간격 4px (앱 cell Padding(all:2)=셀간 4px)
               gridTemplateColumns: `56px repeat(${HEAT_COLS.length}, 1fr)`,
               gap: 6,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             {/* 헤더 행: 빈 코너 + 요일 라벨 */}
             <span />
-            {HEAT_COLS.map(col => (
+            {HEAT_COLS.map((col) => (
               <span
                 key={col.dow}
                 style={{
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: '600',
-                  color: 'var(--fg-tertiary)',
-                  textAlign: 'center',
+                  fontSize: "var(--text-caption)",
+                  fontWeight: "600",
+                  color: "var(--fg-tertiary)",
+                  textAlign: "center",
                   paddingBottom: 4,
                 }}
               >
@@ -1192,54 +1767,79 @@ export const StatsPage = () => {
               <Fragment key={row.labelKey}>
                 <div
                   style={{
-                    fontSize: 'var(--text-caption)',
-                    color: 'var(--fg-tertiary)',
-                    lineHeight: '1.3',
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    lineHeight: "1.3",
                     paddingRight: 2,
                   }}
                 >
-                  <div style={{ fontWeight: '700', color: 'var(--fg-primary)', fontSize: 'var(--text-label-sm)' }}>
+                  <div
+                    style={{
+                      fontWeight: "700",
+                      color: "var(--fg-primary)",
+                      fontSize: "var(--text-label-sm)",
+                    }}
+                  >
                     {t(row.labelKey)}
                   </div>
-                  <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
+                  <div
+                    style={{
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      marginTop: 1,
+                    }}
+                  >
                     {t(row.subKey)}
                   </div>
                 </div>
                 {HEAT_COLS.map((col, cIdx) => {
-                  const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0
-                  const bucket = heatBucket(value)
-                  const pal = HEAT_PALETTE[bucket]!
-                  const isPeak = value > 0 && value === heatmapMax
-                  const cellText = shortAmount(value)
+                  const value = heatmapMatrix[rIdx]?.[cIdx] ?? 0;
+                  const bucket = heatBucket(value);
+                  const pal = HEAT_PALETTE[bucket]!;
+                  const isPeak = value > 0 && value === heatmapMax;
+                  const cellText = shortAmount(value);
                   // 한 줄 유지 — 글자 수에 따라 폰트 축소(가계부 캘린더형 px 조정 로직 정합) + nowrap
                   const cellFs = mobile
-                    ? cellText.length <= 4 ? 10 : cellText.length <= 5 ? 9 : 8
-                    : cellText.length <= 5 ? 11.5 : 10
+                    ? cellText.length <= 4
+                      ? 10
+                      : cellText.length <= 5
+                        ? 9
+                        : 8
+                    : cellText.length <= 5
+                      ? 11.5
+                      : 10;
                   return (
                     <div
                       key={`${row.labelKey}-${col.dow}`}
-                      title={hidden ? `${t(row.labelKey)}·${t(col.labelKey)}` : `${t(row.labelKey)}·${t(col.labelKey)} ${money(value)}`}
+                      title={
+                        hidden
+                          ? `${t(row.labelKey)}·${t(col.labelKey)}`
+                          : `${t(row.labelKey)}·${t(col.labelKey)} ${money(value)}`
+                      }
                       style={{
-                        aspectRatio: '1', // 앱 AspectRatio(1) 정합 — 정사각형
-                        borderRadius: 'var(--radius-sm)',
+                        aspectRatio: "1", // 앱 AspectRatio(1) 정합 — 정사각형
+                        borderRadius: "var(--radius-sm)",
                         background: pal.bg,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         fontSize: cellFs,
-                        fontWeight: '700',
+                        fontWeight: "700",
                         color: pal.fg,
-                        fontVariantNumeric: 'tabular-nums',
-                        whiteSpace: 'nowrap',
+                        fontVariantNumeric: "tabular-nums",
+                        whiteSpace: "nowrap",
                         boxShadow: isPeak
-                          ? '0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)'
-                          : 'none',
-                        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+                          ? "0 0 0 2px var(--fg-brand-strong), 0 0 0 4px color-mix(in srgb, var(--fg-brand-strong) 25%, transparent)"
+                          : "none",
+                        transition:
+                          "background var(--motion-duration-fast) var(--motion-ease-out)",
                       }}
                     >
-                      <MaskAmount mask={value > 0 ? '••' : '—'}>{cellText}</MaskAmount>
+                      <MaskAmount mask={value > 0 ? "••" : "—"}>
+                        {cellText}
+                      </MaskAmount>
                     </div>
-                  )
+                  );
                 })}
               </Fragment>
             ))}
@@ -1248,282 +1848,389 @@ export const StatsPage = () => {
           {/* 범례 */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 8,
               marginTop: 14,
-              fontSize: 'var(--text-badge)',
-              color: 'var(--fg-tertiary)',
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
             }}
           >
-            <span>{t('heatmap.less')}</span>
-            <div style={{ display: 'flex', gap: 3 }}>
+            <span>{t("heatmap.less")}</span>
+            <div style={{ display: "flex", gap: 3 }}>
               {HEAT_PALETTE.slice(1).map((c, i) => (
                 <span
                   key={i}
                   style={{
                     width: 18,
                     height: 10,
-                    borderRadius: 'var(--radius-xs)',
+                    borderRadius: "var(--radius-xs)",
                     background: c.bg,
-                    border: '1px solid var(--border-subtle)',
+                    border: "1px solid var(--border-subtle)",
                   }}
                 />
               ))}
             </div>
-            <span>{t('heatmap.more')}</span>
-            <span style={{ marginLeft: 'auto' }}>
-              {t('heatmap.total')} <MaskAmount>{wonPre()}{KRW(heatmapTotal)}</MaskAmount>
+            <span>{t("heatmap.more")}</span>
+            <span style={{ marginLeft: "auto" }}>
+              {t("heatmap.total")}{" "}
+              <MaskAmount>
+                {wonPre()}
+                {KRW(heatmapTotal)}
+              </MaskAmount>
               <WonUnit />
             </span>
           </div>
         </>
       )}
     </Section>
-  )
+  );
 
-  const topMerchant = topMerchants[0]
-  const categoryTop = donutBreakdown[0]
+  const topMerchant = topMerchants[0];
+  const categoryTop = donutBreakdown[0];
   // 가맹점 대표 카테고리 — 원시 거래에서 해당 가맹점의 지배적(최다 지출) 카테고리 역산
   const topMerchantCat = useMemo(() => {
-    const mName = topMerchant?.merchant
-    if (!mName) return null
-    const byCat = new Map<number, { amount: number; icon: string | null; color: string | null }>()
+    const mName = topMerchant?.merchant;
+    if (!mName) return null;
+    const byCat = new Map<
+      number,
+      { amount: number; icon: string | null; color: string | null }
+    >();
     for (const e of monthExpensesQ.data ?? []) {
-      if (e.merchant !== mName || e.expenseType !== 'EXPENSE') continue
-      const prev = byCat.get(e.categoryRowId)
+      if (e.merchant !== mName || e.expenseType !== "EXPENSE") continue;
+      const prev = byCat.get(e.categoryRowId);
       if (prev) {
-        prev.amount += e.amount
+        prev.amount += e.amount;
       } else {
-        const cat = categoryById.get(e.categoryRowId)
+        const cat = categoryById.get(e.categoryRowId);
         byCat.set(e.categoryRowId, {
           amount: e.amount,
           icon: e.categoryIcon ?? cat?.icon ?? null,
           color: e.categoryColor ?? cat?.color ?? null,
-        })
+        });
       }
     }
-    let best: { amount: number; icon: string | null; color: string | null } | null = null
-    for (const v of byCat.values()) if (!best || v.amount > best.amount) best = v
-    return best
-  }, [topMerchant, monthExpensesQ.data, categoryById])
+    let best: {
+      amount: number;
+      icon: string | null;
+      color: string | null;
+    } | null = null;
+    for (const v of byCat.values())
+      if (!best || v.amount > best.amount) best = v;
+    return best;
+  }, [topMerchant, monthExpensesQ.data, categoryById]);
   // 기간 일수
   const rangeDays =
-    Math.round((startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) / 86400000) + 1
+    Math.round(
+      (startOfDay(period.to).getTime() - startOfDay(period.from).getTime()) /
+        86400000,
+    ) + 1;
 
   // 평균 계산 — 단일 월 모드는 일평균, 그 외는 월평균. custom 은 일평균.
-  const useDailyAvg = period.segMode === 'm' || period.segMode === 'custom'
-  const avgDivisor = useDailyAvg ? rangeDays : Math.max(1, monthlyBuckets.length)
-  const avgValue = avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0
-  const avgLabel = t(labels.avg)
+  const useDailyAvg = period.segMode === "m" || period.segMode === "custom";
+  const avgDivisor = useDailyAvg
+    ? rangeDays
+    : Math.max(1, monthlyBuckets.length);
+  const avgValue =
+    avgDivisor > 0 ? Math.round(periodTotalExpense / avgDivisor) : 0;
+  const avgLabel = t(labels.avg);
 
   // 이전 동등 기간 총지출 (Compare 탭 미사용 시 0 — query가 disabled)
-  const prevTotalExpense = prevRangeQ.data?.totalExpense ?? 0
-  const dayPct = prevTotalExpense > 0
-    ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
-    : 0
+  const prevTotalExpense = prevRangeQ.data?.totalExpense ?? 0;
+  const dayPct =
+    prevTotalExpense > 0
+      ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
+      : 0;
   // 증감 색상: 지출 증가=fg-expense / 감소=fg-income (compare 탭 동일 컨벤션)
-  const avgSub: React.ReactNode = period.segMode !== 'm'
-    ? <>{t('avgSub.rangeTotal', { days: rangeDays })} <MaskAmount>{wonPre()}{KRW(periodTotalExpense)}</MaskAmount><WonUnit /></>
-    : prevTotalExpense > 0
-      ? <>{t(labels.mom)} <span style={{ color: dayPct >= 0 ? 'var(--fg-expense)' : 'var(--fg-income)', fontWeight: 600 }}>{dayPct >= 0 ? '↑' : '↓'}{Math.abs(dayPct)}%</span></>
-      : prevRangeQ.isLoading
-        ? t('avgSub.momCalculating')
-        : t('avgSub.momUnavailable')
+  const avgSub: React.ReactNode =
+    period.segMode !== "m" ? (
+      <>
+        {t("avgSub.rangeTotal", { days: rangeDays })}{" "}
+        <MaskAmount>
+          {wonPre()}
+          {KRW(periodTotalExpense)}
+        </MaskAmount>
+        <WonUnit />
+      </>
+    ) : prevTotalExpense > 0 ? (
+      <>
+        {t(labels.mom)}{" "}
+        <span
+          style={{
+            color: dayPct >= 0 ? "var(--fg-expense)" : "var(--fg-income)",
+            fontWeight: 600,
+          }}
+        >
+          {dayPct >= 0 ? "↑" : "↓"}
+          {Math.abs(dayPct)}%
+        </span>
+      </>
+    ) : prevRangeQ.isLoading ? (
+      t("avgSub.momCalculating")
+    ) : (
+      t("avgSub.momUnavailable")
+    );
 
   const highlights: {
-    lbl: string
-    val: React.ReactNode
-    sub: React.ReactNode
-    icon: string | null
-    color: string | null
-    fallback: string
+    lbl: string;
+    val: React.ReactNode;
+    sub: React.ReactNode;
+    icon: string | null;
+    color: string | null;
+    fallback: string;
   }[] = [
     {
-      lbl: t('highlight.topCategory'),
-      val: categoryTop?.name ?? '—',
-      sub: categoryTop
-        ? <><MaskAmount>{wonPre()}{KRW(categoryTop.amount)}</MaskAmount><WonUnit /></>
-        : t('highlight.noData'),
+      lbl: t("highlight.topCategory"),
+      val: categoryTop?.name ?? "—",
+      sub: categoryTop ? (
+        <>
+          <MaskAmount>
+            {wonPre()}
+            {KRW(categoryTop.amount)}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ) : (
+        t("highlight.noData")
+      ),
       icon: categoryTop?.icon ?? null,
       color: categoryTop?.color ?? null,
-      fallback: categoryTop?.name?.charAt(0) || '•',
+      fallback: categoryTop?.name?.charAt(0) || "•",
     },
     {
-      lbl: t('highlight.topMerchant'),
-      val: topMerchant?.merchant ?? '—',
-      sub: topMerchant
-        ? <>{t('unit.times', { count: topMerchant.count })} · <MaskAmount>{wonPre()}{KRW(topMerchant.totalAmount)}</MaskAmount><WonUnit /></>
-        : t('highlight.noData'),
+      lbl: t("highlight.topMerchant"),
+      val: topMerchant?.merchant ?? "—",
+      sub: topMerchant ? (
+        <>
+          {t("unit.times", { count: topMerchant.count })} ·{" "}
+          <MaskAmount>
+            {wonPre()}
+            {KRW(topMerchant.totalAmount)}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ) : (
+        t("highlight.noData")
+      ),
       // 가맹점이 속한 대표 카테고리 아이콘(역산), 없으면 상점 아이콘 + brand-subtle 타일
-      icon: topMerchantCat?.icon ?? 'store',
+      icon: topMerchantCat?.icon ?? "store",
       color: topMerchantCat?.color ?? null,
-      fallback: topMerchant?.merchant?.charAt(0) || '•',
+      fallback: topMerchant?.merchant?.charAt(0) || "•",
     },
     {
       lbl: avgLabel,
-      val: <><MaskAmount>{wonPre()}{KRW(avgValue)}</MaskAmount><WonUnit /></>,
+      val: (
+        <>
+          <MaskAmount>
+            {wonPre()}
+            {KRW(avgValue)}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ),
       sub: avgSub,
-      icon: 'calendar-days',
+      icon: "calendar-days",
       color: null,
-      fallback: '∅',
+      fallback: "∅",
     },
-  ]
+  ];
 
   const HighlightsGrid = (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)',
+        display: "grid",
+        gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
         gap: 12,
       }}
     >
       {highlights.map((h, i) => {
         // 카테고리 색은 dark 자동 swap. 색 없는 카드(가맹점/평균)도 getPaletteByColor
         // 경유 — null 분기가 brand-light 틴트를 주므로 컬러 타일·앱과 동일.
-        const pal = getPaletteByColor(h.color)
-        const iconBg = pal.bg
-        const iconFg = pal.color
+        const pal = getPaletteByColor(h.color);
+        const iconBg = pal.bg;
+        const iconFg = pal.color;
         return (
           // 모바일 카드 다이어트 — 타일 카드 벗김 (grid gap 이 구분).
           <MTile key={i} mobile={mobile}>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 10 }}>
-                {h.lbl}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 10,
+              }}
+            >
+              {h.lbl}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "var(--radius-tile)",
+                  background: iconBg,
+                  color: iconFg,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {renderIcon(h.icon, h.fallback, 18)}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 'var(--radius-tile)',
-                    background: iconBg,
-                    color: iconFg,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
+                    fontSize: "var(--text-title-md)",
+                    fontWeight: "700",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  {renderIcon(h.icon, h.fallback, 18)}
-                </span>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{h.val}</div>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{h.sub}</div>
+                  {h.val}
+                </div>
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    marginTop: 2,
+                  }}
+                >
+                  {h.sub}
                 </div>
               </div>
+            </div>
           </MTile>
-        )
+        );
       })}
     </div>
-  )
+  );
 
   // ---------- TREND TAB ----------
   // 단일 월(segMode === 'm') 또는 사용자 지정 기간이 1개월 이내면 일별 시리즈, 그 외엔 월별 시리즈
-  const useDailyTrend = period.segMode === 'm' || (period.segMode === 'custom' && monthlyBuckets.length <= 1)
+  const useDailyTrend =
+    period.segMode === "m" ||
+    (period.segMode === "custom" && monthlyBuckets.length <= 1);
   const trendChartData = useMemo(() => {
     if (useDailyTrend) {
-      const exps = monthExpensesQ.data ?? []
-      const fromDay = startOfDay(period.from)
-      const toDay = startOfDay(period.to)
-      const days = Math.round((toDay.getTime() - fromDay.getTime()) / 86400000) + 1
-      const byDay = new Map<string, { income: number; expense: number; label: string }>()
+      const exps = monthExpensesQ.data ?? [];
+      const fromDay = startOfDay(period.from);
+      const toDay = startOfDay(period.to);
+      const days =
+        Math.round((toDay.getTime() - fromDay.getTime()) / 86400000) + 1;
+      const byDay = new Map<
+        string,
+        { income: number; expense: number; label: string }
+      >();
       for (let i = 0; i < days; i++) {
-        const d = new Date(fromDay); d.setDate(d.getDate() + i)
-        const key = fmt(d)
-        byDay.set(key, { income: 0, expense: 0, label: `${d.getMonth() + 1}/${d.getDate()}` })
+        const d = new Date(fromDay);
+        d.setDate(d.getDate() + i);
+        const key = fmt(d);
+        byDay.set(key, {
+          income: 0,
+          expense: 0,
+          label: `${d.getMonth() + 1}/${d.getDate()}`,
+        });
       }
       // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
       // 안 그러면 같은 화면의 저축률 위젯(서버 값)과 선 그래프가 어긋난다.
       for (const e of exps) {
-        const key = e.expenseDate.slice(0, 10)
-        const bucket = byDay.get(key)
-        if (!bucket) continue
-        if (isScheduledTx(e.expenseDate)) continue
-        const isRefund = isRefundTx(e)
-        if (isRefund) bucket.expense -= Math.abs(e.amount)
-        else if (e.expenseType === 'INCOME') bucket.income += e.amount
-        else bucket.expense += e.amount
+        const key = e.expenseDate.slice(0, 10);
+        const bucket = byDay.get(key);
+        if (!bucket) continue;
+        if (isScheduledTx(e.expenseDate)) continue;
+        const isRefund = isRefundTx(e);
+        if (isRefund) bucket.expense -= Math.abs(e.amount);
+        else if (e.expenseType === "INCOME") bucket.income += e.amount;
+        else bucket.expense += e.amount;
       }
-      return Array.from(byDay.values()).map(v => ({
+      return Array.from(byDay.values()).map((v) => ({
         month: v.label,
         income: v.income,
         expense: v.expense,
         savings: v.income - v.expense,
-      }))
+      }));
     }
     // 모든 버킷이 같은 해면 'MM' 만 (년 prefix 생략) — 년/단일년도 사용자기간
     const allSameYear =
       monthlyBuckets.length > 0 &&
-      monthlyBuckets.every(b => b.year === monthlyBuckets[0]!.year)
-    return monthlyBuckets.map(b => ({
+      monthlyBuckets.every((b) => b.year === monthlyBuckets[0]!.year);
+    return monthlyBuckets.map((b) => ({
       month: allSameYear
-        ? String(b.month).padStart(2, '0')
-        : `${b.year}.${String(b.month).padStart(2, '0')}`,
+        ? String(b.month).padStart(2, "0")
+        : `${b.year}.${String(b.month).padStart(2, "0")}`,
       income: b.totalIncome,
       expense: b.totalExpense,
       savings: b.totalIncome - b.totalExpense,
-    }))
-  }, [useDailyTrend, monthlyBuckets, monthExpensesQ.data, period.from, period.to])
+    }));
+  }, [
+    useDailyTrend,
+    monthlyBuckets,
+    monthExpensesQ.data,
+    period.from,
+    period.to,
+  ]);
 
-  const sumIn = monthlyBuckets.reduce((s, b) => s + b.totalIncome, 0)
-  const sumOut = monthlyBuckets.reduce((s, b) => s + b.totalExpense, 0)
-  const n = Math.max(1, monthlyBuckets.length)
-  const avgIn = sumIn / n
-  const avgOut = sumOut / n
-  const avgSave = avgIn - avgOut
-  const isSingle = period.segMode === 'm'
-  const statLabelIn = isSingle ? te('income') : t('trend.avgIncome')
-  const statLabelOut = isSingle ? te('expense') : t('trend.avgExpense')
-  const statLabelSave = isSingle ? t('trend.savings') : t('trend.avgSavings')
+  const sumIn = monthlyBuckets.reduce((s, b) => s + b.totalIncome, 0);
+  const sumOut = monthlyBuckets.reduce((s, b) => s + b.totalExpense, 0);
+  const n = Math.max(1, monthlyBuckets.length);
+  const avgIn = sumIn / n;
+  const avgOut = sumOut / n;
+  const avgSave = avgIn - avgOut;
+  const isSingle = period.segMode === "m";
+  const statLabelIn = isSingle ? te("income") : t("trend.avgIncome");
+  const statLabelOut = isSingle ? te("expense") : t("trend.avgExpense");
+  const statLabelSave = isSingle ? t("trend.savings") : t("trend.avgSavings");
 
   const trendChartConfig: ChartConfig = {
-    income: { label: te('income'), color: 'var(--status-info-fg)' },
-    expense: { label: te('expense'), color: 'var(--fg-expense)' },
-  }
+    income: { label: te("income"), color: "var(--status-info-fg)" },
+    expense: { label: te("expense"), color: "var(--fg-expense)" },
+  };
   const savingsChartConfig: ChartConfig = {
-    savings: { label: t('trend.savings'), color: 'var(--bg-brand)' },
-  }
+    savings: { label: t("trend.savings"), color: "var(--bg-brand)" },
+  };
 
   // app stats _fmtTick 정합 — 만 단위 round(formatChartAmount). 공용 formatChartAxis(100만
   // 단위 round)는 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져 stats 엔 부적합.
   // 카테고리 추이 값라벨(catTrendData)과 동일 헬퍼 공용 → 축약 통일.
-  const fmtTick = formatChartAmount
+  const fmtTick = formatChartAmount;
 
   // Y축 nice 눈금 (앱 stats_screen 정합). dual-axis 는 좌·우 각각 0기준 고정 5틱(niceCeil)
   // 으로 가로 그리드 정렬, 순저축 bar 는 음수 포함 niceAxis.
   const incomeAxis = useMemo(
-    () => niceCeil(Math.max(0, ...trendChartData.map(d => d.income))),
+    () => niceCeil(Math.max(0, ...trendChartData.map((d) => d.income))),
     [trendChartData],
-  )
+  );
   const expenseAxis = useMemo(
-    () => niceCeil(Math.max(0, ...trendChartData.map(d => d.expense))),
+    () => niceCeil(Math.max(0, ...trendChartData.map((d) => d.expense))),
     [trendChartData],
-  )
+  );
   const savingsAxis = useMemo(
     () =>
       niceAxis(
-        Math.min(0, ...trendChartData.map(d => d.savings)),
-        Math.max(0, ...trendChartData.map(d => d.savings)),
+        Math.min(0, ...trendChartData.map((d) => d.savings)),
+        Math.max(0, ...trendChartData.map((d) => d.savings)),
       ),
     [trendChartData],
-  )
+  );
 
   const TrendBig = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
-    <Section mobile={mobile} title={t('trend.title')} action={PeriodSeg}>
+    <Section mobile={mobile} title={t("trend.title")} action={PeriodSeg}>
       {rangeQ.isLoading ? (
         <>
           <SkeletonBase
             className="w-full rounded-lg"
             style={{ height: mobile ? 200 : 260 }}
           />
-          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+          <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
             <SkeletonBase className="h-3 w-12" />
             <SkeletonBase className="h-3 w-12" />
           </div>
         </>
       ) : trendChartData.length === 0 ? (
-        <EmptyBox text={t('empty.trend')} />
+        <EmptyBox text={t("empty.trend")} />
       ) : (
         <>
           <ChartContainer
@@ -1531,23 +2238,61 @@ export const StatsPage = () => {
             className="aspect-auto w-full"
             style={{ height: mobile ? 200 : 260 }}
           >
-            <AreaChart data={trendChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={trendChartData}
+              margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+            >
               <defs>
-                <linearGradient id="trendIncomeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-income)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--color-income)" stopOpacity={0} />
+                <linearGradient
+                  id="trendIncomeFill"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="var(--color-income)"
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--color-income)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
-                <linearGradient id="trendExpenseFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-expense)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--color-expense)" stopOpacity={0} />
+                <linearGradient
+                  id="trendExpenseFill"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="var(--color-expense)"
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--color-expense)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
+              <CartesianGrid
+                vertical={false}
+                stroke="var(--border-subtle)"
+                strokeDasharray="3 3"
+              />
               <XAxis
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+                tick={{
+                  fontSize: "var(--text-badge)",
+                  fill: "var(--fg-tertiary)",
+                }}
                 tickMargin={8}
                 interval="preserveStartEnd"
                 minTickGap={mobile ? 16 : 24}
@@ -1559,7 +2304,10 @@ export const StatsPage = () => {
                 axisLine={false}
                 domain={[0, incomeAxis.max]}
                 ticks={incomeAxis.ticks}
-                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-income)' }}
+                tick={{
+                  fontSize: "var(--text-badge)",
+                  fill: "var(--color-income)",
+                }}
                 tickFormatter={fmtTick}
                 width={52}
               />
@@ -1571,17 +2319,31 @@ export const StatsPage = () => {
                 axisLine={false}
                 domain={[0, expenseAxis.max]}
                 ticks={expenseAxis.ticks}
-                tick={{ fontSize: 'var(--text-badge)', fill: 'var(--color-expense)' }}
+                tick={{
+                  fontSize: "var(--text-badge)",
+                  fill: "var(--color-expense)",
+                }}
                 tickFormatter={fmtTick}
                 width={52}
               />
               <ChartTooltip
-                cursor={{ stroke: 'var(--fg-tertiary)', strokeDasharray: '3 3' }}
+                cursor={{
+                  stroke: "var(--fg-tertiary)",
+                  strokeDasharray: "3 3",
+                }}
                 content={
                   <PorestChartTooltip
                     rows={[
-                      { dataKey: 'income', label: te('income'), color: 'var(--status-info-fg)' },
-                      { dataKey: 'expense', label: te('expense'), color: 'var(--fg-expense)' },
+                      {
+                        dataKey: "income",
+                        label: te("income"),
+                        color: "var(--status-info-fg)",
+                      },
+                      {
+                        dataKey: "expense",
+                        label: te("expense"),
+                        color: "var(--fg-expense)",
+                      },
                     ]}
                   />
                 }
@@ -1593,7 +2355,12 @@ export const StatsPage = () => {
                 stroke="var(--color-income)"
                 strokeWidth={2}
                 fill="url(#trendIncomeFill)"
-                dot={{ fill: 'var(--color-income)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+                dot={{
+                  fill: "var(--color-income)",
+                  stroke: "var(--bg-surface)",
+                  strokeWidth: 2,
+                  r: 3,
+                }}
                 activeDot={{ r: 5 }}
               />
               <Area
@@ -1603,92 +2370,310 @@ export const StatsPage = () => {
                 stroke="var(--color-expense)"
                 strokeWidth={2}
                 fill="url(#trendExpenseFill)"
-                dot={{ fill: 'var(--color-expense)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 3 }}
+                dot={{
+                  fill: "var(--color-expense)",
+                  stroke: "var(--bg-surface)",
+                  strokeWidth: 2,
+                  r: 3,
+                }}
                 activeDot={{ r: 5 }}
               />
             </AreaChart>
           </ChartContainer>
-          <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} /> {te('income')}
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              marginTop: 12,
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-secondary)",
+            }}
+          >
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              <span
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "var(--radius-xs)",
+                  background: "var(--status-info-fg)",
+                }}
+              />{" "}
+              {te("income")}
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} /> {te('expense')}
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              <span
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "var(--radius-xs)",
+                  background: "var(--fg-expense)",
+                }}
+              />{" "}
+              {te("expense")}
             </span>
           </div>
         </>
       )}
     </Section>
-  )
+  );
 
   // 추이 탭 — 저축률 도넛 게이지 + 구성 스택바 + 평균수입/지출/저축 3행 (design StatsScreen).
-  const saveRate = avgIn > 0 ? Math.max(0, Math.min(100, (avgSave / avgIn) * 100)) : 0
-  const spendRate = avgIn > 0 ? Math.max(0, Math.min(100, (avgOut / avgIn) * 100)) : 0
-  const RING_R = 48
-  const RING_C = 2 * Math.PI * RING_R
-  const savingsRows: { lbl: string; val: React.ReactNode; dot: string; pct: number | null }[] = [
-    { lbl: statLabelIn, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgIn))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-tertiary)', pct: null },
-    { lbl: statLabelOut, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgOut))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-expense)', pct: spendRate },
-    { lbl: statLabelSave, val: <><MaskAmount>{wonPre()}{KRW(Math.round(avgSave))}</MaskAmount><WonUnit /></>, dot: 'var(--fg-brand)', pct: saveRate },
-  ]
+  const saveRate =
+    avgIn > 0 ? Math.max(0, Math.min(100, (avgSave / avgIn) * 100)) : 0;
+  const spendRate =
+    avgIn > 0 ? Math.max(0, Math.min(100, (avgOut / avgIn) * 100)) : 0;
+  const RING_R = 48;
+  const RING_C = 2 * Math.PI * RING_R;
+  const savingsRows: {
+    lbl: string;
+    val: React.ReactNode;
+    dot: string;
+    pct: number | null;
+  }[] = [
+    {
+      lbl: statLabelIn,
+      val: (
+        <>
+          <MaskAmount>
+            {wonPre()}
+            {KRW(Math.round(avgIn))}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ),
+      dot: "var(--fg-tertiary)",
+      pct: null,
+    },
+    {
+      lbl: statLabelOut,
+      val: (
+        <>
+          <MaskAmount>
+            {wonPre()}
+            {KRW(Math.round(avgOut))}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ),
+      dot: "var(--fg-expense)",
+      pct: spendRate,
+    },
+    {
+      lbl: statLabelSave,
+      val: (
+        <>
+          <MaskAmount>
+            {wonPre()}
+            {KRW(Math.round(avgSave))}
+          </MaskAmount>
+          <WonUnit />
+        </>
+      ),
+      dot: "var(--fg-brand)",
+      pct: saveRate,
+    },
+  ];
   const TrendStats = (
     // 모바일 = 카드 다이어트(flat) / 데스크톱 = Card.
     <MTile mobile={mobile}>
-      <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'center', gap: mobile ? 20 : 32 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: mobile ? "column" : "row",
+          alignItems: mobile ? "stretch" : "center",
+          gap: mobile ? 20 : 32,
+        }}
+      >
         {/* 저축률 도넛 게이지 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: mobile ? 'center' : 'flex-start', flexShrink: 0 }}>
-          <div style={{ position: 'relative', width: 108, height: 108 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            justifyContent: mobile ? "center" : "flex-start",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ position: "relative", width: 108, height: 108 }}>
             <svg width="108" height="108" viewBox="0 0 108 108">
-              <circle cx="54" cy="54" r={RING_R} fill="none" stroke="var(--color-surface-input)" strokeWidth="10" />
-              <circle cx="54" cy="54" r={RING_R} fill="none" stroke="var(--fg-brand)" strokeWidth="10" strokeLinecap="round"
-                strokeDasharray={`${(RING_C * saveRate) / 100} ${RING_C}`} transform="rotate(-90 54 54)" />
+              <circle
+                cx="54"
+                cy="54"
+                r={RING_R}
+                fill="none"
+                stroke="var(--color-surface-input)"
+                strokeWidth="10"
+              />
+              <circle
+                cx="54"
+                cy="54"
+                r={RING_R}
+                fill="none"
+                stroke="var(--fg-brand)"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={`${(RING_C * saveRate) / 100} ${RING_C}`}
+                transform="rotate(-90 54 54)"
+              />
             </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 10.5, color: 'var(--fg-tertiary)', fontWeight: 600 }}>{t('trend.savingsRate')}</span>
-              <span className="num" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{saveRate.toFixed(1)}%</span>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10.5,
+                  color: "var(--fg-tertiary)",
+                  fontWeight: 600,
+                }}
+              >
+                {t("trend.savingsRate")}
+              </span>
+              <span
+                className="num"
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {saveRate.toFixed(1)}%
+              </span>
             </div>
           </div>
           {mobile && (
             <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>
-              {t('trend.savingsInsight', { pct: Math.round(saveRate) })}
+              {t("trend.savingsInsight", { pct: Math.round(saveRate) })}
             </div>
           )}
         </div>
         {/* 구성 비율 + 항목 */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {!mobile && (
-            <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: 700, marginBottom: 14 }}>
-              {t('trend.savingsInsight', { pct: Math.round(saveRate) })}
+            <div
+              style={{
+                fontSize: "var(--text-body-lg)",
+                fontWeight: 700,
+                marginBottom: 14,
+              }}
+            >
+              {t("trend.savingsInsight", { pct: Math.round(saveRate) })}
             </div>
           )}
-          <div style={{ display: 'flex', height: 10, borderRadius: 999, overflow: 'hidden', gap: 2 }}>
-            <div style={{ width: `${spendRate}%`, background: 'var(--fg-expense)', borderRadius: 999 }} />
-            <div style={{ width: `${saveRate}%`, background: 'var(--fg-brand)', borderRadius: 999 }} />
+          <div
+            style={{
+              display: "flex",
+              height: 10,
+              borderRadius: 999,
+              overflow: "hidden",
+              gap: 2,
+            }}
+          >
+            <div
+              style={{
+                width: `${spendRate}%`,
+                background: "var(--fg-expense)",
+                borderRadius: 999,
+              }}
+            />
+            <div
+              style={{
+                width: `${saveRate}%`,
+                background: "var(--fg-brand)",
+                borderRadius: 999,
+              }}
+            />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, auto)', gap: mobile ? 10 : 28, marginTop: 14, justifyContent: mobile ? 'stretch' : 'start' }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: mobile ? "1fr" : "repeat(3, auto)",
+              gap: mobile ? 10 : 28,
+              marginTop: 14,
+              justifyContent: mobile ? "stretch" : "start",
+            }}
+          >
             {savingsRows.map((s, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: mobile ? 'space-between' : 'flex-start' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 999, background: s.dot, flexShrink: 0 }} />
-                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
-                    {s.lbl}{s.pct != null ? ` ${Math.round(s.pct)}%` : ''}
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  justifyContent: mobile ? "space-between" : "flex-start",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 999,
+                      background: s.dot,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-secondary)",
+                    }}
+                  >
+                    {s.lbl}
+                    {s.pct != null ? ` ${Math.round(s.pct)}%` : ""}
                   </span>
                 </span>
-                <span className="num" style={{ fontSize: 13, fontWeight: 700, marginLeft: mobile ? 0 : 8 }}>{s.val}</span>
+                <span
+                  className="num"
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    marginLeft: mobile ? 0 : 8,
+                  }}
+                >
+                  {s.val}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
     </MTile>
-  )
+  );
 
   const SavingsBars = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={useDailyTrend ? t('trend.dailySavings') : t('trend.monthlySavings')}
-      action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.savingsFormula')}</span>}
+      title={
+        useDailyTrend ? t("trend.dailySavings") : t("trend.monthlySavings")
+      }
+      action={
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {t("trend.savingsFormula")}
+        </span>
+      }
     >
       {rangeQ.isLoading ? (
         <SkeletonBase
@@ -1696,20 +2681,30 @@ export const StatsPage = () => {
           style={{ height: mobile ? 180 : 220 }}
         />
       ) : trendChartData.length === 0 ? (
-        <EmptyBox text={t('empty.monthlyData')} />
+        <EmptyBox text={t("empty.monthlyData")} />
       ) : (
         <ChartContainer
           config={savingsChartConfig}
           className="aspect-auto w-full"
           style={{ height: mobile ? 180 : 220 }}
         >
-          <BarChart data={trendChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
+          <BarChart
+            data={trendChartData}
+            margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid
+              vertical={false}
+              stroke="var(--border-subtle)"
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+              tick={{
+                fontSize: "var(--text-badge)",
+                fill: "var(--fg-tertiary)",
+              }}
               tickMargin={8}
               interval="preserveStartEnd"
               minTickGap={mobile ? 16 : 24}
@@ -1719,34 +2714,43 @@ export const StatsPage = () => {
               axisLine={false}
               domain={[savingsAxis.min, savingsAxis.max]}
               ticks={savingsAxis.ticks}
-              tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+              tick={{
+                fontSize: "var(--text-badge)",
+                fill: "var(--fg-tertiary)",
+              }}
               tickFormatter={fmtTick}
               width={52}
             />
             <ChartTooltip
-              cursor={{ fill: 'var(--border-brand)', fillOpacity: 0.05 }}
+              cursor={{ fill: "var(--border-brand)", fillOpacity: 0.05 }}
               content={
                 <PorestChartTooltip
                   rows={[
                     {
-                      dataKey: 'savings',
-                      label: t('trend.savings'),
-                      color: (v) => (v < 0 ? 'var(--fg-expense)' : 'var(--status-info-fg)'),
-                      format: (v) => `${v >= 0 ? '+' : '−'}${money(Math.abs(v))}`,
+                      dataKey: "savings",
+                      label: t("trend.savings"),
+                      color: (v) =>
+                        v < 0 ? "var(--fg-expense)" : "var(--status-info-fg)",
+                      format: (v) =>
+                        `${v >= 0 ? "+" : "−"}${money(Math.abs(v))}`,
                     },
                   ]}
                 />
               }
             />
             {/* 월별 바 두께 24 로 통일(앱 카테고리 월별 추이 기준). 일별(>20개)만 얇게 4. */}
-            <Bar dataKey="savings" radius={[4, 4, 4, 4]} barSize={trendChartData.length > 20 ? 4 : 18}>
+            <Bar
+              dataKey="savings"
+              radius={[4, 4, 4, 4]}
+              barSize={trendChartData.length > 20 ? 4 : 18}
+            >
               {trendChartData.map((d, i) => (
                 <Cell
                   key={i}
                   fill={
                     d.savings < 0
-                      ? 'var(--fg-expense)'
-                      : 'var(--status-info-fg)'
+                      ? "var(--fg-expense)"
+                      : "var(--status-info-fg)"
                   }
                 />
               ))}
@@ -1755,150 +2759,299 @@ export const StatsPage = () => {
         </ChartContainer>
       )}
     </Section>
-  )
+  );
 
   // ---------- 주요 카테고리 월별 추이 (지출 TOP3 stacked) ----------
   // TOP3 = 기간 전체 EXPENSE breakdown 상위 3. 월별 금액은 bucket.categoryExpenses(rowId 매칭).
   const catTrendTop3 = useMemo(
-    () => [...periodBreakdown].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 3),
+    () =>
+      [...periodBreakdown]
+        .sort((a, b) => b.totalAmount - a.totalAmount)
+        .slice(0, 3),
     [periodBreakdown],
-  )
+  );
   const catTrendData = useMemo(
     () =>
       monthlyBuckets.map((b, i) => {
         const parts = catTrendTop3.map(
-          c => (b.categoryExpenses ?? []).find(ce => ce.categoryRowId === c.categoryRowId)?.amount ?? 0,
-        )
+          (c) =>
+            (b.categoryExpenses ?? []).find(
+              (ce) => ce.categoryRowId === c.categoryRowId,
+            )?.amount ?? 0,
+        );
         const label = isEn()
-          ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][b.month - 1]
-          : String(b.month).padStart(2, '0') // "월" 글자 빼고 숫자만(앱 정합) — "10월" 줄바꿈으로 차트 밀림 방지
-        return { label, parts, sum: parts.reduce((s, v) => s + v, 0), isCur: i === monthlyBuckets.length - 1 }
+          ? [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ][b.month - 1]
+          : String(b.month).padStart(2, "0"); // "월" 글자 빼고 숫자만(앱 정합) — "10월" 줄바꿈으로 차트 밀림 방지
+        return {
+          label,
+          parts,
+          sum: parts.reduce((s, v) => s + v, 0),
+          isCur: i === monthlyBuckets.length - 1,
+        };
       }),
     [monthlyBuckets, catTrendTop3],
-  )
-  const catTrendMax = Math.max(1, ...catTrendData.map(d => d.sum))
+  );
+  const catTrendMax = Math.max(1, ...catTrendData.map((d) => d.sum));
   // 여러 달 + TOP3 지출 데이터가 있을 때만 노출(단일 월은 카테고리 탭 도넛이 담당).
-  const showCatTrend = monthlyBuckets.length >= 2 && catTrendTop3.length > 0 && catTrendMax > 1
+  const showCatTrend =
+    monthlyBuckets.length >= 2 && catTrendTop3.length > 0 && catTrendMax > 1;
   const CatTrend = showCatTrend ? (
     <Section
       mobile={mobile}
-      title={t('trend.catTrendTitle')}
-      action={<span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>{t('trend.catTrendTop3')}</span>}
+      title={t("trend.catTrendTitle")}
+      action={
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {t("trend.catTrendTop3")}
+        </span>
+      }
     >
       {/* 범례 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', margin: '10px 0 4px' }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 14,
+          fontSize: "var(--text-caption)",
+          color: "var(--fg-secondary)",
+          margin: "10px 0 4px",
+        }}
+      >
         {catTrendTop3.map((c, i) => (
-          <span key={c.categoryRowId} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: segmentColor(i, c.categoryRowId != null ? categoryById.get(c.categoryRowId)?.color : undefined) }} />
-            {c.categoryName ?? t('uncategorized')}
+          <span
+            key={c.categoryRowId}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+          >
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: 2.5,
+                background: segmentColor(
+                  i,
+                  c.categoryRowId != null
+                    ? categoryById.get(c.categoryRowId)?.color
+                    : undefined,
+                ),
+              }}
+            />
+            {c.categoryName ?? t("uncategorized")}
           </span>
         ))}
       </div>
       {/* 월별 stacked 막대 */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 10 : 20, height: mobile ? 150 : 180, padding: '16px 4px 6px' }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: mobile ? 10 : 20,
+          height: mobile ? 150 : 180,
+          padding: "16px 4px 6px",
+        }}
+      >
         {catTrendData.map((d, i) => {
           // 카드 밖 가로 넘침 방지 — 좌반부는 col-left 기준 우측 전개, 우반부는 col-right 기준 좌측 전개.
-          const anchorRight = i >= catTrendData.length / 2
-          const active = catActiveIdx === i
+          const anchorRight = i >= catTrendData.length / 2;
+          const active = catActiveIdx === i;
           return (
-          <div
-            key={i}
-            style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0, cursor: 'pointer' }}
-            onPointerEnter={e => { if (e.pointerType !== 'touch') setCatActiveIdx(i) }}
-            onPointerLeave={e => { if (e.pointerType !== 'touch') setCatActiveIdx(cur => (cur === i ? null : cur)) }}
-            onPointerDown={e => { if (e.pointerType === 'touch') setCatActiveIdx(cur => (cur === i ? null : i)) }}
-          >
-            {/* 터치/호버 상세 툴팁 — 월 + TOP3 카테고리별 금액 (순저축 recharts 툴팁 시각 정합) */}
-            {active && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 'calc(100% + 6px)',
-                  left: anchorRight ? 'auto' : 0,
-                  right: anchorRight ? 0 : 'auto',
-                  zIndex: 30,
-                  pointerEvents: 'none',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-tile)',
-                  boxShadow: 'var(--shadow-md)',
-                  padding: '10px 12px',
-                  minWidth: 150,
-                  maxWidth: 220,
-                }}
-              >
-                <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, marginBottom: 6 }}>
-                  {d.label}
-                </div>
-                {catTrendTop3.map((c, ci) => (
-                  <div key={c.categoryRowId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: segmentColor(ci, c.categoryRowId != null ? categoryById.get(c.categoryRowId)?.color : undefined), flexShrink: 0 }} />
-                    <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>{c.categoryName ?? t('uncategorized')}</span>
-                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: 700, color: 'var(--fg-primary)' }}>
-                      <MaskAmount>{wonPre()}{KRW(d.parts[ci] ?? 0)}</MaskAmount>
-                      <WonUnit />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* 통짜 바 — 외곽(최상단·최하단)만 round + overflow hidden, 세그먼트는 붙여서 색상 경계만으로 구분. 0값 세그먼트 제외. 금액은 호버/터치 툴팁으로만 표시. */}
             <div
+              key={i}
               style={{
-                width: '100%',
-                maxWidth: 24,
-                height: Math.max(8, (d.sum / catTrendMax) * (mobile ? 100 : 128)),
-                display: 'flex',
-                flexDirection: 'column-reverse',
-                borderRadius: 4,
-                overflow: 'hidden',
+                position: "relative",
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                minWidth: 0,
+                cursor: "pointer",
+              }}
+              onPointerEnter={(e) => {
+                if (e.pointerType !== "touch") setCatActiveIdx(i);
+              }}
+              onPointerLeave={(e) => {
+                if (e.pointerType !== "touch")
+                  setCatActiveIdx((cur) => (cur === i ? null : cur));
+              }}
+              onPointerDown={(e) => {
+                if (e.pointerType === "touch")
+                  setCatActiveIdx((cur) => (cur === i ? null : i));
               }}
             >
-              {d.parts
-                .map((v, ci) => ({ v, ci }))
-                .filter(s => s.v > 0)
-                .map(({ v, ci }) => (
+              {/* 터치/호버 상세 툴팁 — 월 + TOP3 카테고리별 금액 (순저축 recharts 툴팁 시각 정합) */}
+              {active && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "calc(100% + 6px)",
+                    left: anchorRight ? "auto" : 0,
+                    right: anchorRight ? 0 : "auto",
+                    zIndex: 30,
+                    pointerEvents: "none",
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "var(--radius-tile)",
+                    boxShadow: "var(--shadow-md)",
+                    padding: "10px 12px",
+                    minWidth: 150,
+                    maxWidth: 220,
+                  }}
+                >
                   <div
-                    key={ci}
                     style={{
-                      height: `${(v / d.sum) * 100}%`,
-                      background: segmentColor(ci, catTrendTop3[ci]!.categoryRowId != null ? categoryById.get(catTrendTop3[ci]!.categoryRowId!)?.color : undefined),
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      fontWeight: 600,
+                      marginBottom: 6,
                     }}
-                  />
-                ))}
+                  >
+                    {d.label}
+                  </div>
+                  {catTrendTop3.map((c, ci) => (
+                    <div
+                      key={c.categoryRowId}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginTop: 2,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "var(--radius-xs)",
+                          background: segmentColor(
+                            ci,
+                            c.categoryRowId != null
+                              ? categoryById.get(c.categoryRowId)?.color
+                              : undefined,
+                          ),
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "var(--text-caption)",
+                          color: "var(--fg-secondary)",
+                        }}
+                      >
+                        {c.categoryName ?? t("uncategorized")}
+                      </span>
+                      <span
+                        className="num"
+                        style={{
+                          marginLeft: "auto",
+                          fontSize: "var(--text-label-sm)",
+                          fontWeight: 700,
+                          color: "var(--fg-primary)",
+                        }}
+                      >
+                        <MaskAmount>
+                          {wonPre()}
+                          {KRW(d.parts[ci] ?? 0)}
+                        </MaskAmount>
+                        <WonUnit />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* 통짜 바 — 외곽(최상단·최하단)만 round + overflow hidden, 세그먼트는 붙여서 색상 경계만으로 구분. 0값 세그먼트 제외. 금액은 호버/터치 툴팁으로만 표시. */}
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 24,
+                  height: Math.max(
+                    8,
+                    (d.sum / catTrendMax) * (mobile ? 100 : 128),
+                  ),
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                }}
+              >
+                {d.parts
+                  .map((v, ci) => ({ v, ci }))
+                  .filter((s) => s.v > 0)
+                  .map(({ v, ci }) => (
+                    <div
+                      key={ci}
+                      style={{
+                        height: `${(v / d.sum) * 100}%`,
+                        background: segmentColor(
+                          ci,
+                          catTrendTop3[ci]!.categoryRowId != null
+                            ? categoryById.get(catTrendTop3[ci]!.categoryRowId!)
+                                ?.color
+                            : undefined,
+                        ),
+                      }}
+                    />
+                  ))}
+              </div>
+              <span
+                style={{
+                  fontSize: mobile ? 10.5 : 11.5,
+                  fontWeight: d.isCur ? 700 : 500,
+                  color: d.isCur ? "var(--fg-primary)" : "var(--fg-tertiary)",
+                }}
+              >
+                {d.label}
+              </span>
             </div>
-            <span style={{ fontSize: mobile ? 10.5 : 11.5, fontWeight: d.isCur ? 700 : 500, color: d.isCur ? 'var(--fg-primary)' : 'var(--fg-tertiary)' }}>
-              {d.label}
-            </span>
-          </div>
-          )
+          );
         })}
       </div>
     </Section>
-  ) : null
+  ) : null;
 
   // ---------- COMPARE TAB ----------
   // 카테고리별 비교 (parent rowId로 그룹핑, 아이콘/색 동반)
   type CompareRow = {
-    groupRowId: number | null
-    name: string
-    icon: string | null
-    color: string | null
-    now: number
-    prev: number
-  }
+    groupRowId: number | null;
+    name: string;
+    icon: string | null;
+    color: string | null;
+    now: number;
+    prev: number;
+  };
   const compareRows = useMemo<CompareRow[]>(() => {
-    const byId = new Map<number | null, CompareRow>()
+    const byId = new Map<number | null, CompareRow>();
 
-    const addBreakdown = (source: 'now' | 'prev', list: CategoryBreakdown[]) => {
+    const addBreakdown = (
+      source: "now" | "prev",
+      list: CategoryBreakdown[],
+    ) => {
       for (const c of list) {
-        if (c.expenseType !== 'EXPENSE') continue
+        if (c.expenseType !== "EXPENSE") continue;
         // 미분류(카테고리 없음)도 한 줄로 세운다 — 빼면 합이 총액과 안 맞는다.
-        const groupRowId = c.parentCategoryRowId ?? c.categoryRowId
-        const groupName = c.parentCategoryName ?? c.categoryName ?? t('uncategorized')
-        let row = byId.get(groupRowId)
+        const groupRowId = c.parentCategoryRowId ?? c.categoryRowId;
+        const groupName =
+          c.parentCategoryName ?? c.categoryName ?? t("uncategorized");
+        let row = byId.get(groupRowId);
         if (!row) {
-          const cat = groupRowId != null ? categoryById.get(groupRowId) : undefined
+          const cat =
+            groupRowId != null ? categoryById.get(groupRowId) : undefined;
           row = {
             groupRowId,
             name: groupName,
@@ -1906,167 +3059,414 @@ export const StatsPage = () => {
             color: cat?.color ?? null,
             now: 0,
             prev: 0,
-          }
-          byId.set(groupRowId, row)
+          };
+          byId.set(groupRowId, row);
         }
-        row[source] += c.totalAmount
+        row[source] += c.totalAmount;
       }
-    }
+    };
 
-    addBreakdown('now', rangeQ.data?.categoryBreakdown ?? [])
-    addBreakdown('prev', prevRangeQ.data?.categoryBreakdown ?? [])
+    addBreakdown("now", rangeQ.data?.categoryBreakdown ?? []);
+    addBreakdown("prev", prevRangeQ.data?.categoryBreakdown ?? []);
 
     return Array.from(byId.values())
-      .sort((a, b) => (b.now - a.now) || (b.prev - a.prev))
-      .slice(0, 10)
-  }, [rangeQ.data, prevRangeQ.data, categoryById])
+      .sort((a, b) => b.now - a.now || b.prev - a.prev)
+      .slice(0, 10);
+  }, [rangeQ.data, prevRangeQ.data, categoryById]);
 
-  const totalNow = periodTotalExpense
-  const totalPrev = prevRangeQ.data?.totalExpense ?? 0
+  const totalNow = periodTotalExpense;
+  const totalPrev = prevRangeQ.data?.totalExpense ?? 0;
 
-  const periodNow = t(labels.now)
-  const periodPrev = t(labels.prev)
-  const noPrevText = t(labels.noPrev)
+  const periodNow = t(labels.now);
+  const periodPrev = t(labels.prev);
+  const noPrevText = t(labels.noPrev);
 
-  const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading
+  const compareLoading = rangeQ.isLoading || prevRangeQ.isLoading;
 
   // 비교 탭 헤더/지표 (design StatsScreen). 감소=파랑(good)/증가=빨강(지출성).
-  const cmpDiff = totalNow - totalPrev
-  const cmpLess = cmpDiff <= 0
-  const cmpColor = cmpLess ? 'var(--fg-income)' : 'var(--fg-expense)'
-  const cmpPct = totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null
-  const cmpBarMax = Math.max(1, totalNow, totalPrev)
-  const prevDays = Math.round((startOfDay(prevR.to).getTime() - startOfDay(prevR.from).getTime()) / 86400000) + 1
+  const cmpDiff = totalNow - totalPrev;
+  const cmpLess = cmpDiff <= 0;
+  const cmpColor = cmpLess ? "var(--fg-income)" : "var(--fg-expense)";
+  const cmpPct =
+    totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null;
+  const cmpBarMax = Math.max(1, totalNow, totalPrev);
+  const prevDays =
+    Math.round(
+      (startOfDay(prevR.to).getTime() - startOfDay(prevR.from).getTime()) /
+        86400000,
+    ) + 1;
   // 하루 평균 분모 — 이번 기간은 '오늘까지 경과 일수'(design cmpMetrics now/20 · 앱 clamp-to-today),
   // 이전 기간은 전체 일수(design prev/31). 진행 중인 기간이 미래 종료일까지 계산돼 분모가 과대해지는 것 방지.
-  const cmpToday = startOfDay(new Date())
-  const cmpNowEnd = startOfDay(period.to).getTime() > cmpToday.getTime() ? cmpToday : startOfDay(period.to)
-  const cmpNowDays = Math.max(1, Math.round((cmpNowEnd.getTime() - startOfDay(period.from).getTime()) / 86400000) + 1)
-  const nowTxCount = (monthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
-  const prevTxCount = (prevMonthExpensesQ.data ?? []).filter(e => e.expenseType === 'EXPENSE').length
+  const cmpToday = startOfDay(new Date());
+  const cmpNowEnd =
+    startOfDay(period.to).getTime() > cmpToday.getTime()
+      ? cmpToday
+      : startOfDay(period.to);
+  const cmpNowDays = Math.max(
+    1,
+    Math.round(
+      (cmpNowEnd.getTime() - startOfDay(period.from).getTime()) / 86400000,
+    ) + 1,
+  );
+  const nowTxCount = (monthExpensesQ.data ?? []).filter(
+    (e) => e.expenseType === "EXPENSE",
+  ).length;
+  const prevTxCount = (prevMonthExpensesQ.data ?? []).filter(
+    (e) => e.expenseType === "EXPENSE",
+  ).length;
 
   const CompareSummary = (
     // 모바일 = 카드 다이어트(flat) / 데스크톱 = Card.
     <MTile mobile={mobile}>
-      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)', fontWeight: 500 }}>
-        {t('compare.periodExpense', { period: periodNow })}
+      <div
+        style={{
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-secondary)",
+          fontWeight: 500,
+        }}
+      >
+        {t("compare.periodExpense", { period: periodNow })}
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
-        <span className="num" style={{ fontSize: mobile ? 24 : 28, fontWeight: 800, letterSpacing: '-0.02em' }}>
-          <MaskAmount>{wonPre()}{KRW(totalNow)}</MaskAmount><WonUnit />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 10,
+          flexWrap: "wrap",
+          marginTop: 4,
+        }}
+      >
+        <span
+          className="num"
+          style={{
+            fontSize: mobile ? 24 : 28,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          <MaskAmount>
+            {wonPre()}
+            {KRW(totalNow)}
+          </MaskAmount>
+          <WonUnit />
         </span>
         {cmpPct != null && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, color: cmpColor, background: `color-mix(in oklab, ${cmpColor} 12%, transparent)` }}>
-            {cmpLess ? '▼' : '▲'} {cmpPct}%
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "3px 9px",
+              borderRadius: 999,
+              color: cmpColor,
+              background: `color-mix(in oklab, ${cmpColor} 12%, transparent)`,
+            }}
+          >
+            {cmpLess ? "▼" : "▲"} {cmpPct}%
           </span>
         )}
       </div>
       {cmpPct != null ? (
         // 강조는 "{금액} 더/덜"만 색+bold — 앞뒤("…보다"/"썼어요")는 일반 굵기.
         <div style={{ fontSize: mobile ? 14 : 15, marginTop: 10 }}>
-          {t('compare.vsLastPrefix', { prev: periodPrev })}{' '}
+          {t("compare.vsLastPrefix", { prev: periodPrev })}{" "}
           <span style={{ color: cmpColor, fontWeight: 700 }}>
-            <MaskAmount>{wonPre()}{KRW(Math.abs(cmpDiff))}</MaskAmount><WonUnit /> {cmpLess ? t('compare.dirLess') : t('compare.dirMore')}
-          </span>{' '}
-          {t('compare.spentSuffix', { prev: periodPrev })}
+            <MaskAmount>
+              {wonPre()}
+              {KRW(Math.abs(cmpDiff))}
+            </MaskAmount>
+            <WonUnit /> {cmpLess ? t("compare.dirLess") : t("compare.dirMore")}
+          </span>{" "}
+          {t("compare.spentSuffix", { prev: periodPrev })}
         </div>
       ) : (
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 10 }}>{noPrevText}</div>
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            marginTop: 10,
+          }}
+        >
+          {noPrevText}
+        </div>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          marginTop: 18,
+        }}
+      >
         {[
-          { lbl: periodNow, amt: totalNow, color: 'var(--fg-brand)', border: false, muted: false },
-          { lbl: periodPrev, amt: totalPrev, color: 'var(--color-surface-input)', border: true, muted: true },
+          {
+            lbl: periodNow,
+            amt: totalNow,
+            color: "var(--fg-brand)",
+            border: false,
+            muted: false,
+          },
+          {
+            lbl: periodPrev,
+            amt: totalPrev,
+            color: "var(--color-surface-input)",
+            border: true,
+            muted: true,
+          },
         ].map((m, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: 600, width: 44, flexShrink: 0 }}>{m.lbl}</span>
-            <div style={{ flex: 1, height: 14, borderRadius: 999, overflow: 'hidden' }}>
-              <div style={{ width: `${(m.amt / cmpBarMax) * 100}%`, height: '100%', borderRadius: 999, background: m.color, border: m.border ? '1px solid var(--border-default)' : 'none', boxSizing: 'border-box' }} />
+          <div
+            key={i}
+            style={{ display: "flex", alignItems: "center", gap: 10 }}
+          >
+            <span
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: 600,
+                width: 44,
+                flexShrink: 0,
+              }}
+            >
+              {m.lbl}
+            </span>
+            <div
+              style={{
+                flex: 1,
+                height: 14,
+                borderRadius: 999,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${(m.amt / cmpBarMax) * 100}%`,
+                  height: "100%",
+                  borderRadius: 999,
+                  background: m.color,
+                  border: m.border ? "1px solid var(--border-default)" : "none",
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
             {/* 지난 기간 금액은 muted(fg-secondary) — 앱 cmpBar 정합, 이번 기간만 primary 강조. */}
-            <span className="num" style={{ fontSize: 12, fontWeight: 700, width: mobile ? 82 : 96, textAlign: 'right', flexShrink: 0, color: m.muted ? 'var(--fg-secondary)' : 'var(--fg-primary)' }}>
-              <MaskAmount>{wonPre()}{KRW(m.amt)}</MaskAmount><WonUnit />
+            <span
+              className="num"
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                width: mobile ? 82 : 96,
+                textAlign: "right",
+                flexShrink: 0,
+                color: m.muted ? "var(--fg-secondary)" : "var(--fg-primary)",
+              }}
+            >
+              <MaskAmount>
+                {wonPre()}
+                {KRW(m.amt)}
+              </MaskAmount>
+              <WonUnit />
             </span>
           </div>
         ))}
       </div>
     </MTile>
-  )
+  );
 
   // 비교 탭 — 하루 평균 / 거래 건수 / 건당 평균 (이번 기간 vs 이전 기간).
-  const cmpMetrics: { label: string; now: number; prev: number; count: boolean }[] = [
-    { label: t('compare.metricDailyAvg'), now: Math.round(totalNow / cmpNowDays), prev: Math.round(totalPrev / Math.max(1, prevDays)), count: false },
-    { label: t('compare.metricTxCount'), now: nowTxCount, prev: prevTxCount, count: true },
-    { label: t('compare.metricPerTx'), now: nowTxCount > 0 ? Math.round(totalNow / nowTxCount) : 0, prev: prevTxCount > 0 ? Math.round(totalPrev / prevTxCount) : 0, count: false },
-  ]
+  const cmpMetrics: {
+    label: string;
+    now: number;
+    prev: number;
+    count: boolean;
+  }[] = [
+    {
+      label: t("compare.metricDailyAvg"),
+      now: Math.round(totalNow / cmpNowDays),
+      prev: Math.round(totalPrev / Math.max(1, prevDays)),
+      count: false,
+    },
+    {
+      label: t("compare.metricTxCount"),
+      now: nowTxCount,
+      prev: prevTxCount,
+      count: true,
+    },
+    {
+      label: t("compare.metricPerTx"),
+      now: nowTxCount > 0 ? Math.round(totalNow / nowTxCount) : 0,
+      prev: prevTxCount > 0 ? Math.round(totalPrev / prevTxCount) : 0,
+      count: false,
+    },
+  ];
   const cmpMetricVal = (v: number, count: boolean) =>
-    count ? <>{KRW(v)}{t('compare.unitCount')}</> : <><MaskAmount>{wonPre()}{KRW(v)}</MaskAmount><WonUnit /></>
+    count ? (
+      <>
+        {KRW(v)}
+        {t("compare.unitCount")}
+      </>
+    ) : (
+      <>
+        <MaskAmount>
+          {wonPre()}
+          {KRW(v)}
+        </MaskAmount>
+        <WonUnit />
+      </>
+    );
   const CompareMetrics = (
-    <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
+        gap: 12,
+      }}
+    >
       {cmpMetrics.map((m, i) => {
-        const d = m.now - m.prev
-        const up = d > 0
-        const c = up ? 'var(--fg-expense)' : 'var(--fg-income)'
+        const d = m.now - m.prev;
+        const up = d > 0;
+        const c = up ? "var(--fg-expense)" : "var(--fg-income)";
         return (
           // 앱 _CompareMetricsCard 미러: 라벨+값(좌) / 증감(윗줄)+지난기간(아랫줄) 2줄(우, 우측·하단 정렬)
-          <MTile key={i} mobile={mobile} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
+          <MTile
+            key={i}
+            mobile={mobile}
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
             <div style={{ minWidth: 0 }}>
               {/* 앱 크기 정합 — 라벨 caption(12)/값 title-lg(20)/증감 caption(12). */}
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: 600 }}>{m.label}</div>
-              <div className="num" style={{ fontSize: 'var(--text-title-lg)', fontWeight: 800, letterSpacing: '-0.02em', marginTop: mobile ? 3 : 6 }}>{cmpMetricVal(m.now, m.count)}</div>
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: 600,
+                }}
+              >
+                {m.label}
+              </div>
+              <div
+                className="num"
+                style={{
+                  fontSize: "var(--text-title-lg)",
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  marginTop: mobile ? 3 : 6,
+                }}
+              >
+                {cmpMetricVal(m.now, m.count)}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, textAlign: 'right' }}>
-              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 700, color: d === 0 ? 'var(--fg-tertiary)' : c }}>
-                {d === 0 ? '—' : <>{up ? '▲' : '▼'} {cmpMetricVal(Math.abs(d), m.count)}</>}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                flexShrink: 0,
+                textAlign: "right",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "var(--text-caption)",
+                  fontWeight: 700,
+                  color: d === 0 ? "var(--fg-tertiary)" : c,
+                }}
+              >
+                {d === 0 ? (
+                  "—"
+                ) : (
+                  <>
+                    {up ? "▲" : "▼"} {cmpMetricVal(Math.abs(d), m.count)}
+                  </>
+                )}
               </span>
-              <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
+              <span
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
                 {periodPrev} {cmpMetricVal(m.prev, m.count)}
               </span>
             </div>
           </MTile>
-        )
+        );
       })}
     </div>
-  )
+  );
 
   // 카테고리별 증감 — compareRows(상위 10, now desc)를 증감액 절대값 큰 순으로 재정렬.
-  type DeltaRow = CompareRow & { diff: number; pct: number }
+  type DeltaRow = CompareRow & { diff: number; pct: number };
   const deltaRows: DeltaRow[] = compareRows
-    .map(r => ({ ...r, diff: r.now - r.prev, pct: r.prev > 0 ? ((r.now - r.prev) / r.prev) * 100 : 0 }))
-    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
-  const maxDelta = Math.max(1, ...deltaRows.map(r => Math.abs(r.diff)))
+    .map((r) => ({
+      ...r,
+      diff: r.now - r.prev,
+      pct: r.prev > 0 ? ((r.now - r.prev) / r.prev) * 100 : 0,
+    }))
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+  const maxDelta = Math.max(1, ...deltaRows.map((r) => Math.abs(r.diff)));
 
   const CompareCategory = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={t('compare.categoryDeltaTitle')}
+      title={t("compare.categoryDeltaTitle")}
       action={
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-          {t('compare.categoryDeltaSort')}
+        <span
+          style={{ fontSize: "var(--text-badge)", color: "var(--fg-tertiary)" }}
+        >
+          {t("compare.categoryDeltaSort")}
         </span>
       }
     >
       {compareLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {[0, 1, 2, 3].map(i => (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               style={{
-                display: 'flex',
-                alignItems: 'center',
+                display: "flex",
+                alignItems: "center",
                 gap: 12,
-                padding: '12px 0',
-                borderBottom: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+                padding: "12px 0",
+                borderBottom: i < 3 ? "1px solid var(--border-subtle)" : "none",
               }}
             >
               <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
                 <SkeletonBase className="h-3.5 w-24" />
                 <SkeletonBase className="h-3 w-32" />
               </div>
-              {!mobile && <SkeletonBase className="h-2 rounded-full shrink-0" style={{ width: 180 }} />}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+              {!mobile && (
+                <SkeletonBase
+                  className="h-2 rounded-full shrink-0"
+                  style={{ width: 180 }}
+                />
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  alignItems: "flex-end",
+                  flexShrink: 0,
+                }}
+              >
                 <SkeletonBase className="h-4 w-16" />
                 <SkeletonBase className="h-3 w-10" />
               </div>
@@ -2074,25 +3474,28 @@ export const StatsPage = () => {
           ))}
         </div>
       ) : deltaRows.length === 0 ? (
-        <EmptyBox text={t('empty.compare')} />
+        <EmptyBox text={t("empty.compare")} />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {deltaRows.map((r, i) => {
-            const up = r.diff > 0
+            const up = r.diff > 0;
             // 증가=지출성(빨강 --fg-expense) / 감소=good(파랑 --fg-income).
             // design chart-line-expense / bg-brand 의 web 시맨틱 매핑(CompareSummary·CompareMetrics 정합).
-            const color = up ? 'var(--fg-expense)' : 'var(--fg-income)'
+            const color = up ? "var(--fg-expense)" : "var(--fg-income)";
             // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
-            const pal = getPaletteByColor(r.color)
+            const pal = getPaletteByColor(r.color);
             return (
               <div
                 key={r.groupRowId}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 12,
-                  padding: '12px 0',
-                  borderBottom: i < deltaRows.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                  padding: "12px 0",
+                  borderBottom:
+                    i < deltaRows.length - 1
+                      ? "1px solid var(--border-subtle)"
+                      : "none",
                 }}
               >
                 <span
@@ -2102,191 +3505,422 @@ export const StatsPage = () => {
                     borderRadius: tileRadius(32),
                     background: pal.bg,
                     color: pal.color,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     flexShrink: 0,
                   }}
                 >
-                  {renderIcon(r.icon, r.name.charAt(0) || '•', 16)}
+                  {renderIcon(r.icon, r.name.charAt(0) || "•", 16)}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {/* 클로드 디자인(이름 13.5/서브 11.5) 정수 스냅 — 이름 label-sm(13)/서브 badge(11).
                       앱 bodySm(13)/micro(11)와 동값 토큰이라 크로스클라이언트 1px 불일치 해소. */}
-                  <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: 600 }}>{r.name}</div>
-                  <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                    <MaskAmount>{wonPre()}{KRW(r.prev)}</MaskAmount><WonUnit /> → <MaskAmount>{wonPre()}{KRW(r.now)}</MaskAmount><WonUnit />
+                  <div
+                    style={{
+                      fontSize: "var(--text-label-sm)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {r.name}
+                  </div>
+                  <div
+                    className="num"
+                    style={{
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      marginTop: 2,
+                    }}
+                  >
+                    <MaskAmount>
+                      {wonPre()}
+                      {KRW(r.prev)}
+                    </MaskAmount>
+                    <WonUnit /> →{" "}
+                    <MaskAmount>
+                      {wonPre()}
+                      {KRW(r.now)}
+                    </MaskAmount>
+                    <WonUnit />
                   </div>
                 </div>
                 {/* diverging bar — 데스크톱/태블릿만. 중앙 세로선 기준 감소=왼쪽/증가=오른쪽. */}
                 {!mobile && (
-                  <div style={{ width: 180, display: 'flex', flexShrink: 0 }}>
-                    <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                  <div style={{ width: 180, display: "flex", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    >
                       {!up && (
-                        <div style={{ width: `${(Math.abs(r.diff) / maxDelta) * 100}%`, height: 8, borderRadius: '999px 0 0 999px', background: color, alignSelf: 'center' }} />
+                        <div
+                          style={{
+                            width: `${(Math.abs(r.diff) / maxDelta) * 100}%`,
+                            height: 8,
+                            borderRadius: "999px 0 0 999px",
+                            background: color,
+                            alignSelf: "center",
+                          }}
+                        />
                       )}
                     </div>
-                    <div style={{ width: 1, background: 'var(--border-default)', flexShrink: 0 }} />
-                    <div style={{ flex: 1, display: 'flex' }}>
+                    <div
+                      style={{
+                        width: 1,
+                        background: "var(--border-default)",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ flex: 1, display: "flex" }}>
                       {up && (
-                        <div style={{ width: `${(Math.abs(r.diff) / maxDelta) * 100}%`, height: 8, borderRadius: '0 999px 999px 0', background: color, alignSelf: 'center' }} />
+                        <div
+                          style={{
+                            width: `${(Math.abs(r.diff) / maxDelta) * 100}%`,
+                            height: 8,
+                            borderRadius: "0 999px 999px 0",
+                            background: color,
+                            alignSelf: "center",
+                          }}
+                        />
                       )}
                     </div>
                   </div>
                 )}
-                <div style={{ textAlign: 'right', flexShrink: 0, minWidth: mobile ? 90 : 110 }}>
-                  <div className="num" style={{ fontSize: 'var(--text-label-sm)', fontWeight: 700, color }}>
-                    {up ? '+' : '−'}<MaskAmount>{wonPre()}{KRW(Math.abs(r.diff))}</MaskAmount><WonUnit />
+                <div
+                  style={{
+                    textAlign: "right",
+                    flexShrink: 0,
+                    minWidth: mobile ? 90 : 110,
+                  }}
+                >
+                  <div
+                    className="num"
+                    style={{
+                      fontSize: "var(--text-label-sm)",
+                      fontWeight: 700,
+                      color,
+                    }}
+                  >
+                    {up ? "+" : "−"}
+                    <MaskAmount>
+                      {wonPre()}
+                      {KRW(Math.abs(r.diff))}
+                    </MaskAmount>
+                    <WonUnit />
                   </div>
                   {/* 증감률 11 — 클로드 디자인 원본(11)·앱 micro(11) 정합, badge 토큰과 동값. */}
-                  <div className="num" style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-                    {r.prev > 0 ? <>{up ? '▲' : '▼'} {Math.abs(r.pct).toFixed(0)}%</> : '—'}
+                  <div
+                    className="num"
+                    style={{
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      marginTop: 2,
+                    }}
+                  >
+                    {r.prev > 0 ? (
+                      <>
+                        {up ? "▲" : "▼"} {Math.abs(r.pct).toFixed(0)}%
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
     </Section>
-  )
+  );
 
   // 비교 탭 — 요일별 지출 비교 (grouped bars). 이번 기간 vs 이전 기간, 월요일 시작.
-  const WK_KEYS = ['dow.mon', 'dow.tue', 'dow.wed', 'dow.thu', 'dow.fri', 'dow.sat', 'dow.sun'] as const
+  const WK_KEYS = [
+    "dow.mon",
+    "dow.tue",
+    "dow.wed",
+    "dow.thu",
+    "dow.fri",
+    "dow.sat",
+    "dow.sun",
+  ] as const;
   const wkAgg = (() => {
-    const now = new Array(7).fill(0) as number[]
-    const prev = new Array(7).fill(0) as number[]
+    const now = new Array(7).fill(0) as number[];
+    const prev = new Array(7).fill(0) as number[];
     const add = (
       arr: number[],
-      list: ReadonlyArray<{ expenseType: string; amount: number; expenseDate?: string | null }> | undefined,
+      list:
+        | ReadonlyArray<{
+            expenseType: string;
+            amount: number;
+            expenseDate?: string | null;
+          }>
+        | undefined,
     ) => {
       for (const e of list ?? []) {
-        if (e.expenseType !== 'EXPENSE') continue
-        const ds = (e.expenseDate ?? '').slice(0, 10)
-        if (!ds) continue
-        const idx = (new Date(`${ds}T00:00:00`).getDay() + 6) % 7
-        arr[idx] = (arr[idx] ?? 0) + e.amount
+        if (e.expenseType !== "EXPENSE") continue;
+        const ds = (e.expenseDate ?? "").slice(0, 10);
+        if (!ds) continue;
+        const idx = (new Date(`${ds}T00:00:00`).getDay() + 6) % 7;
+        arr[idx] = (arr[idx] ?? 0) + e.amount;
+      }
+    };
+    add(now, monthExpensesQ.data);
+    add(prev, prevMonthExpensesQ.data);
+    return { now, prev };
+  })();
+  const wkMax = Math.max(1, ...wkAgg.now, ...wkAgg.prev);
+  const wkDelta = (() => {
+    let idx = -1;
+    let delta = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = (wkAgg.now[i] ?? 0) - (wkAgg.prev[i] ?? 0);
+      if (Math.abs(d) > Math.abs(delta)) {
+        delta = d;
+        idx = i;
       }
     }
-    add(now, monthExpensesQ.data)
-    add(prev, prevMonthExpensesQ.data)
-    return { now, prev }
-  })()
-  const wkMax = Math.max(1, ...wkAgg.now, ...wkAgg.prev)
-  const wkDelta = (() => {
-    let idx = -1
-    let delta = 0
-    for (let i = 0; i < 7; i++) {
-      const d = (wkAgg.now[i] ?? 0) - (wkAgg.prev[i] ?? 0)
-      if (Math.abs(d) > Math.abs(delta)) { delta = d; idx = i }
-    }
-    return { idx, delta }
-  })()
-  const wkDeltaKey = wkDelta.idx >= 0 ? WK_KEYS[wkDelta.idx] : undefined
+    return { idx, delta };
+  })();
+  const wkDeltaKey = wkDelta.idx >= 0 ? WK_KEYS[wkDelta.idx] : undefined;
   // 컬럼이 flex:1 등폭이라 슬롯폭 = 전체폭/7 로 인덱스 산출 (앱 커스텀 바 터치 계산 정합).
   const onWkPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    if (rect.width <= 0) return
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const i = Math.max(0, Math.min(6, Math.floor((x / rect.width) * 7)))
-    setWkTip({ i, x, y, w: rect.width })
-  }
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const i = Math.max(0, Math.min(6, Math.floor((x / rect.width) * 7)));
+    setWkTip({ i, x, y, w: rect.width });
+  };
   const CompareWeekday = (
     <Section
       mobile={mobile}
-      title={t('compare.weekdayTitle')}
+      title={t("compare.weekdayTitle")}
       action={
-        <div style={{ display: 'flex', gap: 12, fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: 'var(--fg-brand)' }} />{periodNow}
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          <span
+            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+          >
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: 2.5,
+                background: "var(--fg-brand)",
+              }}
+            />
+            {periodNow}
           </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2.5, background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', boxSizing: 'border-box' }} />{periodPrev}
+          <span
+            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+          >
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: 2.5,
+                background: "var(--color-surface-input)",
+                border: "1px solid var(--border-default)",
+                boxSizing: "border-box",
+              }}
+            />
+            {periodPrev}
           </span>
         </div>
       }
     >
       <div
-        style={{ position: 'relative', touchAction: 'pan-y' }}
+        style={{ position: "relative", touchAction: "pan-y" }}
         onPointerDown={onWkPointer}
         onPointerMove={onWkPointer}
         onPointerLeave={() => setWkTip(null)}
-        onPointerUp={e => { if (e.pointerType !== 'mouse') setWkTip(null) }}
+        onPointerUp={(e) => {
+          if (e.pointerType !== "mouse") setWkTip(null);
+        }}
         onPointerCancel={() => setWkTip(null)}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: mobile ? 8 : 18, height: mobile ? 140 : 170, padding: '14px 2px 6px' }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            gap: mobile ? 8 : 18,
+            height: mobile ? 140 : 170,
+            padding: "14px 2px 6px",
+          }}
+        >
           {WK_KEYS.map((k, i) => {
-            const isSat = i === 5
-            const isSun = i === 6
+            const isSat = i === 5;
+            const isSun = i === 6;
             return (
-              <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                <div style={{ height: mobile ? 96 : 124, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3 }}>
-                  <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.now[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--fg-brand)', borderRadius: '3px 3px 0 0' }} />
-                  <div style={{ width: '42%', maxWidth: 16, height: Math.max(4, ((wkAgg.prev[i] ?? 0) / wkMax) * (mobile ? 96 : 124)), background: 'var(--color-surface-input)', border: '1px solid var(--border-default)', borderBottom: 'none', borderRadius: '3px 3px 0 0', boxSizing: 'border-box' }} />
+              <div
+                key={k}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    height: mobile ? 96 : 124,
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                    gap: 3,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "42%",
+                      maxWidth: 16,
+                      height: Math.max(
+                        4,
+                        ((wkAgg.now[i] ?? 0) / wkMax) * (mobile ? 96 : 124),
+                      ),
+                      background: "var(--fg-brand)",
+                      borderRadius: "3px 3px 0 0",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: "42%",
+                      maxWidth: 16,
+                      height: Math.max(
+                        4,
+                        ((wkAgg.prev[i] ?? 0) / wkMax) * (mobile ? 96 : 124),
+                      ),
+                      background: "var(--color-surface-input)",
+                      border: "1px solid var(--border-default)",
+                      borderBottom: "none",
+                      borderRadius: "3px 3px 0 0",
+                      boxSizing: "border-box",
+                    }}
+                  />
                 </div>
-                <span style={{ fontSize: 'var(--text-badge)', fontWeight: 600, color: isSun ? 'var(--fg-expense)' : isSat ? 'var(--fg-brand)' : 'var(--fg-tertiary)' }}>{t(k)}</span>
+                <span
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    fontWeight: 600,
+                    color: isSun
+                      ? "var(--fg-expense)"
+                      : isSat
+                        ? "var(--fg-brand)"
+                        : "var(--fg-tertiary)",
+                  }}
+                >
+                  {t(k)}
+                </span>
               </div>
-            )
+            );
           })}
         </div>
         {wkTip && (
           <div
             style={{
-              position: 'absolute',
-              top: Math.max(0, Math.min(wkTip.y - 38, (mobile ? 140 : 170) - 84)),
+              position: "absolute",
+              top: Math.max(
+                0,
+                Math.min(wkTip.y - 38, (mobile ? 140 : 170) - 84),
+              ),
               // 포인터 우측 우선, 우측 절반에선 좌측으로 flip (recharts 동작 정합).
               ...(wkTip.x < wkTip.w / 2
                 ? { left: wkTip.x + 12 }
                 : { right: wkTip.w - wkTip.x + 12 }),
-              pointerEvents: 'none',
+              pointerEvents: "none",
               zIndex: 5,
             }}
           >
             <PorestChartTooltip
               active
-              label={t(WK_KEYS[wkTip.i] ?? 'dow.mon')}
+              label={t(WK_KEYS[wkTip.i] ?? "dow.mon")}
               payload={[
-                { dataKey: 'now', value: wkAgg.now[wkTip.i] ?? 0 },
-                { dataKey: 'prev', value: wkAgg.prev[wkTip.i] ?? 0 },
+                { dataKey: "now", value: wkAgg.now[wkTip.i] ?? 0 },
+                { dataKey: "prev", value: wkAgg.prev[wkTip.i] ?? 0 },
               ]}
               rows={[
-                { dataKey: 'now', label: periodNow, color: 'var(--fg-brand)' },
-                { dataKey: 'prev', label: periodPrev, color: 'var(--color-surface-input)', border: 'var(--border-default)' },
+                { dataKey: "now", label: periodNow, color: "var(--fg-brand)" },
+                {
+                  dataKey: "prev",
+                  label: periodPrev,
+                  color: "var(--color-surface-input)",
+                  border: "var(--border-default)",
+                },
               ]}
             />
           </div>
         )}
       </div>
       {wkDeltaKey && wkDelta.delta !== 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)' }}>
-          <Sparkles size={14} style={{ color: 'var(--fg-brand)', flexShrink: 0 }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 10,
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          <Sparkles
+            size={14}
+            style={{ color: "var(--fg-brand)", flexShrink: 0 }}
+          />
           <span>
-            {t(wkDelta.delta < 0 ? 'compare.weekdayInsightDown' : 'compare.weekdayInsightUp', {
-              dow: t(wkDeltaKey),
-              amt: KRW(Math.abs(wkDelta.delta)),
-              prev: periodPrev,
-            })}
+            {t(
+              wkDelta.delta < 0
+                ? "compare.weekdayInsightDown"
+                : "compare.weekdayInsightUp",
+              {
+                dow: t(wkDeltaKey),
+                amt: KRW(Math.abs(wkDelta.delta)),
+                prev: periodPrev,
+              },
+            )}
           </span>
         </div>
       )}
     </Section>
-  )
+  );
 
   // 탭 하나가 곧 카드다 — 안쪽 금액이 전부 그 탭 키로 잡힌다.
   // 카드들이 변수로 조립돼 정의부만 봐선 어느 탭인지 알 수 없어서, 조립 결과를 감싼다.
   const ContentInner =
-    tab === 'cat' ? (
+    tab === "cat" ? (
       // 한 덩어리(flex-col gap) — 카테고리/가맹점/히트맵/통계 4섹션 균일 gap(앱·추이·비교 탭 정합).
       // 데스크톱만 도넛|가맹점을 grid 2열로 나란히, 그 외엔 세로. margin-bottom 혼재 제거.
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: mobile ? "var(--spacing-2xl)" : 20,
+        }}
+      >
         {mobile ? (
           <>
             {DonutCard}
             {TopMerchantsCard}
           </>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.4fr 1fr",
+              gap: 20,
+            }}
+          >
             {DonutCard}
             {TopMerchantsCard}
           </div>
@@ -2294,33 +3928,57 @@ export const StatsPage = () => {
         {HeatmapCard}
         {HighlightsGrid}
       </div>
-    ) : tab === 'trend' ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+    ) : tab === "trend" ? (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: mobile ? "var(--spacing-2xl)" : 20,
+        }}
+      >
         {TrendBig}
         {TrendStats}
         {SavingsBars}
         {CatTrend}
       </div>
     ) : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 'var(--spacing-2xl)' : 20 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: mobile ? "var(--spacing-2xl)" : 20,
+        }}
+      >
         {CompareSummary}
         {CompareMetrics}
         {CompareCategory}
         {CompareWeekday}
       </div>
-    )
+    );
 
   // Suppress unused warning if totalIncome isn't used elsewhere
-  void totalIncome
+  void totalIncome;
 
   // 정적 틀(탭·헤더)은 항상 실제 렌더 — 스켈레톤은 콘텐츠 영역에만(서버 데이터 자리).
   const Content = (
-    <HideCard card={tab === 'cat' ? 'stats.category' : tab === 'trend' ? 'stats.trend' : 'stats.compare'}>
+    <HideCard
+      card={
+        tab === "cat"
+          ? "stats.category"
+          : tab === "trend"
+            ? "stats.trend"
+            : "stats.compare"
+      }
+    >
       {ContentInner}
     </HideCard>
-  )
+  );
 
-  const content = shouldShowSkeleton ? <StatsPageSkeleton mobile={mobile} tab={tab} /> : Content
+  const content = shouldShowSkeleton ? (
+    <StatsPageSkeleton mobile={mobile} tab={tab} />
+  ) : (
+    Content
+  );
 
   if (mobile) {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
@@ -2329,33 +3987,33 @@ export const StatsPage = () => {
     // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 24, 상 20 · 하 24 padding).
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="shrink-0" style={{ background: 'var(--bg-surface)' }}>
+        <div className="shrink-0" style={{ background: "var(--bg-surface)" }}>
           {StatsTabs}
         </div>
         <div
           className="flex-1 min-h-0 overflow-y-auto scrollbar-hide"
-          style={{ padding: '20px 24px 24px', ...swipeNav.style }}
+          style={{ padding: "20px 24px 24px", ...swipeNav.style }}
           {...swipeNav.handlers}
         >
           {content}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>{t('page.title')}</h1>
-          <div className="sub">{t('page.subtitle')}</div>
+          <h1>{t("page.title")}</h1>
+          <div className="sub">{t("page.subtitle")}</div>
         </div>
       </div>
       {StatsTabs}
       {content}
     </div>
-  )
-}
+  );
+};
 
 // ───────────────────────────────────────────────────────────
 // RangePickerSheet — 직접 기간 선택 모달.
@@ -2364,21 +4022,21 @@ export const StatsPage = () => {
 // - 적용 버튼: 확정 후 confirm
 // ───────────────────────────────────────────────────────────
 const QUICK_RANGES: { labelKey: string; days: number }[] = [
-  { labelKey: 'picker.last7d', days: 7 },
-  { labelKey: 'picker.last30d', days: 30 },
-  { labelKey: 'picker.last3m', days: 90 },
-  { labelKey: 'picker.last6m', days: 180 },
-  { labelKey: 'picker.last1y', days: 365 },
-]
+  { labelKey: "picker.last7d", days: 7 },
+  { labelKey: "picker.last30d", days: 30 },
+  { labelKey: "picker.last3m", days: 90 },
+  { labelKey: "picker.last6m", days: 180 },
+  { labelKey: "picker.last1y", days: 365 },
+];
 
 const toISODate = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const fromISODate = (s: string | undefined): Date | undefined => {
-  if (!s) return undefined
-  const [y, m, d] = s.split('-').map(Number)
-  if (!y || !m || !d) return undefined
-  return new Date(y, m - 1, d)
-}
+  if (!s) return undefined;
+  const [y, m, d] = s.split("-").map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(y, m - 1, d);
+};
 
 function RangePickerSheet({
   mobile,
@@ -2386,92 +4044,131 @@ function RangePickerSheet({
   onCancel,
   onConfirm,
 }: {
-  mobile: boolean
-  initial: RangeState
-  onCancel: () => void
-  onConfirm: (range: RangeState) => void
+  mobile: boolean;
+  initial: RangeState;
+  onCancel: () => void;
+  onConfirm: (range: RangeState) => void;
 }) {
-  const { t } = useTranslation('stats')
-  const { t: tc } = useTranslation('common')
-  const [segMode, setSegMode] = useState<SegMode>(initial.segMode)
-  const [from, setFrom] = useState<Date>(initial.from)
-  const [to, setTo] = useState<Date>(initial.to)
-  const canApply = from.getTime() <= to.getTime()
+  const { t } = useTranslation("stats");
+  const { t: tc } = useTranslation("common");
+  const [segMode, setSegMode] = useState<SegMode>(initial.segMode);
+  const [from, setFrom] = useState<Date>(initial.from);
+  const [to, setTo] = useState<Date>(initial.to);
+  const canApply = from.getTime() <= to.getTime();
 
   // segMode 변경 시 — 월/분기/년 의 from/to 자동 계산 (이번 month/quarter/year)
   // custom 은 기존 from/to 유지.
   const setSeg = (v: SegMode) => {
-    setSegMode(v)
-    const now = new Date()
-    if (v === 'm') { const r = monthRangeOf(now); setFrom(r.from); setTo(r.to) }
-    else if (v === 'q') { const r = quarterRangeOf(now); setFrom(r.from); setTo(r.to) }
-    else if (v === 'y') { const r = yearRangeOf(now); setFrom(r.from); setTo(r.to) }
-  }
+    setSegMode(v);
+    const now = new Date();
+    if (v === "m") {
+      const r = monthRangeOf(now);
+      setFrom(r.from);
+      setTo(r.to);
+    } else if (v === "q") {
+      const r = quarterRangeOf(now);
+      setFrom(r.from);
+      setTo(r.to);
+    } else if (v === "y") {
+      const r = yearRangeOf(now);
+      setFrom(r.from);
+      setTo(r.to);
+    }
+  };
 
   const applyQuick = (days: number) => {
-    const today = new Date()
-    const start = new Date(today)
-    start.setDate(today.getDate() - days + 1)
-    setFrom(start)
-    setTo(today)
-    setSegMode('custom')
-  }
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - days + 1);
+    setFrom(start);
+    setTo(today);
+    setSegMode("custom");
+  };
 
   // 가계부 FilterDialog 패턴 정합 — 상단 ToggleGroup (월/분기/년/직접) + 항상 date range
   // + custom 시만 quick chips (최근 N일/N개월) 표시.
   const formBody = (
     <>
-      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+      <div style={{ marginBottom: "var(--spacing-lg)" }}>
         <Tabs
           value={segMode}
-          onValueChange={(v) => { if (v) setSeg(v as SegMode) }}
+          onValueChange={(v) => {
+            if (v) setSeg(v as SegMode);
+          }}
         >
           <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="m" className="flex-1">{t('picker.segMonth')}</TabsTrigger>
-            <TabsTrigger value="q" className="flex-1">{t('picker.segQuarter')}</TabsTrigger>
-            <TabsTrigger value="y" className="flex-1">{t('picker.segYear')}</TabsTrigger>
-            <TabsTrigger value="custom" className="flex-1">{t('picker.segCustom')}</TabsTrigger>
+            <TabsTrigger value="m" className="flex-1">
+              {t("picker.segMonth")}
+            </TabsTrigger>
+            <TabsTrigger value="q" className="flex-1">
+              {t("picker.segQuarter")}
+            </TabsTrigger>
+            <TabsTrigger value="y" className="flex-1">
+              {t("picker.segYear")}
+            </TabsTrigger>
+            <TabsTrigger value="custom" className="flex-1">
+              {t("picker.segCustom")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
-      <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', marginBottom: segMode === 'custom' ? 'var(--spacing-lg)' : 0 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--spacing-sm)",
+          alignItems: "center",
+          marginBottom: segMode === "custom" ? "var(--spacing-lg)" : 0,
+        }}
+      >
         <div style={{ flex: 1 }}>
           <InputDatePicker
             value={toISODate(from)}
             onValueChange={(v) => {
-              const d = fromISODate(v)
-              if (d) { setFrom(d); setSegMode('custom') }
+              const d = fromISODate(v);
+              if (d) {
+                setFrom(d);
+                setSegMode("custom");
+              }
             }}
           />
         </div>
-        <span style={{ color: 'var(--fg-tertiary)' }}>~</span>
+        <span style={{ color: "var(--fg-tertiary)" }}>~</span>
         <div style={{ flex: 1 }}>
           <InputDatePicker
             value={toISODate(to)}
             onValueChange={(v) => {
-              const d = fromISODate(v)
-              if (d) { setTo(d); setSegMode('custom') }
+              const d = fromISODate(v);
+              if (d) {
+                setTo(d);
+                setSegMode("custom");
+              }
             }}
           />
         </div>
       </div>
-      {segMode === 'custom' && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+      {segMode === "custom" && (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "var(--spacing-sm)",
+          }}
+        >
           {QUICK_RANGES.map((q) => (
             <button
               key={q.days}
               type="button"
               onClick={() => applyQuick(q.days)}
               style={{
-                padding: 'var(--spacing-xs) var(--spacing-md)',
-                borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--bg-surface)',
-                fontSize: 'var(--text-caption)',
-                fontWeight: '500',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: 'var(--fg-secondary)',
+                padding: "var(--spacing-xs) var(--spacing-md)",
+                borderRadius: "var(--radius-pill)",
+                border: "1px solid var(--border-subtle)",
+                background: "var(--bg-surface)",
+                fontSize: "var(--text-caption)",
+                fontWeight: "500",
+                cursor: "pointer",
+                fontFamily: "inherit",
+                color: "var(--fg-secondary)",
               }}
             >
               {t(q.labelKey)}
@@ -2480,41 +4177,46 @@ function RangePickerSheet({
         </div>
       )}
     </>
-  )
+  );
 
   // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 —
   // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
   // (spec button.md Migration notes 2026-08). 폭 배분은 DrawerFooter 가 맡는다.
   const cancelBtn = (
     <Button
-      variant={mobile ? 'secondary' : 'ghost'}
-      size={mobile ? 'lg' : undefined}
+      variant={mobile ? "secondary" : "ghost"}
+      size={mobile ? "lg" : undefined}
       onClick={onCancel}
     >
-      {tc('cancel')}
+      {tc("cancel")}
     </Button>
-  )
+  );
   const applyBtn = (
     <Button
-      size={mobile ? 'lg' : undefined}
+      size={mobile ? "lg" : undefined}
       disabled={!canApply}
       onClick={() => canApply && onConfirm({ from, to, segMode })}
     >
-      {t('picker.apply')}
+      {t("picker.apply")}
     </Button>
-  )
+  );
 
   // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
   if (mobile) {
     return (
-      <Drawer open onOpenChange={(o) => { if (!o) onCancel() }}>
+      <Drawer
+        open
+        onOpenChange={(o) => {
+          if (!o) onCancel();
+        }}
+      >
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="flex-1">{t('picker.title')}</DrawerTitle>
+            <DrawerTitle className="flex-1">{t("picker.title")}</DrawerTitle>
             <DrawerClose asChild>
               <button
                 type="button"
-                aria-label={tc('close')}
+                aria-label={tc("close")}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
               >
                 <X size={18} />
@@ -2528,15 +4230,20 @@ function RangePickerSheet({
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-    )
+    );
   }
 
   // 데스크탑/태블릿: Dialog (modal).
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onCancel() }}>
+    <Dialog
+      open
+      onOpenChange={(o) => {
+        if (!o) onCancel();
+      }}
+    >
       <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle>{t('picker.title')}</DialogTitle>
+          <DialogTitle>{t("picker.title")}</DialogTitle>
         </DialogHeader>
         <DialogBody>{formBody}</DialogBody>
         <DialogFooter>
@@ -2545,5 +4252,5 @@ function RangePickerSheet({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
