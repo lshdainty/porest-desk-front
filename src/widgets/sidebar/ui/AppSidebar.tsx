@@ -16,9 +16,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/shared/ui/sidebar";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useSidebar } from "@/shared/ui/sidebar-context";
+import { useTheme } from "@/shared/ui/theme-context";
 import { NavMain, type NavItem } from "./NavMain";
 import { NavUser } from "./NavUser";
 

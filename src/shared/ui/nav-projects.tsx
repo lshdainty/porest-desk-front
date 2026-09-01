@@ -20,8 +20,8 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/shared/ui/sidebar";
+import { useSidebar } from "@/shared/ui/sidebar-context";
 
 export function NavProjects({
   projects,

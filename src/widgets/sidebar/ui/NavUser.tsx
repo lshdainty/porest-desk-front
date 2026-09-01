@@ -16,8 +16,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/shared/ui/sidebar";
+import { useSidebar } from "@/shared/ui/sidebar-context";
 import { PasswordChangeDialog } from "./PasswordChangeDialog";
 
 export function NavUser() {

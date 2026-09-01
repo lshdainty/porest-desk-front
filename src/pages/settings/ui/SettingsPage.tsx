@@ -48,7 +48,7 @@ import {
 } from "@/widgets/account-settings";
 import { AccountManager, SavingGoalManager } from "@/widgets/asset-full";
 import { Card, CardContent } from "@/shared/ui/card";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 import { useCurrentUser } from "@/features/user";
 import { useAuth } from "@/features/auth";
 import { SubscriptionDialog } from "@/features/subscription/ui/SubscriptionDialog";

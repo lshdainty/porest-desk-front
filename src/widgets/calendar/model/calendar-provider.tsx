@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useMemo,
-  useCallback,
-} from "react";
+import { useState, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 import type {
   TCalendarView,
@@ -20,30 +14,7 @@ import {
   useUserCalendars,
   useToggleCalendarVisibility,
 } from "@/features/user-calendar";
-import type { UserCalendar } from "@/entities/user-calendar";
-
-interface CalendarContextValue {
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  view: TCalendarView;
-  setView: (view: TCalendarView) => void;
-  badgeVariant: TBadgeVariant;
-  setBadgeVariant: (variant: TBadgeVariant) => void;
-  workingHours: TWorkingHours;
-  setWorkingHours: (hours: TWorkingHours) => void;
-  visibleHours: TVisibleHours;
-  setVisibleHours: (hours: TVisibleHours) => void;
-  events: IEvent[];
-  setLocalEvents: (events: IEvent[]) => void;
-  builtinSources: IBuiltinSource[];
-  toggleBuiltinSource: (sourceId: TCalendarSourceType) => void;
-  isBuiltinSourceEnabled: (sourceId: TCalendarSourceType) => boolean;
-  userCalendars: UserCalendar[];
-  isCalendarVisible: (calendarRowId: number) => boolean;
-  toggleCalendarVisibility: (calendarRowId: number) => void;
-}
-
-const CalendarContext = createContext<CalendarContextValue | null>(null);
+import { CalendarContext, type CalendarContextValue } from "./calendar-context";
 
 interface CalendarProviderProps {
   children: ReactNode;
@@ -168,15 +139,3 @@ export const CalendarProvider = ({
     </CalendarContext.Provider>
   );
 };
-
-export const useCalendarContext = (): CalendarContextValue => {
-  const context = useContext(CalendarContext);
-  if (!context) {
-    throw new Error(
-      "useCalendarContext must be used within a CalendarProvider",
-    );
-  }
-  return context;
-};
-
-export const useCalendar = useCalendarContext;

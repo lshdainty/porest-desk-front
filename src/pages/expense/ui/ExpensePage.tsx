@@ -53,8 +53,8 @@ import {
   LedgerSummaryRow,
   LedgerTotal,
   LedgerWeek,
-  useLedgerScroll,
 } from "@/shared/ui/porest/ledger";
+import { useLedgerScroll } from "@/shared/ui/porest/use-ledger-scroll";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
@@ -65,7 +65,7 @@ import { ModalShell } from "@/shared/ui/porest/dialogs";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
-import { CalendarProvider } from "@/widgets/calendar/model/calendar-context";
+import { CalendarProvider } from "@/widgets/calendar/model/calendar-provider";
 import { CalendarMonthView } from "@/widgets/calendar/ui/month-view/calendar-month-view";
 import { convertExpenseToIEvent } from "@/widgets/calendar/lib/helpers";
 import {

@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 
 /**
  * shadcn dark-mode 패턴 (https://ui.shadcn.com/docs/dark-mode/vite) 기반.

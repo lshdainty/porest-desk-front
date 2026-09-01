@@ -13,10 +13,8 @@ import { useMemo, useCallback, useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
-import {
-  useDragSelect,
-  DragSelectProvider,
-} from "@/widgets/calendar/model/drag-select-context";
+import { useDragSelect } from "@/widgets/calendar/model/drag-select-context";
+import { DragSelectProvider } from "@/widgets/calendar/model/drag-select-provider";
 import {
   calculateMonthEventPositions,
   eventBadgeColor,

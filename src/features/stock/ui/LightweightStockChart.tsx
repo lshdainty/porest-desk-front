@@ -28,7 +28,7 @@ import {
   type MouseEventParams,
   type Time,
 } from "lightweight-charts";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 import {
   securitiesApi,
   type BrokerCandle,

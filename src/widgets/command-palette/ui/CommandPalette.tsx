@@ -22,7 +22,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/shared/ui/command";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 import { useCreateTodo } from "@/features/todo";
 import { useMemos } from "@/features/memo";
 import { toast } from "sonner";

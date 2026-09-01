@@ -1,4 +1,8 @@
-import { Activity, createContext, useContext, type ReactNode } from "react";
+import { Activity, type ReactNode } from "react";
+import {
+  HideCardContext,
+  useHideCard,
+} from "@/shared/lib/porest/hide-card-context";
 import { isEn } from "@/shared/lib/porest/format";
 import {
   HIDE_AMOUNTS_MASK,
@@ -8,15 +12,6 @@ import type {
   HideCardKey,
   HideKind,
 } from "@/shared/lib/porest/hide-amounts-cards";
-
-/**
- * 이 아래 금액들이 어느 카드에 속하는지.
- *
- * <p>카드 하나에 금액이 여러 개 박혀 있는 게 보통이라, 그때마다 `card=` 를 적으면
- * 빠뜨리기 쉽다. 카드 최상단에서 한 번 감싸면 안쪽 `<MaskAmount>` 가 전부 그 카드로
- * 잡힌다. 개별로 다르게 하고 싶을 때만 `card=` 로 덮어쓴다.
- */
-const HideCardContext = createContext<HideCardKey | undefined>(undefined);
 
 export function HideCard({
   card,
@@ -28,14 +23,6 @@ export function HideCard({
   return (
     <HideCardContext.Provider value={card}>{children}</HideCardContext.Provider>
   );
-}
-
-/** 감싸는 카드가 있으면 그것, 없으면 넘긴 값. 둘 다 없으면 undefined. */
-export function useHideCard(
-  card?: HideCardKey | HideCardKey[],
-): HideCardKey | HideCardKey[] | undefined {
-  const ctx = useContext(HideCardContext);
-  return card ?? ctx;
 }
 
 /**

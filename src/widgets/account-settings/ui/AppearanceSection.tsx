@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { RadioList, RadioListItem } from "@/shared/ui/radio-list";
 import { TileGroup, TileItem } from "@/shared/ui/tile";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
   Select,
