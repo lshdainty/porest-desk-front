@@ -3,6 +3,13 @@ import { useTranslation } from "react-i18next";
 import { CreditCard, Search } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
@@ -26,6 +33,9 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
   const { t: tc } = useTranslation("common");
   const isMobile = useIsMobile();
   const [cardType, setCardType] = useState<CardType>("CREDIT");
+  // 신용카드 결제일 — 필수다. 없으면 명세서(예정 회차·할부 구성)가 성립하지 않는다.
+  // 결제일이 없어도 되는 건 체크카드뿐이고, 체크카드는 할부를 안 받는다(사용자 결정).
+  const [paymentDay, setPaymentDay] = useState<string>("");
   const [keyword, setKeyword] = useState("");
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
   const [selected, setSelected] = useState<CardCatalogSummary | null>(null);
@@ -60,6 +70,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
     setKeyword("");
     setIncludeDiscontinued(false);
     setSelected(null);
+    setPaymentDay("");
     setNickname("");
     setOutstandingStr("0");
   };
@@ -72,6 +83,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
 
   const handleSubmit = () => {
     if (!selected) return;
+    if (cardType === "CREDIT" && !paymentDay) return;
     const name = nickname.trim() || selected.cardName;
     // 신용카드 잔액은 미결제 사용액이라 음수로 저장한다 — 화면은 "현재 사용액" 을 묻고
     // 사용자는 양수를 치는 게 자연스럽다. 서버도 같은 정규화를 하지만 여기서도 맞춰 보낸다.
@@ -90,6 +102,8 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
         institution: selected.company?.name ?? undefined,
         color: companyColor?.bg,
         cardCatalogRowId: selected.rowId,
+        paymentDay:
+          assetType === "CREDIT_CARD" ? parseInt(paymentDay, 10) : undefined,
       },
       {
         onSuccess: () => {
@@ -320,6 +334,29 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
         </div>
       </div>
 
+      {cardType === "CREDIT" && (
+        <div>
+          <Label className="text-[13px] font-medium mb-2 block">
+            {t("form.paymentDay")}
+          </Label>
+          <Select
+            value={paymentDay || undefined}
+            onValueChange={(v) => setPaymentDay(v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t("form.paymentDaySelect")} />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <SelectItem key={d} value={String(d)}>
+                  {t("form.dayN", { d })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div>
         <Label
           htmlFor="card-nickname"
@@ -368,7 +405,7 @@ export function CardAddDialog({ open, onClose }: CardAddDialogProps) {
       onSave={handleSubmit}
       saveLabel={selected ? tc("add") : t("cardAdd.selectRequired")}
       saving={createMut.isPending}
-      saveDisabled={!selected}
+      saveDisabled={!selected || (cardType === "CREDIT" && !paymentDay)}
     />
   );
 
