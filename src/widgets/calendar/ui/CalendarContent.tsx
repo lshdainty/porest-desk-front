@@ -9,16 +9,16 @@ import {
   format,
 } from "date-fns";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
-import { useCalendarEvents } from "@/features/calendar/model/useCalendarEvents";
-import { useCalendarExpenses } from "@/features/calendar/model/useCalendarExpenses";
-import { useCalendarHolidays } from "@/features/calendar/model/useCalendarHolidays";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
+import { useCalendarEvents } from "@/widgets/calendar/model/useCalendarEvents";
+import { useCalendarExpenses } from "@/widgets/calendar/model/useCalendarExpenses";
+import { useCalendarHolidays } from "@/widgets/calendar/model/useCalendarHolidays";
 import {
   convertCalendarEventToIEvent,
   convertExpenseToIEvent,
   convertHolidayToIEvent,
-} from "@/features/calendar/lib/helpers";
-import { CalendarContainer } from "@/features/calendar/ui/CalendarContainer";
+} from "@/widgets/calendar/lib/helpers";
+import { CalendarContainer } from "@/widgets/calendar/ui/CalendarContainer";
 
 const CalendarContent = () => {
   const { selectedDate, view, isBuiltinSourceEnabled } = useCalendar();

@@ -65,9 +65,9 @@ import { ModalShell } from "@/shared/ui/porest/dialogs";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
-import { CalendarProvider } from "@/features/calendar/model/calendar-context";
-import { CalendarMonthView } from "@/features/calendar/ui/month-view/calendar-month-view";
-import { convertExpenseToIEvent } from "@/features/calendar/lib/helpers";
+import { CalendarProvider } from "@/widgets/calendar/model/calendar-context";
+import { CalendarMonthView } from "@/widgets/calendar/ui/month-view/calendar-month-view";
+import { convertExpenseToIEvent } from "@/widgets/calendar/lib/helpers";
 import {
   useExpenses,
   useRangeSummary,

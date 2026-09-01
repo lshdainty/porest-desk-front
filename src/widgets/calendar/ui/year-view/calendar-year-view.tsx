@@ -12,11 +12,11 @@ import { enUS, ko } from "date-fns/locale";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { cn } from "@/shared/lib";
-import { eventBadgeColor } from "@/features/calendar/lib/helpers";
+import { eventBadgeColor } from "@/widgets/calendar/lib/helpers";
 
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 interface IProps {
   allEvents: IEvent[];

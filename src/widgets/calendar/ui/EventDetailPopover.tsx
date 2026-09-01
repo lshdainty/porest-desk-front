@@ -9,9 +9,9 @@ import { Bell, MapPin, Pencil, Repeat, Tag, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/ui/button";
-import { eventBadgeColor } from "@/features/calendar/lib/helpers";
+import { eventBadgeColor } from "@/widgets/calendar/lib/helpers";
 
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 interface EventDetailPopoverProps {
   event: IEvent;

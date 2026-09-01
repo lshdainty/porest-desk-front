@@ -16,12 +16,12 @@ import { enUS, ko } from "date-fns/locale";
 import { formatYear, formatMonthShort } from "@/shared/lib/date";
 import { useMemo, useState } from "react";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   getEventsCount,
   navigateDate,
   rangeText,
-} from "@/features/calendar/lib/helpers";
+} from "@/widgets/calendar/lib/helpers";
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import {
@@ -33,11 +33,11 @@ import {
   DrawerTitle,
   DrawerBody,
 } from "@/shared/ui/drawer";
-import { CalendarSourceToggle } from "@/features/calendar/ui/header/calendar-source-toggle";
+import { CalendarSourceToggle } from "@/widgets/calendar/ui/header/calendar-source-toggle";
 import { useIsMobile } from "@/shared/hooks";
 import { cn } from "@/shared/lib";
 
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 interface IProps {
   events: IEvent[];

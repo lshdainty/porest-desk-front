@@ -3,30 +3,30 @@ import { X } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   useCreateEvent,
   useDeleteEvent,
   useUpdateEvent,
-} from "@/features/calendar/model/useCalendarEvents";
+} from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { useIsMobile } from "@/shared/hooks";
 
-import { DndProviderWrapper } from "@/features/calendar/ui/dnd/dnd-provider";
-import { DayEventsDialog } from "@/features/calendar/ui/DayEventsDialog";
-import { EventDetailPopover } from "@/features/calendar/ui/EventDetailPopover";
+import { DndProviderWrapper } from "@/widgets/calendar/ui/dnd/dnd-provider";
+import { DayEventsDialog } from "@/widgets/calendar/ui/DayEventsDialog";
+import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
 
-import { CalendarAgendaView } from "@/features/calendar/ui/agenda-view/calendar-agenda-view";
-import { CalendarAgendaViewSkeleton } from "@/features/calendar/ui/agenda-view/calendar-agenda-view-skeleton";
-import { CalendarHeader } from "@/features/calendar/ui/header/calendar-header";
-import { CalendarMonthView } from "@/features/calendar/ui/month-view/calendar-month-view";
-import { CalendarMonthViewSkeleton } from "@/features/calendar/ui/month-view/calendar-month-view-skeleton";
-import { CalendarDayView } from "@/features/calendar/ui/week-and-day-view/calendar-day-view";
-import { CalendarDayViewSkeleton } from "@/features/calendar/ui/week-and-day-view/calendar-day-view-skeleton";
-import { CalendarWeekView } from "@/features/calendar/ui/week-and-day-view/calendar-week-view";
-import { CalendarWeekViewSkeleton } from "@/features/calendar/ui/week-and-day-view/calendar-week-view-skeleton";
-import { CalendarYearView } from "@/features/calendar/ui/year-view/calendar-year-view";
-import { CalendarYearViewSkeleton } from "@/features/calendar/ui/year-view/calendar-year-view-skeleton";
+import { CalendarAgendaView } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view";
+import { CalendarAgendaViewSkeleton } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view-skeleton";
+import { CalendarHeader } from "@/widgets/calendar/ui/header/calendar-header";
+import { CalendarMonthView } from "@/widgets/calendar/ui/month-view/calendar-month-view";
+import { CalendarMonthViewSkeleton } from "@/widgets/calendar/ui/month-view/calendar-month-view-skeleton";
+import { CalendarDayView } from "@/widgets/calendar/ui/week-and-day-view/calendar-day-view";
+import { CalendarDayViewSkeleton } from "@/widgets/calendar/ui/week-and-day-view/calendar-day-view-skeleton";
+import { CalendarWeekView } from "@/widgets/calendar/ui/week-and-day-view/calendar-week-view";
+import { CalendarWeekViewSkeleton } from "@/widgets/calendar/ui/week-and-day-view/calendar-week-view-skeleton";
+import { CalendarYearView } from "@/widgets/calendar/ui/year-view/calendar-year-view";
+import { CalendarYearViewSkeleton } from "@/widgets/calendar/ui/year-view/calendar-year-view-skeleton";
 
 import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
 import {
@@ -53,7 +53,7 @@ import type {
   CalendarEvent,
   CalendarEventFormValues,
 } from "@/entities/calendar";
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 interface IProps {
   events: IEvent[];

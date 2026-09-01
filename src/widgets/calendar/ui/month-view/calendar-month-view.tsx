@@ -10,17 +10,17 @@ import { enUS, ko } from "date-fns/locale";
 import { useMemo, useCallback, useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   useDragSelect,
   DragSelectProvider,
-} from "@/features/calendar/model/drag-select-context";
+} from "@/widgets/calendar/model/drag-select-context";
 import {
   calculateMonthEventPositions,
   eventBadgeColor,
   getCalendarCells,
   getMonthCellEvents,
-} from "@/features/calendar/lib/helpers";
+} from "@/widgets/calendar/lib/helpers";
 import { cn, formatNumber } from "@/shared/lib";
 import { useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
@@ -28,7 +28,7 @@ import { useIsMobile } from "@/shared/hooks/use-mobile";
 import type {
   ICalendarCell,
   IEvent,
-} from "@/features/calendar/model/interfaces";
+} from "@/widgets/calendar/model/interfaces";
 
 /** expense 이벤트의 title에서 금액(숫자)을 추출 */
 /** 제목의 금액을 부호까지 읽는다 — 붉은색(지출 계열)에 `+` 면 환불이라 지출에서 빠진다. */

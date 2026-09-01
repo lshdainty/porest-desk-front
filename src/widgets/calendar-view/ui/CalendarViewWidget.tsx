@@ -21,7 +21,7 @@ import {
   useCreateEvent,
   useUpdateEvent,
   useDeleteEvent,
-} from "@/features/calendar";
+} from "@/widgets/calendar";
 import { useEventLabels } from "@/features/event-label";
 import { useTodos, useToggleTodoStatus } from "@/features/todo";
 import type {

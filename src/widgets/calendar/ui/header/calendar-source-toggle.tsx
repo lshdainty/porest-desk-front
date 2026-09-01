@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import {
   Drawer,
@@ -29,7 +29,7 @@ import { useIsMobile } from "@/shared/hooks";
 import type {
   IBuiltinSource,
   TCalendarSourceType,
-} from "@/features/calendar/model/types";
+} from "@/widgets/calendar/model/types";
 import type { UserCalendar } from "@/entities/user-calendar";
 
 const SOURCE_ICONS: Record<TCalendarSourceType, React.ElementType> = {

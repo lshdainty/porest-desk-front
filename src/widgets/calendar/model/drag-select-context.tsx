@@ -3,7 +3,7 @@ import { isBefore, startOfDay, isAfter, isSameDay, format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { CalendarDays, Wallet } from "lucide-react";
 
-import { useCreateEvent } from "@/features/calendar/model/useCalendarEvents";
+import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { EventForm } from "@/widgets/calendar-view/ui/EventForm";

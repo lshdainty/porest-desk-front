@@ -35,12 +35,12 @@ import type { Expense } from "@/entities/expense";
 import type {
   IEvent,
   ICalendarCell,
-} from "@/features/calendar/model/interfaces";
+} from "@/widgets/calendar/model/interfaces";
 import type {
   TCalendarView,
   TVisibleHours,
   TWorkingHours,
-} from "@/features/calendar/model/types";
+} from "@/widgets/calendar/model/types";
 
 // ================ Header helper functions ================ //
 

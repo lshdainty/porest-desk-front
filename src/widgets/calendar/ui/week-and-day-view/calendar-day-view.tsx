@@ -12,7 +12,7 @@ import { enUS, ko } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useCalendar } from "@/features/calendar/model/calendar-context";
+import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   eventBadgeColor,
   getCurrentEvents,
@@ -20,10 +20,10 @@ import {
   getVisibleHours,
   groupEvents,
   isWorkingHour,
-} from "@/features/calendar/lib/helpers";
+} from "@/widgets/calendar/lib/helpers";
 import { cn } from "@/shared/lib";
 
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 interface IProps {
   singleDayEvents: IEvent[];

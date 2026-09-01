@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { formatMonthDayWeekday } from "@/shared/lib/date";
-import type { IEvent } from "@/features/calendar/model/interfaces";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 /**
  * 일별 이벤트 시트 — 앱 `_DayEventsSheetBody` + 가계부 `DayDetailDialog` 패턴 미러.

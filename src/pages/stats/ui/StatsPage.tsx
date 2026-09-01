@@ -30,10 +30,7 @@ import {
   formatYearQuarter,
 } from "@/shared/lib/date";
 import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
-import {
-  isRefundTx,
-  isScheduledTx,
-} from "@/entities/expense";
+import { isRefundTx, isScheduledTx } from "@/entities/expense";
 import {
   HideCard,
   MaskAmount,
