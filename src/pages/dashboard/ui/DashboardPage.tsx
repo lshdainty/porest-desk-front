@@ -32,12 +32,12 @@ import {
   MaskAmount,
   WonUnit,
 } from "@/shared/lib/porest/hide-amounts";
-import { expenseSum } from "@/shared/lib/porest/expense-aggregate";
+import { expenseSum } from "@/entities/expense";
 import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
 import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
 import { Donut } from "@/shared/ui/porest/charts";
-import { ExpenseRow } from "@/shared/ui/porest/expense-row";
+import { ExpenseRow } from "@/entities/expense";
 import {
   ChartContainer,
   ChartTooltip,

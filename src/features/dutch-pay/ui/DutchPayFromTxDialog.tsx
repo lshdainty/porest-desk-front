@@ -4,7 +4,7 @@ import { Check, Divide, ListOrdered, Percent, UserPlus, X } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { DetailSourceTx } from "@/shared/ui/porest/detail";
-import { CategoryChip } from "@/shared/ui/porest/expense-row";
+import { CategoryChip } from "@/shared/ui/porest/category-chip";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";

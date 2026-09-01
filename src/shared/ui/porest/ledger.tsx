@@ -800,3 +800,22 @@ export function LedgerPrevBtn({
     />
   );
 }
+
+/** "예정" 배지 — 아직 오지 않은 거래·이체 행에 붙는다. */
+export function ScheduledBadge({ label }: { label: string }) {
+  return (
+    <span
+      style={{
+        flexShrink: 0,
+        fontSize: "var(--text-badge)",
+        fontWeight: 700,
+        color: "var(--fg-tertiary)",
+        background: "var(--bg-sunken)",
+        borderRadius: "var(--radius-xs)",
+        padding: "1px 5px",
+      }}
+    >
+      {label}
+    </span>
+  );
+}

@@ -4,7 +4,7 @@ import { Bell, Zap, Calendar } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { DetailSection, DetailSourceTx } from "@/shared/ui/porest/detail";
-import { CategoryChip } from "@/shared/ui/porest/expense-row";
+import { CategoryChip } from "@/shared/ui/porest/category-chip";
 import { Input } from "@/shared/ui/input";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";

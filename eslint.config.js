@@ -4,6 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
+import { fsdConfig } from "./eslint.fsd.js";
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -33,4 +34,6 @@ export default defineConfig([
       ],
     },
   },
+  // 계층 규칙은 eslint.fsd.js 하나가 정의한다 (CI 게이트와 같은 정의).
+  ...fsdConfig,
 ]);

@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router-dom";
-import { CalendarContent } from "@/features/calendar/ui/CalendarContent";
-import { CalendarProvider } from "@/features/calendar/model/calendar-context";
+import { CalendarContent } from "@/widgets/calendar/ui/CalendarContent";
+import { CalendarProvider } from "@/widgets/calendar/model/calendar-context";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
