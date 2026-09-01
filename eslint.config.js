@@ -19,5 +19,18 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // `_` 로 시작하는 인자는 "안 쓰지만 자리는 필요하다" 는 뜻이다 —
+      // 콜백 시그니처를 맞추거나(handleDragEnd(_event)), 하위 호환으로 인자를
+      // 받아만 두는(setToken(_token)) 자리다. 지울 수 없는 인자라 규칙에 알려 준다.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
   },
 ]);
