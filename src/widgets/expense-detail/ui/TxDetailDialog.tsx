@@ -41,7 +41,7 @@ import { useDutchPays } from "@/features/dutch-pay";
 import { useAssets } from "@/features/asset";
 import type { Expense, ExpenseCategory } from "@/entities/expense";
 import type { Asset } from "@/entities/asset";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
 import { RecurringFromTxDialog } from "@/features/recurring-transaction/ui/RecurringFromTxDialog";
 import { DutchPayFromTxDialog } from "@/features/dutch-pay/ui/DutchPayFromTxDialog";

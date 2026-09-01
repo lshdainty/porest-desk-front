@@ -25,7 +25,8 @@ import type {
   ExpenseType,
 } from "@/entities/expense";
 
-// 호환 re-export — 호출처가 `@/features/porest/dialogs` 에서 import 한다.
+// 호환 re-export — 진짜 정의는 `@/shared/lib/porest/chart-palette` 다.
+// 새 코드는 거기서 직접 가져와라(이 경로는 옛 호출처용으로만 남는다).
 // eslint-disable-next-line react-refresh/only-export-components
 export { CAT_PALETTE, getPaletteByColor };
 

@@ -7,7 +7,7 @@ import { MobileHeader } from "./MobileHeader";
 import { AppTabBar } from "./AppTabBar";
 import { useDeviceSize } from "@/shared/lib/porest/responsive";
 import { SwipeActionsProvider } from "@/shared/ui/swipe-actions";
-import { AddTxSheet } from "@/features/porest/add-tx/AddTxSheet";
+import { AddTxSheet } from "@/widgets/add-tx";
 import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
 import { useCreateEvent } from "@/features/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";

@@ -10,7 +10,7 @@ import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { money, isEn } from "@/shared/lib/porest/format";
 import { tileRadius } from "@/shared/lib";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 
 export interface BudgetDraft {
   categoryRowId: number;

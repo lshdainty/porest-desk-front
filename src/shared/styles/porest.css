@@ -754,7 +754,7 @@
   background: transparent;
 }
 /* .notif-pop, .notif-pop__head/__title/__sub/__read-all/__body
- *   → NotificationsPopover (@/features/porest/dialogs/NotificationsPopover.tsx) inline 으로 이동.
+ *   → NotificationsPopover (@/widgets/notification-manage/ui/NotificationsPopover.tsx) inline 으로 이동.
  *     .notif-backdrop, .notif-row* 는 모바일/공용에서 계속 사용되어 보존. */
 
 .notif-row {

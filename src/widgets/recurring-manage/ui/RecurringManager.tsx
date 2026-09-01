@@ -27,7 +27,7 @@ import {
 } from "@/features/recurring-transaction";
 import { useExpenseCategories } from "@/features/expense";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import {
   displayTitle,
   recurringSummary,
