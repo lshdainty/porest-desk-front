@@ -47,17 +47,6 @@ export const useDeleteExpenseTemplate = () => {
   });
 };
 
-export const useUseExpenseTemplate = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, expenseDate }: { id: number; expenseDate: string }) =>
-      expenseTemplateApi.useTemplate(id, expenseDate),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: expenseKeys.all });
-    },
-  });
-};
-
 export const useTouchExpenseTemplate = () => {
   const qc = useQueryClient();
   return useMutation({
