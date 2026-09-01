@@ -33,13 +33,14 @@ import {
   useAssetBalanceTrend,
   useAssets,
   useCancelCardPayment,
+  useInstallmentPayoff,
   useCardBilling,
   usePayCard,
   useInvestValuation,
   holdingsOf,
   useAssetTransfers,
 } from "@/features/asset";
-import type { AssetTransfer } from "@/entities/asset";
+import type { AssetTransfer, InstallmentDue } from "@/entities/asset";
 import { useLivePrices } from "@/features/stock/model/useLivePrices";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
@@ -397,6 +398,12 @@ function CardDetailBody({
   const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null;
   const canPay = (billing?.upcomingAmount ?? 0) > 0 && !payCard.isPending;
   const cancelPayment = useCancelCardPayment(asset.rowId);
+  const installmentPayoff = useInstallmentPayoff(asset.rowId);
+  // 정리/되돌리기 확인 대상 — null 이면 닫힘. undo 는 이미 상환된 회차의 되돌리기.
+  const [payoffTarget, setPayoffTarget] = useState<{
+    due: InstallmentDue;
+    undo: boolean;
+  } | null>(null);
   /**
    * 되돌릴 수 있는 가장 최근 결제.
    *
@@ -737,6 +744,59 @@ function CardDetailBody({
                       amount: money(due.principalAmount),
                     })}
                   </MaskAmount>
+                </div>
+                {/* 정리/되돌리기 — 상환하면 남은 원금이 이 회차에 몰리므로 두 상태가 같은 자리를 쓴다. */}
+                <div style={{ marginTop: 4 }}>
+                  {due.paidOff ? (
+                    <span
+                      style={{
+                        fontSize: "var(--text-caption)",
+                        display: "inline-flex",
+                        gap: 8,
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "var(--fg-success)",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {t("assetDetail.installmentPaidOffBadge")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPayoffTarget({ due, undo: true })}
+                        style={{
+                          border: 0,
+                          background: "none",
+                          padding: 0,
+                          cursor: "pointer",
+                          color: "var(--fg-tertiary)",
+                          textDecoration: "underline",
+                          fontSize: "var(--text-caption)",
+                        }}
+                      >
+                        {t("assetDetail.installmentPayoffUndo")}
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPayoffTarget({ due, undo: false })}
+                      style={{
+                        border: 0,
+                        background: "none",
+                        padding: 0,
+                        cursor: "pointer",
+                        color: "var(--fg-brand)",
+                        fontWeight: "600",
+                        fontSize: "var(--text-caption)",
+                      }}
+                    >
+                      {t("assetDetail.installmentPayoff")}
+                    </button>
+                  )}
                 </div>
               </div>
               <span
@@ -1225,6 +1285,41 @@ function CardDetailBody({
             </div>
           ))}
         </ModalShell>
+      )}
+
+      {payoffTarget && (
+        <ConfirmDialog
+          title={
+            payoffTarget.undo
+              ? t("assetDetail.installmentPayoffUndo")
+              : t("assetDetail.installmentPayoff")
+          }
+          message={
+            payoffTarget.undo
+              ? t("assetDetail.installmentPayoffUndoConfirm")
+              : t("assetDetail.installmentPayoffConfirm", {
+                  amount: money(payoffTarget.due.amount),
+                })
+          }
+          confirmLabel={
+            payoffTarget.undo
+              ? t("assetDetail.installmentPayoffUndo")
+              : t("assetDetail.installmentPayoff")
+          }
+          loading={installmentPayoff.isPending}
+          onCancel={() => {
+            if (!installmentPayoff.isPending) setPayoffTarget(null);
+          }}
+          onConfirm={() => {
+            installmentPayoff.mutate(
+              {
+                expenseId: payoffTarget.due.expenseRowId,
+                undo: payoffTarget.undo,
+              },
+              { onSuccess: () => setPayoffTarget(null) },
+            );
+          }}
+        />
       )}
 
       {confirmPay && (

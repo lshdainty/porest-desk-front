@@ -7,6 +7,7 @@ export {
   useNetWorthTrend,
   useAssetBalanceTrend,
   useCardBilling,
+  useInstallmentPayoff,
   usePayCard,
   useCreateAsset,
   useUpdateAsset,

@@ -30,4 +30,5 @@ export type {
   BillingStatus,
   BillingItem,
   CardBilling,
+  InstallmentDue,
 } from "./model/types";
