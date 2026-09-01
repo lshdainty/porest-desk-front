@@ -30,15 +30,6 @@ import type {
   IEvent,
 } from "@/widgets/calendar/model/interfaces";
 
-/** expense 이벤트의 title에서 금액(숫자)을 추출 */
-/** 제목의 금액을 부호까지 읽는다 — 붉은색(지출 계열)에 `+` 면 환불이라 지출에서 빠진다. */
-function parseExpenseAmount(title: string): number {
-  const match = title.match(/([+-])?([\d,]+)/);
-  if (!match?.[2]) return 0;
-  const value = Number(match[2].replace(/,/g, ""));
-  return match[1] === "-" ? -value : value;
-}
-
 /** 날짜별 수입/지출 합계 */
 interface IDayExpenseSummary {
   income: number;
@@ -54,14 +45,18 @@ function buildExpenseSummaryMap(
   for (const event of expenseEvents) {
     const dayKey = startOfDay(parseISO(event.startDate)).toISOString();
     const summary = map.get(dayKey) ?? { income: 0, expense: 0 };
-    const amount = parseExpenseAmount(event.title);
+    // 금액은 converter 가 실어 준 부호 값(expenseAmount)을 그대로 쓴다.
+    // 예전엔 title 을 되파싱했는데, en 로케일 `-₩50,000` 은 부호와 숫자 사이
+    // ₩ 때문에 부호를 놓쳐 지출이 전부 환불로 뒤집혔고(빨간 +1,250,000),
+    // `2차회식` 처럼 숫자로 시작하는 카테고리명도 그 숫자를 금액으로 읽었다.
+    const amount = event.expenseAmount ?? 0;
 
     if (event.color === "#0147ad") {
       summary.income += Math.abs(amount);
     } else {
-      // 지출 계열 — 제목의 부호를 뒤집어 더한다.
-      //   지출 `-52,400` → +52,400 (쓴 돈)
-      //   환불 `+3,000`  → −3,000  (되돌려받아 지출이 준다, 서버 집계와 같은 규칙)
+      // 지출 계열 — 부호를 뒤집어 더한다.
+      //   지출 −52,400 → +52,400 (쓴 돈)
+      //   환불 +3,000  → −3,000  (되돌려받아 지출이 준다, 서버 집계와 같은 규칙)
       // abs() 로 묶으면 환불이 지출로 더해져 월 헤더와 두 배로 어긋난다.
       summary.expense += -amount;
     }

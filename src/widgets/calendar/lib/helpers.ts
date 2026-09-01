@@ -384,9 +384,13 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
   const title = categoryName
     ? `${categoryName} ${sign}${amount}`
     : `${sign}${amount}`;
+  // 지출 음수 / 수입·환불 양수 — title 의 sign·color 와 같은 규칙.
+  const expenseAmount =
+    sign === "-" ? -Math.abs(expense.amount) : Math.abs(expense.amount);
 
   return {
     id: expense.rowId,
+    expenseAmount,
     startDate: expense.expenseDate,
     endDate: expense.expenseDate,
     title,
