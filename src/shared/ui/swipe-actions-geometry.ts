@@ -4,8 +4,9 @@
  * 컴포넌트 파일에서 분리한 이유 둘.
  * 1. `react-refresh/only-export-components` — 컴포넌트 .tsx 에서 상수·함수를 export 하면
  *    lint 에러가 는다(button-variants.ts 가 같은 이유로 분리돼 있다).
- * 2. 이 레포에는 테스트 러너가 없다. 순수 함수로 빼 두면 `node --experimental-strip-types`
- *    로 수치를 직접 확인할 수 있다 — 제스처는 못 돌려 봐도 기하는 돌려 볼 수 있다.
+ * 2. 순수 함수라 값 검증이 쉽다 — 제스처는 못 돌려 봐도 기하는 돌려 볼 수 있다.
+ *    (예전 주석은 "이 레포에 테스트 러너가 없다" 였는데 사실이 아니다 — vitest 가 있다.
+ *     `*.test.ts` 로 두면 `npm test` 가 잡는다)
  */
 
 /** 원형 배지 지름. 행 높이 안에 배지 + 라벨이 함께 들어가는 최대치(spec Sizes). */

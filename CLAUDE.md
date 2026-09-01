@@ -102,9 +102,36 @@ python3 -c "import json,io;d=json.load(io.open('src/locales/ko/<ns>.json'));prin
 3. spec과 현재 코드 diff
 4. spec 부재 / 모호 → 사용자에게 결정 요구 (현재 + spec 인용 + 선택지)
 5. 결정 → spec 업데이트 (필요 시) → 코드 동기
-6. lint + 시각 검증 (storybook / 화면)
+6. `npm run format` → `npx tsc --noEmit -p tsconfig.app.json` → `npm test` + 시각 검증
 7. 반복
 ```
+
+## 서식은 prettier 가 정한다
+
+**설정은 기본값이다.** `prettier.config.js` 가 비어 있는 건 빠뜨린 게 아니라 결정이다 —
+서식은 논쟁거리가 아니라 정해 두고 잊는 것이라, gofmt·`dart format` 처럼 도구 의견을
+그대로 받는다. 기본값이면 "왜 이 값인가" 를 설명할 일이 없다.
+
+기본값이 정하는 것 중 눈에 띄는 셋: 세미콜론을 **붙이고**(`semi`), **큰따옴표**를 쓰고
+(`singleQuote: false`), 폭은 **80** 이다.
+
+**커밋 전에 `npm run format` 을 돌려라.** CI(`ci-main`)가 `npm run format:check` 로 막는다.
+
+- 제외 대상은 `.prettierignore` — i18n 생성물(`src/locales`)과 **마크다운**.
+  `CLAUDE.md`·`README` 는 손으로 줄을 맞춘 한국어 산문이라 prettier 가 문단을 다시
+  흘리면 의도한 줄바꿈이 깨진다. 코드 서식을 통일하려는 것이지 문서를 다시 쓰려는 게 아니다.
+- 서식만 바꾼 대규모 커밋은 `.git-blame-ignore-revs` 에 적는다.
+  로컬 blame 에도 먹이려면 한 번만: `git config blame.ignoreRevsFile .git-blame-ignore-revs`
+- **레포 전체를 건드리는 서식 커밋은 최신 main 에서 파고 바로 머지한다.** 오래 들고
+  있으면 그 사이 머지된 PR 과 통째로 충돌한다(앱에서 실제로 겪었다).
+
+eslint 는 서식이 아니라 **의미**를 본다(`exhaustive-deps` 등). prettier 와 역할이 겹치지
+않아 `eslint-config-prettier` 는 필요 없다 — 실제로 전면 적용 전후 eslint 지적 수가
+44/28 로 동일했다. 다만 `npm run lint` 는 아직 CI 에 없고 현재 실패한다(별건).
+
+## 테스트는 vitest 로 돌린다
+
+`npm test` (= `vitest run`). CI 가 빌드보다 먼저 돌린다. 테스트 파일은 `*.test.ts(x)`.
 
 ## 참고
 
