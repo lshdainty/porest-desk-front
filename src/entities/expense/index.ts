@@ -8,7 +8,6 @@ export type {
   ExpenseCategoryFormValues,
   ExpenseBudget,
   ExpenseBudgetFormValues,
-  YNType,
   DailySummary,
   RangeSummary,
   RangeMonthlyBucket,

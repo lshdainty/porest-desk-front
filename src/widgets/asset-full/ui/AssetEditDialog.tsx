@@ -64,8 +64,8 @@ import {
   normalizeQty,
   type AssetType,
   type AssetUpdateFormValues,
-  type YNType,
 } from "@/entities/asset";
+import type { YNType } from "@/shared/types";
 import {
   useStockSearch,
   useStockSymbolName,

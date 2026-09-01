@@ -1,3 +1,4 @@
+import type { YNType } from "@/shared/types";
 export type AssetType =
   | "BANK_ACCOUNT"
   | "CREDIT_CARD"
@@ -6,7 +7,6 @@ export type AssetType =
   | "SAVINGS"
   | "LOAN"
   | "INVESTMENT";
-export type YNType = "Y" | "N";
 
 export interface AssetCardCatalogBrief {
   rowId: number;

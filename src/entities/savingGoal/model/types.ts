@@ -1,4 +1,4 @@
-export type YNType = "Y" | "N";
+import type { YNType } from "@/shared/types";
 
 export interface SavingGoal {
   rowId: number;
