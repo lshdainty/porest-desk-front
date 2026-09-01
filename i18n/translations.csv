@@ -1830,7 +1830,7 @@ settings,account.group.security,보안,Security
 settings,account.group.connected,연결된 계정,Linked Accounts
 settings,account.group.subscription,구독·결제,Subscription & Billing
 settings,account.group.manage,계정 관리,Account Management
-settings,account.password.desc,최근 변경 없음,No recent changes
+settings,account.password.desc,주기적으로 바꾸면 안전해요,Change it regularly to stay secure
 settings,account.twoFactor.label,2단계 인증,Two-Factor Authentication
 settings,account.twoFactor.desc,사용 안 함,Off
 settings,account.biometric.label,생체 인증,Biometric Authentication

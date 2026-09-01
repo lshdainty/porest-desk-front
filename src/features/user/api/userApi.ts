@@ -57,9 +57,13 @@ export const userApi = {
   },
 
   verifyPassword: async (password: string): Promise<void> => {
+    // 실패(400)는 다이얼로그가 인라인으로 보여준다 — 전역 토스트까지 겹치지 않게 silent.
     const resp: ApiResponse = await apiClient.post(
       "/v1/users/me/verify-password",
       { password },
+      { silent: true } as import("axios").AxiosRequestConfig & {
+        silent?: boolean;
+      },
     );
     if (!resp.success) throw new Error(resp.message);
   },
