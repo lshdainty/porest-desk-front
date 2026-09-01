@@ -11,6 +11,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{ts,tsx}"],
+    // 레포 설정을 검사하는 테스트는 src 밖에 둔다 — 안에 두면 FSD 게이트가
+    // 그 파일까지 어느 계층으로 분류하려 든다.
+    include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.ts"],
   },
 });

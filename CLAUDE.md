@@ -127,7 +127,23 @@ python3 -c "import json,io;d=json.load(io.open('src/locales/ko/<ns>.json'));prin
 
 eslint 는 서식이 아니라 **의미**를 본다(`exhaustive-deps` 등). prettier 와 역할이 겹치지
 않아 `eslint-config-prettier` 는 필요 없다 — 실제로 전면 적용 전후 eslint 지적 수가
-44/28 로 동일했다. 다만 `npm run lint` 는 아직 CI 에 없고 현재 실패한다(별건).
+44/28 로 동일했다. `npm run lint` 전체는 아직 CI 에 없고 현재 실패한다(정리 중).
+
+## FSD 계층은 CI 가 막는다
+
+임포트는 **아래로만** 간다.
+
+    app → pages → widgets → features → entities → shared
+
+`npm run lint:fsd` 가 이것만 검사하고 CI(`ci-main`)가 막는다. 전체 lint 를 못 거는
+동안에도 계층은 잠가 둔다 — 규칙이 없으면 조용히 다시 쌓인다(실제로 11 건까지 갔다).
+
+- 정의는 **`eslint.fsd.js` 한 곳**이다. `eslint.config.js`(에디터)와
+  `eslint.fsd.config.js`(CI)가 둘 다 여기서 가져간다.
+- 같은 계층끼리(features → 다른 features)는 아직 막지 않는다. 30 건이 남아 있다.
+- **`import/resolver` 를 지우지 마라.** 이게 없으면 `@/` 별칭과 `.ts` 확장자를 못 풀어
+  모든 임포트가 외부 패키지로 분류되고, 위반을 심어 놔도 **초록불이 난다.**
+  `tests/fsd-boundaries.test.ts` 가 그 상태를 잡으려고 있는 테스트다.
 
 ## 테스트는 vitest 로 돌린다
 
