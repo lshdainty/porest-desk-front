@@ -212,10 +212,14 @@ export function getVisibleHours(
 // ================ Month view helper functions ================ //
 
 /**
- * 이벤트의 고유 키 생성
+ * 이벤트의 고유 키 생성.
+ *
+ * <p>반복 일정은 서버가 발생(occurrence)마다 같은 rowId 로 전개해 내려온다
+ * (수정·삭제가 시리즈에 걸리도록). id 만으로는 발생들끼리 키가 겹쳐 월뷰
+ * 포지션 맵이 서로를 덮어쓴다 — 발생마다 다른 startDate 를 합성한다.
  */
 export function getEventUniqueKey(event: IEvent): string {
-  return `${event.id}`;
+  return `${event.id}-${event.startDate}`;
 }
 
 export function getCalendarCells(selectedDate: Date): ICalendarCell[] {

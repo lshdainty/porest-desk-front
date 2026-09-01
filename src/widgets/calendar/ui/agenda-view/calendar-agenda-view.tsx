@@ -145,7 +145,7 @@ const AgendaDayGroup = ({
               differenceInDays(currentDate, eventStart) + 1;
             return (
               <AgendaEventCard
-                key={event.id}
+                key={`${event.id}-${event.startDate}`}
                 event={event}
                 eventCurrentDay={
                   eventTotalDays > 1 ? eventCurrentDay : undefined
@@ -159,7 +159,7 @@ const AgendaDayGroup = ({
         {sortedEvents.length > 0 &&
           sortedEvents.map((event) => (
             <AgendaEventCard
-              key={event.id}
+              key={`${event.id}-${event.startDate}`}
               event={event}
               onEventClick={onEventClick}
             />
