@@ -9,7 +9,6 @@ export {
 } from "./model/holding-format";
 export type {
   AssetType,
-  YNType,
   Asset,
   AssetHolding,
   HoldingType,

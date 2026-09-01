@@ -1,4 +1,4 @@
-import type { YNType } from "@/entities/asset";
+import type { YNType } from "@/shared/types";
 
 export type CardType = "CREDIT" | "CHECK";
 export type CardBenefitType = "DISCOUNT" | "MILEAGE" | "POINT";

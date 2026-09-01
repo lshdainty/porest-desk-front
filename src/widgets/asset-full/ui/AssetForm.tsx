@@ -6,8 +6,8 @@ import type {
   AssetType,
   AssetFormValues,
   AssetUpdateFormValues,
-  YNType,
 } from "@/entities/asset";
+import type { YNType } from "@/shared/types";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";

@@ -1,4 +1,5 @@
-import type { ExpenseType, YNType } from "@/entities/expense";
+import type { ExpenseType } from "@/entities/expense";
+import type { YNType } from "@/shared/types";
 
 export interface ExpenseTemplate {
   rowId: number;

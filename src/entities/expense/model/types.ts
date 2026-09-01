@@ -116,8 +116,6 @@ export interface ExpenseBudget {
   createAt: string;
 }
 
-export type YNType = "Y" | "N";
-
 export interface ExpenseBudgetFormValues {
   categoryRowId?: number | null;
   budgetAmount: number;

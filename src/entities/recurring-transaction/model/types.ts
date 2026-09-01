@@ -1,7 +1,7 @@
+import type { YNType } from "@/shared/types";
 import type { ExpenseType } from "@/entities/expense";
 
 export type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
-export type YNType = "Y" | "N";
 
 export interface RecurringTransaction {
   rowId: number;
