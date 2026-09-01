@@ -175,7 +175,9 @@ export const AssetForm = ({
       onSave={handleSubmit}
       saveLabel={tc("save")}
       saving={isLoading}
-      saveDisabled={!assetName.trim()}
+      // 신용카드는 결제일 필수 — 없으면 명세서(예정 회차)가 성립하지 않는다.
+      // 기존 결제일 없는 카드도 수정하러 들어오면 여기 걸려 자연스럽게 채운다.
+      saveDisabled={!assetName.trim() || (isCreditCard && !paymentDay.trim())}
     />
   );
 
