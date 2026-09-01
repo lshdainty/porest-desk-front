@@ -51,6 +51,15 @@ export const ListSkeleton = ({
   );
 };
 
+/**
+ * 차트 스켈레톤 막대 높이(%) — 결정적 시퀀스.
+ *
+ * 예전엔 `Math.random()` 으로 뽑았는데 렌더마다 막대가 튀었다(그리고 렌더 중
+ * 순수하지 않은 호출이라 React Compiler 가 이 컴포넌트 최적화를 포기한다).
+ * 앱 `PChartSkeleton.barHeights` 와 같은 값이다 — 웹·앱이 같은 모양으로 뜬다.
+ */
+const BAR_HEIGHTS = [50, 80, 65, 95, 45, 75, 60];
+
 interface ChartSkeletonProps {
   className?: string;
   bars?: number;
@@ -73,7 +82,7 @@ export const ChartSkeleton = ({ className, bars = 7 }: ChartSkeletonProps) => {
           <Skeleton
             key={i}
             className="flex-1 rounded-t"
-            style={{ height: `${30 + Math.random() * 70}%` }}
+            style={{ height: `${BAR_HEIGHTS[i % BAR_HEIGHTS.length]}%` }}
           />
         ))}
       </div>

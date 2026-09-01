@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Cell, Pie, PieChart } from "recharts";
 import { ChartContainer, type ChartConfig } from "@/shared/ui/chart";
@@ -15,6 +15,12 @@ export function Sparkline({
   color?: string;
   fill?: boolean;
 }) {
+  // 훅은 early return 위에서 부른다 — 아래 `values` 가 비면 곧장 반환하므로
+  // 여기 두지 않으면 렌더마다 훅 호출 수가 달라진다.
+  //
+  // 렌더마다 새 id 를 뽑으면 <defs> 의 gradient 와 fill 참조가 매 렌더 갈린다.
+  // useId 는 인스턴스마다 다르고 렌더 사이에는 그대로다.
+  const gradId = `sparkfill-${useId().replace(/:/g, "")}`;
   if (!values || values.length === 0) return null;
   const max = Math.max(...values);
   const min = Math.min(...values);
@@ -33,7 +39,6 @@ export function Sparkline({
     )
     .join(" ");
   const fillD = fill ? `${d} L${w},${h} L0,${h} Z` : "";
-  const gradId = `sparkfill-${Math.random().toString(36).slice(2, 8)}`;
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
