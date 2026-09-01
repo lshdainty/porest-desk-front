@@ -946,22 +946,14 @@ function ExpenseList({
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d);
         // 날짜 헤더의 지출/수입 합계 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
-        const out = items
-          .filter(
-            (i) => i.kind === "expense" && i.expense.expenseType === "EXPENSE",
-          )
-          .reduce(
-            (s, i) => s + Math.abs((i as { expense: Expense }).expense.amount),
-            0,
-          );
-        const inn = items
-          .filter(
-            (i) => i.kind === "expense" && i.expense.expenseType === "INCOME",
-          )
-          .reduce(
-            (s, i) => s + Math.abs((i as { expense: Expense }).expense.amount),
-            0,
-          );
+        // 합계 규칙은 expenseSum/incomeSum 한곳이다(환불: 수입 제외 + 지출 상계).
+        // 즉석 reduce 는 2755886 이 걷어낸 옛 규칙의 잔재였다 — 환불이 있는 날
+        // 이 헤더만 월 요약과 다른 숫자를 냈다(수입 +2,005,000 / 지출 −45,000).
+        const dayTxs = items.flatMap((i) =>
+          i.kind === "expense" ? [i.expense] : [],
+        );
+        const out = expenseSum(dayTxs);
+        const inn = incomeSum(dayTxs);
         return (
           <div key={d}>
             {/* 날짜 헤더 — 평문 */}
