@@ -1,7 +1,7 @@
 // 관심목록 그룹 상태는 토스 페이지 안에 있던 것을 나무와 공용으로 끌어냈고,
 // 그러면서 "이펙트로 되돌려 맞추기" 를 "유도하기" 로 바꿨다.
 // 겉보기 동작이 그대로인지 — 특히 **그룹이 지워졌을 때** 되돌아가는지 — 를 고정한다.
-import { act, type ReactNode } from "react";
+import { act, useEffect, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WatchGroup } from "../api/stockApi";
@@ -48,7 +48,12 @@ let root: Root;
 let seen: ReturnType<typeof useWatchlist>;
 
 function Probe() {
-  seen = useWatchlist();
+  // 렌더 중에 바깥 변수를 쓰면 부수효과다 — `act` 가 effect 까지 흘려 주므로
+  // 커밋 뒤에 담아도 테스트가 읽는 시점엔 이미 채워져 있다.
+  const value = useWatchlist();
+  useEffect(() => {
+    seen = value;
+  });
   return null;
 }
 
