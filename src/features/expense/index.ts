@@ -40,6 +40,5 @@ export {
   useCreateExpenseTemplate,
   useUpdateExpenseTemplate,
   useDeleteExpenseTemplate,
-  useUseExpenseTemplate,
   useTouchExpenseTemplate,
 } from "./model/useExpenseTemplates";

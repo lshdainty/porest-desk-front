@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/porest/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
@@ -82,7 +82,21 @@ import {
 import { ALL_HIDE_CARDS } from "@/shared/lib/porest/hide-amounts-cards";
 import { useHiddenCards } from "@/shared/lib/porest/hide-amounts-core";
 import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
-import { PasswordChangeDialog } from "@/widgets/sidebar/ui/PasswordChangeDialog";
+/*
+ * 비밀번호 변경 다이얼로그만 지연 로딩한다.
+ *
+ * 이 다이얼로그가 레포에서 **유일하게 zod 를 쓰는 곳**이라, 같이 묶이면 설정 화면에
+ * 들어오기만 해도 검증 라이브러리를 통째로 받는다(gzip 19 KB). 실제로 여는 사람은
+ * 비밀번호를 바꿀 때뿐이라 그때 받는다.
+ *
+ * 컴포넌트가 이미 `if (!open) return null` 이라 닫힘 애니메이션이 없다 — 열릴 때만
+ * 렌더해도 보이는 동작은 같다.
+ */
+const PasswordChangeDialog = lazy(() =>
+  import("@/widgets/sidebar/ui/PasswordChangeDialog").then((m) => ({
+    default: m.PasswordChangeDialog,
+  })),
+);
 import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 
@@ -1245,11 +1259,12 @@ function AccountSection({
         />
       )}
 
-      {/* 비밀번호 변경 다이얼로그 */}
-      <PasswordChangeDialog
-        open={pwDialogOpen}
-        onOpenChange={setPwDialogOpen}
-      />
+      {/* 비밀번호 변경 다이얼로그 — 열 때 받는다(위 lazy 주석 참고) */}
+      {pwDialogOpen && (
+        <Suspense fallback={null}>
+          <PasswordChangeDialog open onOpenChange={setPwDialogOpen} />
+        </Suspense>
+      )}
 
       {/* 구독 관리 다이얼로그 */}
       {subOpen && (
