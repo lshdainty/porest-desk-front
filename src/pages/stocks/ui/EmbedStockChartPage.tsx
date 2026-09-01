@@ -15,7 +15,7 @@
  * [symbol, interval] 이라 fetcher 가 나중에 바뀌어도 재조회가 안 걸리고, fetcher 없이 마운트하면
  * 기본값인 쿠키 클라이언트로 조회해 버린다(임베드엔 쿠키가 없다).
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
@@ -93,6 +93,18 @@ function createEmbedClient(getToken: () => string) {
   return client;
 }
 
+/**
+ * 현재 유효 토큰 — 호스트가 `__tokenBridge` 로 갱신한다.
+ *
+ * ref 가 아니라 모듈 변수다. embed 페이지는 WebView 하나에 하나뿐이라 인스턴스별로
+ * 나눌 이유가 없고, ref 를 쓰면 그걸 읽는 클로저를 렌더 중에 만들게 되어
+ * "렌더 중 ref 접근"이 된다(`react-hooks/refs`). 클라이언트는 한 번만 만들고
+ * 인터셉터가 매 요청마다 이 값을 읽는다 — 토큰이 돌아도 리로드가 없다.
+ */
+let embedToken = "";
+
+const embedClient = createEmbedClient(() => embedToken);
+
 function isRange(v: string | null): v is Range {
   return v !== null && (RANGES as ReadonlyArray<string>).includes(v);
 }
@@ -118,8 +130,6 @@ export function EmbedStockChartPage() {
 
   const [range, setRange] = useState<Range>(initRange);
   const [theme, setTheme] = useState<Theme>(initTheme);
-  // 현재 유효 토큰 — __tokenBridge 가 갱신, embedClient 가 매 요청마다 읽음(리로드 없는 토큰 회전).
-  const tokenRef = useRef(urlToken);
   // 토큰이 "있다" 만 state 로 둔다. 45초 회전마다 값을 state 에 넣으면 리렌더가 도는데,
   // setState 는 같은 값이면 리렌더를 건너뛰므로 첫 토큰에서 한 번만 gate 가 열린다.
   const [hasToken, setHasToken] = useState(urlToken !== "");
@@ -143,12 +153,13 @@ export function EmbedStockChartPage() {
   // 브릿지를 **먼저** 붙이고 그 다음 ready 를 알린다. 순서가 뒤집히면 호스트가 ready 를 받고
   // 곧바로 부른 __tokenBridge 가 undefined 라 첫 토큰이 통째로 유실된다.
   useEffect(() => {
+    embedToken = urlToken; // 레거시 쿼리 토큰 — 브릿지가 오기 전까지 이걸로 부른다
     window.__themeBridge = (mode: Theme) =>
       setTheme(mode === "dark" ? "dark" : "light");
     window.__rangeBridge = (r: Range) => setRange(isRange(r) ? r : "1D");
     window.__tokenBridge = (tok: string) => {
       if (!tok) return;
-      tokenRef.current = tok; // 다음 요청부터 새 토큰 — 차트 리로드 없음
+      embedToken = tok; // 다음 요청부터 새 토큰 — 차트 리로드 없음
       setHasToken(true); // 첫 토큰이면 gate 를 연다. 이후 회전은 같은 값이라 리렌더 없음
     };
     postBridge({ type: "ready", v: "1.0" });
@@ -157,7 +168,7 @@ export function EmbedStockChartPage() {
       window.__rangeBridge = undefined;
       window.__tokenBridge = undefined;
     };
-  }, []);
+  }, [urlToken]);
 
   // 토큰 대기 타임아웃 — 안 오면 안내를 띄운다(빈 화면으로 매달리지 않게).
   useEffect(() => {
@@ -168,10 +179,9 @@ export function EmbedStockChartPage() {
 
   const fetcher: CandleFetcher | undefined = useMemo(() => {
     if (!hasToken) return undefined;
-    const client = createEmbedClient(() => tokenRef.current);
     return async (sym, interval, opts) => {
       // 증권사 무관 경로 — 토스 키가 없는 사용자도 차트가 뜬다.
-      const resp: ApiResponse<BrokerCandleCursorPage> = await client.get(
+      const resp: ApiResponse<BrokerCandleCursorPage> = await embedClient.get(
         "/v1/securities/candles",
         {
           params: {

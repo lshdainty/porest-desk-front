@@ -43,8 +43,13 @@ export function useLedgerScroll({
     }, ms);
   };
 
+  // 스크롤 핸들러가 항상 최신 콜백을 부르게 담아 둔다. 쓰기는 커밋 뒤에 한다 —
+  // 렌더 중에 ref 를 쓰면 화면과 어긋난 값을 남길 수 있다(`react-hooks/refs`).
+  // 핸들러는 커밋 이후에만 도므로 한 렌더 늦을 일이 없다.
   const onCompactEnterRef = useRef(onCompactEnter);
-  onCompactEnterRef.current = onCompactEnter;
+  useEffect(() => {
+    onCompactEnterRef.current = onCompactEnter;
+  });
 
   const scroller = () =>
     rootRef.current?.closest(
