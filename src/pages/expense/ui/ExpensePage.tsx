@@ -59,7 +59,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
 import { ExpenseRow, TransferRow } from "@/shared/ui/porest/expense-row";
-import { TransferDetailDialog } from "@/features/porest/dialogs/TransferDetailDialog";
+import { TransferDetailDialog } from "@/widgets/expense-detail/ui/TransferDetailDialog";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
@@ -95,16 +95,16 @@ import {
   FilterDialog,
   type FilterValue,
   DEFAULT_FILTER,
-} from "@/features/porest/dialogs";
+} from "@/features/expense/ui/FilterDialog";
 import {
   countableTx,
   expenseSum,
   incomeSum,
   isRefundTx,
 } from "@/shared/lib/porest/expense-aggregate";
-import { AddTxSheet } from "@/features/porest/add-tx/AddTxSheet";
+import { AddTxSheet } from "@/widgets/add-tx";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { TxDetailDialog } from "@/features/porest/dialogs/TxDetailDialog";
+import { TxDetailDialog } from "@/widgets/expense-detail/ui/TxDetailDialog";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 type Filter = "all" | "income" | "expense";

@@ -23,7 +23,7 @@ import {
   previewNextDates,
   addYears,
   formatKoreanMonthDay,
-} from "./recurring-date";
+} from "@/features/recurring-transaction/lib/recurring-date";
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
   { v: "DAILY", lKey: "freq.DAILY" },

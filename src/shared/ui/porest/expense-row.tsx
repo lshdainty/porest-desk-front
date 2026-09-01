@@ -6,7 +6,7 @@ import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
 import { kindOfExpense } from "@/shared/lib/porest/hide-amounts-cards";
 import type { Expense } from "@/entities/expense/model/types";
 import type { AssetTransfer } from "@/entities/asset/model/types";
-import { getPaletteByColor } from "@/features/porest/dialogs";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { tileRadius } from "@/shared/lib";
 import { Icon } from "./primitives";
 import {

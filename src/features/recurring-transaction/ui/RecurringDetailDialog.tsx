@@ -15,8 +15,11 @@ import { renderIcon, tileRadius } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import type { ExpenseCategory } from "@/entities/expense";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
-import { previewNextDates, formatKoreanMonthDay } from "./recurring-date";
-import { displayTitle, recurringSummary } from "./RecurringManager";
+import {
+  previewNextDates,
+  formatKoreanMonthDay,
+} from "@/features/recurring-transaction/lib/recurring-date";
+import { displayTitle, recurringSummary } from "../lib/recurring-format";
 
 /**
  * 반복 거래 상세 — 행 탭 → 읽기 전용 상세 → footer 에서 삭제·수정·일시정지.

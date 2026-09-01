@@ -57,8 +57,9 @@ import type {
   ExpenseCategoryFormValues,
   ExpenseType,
 } from "@/entities/expense";
-import { CategoryEditDialog, getPaletteByColor } from "./CategoryEditDialog";
-import { CategoryMoveTxDialog } from "./CategoryMoveTxDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { CategoryEditDialog } from "./CategoryEditDialog";
+import { CategoryMoveTxDialog } from "@/features/expense/ui/CategoryMoveTxDialog";
 
 type EditingState =
   ExpenseCategory | { kind: "new"; parentRowId?: number | null } | null;

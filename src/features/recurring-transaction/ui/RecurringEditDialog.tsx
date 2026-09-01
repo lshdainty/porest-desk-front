@@ -15,7 +15,7 @@ import {
   addYears,
   formatKoreanMonthDay,
   previewNextDates,
-} from "./recurring-date";
+} from "@/features/recurring-transaction/lib/recurring-date";
 import { renderIcon, tileRadius } from "@/shared/lib";
 import { useUpdateRecurringTransaction } from "@/features/recurring-transaction";
 import { useExpenseCategories } from "@/features/expense";
@@ -24,7 +24,7 @@ import type {
   RecurringTransaction,
   RecurringTransactionFormValues,
 } from "@/entities/recurring-transaction";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
   { v: "DAILY", lKey: "freq.DAILY" },

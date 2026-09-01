@@ -30,22 +30,23 @@ import {
   FilePen,
   Sparkles,
 } from "lucide-react";
+import { BudgetManager } from "@/widgets/budget-manage";
+import { CategoryManager } from "@/widgets/category-manage";
+import { PresetManager } from "@/widgets/preset-manage";
+import { RecurringManager } from "@/widgets/recurring-manage";
 import {
-  AccountManager,
-  AppearanceSection,
-  BudgetManager,
   CalendarLabelsSection,
   CalendarShareSection,
-  CategoryManager,
-  DataExportSection,
+  TodoTagManager,
+} from "@/widgets/calendar-manage";
+import { NotificationsManager } from "@/widgets/notification-manage";
+import { DataExportSection } from "@/widgets/data-transfer";
+import {
+  AppearanceSection,
   DevicesSection,
   HideAmountsSection,
-  NotificationsManager,
-  PresetManager,
-  RecurringManager,
-  SavingGoalManager,
-  TodoTagManager,
-} from "@/features/porest/dialogs";
+} from "@/widgets/account-settings";
+import { AccountManager, SavingGoalManager } from "@/widgets/asset-full";
 import { Card, CardContent } from "@/shared/ui/card";
 import { useTheme } from "@/shared/ui/theme-provider";
 import { useCurrentUser } from "@/features/user";

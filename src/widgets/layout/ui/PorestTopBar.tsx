@@ -5,7 +5,7 @@ import { Bell, Eye, EyeOff, Plus, Search, Settings } from "lucide-react";
 import { useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
 import { useUnreadCount } from "@/features/notification";
-import { NotificationsPopover } from "@/features/porest/dialogs";
+import { NotificationsPopover } from "@/widgets/notification-manage";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
 import { ModeToggle } from "@/shared/ui/mode-toggle";

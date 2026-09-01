@@ -39,7 +39,7 @@ import {
   MonthlyBudgetDialog,
   type BudgetDraft,
 } from "./BudgetEditDialog";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
