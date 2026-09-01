@@ -670,11 +670,11 @@ asset,assetDetail.paidDone,결제 완료,Paid
 asset,assetDetail.usagePeriod,카드 이용 기간 {{period}},Card usage period {{period}}
 asset,assetDetail.installmentFallback,할부,Installment
 asset,assetDetail.installmentSeq,{{seq}}/{{total}}회차,Payment {{seq}} of {{total}}
-asset,assetDetail.installmentPrincipal,원금 {{amount}}원,Principal ₩{{amount}}
+asset,assetDetail.installmentPrincipal,원금 {{amount}},Principal {{amount}}
 asset,assetDetail.lumpSumLabel,일시불,One-time
 asset,assetDetail.alreadyPaidLabel,선결제 차감,Prepaid
 asset,assetDetail.installmentPayoff,남은 할부 한 번에 정리,Pay off remaining
-asset,assetDetail.installmentPayoffConfirm,남은 할부 {{amount}}원을 이번 결제 예정액에 한 번에 넣을까요? 다음 회차부터는 청구되지 않아요.,Add the remaining ₩{{amount}} to this billing cycle? No further installments will be charged.
+asset,assetDetail.installmentPayoffConfirm,남은 할부 {{amount}}을 이번 결제 예정액에 한 번에 넣을까요? 다음 회차부터는 청구되지 않아요.,Add the remaining {{amount}} to this billing cycle? No further installments will be charged.
 asset,assetDetail.installmentPayoffUndo,되돌리기,Undo
 asset,assetDetail.installmentPayoffUndoConfirm,남은 원금 정리를 취소하고 원래 회차대로 나눠 낼까요?,Cancel the payoff and return to the original installment schedule?
 asset,assetDetail.installmentPaidOffBadge,남은 원금 정리됨,Paid off
