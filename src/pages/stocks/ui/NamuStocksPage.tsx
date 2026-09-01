@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
 import { Info, Unplug } from "lucide-react";
@@ -130,11 +130,10 @@ export function NamuStocksPage({ header }: { header?: React.ReactNode }) {
   );
 
   // 데스크톱: 기본 선택 = 첫 보유 종목. 보유가 없으면 개요를 띄운다(빈 안내문 대신).
-  useEffect(() => {
-    if (mobile || selected) return;
+  // 한 번 고르면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다.
+  if (!mobile && !selected) {
     setSelected(view.rows.length > 0 ? view.rows[0]!.symbol : OVERVIEW);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobile, view.rows.length]);
+  }
 
   // ---- 시세: 나무 유량 제한을 여기서 다룬다 --------------------------------
   //

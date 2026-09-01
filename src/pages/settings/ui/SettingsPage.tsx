@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/porest/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
@@ -323,17 +323,27 @@ export const SettingsPage = () => {
   );
 
   // URL 쿼리 변화를 섹션 상태에 반영 (외부에서 딥링크 들어오면 스위치).
-  useEffect(() => {
+  //
+  // **쿼리가 바뀐 순간에만** 본다. 매 렌더 대조하면 화면에서 섹션을 바꾼 직후
+  // (아직 URL 이 안 따라온 찰나) 곧바로 되돌릴 수 있다.
+  const [prevQuerySection, setPrevQuerySection] = useState(querySection);
+  if (prevQuerySection !== querySection) {
+    setPrevQuerySection(querySection);
     if (querySection && querySection !== section) setSection(querySection);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }
 
   // 소셜 연동 복귀 처리 — SSO→Google 연동 후 ?linked=<provider>(성공) / ?linkError=<msg>(실패) 를
-  // 달고 이 페이지로 돌아온다. 마운트 1회: 알림 노출 + provider 상태 재조회 + 쿼리 제거.
+  // 달고 이 페이지로 돌아온다. 알림 노출 + provider 상태 재조회 + 쿼리 제거.
+  //
+  // 딱 한 번만 돈다. 예전엔 의존성을 `[]` 로 비워 그걸 표현했는데, 몸통이 실제로 읽는
+  // 값들과 어긋나 규칙을 꺼야 했다 — 의존성은 정직하게 적고 "한 번" 은 플래그로 적는다.
+  const oauthReturnHandled = useRef(false);
   useEffect(() => {
+    if (oauthReturnHandled.current) return;
     const linked = searchParams.get("linked");
     const linkError = searchParams.get("linkError");
     if (!linked && !linkError) return;
+    oauthReturnHandled.current = true;
 
     if (linked) {
       const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? linked;
@@ -348,8 +358,7 @@ export const SettingsPage = () => {
     url.searchParams.delete("linked");
     url.searchParams.delete("linkError");
     window.history.replaceState({}, "", url.toString());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams, queryClient, t]);
 
   // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
   const changeSection = (next: SectionId | "menu") => {

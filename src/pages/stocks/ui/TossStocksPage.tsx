@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -1414,11 +1414,10 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
   const idxCandles = useTossIndicatorCandles(INDEX_SYMBOLS);
 
   // 데스크톱: 기본 선택 = 첫 보유 종목. 보유가 없으면 개요를 띄운다(빈 안내문 대신).
-  useEffect(() => {
-    if (mobile || selected) return;
+  // 한 번 고르면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다.
+  if (!mobile && !selected) {
     setSelected(holdingItems.length > 0 ? holdingItems[0]!.symbol : OVERVIEW);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobile, holdingItems.length]);
+  }
 
   // 요약 (서버 계산값)
   const totalEval = holdings ? num(holdings.marketValue.amount.krw) : 0;

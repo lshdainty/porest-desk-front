@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -35,7 +35,10 @@ import { useExpenseCategories } from "@/features/expense";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import type { Expense } from "@/entities/expense";
-import type { ExpenseSplitFormValue } from "@/entities/expense-split";
+import type {
+  ExpenseSplit,
+  ExpenseSplitFormValue,
+} from "@/entities/expense-split";
 
 type Row = {
   uid: string;
@@ -45,6 +48,52 @@ type Row = {
 };
 
 const newUid = () => Math.random().toString(36).slice(2, 9);
+
+/**
+ * 분할 행의 최초 상태. 아직 정할 수 없으면 `null` 을 돌려준다(서버 값 대기 중).
+ *
+ * 우선순위: 편집 중 값 → 저장된 분할 → 반반 나누기.
+ */
+function seedRows(
+  initialSplits: ExpenseSplitFormValue[] | undefined,
+  persisted: ExpenseSplit[] | undefined,
+  targetTotal: number,
+  expense: Expense,
+): Row[] | null {
+  if (initialSplits) {
+    // 편집 일치화: 진행 중 분할(initialSplits)로 시드
+    return initialSplits.map((s) => ({
+      uid: newUid(),
+      categoryRowId: s.categoryRowId,
+      amount: String(s.amount),
+      label: s.label ?? "",
+    }));
+  }
+  if (persisted === undefined) return null; // 아직 안 왔다
+  if (persisted.length > 0) {
+    return persisted.map((s) => ({
+      uid: newUid(),
+      categoryRowId: s.categoryRowId,
+      amount: String(s.amount),
+      label: s.label ?? "",
+    }));
+  }
+  const half = Math.floor(targetTotal / 2);
+  return [
+    {
+      uid: newUid(),
+      categoryRowId: expense.categoryRowId,
+      amount: String(targetTotal - half),
+      label: expense.merchant ?? expense.description ?? "",
+    },
+    {
+      uid: newUid(),
+      categoryRowId: expense.categoryRowId,
+      amount: String(half),
+      label: "",
+    },
+  ];
+}
 
 /**
  * 금액 배열의 합이 정확히 target이 되도록 잔차를 분배한다(항상 균형).
@@ -140,55 +189,13 @@ export function SplitTxDialog({
   // 빠르게 맞추기(일치화 전략) 접힘 상태 — 기본 접힘(footer 정리 후 패널 군더더기 최소화).
   const [quickOpen, setQuickOpen] = useState(false);
 
-  useEffect(() => {
-    if (rows !== null) return;
-    let seed: Row[] | null = null;
-    if (initialSplits) {
-      // 편집 일치화: 진행 중 분할(initialSplits)로 시드
-      seed = initialSplits.map((s) => ({
-        uid: newUid(),
-        categoryRowId: s.categoryRowId,
-        amount: String(s.amount),
-        label: s.label ?? "",
-      }));
-    } else if (splitsQ.data === undefined) {
-      return;
-    } else if (splitsQ.data.length > 0) {
-      seed = splitsQ.data.map((s) => ({
-        uid: newUid(),
-        categoryRowId: s.categoryRowId,
-        amount: String(s.amount),
-        label: s.label ?? "",
-      }));
-    } else {
-      const half = Math.floor(targetTotal / 2);
-      seed = [
-        {
-          uid: newUid(),
-          categoryRowId: expense.categoryRowId,
-          amount: String(targetTotal - half),
-          label: expense.merchant ?? expense.description ?? "",
-        },
-        {
-          uid: newUid(),
-          categoryRowId: expense.categoryRowId,
-          amount: String(half),
-          label: "",
-        },
-      ];
-    }
-    // 비동기 로드된 분할/초기값으로 1회 시드 — 외부 데이터 초기화 목적의 의도된 setState
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRows(seed);
-  }, [
-    splitsQ.data,
-    rows,
-    initialSplits,
-    expense.categoryRowId,
-    expense.merchant,
-    expense.description,
-    targetTotal,
-  ]);
+  // 비동기로 온 분할(또는 편집 중 값)로 **딱 한 번** 시드한다. `rows` 가 채워지면
+  // 조건이 영구히 닫히므로 렌더 중에 맞춰도 반복되지 않는다 — effect 로 두면 값이
+  // 도착할 때마다 커밋을 한 번 더 태운다(`set-state-in-effect`).
+  if (rows === null) {
+    const seed = seedRows(initialSplits, splitsQ.data, targetTotal, expense);
+    if (seed) setRows(seed);
+  }
 
   const safeRows = rows ?? [];
   const sumAmount = safeRows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
