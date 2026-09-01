@@ -48,8 +48,8 @@ import {
   LedgerSumBtn,
   LedgerTotal,
   LedgerWeek,
-  useLedgerScroll,
 } from "@/shared/ui/porest/ledger";
+import { useLedgerScroll } from "@/shared/ui/porest/use-ledger-scroll";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import {
   constellationColorVar,

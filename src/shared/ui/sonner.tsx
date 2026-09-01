@@ -1,5 +1,5 @@
 import { Toaster as Sonner } from "sonner";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 
 /*
  * Porest Sonner (Toaster) — porest-design specs/components/sonner.md SoT 기반.

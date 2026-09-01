@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { useCallback, useState } from "react";
 import { isBefore, startOfDay, isAfter, isSameDay, format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { CalendarDays, Wallet } from "lucide-react";
@@ -10,28 +10,9 @@ import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
 import { useIsMobile } from "@/shared/hooks";
 import type { CalendarEventFormValues } from "@/entities/calendar";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { DragSelectContext } from "./drag-select-context";
 
 type SelectionMode = "choose" | "event" | "expense";
-
-interface DragSelectContextType {
-  isDragSelecting: boolean;
-  selectionStart: Date | null;
-  selectionEnd: Date | null;
-  startSelection: (date: Date) => void;
-  updateSelection: (date: Date) => void;
-  endSelection: () => void;
-  isDateInSelection: (date: Date) => boolean;
-}
-
-const DragSelectContext = createContext<DragSelectContextType | null>(null);
-
-export const useDragSelect = () => {
-  const context = useContext(DragSelectContext);
-  if (!context) {
-    throw new Error("useDragSelect must be used within a DragSelectProvider");
-  }
-  return context;
-};
 
 export const DragSelectProvider = ({
   children,

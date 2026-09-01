@@ -109,6 +109,14 @@ ${colorConfig
   );
 };
 
+/*
+ * recharts 가 툴팁·레전드 항목에 쓰는 타입. 예전엔 `any` 로 뚫어 뒀는데, recharts 3 이
+ * 루트에서 이름을 내보내므로 그대로 받는다 — `any` 를 쓰면 `item.value` 오타 같은 게
+ * 그냥 통과한다.
+ */
+type TooltipEntry = RechartsPrimitive.TooltipPayloadEntry;
+type LegendEntry = RechartsPrimitive.LegendPayload;
+
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
 const ChartTooltipContent = React.forwardRef<
@@ -120,7 +128,7 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed";
       nameKey?: string;
       labelKey?: string;
-      payload?: Array<Record<string, unknown>>;
+      payload?: readonly TooltipEntry[];
       label?: string;
     }
 >(
@@ -160,7 +168,7 @@ const ChartTooltipContent = React.forwardRef<
       if (labelFormatter) {
         return (
           <div className={cn("font-medium", labelClassName)}>
-            {labelFormatter(value as string, payload as any)}
+            {labelFormatter(value as string, payload)}
           </div>
         );
       }
@@ -197,27 +205,28 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item: Record<string, any>, index: number) => {
+          {payload.map((item: TooltipEntry, index: number) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
+            // recharts 의 `dataKey` 는 접근자 **함수**일 수도 있다 — 그대로 key 에 넣으면
+            // React key 타입이 아니다. `any` 로 뚫려 있어 안 보이던 자리다.
+            const rowKey =
+              typeof item.dataKey === "string" ||
+              typeof item.dataKey === "number"
+                ? item.dataKey
+                : index;
 
             return (
               <div
-                key={item.dataKey}
+                key={rowKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-text-secondary",
                   indicator === "dot" && "items-center",
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(
-                    item.value,
-                    item.name,
-                    item as any,
-                    index,
-                    payload as any,
-                  )
+                  formatter(item.value, item.name, item, index, payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -284,7 +293,7 @@ const ChartLegendContent = React.forwardRef<
     Pick<RechartsPrimitive.LegendProps, "verticalAlign"> & {
       hideIcon?: boolean;
       nameKey?: string;
-      payload?: Array<Record<string, any>>;
+      payload?: readonly LegendEntry[];
     }
 >(
   (
@@ -306,7 +315,7 @@ const ChartLegendContent = React.forwardRef<
           className,
         )}
       >
-        {payload.map((item: Record<string, any>) => {
+        {payload.map((item: LegendEntry) => {
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 

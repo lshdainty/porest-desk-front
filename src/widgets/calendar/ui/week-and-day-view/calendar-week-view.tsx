@@ -12,7 +12,6 @@ import {
   startOfWeek,
 } from "date-fns";
 import { enUS, ko } from "date-fns/locale";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
@@ -35,6 +34,32 @@ interface IProps {
 
 // ---- Multi-day events row for week view ---- //
 
+/** 주 안으로 잘라 낸 여러 날짜 이벤트 — 시작·끝 칸 번호를 함께 든다. */
+type ProcessedEvent = IEvent & {
+  adjustedStart: Date;
+  adjustedEnd: Date;
+  startIndex: number;
+  endIndex: number;
+};
+
+/** 겹치지 않는 것끼리 같은 줄에 눕힌다 — 줄 수를 최소로. */
+function packIntoRows(events: ProcessedEvent[]): ProcessedEvent[][] {
+  const rows: ProcessedEvent[][] = [];
+  for (const event of events) {
+    let rowIndex = rows.findIndex((row) =>
+      row.every(
+        (e) => e.endIndex < event.startIndex || e.startIndex > event.endIndex,
+      ),
+    );
+    if (rowIndex === -1) {
+      rowIndex = rows.length;
+      rows.push([]);
+    }
+    rows[rowIndex]!.push(event);
+  }
+  return rows;
+}
+
 const WeekViewMultiDayEventsRow = ({
   selectedDate,
   multiDayEvents,
@@ -48,63 +73,43 @@ const WeekViewMultiDayEventsRow = ({
   const weekEnd = endOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const processedEvents = useMemo(() => {
-    return multiDayEvents
-      .map((event) => {
-        const start = parseISO(event.startDate);
-        const end = parseISO(event.endDate);
-        const adjustedStart = isBefore(start, weekStart) ? weekStart : start;
-        const adjustedEnd = isAfter(end, weekEnd) ? weekEnd : end;
-        const startIndex = differenceInDays(adjustedStart, weekStart);
-        const endIndex = differenceInDays(adjustedEnd, weekStart);
-
-        return {
-          ...event,
-          adjustedStart,
-          adjustedEnd,
-          startIndex,
-          endIndex,
-        };
-      })
-      .sort((a, b) => {
-        const startDiff = a.adjustedStart.getTime() - b.adjustedStart.getTime();
-        if (startDiff !== 0) return startDiff;
-        return b.endIndex - b.startIndex - (a.endIndex - a.startIndex);
-      });
-  }, [multiDayEvents, weekStart, weekEnd]);
-
-  const eventRows = useMemo(() => {
-    const rows: (typeof processedEvents)[] = [];
-
-    processedEvents.forEach((event) => {
-      let rowIndex = rows.findIndex((row) =>
-        row.every(
-          (e) => e.endIndex < event.startIndex || e.startIndex > event.endIndex,
-        ),
-      );
-
-      if (rowIndex === -1) {
-        rowIndex = rows.length;
-        rows.push([]);
-      }
-
-      rows[rowIndex]!.push(event);
-    });
-
-    return rows;
-  }, [processedEvents]);
-
-  const hasEventsInWeek = useMemo(() => {
-    return multiDayEvents.some((event) => {
+  // 메모이제이션은 컴파일러에 맡긴다. 손으로 적으면 `weekStart`/`weekEnd` 가
+  // 의존성에 들어가는데 둘 다 렌더마다 새로 만들어지는 Date 라 어차피 매번
+  // 무효화된다 — 컴파일러는 `selectedDate` 까지 거슬러 올라가 제대로 잡는다.
+  const processedEvents: ProcessedEvent[] = multiDayEvents
+    .map((event) => {
       const start = parseISO(event.startDate);
       const end = parseISO(event.endDate);
-      return (
-        (start >= weekStart && start <= weekEnd) ||
-        (end >= weekStart && end <= weekEnd) ||
-        (start <= weekStart && end >= weekEnd)
-      );
+      const adjustedStart = isBefore(start, weekStart) ? weekStart : start;
+      const adjustedEnd = isAfter(end, weekEnd) ? weekEnd : end;
+      const startIndex = differenceInDays(adjustedStart, weekStart);
+      const endIndex = differenceInDays(adjustedEnd, weekStart);
+
+      return {
+        ...event,
+        adjustedStart,
+        adjustedEnd,
+        startIndex,
+        endIndex,
+      };
+    })
+    .sort((a, b) => {
+      const startDiff = a.adjustedStart.getTime() - b.adjustedStart.getTime();
+      if (startDiff !== 0) return startDiff;
+      return b.endIndex - b.startIndex - (a.endIndex - a.startIndex);
     });
-  }, [multiDayEvents, weekStart, weekEnd]);
+
+  const eventRows = packIntoRows(processedEvents);
+
+  const hasEventsInWeek = multiDayEvents.some((event) => {
+    const start = parseISO(event.startDate);
+    const end = parseISO(event.endDate);
+    return (
+      (start >= weekStart && start <= weekEnd) ||
+      (end >= weekStart && end <= weekEnd) ||
+      (start <= weekStart && end >= weekEnd)
+    );
+  });
 
   if (!hasEventsInWeek) return null;
 

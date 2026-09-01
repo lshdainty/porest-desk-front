@@ -61,7 +61,11 @@ import {
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { useUserPreferences } from "@/features/user";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
-import type { Expense } from "@/entities/expense";
+import type {
+  Expense,
+  ExpenseCategory,
+  CategoryBreakdown,
+} from "@/entities/expense";
 import { aggregateByParent } from "@/entities/expense";
 
 // income/expense bar 색상·라벨은 IncomeExpenseBarChart 내부에서 t() 로 구성.
@@ -303,6 +307,42 @@ const CATEGORY_PALETTE = [
   "var(--color-cat-brown)",
   "var(--color-cat-gray)",
 ];
+
+/**
+ * 카테고리 지출 도넛 조각 — 부모 카테고리로 롤업 후 금액 내림차순.
+ *
+ * 데스크톱·모바일 대시보드가 같은 도넛을 그린다. 예전엔 두 컴포넌트가 같은
+ * `useMemo` 를 통째로 복사해 갖고 있었는데, 둘 다 `t` 를 의존성에 안 적어
+ * (언어를 바꿔도 라벨이 안 따라오는) 같은 결함을 나눠 갖고 있었다.
+ * 메모이제이션은 컴파일러에 맡기고, 여기서는 계산만 한다.
+ */
+function donutSegments(
+  breakdown: CategoryBreakdown[] | undefined,
+  cats: ExpenseCategory[] | undefined,
+  t: (key: string) => string,
+): { value: number; color: string; label: string }[] {
+  const expenseOnly = (breakdown ?? []).filter(
+    (c) => c.expenseType === "EXPENSE",
+  );
+  const catColorMap = new Map<number, string | null | undefined>();
+  for (const cat of cats ?? []) catColorMap.set(cat.rowId, cat.color);
+  const items = aggregateByParent(expenseOnly)
+    .slice()
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+  return items.map((c, i) => {
+    // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
+    const raw =
+      c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
+    const color = raw
+      ? getPaletteByColor(raw).color
+      : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
+    return {
+      value: c.totalAmount,
+      color,
+      label: c.categoryName ?? t("uncategorized"),
+    };
+  });
+}
 
 /**
  * Dashboard 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
@@ -1013,30 +1053,11 @@ function HomeDesktop() {
   const savingsPct =
     prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0;
 
-  const donutSegs = useMemo(() => {
-    const expenseOnly = (monthly?.categoryBreakdown ?? []).filter(
-      (c) => c.expenseType === "EXPENSE",
-    );
-    const cats = categoriesQ.data ?? [];
-    const catColorMap = new Map<number, string | null | undefined>();
-    for (const cat of cats) catColorMap.set(cat.rowId, cat.color);
-    const items = aggregateByParent(expenseOnly)
-      .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount);
-    return items.map((c, i) => {
-      // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
-      const raw =
-        c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
-      const color = raw
-        ? getPaletteByColor(raw).color
-        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
-      return {
-        value: c.totalAmount,
-        color,
-        label: c.categoryName ?? t("uncategorized"),
-      };
-    });
-  }, [monthly, categoriesQ.data]);
+  const donutSegs = donutSegments(
+    monthly?.categoryBreakdown,
+    categoriesQ.data,
+    t,
+  );
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0);
 
   const barData = useMemo(() => {
@@ -2057,30 +2078,11 @@ function HomeMobile() {
   const todayTotal = expenseSum(todayTx);
 
   // 도넛 — 부모 카테고리로 롤업, 전체 표시
-  const donutSegs = useMemo(() => {
-    const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
-      (c) => c.expenseType === "EXPENSE",
-    );
-    const cats = categoriesQ.data ?? [];
-    const catColorMap = new Map<number, string | null | undefined>();
-    for (const cat of cats) catColorMap.set(cat.rowId, cat.color);
-    const items = aggregateByParent(expenseOnly)
-      .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount);
-    return items.map((c, i) => {
-      // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
-      const raw =
-        c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
-      const color = raw
-        ? getPaletteByColor(raw).color
-        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
-      return {
-        value: c.totalAmount,
-        color,
-        label: c.categoryName ?? t("uncategorized"),
-      };
-    });
-  }, [monthlyQ.data, categoriesQ.data]);
+  const donutSegs = donutSegments(
+    monthlyQ.data?.categoryBreakdown,
+    categoriesQ.data,
+    t,
+  );
   const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0);
 
   // 예산 — 설정한 전체 표시

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
@@ -170,9 +170,12 @@ export function CategoryManager({
   const submitting = createMut.isPending || updateMut.isPending;
 
   // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
-  useEffect(() => {
+  // 모드가 **바뀐 순간**에만 본다. 렌더 중 조정이라 커밋을 한 번 더 태우지 않는다.
+  const [wasReorder, setWasReorder] = useState(reorderMode);
+  if (wasReorder !== reorderMode) {
+    setWasReorder(reorderMode);
     if (reorderMode) setQuery("");
-  }, [reorderMode]);
+  }
 
   const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
     updateMut.mutate(

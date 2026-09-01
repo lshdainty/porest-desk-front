@@ -22,7 +22,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/shared/ui/command";
-import { useTheme } from "@/shared/ui/theme-provider";
+import { useTheme } from "@/shared/ui/theme-context";
 import { useCreateTodo } from "@/features/todo";
 import { useMemos } from "@/features/memo";
 import { toast } from "sonner";
@@ -52,12 +52,15 @@ export const CommandPalette = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  useEffect(() => {
+  // 닫히면 다음에 열 때 지난 입력이 남지 않도록 비운다. 열림이 **바뀐 순간**만 본다.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (!open) {
       setSearch("");
       setMode("default");
     }
-  }, [open]);
+  }
 
   const runAction = useCallback((action: () => void) => {
     setOpen(false);
