@@ -31,12 +31,16 @@ import type {
   RecurringFrequency,
   RecurringTransactionFormValues,
 } from "@/entities/recurring-transaction";
-import { Section, RadioCard, ToggleRow } from "./RecurringFromTxDialog";
+import {
+  Section,
+  RadioCard,
+  ToggleRow,
+} from "@/features/recurring-transaction/ui/RecurringFromTxDialog";
 import {
   previewNextDates,
   addYears,
   formatKoreanMonthDay,
-} from "./recurring-date";
+} from "@/features/recurring-transaction/lib/recurring-date";
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
   { v: "DAILY", lKey: "freq.DAILY" },

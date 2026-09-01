@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import {
   Bell,
   PauseCircle,
@@ -29,9 +28,14 @@ import {
 import { useExpenseCategories } from "@/features/expense";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
 import { getPaletteByColor } from "./CategoryEditDialog";
-import { RecurringAddDialog } from "./RecurringAddDialog";
-import { RecurringDetailDialog } from "./RecurringDetailDialog";
-import { RecurringEditDialog } from "./RecurringEditDialog";
+import {
+  displayTitle,
+  recurringSummary,
+  startOfDay,
+} from "@/features/recurring-transaction/lib/recurring-format";
+import { RecurringAddDialog } from "@/features/recurring-transaction/ui/RecurringAddDialog";
+import { RecurringDetailDialog } from "@/features/recurring-transaction/ui/RecurringDetailDialog";
+import { RecurringEditDialog } from "@/features/recurring-transaction/ui/RecurringEditDialog";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -1217,30 +1221,3 @@ function RecAction({
 }
 
 /** 행·상세가 같은 제목을 쓴다 — 갈라지면 같은 항목이 두 이름으로 보인다. */
-export function displayTitle(it: RecurringTransaction, t: TFunction): string {
-  return it.merchant || it.description || it.categoryName || t("defaultTitle");
-}
-
-function startOfDay(d: Date): Date {
-  const c = new Date(d);
-  c.setHours(0, 0, 0, 0);
-  return c;
-}
-
-/** 반복 규칙 한 줄 요약 — 행·상세가 같은 문장을 쓴다. */
-export function recurringSummary(
-  it: RecurringTransaction,
-  t: TFunction,
-): string {
-  let core = t(`freq.${it.frequency}`);
-  if (it.frequency === "WEEKLY" && it.dayOfWeek != null) {
-    // 백엔드 ISO 1=월~7=일 → recurring dow 키 매핑
-    const isoToDow = ["", "mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-    const dowKey = isoToDow[it.dayOfWeek];
-    core = t("summaryWeekly", { day: dowKey ? t(`dow.${dowKey}`) : "" });
-  } else if (it.frequency === "MONTHLY" && it.dayOfMonth != null) {
-    core = t("summaryMonthly", { day: it.dayOfMonth });
-  }
-  const end = it.endDate ? `~${it.endDate}` : t("endNone");
-  return `${core} · ${end}${it.notifyDayBefore ? ` · ${t("alarmTag")}` : ""}`;
-}

@@ -58,7 +58,7 @@ import type {
   ExpenseType,
 } from "@/entities/expense";
 import { CategoryEditDialog, getPaletteByColor } from "./CategoryEditDialog";
-import { CategoryMoveTxDialog } from "./CategoryMoveTxDialog";
+import { CategoryMoveTxDialog } from "@/features/expense/ui/CategoryMoveTxDialog";
 
 type EditingState =
   ExpenseCategory | { kind: "new"; parentRowId?: number | null } | null;

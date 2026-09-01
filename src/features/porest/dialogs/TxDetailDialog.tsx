@@ -42,9 +42,9 @@ import { useAssets } from "@/features/asset";
 import type { Expense, ExpenseCategory } from "@/entities/expense";
 import type { Asset } from "@/entities/asset";
 import { getPaletteByColor } from "./CategoryEditDialog";
-import { SplitTxDialog } from "./SplitTxDialog";
-import { RecurringFromTxDialog } from "./RecurringFromTxDialog";
-import { DutchPayFromTxDialog } from "./DutchPayFromTxDialog";
+import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
+import { RecurringFromTxDialog } from "@/features/recurring-transaction/ui/RecurringFromTxDialog";
+import { DutchPayFromTxDialog } from "@/features/dutch-pay/ui/DutchPayFromTxDialog";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 const toDayKey = (iso?: string | null): string => (iso ? iso.slice(0, 10) : "");

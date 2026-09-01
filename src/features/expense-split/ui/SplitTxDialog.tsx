@@ -32,7 +32,7 @@ import {
   useDeleteAllExpenseSplits,
 } from "@/features/expense-split";
 import { useExpenseCategories } from "@/features/expense";
-import { getPaletteByColor } from "./CategoryEditDialog";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import type { Expense } from "@/entities/expense";
 import type { ExpenseSplitFormValue } from "@/entities/expense-split";

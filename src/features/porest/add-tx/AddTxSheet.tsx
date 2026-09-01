@@ -65,7 +65,7 @@ import {
   DEFAULT_CURRENCY,
   formatOriginalAmount,
 } from "@/shared/lib/porest/currency";
-import { SplitTxDialog } from "../dialogs/SplitTxDialog";
+import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
 
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
 const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {

@@ -32,10 +32,7 @@ import {
   ManagerTabs,
 } from "@/shared/ui/porest/manager-layout";
 import { AssetDetailDialog } from "./AssetDetailDialog";
-import {
-  AssetEditDialog,
-  type AssetGroup,
-} from "./AssetEditDialog";
+import { AssetEditDialog, type AssetGroup } from "./AssetEditDialog";
 
 const GROUP_TYPES: Record<AssetGroup, AssetType[]> = {
   account: ["BANK_ACCOUNT", "SAVINGS", "CASH", "LOAN"],
