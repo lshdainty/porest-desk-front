@@ -38,12 +38,18 @@ jobs:
       - name: Format
         run: npm run format:check
 
-      # FSD 계층 방향(app → pages → widgets → features → entities → shared)만
-      # 검사한다. 전체 `npm run lint` 는 정리 중인 에러가 남아 아직 못 건다 —
-      # 그걸 기다리는 사이에 계층이 다시 샌다. 다 끝난 규칙부터 잠근다.
+      # 계층(FSD)과 나머지 규칙을 나눠 둔 건 정리 중이던 시절의 잔재가 아니다 —
+      # `lint:fsd` 는 `--no-inline-config` 로 돌아 계층 위반을 주석으로 못 덮는다.
       # 로컬에서 확인하는 법: npm run lint:fsd
       - name: FSD Layers
         run: npm run lint:fsd
+
+      # 에러 0 · 경고 0 에서 잠근다. 여기서 막지 않으면 그 상태가 유지되지 않는다.
+      # `--max-warnings 0` 이 핵심이다 — 경고는 쌓여도 CI 가 안 깨지므로, 세지 않으면
+      # 다시 수십 개가 된다(실제로 28 개까지 갔다).
+      # 로컬에서 확인하는 법: npm run lint
+      - name: Lint
+        run: npm run lint -- --max-warnings 0
 
       # 자격증명 입력칸이 다시 평문으로 벗겨지는 회귀를 여기서 잡는다.
       # 게이트가 살아 있는지(tests/fsd-boundaries)도 여기서 확인한다.

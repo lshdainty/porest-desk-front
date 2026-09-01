@@ -6,7 +6,7 @@ import { CalendarDays, Wallet } from "lucide-react";
 import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { AddTxSheet } from "@/widgets/add-tx";
-import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
+import { EventForm } from "../ui/EventForm";
 import { useIsMobile } from "@/shared/hooks";
 import type { CalendarEventFormValues } from "@/entities/calendar";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
