@@ -391,8 +391,10 @@ function CardDetailBody({
   // 한도 사용 — 현재 미결제 잔액(총 부채) 기준
   const limit = asset.creditLimit ?? 0;
   const used = Math.abs(asset.balance);
-  const limitPct =
-    limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  // 실사용률 그대로 — 한도의 20배를 썼으면 2000% 로 보인다(사용자 결정).
+  // 100 으로 눌러 두면 목록(실퍼센트)과 다른 숫자가 나오고, 얼마나 넘겼는지도
+  // 안 보인다. 바 채움만 아래에서 100% 로 캡한다(넘치면 그릴 수 없다).
+  const limitPct = limit > 0 ? Math.round((used / limit) * 100) : 0;
   const limitWarn = limitPct >= 80;
 
   const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null;
@@ -1030,7 +1032,7 @@ function CardDetailBody({
           >
             <div
               style={{
-                width: `${limitPct}%`,
+                width: `${Math.min(100, limitPct)}%`,
                 height: "100%",
                 borderRadius: "var(--radius-pill)",
                 background: limitWarn
