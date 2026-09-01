@@ -5,7 +5,6 @@ export { SplitTxDialog } from "./SplitTxDialog";
 export { RecurringFromTxDialog } from "./RecurringFromTxDialog";
 export { DutchPayFromTxDialog } from "./DutchPayFromTxDialog";
 export { NotificationsPopover } from "./NotificationsPopover";
-export { AssetEditDialog, type AssetGroup } from "./AssetEditDialog";
 export {
   BudgetEditDialog,
   MonthlyBudgetDialog,
@@ -18,9 +17,7 @@ export {
   type CategoryItem,
 } from "./CategoryEditDialog";
 export { CategoryManager } from "./CategoryManager";
-export { AccountManager } from "./AccountManager";
 export { BudgetManager } from "./BudgetManager";
-export { SavingGoalManager } from "./SavingGoalManager";
 export { NotificationsManager } from "./NotificationsManager";
 export { RecurringManager } from "./RecurringManager";
 export { RecurringEditDialog } from "./RecurringEditDialog";

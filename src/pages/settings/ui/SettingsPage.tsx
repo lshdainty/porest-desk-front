@@ -31,7 +31,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import {
-  AccountManager,
   AppearanceSection,
   BudgetManager,
   CalendarLabelsSection,
@@ -43,9 +42,9 @@ import {
   NotificationsManager,
   PresetManager,
   RecurringManager,
-  SavingGoalManager,
   TodoTagManager,
 } from "@/features/porest/dialogs";
+import { AccountManager, SavingGoalManager } from "@/widgets/asset-full";
 import { Card, CardContent } from "@/shared/ui/card";
 import { useTheme } from "@/shared/ui/theme-provider";
 import { useCurrentUser } from "@/features/user";

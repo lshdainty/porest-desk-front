@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { MANAGE_ROW } from "@/shared/ui/porest/manage-row-tokens";
 import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
-import { SavingGoalAddDialog } from "@/widgets/asset-full/ui/SavingGoalAddDialog";
+import { SavingGoalAddDialog } from "./SavingGoalAddDialog";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { parseLocalDate } from "@/shared/lib/date";
 

@@ -44,7 +44,7 @@ import {
 } from "@/features/expense";
 import { useUserPreferences } from "@/features/user";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { getPaletteByColor } from "@/features/porest/dialogs";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 
 type OutletCtx = { mobile: boolean };
 

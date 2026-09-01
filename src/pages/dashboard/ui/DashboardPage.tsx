@@ -58,7 +58,7 @@ import {
   useMonthlyTrend,
   useExpenseBudgets,
 } from "@/features/expense";
-import { getPaletteByColor } from "@/features/porest/dialogs";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { useUserPreferences } from "@/features/user";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import type { Expense } from "@/entities/expense";

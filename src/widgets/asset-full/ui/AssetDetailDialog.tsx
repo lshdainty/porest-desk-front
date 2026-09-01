@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AssetTradeDialog } from "@/features/porest/dialogs/AssetTradeDialog";
+import { AssetTradeDialog } from "./AssetTradeDialog";
 import { useAssetTrades, useDeleteTrade } from "@/features/asset";
 import type { TradeType } from "@/entities/asset";
 import { useNavigate } from "react-router-dom";
