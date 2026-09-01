@@ -437,12 +437,15 @@ const MonthEventBadge = ({
       tabIndex={0}
       className={cn(
         "mx-0.5 lg:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm lg:rounded-md border text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-        // 가운데 라벨이 다음 칸까지 뻗어야 해서 라벨 호스트 조각만 overflow 를 연다.
-        rowSegStart ? "overflow-visible z-20" : "overflow-hidden",
         // 모바일(<768px): 앱 _EventBar 정합 타이트 칩(16px·좌우 4px·leading-none).
         // 데스크톱/태블릿(≥768px): 원래 높이/패딩(22px → lg 26px, 좌우 4 → lg 8px).
         isMobile ? "h-4 leading-none px-1" : "h-5.5 lg:h-6.5 px-1 lg:px-2",
         positionClasses[position],
+        // 가운데 라벨이 다음 칸까지 뻗어야 해서 라벨 호스트 조각만 overflow 를 열고
+        // z 를 이웃(z-10)보다 올린다. positionClasses 뒤에 둬야 한다 — 앞에 두면
+        // tailwind-merge 가 뒤의 z-10 으로 z-20 을 덮어 라벨이 이웃 조각 아래 깔린다
+        // (실제로 그렇게 배포돼 제목이 통째로 안 보였다).
+        rowSegStart ? "overflow-visible z-20" : "overflow-hidden",
         className,
       )}
       style={{
@@ -476,10 +479,14 @@ const MonthEventBadge = ({
         // (첫·끝 조각의 바깥 여백만 있음) 칸 수 × 100% 로 스팬을 근사한다. 클릭은
         // 아래 조각들이 받도록 통과시킨다.
         <span
-          className="pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center overflow-hidden whitespace-nowrap px-1 font-semibold"
+          className="pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden font-semibold"
           style={{ width: `${rowSegDays * 100}%` }}
         >
-          {event.title}
+          {/* 제목이 스팬에 다 들어가면 가운데, 넘치면 왼쪽 정렬 + 말줄임(사용자 결정).
+              text-align 은 박스보다 짧은 줄에만 작용하므로 이 한 줄로 두 경우가 갈린다. */}
+          <span className="block w-full truncate px-1 text-center">
+            {event.title}
+          </span>
         </span>
       )}
 
