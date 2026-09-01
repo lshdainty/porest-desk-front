@@ -151,7 +151,6 @@ export function TabBarItem({
   icon: Icon,
   label,
   active = false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shared: _shared,
   className,
   ...props
