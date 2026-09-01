@@ -28,7 +28,7 @@ import { CalendarWeekViewSkeleton } from "@/widgets/calendar/ui/week-and-day-vie
 import { CalendarYearView } from "@/widgets/calendar/ui/year-view/calendar-year-view";
 import { CalendarYearViewSkeleton } from "@/widgets/calendar/ui/year-view/calendar-year-view-skeleton";
 
-import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
+import { EventForm } from "./EventForm";
 import {
   Drawer,
   DrawerBody,

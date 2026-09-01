@@ -127,7 +127,12 @@ python3 -c "import json,io;d=json.load(io.open('src/locales/ko/<ns>.json'));prin
 
 eslint 는 서식이 아니라 **의미**를 본다(`exhaustive-deps` 등). prettier 와 역할이 겹치지
 않아 `eslint-config-prettier` 는 필요 없다 — 실제로 전면 적용 전후 eslint 지적 수가
-44/28 로 동일했다. `npm run lint` 전체는 아직 CI 에 없고 현재 실패한다(정리 중).
+44/28 로 동일했다.
+
+**`npm run lint` 는 에러 0 · 경고 0 이고 CI 가 `--max-warnings 0` 으로 막는다.**
+경고를 세는 게 핵심이다 — 안 세면 CI 가 안 깨지므로 조용히 쌓인다(실제로 28 개까지 갔다).
+새 지적이 나오면 끄지 말고 고쳐라. `eslint-disable` 은 그 줄만 조용하게 만드는 게 아니라
+**React Compiler 가 그 함수를 통째로 건너뛰게** 한다.
 
 ## FSD 계층은 CI 가 막는다
 

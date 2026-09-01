@@ -8,7 +8,7 @@ import { AppTabBar } from "./AppTabBar";
 import { useDeviceSize } from "@/shared/lib/porest/responsive";
 import { SwipeActionsProvider } from "@/shared/ui/swipe-actions";
 import { AddTxSheet } from "@/widgets/add-tx";
-import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
+import { EventForm } from "@/widgets/calendar/ui/EventForm";
 import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { useHideCardsSync } from "@/features/hide-amounts";

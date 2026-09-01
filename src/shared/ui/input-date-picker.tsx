@@ -62,11 +62,12 @@ export function InputDatePicker({
     date || new Date(),
   );
 
+  // `date` 는 `dateString` 에서 파생되므로 의존성으로 적어도 발화 시점이 같다.
   React.useEffect(() => {
     if (date) {
       setMonth(date);
     }
-  }, [dateString]);
+  }, [date]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {

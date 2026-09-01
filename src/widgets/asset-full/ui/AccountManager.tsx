@@ -34,6 +34,13 @@ import {
 import { AssetDetailDialog } from "./AssetDetailDialog";
 import { AssetEditDialog, type AssetGroup } from "./AssetEditDialog";
 
+/*
+ * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
+ * 든 `useMemo` 가 통째로 무효화된다(memo 를 적어 둔 의미가 없어진다). 상수를 돌려주면
+ * 참조가 고정된다.
+ */
+const EMPTY_ASSETS: Asset[] = [];
+
 const GROUP_TYPES: Record<AssetGroup, AssetType[]> = {
   account: ["BANK_ACCOUNT", "SAVINGS", "CASH", "LOAN"],
   card: ["CREDIT_CARD", "CHECK_CARD"],
@@ -74,7 +81,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
   const updateAsset = useUpdateAsset();
   const deleteAsset = useDeleteAsset();
 
-  const assets: Asset[] = assetsData?.assets ?? [];
+  const assets: Asset[] = assetsData?.assets ?? EMPTY_ASSETS;
 
   const [tab, setTab] = useState<AssetGroup>("account");
   const [editing, setEditing] = useState<EditingState>(null);

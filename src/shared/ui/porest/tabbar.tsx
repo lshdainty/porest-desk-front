@@ -80,8 +80,14 @@ export function TabBar({
   const [rendered, setRendered] = useState(children);
   const prevMode = useRef(modeKey);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // 탭 전환 안무(130ms out → in → 420ms 후 해제)는 타이머로 짜여 있어 effect 밖으로
+  // 못 뺀다. 렌더 중 조정으로 옮기면 타이머를 렌더에서 걸게 되고, 그건 부수효과다.
+  //
+  // 그래서 `set-state-in-effect` 는 여기서만 끈다. 커밋을 한 번 더 태우는 비용은
+  // 인정하고 남긴다 — 모드가 바뀔 때만(탭 전환) 도는 자리다.
   useEffect(() => {
     if (prevMode.current === modeKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRendered(children);
       return;
     }
@@ -95,7 +101,6 @@ export function TabBar({
         timers.current.push(setTimeout(() => setPhase(null), 420));
       }, 130),
     ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeKey, children]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
