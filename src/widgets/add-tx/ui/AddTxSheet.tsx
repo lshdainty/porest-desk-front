@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -367,12 +367,7 @@ export function AddTxSheet({
   }, [type, toAssetRowId, assets]);
 
   // 대출이 아니게 되면 남아 있던 이자를 지운다(저장 시 흘러들지 않도록).
-  useEffect(() => {
-    if (!showInterest && interest) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInterest("");
-    }
-  }, [showInterest, interest]);
+  if (!showInterest && interest) setInterest("");
 
   // 할부는 신용카드 지출에만 존재한다 — 체크카드는 긁는 즉시 계좌에서 빠지고, 현금·이체는 나눌 수 없다.
   const showInstallment = useMemo(() => {
@@ -383,58 +378,47 @@ export function AddTxSheet({
   }, [type, assetRowId, assets]);
 
   // 신용카드가 아니게 되면 남아 있던 할부 개월을 지운다(저장 시 흘러들지 않도록).
-  useEffect(() => {
-    if (!showInstallment && installmentMonths) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInstallmentMonths("");
-    }
-  }, [showInstallment, installmentMonths]);
+  if (!showInstallment && installmentMonths) setInstallmentMonths("");
 
   // 외화는 지출·수입에만 — 이체는 두 자산 사이의 이동이라 통화가 자산에 달려 있다.
   const isForeignTx = type !== "TRANSFER" && origCurrency !== DEFAULT_CURRENCY;
 
   // 원화로 돌아오면 남아 있던 외화 입력을 지운다(저장 시 흘러들지 않도록).
-  useEffect(() => {
-    if (!isForeignTx && (origAmount || fxRate)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOrigAmount("");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFxRate("");
-    }
-  }, [isForeignTx, origAmount, fxRate]);
+  if (!isForeignTx && (origAmount || fxRate)) {
+    setOrigAmount("");
+    setFxRate("");
+  }
 
   // 해외 결제는 $5.50 을 보고 입력하지 원화 환산액을 모른다 — 원 통화 × 환율로 금액을 채운다.
-  // 카드사 실제 청구액이 다르면 금액 칸을 직접 고치면 된다(이 effect 는 원통화·환율이
-  // 바뀔 때만 발화하므로 손으로 고친 금액을 덮어쓰지 않는다).
-  useEffect(() => {
-    if (!isForeignTx) return;
-    const a = parseFloat(origAmount);
-    const r = parseFloat(fxRate);
-    if (!Number.isFinite(a) || !Number.isFinite(r) || a <= 0 || r <= 0) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAmount(String(Math.round(a * r)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origAmount, fxRate, isForeignTx]);
+  // 카드사 실제 청구액이 다르면 금액 칸을 직접 고치면 된다.
+  //
+  // **원통화·환율이 "바뀐 순간"에만 채운다.** 매 렌더 채우면 손으로 고친 금액을 곧바로
+  // 덮어써서 금액 칸을 고칠 수 없게 된다. 그래서 직전 값을 들고 있다가 대조한다
+  // (예전엔 이 조건을 effect 의 의존성 배열로 표현하고 `amount` 를 일부러 빼 뒀다 —
+  //  린트에는 "빠뜨린 의존성" 으로 보여서 규칙을 꺼야 했다).
+  const [fxSeed, setFxSeed] = useState({ origAmount, fxRate });
+  if (fxSeed.origAmount !== origAmount || fxSeed.fxRate !== fxRate) {
+    setFxSeed({ origAmount, fxRate });
+    if (isForeignTx) {
+      const a = parseFloat(origAmount);
+      const r = parseFloat(fxRate);
+      if (Number.isFinite(a) && Number.isFinite(r) && a > 0 && r > 0) {
+        setAmount(String(Math.round(a * r)));
+      }
+    }
+  }
 
   // 결제 수단·거래 타입 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
-  useEffect(() => {
-    if (assetRowId == null) return;
+  if (assetRowId != null) {
     const picked = assets.find((a) => a.rowId === assetRowId);
-    if (picked && !allowAsset(picked)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAssetRowId(null);
-    }
-  }, [assetRowId, assets, allowAsset]);
+    if (picked && !allowAsset(picked)) setAssetRowId(null);
+  }
 
   // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
-  useEffect(() => {
-    if (categoryRowId == null) return;
+  if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    if (!cat || cat.expenseType !== type) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCategoryRowId(null);
-    }
-  }, [type, categoryRowId, categories]);
+    if (!cat || cat.expenseType !== type) setCategoryRowId(null);
+  }
 
   const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, "")) : 0;
 
