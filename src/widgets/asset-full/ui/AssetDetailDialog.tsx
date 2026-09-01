@@ -699,7 +699,7 @@ function CardDetailBody({
             gap: 12,
           }}
         >
-          {billing!.upcomingInstallments!.map(due => (
+          {billing!.upcomingInstallments!.map((due) => (
             <div
               key={due.expenseRowId}
               style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
@@ -748,9 +748,7 @@ function CardDetailBody({
                   flexShrink: 0,
                 }}
               >
-                <MaskAmount card="asset.detail">
-                  {money(due.amount)}
-                </MaskAmount>
+                <MaskAmount card="asset.detail">{money(due.amount)}</MaskAmount>
               </span>
             </div>
           ))}
