@@ -481,6 +481,10 @@ export function AssetEditDialog({
   // 유효성
   const canSubmit = (() => {
     if (editingGroup === "card") {
+      // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을
+      // 세울 수 없다. asset-full 추가 폼(#323)과 같은 규칙인데 이 다이얼로그만
+      // 빠져 있었다. 체크카드는 즉시 출금이라 결제일이 없다.
+      if (cardType === "CREDIT" && !paymentDay.trim()) return false;
       // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 함
       return isNew ? !!selectedCard : true;
     }
