@@ -184,6 +184,36 @@ export interface AssetEditDialogProps {
   isSubmitting?: boolean;
 }
 
+/** 자산에 붙어 있는 카드 카탈로그 → 선택 상태로 쓸 요약. 카드 편집이 아니면 없음. */
+function cardSummaryOf(
+  item: Asset | null | undefined,
+  editingGroup: AssetGroup,
+): CardCatalogSummary | null {
+  if (!item || editingGroup !== "card" || !item.cardCatalog) return null;
+  return {
+    rowId: item.cardCatalog.rowId,
+    externalCardId: 0,
+    cardName: item.cardCatalog.cardName,
+    cardType: item.assetType === "CHECK_CARD" ? "CHECK" : "CREDIT",
+    benefitType: "POINT",
+    isDiscontinued: "N",
+    onlyOnline: "N",
+    launchDate: null,
+    imgUrl: item.cardCatalog.imgUrl,
+    detailUrl: null,
+    annualFee: null, // 자산에서 만든 임시 요약 — 연회비를 모르는 상태다
+    performance: { requiredAmount: 0, requiredText: null, isRequired: "N" },
+    company: item.cardCatalog.companyName
+      ? {
+          rowId: 0,
+          name: item.cardCatalog.companyName,
+          nameEng: "",
+          logoUrl: item.cardCatalog.companyLogoUrl,
+        }
+      : null,
+  };
+}
+
 export function AssetEditDialog({
   item,
   group,
@@ -311,8 +341,13 @@ export function AssetEditDialog({
   );
   const [cardKeyword, setCardKeyword] = useState("");
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
+  // 편집 진입 시 기존 카드 카탈로그를 선택 상태처럼 보이도록 채움.
+  //
+  // 초기값으로 넣는다 — 이 컴포넌트의 `item` 기반 상태는 전부 그렇게 시드된다
+  // (`cardType`·`creditLimit`·…). 이것만 effect 였고, 그래서 의존성을 `item?.rowId`
+  // 하나로 좁히려 규칙을 꺼야 했다. 다이얼로그는 자산 하나마다 새로 열린다.
   const [selectedCard, setSelectedCard] = useState<CardCatalogSummary | null>(
-    null,
+    () => cardSummaryOf(item, editingGroup),
   );
 
   // 신용카드 청구사이클 (CREDIT_CARD 전용)
@@ -343,38 +378,6 @@ export function AssetEditDialog({
     size: 40,
   });
   const catalogItems = catalogQ.data?.content ?? [];
-
-  // 편집 진입 시 기존 카드 카탈로그를 선택 상태처럼 보이도록 채움
-  useEffect(() => {
-    if (!item || editingGroup !== "card") return;
-    if (!item.cardCatalog) {
-      setSelectedCard(null);
-      return;
-    }
-    setSelectedCard({
-      rowId: item.cardCatalog.rowId,
-      externalCardId: 0,
-      cardName: item.cardCatalog.cardName,
-      cardType: item.assetType === "CHECK_CARD" ? "CHECK" : "CREDIT",
-      benefitType: "POINT",
-      isDiscontinued: "N",
-      onlyOnline: "N",
-      launchDate: null,
-      imgUrl: item.cardCatalog.imgUrl,
-      detailUrl: null,
-      annualFee: null, // 자산에서 만든 임시 요약 — 연회비를 모르는 상태다
-      performance: { requiredAmount: 0, requiredText: null, isRequired: "N" },
-      company: item.cardCatalog.companyName
-        ? {
-            rowId: 0,
-            name: item.cardCatalog.companyName,
-            nameEng: "",
-            logoUrl: item.cardCatalog.companyLogoUrl,
-          }
-        : null,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.rowId]);
 
   // 은행 검색 (category 묶음 — 투자용 카테고리는 제외)
   const matchesQuery = (e: BankEntry, q: string) => {
