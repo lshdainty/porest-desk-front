@@ -69,7 +69,12 @@ export function HideAmountsUnlockDialog({
         onOpenChange(false);
       },
       onError: (e) => {
-        setError(e.message || t("hideAmounts.passwordError"));
+        // axios 에러의 e.message 는 "Request failed with status code 400" 원문이다 —
+        // 사용자에게 보여줄 문구는 서버 응답 body 의 message 다.
+        const serverMessage = (
+          e as { response?: { data?: { message?: string } } }
+        ).response?.data?.message;
+        setError(serverMessage || t("hideAmounts.passwordError"));
         setPassword("");
         inputRef.current?.focus();
       },
