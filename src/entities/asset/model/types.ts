@@ -209,6 +209,21 @@ export interface BillingItem {
   failureReason: string | null;
 }
 
+/** 다가오는 회차에 빠지는 할부 한 건 — 명세서의 "원금·N개월 중 k회차" 표시용. */
+export interface InstallmentDue {
+  expenseRowId: number;
+  merchant: string | null;
+  description: string | null;
+  /** 할부 원금(거래 전액). */
+  principalAmount: number;
+  /** 총 회차 수(N). */
+  installmentMonths: number;
+  /** 이번이 몇 회차인지(1-base). */
+  sequence: number;
+  /** 이번 회차에 빠지는 금액. 나머지는 1회차에 몰린다(카드사 관행). */
+  amount: number;
+}
+
 export interface CardBilling {
   cardAssetRowId: number;
   /**
@@ -216,6 +231,12 @@ export interface CardBilling {
    * − 같은 회차 기결제액(선결제 차감). 결제일 미설정 시 잔액 전액 fallback.
    */
   upcomingAmount: number;
+  /** 회차 내 일시불 순사용액(환불 상계, 음수 가능). 옛 서버 호환으로 옵셔널. */
+  upcomingLumpSumAmount?: number | null;
+  /** 같은 회차에 이미 낸 금액(선결제 차감분). */
+  upcomingAlreadyPaidAmount?: number | null;
+  /** 이 회차에 빠지는 할부 구성 — 예정액이 이용 내역 합과 다른 이유를 설명한다. */
+  upcomingInstallments?: InstallmentDue[];
   /** 다가오는 회차 청구 기간 "yyyy-MM-dd" | null (결제일 미설정 시 null) */
   upcomingPeriodStart: string | null;
   upcomingPeriodEnd: string | null;

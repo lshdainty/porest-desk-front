@@ -668,6 +668,11 @@ asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{
 asset,assetDetail.scheduledTag,예정,Upcoming
 asset,assetDetail.paidDone,결제 완료,Paid
 asset,assetDetail.usagePeriod,카드 이용 기간 {{period}},Card usage period {{period}}
+asset,assetDetail.installmentFallback,할부,Installment
+asset,assetDetail.installmentSeq,{{seq}}/{{total}}회차,Payment {{seq}} of {{total}}
+asset,assetDetail.installmentPrincipal,원금 {{amount}}원,Principal ₩{{amount}}
+asset,assetDetail.lumpSumLabel,일시불,One-time
+asset,assetDetail.alreadyPaidLabel,선결제 차감,Prepaid
 asset,assetDetail.limitSettings,한도 · 결제 설정,Limit · payment
 asset,assetDetail.limitUsage,한도 사용,Limit usage
 asset,assetDetail.limitPctUsed,{{pct}}% 사용,{{pct}}% used
