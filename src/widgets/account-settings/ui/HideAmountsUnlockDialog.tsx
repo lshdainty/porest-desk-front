@@ -34,16 +34,30 @@ export function HideAmountsUnlockDialog({
   const verifyMut = useVerifyPasswordMutation();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  // 닫히면 다음에 열 때 지난 입력이 남지 않도록 비운다. 부모가 `onVerified` 로도 닫으므로
+  // 닫기 핸들러가 아니라 `open` 이 바뀌는 순간을 본다 — 렌더 중 조정이라 커밋을 한 번
+  // 더 태우지 않는다(예전엔 effect 안에서 setState 해 `set-state-in-effect` 를 껐다).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (!open) {
       setPassword("");
       setError(null);
-      verifyMut.reset();
-      return;
     }
+  }
+
+  // 지난 실패 상태를 턴다. 이 컴포넌트의 state 가 아니라 뮤테이션 쪽이라 effect 로 둔다
+  // (이미 초기 상태면 no-op 이므로 몇 번 불려도 안전하다).
+  const resetVerify = verifyMut.reset;
+  useEffect(() => {
+    if (!open) resetVerify();
+  }, [open, resetVerify]);
+
+  // 열리면 입력에 포커스. 다이얼로그가 자리를 잡은 뒤라야 먹는다.
+  useEffect(() => {
+    if (!open) return;
     const id = window.setTimeout(() => inputRef.current?.focus(), 50);
     return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const submit = () => {

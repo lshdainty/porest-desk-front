@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { hideCardsApi } from "@/shared/api";
 import { isEn } from "@/shared/lib/porest/format";
 import {
@@ -170,8 +170,39 @@ export async function syncHideCardsFromServer(userId: string): Promise<void> {
   commitLocal(new Set(server.filter((k): k is HideCardKey => valid.has(k))));
 }
 
+/** 가려짐 여부를 지금 값으로 계산한다 — 훅 밖에 두어 렌더마다 같은 함수를 쓴다. */
+function readHidden(
+  card?: HideCardKey | HideCardKey[],
+  kind?: HideKind,
+): boolean {
+  const set = current();
+  // 화면 카드와 종류 카드는 합집합이다 — 카드는 "가리기" 스위치라, 켰는데 아무 일도
+  // 안 일어나는 조합이 있으면 안 된다. 켜는 방향으로만 넓어지므로 이미 가려진 게
+  // 풀리는 경우도 생기지 않는다.
+  if (kind && cardsOfKind(kind).some((c) => set.has(c))) return true;
+  if (Array.isArray(card)) return card.some((c) => set.has(c));
+  if (card) return set.has(card);
+  // 카드도 종류도 없는 자리는 "하나라도 가려졌나" — 눈 아이콘용이다.
+  // **종류 카드는 세지 않는다.** 세면 지출만 가린 사용자에게 예산·더치페이의 '원'
+  // 단위(카드 없이 부르는 자리들)까지 사라진다 — 종류 카드가 안 덮기로 한 화면이다.
+  if (kind) return false;
+  return SCREEN_HIDE_CARDS.some((c) => set.has(c));
+}
+
+/** 가림 상태 변경 구독. 모듈 스코프라 참조가 고정된다. */
+function subscribeHidden(onChange: () => void): () => void {
+  window.addEventListener(EVENT, onChange);
+  return () => window.removeEventListener(EVENT, onChange);
+}
+
 /**
  * 이 카드(들)가 가려져 있는가.
+ *
+ * <p>값의 출처는 리액트 밖(모듈 전역 Set + window 이벤트)이라
+ * <b>`useSyncExternalStore`</b> 로 읽는다. 예전엔 `useState` + `useEffect` 로 베껴
+ * 두고 이벤트가 오면 다시 세팅했는데, 그러면 두 가지를 손으로 메워야 했다 —
+ * 마운트와 구독 사이에 값이 바뀌는 틈, 그리고 배열 리터럴로 넘어오는 `card` 를
+ * 의존성에 못 적는 문제(그래서 규칙을 꺼야 했다). 이 훅은 둘 다 스스로 처리한다.
  *
  * <p>카드를 여러 개 넘기면 <b>하나라도 켜져 있으면</b> 가린다. 같은 금액이 두 카드에
  * 걸치는 자리가 있다 — 캘린더 셀은 '캘린더 금액' 이면서 '거래 목록' 의 일별 합계이기도
@@ -185,32 +216,7 @@ export function useHideAmounts(
   card?: HideCardKey | HideCardKey[],
   kind?: HideKind,
 ): boolean {
-  // 배열 리터럴을 그대로 넘기는 호출부가 많다 — 매 렌더 새 배열이라 deps 로 못 쓴다.
-  const key = `${Array.isArray(card) ? card.join("|") : (card ?? "")}#${kind ?? ""}`;
-  const read = () => {
-    const set = current();
-    // 화면 카드와 종류 카드는 합집합이다 — 카드는 "가리기" 스위치라, 켰는데 아무 일도
-    // 안 일어나는 조합이 있으면 안 된다. 켜는 방향으로만 넓어지므로 이미 가려진 게
-    // 풀리는 경우도 생기지 않는다.
-    if (kind && cardsOfKind(kind).some((c) => set.has(c))) return true;
-    if (Array.isArray(card)) return card.some((c) => set.has(c));
-    if (card) return set.has(card);
-    // 카드도 종류도 없는 자리는 "하나라도 가려졌나" — 눈 아이콘용이다.
-    // **종류 카드는 세지 않는다.** 세면 지출만 가린 사용자에게 예산·더치페이의 '원'
-    // 단위(카드 없이 부르는 자리들)까지 사라진다 — 종류 카드가 안 덮기로 한 화면이다.
-    if (kind) return false;
-    return SCREEN_HIDE_CARDS.some((c) => set.has(c));
-  };
-  const [hidden, setHidden] = useState(read);
-  useEffect(() => {
-    const onChange = () => setHidden(read());
-    window.addEventListener(EVENT, onChange);
-    // 훅이 마운트되는 사이 값이 바뀌었을 수 있다.
-    onChange();
-    return () => window.removeEventListener(EVENT, onChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  return hidden;
+  return useSyncExternalStore(subscribeHidden, () => readHidden(card, kind));
 }
 
 /** 페이지 단위 상태 — 전부/일부/없음. 설정 화면의 '페이지 잠그기' 스위치용. */

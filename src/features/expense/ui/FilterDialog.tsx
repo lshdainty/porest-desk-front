@@ -11,33 +11,11 @@ import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Toggle } from "@/shared/ui/toggle";
 import { TxTypeToggle, type TxTypeOption } from "@/entities/expense";
-
-export type FilterPeriod = "week" | "month" | "3m" | "custom";
-
-export interface FilterValue {
-  period: FilterPeriod;
-  /** period === 'custom' 일 때만 사용 — "YYYY-MM-DD" */
-  startDate: string;
-  /** period === 'custom' 일 때만 사용 — "YYYY-MM-DD" */
-  endDate: string;
-  types: ExpenseType[];
-  categoryIds: number[];
-  assetIds: number[];
-  min: string;
-  max: string;
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const DEFAULT_FILTER: FilterValue = {
-  period: "custom",
-  startDate: "",
-  endDate: "",
-  types: ["EXPENSE", "INCOME"],
-  categoryIds: [],
-  assetIds: [],
-  min: "",
-  max: "",
-};
+import {
+  DEFAULT_FILTER,
+  type FilterPeriod,
+  type FilterValue,
+} from "../model/filter";
 
 const PERIODS: { v: FilterPeriod; lKey: string }[] = [
   { v: "week", lKey: "filter.period.week" },

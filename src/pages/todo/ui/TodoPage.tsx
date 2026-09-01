@@ -117,6 +117,14 @@ function dayDiff(a: string, b: string): number {
   return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 }
 
+/** 오늘부터 7일 안에 마감인가. `today` 를 받아 모듈 스코프에 둔다 — 컴포넌트 안에
+ *  두면 매 렌더 새 함수라 이걸 쓰는 useMemo 가 의존성을 정직하게 못 적는다. */
+function inSevenDays(today: string, key: string | null): boolean {
+  if (!key) return false;
+  const diff = dayDiff(today, key);
+  return diff >= 0 && diff <= 7;
+}
+
 /** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
 function kDate(s: string): { md: string; full: string } {
   return { md: formatMonthDay(s), full: formatMonthDayDow(s) };
@@ -240,12 +248,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     );
   };
 
-  const inSevenDays = (key: string | null): boolean => {
-    if (!key) return false;
-    const diff = dayDiff(today, key);
-    return diff >= 0 && diff <= 7;
-  };
-
   // 필터별 카운트 (칩 뱃지).
   const counts = useMemo(() => {
     let t = 0;
@@ -260,10 +262,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       a++;
       const key = dueKey(todo.dueDate);
       if (key === today) t++;
-      if (inSevenDays(key)) w++;
+      if (inSevenDays(today, key)) w++;
     }
     return { today: t, week: w, all: a, done: d };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todos, today]);
 
   // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
@@ -273,7 +274,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       visible = todos.filter((t) => !isDone(t) && dueKey(t.dueDate) === today);
     else if (filter === "week")
       visible = todos.filter(
-        (t) => !isDone(t) && inSevenDays(dueKey(t.dueDate)),
+        (t) => !isDone(t) && inSevenDays(today, dueKey(t.dueDate)),
       );
     else if (filter === "all") visible = todos.filter((t) => !isDone(t));
     else visible = todos.filter(isDone);
@@ -295,7 +296,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       else map.set(k, [t]);
     }
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todos, filter, today]);
 
   const onSave = (values: TodoFormValues, id?: number) => {

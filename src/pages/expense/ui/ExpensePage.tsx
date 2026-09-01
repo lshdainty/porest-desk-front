@@ -92,11 +92,11 @@ const INSIGHT_CARDS: HideCardKey[] = ["ledger.monthSummary", "ledger.txList"];
 import { useAsset, useAssets, useAssetTransfers } from "@/features/asset";
 import type { AssetTransfer } from "@/entities/asset";
 import type { Expense, ExpenseType, ExpenseCategory } from "@/entities/expense";
+import { FilterDialog } from "@/features/expense/ui/FilterDialog";
 import {
-  FilterDialog,
-  type FilterValue,
   DEFAULT_FILTER,
-} from "@/features/expense/ui/FilterDialog";
+  type FilterValue,
+} from "@/features/expense/model/filter";
 import {
   countableTx,
   expenseSum,

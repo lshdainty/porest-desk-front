@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Bell, Zap, Calendar } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
@@ -182,20 +182,17 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   );
 
   // 결제 수단·거래 타입 변경 시 현재 선택 자산이 허용 목록에 없으면 리셋
-  useEffect(() => {
-    if (assetRowId == null) return;
+  // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
+  if (assetRowId != null) {
     const picked = assets.find((a) => a.rowId === assetRowId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (picked && !allowAsset(picked)) setAssetRowId(null);
-  }, [assetRowId, assets, allowAsset]);
+  }
 
   // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
-  useEffect(() => {
-    if (categoryRowId == null) return;
+  if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!cat || cat.expenseType !== type) setCategoryRowId(null);
-  }, [type, categoryRowId, categories]);
+  }
 
   const nextDates = useMemo(
     () => previewNextDates(startDate, frequency, dayOfWeek, dayOfMonth, 3),

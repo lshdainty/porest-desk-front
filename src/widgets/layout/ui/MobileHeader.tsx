@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useUnreadCount } from "@/features/notification";
-import { NAV } from "./PorestSidebar";
+import { NAV } from "../model/nav";
 
 // 값은 layout ns i18n 키 — 렌더 시 t(titleKey(pathname)) 로 해석.
 const MTITLE_KEY: Record<string, string> = {

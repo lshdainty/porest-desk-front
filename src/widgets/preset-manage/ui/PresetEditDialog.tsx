@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -77,14 +77,11 @@ export function PresetEditDialog({
   );
 
   // 타입이 바뀌면 해당 타입의 카테고리가 아닌 경우 초기화
-  useEffect(() => {
-    if (categoryRowId == null) return;
+  // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
+  if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    if (!cat || cat.expenseType !== type) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCategoryRowId(null);
-    }
-  }, [type, categoryRowId, categories]);
+    if (!cat || cat.expenseType !== type) setCategoryRowId(null);
+  }
 
   const topCategories = useMemo(
     () =>
