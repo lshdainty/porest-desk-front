@@ -15,20 +15,12 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import {
-  CAT_PALETTE,
-  getPaletteByColor,
-} from "@/shared/lib/porest/chart-palette";
+import { CAT_PALETTE } from "@/shared/lib/porest/chart-palette";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
   ExpenseType,
 } from "@/entities/expense";
-
-// 호환 re-export — 진짜 정의는 `@/shared/lib/porest/chart-palette` 다.
-// 새 코드는 거기서 직접 가져와라(이 경로는 옛 호출처용으로만 남는다).
-// eslint-disable-next-line react-refresh/only-export-components
-export { CAT_PALETTE, getPaletteByColor };
 
 /** @deprecated retained only for legacy re-exports; prefer ExpenseCategory. */
 export interface CategoryItem {

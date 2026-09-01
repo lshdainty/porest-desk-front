@@ -1,21 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  Calendar1,
-  ChartPie,
-  ChevronRight,
-  ChevronsUpDown,
-  CreditCard,
-  LayoutDashboard,
-  SquareCheckBig,
-  FileText,
-  ReceiptText,
-  FilePen,
-  TrendingUp,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ChevronRight, ChevronsUpDown } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,53 +30,7 @@ import {
 } from "@/features/subscription/model/useSubscription";
 import { brokerPath, useBrokerLabel } from "@/features/stock/lib/broker";
 import { BrandMark } from "@/shared/ui/brand-mark";
-
-export interface NavItem {
-  id: string;
-  labelKey: string;
-  icon: React.ComponentType<{
-    size?: number;
-    strokeWidth?: number;
-    className?: string;
-  }>;
-  path: string;
-}
-
-// NAV 는 MobileHeader 가 import 하는 공용 상수 — 컴포넌트 파일에서 함께 export.
-// **하위 메뉴는 여기 담지 않는다.** 증권의 하위(증권사)는 연결 상태에 따라 사용자마다
-// 달라지는 값이라 정적 상수에 못 들어가고, NAV 를 쓰는 다른 곳(모바일 헤더 제목)은
-// 하위를 볼 일이 없다. 사이드바만 자기 자리에서 붙인다.
-// label 은 layout ns i18n 키(labelKey) — 렌더 시 t(labelKey) 로 해석.
-// (Fast Refresh 경고는 의도된 것이라 이 줄만 예외 처리. button.tsx buttonVariants 와 동일 관례.)
-// eslint-disable-next-line react-refresh/only-export-components
-export const NAV: NavItem[] = [
-  { id: "home", labelKey: "home", icon: LayoutDashboard, path: "/desk" },
-  { id: "assets", labelKey: "asset", icon: Wallet, path: "/desk/asset" },
-  { id: "stocks", labelKey: "stocks", icon: TrendingUp, path: "/desk/stocks" },
-  { id: "tx", labelKey: "expense", icon: ReceiptText, path: "/desk/expense" },
-  {
-    id: "stats",
-    labelKey: "statsAnalysis",
-    icon: ChartPie,
-    path: "/desk/stats",
-  },
-  { id: "budget", labelKey: "budget", icon: FilePen, path: "/desk/budget" },
-  {
-    id: "calendar",
-    labelKey: "calendar",
-    icon: Calendar1,
-    path: "/desk/calendar",
-  },
-  { id: "todo", labelKey: "todoNav", icon: SquareCheckBig, path: "/desk/todo" },
-  { id: "dutch", labelKey: "dutchPay", icon: Users, path: "/desk/dutch-pay" },
-  { id: "memo", labelKey: "memo", icon: FileText, path: "/desk/memo" },
-  {
-    id: "card-benefit",
-    labelKey: "cardBenefit",
-    icon: CreditCard,
-    path: "/desk/card-benefit",
-  },
-];
+import { NAV, type NavItem } from "../model/nav";
 
 export function PorestSidebar() {
   const { t } = useTranslation("layout");

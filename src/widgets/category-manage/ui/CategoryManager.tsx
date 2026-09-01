@@ -537,7 +537,6 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <>
       {entries.map((e, i) => (
-        // eslint-disable-next-line react/no-array-index-key
         <div key={i}>
           <div className={manageRowClass(mobile)}>
             {/* grip 은 모바일 평시엔 없음(편집 모드 전용) — 스켈레톤도 미러 */}
@@ -564,7 +563,6 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
           {e.childCount > 0 && (
             <div style={{ paddingLeft: 28 }}>
               {Array.from({ length: e.childCount }).map((_, j) => (
-                // eslint-disable-next-line react/no-array-index-key
                 <div key={j} className={manageRowClass(mobile)}>
                   {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
                   {/* 부모와 같은 chevron 자리 — 없으면 자식이 부모와 같은 x 에 선다 */}
