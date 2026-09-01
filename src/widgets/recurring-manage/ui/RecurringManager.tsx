@@ -40,6 +40,13 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
+/*
+ * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
+ * 든 `useMemo` 가 통째로 무효화된다(memo 를 적어 둔 의미가 없어진다). 상수를 돌려주면
+ * 참조가 고정된다.
+ */
+const EMPTY_ITEMS: RecurringTransaction[] = [];
+
 type FilterKey = "all" | "expense" | "income" | "paused";
 
 // 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
@@ -81,7 +88,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
 
   const isLoading = recurringsQ.isLoading || categoriesQ.isLoading;
 
-  const items = recurringsQ.data ?? [];
+  const items = recurringsQ.data ?? EMPTY_ITEMS;
   const categories = categoriesQ.data ?? [];
 
   const [filter, setFilter] = useState<FilterKey>("all");

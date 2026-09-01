@@ -89,6 +89,13 @@ import type {
 } from "@/entities/expense";
 import { renderIcon, tileRadius } from "@/shared/lib";
 
+/*
+ * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
+ * 든 `useMemo` 가 통째로 무효화된다(memo 를 적어 둔 의미가 없어진다). 상수를 돌려주면
+ * 참조가 고정된다.
+ */
+const EMPTY_HEATMAP: HeatmapCell[] = [];
+
 type OutletCtx = { mobile: boolean };
 type TabKey = "cat" | "trend" | "compare";
 type SegMode = "m" | "q" | "y" | "custom";
@@ -1065,7 +1072,7 @@ export const StatsPage = () => {
       if (c.parentCategoryRowId != null) row.hasChildren = true;
     }
     return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-  }, [periodBreakdown, categoryById]);
+  }, [periodBreakdown, categoryById, t]);
 
   // 드릴 모드: 활성 부모의 자식 leaf 집계
   const drillBreakdown = useMemo<DonutRow[]>(() => {
@@ -1092,7 +1099,7 @@ export const StatsPage = () => {
       row.amount += c.totalAmount;
     }
     return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-  }, [activeParentId, periodBreakdown, categoryById]);
+  }, [activeParentId, periodBreakdown, categoryById, t]);
 
   const activeParent =
     activeParentId != null
@@ -1615,7 +1622,7 @@ export const StatsPage = () => {
   );
 
   // ---------- HEATMAP (요일 × 시간대 구간) ----------
-  const heatmapCells: HeatmapCell[] = heatmapQ.data ?? [];
+  const heatmapCells: HeatmapCell[] = heatmapQ.data ?? EMPTY_HEATMAP;
   const heatmapMatrix = useMemo(() => {
     // rows: 6 시간대 × cols: 7 요일, value = sum of totalAmount
     const matrix: number[][] = HEAT_ROWS.map(() => HEAT_COLS.map(() => 0));
@@ -3069,7 +3076,7 @@ export const StatsPage = () => {
     return Array.from(byId.values())
       .sort((a, b) => b.now - a.now || b.prev - a.prev)
       .slice(0, 10);
-  }, [rangeQ.data, prevRangeQ.data, categoryById]);
+  }, [rangeQ.data, prevRangeQ.data, categoryById, t]);
 
   const totalNow = periodTotalExpense;
   const totalPrev = prevRangeQ.data?.totalExpense ?? 0;

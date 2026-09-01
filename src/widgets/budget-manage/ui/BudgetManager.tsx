@@ -43,6 +43,14 @@ import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
+/*
+ * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
+ * 든 `useMemo` 가 통째로 무효화된다(memo 를 적어 둔 의미가 없어진다). 상수를 돌려주면
+ * 참조가 고정된다.
+ */
+const EMPTY_BUDGETS: ExpenseBudget[] = [];
+const EMPTY_CATEGORIES: ExpenseCategory[] = [];
+
 const currentMonthKey = () => {
   const n = new Date();
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
@@ -89,8 +97,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const [confirmCopy, setConfirmCopy] = useState(false);
   const [copyingPrev, setCopyingPrev] = useState(false);
 
-  const budgetList = budgets ?? [];
-  const categoryList: ExpenseCategory[] = categories ?? [];
+  const budgetList = budgets ?? EMPTY_BUDGETS;
+  const categoryList: ExpenseCategory[] = categories ?? EMPTY_CATEGORIES;
 
   // 월 전체 예산 = categoryRowId === null 인 항목
   const monthlyBudget = useMemo(

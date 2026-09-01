@@ -558,7 +558,6 @@ export function LightweightStockChart({
     const ms = interval === "1m" ? 15_000 : 60_000;
     const id = setInterval(() => pollLatestRef.current(), ms);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbol, interval]);
 
   const fmtPrice = (v: number) =>

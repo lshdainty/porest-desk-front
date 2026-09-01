@@ -13,7 +13,14 @@ import {
 } from "@/shared/ui/command";
 import { cn } from "@/shared/lib";
 import { useCardCatalogs } from "../model/useCardCatalogs";
-import type { CardType } from "@/entities/card";
+import type { CardCatalogSummary, CardType } from "@/entities/card";
+
+/*
+ * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
+ * 든 `useMemo` 가 통째로 무효화된다(memo 를 적어 둔 의미가 없어진다). 상수를 돌려주면
+ * 참조가 고정된다.
+ */
+const EMPTY_ITEMS: CardCatalogSummary[] = [];
 
 interface Props {
   value?: number | null;
@@ -45,7 +52,7 @@ export function CardCatalogCombobox({
     size: 30,
   });
 
-  const items = data?.content ?? [];
+  const items = data?.content ?? EMPTY_ITEMS;
   const selected = useMemo(
     () => items.find((c) => c.rowId === value),
     [items, value],

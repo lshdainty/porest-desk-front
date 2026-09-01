@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { MapPin, Repeat, Bell, Tag, Check } from "lucide-react";
 import { cn } from "@/shared/lib";
@@ -121,8 +121,20 @@ export const EventForm = ({
   const defaultCalendar =
     userCalendars.find((c) => c.isDefault) ?? userCalendars[0];
 
-  const [recurrence, setRecurrence] = useState<RecurrenceOption>("none");
-  const [selectedReminders, setSelectedReminders] = useState<number[]>([]);
+  // 반복·알림은 `event` 에서 시드한다. 마운트는 초기값으로, 이후 `event` 가 바뀌면
+  // 렌더 중 조정으로 다시 맞춘다 — effect 안에서 setState 하면 커밋을 한 번 더 태운다.
+  const [recurrence, setRecurrence] = useState<RecurrenceOption>(() =>
+    rruleToRecurrence(event?.rrule),
+  );
+  const [selectedReminders, setSelectedReminders] = useState<number[]>(
+    () => event?.reminders?.map((r) => r.minutesBefore) ?? [],
+  );
+  const [seededEvent, setSeededEvent] = useState(event);
+  if (seededEvent !== event) {
+    setSeededEvent(event);
+    setRecurrence(rruleToRecurrence(event?.rrule));
+    setSelectedReminders(event?.reminders?.map((r) => r.minutesBefore) ?? []);
+  }
 
   const form = useForm<CalendarEventFormValues>({
     defaultValues: {
@@ -145,14 +157,20 @@ export const EventForm = ({
     handleSubmit,
     reset,
     setValue,
-    watch,
+    getValues,
+    control,
     formState: { errors },
   } = form;
 
-  const selectedColor = watch("color");
-  const isAllDay = watch("isAllDay");
-  const selectedLabelRowId = watch("labelRowId");
-  const selectedCalendarRowId = watch("calendarRowId");
+  // 렌더에서 값을 구독할 땐 `useWatch` 를 쓴다. `useForm().watch` 는 매번 새 함수를
+  // 돌려주는 API 라 React Compiler 가 이 컴포넌트 최적화를 통째로 건너뛴다
+  // (`react-hooks/incompatible-library`). 핸들러 안 1 회 읽기는 `getValues` 다.
+  const startDate = useWatch({ control, name: "startDate" });
+  const endDate = useWatch({ control, name: "endDate" });
+  const selectedColor = useWatch({ control, name: "color" });
+  const isAllDay = useWatch({ control, name: "isAllDay" });
+  const selectedLabelRowId = useWatch({ control, name: "labelRowId" });
+  const selectedCalendarRowId = useWatch({ control, name: "calendarRowId" });
 
   // Update default calendar when userCalendars load
   useEffect(() => {
@@ -184,8 +202,6 @@ export const EventForm = ({
         reminderMinutes: reminderMins,
         calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
       });
-      setRecurrence(rruleToRecurrence(event.rrule));
-      setSelectedReminders(reminderMins);
     } else {
       reset({
         title: "",
@@ -201,8 +217,6 @@ export const EventForm = ({
         reminderMinutes: [],
         calendarRowId: defaultCalendar?.rowId,
       });
-      setRecurrence("none");
-      setSelectedReminders([]);
     }
   }, [event, reset, defaultDate, defaultEndDate, defaultCalendar]);
 
@@ -387,8 +401,10 @@ export const EventForm = ({
               onCheckedChange={(checked) => {
                 setValue("isAllDay", checked, { shouldDirty: true });
 
-                const currentStart = watch("startDate");
-                const currentEnd = watch("endDate");
+                // 핸들러 안에서의 1 회 읽기라 `getValues` 가 맞다 — `watch` 는 구독을
+                // 만드는 API 라 컴파일러가 이 컴포넌트 최적화를 통째로 건너뛴다.
+                const currentStart = getValues("startDate");
+                const currentEnd = getValues("endDate");
 
                 if (checked) {
                   // datetime-local → date: strip time
@@ -420,48 +436,48 @@ export const EventForm = ({
               <Label>{t("form.startDate")}</Label>
               {isAllDay ? (
                 <InputDatePicker
-                  value={watch("startDate")}
+                  value={startDate}
                   onValueChange={(d) => {
                     setValue("startDate", d, { shouldDirty: true });
                     const adjusted = ensureEndAfterStart(
                       d,
-                      watch("endDate"),
+                      getValues("endDate"),
                       true,
                     );
-                    if (adjusted !== watch("endDate"))
+                    if (adjusted !== getValues("endDate"))
                       setValue("endDate", adjusted, { shouldDirty: true });
                   }}
                 />
               ) : (
                 <div className="grid grid-cols-[1fr_116px] gap-2">
                   <InputDatePicker
-                    value={watch("startDate").substring(0, 10)}
+                    value={startDate.substring(0, 10)}
                     onValueChange={(d) => {
                       const time =
-                        watch("startDate").substring(11, 16) || "09:00";
+                        getValues("startDate").substring(11, 16) || "09:00";
                       const newStart = `${d}T${time}`;
                       setValue("startDate", newStart, { shouldDirty: true });
                       const adjusted = ensureEndAfterStart(
                         newStart,
-                        watch("endDate"),
+                        getValues("endDate"),
                         false,
                       );
-                      if (adjusted !== watch("endDate"))
+                      if (adjusted !== getValues("endDate"))
                         setValue("endDate", adjusted, { shouldDirty: true });
                     }}
                   />
                   <InputTimePicker
-                    value={watch("startDate").substring(11, 16)}
+                    value={startDate.substring(11, 16)}
                     onValueChange={(t) => {
-                      const date = watch("startDate").substring(0, 10);
+                      const date = getValues("startDate").substring(0, 10);
                       const newStart = `${date}T${t}`;
                       setValue("startDate", newStart, { shouldDirty: true });
                       const adjusted = ensureEndAfterStart(
                         newStart,
-                        watch("endDate"),
+                        getValues("endDate"),
                         false,
                       );
-                      if (adjusted !== watch("endDate"))
+                      if (adjusted !== getValues("endDate"))
                         setValue("endDate", adjusted, { shouldDirty: true });
                     }}
                     minuteStep={5}
@@ -473,7 +489,7 @@ export const EventForm = ({
               <Label>{t("form.endDate")}</Label>
               {isAllDay ? (
                 <InputDatePicker
-                  value={watch("endDate")}
+                  value={endDate}
                   onValueChange={(d) =>
                     setValue("endDate", d, { shouldDirty: true })
                   }
@@ -481,19 +497,19 @@ export const EventForm = ({
               ) : (
                 <div className="grid grid-cols-[1fr_116px] gap-2">
                   <InputDatePicker
-                    value={watch("endDate").substring(0, 10)}
+                    value={endDate.substring(0, 10)}
                     onValueChange={(d) => {
                       const time =
-                        watch("endDate").substring(11, 16) || "10:00";
+                        getValues("endDate").substring(11, 16) || "10:00";
                       setValue("endDate", `${d}T${time}`, {
                         shouldDirty: true,
                       });
                     }}
                   />
                   <InputTimePicker
-                    value={watch("endDate").substring(11, 16)}
+                    value={endDate.substring(11, 16)}
                     onValueChange={(t) => {
-                      const date = watch("endDate").substring(0, 10);
+                      const date = getValues("endDate").substring(0, 10);
                       setValue("endDate", `${date}T${t}`, {
                         shouldDirty: true,
                       });
