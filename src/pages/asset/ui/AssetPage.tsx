@@ -1,122 +1,174 @@
-import { useMemo, useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useMemo, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
-  ChevronRight, Eye, EyeOff, RefreshCw,
-  Target, TrendingDown, TrendingUp,
-} from 'lucide-react'
-import { DynamicIcon } from 'lucide-react/dynamic'
-import type { IconName } from 'lucide-react/dynamic'
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { tileRadius } from '@/shared/lib'
-import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
-import { formatYearMonth, formatMonthShort, formatMonthDay, parseLocalDate } from '@/shared/lib/date'
-import { niceAxis } from '@/shared/lib/porest/chartAxis'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import { HideCard, HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import type { HideCardKey } from '@/shared/lib/porest/hide-amounts-cards'
-import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
-import { getBrandColor } from '@/shared/lib/porest/bank-colors'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { Section } from '@/shared/ui/porest/section'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { Donut } from '@/shared/ui/porest/charts'
-import { useAssets, useAssetSummary, useNetWorthTrend, useInvestValuation, holdingsOf, type InvestValuation } from '@/features/asset'
-import { useStockSymbolName } from '@/features/stock/model/useStockMaster'
-import { useRecurringTransactions } from '@/features/recurring-transaction'
-import { useSavingGoals } from '@/features/savingGoal'
-import { AssetDetailDialog } from '@/widgets/asset-full/ui/AssetDetailDialog'
-import { AssetLogo, type Asset, type AssetType } from '@/entities/asset'
-import type { SavingGoal } from '@/entities/savingGoal'
+  ChevronRight,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Target,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
+import type { IconName } from "lucide-react/dynamic";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { tileRadius } from "@/shared/lib";
+import { KRW, money, formatChartAxis, isEn } from "@/shared/lib/porest/format";
+import {
+  formatYearMonth,
+  formatMonthShort,
+  formatMonthDay,
+  parseLocalDate,
+} from "@/shared/lib/date";
+import { niceAxis } from "@/shared/lib/porest/chartAxis";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import {
+  HideCard,
+  HideUnit,
+  MaskAmount,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
+import type { HideCardKey } from "@/shared/lib/porest/hide-amounts-cards";
+import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
+import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
+import { getBrandColor } from "@/shared/lib/porest/bank-colors";
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/shared/ui/chart";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Section } from "@/shared/ui/porest/section";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { Donut } from "@/shared/ui/porest/charts";
+import {
+  useAssets,
+  useAssetSummary,
+  useNetWorthTrend,
+  useInvestValuation,
+  holdingsOf,
+  type InvestValuation,
+} from "@/features/asset";
+import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
+import { useRecurringTransactions } from "@/features/recurring-transaction";
+import { useSavingGoals } from "@/features/savingGoal";
+import { AssetDetailDialog } from "@/widgets/asset-full/ui/AssetDetailDialog";
+import { AssetLogo, type Asset, type AssetType } from "@/entities/asset";
+import type { SavingGoal } from "@/entities/savingGoal";
 
-type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } }
+type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } };
 function NetWorthTooltip({
   active,
   payload,
   label,
 }: {
-  active?: boolean
-  payload?: NetWorthPayload[]
-  label?: string
+  active?: boolean;
+  payload?: NetWorthPayload[];
+  label?: string;
 }) {
-  const { t } = useTranslation('asset')
-  if (!active || !payload?.length) return null
-  const v = Number(payload[0]?.value ?? 0)
+  const { t } = useTranslation("asset");
+  if (!active || !payload?.length) return null;
+  const v = Number(payload[0]?.value ?? 0);
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-tile)',
-        boxShadow: 'var(--shadow-md)',
-        padding: '8px 12px',
-        fontSize: 'var(--text-caption)',
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-tile)",
+        boxShadow: "var(--shadow-md)",
+        padding: "8px 12px",
+        fontSize: "var(--text-caption)",
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--border-brand)' }} />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('netWorth')}</span>
+      <div
+        style={{
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-tertiary)",
+          fontWeight: "600",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "var(--radius-xs)",
+            background: "var(--border-brand)",
+          }}
+        />
+        <span
+          style={{
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("netWorth")}
+        </span>
         <span
           className="num"
-          style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-primary)' }}
+          style={{
+            marginLeft: "auto",
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
+            color: "var(--fg-primary)",
+          }}
         >
-          <MaskAmount card="asset.netWorth">{wonPre()}{KRW(v)}</MaskAmount>
+          <MaskAmount card="asset.netWorth">
+            {wonPre()}
+            {KRW(v)}
+          </MaskAmount>
           <WonUnit card="asset.netWorth" />
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 function NetWorthChart({ height = 180 }: { height?: number }) {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
   const netWorthChartConfig = {
-    netWorth: { label: t('netWorth'), color: 'var(--border-brand)' },
-  } satisfies ChartConfig
-  const hidden = useHideAmounts('asset.netWorth')
-  const trendQ = useNetWorthTrend(12)
+    netWorth: { label: t("netWorth"), color: "var(--border-brand)" },
+  } satisfies ChartConfig;
+  const hidden = useHideAmounts("asset.netWorth");
+  const trendQ = useNetWorthTrend(12);
   const data = useMemo(
     () =>
-      (trendQ.data ?? []).map(p => ({
+      (trendQ.data ?? []).map((p) => ({
         monthLabel: formatMonthShort(p.month, { pad: true }),
         netWorth: p.netWorth,
       })),
     [trendQ.data],
-  )
+  );
   // Y축: 0기준 nice 눈금 (앱 net_worth_chart niceAxis 정합).
   const yAxis = useMemo(() => {
-    const vals = data.map(d => d.netWorth)
-    return niceAxis(Math.min(0, ...vals), Math.max(0, ...vals))
-  }, [data])
+    const vals = data.map((d) => d.netWorth);
+    return niceAxis(Math.min(0, ...vals), Math.max(0, ...vals));
+  }, [data]);
 
   if (trendQ.isLoading) {
-    return (
-      <SkeletonBase
-        className="w-full rounded-lg"
-        style={{ height }}
-      />
-    )
+    return <SkeletonBase className="w-full rounded-lg" style={{ height }} />;
   }
   if (data.length === 0) {
     return (
       <div
         style={{
           height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
-          fontSize: 'var(--text-label-sm)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--fg-tertiary)",
+          fontSize: "var(--text-label-sm)",
         }}
       >
-        {t('noTrendData')}
+        {t("noTrendData")}
       </div>
-    )
+    );
   }
 
   return (
@@ -128,16 +180,28 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
         <defs>
           <linearGradient id="netWorthFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--border-brand)" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="var(--border-brand)" stopOpacity={0} />
+            <stop
+              offset="0%"
+              stopColor="var(--border-brand)"
+              stopOpacity={0.25}
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--border-brand)"
+              stopOpacity={0}
+            />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
+        <CartesianGrid
+          vertical={false}
+          stroke="var(--border-subtle)"
+          strokeDasharray="3 3"
+        />
         <XAxis
           dataKey="monthLabel"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: "var(--text-badge)", fill: "var(--fg-tertiary)" }}
           tickMargin={8}
         />
         <YAxis
@@ -146,12 +210,12 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           domain={[yAxis.min, yAxis.max]}
           ticks={yAxis.ticks}
           // 금액 숨기기 시 Y축도 마스킹 (앱 net_worth_chart '••••' 정합)
-          tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
-          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+          tickFormatter={(v: number) => (hidden ? "••••" : formatChartAxis(v))}
+          tick={{ fontSize: "var(--text-badge)", fill: "var(--fg-tertiary)" }}
           width={52}
         />
         <ChartTooltip
-          cursor={{ stroke: 'var(--fg-tertiary)', strokeDasharray: '3 3' }}
+          cursor={{ stroke: "var(--fg-tertiary)", strokeDasharray: "3 3" }}
           content={<NetWorthTooltip />}
         />
         <Area
@@ -160,25 +224,35 @@ function NetWorthChart({ height = 180 }: { height?: number }) {
           stroke="var(--border-brand)"
           strokeWidth={2}
           fill="url(#netWorthFill)"
-          dot={{ fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2, r: 4 }}
-          activeDot={{ r: 6, fill: 'var(--border-brand)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
+          dot={{
+            fill: "var(--border-brand)",
+            stroke: "var(--bg-surface)",
+            strokeWidth: 2,
+            r: 4,
+          }}
+          activeDot={{
+            r: 6,
+            fill: "var(--border-brand)",
+            stroke: "var(--bg-surface)",
+            strokeWidth: 2,
+          }}
         />
       </AreaChart>
     </ChartContainer>
-  )
+  );
 }
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-type AssetGroupKey = 'cash' | 'invest' | 'card' | 'loan'
+type AssetGroupKey = "cash" | "invest" | "card" | "loan";
 
 // porest chart palette 정합 — AssetSummaryCard ASSET_TYPE_COLORS와 일관
 const GROUP_META: Record<AssetGroupKey, { labelKey: string; color: string }> = {
-  cash: { labelKey: 'group.cashDeposit', color: 'var(--color-chart-blue)' },
-  invest: { labelKey: 'group.invest', color: 'var(--bg-brand)' },
-  card: { labelKey: 'group.card', color: 'var(--fg-expense)' },
-  loan: { labelKey: 'assetType.loan', color: 'var(--color-chart-brown)' },
-}
+  cash: { labelKey: "group.cashDeposit", color: "var(--color-chart-blue)" },
+  invest: { labelKey: "group.invest", color: "var(--bg-brand)" },
+  card: { labelKey: "group.card", color: "var(--fg-expense)" },
+  loan: { labelKey: "assetType.loan", color: "var(--color-chart-brown)" },
+};
 
 function AssetCompositionCard({
   accounts,
@@ -187,37 +261,40 @@ function AssetCompositionCard({
   loans,
   netWorth,
 }: {
-  accounts: Asset[]
-  investments: Asset[]
-  cards: Asset[]
-  loans: Asset[]
-  netWorth: number
+  accounts: Asset[];
+  investments: Asset[];
+  cards: Asset[];
+  loans: Asset[];
+  netWorth: number;
 }) {
-  const { t } = useTranslation('asset')
-  const [active, setActive] = useState<AssetGroupKey | null>(null)
+  const { t } = useTranslation("asset");
+  const [active, setActive] = useState<AssetGroupKey | null>(null);
 
   const groupAssets: Record<AssetGroupKey, Asset[]> = {
     cash: accounts,
     invest: investments,
     card: cards,
     loan: loans,
-  }
+  };
 
   type Row = {
-    key: string
-    label: string
-    amt: number
-    color: string
-    groupKey?: AssetGroupKey
-    clickable: boolean
-  }
+    key: string;
+    label: string;
+    amt: number;
+    color: string;
+    groupKey?: AssetGroupKey;
+    clickable: boolean;
+  };
 
-  const groupRows: Row[] = (['cash', 'invest', 'card', 'loan'] as AssetGroupKey[])
-    .map(g => {
-      const arr = groupAssets[g]
-      const amt = (g === 'card' || g === 'loan')
-        ? Math.abs(arr.reduce((s, a) => s + a.balance, 0))
-        : arr.reduce((s, a) => s + a.balance, 0)
+  const groupRows: Row[] = (
+    ["cash", "invest", "card", "loan"] as AssetGroupKey[]
+  )
+    .map((g) => {
+      const arr = groupAssets[g];
+      const amt =
+        g === "card" || g === "loan"
+          ? Math.abs(arr.reduce((s, a) => s + a.balance, 0))
+          : arr.reduce((s, a) => s + a.balance, 0);
       return {
         key: g,
         label: t(GROUP_META[g].labelKey),
@@ -225,49 +302,60 @@ function AssetCompositionCard({
         color: GROUP_META[g].color,
         groupKey: g,
         clickable: arr.length > 0,
-      }
+      };
     })
-    .filter(r => r.amt > 0)
+    .filter((r) => r.amt > 0);
 
   const drillRows: Row[] = active
-    ? groupAssets[active].map(a => {
-        const brand = getBrandColor(a.institution, a.assetName)
-        const isDebt = active === 'card' || active === 'loan'
-        return {
-          key: String(a.rowId),
-          label: a.institution ? `${a.institution} · ${a.assetName}` : a.assetName,
-          amt: isDebt ? Math.abs(a.balance) : a.balance,
-          color: a.color ?? brand?.bg ?? GROUP_META[active].color,
-          clickable: false,
-        }
-      })
-        .filter(r => r.amt > 0)
+    ? groupAssets[active]
+        .map((a) => {
+          const brand = getBrandColor(a.institution, a.assetName);
+          const isDebt = active === "card" || active === "loan";
+          return {
+            key: String(a.rowId),
+            label: a.institution
+              ? `${a.institution} · ${a.assetName}`
+              : a.assetName,
+            amt: isDebt ? Math.abs(a.balance) : a.balance,
+            color: a.color ?? brand?.bg ?? GROUP_META[active].color,
+            clickable: false,
+          };
+        })
+        .filter((r) => r.amt > 0)
         .sort((a, b) => b.amt - a.amt)
-    : []
+    : [];
 
-  const rows = active ? drillRows : groupRows
-  const segments = rows.map(r => ({ value: r.amt, color: r.color }))
-  const denom = Math.max(1, rows.reduce((s, r) => s + r.amt, 0))
+  const rows = active ? drillRows : groupRows;
+  const segments = rows.map((r) => ({ value: r.amt, color: r.color }));
+  const denom = Math.max(
+    1,
+    rows.reduce((s, r) => s + r.amt, 0),
+  );
 
-  const activeTotal = rows.reduce((s, r) => s + r.amt, 0)
-  const centerLbl = active ? t(GROUP_META[active].labelKey) : t('netWorth')
-  const centerVal = active
-    ? activeTotal
-    : netWorth
+  const activeTotal = rows.reduce((s, r) => s + r.amt, 0);
+  const centerLbl = active ? t(GROUP_META[active].labelKey) : t("netWorth");
+  const centerVal = active ? activeTotal : netWorth;
 
   const totalLabel = isEn()
     ? formatChartAxis(centerVal)
     : Math.abs(centerVal) >= 10_000_000
       ? `${(centerVal / 10_000_000).toFixed(2)}천만`
-      : `${(centerVal / 10_000).toFixed(0)}만`
+      : `${(centerVal / 10_000).toFixed(0)}만`;
 
-  const today = new Date()
-  const dateLabel = t('date:asOf', { date: formatMonthDay(today) })
+  const today = new Date();
+  const dateLabel = t("date:asOf", { date: formatMonthDay(today) });
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <CardTitle
+          style={{
+            fontSize: "var(--text-body-lg)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
           {active ? (
             <>
               <Button
@@ -275,301 +363,465 @@ function AssetCompositionCard({
                 onClick={() => setActive(null)}
                 className="h-auto p-0 text-body-lg font-medium text-text-secondary hover:text-text-primary no-underline hover:no-underline"
               >
-                {t('composition')}
+                {t("composition")}
               </Button>
-              <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}>›</span>
+              <span style={{ color: "var(--fg-tertiary)", fontWeight: "500" }}>
+                ›
+              </span>
               <span>{t(GROUP_META[active].labelKey)}</span>
             </>
           ) : (
-            t('composition')
+            t("composition")
           )}
         </CardTitle>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
           {dateLabel}
         </span>
       </CardHeader>
       <CardContent>
-      {segments.length === 0 ? (
-        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-          {active ? t('noItems') : t('noAssetData')}
-        </div>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Donut size={180} stroke={24} segments={segments}>
-            <div className="lbl">{centerLbl}</div>
-            <div className="val num" style={{ fontSize: 'var(--text-body-lg)' }}>
-              <MaskAmount card="asset.composition" mask="••••">{totalLabel}</MaskAmount>
-            </div>
-          </Donut>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-            {rows.map(row => {
-              const pct = (row.amt / denom) * 100
-              return (
-                <div
-                  key={row.key}
-                  role={row.clickable ? 'button' : undefined}
-                  tabIndex={row.clickable ? 0 : undefined}
-                  onClick={row.clickable ? () => row.groupKey && setActive(row.groupKey) : undefined}
-                  onKeyDown={row.clickable ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      if (row.groupKey) setActive(row.groupKey)
+        {segments.length === 0 ? (
+          <div
+            style={{
+              padding: "24px 0",
+              textAlign: "center",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-label-sm)",
+            }}
+          >
+            {active ? t("noItems") : t("noAssetData")}
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            <Donut size={180} stroke={24} segments={segments}>
+              <div className="lbl">{centerLbl}</div>
+              <div
+                className="val num"
+                style={{ fontSize: "var(--text-body-lg)" }}
+              >
+                <MaskAmount card="asset.composition" mask="••••">
+                  {totalLabel}
+                </MaskAmount>
+              </div>
+            </Donut>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                minWidth: 0,
+              }}
+            >
+              {rows.map((row) => {
+                const pct = (row.amt / denom) * 100;
+                return (
+                  <div
+                    key={row.key}
+                    role={row.clickable ? "button" : undefined}
+                    tabIndex={row.clickable ? 0 : undefined}
+                    onClick={
+                      row.clickable
+                        ? () => row.groupKey && setActive(row.groupKey)
+                        : undefined
                     }
-                  } : undefined}
-                  style={{
-                    cursor: row.clickable ? 'pointer' : 'default',
-                    borderRadius: 'var(--radius-md)',
-                    padding: row.clickable ? '4px 6px' : undefined,
-                    margin: row.clickable ? '0 -6px' : undefined,
-                    transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
-                  }}
-                  onMouseEnter={row.clickable ? (e) => { e.currentTarget.style.background = 'var(--bg-muted)' } : undefined}
-                  onMouseLeave={row.clickable ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
-                  title={row.clickable ? t('viewSubAssets') : undefined}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-xs)', background: row.color, flexShrink: 0 }} />
-                    <span
-                      style={{
-                        fontSize: 'var(--text-label-sm)',
-                        fontWeight: '600',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {row.label}
-                    </span>
-                    <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>
-                      <MaskAmount card="asset.composition" mask="••••">{KRW(row.amt)}</MaskAmount>
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    onKeyDown={
+                      row.clickable
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              if (row.groupKey) setActive(row.groupKey);
+                            }
+                          }
+                        : undefined
+                    }
+                    style={{
+                      cursor: row.clickable ? "pointer" : "default",
+                      borderRadius: "var(--radius-md)",
+                      padding: row.clickable ? "4px 6px" : undefined,
+                      margin: row.clickable ? "0 -6px" : undefined,
+                      transition:
+                        "background var(--motion-duration-fast) var(--motion-ease-out)",
+                    }}
+                    onMouseEnter={
+                      row.clickable
+                        ? (e) => {
+                            e.currentTarget.style.background =
+                              "var(--bg-muted)";
+                          }
+                        : undefined
+                    }
+                    onMouseLeave={
+                      row.clickable
+                        ? (e) => {
+                            e.currentTarget.style.background = "transparent";
+                          }
+                        : undefined
+                    }
+                    title={row.clickable ? t("viewSubAssets") : undefined}
+                  >
                     <div
                       style={{
-                        flex: 1, height: 6, background: 'var(--bg-sunken)',
-                        borderRadius: 'var(--radius-pill)', overflow: 'hidden',
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 4,
                       }}
+                    >
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "var(--radius-xs)",
+                          background: row.color,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "var(--text-label-sm)",
+                          fontWeight: "600",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {row.label}
+                      </span>
+                      <span
+                        className="num"
+                        style={{
+                          marginLeft: "auto",
+                          fontSize: "var(--text-label-sm)",
+                          fontWeight: "700",
+                        }}
+                      >
+                        <MaskAmount card="asset.composition" mask="••••">
+                          {KRW(row.amt)}
+                        </MaskAmount>
+                      </span>
+                    </div>
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 10 }}
                     >
                       <div
                         style={{
-                          width: `${pct}%`, height: '100%',
-                          background: row.color, borderRadius: 'var(--radius-pill)',
+                          flex: 1,
+                          height: 6,
+                          background: "var(--bg-sunken)",
+                          borderRadius: "var(--radius-pill)",
+                          overflow: "hidden",
                         }}
-                      />
+                      >
+                        <div
+                          style={{
+                            width: `${pct}%`,
+                            height: "100%",
+                            background: row.color,
+                            borderRadius: "var(--radius-pill)",
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="num"
+                        style={{
+                          fontSize: "var(--text-caption)",
+                          fontWeight: "600",
+                          color: "var(--fg-tertiary)",
+                          minWidth: 40,
+                          textAlign: "right",
+                        }}
+                      >
+                        {pct.toFixed(1)}%
+                      </span>
                     </div>
-                    <span
-                      className="num"
-                      style={{
-                        fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)',
-                        minWidth: 40, textAlign: 'right',
-                      }}
-                    >
-                      {pct.toFixed(1)}%
-                    </span>
                   </div>
-                </div>
-              )
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function UpcomingBillsCard() {
-  const { t } = useTranslation('asset')
-  const navigate = useNavigate()
+  const { t } = useTranslation("asset");
+  const navigate = useNavigate();
   // 백엔드에서 EXPENSE·활성·nextDate>=today 필터 + limit 6 — 프론트 필터 불필요.
-  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 })
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const items = (recurringQ.data ?? [])
-    .filter(r => !!r.nextExecutionDate)
-    .map(r => {
-      const next = parseLocalDate(r.nextExecutionDate as string) ?? today
-      const daysLeft = Math.round((next.getTime() - today.getTime()) / 86_400_000)
+    .filter((r) => !!r.nextExecutionDate)
+    .map((r) => {
+      const next = parseLocalDate(r.nextExecutionDate as string) ?? today;
+      const daysLeft = Math.round(
+        (next.getTime() - today.getTime()) / 86_400_000,
+      );
       return {
         rowId: r.rowId,
         title: r.description || r.merchant || r.categoryName,
         categoryName: r.categoryName,
         amount: r.amount,
         daysLeft,
-        dateLabel: `${String(next.getMonth() + 1).padStart(2, '0')}/${String(next.getDate()).padStart(2, '0')}`,
+        dateLabel: `${String(next.getMonth() + 1).padStart(2, "0")}/${String(next.getDate()).padStart(2, "0")}`,
         iso: r.nextExecutionDate as string,
-      }
-    })
+      };
+    });
 
   const goToSettings = (rowId?: number) => {
-    const params = new URLSearchParams({ tab: 'settings', sub: 'recurring' })
-    if (rowId) params.set('recurringId', String(rowId))
-    navigate(`/desk/expense?${params.toString()}`)
-  }
+    const params = new URLSearchParams({ tab: "settings", sub: "recurring" });
+    if (rowId) params.set("recurringId", String(rowId));
+    navigate(`/desk/expense?${params.toString()}`);
+  };
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('upcomingBills')}</CardTitle>
+        <CardTitle style={{ fontSize: "var(--text-body-lg)" }}>
+          {t("upcomingBills")}
+        </CardTitle>
         <Button
           variant="link"
           onClick={() => goToSettings()}
           className="h-auto gap-0.5 p-0 text-body-sm font-semibold text-text-secondary hover:text-text-primary no-underline hover:no-underline"
         >
-          {t('viewAll')} <ChevronRight size={12} />
+          {t("viewAll")} <ChevronRight size={12} />
         </Button>
       </CardHeader>
       <CardContent>
-      {recurringQ.isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                padding: '16px 18px',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-              }}
-            >
-              <SkeletonBase className="h-4 w-24" />
-              <SkeletonBase className="h-4 w-20 shrink-0" />
-            </div>
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-          {t('noUpcomingBills')}
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {items.map(it => {
-            const urgent = it.daysLeft <= 3
-            return (
-              <button
-                key={it.rowId}
-                type="button"
-                onClick={() => goToSettings(it.rowId)}
+        {recurringQ.isLoading ? (
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  padding: '16px 18px',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  minWidth: 0,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  width: '100%',
-                  fontFamily: 'inherit',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  padding: "16px 18px",
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "var(--radius-lg)",
                 }}
               >
-                <span
+                <SkeletonBase className="h-4 w-24" />
+                <SkeletonBase className="h-4 w-20 shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div
+            style={{
+              padding: "16px 0",
+              textAlign: "center",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-caption)",
+            }}
+          >
+            {t("noUpcomingBills")}
+          </div>
+        ) : (
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+          >
+            {items.map((it) => {
+              const urgent = it.daysLeft <= 3;
+              return (
+                <button
+                  key={it.rowId}
+                  type="button"
+                  onClick={() => goToSettings(it.rowId)}
                   style={{
-                    fontSize: 'var(--text-body-sm)',
-                    fontWeight: urgent ? 600 : 500,
-                    color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "16px 18px",
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "var(--radius-lg)",
+                    minWidth: 0,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    width: "100%",
+                    fontFamily: "inherit",
                   }}
                 >
-                  {it.daysLeft <= 0 ? t('date:today') : t('date:daysLater', { count: it.daysLeft })} · {it.dateLabel}
-                </span>
-                <span className="num" style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.012em', flexShrink: 0 }}>
-                  <MaskAmount card="asset.upcoming" mask="••••">−{KRW(it.amount)}</MaskAmount>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
+                  <span
+                    style={{
+                      fontSize: "var(--text-body-sm)",
+                      fontWeight: urgent ? 600 : 500,
+                      color: urgent
+                        ? "var(--fg-expense)"
+                        : "var(--fg-tertiary)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      minWidth: 0,
+                    }}
+                  >
+                    {it.daysLeft <= 0
+                      ? t("date:today")
+                      : t("date:daysLater", { count: it.daysLeft })}{" "}
+                    · {it.dateLabel}
+                  </span>
+                  <span
+                    className="num"
+                    style={{
+                      fontSize: "var(--text-body-lg)",
+                      fontWeight: "700",
+                      letterSpacing: "-0.012em",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <MaskAmount card="asset.upcoming" mask="••••">
+                      −{KRW(it.amount)}
+                    </MaskAmount>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function formatDeadline(deadline: string | null): string | null {
-  const d = parseLocalDate(deadline)
-  if (!d) return null
-  return formatYearMonth(d)
+  const d = parseLocalDate(deadline);
+  if (!d) return null;
+  return formatYearMonth(d);
 }
 
 function SavingGoalItem({ goal }: { goal: SavingGoal }) {
-  const { t } = useTranslation('asset')
-  const pct = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
+  const { t } = useTranslation("asset");
+  const pct =
+    goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
   // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다(앱 resolveChartColor 정합).
-  const palette = getPaletteByColor(goal.color)
-  const color = palette.color
-  const iconName = (goal.icon && goal.icon.trim().length > 0 ? goal.icon : 'piggy-bank') as IconName
+  const palette = getPaletteByColor(goal.color);
+  const color = palette.color;
+  const iconName = (
+    goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank"
+  ) as IconName;
 
   return (
     // 조회 전용 — 추가·수정·삭제는 설정 > 저축 목표(관리)에서 (design AssetsScreen GoalsCard).
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 8,
+        }}
+      >
         <span
           style={{
-            width: 32, height: 32, borderRadius: tileRadius(32),
+            width: 32,
+            height: 32,
+            borderRadius: tileRadius(32),
             background: palette.bg,
             color,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <DynamicIcon name={iconName} size={15} fallback={() => <Target size={15} />} />
+          <DynamicIcon
+            name={iconName}
+            size={15}
+            fallback={() => <Target size={15} />}
+          />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--text-body-sm)', fontWeight: '600',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              fontSize: "var(--text-body-sm)",
+              fontWeight: "600",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {goal.title}
-            {goal.isAchieved === 'Y' && (
+            {goal.isAchieved === "Y" && (
               <span
                 style={{
                   marginLeft: 8,
-                  padding: '1px 6px',
-                  background: 'var(--bg-brand-subtle)',
-                  color: 'var(--fg-brand-strong)',
-                  fontSize: 'var(--text-badge)',
-                  fontWeight: '600',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: "1px 6px",
+                  background: "var(--bg-brand-subtle)",
+                  color: "var(--fg-brand-strong)",
+                  fontSize: "var(--text-badge)",
+                  fontWeight: "600",
+                  borderRadius: "var(--radius-sm)",
                 }}
               >
-                {t('achieved')}
+                {t("achieved")}
               </span>
             )}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-            {formatDeadline(goal.deadlineDate) ?? t('anytime')}
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 1,
+            }}
+          >
+            {formatDeadline(goal.deadlineDate) ?? t("anytime")}
           </div>
         </div>
-        <div className="num" style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700' }}>{pct.toFixed(0)}%</div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
+        <div className="num" style={{ textAlign: "right" }}>
+          <div style={{ fontSize: "var(--text-label-sm)", fontWeight: "700" }}>
+            {pct.toFixed(0)}%
+          </div>
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+            }}
+          >
             {/* 저축목표만 마스킹에서 빠져 있었다 — 금액을 가려도 여기엔 그대로 나왔다. */}
             <MaskAmount card="asset.savingGoals" mask="••• / •••">
-              {KRW(goal.currentAmount)} / {isEn() ? formatChartAxis(goal.targetAmount) : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
+              {KRW(goal.currentAmount)} /{" "}
+              {isEn()
+                ? formatChartAxis(goal.targetAmount)
+                : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
             </MaskAmount>
           </div>
         </div>
       </div>
       <div
         style={{
-          height: 6, background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-pill)', overflow: 'hidden',
+          height: 6,
+          background: "var(--bg-sunken)",
+          borderRadius: "var(--radius-pill)",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            width: `${Math.min(100, pct)}%`, height: '100%',
-            background: color, borderRadius: 'var(--radius-pill)',
+            width: `${Math.min(100, pct)}%`,
+            height: "100%",
+            background: color,
+            borderRadius: "var(--radius-pill)",
           }}
         />
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -577,35 +829,45 @@ function SavingGoalItem({ goal }: { goal: SavingGoal }) {
  * 모바일 = flat Section / 데스크톱 = Card, 우측 '관리 >' 링크로 설정 섹션 진입.
  */
 function SavingGoalsCard({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('asset')
-  const navigate = useNavigate()
-  const goalsQ = useSavingGoals()
+  const { t } = useTranslation("asset");
+  const navigate = useNavigate();
+  const goalsQ = useSavingGoals();
 
-  const goals = goalsQ.data?.goals ?? []
-  const isLoading = goalsQ.isLoading
-  const isEmpty = !isLoading && goals.length === 0
+  const goals = goalsQ.data?.goals ?? [];
+  const isLoading = goalsQ.isLoading;
+  const isEmpty = !isLoading && goals.length === 0;
 
   return (
     <Section
       mobile={mobile}
-      title={t('savingGoals')}
+      title={t("savingGoals")}
       action={
-        <button className="all" onClick={() => navigate('/desk/settings?section=goals')}>
-          {t('manage')} <ChevronRight size={13} />
+        <button
+          className="all"
+          onClick={() => navigate("/desk/settings?section=goals")}
+        >
+          {t("manage")} <ChevronRight size={13} />
         </button>
       }
     >
       {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[0, 1, 2].map(i => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {[0, 1, 2].map((i) => (
             <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 8,
+                }}
+              >
                 <SkeletonBase className="h-8 w-8 rounded-[10px] shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <SkeletonBase className="h-4 w-2/3 mb-1.5" />
                   <SkeletonBase className="h-3 w-1/3" />
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: "right" }}>
                   <SkeletonBase className="h-4 w-12 mb-1 ml-auto" />
                   <SkeletonBase className="h-3 w-20 ml-auto" />
                 </div>
@@ -617,27 +879,30 @@ function SavingGoalsCard({ mobile }: { mobile: boolean }) {
       ) : isEmpty ? (
         <div
           style={{
-            padding: '20px 0', textAlign: 'center',
-            fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', fontWeight: '500',
+            padding: "20px 0",
+            textAlign: "center",
+            fontSize: "var(--text-label-sm)",
+            color: "var(--fg-tertiary)",
+            fontWeight: "500",
           }}
         >
-          {t('manageGoalsPrompt')}
+          {t("manageGoalsPrompt")}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {goals.map(g => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {goals.map((g) => (
             <SavingGoalItem key={g.rowId} goal={g} />
           ))}
         </div>
       )}
     </Section>
-  )
+  );
 }
 
-const ACCOUNT_TYPES: AssetType[] = ['BANK_ACCOUNT', 'SAVINGS', 'CASH']
-const CARD_TYPES: AssetType[] = ['CREDIT_CARD', 'CHECK_CARD']
-const INVESTMENT_TYPES: AssetType[] = ['INVESTMENT']
-const LOAN_TYPES: AssetType[] = ['LOAN']
+const ACCOUNT_TYPES: AssetType[] = ["BANK_ACCOUNT", "SAVINGS", "CASH"];
+const CARD_TYPES: AssetType[] = ["CREDIT_CARD", "CHECK_CARD"];
+const INVESTMENT_TYPES: AssetType[] = ["INVESTMENT"];
+const LOAN_TYPES: AssetType[] = ["LOAN"];
 
 /**
  * AssetPage 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
@@ -645,78 +910,113 @@ const LOAN_TYPES: AssetType[] = ['LOAN']
  * 페이지 진입 시 "모든 데이터가 준비될 때까지" 하나의 로딩 게이트로 표현하기 위함.
  */
 function useAssetPageData() {
-  const assetsQ = useAssets()
-  const summaryQ = useAssetSummary()
-  const trendQ = useNetWorthTrend(12)
-  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 })
-  const goalsQ = useSavingGoals()
+  const assetsQ = useAssets();
+  const summaryQ = useAssetSummary();
+  const trendQ = useNetWorthTrend(12);
+  const recurringQ = useRecurringTransactions({ upcoming: true, limit: 6 });
+  const goalsQ = useSavingGoals();
   return {
     isLoading:
-      assetsQ.isLoading || summaryQ.isLoading || trendQ.isLoading
-      || recurringQ.isLoading || goalsQ.isLoading,
-  }
+      assetsQ.isLoading ||
+      summaryQ.isLoading ||
+      trendQ.isLoading ||
+      recurringQ.isLoading ||
+      goalsQ.isLoading,
+  };
 }
 
 /** 자산 페이지 구조와 1:1 매칭되는 skeleton. */
 function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
   // 예정 결제·저축목표는 자기 쿼리로 자기 스켈레톤을 그린다(제목·액션은 진짜) —
   // 페이지가 따로 흉내내면 두 스켈레톤이 서로 어긋난다. 실컴포넌트를 그대로 쓴다.
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
-      <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+      <div
+        style={{
+          padding: "16px 24px 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--spacing-2xl)",
+        }}
+      >
         <AssetSummarySkeleton mobile />
         <TypeGroupSkeleton mobile rows={3} />
         <TypeGroupSkeleton mobile rows={2} />
         <SavingGoalsCard mobile />
       </div>
-    )
+    );
   }
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>{t('assets')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("assets")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.4fr 1fr",
+          gap: 20,
+          alignItems: "start",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <AssetSummarySkeleton mobile={false} />
           <AssetCompositionSkeleton />
           <UpcomingBillsCard />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <TypeGroupSkeleton rows={3} />
           <TypeGroupSkeleton rows={2} />
           <SavingGoalsCard mobile={false} />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
   return (
     // 실렌더 SummaryCard 와 같은 여백 — 라벨 6 / 금액 6 / 증감 14·18.
-    <Card variant={mobile ? 'raised' : undefined}>
+    <Card variant={mobile ? "raised" : undefined}>
       <CardContent>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 6,
+          }}
+        >
           <SkeletonBase className="h-3 w-16" />
         </div>
         {/* 순자산 금액 — 실렌더 28(모바일)/36 + lineHeight 1.15 */}
-        <SkeletonBase className={mobile ? 'h-8 w-40' : 'h-10 w-56'} style={{ marginBottom: 6 }} />
-        <SkeletonBase className="h-4 w-32" style={{ marginBottom: mobile ? 14 : 18 }} />
-        <SkeletonBase className={mobile ? 'h-[140px] w-full' : 'h-[180px] w-full'} />
+        <SkeletonBase
+          className={mobile ? "h-8 w-40" : "h-10 w-56"}
+          style={{ marginBottom: 6 }}
+        />
+        <SkeletonBase
+          className="h-4 w-32"
+          style={{ marginBottom: mobile ? 14 : 18 }}
+        />
+        <SkeletonBase
+          className={mobile ? "h-[140px] w-full" : "h-[180px] w-full"}
+        />
         <div
           style={{
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
-            paddingTop: mobile ? 14 : 20, marginTop: mobile ? 14 : 20,
-            borderTop: '1px solid var(--border-subtle)',
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            paddingTop: mobile ? 14 : 20,
+            marginTop: mobile ? 14 : 20,
+            borderTop: "1px solid var(--border-subtle)",
           }}
         >
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2].map((i) => (
             <div key={i}>
               {/* 라벨 badge + 값 사이는 실렌더 2 */}
               <SkeletonBase className="h-3 w-12" style={{ marginBottom: 2 }} />
@@ -726,28 +1026,50 @@ function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function AssetCompositionSkeleton() {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
   // 제목·기준일은 정적(로컬 계산)이라 로딩에도 실제 렌더 — 도넛·범례만 데이터 자리.
-  const dateLabel = t('date:asOf', { date: formatMonthDay(new Date()) })
+  const dateLabel = t("date:asOf", { date: formatMonthDay(new Date()) });
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle style={{ fontSize: 'var(--text-body-lg)' }}>{t('composition')}</CardTitle>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
+        <CardTitle style={{ fontSize: "var(--text-body-lg)" }}>
+          {t("composition")}
+        </CardTitle>
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
           {dateLabel}
         </span>
       </CardHeader>
       <CardContent>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <SkeletonBase className="h-[180px] w-[180px] rounded-full shrink-0" />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-            {[0, 1, 2, 3].map(i => (
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              minWidth: 0,
+            }}
+          >
+            {[0, 1, 2, 3].map((i) => (
               <div key={i}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 4,
+                  }}
+                >
                   <SkeletonBase className="h-2.5 w-2.5 rounded-[var(--radius-xs)] shrink-0" />
                   <SkeletonBase className="h-4 w-20" />
                   <SkeletonBase className="h-4 w-16 ml-auto" />
@@ -759,10 +1081,16 @@ function AssetCompositionSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile?: boolean }) {
+function TypeGroupSkeleton({
+  rows = 3,
+  mobile = false,
+}: {
+  rows?: number;
+  mobile?: boolean;
+}) {
   return (
     // 껍데기는 실렌더와 같은 Section SoT — 자체 Card/flat-group 모방은 spec 변경 때 어긋난다.
     <Section
@@ -770,19 +1098,25 @@ function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile
       title={<SkeletonBase className="h-5 w-20" />}
       total={<SkeletonBase className="h-4 w-16" />}
     >
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         {Array.from({ length: rows }).map((_, i) => (
           <div
             key={i}
             // 실렌더(AssetCard)와 같은 여백 — 다르면 데이터가 오는 순간 행이 좌우로 튄다.
             style={{
-              display: 'flex', flexDirection: 'column',
-              padding: '12px 6px', margin: '0 -6px', borderRadius: 10,
+              display: "flex",
+              flexDirection: "column",
+              padding: "12px 6px",
+              margin: "0 -6px",
+              borderRadius: 10,
             }}
           >
             {/* 발급사 — 행 맨 위, 아이콘과 같은 왼쪽 끝(caption + spacing-xs). */}
-            <SkeletonBase className="h-3 w-20" style={{ marginBottom: 'var(--spacing-xs)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <SkeletonBase
+              className="h-3 w-20"
+              style={{ marginBottom: "var(--spacing-xs)" }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <SkeletonBase className="h-4 w-1/2" />
@@ -795,78 +1129,109 @@ function TypeGroupSkeleton({ rows = 3, mobile = false }: { rows?: number; mobile
         ))}
       </div>
     </Section>
-  )
+  );
 }
 
 export const AssetPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { isLoading } = useAssetPageData()
-  if (isLoading) return <AssetPageSkeleton mobile={mobile} />
-  return mobile ? <AssetMobile /> : <AssetDesktop />
-}
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { isLoading } = useAssetPageData();
+  if (isLoading) return <AssetPageSkeleton mobile={mobile} />;
+  return mobile ? <AssetMobile /> : <AssetDesktop />;
+};
 
 // 카드 사용률 — usage = abs(balance)/creditLimit*100.
 // 70%↑ status-warning, 90%↑ status-danger.
 function cardUsageOf(asset: Asset) {
-  if (asset.assetType !== 'CREDIT_CARD' || asset.creditLimit == null || asset.creditLimit <= 0) {
-    return null
+  if (
+    asset.assetType !== "CREDIT_CARD" ||
+    asset.creditLimit == null ||
+    asset.creditLimit <= 0
+  ) {
+    return null;
   }
-  const used = Math.abs(asset.balance)
-  const usage = (used / asset.creditLimit) * 100
+  const used = Math.abs(asset.balance);
+  const usage = (used / asset.creditLimit) * 100;
   const barColor =
-    usage >= 90 ? 'var(--color-error)' : usage >= 70 ? 'var(--color-warning)' : 'var(--fg-brand)'
-  return { used, limit: asset.creditLimit, usage, barColor }
+    usage >= 90
+      ? "var(--color-error)"
+      : usage >= 70
+        ? "var(--color-warning)"
+        : "var(--fg-brand)";
+  return { used, limit: asset.creditLimit, usage, barColor };
 }
 
 // 게이지 바 — 행 맨 아래에 아이콘부터 오른쪽 끝까지 한 줄로 깔린다.
 // 예산 카테고리 행과 같은 배치라, 카드 이름이나 금액 길이와 무관하게 시작·끝이 늘 같다.
 // (사용금액/한도 라벨은 우측 금액 열에 있다 — 여기 두면 이름 길이에 밀려 넘쳤다)
 function CardUsageBar({ asset }: { asset: Asset }) {
-  const u = cardUsageOf(asset)
-  if (!u) return null
+  const u = cardUsageOf(asset);
+  if (!u) return null;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--spacing-sm)",
+        marginTop: "var(--spacing-sm)",
+      }}
+    >
       <div
         style={{
           // 바 두께는 간격이 아니라 컴포넌트 치수라 spacing 토큰을 안 쓴다.
           // 저축목표 진행률 바와 같은 6px.
-          flex: 1, height: 6, background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-pill)', overflow: 'hidden',
+          flex: 1,
+          height: 6,
+          background: "var(--bg-sunken)",
+          borderRadius: "var(--radius-pill)",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            width: `${Math.min(100, u.usage)}%`, height: '100%',
-            background: u.barColor, borderRadius: 'var(--radius-pill)',
+            width: `${Math.min(100, u.usage)}%`,
+            height: "100%",
+            background: u.barColor,
+            borderRadius: "var(--radius-pill)",
           }}
         />
       </div>
       <span
         className="num"
-        style={{ fontSize: 'var(--text-badge)', fontWeight: '700', color: u.barColor, flexShrink: 0 }}
+        style={{
+          fontSize: "var(--text-badge)",
+          fontWeight: "700",
+          color: u.barColor,
+          flexShrink: 0,
+        }}
       >
         {u.usage.toFixed(0)}%
       </span>
     </div>
-  )
+  );
 }
 
 // 투자 행 서브텍스트 — design: "{첫 보유명} 외 N종목" / "보유 종목 없음".
 // 연동 항목은 이름이 마스터에 있으므로 첫 항목이 linked 면 심볼→이름 1건 조회(캐시됨).
 function InvestHoldingsSub({ asset }: { asset: Asset }) {
-  const { t } = useTranslation('asset')
-  const hs = holdingsOf(asset)
-  const first = hs[0]
-  const firstSymbol = first?.linked ? first.tossSymbol ?? '' : ''
-  const { data: firstName } = useStockSymbolName(firstSymbol)
+  const { t } = useTranslation("asset");
+  const hs = holdingsOf(asset);
+  const first = hs[0];
+  const firstSymbol = first?.linked ? (first.tossSymbol ?? "") : "";
+  const { data: firstName } = useStockSymbolName(firstSymbol);
   if (hs.length === 0) {
-    return <>{t('holdings.emptySub')}</>
+    return <>{t("holdings.emptySub")}</>;
   }
   const label = first?.linked
-    ? firstName ?? first.tossSymbol ?? ''
-    : first?.holdingName ?? ''
-  return <>{hs.length > 1 ? t('holdings.firstAndMore', { name: label, n: hs.length - 1 }) : label}</>
+    ? (firstName ?? first.tossSymbol ?? "")
+    : (first?.holdingName ?? "");
+  return (
+    <>
+      {hs.length > 1
+        ? t("holdings.firstAndMore", { name: label, n: hs.length - 1 })
+        : label}
+    </>
+  );
 }
 
 // AssetCard: list item 패턴 — 자체 border/radius 없음. 부모 list 가 큰 카드,
@@ -876,12 +1241,12 @@ function AssetCard({
   onOpenDetail,
   investVal,
 }: {
-  asset: Asset
-  onOpenDetail: (asset: Asset) => void
+  asset: Asset;
+  onOpenDetail: (asset: Asset) => void;
   /** 투자 자산 라이브 평가(등락) — 투자 그룹에서만 전달, 없으면 등락 미표시 */
-  investVal?: InvestValuation | null
+  investVal?: InvestValuation | null;
 }) {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
   // 음수(빚)는 부호(−)만, 색은 중립(fg-primary) — 행 금액 규칙 정합(사용자 결정).
   // 0 은 부호·강조 없이 '0원' (−0원 방지) — 관리 화면(AccountManager) 과 동일 로직.
   //
@@ -889,36 +1254,36 @@ function AssetCard({
   // 그러면 데이터가 양수로 어긋나도 행은 멀쩡해 보이고 그룹 합계만 틀린 값이 나온다 —
   // 실제로 신용카드 잔액 하나가 양수로 들어가 그렇게 어긋났다. 지금은 저장할 때
   // 음수로 정규화하므로 표시에서 손볼 게 없다.
-  const neg = asset.balance < 0
+  const neg = asset.balance < 0;
   // 연결계좌형 체크카드는 결제가 계좌에서 즉시 빠져 잔액이 늘 0 이다 — 0원을 보여줘 봐야
   // 아무 정보가 없으니 행 금액은 "이번 달 얼마 썼나"(서버 계산 당월 합계)로 바꾼다.
   // 미연결 체크카드는 잔액이 실제로 쌓이므로 지금대로 잔액을 보여준다.
   const checkCardMonthly =
-    asset.assetType === 'CHECK_CARD' && asset.paymentAssetRowId != null
-      ? asset.monthlyUsedAmount ?? 0
-      : null
+    asset.assetType === "CHECK_CARD" && asset.paymentAssetRowId != null
+      ? (asset.monthlyUsedAmount ?? 0)
+      : null;
   return (
     <div
       role="button"
       tabIndex={0}
       className={[
-        'flex flex-col cursor-pointer',
-        'transition-colors duration-[var(--motion-duration-fast)]',
-        'hover:bg-[var(--bg-muted)]',
-      ].join(' ')}
+        "flex flex-col cursor-pointer",
+        "transition-colors duration-[var(--motion-duration-fast)]",
+        "hover:bg-[var(--bg-muted)]",
+      ].join(" ")}
       // 구분선 없이 hover 면으로 행을 가른다. 좌우 순 여백은 0 —
       // 행이 여기서 더 얹으면 그만큼 섹션 라벨과 어긋난다.
       // hover 면만 음수 margin 으로 넓힌다(행 밖까지 눌리는 느낌은 그대로).
       style={{
-        padding: '12px 6px',
-        margin: '0 -6px',
+        padding: "12px 6px",
+        margin: "0 -6px",
         borderRadius: 10,
       }}
       onClick={() => onOpenDetail(asset)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onOpenDetail(asset)
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpenDetail(asset);
         }
       }}
     >
@@ -928,171 +1293,208 @@ function AssetCard({
       {asset.institution && (
         <div
           style={{
-            fontWeight: '500',
-            color: 'var(--fg-tertiary)',
-            fontSize: 'var(--text-caption)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            marginBottom: 'var(--spacing-xs)',
+            fontWeight: "500",
+            color: "var(--fg-tertiary)",
+            fontSize: "var(--text-caption)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            marginBottom: "var(--spacing-xs)",
           }}
         >
           {asset.institution}
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-      <AssetLogo asset={asset} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 'var(--text-body-sm)',
-            fontWeight: '600',
-            color: 'var(--fg-primary)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {asset.assetName}
-        </div>
-        {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
-        {asset.assetType === 'INVESTMENT' ? (
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <AssetLogo asset={asset} />
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 1,
-              fontVariantNumeric: 'tabular-nums',
-              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontSize: "var(--text-body-sm)",
+              fontWeight: "600",
+              color: "var(--fg-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            <InvestHoldingsSub asset={asset} />
+            {asset.assetName}
           </div>
-        ) : asset.memo && !CARD_TYPES.includes(asset.assetType) ? (
-          /* 카드는 메모를 행에 안 띄운다. 아래로 결제일·게이지가 이어지는데 메모가 한 줄
+          {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
+          {asset.assetType === "INVESTMENT" ? (
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 1,
+                fontVariantNumeric: "tabular-nums",
+                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <InvestHoldingsSub asset={asset} />
+            </div>
+          ) : asset.memo && !CARD_TYPES.includes(asset.assetType) ? (
+            /* 카드는 메모를 행에 안 띄운다. 아래로 결제일·게이지가 이어지는데 메모가 한 줄
              끼면 그만큼 밀려, 카드마다 게이지 높이가 달라진다. 투자 행이 이미 쓰는
              원칙과 같다 — 메모는 상세에서 본다. */
-          <div
-            style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 1,
-              fontVariantNumeric: 'tabular-nums',
-              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {asset.memo}
-          </div>
-        ) : null}
-        {/* 신용카드는 이 줄을 늘 차지한다. 결제일이 없다고 줄을 빼면 그 카드만
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 1,
+                fontVariantNumeric: "tabular-nums",
+                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {asset.memo}
+            </div>
+          ) : null}
+          {/* 신용카드는 이 줄을 늘 차지한다. 결제일이 없다고 줄을 빼면 그 카드만
             게이지가 위로 붙어 목록이 어긋난다. */}
-        {asset.assetType === 'CREDIT_CARD' && (
-          <div
-            style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 1,
-              fontVariantNumeric: 'tabular-nums',
-              // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
+          {asset.assetType === "CREDIT_CARD" && (
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 1,
+                fontVariantNumeric: "tabular-nums",
+                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
                 0 이라 자리가 안 잡힌다. */}
-            {asset.paymentDay != null ? t('paymentDayLabel', { day: asset.paymentDay }) : ' '}
-          </div>
-        )}
-        {/* 체크카드(연결계좌형) — 금액이 잔액이 아니라 당월 사용액임을 캡션으로 밝힌다.
+              {asset.paymentDay != null
+                ? t("paymentDayLabel", { day: asset.paymentDay })
+                : " "}
+            </div>
+          )}
+          {/* 체크카드(연결계좌형) — 금액이 잔액이 아니라 당월 사용액임을 캡션으로 밝힌다.
             신용카드의 결제일 줄과 같은 자리·타이포라 카드 그룹의 행 리듬이 맞는다. */}
-        {checkCardMonthly != null && (
-          <div
-            style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
-              marginTop: 1,
-              fontVariantNumeric: 'tabular-nums',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {t('checkCardMonthLabel')}
-          </div>
-        )}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+          {checkCardMonthly != null && (
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 1,
+                fontVariantNumeric: "tabular-nums",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {t("checkCardMonthLabel")}
+            </div>
+          )}
+        </div>
         <div
-          className="num"
           style={{
-            fontSize: 'var(--text-body-lg)',
-            fontWeight: '700',
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.022em',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            flexShrink: 0,
           }}
         >
-          <MaskAmount>
-            {checkCardMonthly != null
-              ? <>{wonPre()}{KRW(checkCardMonthly)}</>
-              : <>{neg ? '−' : ''}{wonPre()}{KRW(Math.abs(asset.balance))}</>}
-          </MaskAmount>
-          <WonUnit />
-        </div>
-        {/* 투자 등락 — design: +상승 빨강/−하락 파랑(국내 통념) + (변동액) */}
-        {investVal?.changePct != null && (
           <div
             className="num"
             style={{
-              fontSize: 'var(--text-badge)',
-              fontWeight: '600',
-              marginTop: 2,
-              color: investVal.changePct >= 0 ? 'var(--status-danger-fg)' : 'var(--fg-brand)',
+              fontSize: "var(--text-body-lg)",
+              fontWeight: "700",
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: "-0.022em",
             }}
           >
-            {investVal.changePct >= 0 ? '+' : ''}{investVal.changePct}%
-            {investVal.changeAmt != null && (
-              <MaskAmount mask="">
-                {' '}({investVal.changeAmt >= 0 ? '+' : '−'}{KRW(Math.abs(investVal.changeAmt))})
-              </MaskAmount>
-            )}
+            <MaskAmount>
+              {checkCardMonthly != null ? (
+                <>
+                  {wonPre()}
+                  {KRW(checkCardMonthly)}
+                </>
+              ) : (
+                <>
+                  {neg ? "−" : ""}
+                  {wonPre()}
+                  {KRW(Math.abs(asset.balance))}
+                </>
+              )}
+            </MaskAmount>
+            <WonUnit />
           </div>
-        )}
-        {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
-        {asset.isIncludedInTotal === 'N' && (
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('excludedFromTotal')}
-          </div>
-        )}
-        {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
-            왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
-        {(() => {
-          const u = cardUsageOf(asset)
-          if (!u) return null
-          return (
+          {/* 투자 등락 — design: +상승 빨강/−하락 파랑(국내 통념) + (변동액) */}
+          {investVal?.changePct != null && (
             <div
               className="num"
               style={{
-                fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)',
-                fontWeight: '500', marginTop: 2, whiteSpace: 'nowrap',
+                fontSize: "var(--text-badge)",
+                fontWeight: "600",
+                marginTop: 2,
+                color:
+                  investVal.changePct >= 0
+                    ? "var(--status-danger-fg)"
+                    : "var(--fg-brand)",
               }}
             >
-              <MaskAmount mask="••• / •••">{wonPre()}{KRW(u.used)} / {wonPre()}{KRW(u.limit)}</MaskAmount>
-              <WonUnit />
+              {investVal.changePct >= 0 ? "+" : ""}
+              {investVal.changePct}%
+              {investVal.changeAmt != null && (
+                <MaskAmount mask="">
+                  {" "}
+                  ({investVal.changeAmt >= 0 ? "+" : "−"}
+                  {KRW(Math.abs(investVal.changeAmt))})
+                </MaskAmount>
+              )}
             </div>
-          )
-        })()}
-      </div>
+          )}
+          {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
+          {asset.isIncludedInTotal === "N" && (
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                marginTop: 2,
+              }}
+            >
+              {t("excludedFromTotal")}
+            </div>
+          )}
+          {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
+            왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
+          {(() => {
+            const u = cardUsageOf(asset);
+            if (!u) return null;
+            return (
+              <div
+                className="num"
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginTop: 2,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <MaskAmount mask="••• / •••">
+                  {wonPre()}
+                  {KRW(u.used)} / {wonPre()}
+                  {KRW(u.limit)}
+                </MaskAmount>
+                <WonUnit />
+              </div>
+            );
+          })()}
+        </div>
       </div>
       <CardUsageBar asset={asset} />
     </div>
-  )
+  );
 }
 
 function TypeGroup({
@@ -1106,62 +1508,64 @@ function TypeGroup({
   investValMap,
   card,
 }: {
-  title: string
-  assets: Asset[]
-  total: number
-  totalColor?: string
-  mobile: boolean
-  onOpenDetail: (asset: Asset) => void
-  negativeTotal?: boolean
+  title: string;
+  assets: Asset[];
+  total: number;
+  totalColor?: string;
+  mobile: boolean;
+  onOpenDetail: (asset: Asset) => void;
+  negativeTotal?: boolean;
   /** 이 그룹이 금액 숨기기에서 어느 카드인지 — 안쪽 금액이 전부 이 키로 잡힌다. */
-  card: HideCardKey
+  card: HideCardKey;
   /** 투자 그룹 전용 — 자산별 라이브 평가(등락) 맵 */
-  investValMap?: Map<number, InvestValuation>
+  investValMap?: Map<number, InvestValuation>;
 }) {
-  const { t } = useTranslation('asset')
+  const { t } = useTranslation("asset");
   return (
     // 그룹 안의 금액(그룹 합계·자산별 잔액·카드 사용액·투자 등락)이 전부 이 카드로 잡힌다.
     <HideCard card={card}>
       {/* 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card — design Section SoT. */}
       <Section
-      mobile={mobile}
-      title={title}
-      totalColor={total === 0 ? undefined : totalColor}
-      total={
-        <>
-          <MaskAmount>
-            {negativeTotal && total !== 0 ? `−${wonPre()}${KRW(total)}` : `${wonPre()}${KRW(total)}`}
-          </MaskAmount>
-          <WonUnit />
-        </>
-      }
-    >
-      {assets.length === 0 ? (
-        <div
-          style={{
-            padding: '24px 0',
-            textAlign: 'center',
-            color: 'var(--fg-tertiary)',
-            fontSize: 'var(--text-label-sm)',
-          }}
-        >
-          {t('noItems')}
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {assets.map(a => (
-            <AssetCard
-              key={a.rowId}
-              asset={a}
-              onOpenDetail={onOpenDetail}
-              investVal={investValMap?.get(a.rowId) ?? null}
-            />
-          ))}
-        </div>
-      )}
-    </Section>
+        mobile={mobile}
+        title={title}
+        totalColor={total === 0 ? undefined : totalColor}
+        total={
+          <>
+            <MaskAmount>
+              {negativeTotal && total !== 0
+                ? `−${wonPre()}${KRW(total)}`
+                : `${wonPre()}${KRW(total)}`}
+            </MaskAmount>
+            <WonUnit />
+          </>
+        }
+      >
+        {assets.length === 0 ? (
+          <div
+            style={{
+              padding: "24px 0",
+              textAlign: "center",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-label-sm)",
+            }}
+          >
+            {t("noItems")}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {assets.map((a) => (
+              <AssetCard
+                key={a.rowId}
+                asset={a}
+                onOpenDetail={onOpenDetail}
+                investVal={investValMap?.get(a.rowId) ?? null}
+              />
+            ))}
+          </div>
+        )}
+      </Section>
     </HideCard>
-  )
+  );
 }
 
 function SummaryCard({
@@ -1174,165 +1578,258 @@ function SummaryCard({
   cardsTotal,
   isLoading,
 }: {
-  mobile: boolean
-  netWorth: number
-  changeAmount: number
-  changePercent: number
-  accountsTotal: number
-  investmentsTotal: number
-  cardsTotal: number
-  isLoading: boolean
+  mobile: boolean;
+  netWorth: number;
+  changeAmount: number;
+  changePercent: number;
+  accountsTotal: number;
+  investmentsTotal: number;
+  cardsTotal: number;
+  isLoading: boolean;
 }) {
-  const { t } = useTranslation('asset')
-  const hidden = useHideAmounts()
-  const isUp = changeAmount >= 0
+  const { t } = useTranslation("asset");
+  const hidden = useHideAmounts();
+  const isUp = changeAmount >= 0;
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
-  const handleHideToggle = useOpenHideAmountsSettings('asset')
+  const handleHideToggle = useOpenHideAmountsSettings("asset");
 
   return (
     // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 강조 요약 (design p-card--keep).
     // 간격은 부모 flex gap 이 담당하므로 모바일 marginBottom 제거.
-    <Card variant={mobile ? 'raised' : undefined} style={mobile ? undefined : { marginBottom: 20 }}>
+    <Card
+      variant={mobile ? "raised" : undefined}
+      style={mobile ? undefined : { marginBottom: 20 }}
+    >
       <CardContent>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>{t('totalNetWorth')}</span>
-        <button
-          onClick={handleHideToggle}
+        <div
           style={{
-            background: 'transparent',
-            border: 0,
-            color: 'var(--fg-tertiary)',
-            cursor: 'pointer',
-            padding: 2,
-            display: 'inline-flex',
-          }}
-          title={hidden ? t('showAmount') : t('hideAmount')}
-        >
-          {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-        </button>
-      </div>
-      <div
-        className="num"
-        style={{
-          fontSize: mobile ? 28 : 36,
-          fontWeight: '800',
-          letterSpacing: '-0.022em',
-          lineHeight: '1.15',
-          marginBottom: 6,
-        }}
-      >
-        {isLoading ? '—' : <MaskAmount card="asset.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
-        {!isEn() && (
-          <HideUnit>
-            <span style={{ fontSize: mobile ? 16 : 20, fontWeight: '700', marginLeft: 4 }}>원</span>
-          </HideUnit>
-        )}
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          fontSize: 'var(--text-label-sm)',
-          color: 'var(--fg-secondary)',
-          marginBottom: mobile ? 14 : 18,
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 2,
-            color: isUp ? 'var(--fg-income)' : 'var(--fg-expense)',
-            fontWeight: '600',
-            fontVariantNumeric: 'tabular-nums',
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 6,
           }}
         >
-          {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          {isUp ? '+' : ''}{changePercent.toFixed(1)}%
-          {changeAmount !== 0 && (
+          <span
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+            }}
+          >
+            {t("totalNetWorth")}
+          </span>
+          <button
+            onClick={handleHideToggle}
+            style={{
+              background: "transparent",
+              border: 0,
+              color: "var(--fg-tertiary)",
+              cursor: "pointer",
+              padding: 2,
+              display: "inline-flex",
+            }}
+            title={hidden ? t("showAmount") : t("hideAmount")}
+          >
+            {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+          </button>
+        </div>
+        <div
+          className="num"
+          style={{
+            fontSize: mobile ? 28 : 36,
+            fontWeight: "800",
+            letterSpacing: "-0.022em",
+            lineHeight: "1.15",
+            marginBottom: 6,
+          }}
+        >
+          {isLoading ? (
+            "—"
+          ) : (
+            <MaskAmount card="asset.netWorth">
+              {wonPre()}
+              {KRW(netWorth)}
+            </MaskAmount>
+          )}
+          {!isEn() && (
             <HideUnit>
-              <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
-                ({isUp ? '+' : '−'}{money(Math.abs(changeAmount))})
+              <span
+                style={{
+                  fontSize: mobile ? 16 : 20,
+                  fontWeight: "700",
+                  marginLeft: 4,
+                }}
+              >
+                원
               </span>
             </HideUnit>
           )}
-        </span>
-        <span style={{ color: 'var(--fg-tertiary)' }}>{t('vsLastMonth')}</span>
-      </div>
-
-      <NetWorthChart height={mobile ? 140 : 180} />
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 12,
-          paddingTop: mobile ? 14 : 20,
-          marginTop: mobile ? 14 : 20,
-          borderTop: '1px solid var(--border-subtle)',
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('tab.accountDeposit')}</div>
-          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
-            <MaskAmount card="asset.netWorth">{KRW(accountsTotal)}</MaskAmount>
-          </div>
         </div>
-        <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('group.invest')}</div>
-          <div className="num" style={{ fontSize: mobile ? 14 : 16, fontWeight: '700' }}>
-            <MaskAmount card="asset.netWorth">{KRW(investmentsTotal)}</MaskAmount>
-          </div>
-        </div>
-        <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('cardBalance')}</div>
-          <div
-            className="num"
-            style={{ fontSize: mobile ? 14 : 16, fontWeight: '700', color: 'var(--fg-expense)' }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: "var(--text-label-sm)",
+            color: "var(--fg-secondary)",
+            marginBottom: mobile ? 14 : 18,
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              color: isUp ? "var(--fg-income)" : "var(--fg-expense)",
+              fontWeight: "600",
+              fontVariantNumeric: "tabular-nums",
+            }}
           >
-            <MaskAmount card="asset.netWorth">−{KRW(cardsTotal)}</MaskAmount>
+            {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            {isUp ? "+" : ""}
+            {changePercent.toFixed(1)}%
+            {changeAmount !== 0 && (
+              <HideUnit>
+                <span
+                  style={{
+                    color: "var(--fg-tertiary)",
+                    marginLeft: 4,
+                    fontWeight: "500",
+                  }}
+                >
+                  ({isUp ? "+" : "−"}
+                  {money(Math.abs(changeAmount))})
+                </span>
+              </HideUnit>
+            )}
+          </span>
+          <span style={{ color: "var(--fg-tertiary)" }}>
+            {t("vsLastMonth")}
+          </span>
+        </div>
+
+        <NetWorthChart height={mobile ? 140 : 180} />
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            paddingTop: mobile ? 14 : 20,
+            marginTop: mobile ? 14 : 20,
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 2,
+              }}
+            >
+              {t("tab.accountDeposit")}
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
+            >
+              <MaskAmount card="asset.netWorth">
+                {KRW(accountsTotal)}
+              </MaskAmount>
+            </div>
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 2,
+              }}
+            >
+              {t("group.invest")}
+            </div>
+            <div
+              className="num"
+              style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
+            >
+              <MaskAmount card="asset.netWorth">
+                {KRW(investmentsTotal)}
+              </MaskAmount>
+            </div>
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 2,
+              }}
+            >
+              {t("cardBalance")}
+            </div>
+            <div
+              className="num"
+              style={{
+                fontSize: mobile ? 14 : 16,
+                fontWeight: "700",
+                color: "var(--fg-expense)",
+              }}
+            >
+              <MaskAmount card="asset.netWorth">−{KRW(cardsTotal)}</MaskAmount>
+            </div>
           </div>
         </div>
-      </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function useAssetGroups() {
-  const assetsQ = useAssets()
-  const summaryQ = useAssetSummary()
+  const assetsQ = useAssets();
+  const summaryQ = useAssetSummary();
   // 연동 보유가 있는 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
   // holdings(다건) 우선, 구버전 단일 tossSymbol 은 holdingsOf 가 합성해 하위호환.
   const linked = useMemo(
-    () => (assetsQ.data?.assets ?? []).filter(a => holdingsOf(a).some(h => h.linked)),
+    () =>
+      (assetsQ.data?.assets ?? []).filter((a) =>
+        holdingsOf(a).some((h) => h.linked),
+      ),
     [assetsQ.data],
-  )
-  const investValMap = useInvestValuation(linked)
+  );
+  const investValMap = useInvestValuation(linked);
   const valMap = useMemo(() => {
-    const m = new Map<number, number>()
-    for (const [k, v] of investValMap) m.set(k, v.value)
-    return m
-  }, [investValMap])
+    const m = new Map<number, number>();
+    for (const [k, v] of investValMap) m.set(k, v.value);
+    return m;
+  }, [investValMap]);
 
   const groups = useMemo(() => {
     // 연결 종목은 토스 라이브 평가액(시세×수량)으로 치환 → 목록·구성비·합계가 실시간 반영.
     // 라이브 평가는 '보유분'만이라 예수금을 더해야 총액이 된다(안 더하면 증권계좌에 넣어 둔
     // 매수 대기 자금이 목록에서 통째로 빠진다).
-    const list: Asset[] = (assetsQ.data?.assets ?? []).map(a =>
+    const list: Asset[] = (assetsQ.data?.assets ?? []).map((a) =>
       valMap.has(a.rowId)
-        ? { ...a, holdingBalance: valMap.get(a.rowId)!, balance: (a.cashBalance ?? 0) + valMap.get(a.rowId)! }
+        ? {
+            ...a,
+            holdingBalance: valMap.get(a.rowId)!,
+            balance: (a.cashBalance ?? 0) + valMap.get(a.rowId)!,
+          }
         : a,
-    )
-    const accounts = list.filter(a => ACCOUNT_TYPES.includes(a.assetType))
-    const cards = list.filter(a => CARD_TYPES.includes(a.assetType))
-    const investments = list.filter(a => INVESTMENT_TYPES.includes(a.assetType))
-    const loans = list.filter(a => LOAN_TYPES.includes(a.assetType))
+    );
+    const accounts = list.filter((a) => ACCOUNT_TYPES.includes(a.assetType));
+    const cards = list.filter((a) => CARD_TYPES.includes(a.assetType));
+    const investments = list.filter((a) =>
+      INVESTMENT_TYPES.includes(a.assetType),
+    );
+    const loans = list.filter((a) => LOAN_TYPES.includes(a.assetType));
     // 순자산·구성비 집계에는 '총액 포함' 자산만 사용해 백엔드 summary 와 일치.
-    const inTotal = (a: Asset) => a.isIncludedInTotal === 'Y'
+    const inTotal = (a: Asset) => a.isIncludedInTotal === "Y";
     const sumIncluded = (arr: Asset[]) =>
-      arr.filter(inTotal).reduce((s, a) => s + a.balance, 0)
+      arr.filter(inTotal).reduce((s, a) => s + a.balance, 0);
     return {
       accounts,
       cards,
@@ -1342,8 +1839,8 @@ function useAssetGroups() {
       cardsTotal: Math.abs(sumIncluded(cards)),
       investmentsTotal: sumIncluded(investments),
       loansTotal: Math.abs(sumIncluded(loans)),
-    }
-  }, [assetsQ.data, valMap])
+    };
+  }, [assetsQ.data, valMap]);
 
   // 백엔드 summary(DB 잔액 기준)에 연결 자산의 (라이브−DB) 차액만큼 순자산/변화를 보정.
   //
@@ -1352,20 +1849,20 @@ function useAssetGroups() {
   const liveDelta = useMemo(
     () =>
       linked.reduce((s, a) => {
-        if (a.isIncludedInTotal !== 'Y') return s
-        const v = valMap.get(a.rowId)
-        return v != null ? s + (v - (a.holdingBalance ?? 0)) : s
+        if (a.isIncludedInTotal !== "Y") return s;
+        const v = valMap.get(a.rowId);
+        return v != null ? s + (v - (a.holdingBalance ?? 0)) : s;
       }, 0),
     [linked, valMap],
-  )
+  );
 
-  const netWorth = (summaryQ.data?.netWorth ?? 0) + liveDelta
-  const changeAmount = (summaryQ.data?.changeAmount ?? 0) + liveDelta
-  const lastMonth = summaryQ.data?.lastMonthNetWorth ?? 0
+  const netWorth = (summaryQ.data?.netWorth ?? 0) + liveDelta;
+  const changeAmount = (summaryQ.data?.changeAmount ?? 0) + liveDelta;
+  const lastMonth = summaryQ.data?.lastMonthNetWorth ?? 0;
   const changePercent =
     lastMonth !== 0
       ? Math.round((changeAmount / Math.abs(lastMonth)) * 1000) / 10
-      : summaryQ.data?.changePercent ?? 0
+      : (summaryQ.data?.changePercent ?? 0);
 
   return {
     ...groups,
@@ -1376,37 +1873,38 @@ function useAssetGroups() {
     isLoading: assetsQ.isLoading || summaryQ.isLoading,
     isFetching: assetsQ.isFetching || summaryQ.isFetching,
     refetch: () => {
-      assetsQ.refetch()
-      summaryQ.refetch()
+      assetsQ.refetch();
+      summaryQ.refetch();
     },
-  }
+  };
 }
 
 function AssetDesktop() {
-  const { t } = useTranslation('asset')
-  const navigate = useNavigate()
-  const hidden = useHideAmounts()
-  const g = useAssetGroups()
-  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
+  const { t } = useTranslation("asset");
+  const navigate = useNavigate();
+  const hidden = useHideAmounts();
+  const g = useAssetGroups();
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null);
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
-  const handleHideToggle = useOpenHideAmountsSettings('asset')
+  const handleHideToggle = useOpenHideAmountsSettings("asset");
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
     g.cards.length === 0 &&
     g.investments.length === 0 &&
-    g.loans.length === 0
+    g.loans.length === 0;
 
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>{t('assets')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("assets")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">
           <Button variant="secondary" size="sm" onClick={handleHideToggle}>
-            {hidden ? <EyeOff size={13} /> : <Eye size={13} />} {hidden ? t('show') : t('hide')}
+            {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
+            {hidden ? t("show") : t("hide")}
           </Button>
           <Button
             variant="secondary"
@@ -1414,32 +1912,44 @@ function AssetDesktop() {
             onClick={g.refetch}
             disabled={g.isFetching}
           >
-            <RefreshCw size={13} /> {t('refresh')}
+            <RefreshCw size={13} /> {t("refresh")}
           </Button>
         </div>
       </div>
 
       {isEmpty ? (
         <Card>
-          <CardContent style={{ padding: '64px 20px', textAlign: 'center' }}>
+          <CardContent style={{ padding: "64px 20px", textAlign: "center" }}>
             <div
               style={{
-                fontSize: 'var(--text-body-sm)',
-                color: 'var(--fg-tertiary)',
-                fontWeight: '500',
+                fontSize: "var(--text-body-sm)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
                 marginBottom: 12,
               }}
             >
-              {t('emptyTitle')}
+              {t("emptyTitle")}
             </div>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-              {t('emptyDesc')}
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              {t("emptyDesc")}
             </div>
           </CardContent>
         </Card>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, alignItems: 'start' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
+            gap: 20,
+            alignItems: "start",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <SummaryCard
               mobile={false}
               netWorth={g.netWorth}
@@ -1459,10 +1969,10 @@ function AssetDesktop() {
             />
             <UpcomingBillsCard />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <TypeGroup
               card="asset.accounts"
-              title={t('accountDepositTitle')}
+              title={t("accountDepositTitle")}
               assets={g.accounts}
               total={g.accountsTotal}
               mobile={false}
@@ -1471,7 +1981,7 @@ function AssetDesktop() {
             {g.investments.length > 0 && (
               <TypeGroup
                 card="asset.investments"
-                title={t('group.invest')}
+                title={t("group.invest")}
                 assets={g.investments}
                 total={g.investmentsTotal}
                 mobile={false}
@@ -1481,7 +1991,7 @@ function AssetDesktop() {
             )}
             <TypeGroup
               card="asset.cards"
-              title={t('group.card')}
+              title={t("group.card")}
               assets={g.cards}
               total={g.cardsTotal}
               totalColor="var(--fg-expense)"
@@ -1492,7 +2002,7 @@ function AssetDesktop() {
             {g.loans.length > 0 && (
               <TypeGroup
                 card="asset.loans"
-                title={t('assetType.loan')}
+                title={t("assetType.loan")}
                 assets={g.loans}
                 total={g.loansTotal}
                 totalColor="var(--fg-expense)"
@@ -1511,67 +2021,85 @@ function AssetDesktop() {
           mobile={false}
           onClose={() => setDetailAsset(null)}
           onEdit={() => {
-            navigate('/desk/settings?section=accounts')
-            setDetailAsset(null)
+            navigate("/desk/settings?section=accounts");
+            setDetailAsset(null);
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
 function AssetMobile() {
-  const { t } = useTranslation('asset')
-  const navigate = useNavigate()
-  const g = useAssetGroups()
-  const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
+  const { t } = useTranslation("asset");
+  const navigate = useNavigate();
+  const g = useAssetGroups();
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null);
   const isEmpty =
     !g.isLoading &&
     g.accounts.length === 0 &&
     g.cards.length === 0 &&
     g.investments.length === 0 &&
-    g.loans.length === 0
+    g.loans.length === 0;
 
   if (isEmpty) {
     return (
       // 카드 다이어트 — 빈 상태도 카드 없이 배경 위 플랫.
-      <div style={{ padding: '16px 24px 24px' }}>
-        <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+      <div style={{ padding: "16px 24px 24px" }}>
+        <div style={{ padding: "48px 20px", textAlign: "center" }}>
           <div
             style={{
-              fontSize: 'var(--text-body-sm)',
-              color: 'var(--fg-tertiary)',
-              fontWeight: '500',
+              fontSize: "var(--text-body-sm)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
               marginBottom: 12,
             }}
           >
-            {t('emptyTitle')}
+            {t("emptyTitle")}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            {t('emptyDesc')}
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+            }}
+          >
+            {t("emptyDesc")}
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     // 모바일 카드 다이어트 — keep 요약 + flat 그룹, 섹션 gap 36 (design AssetsScreen).
-    <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+    <div
+      style={{
+        padding: "16px 24px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--spacing-2xl)",
+      }}
+    >
       <SummaryCard
         mobile
         netWorth={g.netWorth}
-              changeAmount={g.changeAmount}
-              changePercent={g.changePercent}
+        changeAmount={g.changeAmount}
+        changePercent={g.changePercent}
         accountsTotal={g.accountsTotal}
         investmentsTotal={g.investmentsTotal}
         cardsTotal={g.cardsTotal}
         isLoading={g.isLoading}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--spacing-2xl)",
+        }}
+      >
         <TypeGroup
           card="asset.accounts"
-          title={t('accountDepositTitle')}
+          title={t("accountDepositTitle")}
           assets={g.accounts}
           total={g.accountsTotal}
           mobile
@@ -1580,7 +2108,7 @@ function AssetMobile() {
         {g.investments.length > 0 && (
           <TypeGroup
             card="asset.investments"
-            title={t('group.invest')}
+            title={t("group.invest")}
             assets={g.investments}
             total={g.investmentsTotal}
             mobile
@@ -1590,7 +2118,7 @@ function AssetMobile() {
         )}
         <TypeGroup
           card="asset.cards"
-          title={t('group.card')}
+          title={t("group.card")}
           assets={g.cards}
           total={g.cardsTotal}
           totalColor="var(--fg-expense)"
@@ -1601,7 +2129,7 @@ function AssetMobile() {
         {g.loans.length > 0 && (
           <TypeGroup
             card="asset.loans"
-            title={t('assetType.loan')}
+            title={t("assetType.loan")}
             assets={g.loans}
             total={g.loansTotal}
             totalColor="var(--fg-expense)"
@@ -1618,13 +2146,13 @@ function AssetMobile() {
           mobile
           onClose={() => setDetailAsset(null)}
           onEdit={() => {
-            navigate('/desk/settings?section=accounts')
-            setDetailAsset(null)
+            navigate("/desk/settings?section=accounts");
+            setDetailAsset(null);
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
-export default AssetPage
+export default AssetPage;

@@ -1,38 +1,38 @@
-import { cn } from '@/shared/lib'
+import { cn } from "@/shared/lib";
 
 interface BudgetRingProps {
   /** 0 ~ 100+ (over 100 means over-budget) */
-  percentage: number
-  label?: string
+  percentage: number;
+  label?: string;
   /** Formatted total budget string e.g. "₩1,500,000" */
-  totalBudget?: string
+  totalBudget?: string;
   /** Formatted spent string */
-  spent?: string
+  spent?: string;
   /** Formatted remaining string */
-  remaining?: string
+  remaining?: string;
   /** Negative remaining → over budget, we highlight it */
-  isOverBudget?: boolean
+  isOverBudget?: boolean;
   /** Optional per-day suggestion */
-  perDay?: string
-  size?: number
-  strokeWidth?: number
-  className?: string
-  onClick?: () => void
+  perDay?: string;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  onClick?: () => void;
 }
 
 /** Pick stroke color by threshold — porest status 토큰 정합. */
 function getRingStroke(percentage: number): string {
-  if (percentage > 100) return 'stroke-error'
-  if (percentage > 90) return 'stroke-warning'
-  if (percentage > 70) return 'stroke-[var(--color-chart-yellow)]'
-  return 'stroke-primary'
+  if (percentage > 100) return "stroke-error";
+  if (percentage > 90) return "stroke-warning";
+  if (percentage > 70) return "stroke-[var(--color-chart-yellow)]";
+  return "stroke-primary";
 }
 
 function getTextTone(percentage: number): string {
-  if (percentage > 100) return 'text-error'
-  if (percentage > 90) return 'text-warning'
-  if (percentage > 70) return 'text-[var(--color-chart-yellow)]'
-  return 'text-primary'
+  if (percentage > 100) return "text-error";
+  if (percentage > 90) return "text-warning";
+  if (percentage > 70) return "text-[var(--color-chart-yellow)]";
+  return "text-primary";
 }
 
 export const BudgetRing = ({
@@ -48,21 +48,21 @@ export const BudgetRing = ({
   className,
   onClick,
 }: BudgetRingProps) => {
-  const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
-  const clamped = Math.min(Math.max(percentage, 0), 100)
-  const dashOffset = circumference - (clamped / 100) * circumference
-  const strokeClass = getRingStroke(percentage)
-  const textToneClass = getTextTone(percentage)
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.min(Math.max(percentage, 0), 100);
+  const dashOffset = circumference - (clamped / 100) * circumference;
+  const strokeClass = getRingStroke(percentage);
+  const textToneClass = getTextTone(percentage);
 
-  const Wrapper = onClick ? 'button' : 'div'
+  const Wrapper = onClick ? "button" : "div";
 
   return (
     <Wrapper
       onClick={onClick}
       className={cn(
-        'flex items-center gap-4 rounded-xl border bg-surface-default p-4 transition-colors text-left w-full',
-        onClick && 'hover:bg-surface-input/40 active:scale-[0.99]',
+        "flex items-center gap-4 rounded-xl border bg-surface-default p-4 transition-colors text-left w-full",
+        onClick && "hover:bg-surface-input/40 active:scale-[0.99]",
         className,
       )}
     >
@@ -93,15 +93,25 @@ export const BudgetRing = ({
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
-            className={cn('transition-[stroke-dashoffset] duration-700 ease-out', strokeClass)}
+            className={cn(
+              "transition-[stroke-dashoffset] duration-700 ease-out",
+              strokeClass,
+            )}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={cn('text-2xl sm:text-3xl font-bold tabular-nums tracking-tight', textToneClass)}>
+          <span
+            className={cn(
+              "text-2xl sm:text-3xl font-bold tabular-nums tracking-tight",
+              textToneClass,
+            )}
+          >
             {Math.round(percentage)}%
           </span>
           {label && (
-            <span className="text-[10px] sm:text-xs text-text-secondary mt-0.5">{label}</span>
+            <span className="text-[10px] sm:text-xs text-text-secondary mt-0.5">
+              {label}
+            </span>
           )}
         </div>
       </div>
@@ -118,10 +128,8 @@ export const BudgetRing = ({
         {remaining && (
           <p
             className={cn(
-              'text-xs sm:text-sm tabular-nums',
-              isOverBudget
-                ? 'text-error font-semibold'
-                : 'text-text-secondary',
+              "text-xs sm:text-sm tabular-nums",
+              isOverBudget ? "text-error font-semibold" : "text-text-secondary",
             )}
           >
             {remaining}
@@ -134,5 +142,5 @@ export const BudgetRing = ({
         )}
       </div>
     </Wrapper>
-  )
-}
+  );
+};

@@ -1,4 +1,4 @@
-export { savingGoalApi } from './api/savingGoalApi'
+export { savingGoalApi } from "./api/savingGoalApi";
 export {
   useSavingGoals,
   useSavingGoal,
@@ -7,4 +7,4 @@ export {
   useContributeSavingGoal,
   useDeleteSavingGoal,
   useReorderSavingGoals,
-} from './model/useSavingGoals'
+} from "./model/useSavingGoals";

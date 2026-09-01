@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
-import { expenseKeys } from '@/shared/config'
-import { expenseApi } from '@/features/expense'
-import type { ExpenseListParams } from '@/features/expense'
+import { useQuery } from "@tanstack/react-query";
+import { expenseKeys } from "@/shared/config";
+import { expenseApi } from "@/features/expense";
+import type { ExpenseListParams } from "@/features/expense";
 
 /**
  * 캘린더 뷰에서 가계부 데이터를 조회하는 훅
@@ -14,11 +14,14 @@ export const useCalendarExpenses = (
   const filters: ExpenseListParams = {
     startDate: params.startDate,
     endDate: params.endDate,
-  }
+  };
 
   return useQuery({
-    queryKey: [...expenseKeys.list(filters as unknown as Record<string, unknown>), 'calendar'],
+    queryKey: [
+      ...expenseKeys.list(filters as unknown as Record<string, unknown>),
+      "calendar",
+    ],
     queryFn: () => expenseApi.getExpenses(filters),
     enabled,
-  })
-}
+  });
+};

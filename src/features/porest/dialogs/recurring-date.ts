@@ -1,5 +1,9 @@
-import type { RecurringFrequency } from '@/entities/recurring-transaction'
-import { formatMonthDay, localDateKey, parseLocalDate } from '@/shared/lib/date'
+import type { RecurringFrequency } from "@/entities/recurring-transaction";
+import {
+  formatMonthDay,
+  localDateKey,
+  parseLocalDate,
+} from "@/shared/lib/date";
 
 // 반복 거래 다이얼로그 공용 date helpers — RecurringFromTxDialog / RecurringAddDialog /
 // RecurringEditDialog 공유.
@@ -12,16 +16,16 @@ import { formatMonthDay, localDateKey, parseLocalDate } from '@/shared/lib/date'
 // 미리보기·종료일이 하루씩 밀린다.
 
 export function addYears(iso: string, years: number): string {
-  const d = parseLocalDate(iso)
-  if (!d) return iso
-  d.setFullYear(d.getFullYear() + years)
-  return localDateKey(d)
+  const d = parseLocalDate(iso);
+  if (!d) return iso;
+  d.setFullYear(d.getFullYear() + years);
+  return localDateKey(d);
 }
 
 export function formatKoreanMonthDay(iso: string): string {
-  const d = parseLocalDate(iso)
-  if (!d) return iso
-  return formatMonthDay(d, { pad: true })
+  const d = parseLocalDate(iso);
+  if (!d) return iso;
+  return formatMonthDay(d, { pad: true });
 }
 
 export function previewNextDates(
@@ -31,34 +35,38 @@ export function previewNextDates(
   dayOfMonth: number,
   count: number,
 ): string[] {
-  const start = parseLocalDate(startIso)
-  if (!start) return []
-  const out: string[] = []
-  const cursor = new Date(start)
+  const start = parseLocalDate(startIso);
+  if (!start) return [];
+  const out: string[] = [];
+  const cursor = new Date(start);
 
-  if (freq === 'WEEKLY') {
+  if (freq === "WEEKLY") {
     // 시작일을 dayOfWeekUi 요일로 정규화
-    const diff = (dayOfWeekUi - cursor.getDay() + 7) % 7
-    cursor.setDate(cursor.getDate() + diff)
-  } else if (freq === 'MONTHLY') {
-    cursor.setDate(Math.min(dayOfMonth, daysInMonth(cursor.getFullYear(), cursor.getMonth())))
+    const diff = (dayOfWeekUi - cursor.getDay() + 7) % 7;
+    cursor.setDate(cursor.getDate() + diff);
+  } else if (freq === "MONTHLY") {
+    cursor.setDate(
+      Math.min(
+        dayOfMonth,
+        daysInMonth(cursor.getFullYear(), cursor.getMonth()),
+      ),
+    );
   }
 
   for (let i = 0; i < count; i++) {
-    out.push(localDateKey(cursor))
-    if (freq === 'DAILY') cursor.setDate(cursor.getDate() + 1)
-    else if (freq === 'WEEKLY') cursor.setDate(cursor.getDate() + 7)
-    else if (freq === 'MONTHLY') {
-      const ny = cursor.getFullYear()
-      const nm = cursor.getMonth() + 1
-      const nd = Math.min(dayOfMonth, daysInMonth(ny, nm))
-      cursor.setFullYear(ny, nm, nd)
-    }
-    else if (freq === 'YEARLY') cursor.setFullYear(cursor.getFullYear() + 1)
+    out.push(localDateKey(cursor));
+    if (freq === "DAILY") cursor.setDate(cursor.getDate() + 1);
+    else if (freq === "WEEKLY") cursor.setDate(cursor.getDate() + 7);
+    else if (freq === "MONTHLY") {
+      const ny = cursor.getFullYear();
+      const nm = cursor.getMonth() + 1;
+      const nd = Math.min(dayOfMonth, daysInMonth(ny, nm));
+      cursor.setFullYear(ny, nm, nd);
+    } else if (freq === "YEARLY") cursor.setFullYear(cursor.getFullYear() + 1);
   }
-  return out
+  return out;
 }
 
 function daysInMonth(year: number, monthIdx: number): number {
-  return new Date(year, monthIdx + 1, 0).getDate()
+  return new Date(year, monthIdx + 1, 0).getDate();
 }

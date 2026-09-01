@@ -1,10 +1,13 @@
-export { useCurrentUser } from './model/useCurrentUser'
-export { useChangePasswordMutation } from './model/useChangePasswordMutation'
-export { useVerifyPasswordMutation } from './model/useVerifyPasswordMutation'
-export { useUserPreferences, useUpdateUserPreferences } from './model/useUserPreferences'
+export { useCurrentUser } from "./model/useCurrentUser";
+export { useChangePasswordMutation } from "./model/useChangePasswordMutation";
+export { useVerifyPasswordMutation } from "./model/useVerifyPasswordMutation";
+export {
+  useUserPreferences,
+  useUpdateUserPreferences,
+} from "./model/useUserPreferences";
 export type {
   ChangePasswordReq,
   UserPreferences,
   NotificationSound,
   EmailFrequency,
-} from './api/userApi'
+} from "./api/userApi";

@@ -11,5 +11,5 @@ export {
   getRemainingMs,
   getProgress,
   formatTime,
-} from './lib/timerEngine'
-export type { TimerState, TimerStatus } from './lib/timerEngine'
+} from "./lib/timerEngine";
+export type { TimerState, TimerStatus } from "./lib/timerEngine";

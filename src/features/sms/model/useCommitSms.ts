@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { assetKeys, expenseKeys } from '@/shared/config'
-import { commitSms, type SmsCommitRequest } from '../api/smsApi'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { assetKeys, expenseKeys } from "@/shared/config";
+import { commitSms, type SmsCommitRequest } from "../api/smsApi";
 
 /**
  * 결제 문자로 지출 만들기.
@@ -10,14 +10,14 @@ import { commitSms, type SmsCommitRequest } from '../api/smsApi'
  * 무효화 범위도 일반 생성과 같다.
  */
 export const useCommitSms = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: SmsCommitRequest) => commitSms(request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
       // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all })
+      queryClient.invalidateQueries({ queryKey: assetKeys.all });
     },
-  })
-}
+  });
+};

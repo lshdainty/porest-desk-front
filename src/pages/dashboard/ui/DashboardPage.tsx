@@ -1,125 +1,249 @@
-import { useMemo, useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useMemo, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
-  CalendarClock, CheckCircle2, CheckSquare, ChevronRight, Eye, EyeOff, TrendingDown, TrendingUp, Wallet,
-} from 'lucide-react'
-import { Bar, BarChart as RcBarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { tileRadius } from '@/shared/lib'
-import { KRW, money, formatChartAxis, isEn } from '@/shared/lib/porest/format'
-import { formatMonthDay, formatYearMonth, parseLocalDate } from '@/shared/lib/date'
-import { niceAxis } from '@/shared/lib/porest/chartAxis'
-import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { expenseSum } from '@/shared/lib/porest/expense-aggregate'
-import { wonPre, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import { useOpenHideAmountsSettings } from '@/shared/lib/porest/hide-amounts-nav'
-import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
-import { Donut } from '@/shared/ui/porest/charts'
-import { ExpenseRow } from '@/shared/ui/porest/expense-row'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { useDashboardSummary, type DashboardSummary } from '@/features/dashboard'
-import { useAssetSummary } from '@/features/asset'
+  CalendarClock,
+  CheckCircle2,
+  CheckSquare,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart as RcBarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { tileRadius } from "@/shared/lib";
+import { KRW, money, formatChartAxis, isEn } from "@/shared/lib/porest/format";
+import {
+  formatMonthDay,
+  formatYearMonth,
+  parseLocalDate,
+} from "@/shared/lib/date";
+import { niceAxis } from "@/shared/lib/porest/chartAxis";
+import {
+  HideUnit,
+  MaskAmount,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
+import { expenseSum } from "@/shared/lib/porest/expense-aggregate";
+import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
+import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
+import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
+import { Donut } from "@/shared/ui/porest/charts";
+import { ExpenseRow } from "@/shared/ui/porest/expense-row";
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/shared/ui/chart";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import {
+  useDashboardSummary,
+  type DashboardSummary,
+} from "@/features/dashboard";
+import { useAssetSummary } from "@/features/asset";
 import {
   useExpenses,
   useExpenseCategories,
   useRangeSummary,
   useMonthlyTrend,
   useExpenseBudgets,
-} from '@/features/expense'
-import { getPaletteByColor } from '@/features/porest/dialogs'
-import { useUserPreferences } from '@/features/user'
-import { useRecurringTransactions } from '@/features/recurring-transaction'
-import type { Expense } from '@/entities/expense'
-import { aggregateByParent } from '@/entities/expense'
+} from "@/features/expense";
+import { getPaletteByColor } from "@/features/porest/dialogs";
+import { useUserPreferences } from "@/features/user";
+import { useRecurringTransactions } from "@/features/recurring-transaction";
+import type { Expense } from "@/entities/expense";
+import { aggregateByParent } from "@/entities/expense";
 
 // income/expense bar 색상·라벨은 IncomeExpenseBarChart 내부에서 t() 로 구성.
 
-
-type BarPayloadItem = { dataKey?: string; value?: number; payload?: Record<string, unknown> }
-type BarTooltipProps = { active?: boolean; payload?: BarPayloadItem[]; label?: string }
+type BarPayloadItem = {
+  dataKey?: string;
+  value?: number;
+  payload?: Record<string, unknown>;
+};
+type BarTooltipProps = {
+  active?: boolean;
+  payload?: BarPayloadItem[];
+  label?: string;
+};
 
 function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
-  const { t } = useTranslation('dashboard')
-  if (!active || !payload || payload.length === 0) return null
-  const income = Number(payload.find(p => p.dataKey === 'income')?.value ?? 0)
-  const expense = Number(payload.find(p => p.dataKey === 'expense')?.value ?? 0)
-  const saving = income - expense
+  const { t } = useTranslation("dashboard");
+  if (!active || !payload || payload.length === 0) return null;
+  const income = Number(
+    payload.find((p) => p.dataKey === "income")?.value ?? 0,
+  );
+  const expense = Number(
+    payload.find((p) => p.dataKey === "expense")?.value ?? 0,
+  );
+  const saving = income - expense;
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-tile)',
-        boxShadow: 'var(--shadow-md)',
-        padding: '8px 12px',
-        fontSize: 'var(--text-caption)',
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-tile)",
+        boxShadow: "var(--shadow-md)",
+        padding: "8px 12px",
+        fontSize: "var(--text-caption)",
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
+      <div
+        style={{
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-tertiary)",
+          fontWeight: "600",
+          marginBottom: 4,
+        }}
+      >
         {label}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--status-info-fg)' }} />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.income')}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount card="home.monthExpense" kind="income">{wonPre()}{KRW(income)}</MaskAmount>
-          <WonUnit card="home.monthExpense" kind="income" />
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "var(--radius-xs)",
+            background: "var(--status-info-fg)",
+          }}
+        />
+        <span
+          style={{
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("chart.income")}
         </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-        <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-xs)', background: 'var(--fg-expense)' }} />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.expense')}</span>
-        <span className="num" style={{ marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700' }}>
-          <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(expense)}</MaskAmount>
-          <WonUnit card="home.monthExpense" kind="expense" />
-        </span>
-      </div>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        marginTop: 5, paddingTop: 5, borderTop: '1px solid var(--border-subtle)',
-      }}>
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('chart.savings')}</span>
         <span
           className="num"
           style={{
-            marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700',
-            color: saving >= 0 ? 'var(--fg-brand)' : 'var(--fg-expense)',
+            marginLeft: "auto",
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
           }}
         >
-          <MaskAmount card="home.monthExpense" kind="net">{saving >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(saving))}</MaskAmount>
+          <MaskAmount card="home.monthExpense" kind="income">
+            {wonPre()}
+            {KRW(income)}
+          </MaskAmount>
+          <WonUnit card="home.monthExpense" kind="income" />
+        </span>
+      </div>
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}
+      >
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "var(--radius-xs)",
+            background: "var(--fg-expense)",
+          }}
+        />
+        <span
+          style={{
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("chart.expense")}
+        </span>
+        <span
+          className="num"
+          style={{
+            marginLeft: "auto",
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
+          }}
+        >
+          <MaskAmount card="home.monthExpense" kind="expense">
+            {wonPre()}
+            {KRW(expense)}
+          </MaskAmount>
+          <WonUnit card="home.monthExpense" kind="expense" />
+        </span>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 5,
+          paddingTop: 5,
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("chart.savings")}
+        </span>
+        <span
+          className="num"
+          style={{
+            marginLeft: "auto",
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
+            color: saving >= 0 ? "var(--fg-brand)" : "var(--fg-expense)",
+          }}
+        >
+          <MaskAmount card="home.monthExpense" kind="net">
+            {saving >= 0 ? "+" : "−"}
+            {wonPre()}
+            {KRW(Math.abs(saving))}
+          </MaskAmount>
           <WonUnit card="home.monthExpense" kind="net" />
         </span>
       </div>
     </div>
-  )
+  );
 }
 
-function IncomeExpenseBarChart({ data, height = 200 }: {
-  data: { label: string; income: number; expense: number }[]
-  height?: number
+function IncomeExpenseBarChart({
+  data,
+  height = 200,
+}: {
+  data: { label: string; income: number; expense: number }[];
+  height?: number;
 }) {
-  const { t } = useTranslation('dashboard')
-  const hidden = useHideAmounts('home.monthExpense')
+  const { t } = useTranslation("dashboard");
+  const hidden = useHideAmounts("home.monthExpense");
   const barChartConfig = {
-    income:  { label: t('chart.income'), color: 'var(--status-info-fg)' },
-    expense: { label: t('chart.expense'), color: 'var(--fg-expense)' },
-  } satisfies ChartConfig
+    income: { label: t("chart.income"), color: "var(--status-info-fg)" },
+    expense: { label: t("chart.expense"), color: "var(--fg-expense)" },
+  } satisfies ChartConfig;
   // Y축: 0기준 nice 눈금 (수입·지출 둘 다 포함, 앱 niceAxis 정합).
   const yAxis = useMemo(() => {
-    const vals = data.flatMap(d => [d.income, d.expense])
-    return niceAxis(0, Math.max(0, ...vals))
-  }, [data])
+    const vals = data.flatMap((d) => [d.income, d.expense]);
+    return niceAxis(0, Math.max(0, ...vals));
+  }, [data]);
   return (
     <ChartContainer
       config={barChartConfig}
       className="aspect-auto w-full"
       style={{ height }}
     >
-      <RcBarChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 8 }} barGap={8} barCategoryGap="55%">
+      <RcBarChart
+        data={data}
+        margin={{ top: 16, right: 16, left: 0, bottom: 8 }}
+        barGap={8}
+        barCategoryGap="55%"
+      >
         <CartesianGrid
           vertical={false}
           stroke="var(--border-subtle)"
@@ -129,7 +253,7 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
           dataKey="label"
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+          tick={{ fontSize: "var(--text-badge)", fill: "var(--fg-tertiary)" }}
           tickMargin={8}
         />
         <YAxis
@@ -138,71 +262,93 @@ function IncomeExpenseBarChart({ data, height = 200 }: {
           domain={[yAxis.min, yAxis.max]}
           ticks={yAxis.ticks}
           // 금액 숨기기 시 Y축도 마스킹 ('••••' 4점)
-          tickFormatter={(v: number) => (hidden ? '••••' : formatChartAxis(v))}
-          tick={{ fontSize: 'var(--text-badge)', fill: 'var(--fg-tertiary)' }}
+          tickFormatter={(v: number) => (hidden ? "••••" : formatChartAxis(v))}
+          tick={{ fontSize: "var(--text-badge)", fill: "var(--fg-tertiary)" }}
           width={48}
         />
-        <ChartTooltip cursor={{ fill: 'var(--bg-brand)', fillOpacity: 0.06 }} content={<IncomeExpenseTooltip />} />
-        <Bar dataKey="income"  fill="var(--color-income)"  radius={4} barSize={28} />
-        <Bar dataKey="expense" fill="var(--color-expense)" radius={4} barSize={28} />
+        <ChartTooltip
+          cursor={{ fill: "var(--bg-brand)", fillOpacity: 0.06 }}
+          content={<IncomeExpenseTooltip />}
+        />
+        <Bar
+          dataKey="income"
+          fill="var(--color-income)"
+          radius={4}
+          barSize={28}
+        />
+        <Bar
+          dataKey="expense"
+          fill="var(--color-expense)"
+          radius={4}
+          barSize={28}
+        />
       </RcBarChart>
     </ChartContainer>
-  )
+  );
 }
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
 // `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
-  'var(--color-cat-blue)',
-  'var(--color-cat-green)',
-  'var(--color-cat-orange)',
-  'var(--color-cat-violet)',
-  'var(--color-cat-pink)',
-  'var(--color-cat-indigo)',
-  'var(--color-cat-red)',
-  'var(--color-cat-yellow)',
-  'var(--color-cat-brown)',
-  'var(--color-cat-gray)',
-]
+  "var(--color-cat-blue)",
+  "var(--color-cat-green)",
+  "var(--color-cat-orange)",
+  "var(--color-cat-violet)",
+  "var(--color-cat-pink)",
+  "var(--color-cat-indigo)",
+  "var(--color-cat-red)",
+  "var(--color-cat-yellow)",
+  "var(--color-cat-brown)",
+  "var(--color-cat-gray)",
+];
 
 /**
  * Dashboard 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계.
  * desktop/mobile 공통 — 같은 쿼리들이 재호출되어도 캐시 hit.
  */
-function useDashboardPageData(year: number, month: number, opts?: { includePrevMonth?: boolean }) {
-  const pad2 = (n: number) => String(n).padStart(2, '0')
-  const monthStart = `${year}-${pad2(month)}-01`
-  const monthEnd = `${year}-${pad2(month)}-${pad2(new Date(year, month, 0).getDate())}`
+function useDashboardPageData(
+  year: number,
+  month: number,
+  opts?: { includePrevMonth?: boolean },
+) {
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const monthStart = `${year}-${pad2(month)}-01`;
+  const monthEnd = `${year}-${pad2(month)}-${pad2(new Date(year, month, 0).getDate())}`;
 
-  const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary(year, month)
-  const monthlyQ = useRangeSummary(monthStart, monthEnd)
-  const trendQ = useMonthlyTrend(6)
-  const recentQ = useExpenses({ startDate: monthStart, endDate: monthEnd })
-  const budgetsQ = useExpenseBudgets({ year, month })
-  const categoriesQ = useExpenseCategories()
-  const recurringQ = useRecurringTransactions()
+  const dashboardQ = useDashboardSummary();
+  const assetSummaryQ = useAssetSummary(year, month);
+  const monthlyQ = useRangeSummary(monthStart, monthEnd);
+  const trendQ = useMonthlyTrend(6);
+  const recentQ = useExpenses({ startDate: monthStart, endDate: monthEnd });
+  const budgetsQ = useExpenseBudgets({ year, month });
+  const categoriesQ = useExpenseCategories();
+  const recurringQ = useRecurringTransactions();
 
   // mobile 전용 — 전월 비교용 range summary
-  const prevDate = new Date(year, month - 2, 1)
-  const prevY = prevDate.getFullYear()
-  const prevM = prevDate.getMonth() + 1
-  const prevStart = `${prevY}-${pad2(prevM)}-01`
-  const prevEnd = `${prevY}-${pad2(prevM)}-${pad2(new Date(prevY, prevM, 0).getDate())}`
+  const prevDate = new Date(year, month - 2, 1);
+  const prevY = prevDate.getFullYear();
+  const prevM = prevDate.getMonth() + 1;
+  const prevStart = `${prevY}-${pad2(prevM)}-01`;
+  const prevEnd = `${prevY}-${pad2(prevM)}-${pad2(new Date(prevY, prevM, 0).getDate())}`;
   const prevMonthlyQ = useRangeSummary(
-    opts?.includePrevMonth ? prevStart : '',
-    opts?.includePrevMonth ? prevEnd : '',
-  )
+    opts?.includePrevMonth ? prevStart : "",
+    opts?.includePrevMonth ? prevEnd : "",
+  );
 
   return {
     isLoading:
-      dashboardQ.isLoading || assetSummaryQ.isLoading || monthlyQ.isLoading
-      || trendQ.isLoading || recentQ.isLoading || budgetsQ.isLoading
-      || categoriesQ.isLoading || recurringQ.isLoading
-      || (opts?.includePrevMonth ? prevMonthlyQ.isLoading : false),
-  }
+      dashboardQ.isLoading ||
+      assetSummaryQ.isLoading ||
+      monthlyQ.isLoading ||
+      trendQ.isLoading ||
+      recentQ.isLoading ||
+      budgetsQ.isLoading ||
+      categoriesQ.isLoading ||
+      recurringQ.isLoading ||
+      (opts?.includePrevMonth ? prevMonthlyQ.isLoading : false),
+  };
 }
 
 /**
@@ -210,142 +356,321 @@ function useDashboardPageData(year: number, month: number, opts?: { includePrevM
  * 실제 렌더하고 서버 데이터 영역만 스켈레톤. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정).
  */
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
-  const navigate = useNavigate()
-  const { t } = useTranslation('dashboard')
-  const { key: initialKey, year, month } = useCurrentMonthKey()
-  const [period, setPeriod] = useState(initialKey)
+  const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
+  const { key: initialKey, year, month } = useCurrentMonthKey();
+  const [period, setPeriod] = useState(initialKey);
   if (mobile) {
     return (
       // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 32)
-      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+      <div
+        style={{
+          padding: "20px 24px 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--spacing-2xl)",
+        }}
+      >
         <DashboardHeroSkeleton mobile year={year} month={month} />
-        <DashboardSummaryCardSkeleton mobile month={month} period={period} onPeriodChange={setPeriod} />
-        <DashboardCategoryCardSkeleton mobile onDetail={() => navigate('/desk/stats')} />
-        <DashboardBudgetCardSkeleton mobile onManage={() => navigate('/desk/budget')} />
-        <DashboardWidgetSectionSkeleton icon={<CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />} title={t('schedule.title')} onAll={() => navigate('/desk/calendar')} marker="dot" rows={3} />
-        <DashboardWidgetSectionSkeleton icon={<CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />} title={t('todo.recent')} onAll={() => navigate('/desk/todo')} marker="check" rows={3} />
-        <DashboardListCardSkeleton mobile title={t('expense.todaySpent')} allLabel={t('all')} onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
+        <DashboardSummaryCardSkeleton
+          mobile
+          month={month}
+          period={period}
+          onPeriodChange={setPeriod}
+        />
+        <DashboardCategoryCardSkeleton
+          mobile
+          onDetail={() => navigate("/desk/stats")}
+        />
+        <DashboardBudgetCardSkeleton
+          mobile
+          onManage={() => navigate("/desk/budget")}
+        />
+        <DashboardWidgetSectionSkeleton
+          icon={
+            <CalendarClock size={16} style={{ color: "var(--fg-secondary)" }} />
+          }
+          title={t("schedule.title")}
+          onAll={() => navigate("/desk/calendar")}
+          marker="dot"
+          rows={3}
+        />
+        <DashboardWidgetSectionSkeleton
+          icon={
+            <CheckSquare size={16} style={{ color: "var(--fg-secondary)" }} />
+          }
+          title={t("todo.recent")}
+          onAll={() => navigate("/desk/todo")}
+          marker="check"
+          rows={3}
+        />
+        <DashboardListCardSkeleton
+          mobile
+          title={t("expense.todaySpent")}
+          allLabel={t("all")}
+          onAll={() => navigate("/desk/expense")}
+          rows={3}
+          variant="tx"
+          amount
+        />
       </div>
-    )
+    );
   }
   return (
     <div className="dash-grid">
       <div className="dash-grid__left">
         <DashboardHeroSkeleton mobile={false} year={year} month={month} />
-        <DashboardSummaryCardSkeleton mobile={false} month={month} period={period} onPeriodChange={setPeriod} />
-        <DashboardListCardSkeleton title={t('expense.todaySpent')} allLabel={t('viewAll')} onAll={() => navigate('/desk/expense')} rows={3} variant="tx" amount />
+        <DashboardSummaryCardSkeleton
+          mobile={false}
+          month={month}
+          period={period}
+          onPeriodChange={setPeriod}
+        />
+        <DashboardListCardSkeleton
+          title={t("expense.todaySpent")}
+          allLabel={t("viewAll")}
+          onAll={() => navigate("/desk/expense")}
+          rows={3}
+          variant="tx"
+          amount
+        />
       </div>
       <div className="dash-grid__right">
-        <DashboardCategoryCardSkeleton mobile={false} onDetail={() => navigate('/desk/stats')} />
-        <DashboardBudgetCardSkeleton mobile={false} onManage={() => navigate('/desk/budget')} />
-        <DashboardListCardSkeleton title={t('payment.upcoming')} rows={3} variant="badge" amount />
-        <DashboardListCardSkeleton title={t('todo.label')} allLabel={t('manage')} onAll={() => navigate('/desk/todo')} rows={4} variant="dot" />
-        <DashboardListCardSkeleton title={t('calendar.scheduled')} allLabel={t('calendar.title')} onAll={() => navigate('/desk/calendar')} rows={3} variant="badge" />
+        <DashboardCategoryCardSkeleton
+          mobile={false}
+          onDetail={() => navigate("/desk/stats")}
+        />
+        <DashboardBudgetCardSkeleton
+          mobile={false}
+          onManage={() => navigate("/desk/budget")}
+        />
+        <DashboardListCardSkeleton
+          title={t("payment.upcoming")}
+          rows={3}
+          variant="badge"
+          amount
+        />
+        <DashboardListCardSkeleton
+          title={t("todo.label")}
+          allLabel={t("manage")}
+          onAll={() => navigate("/desk/todo")}
+          rows={4}
+          variant="dot"
+        />
+        <DashboardListCardSkeleton
+          title={t("calendar.scheduled")}
+          allLabel={t("calendar.title")}
+          onAll={() => navigate("/desk/calendar")}
+          rows={3}
+          variant="badge"
+        />
       </div>
     </div>
-  )
+  );
 }
 
-function DashboardHeroSkeleton({ mobile, year, month }: { mobile: boolean; year: number; month: number }) {
+function DashboardHeroSkeleton({
+  mobile,
+  year,
+  month,
+}: {
+  mobile: boolean;
+  year: number;
+  month: number;
+}) {
   // 정적 틀(eyebrow 라벨 + 자산/부채 라벨)은 실제 렌더, 금액(데이터)만 스켈레톤.
-  const { t } = useTranslation('dashboard')
+  const { t } = useTranslation("dashboard");
   return (
-    <div className="balance-hero" style={mobile ? undefined : { padding: '28px 32px 24px' }}>
-      <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-        <Wallet size={mobile ? 13 : 14} /> {mobile ? t('asset.netAsset') : <>{t('asset.netAsset')} · {formatYearMonth(new Date(year, month - 1))}</>}
+    <div
+      className="balance-hero"
+      style={mobile ? undefined : { padding: "28px 32px 24px" }}
+    >
+      <div
+        className="balance-hero__eyebrow"
+        style={{ display: "flex", alignItems: "center" }}
+      >
+        <Wallet size={mobile ? 13 : 14} />{" "}
+        {mobile ? (
+          t("asset.netAsset")
+        ) : (
+          <>
+            {t("asset.netAsset")} · {formatYearMonth(new Date(year, month - 1))}
+          </>
+        )}
       </div>
       <div className="balance-hero__amount num">
-        <SkeletonBase className={mobile ? 'h-8 w-40 bg-white/15' : 'h-10 w-56 bg-white/15'} />
+        <SkeletonBase
+          className={mobile ? "h-8 w-40 bg-white/15" : "h-10 w-56 bg-white/15"}
+        />
       </div>
       <div className="balance-hero__sub">
         <SkeletonBase className="h-3 w-32 bg-white/15" />
       </div>
       <div className="balance-hero__split">
         <div>
-          <div className="l">{mobile ? t('asset.assetTab') : t('asset.totalAsset')}</div>
+          <div className="l">
+            {mobile ? t("asset.assetTab") : t("asset.totalAsset")}
+          </div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
         <div>
-          <div className="l">{mobile ? t('asset.debtTab') : t('asset.totalDebt')}</div>
+          <div className="l">
+            {mobile ? t("asset.debtTab") : t("asset.totalDebt")}
+          </div>
           <SkeletonBase className="h-5 w-24 bg-white/15" />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function DashboardSummaryCardSkeleton({ mobile, month, period, onPeriodChange }: {
-  mobile: boolean
-  month: number
-  period: string
-  onPeriodChange: (v: string) => void
+function DashboardSummaryCardSkeleton({
+  mobile,
+  month,
+  period,
+  onPeriodChange,
+}: {
+  mobile: boolean;
+  month: number;
+  period: string;
+  onPeriodChange: (v: string) => void;
 }) {
-  const { t } = useTranslation('dashboard')
+  const { t } = useTranslation("dashboard");
   if (mobile) {
     // 모바일 월 가계부 — 카드 벗김(플랫 섹션): 헤드 + 본문(10px 인셋) + 헤어라인.
     return (
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.015em' }}>{t('summary.monthExpenseBook', { month })}</div>
+        <div
+          style={{ display: "flex", alignItems: "center", marginBottom: 12 }}
+        >
+          <div
+            style={{
+              fontSize: "var(--text-body-lg)",
+              fontWeight: "700",
+              letterSpacing: "-0.015em",
+            }}
+          >
+            {t("summary.monthExpenseBook", { month })}
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          {[t('chart.income'), t('chart.expense')].map(lbl => (
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}
+        >
+          {[t("chart.income"), t("chart.expense")].map((lbl) => (
             <div key={lbl}>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{lbl}</div>
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginBottom: 2,
+                }}
+              >
+                {lbl}
+              </div>
               <SkeletonBase className="h-6 w-24" />
             </div>
           ))}
         </div>
-        <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 10px' }} />
+        <div
+          style={{
+            height: 1,
+            background: "var(--border-subtle)",
+            margin: "14px 10px",
+          }}
+        />
         <div>
           <SkeletonBase className="h-3 w-3/4" />
         </div>
       </div>
-    )
+    );
   }
   // 데스크탑 수입·지출 카드 — 타이틀(정적) + MonthPicker(정적 선택기) + 3col 라벨(정적) + 금액·차트(데이터).
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>{t('summary.monthIncomeExpense', { month })}</CardTitle>
+        <CardTitle>{t("summary.monthIncomeExpense", { month })}</CardTitle>
         <MonthPicker value={period} onChange={onPeriodChange} />
       </CardHeader>
       <CardContent>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
-          {[t('chart.income'), t('chart.expense'), t('balance')].map(lbl => (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 24,
+            marginBottom: 20,
+          }}
+        >
+          {[t("chart.income"), t("chart.expense"), t("balance")].map((lbl) => (
             <div key={lbl}>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{lbl}</div>
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginBottom: 4,
+                }}
+              >
+                {lbl}
+              </div>
               <SkeletonBase className="h-7 w-24" />
             </div>
           ))}
         </div>
         <SkeletonBase className="h-[280px] w-full" />
-        <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+        <div
+          style={{
+            marginTop: 16,
+            paddingTop: 14,
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        >
           <SkeletonBase className="h-3 w-3/4" />
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; onDetail: () => void }) {
+function DashboardCategoryCardSkeleton({
+  mobile,
+  onDetail,
+}: {
+  mobile: boolean;
+  onDetail: () => void;
+}) {
   // 타이틀 + '자세히' 링크(정적 틀)는 실제 렌더, 도넛+범례(데이터)만 스켈레톤.
-  const { t } = useTranslation('dashboard')
+  const { t } = useTranslation("dashboard");
   const body = (
     <div
       style={{
-        display: 'flex',
-        flexDirection: mobile ? 'row' : 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: mobile ? "row" : "column",
+        alignItems: "center",
         gap: mobile ? 16 : 20,
-              }}
+      }}
     >
       <SkeletonBase
-        className={mobile ? 'h-[120px] w-[120px] rounded-full shrink-0' : 'h-[160px] w-[160px] rounded-full shrink-0'}
+        className={
+          mobile
+            ? "h-[120px] w-[120px] rounded-full shrink-0"
+            : "h-[160px] w-[160px] rounded-full shrink-0"
+        }
       />
-      <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {[0, 1, 2, 3].map(i => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div
+        style={{
+          flex: 1,
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
             <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
             <SkeletonBase className="h-3 flex-1" />
             <SkeletonBase className="h-3 w-12 shrink-0" />
@@ -353,39 +678,62 @@ function DashboardCategoryCardSkeleton({ mobile, onDetail }: { mobile: boolean; 
         ))}
       </div>
     </div>
-  )
+  );
   if (mobile) {
     // 카드 벗김(플랫 섹션) — 실제 렌더와 동일 구조.
     return (
       <div>
         <div className="sec-head">
-          <h2>{t('categoryTitle')}</h2>
-          <button className="all" onClick={onDetail}>{t('detail')} <ChevronRight size={14} /></button>
+          <h2>{t("categoryTitle")}</h2>
+          <button className="all" onClick={onDetail}>
+            {t("detail")} <ChevronRight size={14} />
+          </button>
         </div>
         {body}
       </div>
-    )
+    );
   }
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>{t('categoryTitle')}</CardTitle>
-        <Button variant="link" className="all h-auto p-0" onClick={onDetail}>{t('detail')} <ChevronRight size={14} /></Button>
+        <CardTitle>{t("categoryTitle")}</CardTitle>
+        <Button variant="link" className="all h-auto p-0" onClick={onDetail}>
+          {t("detail")} <ChevronRight size={14} />
+        </Button>
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>
-  )
+  );
 }
 
-function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; onManage: () => void }) {
+function DashboardBudgetCardSkeleton({
+  mobile,
+  onManage,
+}: {
+  mobile: boolean;
+  onManage: () => void;
+}) {
   // 타이틀 + 링크(정적 틀)는 실제 렌더, 예산 항목(데이터)만 스켈레톤.
-  const { t } = useTranslation('dashboard')
+  const { t } = useTranslation("dashboard");
   const rows = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {[0, 1, 2].map(i => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {[0, 1, 2].map((i) => (
         <div key={i}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <SkeletonBase className={mobile ? 'h-10 w-10 rounded-md shrink-0' : 'h-8 w-8 rounded-md shrink-0'} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 6,
+            }}
+          >
+            <SkeletonBase
+              className={
+                mobile
+                  ? "h-10 w-10 rounded-md shrink-0"
+                  : "h-8 w-8 rounded-md shrink-0"
+              }
+            />
             <SkeletonBase className="h-4 w-20" />
             <SkeletonBase className="h-4 w-24 ml-auto" />
           </div>
@@ -393,28 +741,32 @@ function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; on
         </div>
       ))}
     </div>
-  )
+  );
   if (mobile) {
     // 카드 벗김(플랫 섹션) — 실제 렌더와 동일 구조.
     return (
       <div>
         <div className="sec-head" style={{ marginBottom: 14 }}>
-          <h2>{t('expense.budget')}</h2>
-          <button className="all" onClick={onManage}>{t('all')} <ChevronRight size={14} /></button>
+          <h2>{t("expense.budget")}</h2>
+          <button className="all" onClick={onManage}>
+            {t("all")} <ChevronRight size={14} />
+          </button>
         </div>
         {rows}
       </div>
-    )
+    );
   }
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>{t('expense.budget')}</CardTitle>
-        <Button variant="link" className="all h-auto p-0" onClick={onManage}>{t('manageBudget')} <ChevronRight size={14} /></Button>
+        <CardTitle>{t("expense.budget")}</CardTitle>
+        <Button variant="link" className="all h-auto p-0" onClick={onManage}>
+          {t("manageBudget")} <ChevronRight size={14} />
+        </Button>
       </CardHeader>
       <CardContent>{rows}</CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -425,47 +777,82 @@ function DashboardBudgetCardSkeleton({ mobile, onManage }: { mobile: boolean; on
  *  - 'dot'   : 6px 점 + title + date (박스·금액 없음)        — 할 일
  */
 function DashboardListCardSkeleton({
-  title, allLabel, onAll, rows = 3, variant, amount = false, mobile = false,
+  title,
+  allLabel,
+  onAll,
+  rows = 3,
+  variant,
+  amount = false,
+  mobile = false,
 }: {
-  title: string
-  allLabel?: string
-  onAll?: () => void
-  rows?: number
-  variant: 'tx' | 'badge' | 'dot'
-  amount?: boolean
-  mobile?: boolean
+  title: string;
+  allLabel?: string;
+  onAll?: () => void;
+  rows?: number;
+  variant: "tx" | "badge" | "dot";
+  amount?: boolean;
+  mobile?: boolean;
 }) {
   const body = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: variant === 'dot' ? 14 : 12 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: variant === "dot" ? 14 : 12,
+      }}
+    >
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: variant === 'dot' ? 10 : variant === 'tx' ? 12 : 10 }}>
-          {variant === 'dot' ? (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: variant === "dot" ? 10 : variant === "tx" ? 12 : 10,
+          }}
+        >
+          {variant === "dot" ? (
             <SkeletonBase className="h-1.5 w-1.5 rounded-full shrink-0" />
           ) : (
-            <SkeletonBase className={variant === 'tx' ? 'h-10 w-10 rounded-md shrink-0' : 'h-[38px] w-[38px] rounded-md shrink-0'} />
+            <SkeletonBase
+              className={
+                variant === "tx"
+                  ? "h-10 w-10 rounded-md shrink-0"
+                  : "h-[38px] w-[38px] rounded-md shrink-0"
+              }
+            />
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <SkeletonBase className={variant === 'dot' ? 'h-4 w-1/2' : 'h-4 w-1/2 mb-1.5'} />
-            {variant !== 'dot' && <SkeletonBase className="h-3 w-1/3" />}
+            <SkeletonBase
+              className={variant === "dot" ? "h-4 w-1/2" : "h-4 w-1/2 mb-1.5"}
+            />
+            {variant !== "dot" && <SkeletonBase className="h-3 w-1/3" />}
           </div>
-          {(amount || variant === 'dot') && (
-            <SkeletonBase className={variant === 'dot' ? 'h-3 w-10 shrink-0' : 'h-4 w-16 shrink-0'} />
+          {(amount || variant === "dot") && (
+            <SkeletonBase
+              className={
+                variant === "dot" ? "h-3 w-10 shrink-0" : "h-4 w-16 shrink-0"
+              }
+            />
           )}
         </div>
       ))}
     </div>
-  )
+  );
   if (mobile) {
     // 카드 벗김(플랫 섹션) — 실제 렌더와 동일 구조.
     return (
       <div>
         <div className="sec-head" style={{ marginBottom: 6 }}>
           <h2>{title}</h2>
-          {allLabel && <button className="all" onClick={onAll}>{allLabel}</button>}
+          {allLabel && (
+            <button className="all" onClick={onAll}>
+              {allLabel}
+            </button>
+          )}
         </div>
         {body}
       </div>
-    )
+    );
   }
   return (
     <Card>
@@ -479,7 +866,7 @@ function DashboardListCardSkeleton({
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -489,21 +876,39 @@ function DashboardListCardSkeleton({
  *  - 'check' : 18px 체크써클 + title + date  — 최근 할 일
  */
 function DashboardWidgetSectionSkeleton({
-  icon, title, onAll, marker, rows = 3,
+  icon,
+  title,
+  onAll,
+  marker,
+  rows = 3,
 }: {
-  icon: React.ReactNode
-  title: string
-  onAll: () => void
-  marker: 'dot' | 'check'
-  rows?: number
+  icon: React.ReactNode;
+  title: string;
+  onAll: () => void;
+  marker: "dot" | "check";
+  rows?: number;
 }) {
   return (
     <div>
       <WidgetHead icon={icon} title={title} onAll={onAll} />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
-            <SkeletonBase className={marker === 'dot' ? 'h-2 w-2 rounded-full shrink-0' : 'h-[18px] w-[18px] rounded-full shrink-0'} />
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "10px 0",
+            }}
+          >
+            <SkeletonBase
+              className={
+                marker === "dot"
+                  ? "h-2 w-2 rounded-full shrink-0"
+                  : "h-[18px] w-[18px] rounded-full shrink-0"
+              }
+            />
             <div style={{ flex: 1, minWidth: 0 }}>
               <SkeletonBase className="h-4 w-1/2" />
             </div>
@@ -512,178 +917,200 @@ function DashboardWidgetSectionSkeleton({
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export const DashboardPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { key } = useCurrentMonthKey()
-  const [year, month] = key.split('-').map(Number) as [number, number]
-  const { isLoading } = useDashboardPageData(year, month, { includePrevMonth: mobile })
-  if (isLoading) return <DashboardPageSkeleton mobile={mobile} />
-  return mobile ? <HomeMobile /> : <HomeDesktop />
-}
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { key } = useCurrentMonthKey();
+  const [year, month] = key.split("-").map(Number) as [number, number];
+  const { isLoading } = useDashboardPageData(year, month, {
+    includePrevMonth: mobile,
+  });
+  if (isLoading) return <DashboardPageSkeleton mobile={mobile} />;
+  return mobile ? <HomeMobile /> : <HomeDesktop />;
+};
 
 function useCurrentMonthKey() {
-  const now = new Date()
+  const now = new Date();
   return {
-    key: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+    key: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
     year: now.getFullYear(),
     month: now.getMonth() + 1,
-  }
+  };
 }
 
 function HomeDesktop() {
-  const { t } = useTranslation('dashboard')
-  const { t: tc } = useTranslation('common')
-  const navigate = useNavigate()
-  const hidden = useHideAmounts()
+  const { t } = useTranslation("dashboard");
+  const { t: tc } = useTranslation("common");
+  const navigate = useNavigate();
+  const hidden = useHideAmounts();
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
-  const handleHideToggle = useOpenHideAmountsSettings('home')
-  const { key: initialKey } = useCurrentMonthKey()
-  const [period, setPeriod] = useState(initialKey)
-  const [periodY, periodM] = period.split('-').map(Number) as [number, number]
+  const handleHideToggle = useOpenHideAmountsSettings("home");
+  const { key: initialKey } = useCurrentMonthKey();
+  const [period, setPeriod] = useState(initialKey);
+  const [periodY, periodM] = period.split("-").map(Number) as [number, number];
 
-  const pad2 = (n: number) => String(n).padStart(2, '0')
-  const periodStart = `${periodY}-${pad2(periodM)}-01`
-  const periodEnd = `${periodY}-${pad2(periodM)}-${pad2(new Date(periodY, periodM, 0).getDate())}`
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const periodStart = `${periodY}-${pad2(periodM)}-01`;
+  const periodEnd = `${periodY}-${pad2(periodM)}-${pad2(new Date(periodY, periodM, 0).getDate())}`;
 
-  const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary(periodY, periodM)
-  const monthlyQ = useRangeSummary(periodStart, periodEnd)
-  const trendQ = useMonthlyTrend(6)
-  const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd })
-  const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM })
-  const categoriesQ = useExpenseCategories()
-  const recurringQ = useRecurringTransactions()
-  const preferencesQ = useUserPreferences()
+  const dashboardQ = useDashboardSummary();
+  const assetSummaryQ = useAssetSummary(periodY, periodM);
+  const monthlyQ = useRangeSummary(periodStart, periodEnd);
+  const trendQ = useMonthlyTrend(6);
+  const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd });
+  const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM });
+  const categoriesQ = useExpenseCategories();
+  const recurringQ = useRecurringTransactions();
+  const preferencesQ = useUserPreferences();
   // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
-  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85;
 
-  const summary = dashboardQ.data
-  const assetSummary = assetSummaryQ.data
-  const totalAssets = assetSummary?.totalAssets ?? 0
-  const totalDebt = assetSummary?.totalDebt ?? 0
-  const netWorth = assetSummary?.netWorth ?? 0
-  const changeAmount = assetSummary?.changeAmount ?? 0
-  const changePercent = assetSummary?.changePercent ?? 0
-  const isUp = changeAmount >= 0
-  const monthly = monthlyQ.data
-  const income = monthly?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
-  const expense = monthly?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
-  const balance = income - expense
+  const summary = dashboardQ.data;
+  const assetSummary = assetSummaryQ.data;
+  const totalAssets = assetSummary?.totalAssets ?? 0;
+  const totalDebt = assetSummary?.totalDebt ?? 0;
+  const netWorth = assetSummary?.netWorth ?? 0;
+  const changeAmount = assetSummary?.changeAmount ?? 0;
+  const changePercent = assetSummary?.changePercent ?? 0;
+  const isUp = changeAmount >= 0;
+  const monthly = monthlyQ.data;
+  const income =
+    monthly?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0;
+  const expense =
+    monthly?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0;
+  const balance = income - expense;
 
   const todayDStr = (() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  })()
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
   // 오늘 쓴 거래만
   const todayTx: Expense[] = (recentQ.data ?? [])
     .slice()
-    .filter(t => t.expenseDate?.slice(0, 10) === todayDStr)
-    .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
+    .filter((t) => t.expenseDate?.slice(0, 10) === todayDStr)
+    .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate));
   // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
-  const todayTotal = expenseSum(todayTx)
+  const todayTotal = expenseSum(todayTx);
 
   // 일평균 + 전월 대비 — 가계부 카드 요약 라인용
-  const _today = new Date()
-  const _isCurMonth = _today.getFullYear() === periodY && _today.getMonth() + 1 === periodM
-  const _daysInMonth = new Date(periodY, periodM, 0).getDate()
-  const _dayOfMonth = _isCurMonth ? _today.getDate() : _daysInMonth
-  const dailyAvg = Math.round(expense / Math.max(1, _dayOfMonth))
-  const trendArr = trendQ.data ?? []
+  const _today = new Date();
+  const _isCurMonth =
+    _today.getFullYear() === periodY && _today.getMonth() + 1 === periodM;
+  const _daysInMonth = new Date(periodY, periodM, 0).getDate();
+  const _dayOfMonth = _isCurMonth ? _today.getDate() : _daysInMonth;
+  const dailyAvg = Math.round(expense / Math.max(1, _dayOfMonth));
+  const trendArr = trendQ.data ?? [];
   const prevExpense = (() => {
-    if (trendArr.length < 2) return 0
-    const idx = trendArr.findIndex(t => t.year === periodY && t.month === periodM)
-    if (idx > 0) return trendArr[idx - 1]?.totalExpense ?? 0
-    return trendArr[trendArr.length - 2]?.totalExpense ?? 0
-  })()
-  const savingsPct = prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0
+    if (trendArr.length < 2) return 0;
+    const idx = trendArr.findIndex(
+      (t) => t.year === periodY && t.month === periodM,
+    );
+    if (idx > 0) return trendArr[idx - 1]?.totalExpense ?? 0;
+    return trendArr[trendArr.length - 2]?.totalExpense ?? 0;
+  })();
+  const savingsPct =
+    prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0;
 
   const donutSegs = useMemo(() => {
     const expenseOnly = (monthly?.categoryBreakdown ?? []).filter(
-      c => c.expenseType === 'EXPENSE',
-    )
-    const cats = categoriesQ.data ?? []
-    const catColorMap = new Map<number, string | null | undefined>()
-    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
+      (c) => c.expenseType === "EXPENSE",
+    );
+    const cats = categoriesQ.data ?? [];
+    const catColorMap = new Map<number, string | null | undefined>();
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color);
     const items = aggregateByParent(expenseOnly)
       .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
     return items.map((c, i) => {
       // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
-      const raw = c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined
+      const raw =
+        c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
       const color = raw
         ? getPaletteByColor(raw).color
-        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
       return {
         value: c.totalAmount,
         color,
-        label: c.categoryName ?? t('uncategorized'),
-      }
-    })
-  }, [monthly, categoriesQ.data])
-  const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
+        label: c.categoryName ?? t("uncategorized"),
+      };
+    });
+  }, [monthly, categoriesQ.data]);
+  const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0);
 
   const barData = useMemo(() => {
-    const trend = trendQ.data ?? []
-    return trend.map(t => ({
-      label: String(t.month).padStart(2, '0'),
+    const trend = trendQ.data ?? [];
+    return trend.map((t) => ({
+      label: String(t.month).padStart(2, "0"),
       income: t.totalIncome,
       expense: t.totalExpense,
-    }))
-  }, [trendQ.data])
+    }));
+  }, [trendQ.data]);
 
   const budgetItems = useMemo(() => {
-    const budgets = budgetsQ.data ?? []
-    const cats = categoriesQ.data ?? []
-    const catMap = new Map<number, (typeof cats)[number]>()
-    for (const c of cats) catMap.set(c.rowId, c)
+    const budgets = budgetsQ.data ?? [];
+    const cats = categoriesQ.data ?? [];
+    const catMap = new Map<number, (typeof cats)[number]>();
+    for (const c of cats) catMap.set(c.rowId, c);
 
-    const spentByCat = new Map<number, number>()
+    const spentByCat = new Map<number, number>();
     for (const c of monthly?.categoryBreakdown ?? []) {
-      if (c.expenseType !== 'EXPENSE' || c.categoryRowId == null) continue
+      if (c.expenseType !== "EXPENSE" || c.categoryRowId == null) continue;
       // 본인에 누적
-      spentByCat.set(c.categoryRowId, (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount)
+      spentByCat.set(
+        c.categoryRowId,
+        (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount,
+      );
       // 예산이 부모(top-level) 에 걸리므로 자식 지출은 부모에도 roll-up.
       if (c.parentCategoryRowId != null) {
         spentByCat.set(
           c.parentCategoryRowId,
           (spentByCat.get(c.parentCategoryRowId) ?? 0) + c.totalAmount,
-        )
+        );
       }
     }
-    const totalExpense = monthly?.totalExpense ?? 0
-    return budgets.map(b => {
+    const totalExpense = monthly?.totalExpense ?? 0;
+    return budgets.map((b) => {
       // 전체 상한(categoryRowId === null) 은 이번 달 모든 EXPENSE 합계를
       // 사용금액으로 사용 — 카테고리 예산이 없는 지출도 포함.
-      const spent = b.categoryRowId == null
-        ? totalExpense
-        : spentByCat.get(b.categoryRowId) ?? 0
-      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
-      const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
+      const spent =
+        b.categoryRowId == null
+          ? totalExpense
+          : (spentByCat.get(b.categoryRowId) ?? 0);
+      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0;
+      const state = pct > 100 ? "over" : pct > warnThreshold ? "warn" : "";
+      const cat =
+        b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined;
       return {
         rowId: b.rowId,
-        categoryName: cat?.categoryName ?? b.categoryName ?? t('all'),
-        icon: cat?.icon ?? 'tag',
+        categoryName: cat?.categoryName ?? b.categoryName ?? t("all"),
+        icon: cat?.icon ?? "tag",
         color: cat?.color,
         budgetAmount: b.budgetAmount,
         spent,
         pct,
         state,
-      }
-    })
-  }, [budgetsQ.data, categoriesQ.data, monthly, warnThreshold, t])
+      };
+    });
+  }, [budgetsQ.data, categoriesQ.data, monthly, warnThreshold, t]);
 
   const upcomingPayments = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const recurrings = (recurringQ.data ?? [])
-      .filter(r => r.isActive === 'Y' && r.expenseType === 'EXPENSE' && r.nextExecutionDate)
-      .map(r => {
-        const next = parseLocalDate(r.nextExecutionDate as string) ?? today
-        const d = Math.max(0, Math.round((next.getTime() - today.getTime()) / 86_400_000))
+      .filter(
+        (r) =>
+          r.isActive === "Y" &&
+          r.expenseType === "EXPENSE" &&
+          r.nextExecutionDate,
+      )
+      .map((r) => {
+        const next = parseLocalDate(r.nextExecutionDate as string) ?? today;
+        const d = Math.max(
+          0,
+          Math.round((next.getTime() - today.getTime()) / 86_400_000),
+        );
         return {
           rowId: r.rowId,
           title: r.description || r.merchant || r.categoryName,
@@ -691,67 +1118,92 @@ function HomeDesktop() {
           d,
           dateLabel: formatMonthDay(next, { pad: true }),
           nextIso: r.nextExecutionDate as string,
-        }
+        };
       })
-      .sort((a, b) => a.nextIso.localeCompare(b.nextIso))
-    return recurrings.slice(0, 3)
-  }, [recurringQ.data])
+      .sort((a, b) => a.nextIso.localeCompare(b.nextIso));
+    return recurrings.slice(0, 3);
+  }, [recurringQ.data]);
 
   return (
     <div className="dash-grid">
       <div className="dash-grid__left">
-        <div className="balance-hero" style={{ padding: '28px 32px 24px' }}>
-          <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-            <Wallet size={14} /> {t('asset.netAsset')} · {formatYearMonth(new Date(periodY, periodM - 1))}
+        <div className="balance-hero" style={{ padding: "28px 32px 24px" }}>
+          <div
+            className="balance-hero__eyebrow"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <Wallet size={14} /> {t("asset.netAsset")} ·{" "}
+            {formatYearMonth(new Date(periodY, periodM - 1))}
             <button
               onClick={handleHideToggle}
-              title={hidden ? t('showAmount') : t('hideAmount')}
+              title={hidden ? t("showAmount") : t("hideAmount")}
               style={{
-                marginLeft: 'auto',
-                background: 'oklch(1 0 0 / 0.12)',
-                border: '1px solid oklch(1 0 0 / 0.15)',
-                color: 'inherit',
+                marginLeft: "auto",
+                background: "oklch(1 0 0 / 0.12)",
+                border: "1px solid oklch(1 0 0 / 0.15)",
+                color: "inherit",
                 width: 28,
                 height: 28,
-                borderRadius: 'var(--radius-pill)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
+                borderRadius: "var(--radius-pill)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
               }}
             >
               {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
           <div className="balance-hero__amount num">
-            {assetSummaryQ.isLoading ? '—' : <MaskAmount card="home.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
-            {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
+            {assetSummaryQ.isLoading ? (
+              "—"
+            ) : (
+              <MaskAmount card="home.netWorth">
+                {wonPre()}
+                {KRW(netWorth)}
+              </MaskAmount>
+            )}
+            {!isEn() && (
+              <HideUnit>
+                <span className="unit">원</span>
+              </HideUnit>
+            )}
           </div>
           <div className="balance-hero__sub">
-            {t('vsLastMonth')}
-            <span className={`chg ${isUp ? 'up' : 'down'}`}>
-              {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-              {' '}
-              {isUp ? '+' : ''}{changePercent.toFixed(1)}%
+            {t("vsLastMonth")}
+            <span className={`chg ${isUp ? "up" : "down"}`}>
+              {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}{" "}
+              {isUp ? "+" : ""}
+              {changePercent.toFixed(1)}%
               {changeAmount !== 0 && (
                 <HideUnit>
-                  <>{' '}({isUp ? '+' : '−'}{money(Math.abs(changeAmount))})</>
+                  <>
+                    {" "}
+                    ({isUp ? "+" : "−"}
+                    {money(Math.abs(changeAmount))})
+                  </>
                 </HideUnit>
               )}
             </span>
           </div>
           <div className="balance-hero__split">
             <div>
-              <div className="l">{t('asset.totalAsset')}</div>
+              <div className="l">{t("asset.totalAsset")}</div>
               <div className="v num">
-                <MaskAmount card="home.netWorth">{wonPre()}{KRW(totalAssets)}</MaskAmount>
+                <MaskAmount card="home.netWorth">
+                  {wonPre()}
+                  {KRW(totalAssets)}
+                </MaskAmount>
                 <WonUnit card="home.netWorth" />
               </div>
             </div>
             <div>
-              <div className="l">{t('asset.totalDebt')}</div>
+              <div className="l">{t("asset.totalDebt")}</div>
               <div className="v num">
-                <MaskAmount card="home.netWorth">−{wonPre()}{KRW(totalDebt)}</MaskAmount>
+                <MaskAmount card="home.netWorth">
+                  −{wonPre()}
+                  {KRW(totalDebt)}
+                </MaskAmount>
                 <WonUnit card="home.netWorth" />
               </div>
             </div>
@@ -760,128 +1212,262 @@ function HomeDesktop() {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{t('summary.monthIncomeExpense', { month: periodM })}</CardTitle>
+            <CardTitle>
+              {t("summary.monthIncomeExpense", { month: periodM })}
+            </CardTitle>
             <MonthPicker value={period} onChange={setPeriod} />
           </CardHeader>
           <CardContent>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 20 }}>
-            <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('chart.income')}</div>
-              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand)', letterSpacing: '-0.022em' }}>
-                {monthlyQ.isLoading
-                  ? '—'
-                  : <><MaskAmount card="home.monthExpense" kind="income">+{wonPre()}{KRW(income)}</MaskAmount><WonUnit card="home.monthExpense" kind="income" /></>}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 24,
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("chart.income")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-display-sm)",
+                    fontWeight: "700",
+                    color: "var(--fg-brand)",
+                    letterSpacing: "-0.022em",
+                  }}
+                >
+                  {monthlyQ.isLoading ? (
+                    "—"
+                  ) : (
+                    <>
+                      <MaskAmount card="home.monthExpense" kind="income">
+                        +{wonPre()}
+                        {KRW(income)}
+                      </MaskAmount>
+                      <WonUnit card="home.monthExpense" kind="income" />
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('chart.expense')}</div>
-              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-expense)', letterSpacing: '-0.022em' }}>
-                {monthlyQ.isLoading
-                  ? '—'
-                  : <><MaskAmount card="home.monthExpense" kind="expense">−{wonPre()}{KRW(expense)}</MaskAmount><WonUnit card="home.monthExpense" kind="expense" /></>}
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("chart.expense")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-display-sm)",
+                    fontWeight: "700",
+                    color: "var(--fg-expense)",
+                    letterSpacing: "-0.022em",
+                  }}
+                >
+                  {monthlyQ.isLoading ? (
+                    "—"
+                  ) : (
+                    <>
+                      <MaskAmount card="home.monthExpense" kind="expense">
+                        −{wonPre()}
+                        {KRW(expense)}
+                      </MaskAmount>
+                      <WonUnit card="home.monthExpense" kind="expense" />
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>{t('balance')}</div>
-              <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', color: 'var(--fg-brand-strong)', letterSpacing: '-0.022em' }}>
-                {monthlyQ.isLoading
-                  ? '—'
-                  : <>
-                      <MaskAmount card="home.monthExpense" kind="net">{balance >= 0 ? '+' : '-'}{wonPre()}{KRW(Math.abs(balance))}</MaskAmount>
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("balance")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-display-sm)",
+                    fontWeight: "700",
+                    color: "var(--fg-brand-strong)",
+                    letterSpacing: "-0.022em",
+                  }}
+                >
+                  {monthlyQ.isLoading ? (
+                    "—"
+                  ) : (
+                    <>
+                      <MaskAmount card="home.monthExpense" kind="net">
+                        {balance >= 0 ? "+" : "-"}
+                        {wonPre()}
+                        {KRW(Math.abs(balance))}
+                      </MaskAmount>
                       <WonUnit card="home.monthExpense" kind="net" />
-                    </>}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          {barData.length > 0 ? (
-            <IncomeExpenseBarChart data={barData} height={280} />
-          ) : trendQ.isLoading ? (
-            <SkeletonBase className="h-[280px] w-full rounded-lg" />
-          ) : (
-            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-              {tc('noData')}
-            </div>
-          )}
-          <div style={{
-            marginTop: 16,
-            paddingTop: 14,
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: 'var(--text-label-sm)',
-            color: 'var(--fg-secondary)',
-            lineHeight: '1.5',
-          }}>
-            {t('avg.dailyAverage')}{' '}
-            <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-              <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
-            </span>
-            <WonUnit card="home.monthExpense" />
-            {' '}{t('avg.spent')}
-            {prevExpense > 0 && (
-              <>
-                {' '}{t('avg.vsPrev')}{' '}
-                <span style={{
-                  color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
-                  fontWeight: '700',
-                }}>
-                  {Math.abs(savingsPct).toFixed(0)}%
-                </span>
-                {' '}{savingsPct > 0 ? t('avg.saving') : savingsPct < 0 ? t('avg.spentMore') : t('avg.same')}
-              </>
+            {barData.length > 0 ? (
+              <IncomeExpenseBarChart data={barData} height={280} />
+            ) : trendQ.isLoading ? (
+              <SkeletonBase className="h-[280px] w-full rounded-lg" />
+            ) : (
+              <div
+                style={{
+                  height: 280,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--fg-tertiary)",
+                  fontSize: "var(--text-label-sm)",
+                }}
+              >
+                {tc("noData")}
+              </div>
             )}
-          </div>
+            <div
+              style={{
+                marginTop: 16,
+                paddingTop: 14,
+                borderTop: "1px solid var(--border-subtle)",
+                fontSize: "var(--text-label-sm)",
+                color: "var(--fg-secondary)",
+                lineHeight: "1.5",
+              }}
+            >
+              {t("avg.dailyAverage")}{" "}
+              <span
+                className="num"
+                style={{ color: "var(--fg-primary)", fontWeight: "700" }}
+              >
+                <MaskAmount card="home.monthExpense" kind="expense">
+                  {wonPre()}
+                  {KRW(dailyAvg)}
+                </MaskAmount>
+              </span>
+              <WonUnit card="home.monthExpense" /> {t("avg.spent")}
+              {prevExpense > 0 && (
+                <>
+                  {" "}
+                  {t("avg.vsPrev")}{" "}
+                  <span
+                    style={{
+                      color:
+                        savingsPct > 0
+                          ? "var(--fg-brand-strong)"
+                          : "var(--fg-expense)",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {Math.abs(savingsPct).toFixed(0)}%
+                  </span>{" "}
+                  {savingsPct > 0
+                    ? t("avg.saving")
+                    : savingsPct < 0
+                      ? t("avg.spentMore")
+                      : t("avg.same")}
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-              <CardTitle>{t('expense.todaySpent')}</CardTitle>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+              <CardTitle>{t("expense.todaySpent")}</CardTitle>
               {todayTotal > 0 && (
-                <span className="num" style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-                  <MaskAmount card="home.todaySpend" mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+                <span
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-label-sm)",
+                    color: "var(--fg-expense)",
+                    fontWeight: "700",
+                  }}
+                >
+                  <MaskAmount card="home.todaySpend" mask="••••">
+                    −{wonPre()}
+                    {KRW(todayTotal)}
+                  </MaskAmount>
                   <WonUnit card="home.todaySpend" />
                 </span>
               )}
             </div>
-            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/expense')}>
-              {t('viewAll')} <ChevronRight size={14} />
+            <Button
+              variant="link"
+              className="all h-auto p-0"
+              onClick={() => navigate("/desk/expense")}
+            >
+              {t("viewAll")} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
-          <div>
-            {recentQ.isLoading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[0, 1].map(i => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <SkeletonBase className="h-4 w-1/2 mb-1.5" />
-                      <SkeletonBase className="h-3 w-1/3" />
+            <div>
+              {recentQ.isLoading && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  {[0, 1].map((i) => (
+                    <div
+                      key={i}
+                      style={{ display: "flex", alignItems: "center", gap: 12 }}
+                    >
+                      <SkeletonBase className="h-10 w-10 rounded-md shrink-0" />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <SkeletonBase className="h-4 w-1/2 mb-1.5" />
+                        <SkeletonBase className="h-3 w-1/3" />
+                      </div>
+                      <SkeletonBase className="h-4 w-16 shrink-0" />
                     </div>
-                    <SkeletonBase className="h-4 w-16 shrink-0" />
-                  </div>
-                ))}
-              </div>
-            )}
-            {!recentQ.isLoading && todayTx.length === 0 && (
-              <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-                {t('expense.noTodaySpent')}
-              </div>
-            )}
-            {todayTx.map(t => (
-              <ExpenseRow
-                key={t.rowId}
-                expense={t}
-                onClick={() => {
-                  const m = t.expenseDate?.slice(0, 7) ?? ''
-                  const params = new URLSearchParams()
-                  if (m) params.set('month', m)
-                  params.set('txId', String(t.rowId))
-                  navigate(`/desk/expense?${params.toString()}`)
-                }}
-              />
-            ))}
-          </div>
+                  ))}
+                </div>
+              )}
+              {!recentQ.isLoading && todayTx.length === 0 && (
+                <div
+                  style={{
+                    padding: "24px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-label-sm)",
+                  }}
+                >
+                  {t("expense.noTodaySpent")}
+                </div>
+              )}
+              {todayTx.map((t) => (
+                <ExpenseRow
+                  key={t.rowId}
+                  expense={t}
+                  onClick={() => {
+                    const m = t.expenseDate?.slice(0, 7) ?? "";
+                    const params = new URLSearchParams();
+                    if (m) params.set("month", m);
+                    params.set("txId", String(t.rowId));
+                    navigate(`/desk/expense?${params.toString()}`);
+                  }}
+                />
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -889,469 +1475,732 @@ function HomeDesktop() {
       <div className="dash-grid__right">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{t('categoryTitle')}</CardTitle>
-            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/stats')}>
-              {t('detail')} <ChevronRight size={14} />
+            <CardTitle>{t("categoryTitle")}</CardTitle>
+            <Button
+              variant="link"
+              className="all h-auto p-0"
+              onClick={() => navigate("/desk/stats")}
+            >
+              {t("detail")} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
-          {donutSegs.length === 0 ? (
-            monthlyQ.isLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-                <SkeletonBase className="h-[160px] w-[160px] rounded-full" />
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[0, 1, 2, 3].map(i => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
-                      <SkeletonBase className="h-3 flex-1" />
-                      <SkeletonBase className="h-3 w-12 shrink-0" />
+            {donutSegs.length === 0 ? (
+              monthlyQ.isLoading ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 20,
+                  }}
+                >
+                  <SkeletonBase className="h-[160px] w-[160px] rounded-full" />
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                    }}
+                  >
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <SkeletonBase className="h-2.5 w-2.5 rounded-full shrink-0" />
+                        <SkeletonBase className="h-3 flex-1" />
+                        <SkeletonBase className="h-3 w-12 shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "32px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-label-sm)",
+                  }}
+                >
+                  {t("categoryEmpty")}
+                </div>
+              )
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 20,
+                }}
+              >
+                <Donut segments={donutSegs} size={160} stroke={22}>
+                  <div className="lbl">{t("summary.monthlyExpense")}</div>
+                  <div className="val num">
+                    <MaskAmount card="home.categoryDonut" mask="••••">
+                      {KRW(donutTotal)}
+                    </MaskAmount>
+                  </div>
+                </Donut>
+                <div className="cat-legend">
+                  {donutSegs.map((s, i) => (
+                    <div key={i} className="cat-legend__row">
+                      <span
+                        className="cat-legend__sw"
+                        style={{ background: s.color }}
+                      />
+                      <span className="cat-legend__name">{s.label}</span>
+                      <span className="cat-legend__pct num">
+                        {((s.value / donutTotal) * 100).toFixed(0)}%
+                      </span>
+                      <span className="cat-legend__amt num">
+                        <MaskAmount card="home.categoryDonut" mask="••••">
+                          {KRW(s.value)}
+                        </MaskAmount>
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
-            ) : (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-                {t('categoryEmpty')}
-              </div>
-            )
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-              <Donut segments={donutSegs} size={160} stroke={22}>
-                <div className="lbl">{t('summary.monthlyExpense')}</div>
-                <div className="val num">
-                  <MaskAmount card="home.categoryDonut" mask="••••">{KRW(donutTotal)}</MaskAmount>
-                </div>
-              </Donut>
-              <div className="cat-legend">
-                {donutSegs.map((s, i) => (
-                  <div key={i} className="cat-legend__row">
-                    <span className="cat-legend__sw" style={{ background: s.color }} />
-                    <span className="cat-legend__name">{s.label}</span>
-                    <span className="cat-legend__pct num">{((s.value / donutTotal) * 100).toFixed(0)}%</span>
-                    <span className="cat-legend__amt num">
-                      <MaskAmount card="home.categoryDonut" mask="••••">{KRW(s.value)}</MaskAmount>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{t('expense.budget')}</CardTitle>
-            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/budget')}>
-              {t('manageBudget')} <ChevronRight size={14} />
+            <CardTitle>{t("expense.budget")}</CardTitle>
+            <Button
+              variant="link"
+              className="all h-auto p-0"
+              onClick={() => navigate("/desk/budget")}
+            >
+              {t("manageBudget")} <ChevronRight size={14} />
             </Button>
           </CardHeader>
           <CardContent>
-          {budgetItems.length === 0 ? (
-            budgetsQ.isLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {[0, 1, 2].map(i => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
-                      <SkeletonBase className="h-4 w-20" />
-                      <SkeletonBase className="h-4 w-24 ml-auto" />
+            {budgetItems.length === 0 ? (
+              budgetsQ.isLoading ? (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 14 }}
+                >
+                  {[0, 1, 2].map((i) => (
+                    <div key={i}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 6,
+                        }}
+                      >
+                        <SkeletonBase className="h-8 w-8 rounded-md shrink-0" />
+                        <SkeletonBase className="h-4 w-20" />
+                        <SkeletonBase className="h-4 w-24 ml-auto" />
+                      </div>
+                      <SkeletonBase className="h-1.5 w-full rounded-full" />
                     </div>
-                    <SkeletonBase className="h-1.5 w-full rounded-full" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                {t('budget.empty')}
-              </div>
-            )
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {budgetItems.map(b => {
-                const palette = getPaletteByColor(b.color)
-                return (
-                <div key={b.rowId}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span
-                      style={{
-                        width: 32, height: 32, borderRadius: tileRadius(32),
-                        background: palette.bg, color: palette.color,
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon name={b.icon} size={16} strokeWidth={1.9} />
-                    </span>
-                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600' }}>{b.categoryName ?? t('all')}</span>
-                    <span
-                      className="num"
-                      style={{
-                        marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '600',
-                        color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-secondary)',
-                      }}
-                    >
-                      <MaskAmount card="home.budget" mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount card="home.budget" mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
-                    </span>
-                  </div>
-                  <div className="budget-bar">
-                    <div
-                      className={`budget-bar__fill ${b.state}`}
-                      style={{ width: `${Math.min(100, b.pct)}%` }}
-                    />
-                  </div>
+                  ))}
                 </div>
-                )
-              })}
-            </div>
-          )}
+              ) : (
+                <div
+                  style={{
+                    padding: "12px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-caption)",
+                  }}
+                >
+                  {t("budget.empty")}
+                </div>
+              )
+            ) : (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                {budgetItems.map((b) => {
+                  const palette = getPaletteByColor(b.color);
+                  return (
+                    <div key={b.rowId}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: tileRadius(32),
+                            background: palette.bg,
+                            color: palette.color,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Icon name={b.icon} size={16} strokeWidth={1.9} />
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "var(--text-label-sm)",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {b.categoryName ?? t("all")}
+                        </span>
+                        <span
+                          className="num"
+                          style={{
+                            marginLeft: "auto",
+                            fontSize: "var(--text-caption)",
+                            fontWeight: "600",
+                            color:
+                              b.state === "over"
+                                ? "var(--fg-expense)"
+                                : "var(--fg-secondary)",
+                          }}
+                        >
+                          <MaskAmount card="home.budget" mask="••••">
+                            {KRW(b.spent)}
+                          </MaskAmount>
+                          <span
+                            style={{
+                              color: "var(--fg-tertiary)",
+                              fontWeight: "500",
+                            }}
+                          >
+                            {" "}
+                            /{" "}
+                            <MaskAmount card="home.budget" mask="••••">
+                              {KRW(b.budgetAmount)}
+                            </MaskAmount>
+                          </span>
+                        </span>
+                      </div>
+                      <div className="budget-bar">
+                        <div
+                          className={`budget-bar__fill ${b.state}`}
+                          style={{ width: `${Math.min(100, b.pct)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('payment.upcoming')}</CardTitle>
+            <CardTitle>{t("payment.upcoming")}</CardTitle>
           </CardHeader>
           <CardContent>
-          {upcomingPayments.length === 0 ? (
-            recurringQ.isLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[0, 1, 2].map(i => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <SkeletonBase className="h-[38px] w-[38px] rounded-md shrink-0" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <SkeletonBase className="h-4 w-3/4 mb-1.5" />
-                      <SkeletonBase className="h-3 w-1/3" />
+            {upcomingPayments.length === 0 ? (
+              recurringQ.isLoading ? (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                    >
+                      <SkeletonBase className="h-[38px] w-[38px] rounded-md shrink-0" />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <SkeletonBase className="h-4 w-3/4 mb-1.5" />
+                        <SkeletonBase className="h-3 w-1/3" />
+                      </div>
+                      <SkeletonBase className="h-4 w-16 shrink-0" />
                     </div>
-                    <SkeletonBase className="h-4 w-16 shrink-0" />
+                  ))}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "12px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-caption)",
+                  }}
+                >
+                  {t("payment.empty")}
+                </div>
+              )
+            ) : (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
+                {upcomingPayments.map((p) => (
+                  <div
+                    key={p.rowId}
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: "var(--radius-tile)",
+                        background:
+                          p.d <= 7
+                            ? "var(--status-warning-subtle)"
+                            : "var(--bg-sunken)",
+                        color:
+                          p.d <= 7
+                            ? "var(--color-warning)"
+                            : "var(--fg-secondary)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "700",
+                        fontSize: "var(--text-body-sm)",
+                        letterSpacing: "-0.022em",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {t("date:dday", { count: p.d })}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: "var(--text-label-sm)",
+                          fontWeight: "600",
+                          color: "var(--fg-primary)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {p.title}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "var(--text-caption)",
+                          color: "var(--fg-tertiary)",
+                          marginTop: 1,
+                        }}
+                      >
+                        {p.dateLabel}
+                      </div>
+                    </div>
+                    <div
+                      className="num"
+                      style={{
+                        fontSize: "var(--text-body-sm)",
+                        fontWeight: "700",
+                        letterSpacing: "-0.012em",
+                        color: "var(--fg-expense)",
+                      }}
+                    >
+                      <MaskAmount card="home.upcoming" mask="••••">
+                        −{KRW(p.amount)}
+                      </MaskAmount>
+                    </div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                {t('payment.empty')}
-              </div>
-            )
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {upcomingPayments.map(p => (
-                <div key={p.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <CardTitle>{t("todo.label")}</CardTitle>
+              {(summary?.todoSummary.overDueCount ?? 0) > 0 && (
+                <span
+                  style={{
+                    padding: "1px 6px",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "var(--text-badge)",
+                    fontWeight: 600,
+                    background: "var(--status-danger-subtle)",
+                    color: "var(--fg-expense)",
+                  }}
+                >
+                  {t("todo.overdueBadge", {
+                    count: summary!.todoSummary.overDueCount,
+                  })}
+                </span>
+              )}
+            </div>
+            <Button
+              variant="link"
+              className="all h-auto p-0"
+              onClick={() => navigate("/desk/todo")}
+            >
+              {t("manage")} <ChevronRight size={14} />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {summary?.recentTodos?.slice(0, 4).map((td) => (
+                <div
+                  key={td.rowId}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "8px 0",
+                    borderBottom: "1px solid var(--border-subtle)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => navigate("/desk/todo")}
+                >
                   <span
                     style={{
-                      width: 38, height: 38, borderRadius: 'var(--radius-tile)',
-                      background: p.d <= 7 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                      color: p.d <= 7 ? 'var(--color-warning)' : 'var(--fg-secondary)',
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: '700', fontSize: 'var(--text-body-sm)', letterSpacing: '-0.022em',
+                      width: 6,
+                      height: 6,
+                      borderRadius: "var(--radius-pill)",
+                      background:
+                        td.priority === "HIGH"
+                          ? "var(--fg-expense)"
+                          : td.priority === "MEDIUM"
+                            ? "var(--color-warning-light)"
+                            : "var(--bg-brand)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "var(--text-label-sm)",
+                      fontWeight: "500",
+                      color: "var(--fg-primary)",
+                      flex: 1,
+                    }}
+                  >
+                    {td.title}
+                  </span>
+                  {td.dueDate && (
+                    <span
+                      style={{
+                        fontSize: "var(--text-badge)",
+                        color: "var(--fg-tertiary)",
+                      }}
+                    >
+                      {td.dueDate.slice(5, 10)}
+                    </span>
+                  )}
+                </div>
+              ))}
+              {(!summary?.recentTodos || summary.recentTodos.length === 0) && (
+                <div
+                  style={{
+                    padding: "12px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-caption)",
+                  }}
+                >
+                  {t("todo.empty")}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>{t("calendar.scheduled")}</CardTitle>
+            <button className="all" onClick={() => navigate("/desk/calendar")}>
+              {t("calendar.title")} <ChevronRight size={14} />
+            </button>
+          </CardHeader>
+          <CardContent>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {summary?.upcomingEvents?.slice(0, 3).map((ev) => (
+                <div
+                  key={ev.rowId}
+                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                >
+                  <span
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "var(--radius-tile)",
+                      background:
+                        ev.daysUntil <= 3
+                          ? "var(--status-warning-subtle)"
+                          : "var(--bg-sunken)",
+                      color:
+                        ev.daysUntil <= 3
+                          ? "var(--color-warning)"
+                          : "var(--fg-secondary)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "700",
+                      fontSize: "var(--text-body-sm)",
+                      letterSpacing: "-0.022em",
                       flexShrink: 0,
                     }}
                   >
-                    {t('date:dday', { count: p.d })}
+                    {t("date:dday", { count: ev.daysUntil })}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        fontSize: "var(--text-label-sm)",
+                        fontWeight: "600",
+                        color: "var(--fg-primary)",
                       }}
                     >
-                      {p.title}
+                      {ev.title}
                     </div>
-                    <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                      {p.dateLabel}
+                    <div
+                      style={{
+                        fontSize: "var(--text-caption)",
+                        color: "var(--fg-tertiary)",
+                        marginTop: 1,
+                      }}
+                    >
+                      {ev.startDate.slice(5, 10)}
                     </div>
-                  </div>
-                  <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em', color: 'var(--fg-expense)' }}>
-                    <MaskAmount card="home.upcoming" mask="••••">−{KRW(p.amount)}</MaskAmount>
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CardTitle>{t('todo.label')}</CardTitle>
-              {(summary?.todoSummary.overDueCount ?? 0) > 0 && (
-                <span style={{ padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-badge)', fontWeight: 600, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)' }}>
-                  {t('todo.overdueBadge', { count: summary!.todoSummary.overDueCount })}
-                </span>
-              )}
-            </div>
-            <Button variant="link" className="all h-auto p-0" onClick={() => navigate('/desk/todo')}>
-              {t('manage')} <ChevronRight size={14} />
-            </Button>
-          </CardHeader>
-          <CardContent>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {summary?.recentTodos?.slice(0, 4).map(td => (
-              <div
-                key={td.rowId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 0',
-                  borderBottom: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                }}
-                onClick={() => navigate('/desk/todo')}
-              >
-                <span
+              {(!summary?.upcomingEvents ||
+                summary.upcomingEvents.length === 0) && (
+                <div
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: 'var(--radius-pill)',
-                    background:
-                      td.priority === 'HIGH' ? 'var(--fg-expense)'
-                      : td.priority === 'MEDIUM' ? 'var(--color-warning-light)'
-                      : 'var(--bg-brand)',
-                  }}
-                />
-                <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '500', color: 'var(--fg-primary)', flex: 1 }}>
-                  {td.title}
-                </span>
-                {td.dueDate && (
-                  <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)' }}>
-                    {td.dueDate.slice(5, 10)}
-                  </span>
-                )}
-              </div>
-            ))}
-            {(!summary?.recentTodos || summary.recentTodos.length === 0) && (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                {t('todo.empty')}
-              </div>
-            )}
-          </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>{t('calendar.scheduled')}</CardTitle>
-            <button className="all" onClick={() => navigate('/desk/calendar')}>
-              {t('calendar.title')} <ChevronRight size={14} />
-            </button>
-          </CardHeader>
-          <CardContent>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {summary?.upcomingEvents?.slice(0, 3).map(ev => (
-              <div key={ev.rowId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 'var(--radius-tile)',
-                    background: ev.daysUntil <= 3 ? 'var(--status-warning-subtle)' : 'var(--bg-sunken)',
-                    color: ev.daysUntil <= 3 ? 'var(--color-warning)' : 'var(--fg-secondary)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: '700',
-                    fontSize: 'var(--text-body-sm)',
-                    letterSpacing: '-0.022em',
-                    flexShrink: 0,
+                    padding: "12px 0",
+                    textAlign: "center",
+                    color: "var(--fg-tertiary)",
+                    fontSize: "var(--text-caption)",
                   }}
                 >
-                  {t('date:dday', { count: ev.daysUntil })}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{ev.title}</div>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 1 }}>
-                    {ev.startDate.slice(5, 10)}
-                  </div>
+                  {t("calendar.empty")}
                 </div>
-              </div>
-            ))}
-            {(!summary?.upcomingEvents || summary.upcomingEvents.length === 0) && (
-              <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-                {t('calendar.empty')}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
 function HomeMobile() {
-  const { t } = useTranslation('dashboard')
-  const navigate = useNavigate()
-  const hidden = useHideAmounts()
+  const { t } = useTranslation("dashboard");
+  const navigate = useNavigate();
+  const hidden = useHideAmounts();
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
-  const handleHideToggle = useOpenHideAmountsSettings('home')
-  const { key: initialKey } = useCurrentMonthKey()
-  const [period] = useState(initialKey)
-  const [year, month] = period.split('-').map(Number) as [number, number]
+  const handleHideToggle = useOpenHideAmountsSettings("home");
+  const { key: initialKey } = useCurrentMonthKey();
+  const [period] = useState(initialKey);
+  const [year, month] = period.split("-").map(Number) as [number, number];
 
-  const pad2m = (n: number) => String(n).padStart(2, '0')
-  const monthStartM = `${year}-${pad2m(month)}-01`
-  const monthEndDayM = new Date(year, month, 0).getDate()
-  const monthEndM = `${year}-${pad2m(month)}-${pad2m(monthEndDayM)}`
+  const pad2m = (n: number) => String(n).padStart(2, "0");
+  const monthStartM = `${year}-${pad2m(month)}-01`;
+  const monthEndDayM = new Date(year, month, 0).getDate();
+  const monthEndM = `${year}-${pad2m(month)}-${pad2m(monthEndDayM)}`;
 
   // 전월 — '전월 대비 N% 절약 중이에요' 계산용
-  const prevDate = new Date(year, month - 2, 1)
-  const prevY = prevDate.getFullYear()
-  const prevM = prevDate.getMonth() + 1
-  const prevStart = `${prevY}-${pad2m(prevM)}-01`
-  const prevEndDay = new Date(prevY, prevM, 0).getDate()
-  const prevEnd = `${prevY}-${pad2m(prevM)}-${pad2m(prevEndDay)}`
+  const prevDate = new Date(year, month - 2, 1);
+  const prevY = prevDate.getFullYear();
+  const prevM = prevDate.getMonth() + 1;
+  const prevStart = `${prevY}-${pad2m(prevM)}-01`;
+  const prevEndDay = new Date(prevY, prevM, 0).getDate();
+  const prevEnd = `${prevY}-${pad2m(prevM)}-${pad2m(prevEndDay)}`;
 
-  const dashboardQ = useDashboardSummary()
-  const assetSummaryQ = useAssetSummary(year, month)
-  const monthlyQ = useRangeSummary(monthStartM, monthEndM)
-  const prevMonthlyQ = useRangeSummary(prevStart, prevEnd)
-  const recentQ = useExpenses({ startDate: monthStartM, endDate: monthEndM })
-  const budgetsQ = useExpenseBudgets({ year, month })
-  const categoriesQ = useExpenseCategories()
-  const preferencesQ = useUserPreferences()
+  const dashboardQ = useDashboardSummary();
+  const assetSummaryQ = useAssetSummary(year, month);
+  const monthlyQ = useRangeSummary(monthStartM, monthEndM);
+  const prevMonthlyQ = useRangeSummary(prevStart, prevEnd);
+  const recentQ = useExpenses({ startDate: monthStartM, endDate: monthEndM });
+  const budgetsQ = useExpenseBudgets({ year, month });
+  const categoriesQ = useExpenseCategories();
+  const preferencesQ = useUserPreferences();
   // 예산 경고 임계값 — 사용자 알람% 설정값(BudgetPage 정합). 미설정 시 85.
-  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85;
 
-  const summary = dashboardQ.data
-  const assetSummary = assetSummaryQ.data
-  const totalAssets = assetSummary?.totalAssets ?? 0
-  const totalDebt = assetSummary?.totalDebt ?? 0
-  const netWorth = assetSummary?.netWorth ?? 0
-  const changeAmount = assetSummary?.changeAmount ?? 0
-  const changePercent = assetSummary?.changePercent ?? 0
-  const isUp = changeAmount >= 0
-  const income = monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0
-  const expense = monthlyQ.data?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0
-  const prevExpense = prevMonthlyQ.data?.totalExpense ?? 0
+  const summary = dashboardQ.data;
+  const assetSummary = assetSummaryQ.data;
+  const totalAssets = assetSummary?.totalAssets ?? 0;
+  const totalDebt = assetSummary?.totalDebt ?? 0;
+  const netWorth = assetSummary?.netWorth ?? 0;
+  const changeAmount = assetSummary?.changeAmount ?? 0;
+  const changePercent = assetSummary?.changePercent ?? 0;
+  const isUp = changeAmount >= 0;
+  const income =
+    monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0;
+  const expense =
+    monthlyQ.data?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0;
+  const prevExpense = prevMonthlyQ.data?.totalExpense ?? 0;
 
-  const today = new Date()
-  const todayStr = `${today.getFullYear()}-${pad2m(today.getMonth() + 1)}-${pad2m(today.getDate())}`
-  const isCurMonth = today.getFullYear() === year && today.getMonth() + 1 === month
-  const daysInMonth = new Date(year, month, 0).getDate()
-  const dayOfMonth = isCurMonth ? today.getDate() : daysInMonth
-  const dailyAvg = Math.round(expense / Math.max(1, dayOfMonth))
-  const savingsPct = prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${pad2m(today.getMonth() + 1)}-${pad2m(today.getDate())}`;
+  const isCurMonth =
+    today.getFullYear() === year && today.getMonth() + 1 === month;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const dayOfMonth = isCurMonth ? today.getDate() : daysInMonth;
+  const dailyAvg = Math.round(expense / Math.max(1, dayOfMonth));
+  const savingsPct =
+    prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0;
 
   // 오늘 쓴 거래만
   const todayTx: Expense[] = (recentQ.data ?? [])
     .slice()
-    .filter(t => t.expenseDate?.slice(0, 10) === todayStr)
-    .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate))
+    .filter((t) => t.expenseDate?.slice(0, 10) === todayStr)
+    .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate));
   // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
-  const todayTotal = expenseSum(todayTx)
+  const todayTotal = expenseSum(todayTx);
 
   // 도넛 — 부모 카테고리로 롤업, 전체 표시
   const donutSegs = useMemo(() => {
     const expenseOnly = (monthlyQ.data?.categoryBreakdown ?? []).filter(
-      c => c.expenseType === 'EXPENSE',
-    )
-    const cats = categoriesQ.data ?? []
-    const catColorMap = new Map<number, string | null | undefined>()
-    for (const cat of cats) catColorMap.set(cat.rowId, cat.color)
+      (c) => c.expenseType === "EXPENSE",
+    );
+    const cats = categoriesQ.data ?? [];
+    const catColorMap = new Map<number, string | null | undefined>();
+    for (const cat of cats) catColorMap.set(cat.rowId, cat.color);
     const items = aggregateByParent(expenseOnly)
       .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
     return items.map((c, i) => {
       // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
-      const raw = c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined
+      const raw =
+        c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
       const color = raw
         ? getPaletteByColor(raw).color
-        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? 'var(--bg-brand)')
+        : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
       return {
         value: c.totalAmount,
         color,
-        label: c.categoryName ?? t('uncategorized'),
-      }
-    })
-  }, [monthlyQ.data, categoriesQ.data])
-  const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0)
+        label: c.categoryName ?? t("uncategorized"),
+      };
+    });
+  }, [monthlyQ.data, categoriesQ.data]);
+  const donutTotal = donutSegs.reduce((a, b) => a + b.value, 0);
 
   // 예산 — 설정한 전체 표시
   const budgetItems = useMemo(() => {
-    const budgets = budgetsQ.data ?? []
-    const cats = categoriesQ.data ?? []
-    const catMap = new Map<number, (typeof cats)[number]>()
-    for (const c of cats) catMap.set(c.rowId, c)
+    const budgets = budgetsQ.data ?? [];
+    const cats = categoriesQ.data ?? [];
+    const catMap = new Map<number, (typeof cats)[number]>();
+    for (const c of cats) catMap.set(c.rowId, c);
 
-    const spentByCat = new Map<number, number>()
+    const spentByCat = new Map<number, number>();
     for (const c of monthlyQ.data?.categoryBreakdown ?? []) {
-      if (c.expenseType !== 'EXPENSE' || c.categoryRowId == null) continue
-      spentByCat.set(c.categoryRowId, (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount)
+      if (c.expenseType !== "EXPENSE" || c.categoryRowId == null) continue;
+      spentByCat.set(
+        c.categoryRowId,
+        (spentByCat.get(c.categoryRowId) ?? 0) + c.totalAmount,
+      );
       if (c.parentCategoryRowId != null) {
-        spentByCat.set(c.parentCategoryRowId, (spentByCat.get(c.parentCategoryRowId) ?? 0) + c.totalAmount)
+        spentByCat.set(
+          c.parentCategoryRowId,
+          (spentByCat.get(c.parentCategoryRowId) ?? 0) + c.totalAmount,
+        );
       }
     }
-    const totalEx = monthlyQ.data?.totalExpense ?? 0
-    return budgets.map(b => {
-      const spent = b.categoryRowId == null ? totalEx : spentByCat.get(b.categoryRowId) ?? 0
-      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0
-      const state = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
-      const cat = b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined
+    const totalEx = monthlyQ.data?.totalExpense ?? 0;
+    return budgets.map((b) => {
+      const spent =
+        b.categoryRowId == null
+          ? totalEx
+          : (spentByCat.get(b.categoryRowId) ?? 0);
+      const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0;
+      const state = pct > 100 ? "over" : pct > warnThreshold ? "warn" : "";
+      const cat =
+        b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined;
       return {
         rowId: b.rowId,
-        categoryName: cat?.categoryName ?? b.categoryName ?? t('all'),
-        icon: cat?.icon ?? 'tag',
+        categoryName: cat?.categoryName ?? b.categoryName ?? t("all"),
+        icon: cat?.icon ?? "tag",
         color: cat?.color,
         budgetAmount: b.budgetAmount,
         spent,
         pct,
         state,
-      }
-    })
-  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold, t])
+      };
+    });
+  }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold, t]);
 
   return (
     // 모바일 카드 다이어트 — 카드 없이 섹션 gap(32)이 간격을 담당 (design HomeMobile).
-    <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+    <div
+      style={{
+        padding: "20px 24px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--spacing-2xl)",
+      }}
+    >
       <div className="balance-hero">
-        <div className="balance-hero__eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
-          <Wallet size={13} /> {t('asset.netAsset')}
+        <div
+          className="balance-hero__eyebrow"
+          style={{ display: "flex", alignItems: "center" }}
+        >
+          <Wallet size={13} /> {t("asset.netAsset")}
           <button
             onClick={handleHideToggle}
-            title={hidden ? t('showAmount') : t('hideAmount')}
+            title={hidden ? t("showAmount") : t("hideAmount")}
             style={{
-              marginLeft: 'auto',
-              background: 'oklch(1 0 0 / 0.12)',
-              border: '1px solid oklch(1 0 0 / 0.15)',
-              color: 'inherit',
+              marginLeft: "auto",
+              background: "oklch(1 0 0 / 0.12)",
+              border: "1px solid oklch(1 0 0 / 0.15)",
+              color: "inherit",
               width: 26,
               height: 26,
-              borderRadius: 'var(--radius-pill)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
+              borderRadius: "var(--radius-pill)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
             }}
           >
             {hidden ? <EyeOff size={13} /> : <Eye size={13} />}
           </button>
         </div>
         <div className="balance-hero__amount num">
-          {assetSummaryQ.isLoading ? '—' : <MaskAmount card="home.netWorth">{wonPre()}{KRW(netWorth)}</MaskAmount>}
-          {!isEn() && <HideUnit><span className="unit">원</span></HideUnit>}
+          {assetSummaryQ.isLoading ? (
+            "—"
+          ) : (
+            <MaskAmount card="home.netWorth">
+              {wonPre()}
+              {KRW(netWorth)}
+            </MaskAmount>
+          )}
+          {!isEn() && (
+            <HideUnit>
+              <span className="unit">원</span>
+            </HideUnit>
+          )}
         </div>
         <div className="balance-hero__sub">
-          {t('vsLastMonth')}
-          <span className={`chg ${isUp ? 'up' : 'down'}`}>
-            {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-            {' '}
-            {isUp ? '+' : ''}{changePercent.toFixed(1)}%
+          {t("vsLastMonth")}
+          <span className={`chg ${isUp ? "up" : "down"}`}>
+            {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}{" "}
+            {isUp ? "+" : ""}
+            {changePercent.toFixed(1)}%
           </span>
         </div>
         <div className="balance-hero__split">
           <div>
-            <div className="l">{t('asset.assetTab')}</div>
+            <div className="l">{t("asset.assetTab")}</div>
             <div className="v num">
-              <MaskAmount card="home.netWorth" mask="••••">{KRW(totalAssets)}</MaskAmount>
+              <MaskAmount card="home.netWorth" mask="••••">
+                {KRW(totalAssets)}
+              </MaskAmount>
             </div>
           </div>
           <div>
-            <div className="l">{t('asset.debtTab')}</div>
+            <div className="l">{t("asset.debtTab")}</div>
             <div className="v num">
-              <MaskAmount card="home.netWorth" mask="••••">−{KRW(totalDebt)}</MaskAmount>
+              <MaskAmount card="home.netWorth" mask="••••">
+                −{KRW(totalDebt)}
+              </MaskAmount>
             </div>
           </div>
         </div>
@@ -1359,45 +2208,116 @@ function HomeMobile() {
 
       {/* 월 가계부 — 카드 벗김: 헤드 + 본문 + 헤어라인. 좌우는 페이지가 쥔다(24). */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.015em' }}>{t('summary.monthExpenseBook', { month })}</div>
+        <div
+          style={{ display: "flex", alignItems: "center", marginBottom: 12 }}
+        >
+          <div
+            style={{
+              fontSize: "var(--text-body-lg)",
+              fontWeight: "700",
+              letterSpacing: "-0.015em",
+            }}
+          >
+            {t("summary.monthExpenseBook", { month })}
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}
+        >
           <div>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.income')}</div>
-            <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-brand)' }}>
-              <MaskAmount card="home.monthExpense" kind="income">+{KRW(income)}</MaskAmount>
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 2,
+              }}
+            >
+              {t("chart.income")}
+            </div>
+            <div
+              className="num"
+              style={{
+                fontSize: "var(--text-title-md)",
+                fontWeight: "700",
+                color: "var(--fg-brand)",
+              }}
+            >
+              <MaskAmount card="home.monthExpense" kind="income">
+                +{KRW(income)}
+              </MaskAmount>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('chart.expense')}</div>
-            <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', color: 'var(--fg-expense)' }}>
-              <MaskAmount card="home.monthExpense" kind="expense">−{KRW(expense)}</MaskAmount>
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                fontWeight: "500",
+                marginBottom: 2,
+              }}
+            >
+              {t("chart.expense")}
+            </div>
+            <div
+              className="num"
+              style={{
+                fontSize: "var(--text-title-md)",
+                fontWeight: "700",
+                color: "var(--fg-expense)",
+              }}
+            >
+              <MaskAmount card="home.monthExpense" kind="expense">
+                −{KRW(expense)}
+              </MaskAmount>
             </div>
           </div>
         </div>
-        <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 10px' }} />
-        <div style={{
-          fontSize: 'var(--text-caption)',
-          color: 'var(--fg-secondary)',
-          lineHeight: '1.5',
-        }}>
-          {t('avg.dailyAverage')}{' '}
-          <span className="num" style={{ color: 'var(--fg-primary)', fontWeight: '700' }}>
-            <MaskAmount card="home.monthExpense" kind="expense">{wonPre()}{KRW(dailyAvg)}</MaskAmount>
+        <div
+          style={{
+            height: 1,
+            background: "var(--border-subtle)",
+            margin: "14px 10px",
+          }}
+        />
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-secondary)",
+            lineHeight: "1.5",
+          }}
+        >
+          {t("avg.dailyAverage")}{" "}
+          <span
+            className="num"
+            style={{ color: "var(--fg-primary)", fontWeight: "700" }}
+          >
+            <MaskAmount card="home.monthExpense" kind="expense">
+              {wonPre()}
+              {KRW(dailyAvg)}
+            </MaskAmount>
           </span>
-          <WonUnit card="home.monthExpense" />
-          {' '}{t('avg.spent')}
+          <WonUnit card="home.monthExpense" /> {t("avg.spent")}
           {prevExpense > 0 && (
             <>
-              {' '}{t('avg.vsPrev')}{' '}
-              <span style={{
-                color: savingsPct > 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
-                fontWeight: '700',
-              }}>
+              {" "}
+              {t("avg.vsPrev")}{" "}
+              <span
+                style={{
+                  color:
+                    savingsPct > 0
+                      ? "var(--fg-brand-strong)"
+                      : "var(--fg-expense)",
+                  fontWeight: "700",
+                }}
+              >
                 {Math.abs(savingsPct).toFixed(0)}%
-              </span>
-              {' '}{savingsPct > 0 ? t('avg.saving') : savingsPct < 0 ? t('avg.spentMore') : t('avg.same')}
+              </span>{" "}
+              {savingsPct > 0
+                ? t("avg.saving")
+                : savingsPct < 0
+                  ? t("avg.spentMore")
+                  : t("avg.same")}
             </>
           )}
         </div>
@@ -1406,18 +2326,28 @@ function HomeMobile() {
       {/* 카테고리 — 카드 벗김: sec-head + 본문(10px 인셋) */}
       <div>
         <div className="sec-head">
-          <h2>{t('categoryTitle')}</h2>
-          <button className="all" onClick={() => navigate('/desk/stats')}>
-            {t('detail')} <ChevronRight size={14} />
+          <h2>{t("categoryTitle")}</h2>
+          <button className="all" onClick={() => navigate("/desk/stats")}>
+            {t("detail")} <ChevronRight size={14} />
           </button>
         </div>
         {donutSegs.length === 0 ? (
           monthlyQ.isLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <SkeletonBase className="h-[120px] w-[120px] rounded-full shrink-0" />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[0, 1, 2, 3].map(i => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     <SkeletonBase className="h-2 w-2 rounded-full shrink-0" />
                     <SkeletonBase className="h-3 flex-1" />
                     <SkeletonBase className="h-3 w-10 shrink-0" />
@@ -1426,27 +2356,77 @@ function HomeMobile() {
               </div>
             </div>
           ) : (
-            <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              {t('categoryEmptyMobile')}
+            <div
+              style={{
+                padding: "24px 0",
+                textAlign: "center",
+                color: "var(--fg-tertiary)",
+                fontSize: "var(--text-caption)",
+              }}
+            >
+              {t("categoryEmptyMobile")}
             </div>
           )
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Donut segments={donutSegs} size={120} stroke={18}>
-              <div className="lbl" style={{ fontSize: 'var(--text-badge)' }}>{t('chart.expense')}</div>
-              <div className="val num" style={{ fontSize: 'var(--text-caption)' }}>
-                <MaskAmount card="home.categoryDonut" mask="••••">{KRW(donutTotal)}</MaskAmount>
+              <div className="lbl" style={{ fontSize: "var(--text-badge)" }}>
+                {t("chart.expense")}
+              </div>
+              <div
+                className="val num"
+                style={{ fontSize: "var(--text-caption)" }}
+              >
+                <MaskAmount card="home.categoryDonut" mask="••••">
+                  {KRW(donutTotal)}
+                </MaskAmount>
               </div>
             </Donut>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
               {donutSegs.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: s.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "var(--radius-pill)",
+                      background: s.color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-secondary)",
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {s.label}
                   </span>
-                  <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-primary)', fontWeight: '600' }}>
-                    <MaskAmount card="home.categoryDonut" mask="••••">{KRW(s.value)}</MaskAmount>
+                  <span
+                    className="num"
+                    style={{
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-primary)",
+                      fontWeight: "600",
+                    }}
+                  >
+                    <MaskAmount card="home.categoryDonut" mask="••••">
+                      {KRW(s.value)}
+                    </MaskAmount>
                   </span>
                 </div>
               ))}
@@ -1458,17 +2438,24 @@ function HomeMobile() {
       {/* 예산 — 카드 벗김: sec-head + budget-flat 행 리듬 (design .budget-flat__row) */}
       <div>
         <div className="sec-head" style={{ marginBottom: 14 }}>
-          <h2>{t('expense.budget')}</h2>
-          <button className="all" onClick={() => navigate('/desk/budget')}>
-            {t('all')} <ChevronRight size={14} />
+          <h2>{t("expense.budget")}</h2>
+          <button className="all" onClick={() => navigate("/desk/budget")}>
+            {t("all")} <ChevronRight size={14} />
           </button>
         </div>
         {budgetItems.length === 0 ? (
           budgetsQ.isLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[0, 1, 2].map(i => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[0, 1, 2].map((i) => (
                 <div key={i}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 6,
+                    }}
+                  >
                     <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
                     <SkeletonBase className="h-4 w-20 flex-1" />
                     <SkeletonBase className="h-3 w-24 shrink-0" />
@@ -1478,99 +2465,175 @@ function HomeMobile() {
               ))}
             </div>
           ) : (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              {t('budget.empty')}
+            <div
+              style={{
+                padding: "12px 0",
+                textAlign: "center",
+                color: "var(--fg-tertiary)",
+                fontSize: "var(--text-caption)",
+              }}
+            >
+              {t("budget.empty")}
             </div>
           )
         ) : (
           <div>
-            {budgetItems.map(b => {
-              const palette = getPaletteByColor(b.color)
+            {budgetItems.map((b) => {
+              const palette = getPaletteByColor(b.color);
               return (
                 // 좌우는 페이지가 쥔다(24). 행이 여기서 10 을 얹고 -2 로 당기면 순 8 이
                 // 남아, 제목만 24 에 서고 행은 32 에서 시작해 두 줄이 어긋나 보인다.
-                <div key={b.rowId} style={{ padding: '14px 0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <span style={{
-                      width: 40, height: 40, borderRadius: tileRadius(40),
-                      background: palette.bg, color: palette.color,
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
+                <div key={b.rowId} style={{ padding: "14px 0" }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 14 }}
+                  >
+                    <span
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: tileRadius(40),
+                        background: palette.bg,
+                        color: palette.color,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
                       <Icon name={b.icon} size={18} strokeWidth={1.9} />
                     </span>
-                    <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', letterSpacing: '-0.01em' }}>{b.categoryName}</span>
-                    <span className="num" style={{
-                      marginLeft: 'auto',
-                      fontSize: 'var(--text-body-lg)', fontWeight: '700',
-                      color: b.state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
-                    }}>
-                      <MaskAmount card="home.budget" mask="••••">{KRW(b.spent)}</MaskAmount>
-                      <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> / <MaskAmount card="home.budget" mask="••••">{KRW(b.budgetAmount)}</MaskAmount></span>
+                    <span
+                      style={{
+                        fontSize: "var(--text-label-sm)",
+                        fontWeight: "600",
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {b.categoryName}
+                    </span>
+                    <span
+                      className="num"
+                      style={{
+                        marginLeft: "auto",
+                        fontSize: "var(--text-body-lg)",
+                        fontWeight: "700",
+                        color:
+                          b.state === "over"
+                            ? "var(--fg-expense)"
+                            : "var(--fg-primary)",
+                      }}
+                    >
+                      <MaskAmount card="home.budget" mask="••••">
+                        {KRW(b.spent)}
+                      </MaskAmount>
+                      <span
+                        style={{
+                          color: "var(--fg-tertiary)",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {" "}
+                        /{" "}
+                        <MaskAmount card="home.budget" mask="••••">
+                          {KRW(b.budgetAmount)}
+                        </MaskAmount>
+                      </span>
                     </span>
                   </div>
                   <div className="budget-bar" style={{ marginTop: 10 }}>
-                    <div className={`budget-bar__fill ${b.state}`} style={{ width: `${Math.min(100, b.pct)}%` }} />
+                    <div
+                      className={`budget-bar__fill ${b.state}`}
+                      style={{ width: `${Math.min(100, b.pct)}%` }}
+                    />
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </div>
 
-      <HomeUpcomingSection summary={summary} onCalendar={() => navigate('/desk/calendar')} />
-      <HomeTodosSection summary={summary} onTodos={() => navigate('/desk/todo')} />
+      <HomeUpcomingSection
+        summary={summary}
+        onCalendar={() => navigate("/desk/calendar")}
+      />
+      <HomeTodosSection
+        summary={summary}
+        onTodos={() => navigate("/desk/todo")}
+      />
 
       {/* 오늘 쓴 돈 — 카드 벗김: sec-head(baseline) + tx 행 (design .tx-flat) */}
       <div>
-        <div className="sec-head" style={{ marginBottom: 6, alignItems: 'baseline' }}>
-          <h2>{t('expense.todaySpent')}</h2>
+        <div
+          className="sec-head"
+          style={{ marginBottom: 6, alignItems: "baseline" }}
+        >
+          <h2>{t("expense.todaySpent")}</h2>
           {todayTotal > 0 && (
-            <span className="num" style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-expense)', fontWeight: '700' }}>
-              <MaskAmount card="home.todaySpend" mask="••••">−{wonPre()}{KRW(todayTotal)}</MaskAmount>
+            <span
+              className="num"
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-expense)",
+                fontWeight: "700",
+              }}
+            >
+              <MaskAmount card="home.todaySpend" mask="••••">
+                −{wonPre()}
+                {KRW(todayTotal)}
+              </MaskAmount>
               <WonUnit card="home.todaySpend" />
             </span>
           )}
-          <button className="all" onClick={() => navigate('/desk/expense')}>{t('all')}</button>
+          <button className="all" onClick={() => navigate("/desk/expense")}>
+            {t("all")}
+          </button>
         </div>
         <div>
-          {todayTx.map(t => (
+          {todayTx.map((t) => (
             <ExpenseRow
               key={t.rowId}
               expense={t}
               onClick={() => {
-                const m = t.expenseDate?.slice(0, 7) ?? ''
-                const params = new URLSearchParams()
-                if (m) params.set('month', m)
-                params.set('txId', String(t.rowId))
-                navigate(`/desk/expense?${params.toString()}`)
+                const m = t.expenseDate?.slice(0, 7) ?? "";
+                const params = new URLSearchParams();
+                if (m) params.set("month", m);
+                params.set("txId", String(t.rowId));
+                navigate(`/desk/expense?${params.toString()}`);
               }}
             />
           ))}
           {todayTx.length === 0 && (
-            <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-              {t('expense.noTodaySpent')}
+            <div
+              style={{
+                padding: "12px 0",
+                textAlign: "center",
+                color: "var(--fg-tertiary)",
+                fontSize: "var(--text-caption)",
+              }}
+            >
+              {t("expense.noTodaySpent")}
             </div>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // 모바일 홈 위젯 항목 — design screens-home.jsx `.widget-row` 미러(button, full-width, 좌측정렬).
 const widgetRowStyle = {
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   gap: 12,
-  width: '100%',
-  padding: '10px 0',
-  background: 'transparent',
+  width: "100%",
+  padding: "10px 0",
+  background: "transparent",
   border: 0,
-  cursor: 'pointer',
-  textAlign: 'left',
-  fontFamily: 'inherit',
-} as const
+  cursor: "pointer",
+  textAlign: "left",
+  fontFamily: "inherit",
+} as const;
 
 // 모바일 홈 위젯 섹션 헤더 — 아이콘16(fg-secondary) + 제목 + 우측 chevron16.
 function WidgetHead({
@@ -1579,14 +2642,14 @@ function WidgetHead({
   onAll,
   extra,
 }: {
-  icon: React.ReactNode
-  title: string
-  onAll: () => void
-  extra?: React.ReactNode
+  icon: React.ReactNode;
+  title: string;
+  onAll: () => void;
+  extra?: React.ReactNode;
 }) {
   return (
     <div className="sec-head" style={{ marginBottom: 8 }}>
-      <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+      <h2 style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
         {icon}
         {title}
         {extra}
@@ -1595,7 +2658,7 @@ function WidgetHead({
         <ChevronRight size={16} />
       </button>
     </div>
-  )
+  );
 }
 
 /**
@@ -1606,39 +2669,75 @@ function HomeUpcomingSection({
   summary,
   onCalendar,
 }: {
-  summary: DashboardSummary | undefined
-  onCalendar: () => void
+  summary: DashboardSummary | undefined;
+  onCalendar: () => void;
 }) {
-  const { t } = useTranslation('dashboard')
-  if (!summary) return null
-  const events = summary.upcomingEvents.slice(0, 3)
-  if (events.length === 0) return null
+  const { t } = useTranslation("dashboard");
+  if (!summary) return null;
+  const events = summary.upcomingEvents.slice(0, 3);
+  if (events.length === 0) return null;
 
   return (
     <div>
       <WidgetHead
-        icon={<CalendarClock size={16} style={{ color: 'var(--fg-secondary)' }} />}
-        title={t('schedule.title')}
+        icon={
+          <CalendarClock size={16} style={{ color: "var(--fg-secondary)" }} />
+        }
+        title={t("schedule.title")}
         onAll={onCalendar}
       />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {events.map(ev => {
-          const urgent = ev.daysUntil <= 3
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {events.map((ev) => {
+          const urgent = ev.daysUntil <= 3;
           return (
             <button key={ev.rowId} onClick={onCalendar} style={widgetRowStyle}>
-              <span style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: ev.color ? getPaletteByColor(ev.color).color : 'var(--fg-brand)', flexShrink: 0 }} />
-              <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "var(--radius-pill)",
+                  background: ev.color
+                    ? getPaletteByColor(ev.color).color
+                    : "var(--fg-brand)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--fg-primary)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  textAlign: "left",
+                }}
+              >
                 {ev.title}
               </span>
-              <span className="num" style={{ fontSize: 12.5, fontWeight: 700, color: urgent ? 'var(--fg-expense)' : 'var(--fg-tertiary)', flexShrink: 0 }}>
-                {ev.daysUntil === 0 ? t('schedule.today') : ev.daysUntil === 1 ? t('schedule.tomorrow') : t('date:dday', { count: ev.daysUntil })}
+              <span
+                className="num"
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: urgent ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                  flexShrink: 0,
+                }}
+              >
+                {ev.daysUntil === 0
+                  ? t("schedule.today")
+                  : ev.daysUntil === 1
+                    ? t("schedule.tomorrow")
+                    : t("date:dday", { count: ev.daysUntil })}
               </span>
             </button>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -1649,56 +2748,101 @@ function HomeTodosSection({
   summary,
   onTodos,
 }: {
-  summary: DashboardSummary | undefined
-  onTodos: () => void
+  summary: DashboardSummary | undefined;
+  onTodos: () => void;
 }) {
-  const { t } = useTranslation('dashboard')
-  if (!summary) return null
-  const todos = summary.recentTodos.slice(0, 3)
-  if (todos.length === 0) return null
+  const { t } = useTranslation("dashboard");
+  if (!summary) return null;
+  const todos = summary.recentTodos.slice(0, 3);
+  if (todos.length === 0) return null;
   const todayStr = (() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  })()
-  const overdue = summary.todoSummary.overDueCount
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  const overdue = summary.todoSummary.overDueCount;
 
   return (
     <div>
       <WidgetHead
-        icon={<CheckSquare size={16} style={{ color: 'var(--fg-secondary)' }} />}
-        title={t('todo.recent')}
+        icon={
+          <CheckSquare size={16} style={{ color: "var(--fg-secondary)" }} />
+        }
+        title={t("todo.recent")}
         onAll={onTodos}
         extra={
           overdue > 0 ? (
-            <span style={{ fontSize: 'var(--text-badge)', fontWeight: 700, background: 'var(--status-danger-subtle)', color: 'var(--fg-expense)', padding: '2px 8px', borderRadius: 'var(--radius-pill)', letterSpacing: '-0.01em' }}>
-              {t('todo.overdueBadge', { count: overdue })}
+            <span
+              style={{
+                fontSize: "var(--text-badge)",
+                fontWeight: 700,
+                background: "var(--status-danger-subtle)",
+                color: "var(--fg-expense)",
+                padding: "2px 8px",
+                borderRadius: "var(--radius-pill)",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {t("todo.overdueBadge", { count: overdue })}
             </span>
           ) : undefined
         }
       />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {todos.map(td => {
-          const done = td.status === 'COMPLETED'
-          const isOver = !done && !!td.dueDate && td.dueDate.slice(0, 10) < todayStr
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {todos.map((td) => {
+          const done = td.status === "COMPLETED";
+          const isOver =
+            !done && !!td.dueDate && td.dueDate.slice(0, 10) < todayStr;
           return (
             <button key={td.rowId} onClick={onTodos} style={widgetRowStyle}>
               {done ? (
-                <CheckCircle2 size={18} style={{ color: 'var(--status-success-fg)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--status-success-fg)", flexShrink: 0 }}
+                />
               ) : (
-                <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, border: `2px solid ${isOver ? 'var(--fg-expense)' : 'var(--border-strong)'}` }} />
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 999,
+                    flexShrink: 0,
+                    border: `2px solid ${isOver ? "var(--fg-expense)" : "var(--border-strong)"}`,
+                  }}
+                />
               )}
-              <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', textDecoration: done ? 'line-through' : 'none' }}>
+              <span
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--fg-primary)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  textAlign: "left",
+                  textDecoration: done ? "line-through" : "none",
+                }}
+              >
                 {td.title}
               </span>
               {td.dueDate && (
-                <span className="num" style={{ fontSize: 12.5, fontWeight: 600, color: isOver ? 'var(--fg-expense)' : 'var(--fg-tertiary)', flexShrink: 0 }}>
+                <span
+                  className="num"
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: isOver ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                    flexShrink: 0,
+                  }}
+                >
                   {td.dueDate.slice(5, 10)}
                 </span>
               )}
             </button>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

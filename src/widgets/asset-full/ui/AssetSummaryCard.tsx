@@ -1,38 +1,45 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { PieChart, Pie, Cell } from 'recharts'
-import { Wallet } from 'lucide-react'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/ui/chart'
-import { HeroStatCard } from '@/shared/ui/hero-stat-card'
-import type { AssetSummary, Asset, AssetType } from '@/entities/asset'
-import { formatCurrency } from '@/shared/lib'
-import { assetBalanceInKrw } from '@/shared/lib/porest/currency'
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { PieChart, Pie, Cell } from "recharts";
+import { Wallet } from "lucide-react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/shared/ui/chart";
+import { HeroStatCard } from "@/shared/ui/hero-stat-card";
+import type { AssetSummary, Asset, AssetType } from "@/entities/asset";
+import { formatCurrency } from "@/shared/lib";
+import { assetBalanceInKrw } from "@/shared/lib/porest/currency";
 
 // porest chart palette 매핑 — 자산 타입별 파이차트 색
 const ASSET_TYPE_COLORS: Record<AssetType, string> = {
-  BANK_ACCOUNT: 'var(--color-chart-blue)',
-  CREDIT_CARD: 'var(--color-chart-red)',
-  CASH: 'var(--color-chart-green)',
-  SAVINGS: 'var(--color-chart-yellow)',
-  LOAN: 'var(--color-chart-orange)',
-  INVESTMENT: 'var(--color-chart-violet)',
-  CHECK_CARD: 'var(--color-chart-indigo)',
-}
+  BANK_ACCOUNT: "var(--color-chart-blue)",
+  CREDIT_CARD: "var(--color-chart-red)",
+  CASH: "var(--color-chart-green)",
+  SAVINGS: "var(--color-chart-yellow)",
+  LOAN: "var(--color-chart-orange)",
+  INVESTMENT: "var(--color-chart-violet)",
+  CHECK_CARD: "var(--color-chart-indigo)",
+};
 
 interface AssetSummaryCardProps {
-  summary: AssetSummary
-  assets?: Asset[]
+  summary: AssetSummary;
+  assets?: Asset[];
 }
 
-export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps) => {
-  const { t } = useTranslation('asset')
+export const AssetSummaryCard = ({
+  summary,
+  assets = [],
+}: AssetSummaryCardProps) => {
+  const { t } = useTranslation("asset");
 
   const netWorth = useMemo(() => {
-    if (assets.length === 0) return summary.totalBalance
+    if (assets.length === 0) return summary.totalBalance;
     return assets
-      .filter((a) => a.isIncludedInTotal === 'Y')
-      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0)
-  }, [assets, summary.totalBalance])
+      .filter((a) => a.isIncludedInTotal === "Y")
+      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0);
+  }, [assets, summary.totalBalance]);
 
   const chartData = useMemo(() => {
     return summary.byType
@@ -40,25 +47,25 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
       .map((item) => ({
         name: item.assetType,
         value: Math.abs(item.totalBalance),
-        fill: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)',
-      }))
-  }, [summary.byType])
+        fill: ASSET_TYPE_COLORS[item.assetType] || "var(--color-chart-gray)",
+      }));
+  }, [summary.byType]);
 
   const chartConfig = useMemo(() => {
-    const config: Record<string, { label: string; color: string }> = {}
+    const config: Record<string, { label: string; color: string }> = {};
     summary.byType.forEach((item) => {
       config[item.assetType] = {
         label: item.assetType,
-        color: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)',
-      }
-    })
-    return config
-  }, [summary.byType])
+        color: ASSET_TYPE_COLORS[item.assetType] || "var(--color-chart-gray)",
+      };
+    });
+    return config;
+  }, [summary.byType]);
 
   const includedCount = useMemo(
-    () => assets.filter((a) => a.isIncludedInTotal === 'Y').length,
+    () => assets.filter((a) => a.isIncludedInTotal === "Y").length,
     [assets],
-  )
+  );
 
   return (
     <div className="space-y-4">
@@ -66,15 +73,18 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
       <HeroStatCard
         tone="brand"
         icon={Wallet}
-        label={t('totalBalance')}
+        label={t("totalBalance")}
         value={formatCurrency(netWorth)}
         footer={
           assets.length > 0 && netWorth !== summary.totalBalance ? (
             <span className="tabular-nums">
-              {includedCount}/{assets.length} · {formatCurrency(summary.totalBalance)}
+              {includedCount}/{assets.length} ·{" "}
+              {formatCurrency(summary.totalBalance)}
             </span>
           ) : assets.length > 0 ? (
-            <span className="tabular-nums">{assets.length} {t('count')}</span>
+            <span className="tabular-nums">
+              {assets.length} {t("count")}
+            </span>
           ) : undefined
         }
       />
@@ -84,7 +94,10 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
         <div className="rounded-xl border bg-card p-4">
           <div className="flex flex-col items-center gap-4 md:flex-row">
             <div className="w-full md:w-1/2">
-              <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[180px]">
+              <ChartContainer
+                config={chartConfig}
+                className="mx-auto aspect-square max-h-[180px]"
+              >
                 <PieChart>
                   <ChartTooltip
                     content={
@@ -112,17 +125,31 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
             <div className="w-full md:w-1/2">
               <div className="grid grid-cols-2 gap-2">
                 {summary.byType.map((item) => (
-                  <div key={item.assetType} className="flex items-start gap-2 rounded-md bg-muted/50 p-2">
+                  <div
+                    key={item.assetType}
+                    className="flex items-start gap-2 rounded-md bg-muted/50 p-2"
+                  >
                     <div
                       className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: ASSET_TYPE_COLORS[item.assetType] || 'var(--color-chart-gray)' }}
+                      style={{
+                        backgroundColor:
+                          ASSET_TYPE_COLORS[item.assetType] ||
+                          "var(--color-chart-gray)",
+                      }}
                     />
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground truncate">
-                        {t(`assetType.${item.assetType.toLowerCase().replace(/_/g, '')}`)}
+                        {t(
+                          `assetType.${item.assetType.toLowerCase().replace(/_/g, "")}`,
+                        )}
                       </p>
-                      <p className="text-sm font-semibold">{formatCurrency(item.totalBalance)}</p>
-                      <p className="text-xs text-muted-foreground">{item.count}{t('count')}</p>
+                      <p className="text-sm font-semibold">
+                        {formatCurrency(item.totalBalance)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.count}
+                        {t("count")}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -132,5 +159,5 @@ export const AssetSummaryCard = ({ summary, assets = [] }: AssetSummaryCardProps
         </div>
       )}
     </div>
-  )
-}
+  );
+};

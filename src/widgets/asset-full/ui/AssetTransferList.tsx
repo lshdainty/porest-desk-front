@@ -1,23 +1,27 @@
-import { useTranslation } from 'react-i18next'
-import { Trash2 } from 'lucide-react'
-import type { AssetTransfer } from '@/entities/asset'
-import { formatCurrency } from '@/shared/lib'
+import { useTranslation } from "react-i18next";
+import { Trash2 } from "lucide-react";
+import type { AssetTransfer } from "@/entities/asset";
+import { formatCurrency } from "@/shared/lib";
 
 interface AssetTransferListProps {
-  transfers: AssetTransfer[]
-  onDelete: (id: number) => void
-  isDeleting?: boolean
+  transfers: AssetTransfer[];
+  onDelete: (id: number) => void;
+  isDeleting?: boolean;
 }
 
-export const AssetTransferList = ({ transfers, onDelete, isDeleting }: AssetTransferListProps) => {
-  const { t } = useTranslation('asset')
+export const AssetTransferList = ({
+  transfers,
+  onDelete,
+  isDeleting,
+}: AssetTransferListProps) => {
+  const { t } = useTranslation("asset");
 
   if (transfers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <p className="text-sm">{t('noTransfers')}</p>
+        <p className="text-sm">{t("noTransfers")}</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -39,9 +43,13 @@ export const AssetTransferList = ({ transfers, onDelete, isDeleting }: AssetTran
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm font-semibold">{formatCurrency(transfer.amount)}</p>
+            <p className="text-sm font-semibold">
+              {formatCurrency(transfer.amount)}
+            </p>
             {transfer.fee > 0 && (
-              <p className="text-xs text-muted-foreground">{t('fee')}: {formatCurrency(transfer.fee)}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("fee")}: {formatCurrency(transfer.fee)}
+              </p>
             )}
           </div>
           <button
@@ -54,5 +62,5 @@ export const AssetTransferList = ({ transfers, onDelete, isDeleting }: AssetTran
         </div>
       ))}
     </div>
-  )
-}
+  );
+};

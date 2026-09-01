@@ -1,7 +1,7 @@
-import * as React from "react"
-import * as SeparatorPrimitive from "@radix-ui/react-separator"
+import * as React from "react";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Separator — porest-design specs/components/separator.md SoT 기반.
@@ -29,7 +29,7 @@ const Separator = React.forwardRef<
       {...props}
     />
   ),
-)
-Separator.displayName = SeparatorPrimitive.Root.displayName
+);
+Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-export { Separator }
+export { Separator };

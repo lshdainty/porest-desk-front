@@ -1,1 +1,1 @@
-export type { ExpenseSplit, ExpenseSplitFormValue } from './model/types'
+export type { ExpenseSplit, ExpenseSplitFormValue } from "./model/types";

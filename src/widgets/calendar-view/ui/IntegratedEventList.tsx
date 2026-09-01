@@ -1,20 +1,20 @@
-import { useTranslation } from 'react-i18next'
-import { Calendar, CheckSquare, Wallet, MapPin, Repeat } from 'lucide-react'
-import { cn, formatDate, formatCurrency } from '@/shared/lib'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import { isSameDay } from '@/shared/lib/date'
-import type { CalendarEvent } from '@/entities/calendar'
-import type { Todo } from '@/entities/todo'
-import type { Expense } from '@/entities/expense'
-import { EventBadge } from './EventBadge'
+import { useTranslation } from "react-i18next";
+import { Calendar, CheckSquare, Wallet, MapPin, Repeat } from "lucide-react";
+import { cn, formatDate, formatCurrency } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { isSameDay } from "@/shared/lib/date";
+import type { CalendarEvent } from "@/entities/calendar";
+import type { Todo } from "@/entities/todo";
+import type { Expense } from "@/entities/expense";
+import { EventBadge } from "./EventBadge";
 
 interface IntegratedEventListProps {
-  selectedDate: Date
-  events: CalendarEvent[]
-  todos: Todo[]
-  expenses: Expense[]
-  onEventClick?: (event: CalendarEvent) => void
-  onTodoToggle?: (id: number) => void
+  selectedDate: Date;
+  events: CalendarEvent[];
+  todos: Todo[];
+  expenses: Expense[];
+  onEventClick?: (event: CalendarEvent) => void;
+  onTodoToggle?: (id: number) => void;
 }
 
 export const IntegratedEventList = ({
@@ -25,35 +25,38 @@ export const IntegratedEventList = ({
   onEventClick,
   onTodoToggle,
 }: IntegratedEventListProps) => {
-  const { t } = useTranslation('calendar')
+  const { t } = useTranslation("calendar");
 
   const dayEvents = events.filter((event) => {
-    const eventStart = new Date(event.startDate)
-    const eventEnd = new Date(event.endDate)
-    return selectedDate >= new Date(eventStart.toDateString()) &&
+    const eventStart = new Date(event.startDate);
+    const eventEnd = new Date(event.endDate);
+    return (
+      selectedDate >= new Date(eventStart.toDateString()) &&
       selectedDate <= new Date(eventEnd.toDateString())
-  })
+    );
+  });
 
   const dayTodos = todos.filter((todo) => {
-    if (!todo.dueDate) return false
-    return isSameDay(new Date(todo.dueDate), selectedDate)
-  })
+    if (!todo.dueDate) return false;
+    return isSameDay(new Date(todo.dueDate), selectedDate);
+  });
 
   const dayExpenses = expenses.filter((expense) => {
-    return isSameDay(new Date(expense.expenseDate), selectedDate)
-  })
+    return isSameDay(new Date(expense.expenseDate), selectedDate);
+  });
 
-  const hasItems = dayEvents.length > 0 || dayTodos.length > 0 || dayExpenses.length > 0
+  const hasItems =
+    dayEvents.length > 0 || dayTodos.length > 0 || dayExpenses.length > 0;
 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground">
-        {formatDate(selectedDate, 'PPP')}
+        {formatDate(selectedDate, "PPP")}
       </h3>
 
       {!hasItems && (
         <p className="py-6 text-center text-sm text-muted-foreground">
-          {t('noEvents')}
+          {t("noEvents")}
         </p>
       )}
 
@@ -61,7 +64,7 @@ export const IntegratedEventList = ({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <Calendar size={12} />
-            <span>{t('events')}</span>
+            <span>{t("events")}</span>
             <span className="ml-auto text-[10px]">{dayEvents.length}</span>
           </div>
           <div className="space-y-1">
@@ -73,15 +76,22 @@ export const IntegratedEventList = ({
               >
                 <span
                   className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: getPaletteByColor(event.color).color }}
+                  style={{
+                    backgroundColor: getPaletteByColor(event.color).color,
+                  }}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <p className="truncate text-sm font-medium">{event.title}</p>
+                    <p className="truncate text-sm font-medium">
+                      {event.title}
+                    </p>
                     {event.labelName && (
                       <span
                         className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
-                        style={{ backgroundColor: getPaletteByColor(event.labelColor).color }}
+                        style={{
+                          backgroundColor: getPaletteByColor(event.labelColor)
+                            .color,
+                        }}
                       >
                         {event.labelName}
                       </span>
@@ -95,8 +105,8 @@ export const IntegratedEventList = ({
                   <div className="mt-0.5 flex items-center gap-2">
                     <span className="text-[10px] text-muted-foreground">
                       {event.isAllDay
-                        ? t('allDay')
-                        : `${formatDate(event.startDate, 'HH:mm')} - ${formatDate(event.endDate, 'HH:mm')}`}
+                        ? t("allDay")
+                        : `${formatDate(event.startDate, "HH:mm")} - ${formatDate(event.endDate, "HH:mm")}`}
                     </span>
                     <EventBadge
                       title={t(`eventType.${event.eventType}`)}
@@ -109,7 +119,9 @@ export const IntegratedEventList = ({
                     {event.location && (
                       <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                         <MapPin size={10} />
-                        <span className="truncate max-w-[80px]">{event.location}</span>
+                        <span className="truncate max-w-[80px]">
+                          {event.location}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -124,7 +136,7 @@ export const IntegratedEventList = ({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <CheckSquare size={12} />
-            <span>{t('todos')}</span>
+            <span>{t("todos")}</span>
             <span className="ml-auto text-[10px]">{dayTodos.length}</span>
           </div>
           <div className="space-y-1">
@@ -136,13 +148,13 @@ export const IntegratedEventList = ({
               >
                 <span
                   className={cn(
-                    'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-                    todo.status === 'COMPLETED'
-                      ? 'border-primary bg-primary'
-                      : 'border-muted-foreground/40'
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                    todo.status === "COMPLETED"
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground/40",
                   )}
                 >
-                  {todo.status === 'COMPLETED' && (
+                  {todo.status === "COMPLETED" && (
                     <svg
                       className="h-3 w-3 text-primary-foreground"
                       fill="none"
@@ -150,15 +162,20 @@ export const IntegratedEventList = ({
                       stroke="currentColor"
                       strokeWidth={3}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p
                     className={cn(
-                      'truncate text-sm',
-                      todo.status === 'COMPLETED' && 'line-through text-muted-foreground'
+                      "truncate text-sm",
+                      todo.status === "COMPLETED" &&
+                        "line-through text-muted-foreground",
                     )}
                   >
                     {todo.title}
@@ -166,10 +183,10 @@ export const IntegratedEventList = ({
                 </div>
                 <span
                   className={cn(
-                    'h-2 w-2 shrink-0 rounded-full',
-                    todo.priority === 'HIGH' && 'bg-red-500',
-                    todo.priority === 'MEDIUM' && 'bg-yellow-500',
-                    todo.priority === 'LOW' && 'bg-blue-500'
+                    "h-2 w-2 shrink-0 rounded-full",
+                    todo.priority === "HIGH" && "bg-red-500",
+                    todo.priority === "MEDIUM" && "bg-yellow-500",
+                    todo.priority === "LOW" && "bg-blue-500",
                   )}
                 />
               </button>
@@ -182,7 +199,7 @@ export const IntegratedEventList = ({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <Wallet size={12} />
-            <span>{t('expenses')}</span>
+            <span>{t("expenses")}</span>
             <span className="ml-auto text-[10px]">{dayExpenses.length}</span>
           </div>
           <div className="space-y-1">
@@ -193,11 +210,14 @@ export const IntegratedEventList = ({
               >
                 <span
                   className="h-8 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: getPaletteByColor(expense.categoryColor).color }}
+                  style={{
+                    backgroundColor: getPaletteByColor(expense.categoryColor)
+                      .color,
+                  }}
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
-                    {expense.categoryName ?? expense.description ?? '-'}
+                    {expense.categoryName ?? expense.description ?? "-"}
                   </p>
                   {expense.description && expense.categoryName && (
                     <p className="truncate text-xs text-muted-foreground">
@@ -207,11 +227,13 @@ export const IntegratedEventList = ({
                 </div>
                 <span
                   className={cn(
-                    'shrink-0 text-sm font-semibold',
-                    expense.expenseType === 'INCOME' ? 'text-green-600' : 'text-red-600'
+                    "shrink-0 text-sm font-semibold",
+                    expense.expenseType === "INCOME"
+                      ? "text-green-600"
+                      : "text-red-600",
                   )}
                 >
-                  {expense.expenseType === 'INCOME' ? '+' : '-'}
+                  {expense.expenseType === "INCOME" ? "+" : "-"}
                   {formatCurrency(expense.amount)}
                 </span>
               </div>
@@ -220,5 +242,5 @@ export const IntegratedEventList = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};

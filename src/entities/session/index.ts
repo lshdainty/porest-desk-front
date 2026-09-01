@@ -1,1 +1,5 @@
-export type { TokenExchangeRequest, TokenExchangeResponse, LoginCheckResponse } from './model/types'
+export type {
+  TokenExchangeRequest,
+  TokenExchangeResponse,
+  LoginCheckResponse,
+} from "./model/types";

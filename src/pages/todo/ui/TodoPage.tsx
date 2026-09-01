@@ -1,8 +1,14 @@
-import { useMemo, useRef, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { formatMonthDay, formatMonthDayDow, toLocalDateKey, toLocalDateTime, todayLocalKey } from '@/shared/lib/date'
-import { i18n } from '@/shared/i18n/config'
+import { useMemo, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  formatMonthDay,
+  formatMonthDayDow,
+  toLocalDateKey,
+  toLocalDateTime,
+  todayLocalKey,
+} from "@/shared/lib/date";
+import { i18n } from "@/shared/i18n/config";
 import {
   Plus,
   Check,
@@ -13,44 +19,59 @@ import {
   CircleDot,
   Leaf,
   Settings2,
-} from 'lucide-react'
+} from "lucide-react";
 import {
   useTodos,
   useCreateTodo,
   useUpdateTodo,
   useToggleTodoStatus,
   useDeleteTodo,
-} from '@/features/todo'
-import { useTodoTags } from '@/features/todo-tag'
-import { useConstellationSky, useConstellationToday } from '@/features/constellation'
-import { ForestReport, ForestStrip, NightSkyPanel } from '@/widgets/constellation'
-import { TodoMobileLedger } from './TodoMobileLedger'
-import type { Todo, TodoFormValues, TodoPriority } from '@/entities/todo'
-import { Button } from '@/shared/ui/button'
-import { Fab } from '@/shared/ui/porest/fab'
-import { Input } from '@/shared/ui/input'
-import { Textarea } from '@/shared/ui/textarea'
+} from "@/features/todo";
+import { useTodoTags } from "@/features/todo-tag";
+import {
+  useConstellationSky,
+  useConstellationToday,
+} from "@/features/constellation";
+import {
+  ForestReport,
+  ForestStrip,
+  NightSkyPanel,
+} from "@/widgets/constellation";
+import { TodoMobileLedger } from "./TodoMobileLedger";
+import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
+import { Button } from "@/shared/ui/button";
+import { Fab } from "@/shared/ui/porest/fab";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@/shared/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select'
-import { Field, FieldLabel } from '@/shared/ui/field'
-import { Card } from '@/shared/ui/card'
-import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter, ModalViewFooter } from '@/shared/ui/porest/modal-footer'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+} from "@/shared/ui/select";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { Card } from "@/shared/ui/card";
+import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // 태그 select 옵션 7종 (양 플랫폼 공통 확정). category 필드에 저장. 기본값 '개인'.
-const TAG_OPTIONS = ['가계부', '자산', '결제', '업무', '개인', '건강', '고정비'] as const
-const DEFAULT_TAG = '개인'
+const TAG_OPTIONS = [
+  "가계부",
+  "자산",
+  "결제",
+  "업무",
+  "개인",
+  "건강",
+  "고정비",
+] as const;
+const DEFAULT_TAG = "개인";
 
 // 우선순위 칩/아이콘 스타일 (양 플랫폼 공통 확정).
 //  high = chart-red + bg 14% 틴트 / med = chart-orange + 14% 틴트 /
@@ -62,221 +83,238 @@ const PRIO: Record<
   // 중요=error(빨강)/보통=warning(노랑)/여유=info(파랑) — status-*-fg 는
   // 다크에서 *-light 로 스왑되는 토큰 (사용자 결정, 앱 todo_meta 동기).
   HIGH: {
-    labelKey: 'prio.HIGH',
-    color: 'var(--status-danger-fg)',
-    bg: 'color-mix(in oklab, var(--status-danger-fg) 14%, var(--bg-surface))',
+    labelKey: "prio.HIGH",
+    color: "var(--status-danger-fg)",
+    bg: "color-mix(in oklab, var(--status-danger-fg) 14%, var(--bg-surface))",
     order: 0,
   },
   MEDIUM: {
-    labelKey: 'prio.MEDIUM',
-    color: 'var(--status-warning-fg)',
-    bg: 'color-mix(in oklab, var(--status-warning-fg) 14%, var(--bg-surface))',
+    labelKey: "prio.MEDIUM",
+    color: "var(--status-warning-fg)",
+    bg: "color-mix(in oklab, var(--status-warning-fg) 14%, var(--bg-surface))",
     order: 1,
   },
   LOW: {
-    labelKey: 'prio.LOW',
-    color: 'var(--status-info-fg)',
-    bg: 'color-mix(in oklab, var(--status-info-fg) 14%, var(--bg-surface))',
+    labelKey: "prio.LOW",
+    color: "var(--status-info-fg)",
+    bg: "color-mix(in oklab, var(--status-info-fg) 14%, var(--bg-surface))",
     order: 2,
   },
-}
-const PRIO_ORDER: TodoPriority[] = ['HIGH', 'MEDIUM', 'LOW']
+};
+const PRIO_ORDER: TodoPriority[] = ["HIGH", "MEDIUM", "LOW"];
 
-type FilterKey = 'today' | 'week' | 'all' | 'done'
+type FilterKey = "today" | "week" | "all" | "done";
 
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
 /** dueDate(날짜 또는 datetime) → 'YYYY-MM-DD'. nullable. */
 function dueKey(due: string | null | undefined): string | null {
-  if (!due) return null
-  return due.slice(0, 10)
+  if (!due) return null;
+  return due.slice(0, 10);
 }
 
 /** 두 'YYYY-MM-DD' 사이 일수 차이 (b - a). */
 function dayDiff(a: string, b: string): number {
-  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000)
+  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 }
 
 /** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
 function kDate(s: string): { md: string; full: string } {
-  return { md: formatMonthDay(s), full: formatMonthDayDow(s) }
+  return { md: formatMonthDay(s), full: formatMonthDayDow(s) };
 }
 
 /** 상대 시간: 오늘/내일/어제/N일 후/N일 전(±7) · 그 외 'M월 D일'. */
 function relativeDate(due: string, today: string): string {
-  const diff = dayDiff(today, due)
-  if (diff === 0) return i18n.t('date:today')
-  if (diff === 1) return i18n.t('date:tomorrow')
-  if (diff === -1) return i18n.t('date:yesterday')
-  if (diff > 0 && diff <= 7) return i18n.t('date:daysLater', { count: diff })
-  if (diff < 0 && diff >= -7) return i18n.t('date:daysAgo', { count: -diff })
-  return kDate(due).md
+  const diff = dayDiff(today, due);
+  if (diff === 0) return i18n.t("date:today");
+  if (diff === 1) return i18n.t("date:tomorrow");
+  if (diff === -1) return i18n.t("date:yesterday");
+  if (diff > 0 && diff <= 7) return i18n.t("date:daysLater", { count: diff });
+  if (diff < 0 && diff >= -7) return i18n.t("date:daysAgo", { count: -diff });
+  return kDate(due).md;
 }
 
-const NO_DUE_KEY = '￿' // 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel
+const NO_DUE_KEY = "￿"; // 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel
 
 function isDone(t: Todo): boolean {
-  return t.status === 'COMPLETED'
+  return t.status === "COMPLETED";
 }
 /** Todo.category → 태그 라벨 (없으면 '개인'). */
 function todoTag(t: Todo): string {
-  return t.category || DEFAULT_TAG
+  return t.category || DEFAULT_TAG;
 }
 
 /** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useTodoPageData() {
-  const todosQ = useTodos()
-  return { isLoading: todosQ.isLoading }
+  const todosQ = useTodos();
+  return { isLoading: todosQ.isLoading };
 }
 
 export const TodoPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { isLoading } = useTodoPageData()
-  if (isLoading) return <TodoPageSkeleton mobile={mobile} />
-  return <TodoPageInner mobile={mobile} />
-}
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { isLoading } = useTodoPageData();
+  if (isLoading) return <TodoPageSkeleton mobile={mobile} />;
+  return <TodoPageInner mobile={mobile} />;
+};
 
 const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
-  const { t } = useTranslation('todo')
-  const todosQ = useTodos()
-  const createTodo = useCreateTodo()
-  const updateTodo = useUpdateTodo()
-  const toggleStatus = useToggleTodoStatus()
-  const deleteTodo = useDeleteTodo()
-  const todoTagsQ = useTodoTags()
+  const { t } = useTranslation("todo");
+  const todosQ = useTodos();
+  const createTodo = useCreateTodo();
+  const updateTodo = useUpdateTodo();
+  const toggleStatus = useToggleTodoStatus();
+  const deleteTodo = useDeleteTodo();
+  const todoTagsQ = useTodoTags();
 
-  const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data])
-  const today = useMemo(() => todayLocalKey(), [])
+  const todos: Todo[] = useMemo(() => todosQ.data ?? [], [todosQ.data]);
+  const today = useMemo(() => todayLocalKey(), []);
 
   // ── 별자리 게이미피케이션 — 할일 화면엔 스트립/토글 진입점만, 상세는 밤하늘 화면 ──
-  const constellationTodayQ = useConstellationToday()
+  const constellationTodayQ = useConstellationToday();
   // 모바일 원장 캘린더 마크(수집★/구름)용 — 이번 달 커버 확보(45일)
-  const skyQ = useConstellationSky(45)
+  const skyQ = useConstellationSky(45);
   // 오늘 완료 건수 — 완료 이벤트(completedAt) 기준 (히어로 캡션용)
   // completedAt 은 서버가 주는 `[UTC]` 라 로컬 날짜로 바꿔서 비교한다. 문자열을 자르면
   // UTC 날짜라, KST 새벽 0~9시에 끝낸 할일이 전날로 빠진다(today 는 로컬 날짜다).
   const doneToday = useMemo(
-    () => todos.filter(td => isDone(td) && toLocalDateKey(td.completedAt) === today).length,
+    () =>
+      todos.filter(
+        (td) => isDone(td) && toLocalDateKey(td.completedAt) === today,
+      ).length,
     [todos, today],
-  )
+  );
 
   // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union.
   const tagNames = useMemo(() => {
-    const names = (todoTagsQ.data ?? []).map(tag => tag.tagName)
+    const names = (todoTagsQ.data ?? []).map((tag) => tag.tagName);
     for (const td of todos) {
-      const c = td.category
-      if (c && !names.includes(c)) names.push(c)
+      const c = td.category;
+      if (c && !names.includes(c)) names.push(c);
     }
-    return names.length > 0 ? names : [...TAG_OPTIONS]
-  }, [todoTagsQ.data, todos])
+    return names.length > 0 ? names : [...TAG_OPTIONS];
+  }, [todoTagsQ.data, todos]);
 
-  const [filter, setFilter] = useState<FilterKey>('today')
+  const [filter, setFilter] = useState<FilterKey>("today");
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
-  const [editing, setEditing] = useState<Todo | { _new: true } | null>(null)
+  const [editing, setEditing] = useState<Todo | { _new: true } | null>(null);
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
-  const [viewing, setViewing] = useState<Todo | null>(null)
+  const [viewing, setViewing] = useState<Todo | null>(null);
   // 밤하늘 화면 / 관측 리포트 오버레이
-  const [nightSky, setNightSky] = useState(false)
-  const [forestReport, setForestReport] = useState(false)
+  const [nightSky, setNightSky] = useState(false);
+  const [forestReport, setForestReport] = useState(false);
   // 별빛 획득 토스트 — 완료 시 "+N · 수집까지 N별"
-  const [starToast, setStarToast] = useState<string | null>(null)
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [quickAdd, setQuickAdd] = useState('')
+  const [starToast, setStarToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [quickAdd, setQuickAdd] = useState("");
 
   // 완료 토글 + 별빛 토스트 — 서버가 돌려준 실제 적립량(earnedStarlight)으로만 띄운다.
   // 낙관적으로 계산하면 평생 1회 정책에 걸려 적립이 0 이어도 "+N" 이 떠서 거짓말이 된다.
   const onToggleTodo = (td: Todo) => {
     toggleStatus.mutate(td.rowId, {
-      onSuccess: updated => {
-        const gain = updated.earnedStarlight ?? 0
-        const sky = constellationTodayQ.data
-        if (gain <= 0 || !sky || sky.collected) return
-        const left = Math.max(0, sky.goal - (sky.points + gain))
+      onSuccess: (updated) => {
+        const gain = updated.earnedStarlight ?? 0;
+        const sky = constellationTodayQ.data;
+        if (gain <= 0 || !sky || sky.collected) return;
+        const left = Math.max(0, sky.goal - (sky.points + gain));
         setStarToast(
           left === 0
-            ? t('starToast.collected', { gain })
-            : t('starToast.progress', { gain, left }),
-        )
-        if (toastTimer.current) clearTimeout(toastTimer.current)
-        toastTimer.current = setTimeout(() => setStarToast(null), 2200)
+            ? t("starToast.collected", { gain })
+            : t("starToast.progress", { gain, left }),
+        );
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        toastTimer.current = setTimeout(() => setStarToast(null), 2200);
       },
-    })
-  }
+    });
+  };
 
   const handleQuickAdd = () => {
-    const v = quickAdd.trim()
-    if (!v) return
+    const v = quickAdd.trim();
+    if (!v) return;
     createTodo.mutate(
-      { title: v, priority: 'MEDIUM', category: tagNames[0] ?? DEFAULT_TAG, dueDate: today },
-      { onSuccess: () => setQuickAdd('') },
-    )
-  }
+      {
+        title: v,
+        priority: "MEDIUM",
+        category: tagNames[0] ?? DEFAULT_TAG,
+        dueDate: today,
+      },
+      { onSuccess: () => setQuickAdd("") },
+    );
+  };
 
   const inSevenDays = (key: string | null): boolean => {
-    if (!key) return false
-    const diff = dayDiff(today, key)
-    return diff >= 0 && diff <= 7
-  }
+    if (!key) return false;
+    const diff = dayDiff(today, key);
+    return diff >= 0 && diff <= 7;
+  };
 
   // 필터별 카운트 (칩 뱃지).
   const counts = useMemo(() => {
-    let t = 0
-    let w = 0
-    let a = 0
-    let d = 0
+    let t = 0;
+    let w = 0;
+    let a = 0;
+    let d = 0;
     for (const todo of todos) {
       if (isDone(todo)) {
-        d++
-        continue
+        d++;
+        continue;
       }
-      a++
-      const key = dueKey(todo.dueDate)
-      if (key === today) t++
-      if (inSevenDays(key)) w++
+      a++;
+      const key = dueKey(todo.dueDate);
+      if (key === today) t++;
+      if (inSevenDays(key)) w++;
     }
-    return { today: t, week: w, all: a, done: d }
+    return { today: t, week: w, all: a, done: d };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [todos, today])
+  }, [todos, today]);
 
   // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
   const groups = useMemo(() => {
-    let visible: Todo[]
-    if (filter === 'today')
-      visible = todos.filter(t => !isDone(t) && dueKey(t.dueDate) === today)
-    else if (filter === 'week')
-      visible = todos.filter(t => !isDone(t) && inSevenDays(dueKey(t.dueDate)))
-    else if (filter === 'all') visible = todos.filter(t => !isDone(t))
-    else visible = todos.filter(isDone)
+    let visible: Todo[];
+    if (filter === "today")
+      visible = todos.filter((t) => !isDone(t) && dueKey(t.dueDate) === today);
+    else if (filter === "week")
+      visible = todos.filter(
+        (t) => !isDone(t) && inSevenDays(dueKey(t.dueDate)),
+      );
+    else if (filter === "all") visible = todos.filter((t) => !isDone(t));
+    else visible = todos.filter(isDone);
 
     const sorted = [...visible].sort((a, b) => {
-      const pa = PRIO[a.priority].order
-      const pb = PRIO[b.priority].order
-      if (pa !== pb) return pa - pb
-      const da = dueKey(a.dueDate) ?? NO_DUE_KEY
-      const db = dueKey(b.dueDate) ?? NO_DUE_KEY
-      return da.localeCompare(db)
-    })
+      const pa = PRIO[a.priority].order;
+      const pb = PRIO[b.priority].order;
+      if (pa !== pb) return pa - pb;
+      const da = dueKey(a.dueDate) ?? NO_DUE_KEY;
+      const db = dueKey(b.dueDate) ?? NO_DUE_KEY;
+      return da.localeCompare(db);
+    });
 
-    const map = new Map<string, Todo[]>()
+    const map = new Map<string, Todo[]>();
     for (const t of sorted) {
-      const k = dueKey(t.dueDate) ?? NO_DUE_KEY
-      const arr = map.get(k)
-      if (arr) arr.push(t)
-      else map.set(k, [t])
+      const k = dueKey(t.dueDate) ?? NO_DUE_KEY;
+      const arr = map.get(k);
+      if (arr) arr.push(t);
+      else map.set(k, [t]);
     }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [todos, filter, today])
+  }, [todos, filter, today]);
 
   const onSave = (values: TodoFormValues, id?: number) => {
     if (id != null)
-      updateTodo.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
-    else createTodo.mutate(values, { onSuccess: () => setEditing(null) })
-  }
+      updateTodo.mutate(
+        { id, data: values },
+        { onSuccess: () => setEditing(null) },
+      );
+    else createTodo.mutate(values, { onSuccess: () => setEditing(null) });
+  };
 
   // ── 밤하늘 진입점 — 스트립(데스크톱)·토글(모바일 원장). 상세는 오버레이 화면 ──
   const Strip = constellationTodayQ.data ? (
-    <ForestStrip today={constellationTodayQ.data} mobile={mobile} onOpen={() => setNightSky(true)} />
-  ) : null
+    <ForestStrip
+      today={constellationTodayQ.data}
+      mobile={mobile}
+      onOpen={() => setNightSky(true)}
+    />
+  ) : null;
   const overlays = (
     <>
       {starToast && (
@@ -292,82 +330,88 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           onOpenReport={() => setForestReport(true)}
         />
       )}
-      {forestReport && <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />}
+      {forestReport && (
+        <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />
+      )}
     </>
-  )
+  );
 
   // ── 데스크톱 퀵추가 — sunken 인풋 + Enter/추가 + 자세히 ──────────────────
   const QuickAdd = (
     <div
       style={{
         padding: 6,
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 4,
-        background: 'var(--bg-sunken)',
-        borderRadius: 'var(--radius-md)',
+        background: "var(--bg-sunken)",
+        borderRadius: "var(--radius-md)",
       }}
     >
       <span
         style={{
           width: 36,
           height: 36,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--fg-tertiary)',
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--fg-tertiary)",
         }}
       >
         <Plus size={18} />
       </span>
       <input
         value={quickAdd}
-        onChange={e => setQuickAdd(e.target.value)}
-        onKeyDown={e => {
-          if (e.key === 'Enter') handleQuickAdd()
+        onChange={(e) => setQuickAdd(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleQuickAdd();
         }}
-        placeholder={t('quickAdd.placeholder')}
+        placeholder={t("quickAdd.placeholder")}
         style={{
           flex: 1,
           border: 0,
           outline: 0,
-          background: 'transparent',
+          background: "transparent",
           fontSize: 14,
-          color: 'var(--fg-primary)',
-          padding: '8px 0',
-          fontFamily: 'inherit',
+          color: "var(--fg-primary)",
+          padding: "8px 0",
+          fontFamily: "inherit",
         }}
       />
       <Button size="sm" onClick={handleQuickAdd} loading={createTodo.isPending}>
-        {t('quickAdd.add')}
+        {t("quickAdd.add")}
       </Button>
-      <Button variant="outline" size="sm" onClick={() => setEditing({ _new: true })}>
-        <Settings2 size={13} /> {t('quickAdd.detail')}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setEditing({ _new: true })}
+      >
+        <Settings2 size={13} /> {t("quickAdd.detail")}
       </Button>
     </div>
-  )
+  );
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
   const FilterChips = (
-    <Tabs value={filter} onValueChange={v => v && setFilter(v as FilterKey)}>
+    <Tabs value={filter} onValueChange={(v) => v && setFilter(v as FilterKey)}>
       <TabsList variant="pills" size="sm">
         {(
           [
-            { id: 'today', label: t('today'), count: counts.today },
-            { id: 'week', label: t('thisWeek'), count: counts.week },
-            { id: 'all', label: t('status.ALL'), count: counts.all },
-            { id: 'done', label: t('status.COMPLETED'), count: counts.done },
+            { id: "today", label: t("today"), count: counts.today },
+            { id: "week", label: t("thisWeek"), count: counts.week },
+            { id: "all", label: t("status.ALL"), count: counts.all },
+            { id: "done", label: t("status.COMPLETED"), count: counts.done },
           ] as const
-        ).map(f => {
-          const active = filter === f.id
+        ).map((f) => {
+          const active = filter === f.id;
           return (
             <TabsTrigger key={f.id} variant="pills" size="sm" value={f.id}>
               {f.label}
               <span
                 style={{
                   fontSize: 11,
-                  fontWeight: '700',
-                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: "700",
+                  fontVariantNumeric: "tabular-nums",
                   opacity: active ? 0.85 : 0.55,
                   marginLeft: 2,
                 }}
@@ -375,57 +419,61 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                 {f.count}
               </span>
             </TabsTrigger>
-          )
+          );
         })}
       </TabsList>
     </Tabs>
-  )
+  );
 
   // ── 행 ────────────────────────────────────────────────────────────────────
   const Row = ({ todo, last }: { todo: Todo; last: boolean }) => {
-    const prio = PRIO[todo.priority]
-    const done = isDone(todo)
-    const key = dueKey(todo.dueDate)
-    const overdue = !done && !!key && key < today
+    const prio = PRIO[todo.priority];
+    const done = isDone(todo);
+    const key = dueKey(todo.dueDate);
+    const overdue = !done && !!key && key < today;
     return (
       <div
         onClick={() => setViewing(todo)}
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 12,
-          padding: '12px 4px',
-          cursor: 'pointer',
-          borderBottom: last ? 'none' : '1px solid var(--border-subtle)',
-          transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+          padding: "12px 4px",
+          cursor: "pointer",
+          borderBottom: last ? "none" : "1px solid var(--border-subtle)",
+          transition:
+            "background var(--motion-duration-fast) var(--motion-ease-out)",
           opacity: done ? 0.55 : 1,
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-muted)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background = "var(--bg-muted)")
+        }
+        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
       >
         <button
           type="button"
-          onClick={e => {
-            e.stopPropagation()
-            onToggleTodo(todo)
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleTodo(todo);
           }}
-          aria-label={done ? t('uncomplete') : t('status.COMPLETED')}
+          aria-label={done ? t("uncomplete") : t("status.COMPLETED")}
           aria-pressed={done}
           style={{
             width: 22,
             height: 22,
             borderRadius: 999,
             border: done
-              ? '0'
-              : `2px solid ${overdue ? 'var(--color-chart-red)' : 'var(--border-strong)'}`,
-            background: done ? 'var(--color-primary)' : 'transparent',
-            cursor: 'pointer',
+              ? "0"
+              : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
+            background: done ? "var(--color-primary)" : "transparent",
+            cursor: "pointer",
             flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: 0,
-            transition: 'all var(--motion-duration-fast) var(--motion-ease-out)',
+            transition:
+              "all var(--motion-duration-fast) var(--motion-ease-out)",
           }}
         >
           {done && <Check size={13} color="#fff" strokeWidth={3} />}
@@ -434,21 +482,21 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           <div
             style={{
               fontSize: 14,
-              fontWeight: '600',
-              color: 'var(--fg-primary)',
-              letterSpacing: '-0.01em',
-              textDecoration: done ? 'line-through' : 'none',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontWeight: "600",
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.01em",
+              textDecoration: done ? "line-through" : "none",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {todo.title}
           </div>
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 8,
               marginTop: 4,
               fontSize: 12,
@@ -456,14 +504,16 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           >
             <span
               style={{
-                color: overdue ? 'var(--color-chart-red)' : 'var(--fg-tertiary)',
-                fontWeight: overdue ? '600' : '500',
+                color: overdue
+                  ? "var(--color-chart-red)"
+                  : "var(--fg-tertiary)",
+                fontWeight: overdue ? "600" : "500",
               }}
             >
-              {key ? relativeDate(key, today) : t('noDueDate')}
+              {key ? relativeDate(key, today) : t("noDueDate")}
             </span>
             <span style={dot} />
-            <span style={{ color: 'var(--fg-tertiary)' }}>{todoTag(todo)}</span>
+            <span style={{ color: "var(--fg-tertiary)" }}>{todoTag(todo)}</span>
             {todo.content && (
               <>
                 <span style={dot} />
@@ -474,62 +524,60 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         </div>
         <span
           style={{
-            padding: '3px 8px',
-            borderRadius: 'var(--radius-sm)',
+            padding: "3px 8px",
+            borderRadius: "var(--radius-sm)",
             background: prio.bg,
             color: prio.color,
             fontSize: 11,
-            fontWeight: '600',
+            fontWeight: "600",
             flexShrink: 0,
           }}
         >
           {t(prio.labelKey)}
         </span>
       </div>
-    )
-  }
+    );
+  };
 
   // ── 빈 상태 ───────────────────────────────────────────────────────────────
   const EmptyState = (
-    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
       <div
         style={{
           width: 56,
           height: 56,
           borderRadius: 999,
-          background: 'var(--bg-sunken)',
-          color: 'var(--fg-tertiary)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          background: "var(--bg-sunken)",
+          color: "var(--fg-tertiary)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           marginBottom: 14,
         }}
       >
-        {filter === 'done' ? <CheckCheck size={24} /> : <Sparkles size={24} />}
+        {filter === "done" ? <CheckCheck size={24} /> : <Sparkles size={24} />}
       </div>
       <div
         style={{
           fontSize: 15,
-          fontWeight: '700',
-          color: 'var(--fg-primary)',
+          fontWeight: "700",
+          color: "var(--fg-primary)",
           marginBottom: 4,
         }}
       >
-        {filter === 'today'
-          ? t('empty.today')
-          : filter === 'week'
-            ? t('empty.week')
-            : filter === 'done'
-              ? t('empty.done')
-              : t('empty.all')}
+        {filter === "today"
+          ? t("empty.today")
+          : filter === "week"
+            ? t("empty.week")
+            : filter === "done"
+              ? t("empty.done")
+              : t("empty.all")}
       </div>
-      <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>
-        {filter === 'done'
-          ? t('emptyDesc.done')
-          : t('emptyDesc.default')}
+      <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
+        {filter === "done" ? t("emptyDesc.done") : t("emptyDesc.default")}
       </div>
     </div>
-  )
+  );
 
   // ── 그룹 리스트 ───────────────────────────────────────────────────────────
   const listBody = (
@@ -541,15 +589,16 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               <div
                 style={{
                   fontSize: 11,
-                  fontWeight: '700',
-                  color: 'var(--fg-tertiary)',
-                  letterSpacing: '0.04em',
-                  padding: mobile ? '12px 0 6px' : '14px 0 8px',
-                  borderBottom: '1px solid var(--border-subtle)',
+                  fontWeight: "700",
+                  color: "var(--fg-tertiary)",
+                  letterSpacing: "0.04em",
+                  padding: mobile ? "12px 0 6px" : "14px 0 8px",
+                  borderBottom: "1px solid var(--border-subtle)",
                   marginBottom: 4,
                 }}
               >
-                {k === NO_DUE_KEY ? t('noDueDate') : kDate(k).full} · {t('kanban.count', { count: items.length })}
+                {k === NO_DUE_KEY ? t("noDueDate") : kDate(k).full} ·{" "}
+                {t("kanban.count", { count: items.length })}
               </div>
               {items.map((td, i) => (
                 <Row key={td.rowId} todo={td} last={i === items.length - 1} />
@@ -557,31 +606,36 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             </div>
           ))}
     </>
-  )
+  );
   // 모바일 카드 다이어트 — 리스트 카드 벗김(날짜 라벨+행이 배경 위에 바로).
   const ListCard = mobile ? (
     <div>{listBody}</div>
   ) : (
-    <Card style={{ padding: '8px 20px' }}>{listBody}</Card>
-  )
+    <Card style={{ padding: "8px 20px" }}>{listBody}</Card>
+  );
 
   // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
   const TagDistribution = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{t('tagDistribution')}</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {tagNames.map(tag => {
-          const tagged = todos.filter(t => todoTag(t) === tag)
-          const total = tagged.length
-          if (total === 0) return null
-          const done = tagged.filter(isDone).length
+      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 14 }}>
+        {t("tagDistribution")}
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {tagNames.map((tag) => {
+          const tagged = todos.filter((t) => todoTag(t) === tag);
+          const total = tagged.length;
+          if (total === 0) return null;
+          const done = tagged.filter(isDone).length;
           return (
-            <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              key={tag}
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+            >
               <span
                 style={{
                   fontSize: 13,
-                  fontWeight: '600',
-                  color: 'var(--fg-primary)',
+                  fontWeight: "600",
+                  color: "var(--fg-primary)",
                   width: 60,
                   flexShrink: 0,
                 }}
@@ -592,16 +646,16 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                 style={{
                   flex: 1,
                   height: 6,
-                  background: 'var(--bg-sunken)',
+                  background: "var(--bg-sunken)",
                   borderRadius: 999,
-                  overflow: 'hidden',
+                  overflow: "hidden",
                 }}
               >
                 <div
                   style={{
                     width: `${(done / total) * 100}%`,
-                    height: '100%',
-                    background: 'var(--color-primary)',
+                    height: "100%",
+                    background: "var(--color-primary)",
                     borderRadius: 999,
                   }}
                 />
@@ -610,64 +664,72 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                 className="num"
                 style={{
                   fontSize: 12,
-                  color: 'var(--fg-tertiary)',
+                  color: "var(--fg-tertiary)",
                   minWidth: 36,
-                  textAlign: 'right',
+                  textAlign: "right",
                 }}
               >
                 {done}/{total}
               </span>
             </div>
-          )
+          );
         })}
       </div>
     </Card>
-  )
+  );
 
   // ── 데스크톱 우측: 우선순위 ───────────────────────────────────────────────
   const PriorityCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>{t('form.priority')}</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {PRIO_ORDER.map(k => {
-          const p = PRIO[k]
-          const n = todos.filter(t => !isDone(t) && t.priority === k).length
-          const PIcon = k === 'HIGH' ? Flame : k === 'MEDIUM' ? CircleDot : Leaf
+      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 12 }}>
+        {t("form.priority")}
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {PRIO_ORDER.map((k) => {
+          const p = PRIO[k];
+          const n = todos.filter((t) => !isDone(t) && t.priority === k).length;
+          const PIcon =
+            k === "HIGH" ? Flame : k === "MEDIUM" ? CircleDot : Leaf;
           return (
-            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              key={k}
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+            >
               <span
                 style={{
                   width: 26,
                   height: 26,
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: "var(--radius-sm)",
                   background: p.bg,
                   color: p.color,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   flexShrink: 0,
                 }}
               >
                 <PIcon size={14} />
               </span>
-              <span style={{ fontSize: 13.5, fontWeight: '600' }}>{t(p.labelKey)}</span>
+              <span style={{ fontSize: 13.5, fontWeight: "600" }}>
+                {t(p.labelKey)}
+              </span>
               <span
                 className="num"
                 style={{
-                  marginLeft: 'auto',
+                  marginLeft: "auto",
                   fontSize: 13,
-                  fontWeight: '700',
+                  fontWeight: "700",
                   color: p.color,
                 }}
               >
                 {n}
               </span>
             </div>
-          )
+          );
         })}
       </div>
     </Card>
-  )
+  );
 
   const dialog = (
     <>
@@ -677,17 +739,19 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           mobile={mobile}
           today={today}
           onClose={() => setViewing(null)}
-          onEdit={td => {
-            setViewing(null)
-            setEditing(td)
+          onEdit={(td) => {
+            setViewing(null);
+            setEditing(td);
           }}
-          onDelete={id => deleteTodo.mutate(id, { onSuccess: () => setViewing(null) })}
+          onDelete={(id) =>
+            deleteTodo.mutate(id, { onSuccess: () => setViewing(null) })
+          }
           deleting={deleteTodo.isPending}
         />
       )}
       {editing != null && (
         <TodoEditDialog
-          todo={'_new' in editing ? null : editing}
+          todo={"_new" in editing ? null : editing}
           mobile={mobile}
           today={today}
           tags={tagNames}
@@ -697,14 +761,14 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         />
       )}
     </>
-  )
+  );
 
   // ── 모바일 — 캘린더+일별 리스트 원장 (design todo-mobile.jsx) ─────────────
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t('pageTitle')} />
-        <div style={{ position: 'relative', paddingBottom: 96 }}>
+        <MobileBackHeader title={t("pageTitle")} />
+        <div style={{ position: "relative", paddingBottom: 96 }}>
           <TodoMobileLedger
             todos={todos}
             tags={tagNames}
@@ -716,49 +780,55 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             onRowClick={setViewing}
             // 스와이프 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
             onEdit={setEditing}
-            onDelete={td => deleteTodo.mutateAsync(td.rowId)}
+            onDelete={(td) => deleteTodo.mutateAsync(td.rowId)}
             deleting={deleteTodo.isPending}
             openNightSky={() => setNightSky(true)}
             openReport={() => setForestReport(true)}
           />
-          <Fab aria-label={t('addTodoLabel')} onClick={() => setEditing({ _new: true })} />
+          <Fab
+            aria-label={t("addTodoLabel")}
+            onClick={() => setEditing({ _new: true })}
+          />
           {dialog}
           {overlays}
         </div>
       </>
-    )
+    );
   }
 
   // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+      <div
+        className="page__head"
+        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+      >
         <div>
-          <h1>{t('pageTitle')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("pageTitle")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">
           <Button size="sm" onClick={() => setEditing({ _new: true })}>
-            <Plus size={14} /> {t('newTodo')}
+            <Plus size={14} /> {t("newTodo")}
           </Button>
         </div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1.4fr 1fr',
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
             gap: 20,
-            alignItems: 'flex-start',
+            alignItems: "flex-start",
             marginTop: 20,
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {QuickAdd}
             {FilterChips}
             {ListCard}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {Strip}
             {TagDistribution}
             {PriorityCard}
@@ -768,16 +838,16 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       {dialog}
       {overlays}
     </div>
-  )
-}
+  );
+};
 
 const dot = {
   width: 2,
   height: 2,
   borderRadius: 999,
-  background: 'var(--border-strong)',
+  background: "var(--border-strong)",
   flexShrink: 0,
-} as const
+} as const;
 
 // ───────────────────────────── 상세 다이얼로그 ─────────────────────────────
 
@@ -791,21 +861,21 @@ function TodoDetailDialog({
   onDelete,
   deleting,
 }: {
-  todo: Todo
-  mobile: boolean
-  today: string
-  onClose: () => void
-  onEdit: (todo: Todo) => void
-  onDelete: (id: number) => void
-  deleting?: boolean
+  todo: Todo;
+  mobile: boolean;
+  today: string;
+  onClose: () => void;
+  onEdit: (todo: Todo) => void;
+  onDelete: (id: number) => void;
+  deleting?: boolean;
 }) {
-  const { t } = useTranslation('todo')
-  const { t: tc } = useTranslation('common')
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const prio = PRIO[todo.priority]
-  const done = isDone(todo)
-  const key = dueKey(todo.dueDate)
-  const overdue = !done && !!key && key < today
+  const { t } = useTranslation("todo");
+  const { t: tc } = useTranslation("common");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const prio = PRIO[todo.priority];
+  const done = isDone(todo);
+  const key = dueKey(todo.dueDate);
+  const overdue = !done && !!key && key < today;
 
   const Footer = (
     <ModalViewFooter
@@ -813,33 +883,39 @@ function TodoDetailDialog({
       deleting={deleting}
       onEdit={() => onEdit(todo)}
     />
-  )
+  );
 
   return (
     <>
-      <ModalShell title={t('detailTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+      <ModalShell
+        title={t("detailTitle")}
+        onClose={onClose}
+        size="md"
+        footer={Footer}
+        mobile={mobile}
+      >
         {/* Hero — 우선순위 틴트 */}
         <div
           style={{
             background: `linear-gradient(135deg, ${prio.bg}, var(--bg-surface))`,
             border: `1px solid color-mix(in oklch, ${prio.color} 20%, transparent)`,
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: "var(--radius-xl)",
             padding: 22,
             marginBottom: 18,
-            textAlign: 'center',
+            textAlign: "center",
           }}
         >
-          <div style={{ display: 'inline-flex', marginBottom: 12 }}>
+          <div style={{ display: "inline-flex", marginBottom: 12 }}>
             <span
               style={{
                 width: 40,
                 height: 40,
-                borderRadius: 'var(--radius-tile)',
+                borderRadius: "var(--radius-tile)",
                 background: prio.bg,
                 color: prio.color,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {done ? <CheckCheck size={20} /> : <CircleDot size={20} />}
@@ -847,58 +923,62 @@ function TodoDetailDialog({
           </div>
           <div
             style={{
-              fontSize: 'var(--text-title-md)',
-              fontWeight: '800',
-              letterSpacing: '-0.015em',
-              color: 'var(--fg-primary)',
-              textDecoration: done ? 'line-through' : 'none',
-              overflowWrap: 'anywhere',
+              fontSize: "var(--text-title-md)",
+              fontWeight: "800",
+              letterSpacing: "-0.015em",
+              color: "var(--fg-primary)",
+              textDecoration: done ? "line-through" : "none",
+              overflowWrap: "anywhere",
             }}
           >
             {todo.title}
           </div>
           <div
             style={{
-              fontSize: 'var(--text-caption)',
-              color: overdue ? 'var(--color-chart-red)' : 'var(--fg-tertiary)',
-              fontWeight: overdue ? '600' : '400',
+              fontSize: "var(--text-caption)",
+              color: overdue ? "var(--color-chart-red)" : "var(--fg-tertiary)",
+              fontWeight: overdue ? "600" : "400",
               marginTop: 6,
             }}
           >
-            {key ? relativeDate(key, today) : t('noDueDate')}
+            {key ? relativeDate(key, today) : t("noDueDate")}
           </div>
         </div>
 
         {/* Field rows */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
+            display: "flex",
+            flexDirection: "column",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            overflow: "hidden",
           }}
         >
           <DetailFieldRow
-            label={t('form.dueDate')}
-            value={<span style={{ fontWeight: '500' }}>{key ? kDate(key).full : t('noDueDate')}</span>}
+            label={t("form.dueDate")}
+            value={
+              <span style={{ fontWeight: "500" }}>
+                {key ? kDate(key).full : t("noDueDate")}
+              </span>
+            }
           />
           <DetailFieldRow
-            label={t('tag')}
-            value={<span style={{ fontWeight: '500' }}>{todoTag(todo)}</span>}
+            label={t("tag")}
+            value={<span style={{ fontWeight: "500" }}>{todoTag(todo)}</span>}
           />
           <DetailFieldRow
-            label={t('form.priority')}
+            label={t("form.priority")}
             value={
               <span
                 style={{
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: "3px 8px",
+                  borderRadius: "var(--radius-sm)",
                   background: prio.bg,
                   color: prio.color,
                   fontSize: 11,
-                  fontWeight: '600',
+                  fontWeight: "600",
                 }}
               >
                 {t(prio.labelKey)}
@@ -906,18 +986,23 @@ function TodoDetailDialog({
             }
           />
           <DetailFieldRow
-            label={t('detail.status')}
+            label={t("detail.status")}
             value={
-              <span style={{ fontWeight: '600', color: done ? 'var(--fg-brand)' : 'var(--fg-secondary)' }}>
-                {done ? t('status.COMPLETED') : t('status.PENDING')}
+              <span
+                style={{
+                  fontWeight: "600",
+                  color: done ? "var(--fg-brand)" : "var(--fg-secondary)",
+                }}
+              >
+                {done ? t("status.COMPLETED") : t("status.PENDING")}
               </span>
             }
           />
           {done && todo.completedAt && (
             <DetailFieldRow
-              label={t('detail.completedAt')}
+              label={t("detail.completedAt")}
               value={
-                <span style={{ fontWeight: '500' }}>
+                <span style={{ fontWeight: "500" }}>
                   {/* completedAt 은 `[UTC]` — 파싱해서 로컬 시각으로 찍는다.
                       못 읽으면 원문을 그대로 보여 준다(앱 todo_detail_dialog 와 같은 폴백) —
                       값 칸을 비우면 "완료 시각이 없다" 로 읽혀 서버가 준 값이 사라진다 */}
@@ -927,18 +1012,20 @@ function TodoDetailDialog({
             />
           )}
           <DetailFieldRow
-            label={t('form.memo')}
+            label={t("form.memo")}
             value={
               <span
                 style={{
-                  fontWeight: '500',
-                  color: todo.content ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
-                  whiteSpace: 'pre-wrap',
-                  overflowWrap: 'anywhere',
-                  textAlign: 'right',
+                  fontWeight: "500",
+                  color: todo.content
+                    ? "var(--fg-primary)"
+                    : "var(--fg-tertiary)",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                  textAlign: "right",
                 }}
               >
-                {todo.content || t('detail.none')}
+                {todo.content || t("detail.none")}
               </span>
             }
           />
@@ -947,9 +1034,9 @@ function TodoDetailDialog({
 
       {confirmDelete && (
         <ConfirmDialog
-          title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message', { name: todo.title })}
-          confirmLabel={tc('delete')}
+          title={t("deleteConfirm.title")}
+          message={t("deleteConfirm.message", { name: todo.title })}
+          confirmLabel={tc("delete")}
           danger
           loading={deleting}
           onCancel={() => !deleting && setConfirmDelete(false)}
@@ -957,26 +1044,36 @@ function TodoDetailDialog({
         />
       )}
     </>
-  )
+  );
 }
 
 /** 상세 필드 행 — TxDetailDialog FieldRow 미러. */
-function DetailFieldRow({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailFieldRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '14px 16px',
-        background: 'var(--bg-surface)',
-        fontSize: 'var(--text-label-sm)',
+        display: "flex",
+        alignItems: "center",
+        padding: "14px 16px",
+        background: "var(--bg-surface)",
+        fontSize: "var(--text-label-sm)",
         gap: 12,
       }}
     >
-      <span style={{ color: 'var(--fg-tertiary)', minWidth: 72, flexShrink: 0 }}>{label}</span>
-      <div style={{ marginLeft: 'auto' }}>{value}</div>
+      <span
+        style={{ color: "var(--fg-tertiary)", minWidth: 72, flexShrink: 0 }}
+      >
+        {label}
+      </span>
+      <div style={{ marginLeft: "auto" }}>{value}</div>
     </div>
-  )
+  );
 }
 
 // ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
@@ -990,28 +1087,30 @@ function TodoEditDialog({
   onSave,
   submitting,
 }: {
-  todo: Todo | null
-  mobile: boolean
-  today: string
-  tags: string[]
-  onClose: () => void
-  onSave: (values: TodoFormValues, id?: number) => void
-  submitting?: boolean
+  todo: Todo | null;
+  mobile: boolean;
+  today: string;
+  tags: string[];
+  onClose: () => void;
+  onSave: (values: TodoFormValues, id?: number) => void;
+  submitting?: boolean;
 }) {
-  const { t } = useTranslation('todo')
-  const { t: tc } = useTranslation('common')
-  const isNew = !todo
-  const [title, setTitle] = useState(todo?.title ?? '')
-  const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today)
-  const [tag, setTag] = useState(todo?.category || tags[0] || DEFAULT_TAG)
-  const [priority, setPriority] = useState<TodoPriority>(todo?.priority ?? 'MEDIUM')
-  const [note, setNote] = useState(todo?.content ?? '')
-  const [error, setError] = useState(false)
+  const { t } = useTranslation("todo");
+  const { t: tc } = useTranslation("common");
+  const isNew = !todo;
+  const [title, setTitle] = useState(todo?.title ?? "");
+  const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today);
+  const [tag, setTag] = useState(todo?.category || tags[0] || DEFAULT_TAG);
+  const [priority, setPriority] = useState<TodoPriority>(
+    todo?.priority ?? "MEDIUM",
+  );
+  const [note, setNote] = useState(todo?.content ?? "");
+  const [error, setError] = useState(false);
 
   const save = () => {
     if (!title.trim()) {
-      setError(true)
-      return
+      setError(true);
+      return;
     }
     onSave(
       {
@@ -1022,21 +1121,21 @@ function TodoEditDialog({
         dueDate: due || undefined,
       },
       todo?.rowId,
-    )
-  }
+    );
+  };
 
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={tc('save')}
+      saveLabel={tc("save")}
       saving={submitting}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
     <ModalShell
-      title={isNew ? t('newTodo') : t('editTodoTitle')}
+      title={isNew ? t("newTodo") : t("editTodoTitle")}
       onClose={onClose}
       size="md"
       footer={Footer}
@@ -1045,11 +1144,11 @@ function TodoEditDialog({
       <Field style={{ marginBottom: 14 }}>
         <Input
           value={title}
-          onChange={e => {
-            setTitle(e.target.value)
-            if (error) setError(false)
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (error) setError(false);
           }}
-          placeholder={t('editTitlePlaceholder')}
+          placeholder={t("editTitlePlaceholder")}
           aria-invalid={error}
           autoFocus
         />
@@ -1057,38 +1156,42 @@ function TodoEditDialog({
           <div
             style={{
               marginTop: 8,
-              padding: '8px 12px',
-              background: 'var(--status-danger-subtle)',
-              color: 'var(--status-danger-fg)',
-              borderRadius: 'var(--radius-sm)',
+              padding: "8px 12px",
+              background: "var(--status-danger-subtle)",
+              color: "var(--status-danger-fg)",
+              borderRadius: "var(--radius-sm)",
               fontSize: 13,
             }}
           >
-            {t('form.titleRequired')}
+            {t("form.titleRequired")}
           </div>
         )}
       </Field>
 
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: 12,
           marginBottom: 14,
         }}
       >
         <Field>
-          <FieldLabel>{t('form.dueDate')}</FieldLabel>
-          <InputDatePicker value={due} onValueChange={setDue} placeholder="yyyy-mm-dd" />
+          <FieldLabel>{t("form.dueDate")}</FieldLabel>
+          <InputDatePicker
+            value={due}
+            onValueChange={setDue}
+            placeholder="yyyy-mm-dd"
+          />
         </Field>
         <Field>
-          <FieldLabel>{t('tag')}</FieldLabel>
+          <FieldLabel>{t("tag")}</FieldLabel>
           <Select value={tag} onValueChange={setTag}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(tags.includes(tag) ? tags : [tag, ...tags]).map(opt => (
+              {(tags.includes(tag) ? tags : [tag, ...tags]).map((opt) => (
                 <SelectItem key={opt} value={opt}>
                   {opt}
                 </SelectItem>
@@ -1099,55 +1202,55 @@ function TodoEditDialog({
       </div>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t('form.priority')}</FieldLabel>
+        <FieldLabel>{t("form.priority")}</FieldLabel>
         <div
           style={{
-            display: 'inline-flex',
+            display: "inline-flex",
             gap: 2,
             padding: 3,
-            background: 'var(--bg-sunken)',
-            borderRadius: 'var(--radius-md)',
+            background: "var(--bg-sunken)",
+            borderRadius: "var(--radius-md)",
           }}
         >
-          {PRIO_ORDER.map(k => {
-            const p = PRIO[k]
-            const active = priority === k
+          {PRIO_ORDER.map((k) => {
+            const p = PRIO[k];
+            const active = priority === k;
             return (
               <button
                 key={k}
                 type="button"
                 onClick={() => setPriority(k)}
                 style={{
-                  background: active ? 'var(--bg-surface)' : 'transparent',
-                  color: active ? p.color : 'var(--fg-secondary)',
+                  background: active ? "var(--bg-surface)" : "transparent",
+                  color: active ? p.color : "var(--fg-secondary)",
                   border: 0,
-                  padding: '6px 14px',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: "6px 14px",
+                  borderRadius: "var(--radius-sm)",
                   fontSize: 13,
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: active ? 'var(--shadow-sm)' : 'none',
-                  fontFamily: 'inherit',
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  boxShadow: active ? "var(--shadow-sm)" : "none",
+                  fontFamily: "inherit",
                 }}
               >
                 {t(p.labelKey)}
               </button>
-            )
+            );
           })}
         </div>
       </Field>
 
       <Field>
-        <FieldLabel>{t('form.memo')}</FieldLabel>
+        <FieldLabel>{t("form.memo")}</FieldLabel>
         <Textarea
           value={note}
-          onChange={e => setNote(e.target.value)}
-          placeholder={t('form.memoPlaceholder')}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder={t("form.memoPlaceholder")}
           rows={3}
         />
       </Field>
     </ModalShell>
-  )
+  );
 }
 
 // ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
@@ -1157,11 +1260,11 @@ function TodoRowSkeleton({ last }: { last?: boolean }) {
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 12,
-        padding: '12px 4px',
-        borderBottom: last ? 'none' : '1px solid var(--border-subtle)',
+        padding: "12px 4px",
+        borderBottom: last ? "none" : "1px solid var(--border-subtle)",
       }}
     >
       <SkeletonBase className="h-[22px] w-[22px] rounded-full shrink-0" />
@@ -1171,18 +1274,22 @@ function TodoRowSkeleton({ last }: { last?: boolean }) {
       </div>
       <SkeletonBase className="h-5 w-10 rounded-sm shrink-0" />
     </div>
-  )
+  );
 }
-
 
 /** 데스크톱 우측 분포/우선순위 카드 skeleton — 실제 타이틀 + 막대 행 구조 미러. */
 function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
   return (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{title}</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 14 }}>
+        {title}
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div
+            key={i}
+            style={{ display: "flex", alignItems: "center", gap: 12 }}
+          >
             <SkeletonBase className="h-4 w-[60px] shrink-0" />
             <SkeletonBase className="h-1.5 flex-1 rounded-full" />
             <SkeletonBase className="h-3 w-9 shrink-0" />
@@ -1190,7 +1297,7 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
         ))}
       </div>
     </Card>
-  )
+  );
 }
 
 /**
@@ -1198,38 +1305,49 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
  * 서버 쿼리(useTodos) 의존 영역(원장 핀/리스트 · 퀵추가/칩/리스트/분포)만 skeleton.
  */
 function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('todo')
+  const { t } = useTranslation("todo");
   // ── 필터 칩 4개 placeholder ──
   const Chips = (
-    <div style={{ display: 'flex', gap: 8 }}>
-      {[0, 1, 2, 3].map(i => (
+    <div style={{ display: "flex", gap: 8 }}>
+      {[0, 1, 2, 3].map((i) => (
         <SkeletonBase key={i} className="h-7 w-16 rounded-full" />
       ))}
     </div>
-  )
+  );
   // ── 리스트 — 날짜 라벨 + 행 skeleton ──
   const rows = (
     <>
       <SkeletonBase className="h-3 w-36 mt-3 mb-2" />
-      {[0, 1, 2].map(i => (
+      {[0, 1, 2].map((i) => (
         <TodoRowSkeleton key={i} last={i === 2} />
       ))}
       <SkeletonBase className="h-3 w-36 mt-4 mb-2" />
-      {[0, 1].map(i => (
+      {[0, 1].map((i) => (
         <TodoRowSkeleton key={i} last={i === 1} />
       ))}
     </>
-  )
-  const List = mobile ? <div>{rows}</div> : <Card style={{ padding: '8px 20px' }}>{rows}</Card>
+  );
+  const List = mobile ? (
+    <div>{rows}</div>
+  ) : (
+    <Card style={{ padding: "8px 20px" }}>{rows}</Card>
+  );
 
   if (mobile) {
     // 모바일 원장 skeleton — 월네비/오늘상태/캘린더 핀 자리 + 일별 리스트
     return (
       <>
-        <MobileBackHeader title={t('pageTitle')} />
+        <MobileBackHeader title={t("pageTitle")} />
         {/* 실렌더 원장(Shell = spacing-xl 24)과 같은 좌우 여백 */}
-        <div style={{ padding: '10px 24px 96px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0 10px' }}>
+        <div style={{ padding: "10px 24px 96px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "4px 0 10px",
+            }}
+          >
             <SkeletonBase className="h-6 w-6 rounded-md" />
             <SkeletonBase className="h-5 w-12" />
             <SkeletonBase className="h-6 w-6 rounded-md" />
@@ -1237,7 +1355,14 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
           </div>
           <SkeletonBase className="h-6 w-40 mb-1.5" />
           <SkeletonBase className="h-3.5 w-56 mb-4" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 14 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(7, 1fr)",
+              gap: 6,
+              marginBottom: 14,
+            }}
+          >
             {Array.from({ length: 7 }).map((_, i) => (
               <SkeletonBase key={i} className="h-12 w-full rounded-md" />
             ))}
@@ -1245,44 +1370,47 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
           {List}
         </div>
       </>
-    )
+    );
   }
   return (
     <div style={{ padding: 0 }}>
       {/* 정적 페이지 헤더 — 실제 렌더 */}
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+      <div
+        className="page__head"
+        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+      >
         <div>
-          <h1>{t('pageTitle')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("pageTitle")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">
           <Button size="sm" disabled>
-            <Plus size={14} /> {t('newTodo')}
+            <Plus size={14} /> {t("newTodo")}
           </Button>
         </div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1.4fr 1fr',
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
             gap: 20,
-            alignItems: 'flex-start',
+            alignItems: "flex-start",
             marginTop: 20,
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <SkeletonBase className="h-12 w-full rounded-md" />
             {Chips}
             {List}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <SkeletonBase className="h-[62px] w-full rounded-lg" />
-            <RatioCardSkeleton title={t('tagDistribution')} rows={4} />
-            <RatioCardSkeleton title={t('form.priority')} rows={3} />
+            <RatioCardSkeleton title={t("tagDistribution")} rows={4} />
+            <RatioCardSkeleton title={t("form.priority")} rows={3} />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

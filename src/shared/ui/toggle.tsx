@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as TogglePrimitive from "@radix-ui/react-toggle"
-import { type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as TogglePrimitive from "@radix-ui/react-toggle";
+import { type VariantProps } from "class-variance-authority";
 
-import { toggleVariants } from "@/shared/ui/toggle-variants"
+import { toggleVariants } from "@/shared/ui/toggle-variants";
 
-import { cn } from "@/shared/lib/index"
+import { cn } from "@/shared/lib/index";
 
 /*
  * Porest Toggle — porest-design specs/components/toggle.md SoT 기반.
@@ -30,8 +30,8 @@ const Toggle = React.forwardRef<
     className={cn(toggleVariants({ variant, size, className }))}
     {...props}
   />
-))
+));
 
-Toggle.displayName = TogglePrimitive.Root.displayName
+Toggle.displayName = TogglePrimitive.Root.displayName;
 
-export { Toggle }
+export { Toggle };

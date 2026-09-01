@@ -1,9 +1,9 @@
-import { QueryProvider } from './providers'
-import { AppRouter } from './router'
-import { Toaster } from '@/shared/ui/sonner'
-import { ThemeProvider } from '@/shared/ui/theme-provider'
-import { EnvWatermark } from '@/shared/ui/env-watermark'
-import '@/shared/i18n'
+import { QueryProvider } from "./providers";
+import { AppRouter } from "./router";
+import { Toaster } from "@/shared/ui/sonner";
+import { ThemeProvider } from "@/shared/ui/theme-provider";
+import { EnvWatermark } from "@/shared/ui/env-watermark";
+import "@/shared/i18n";
 
 export const AppRoot = () => {
   return (
@@ -14,5 +14,5 @@ export const AppRoot = () => {
         <AppRouter />
       </QueryProvider>
     </ThemeProvider>
-  )
-}
+  );
+};

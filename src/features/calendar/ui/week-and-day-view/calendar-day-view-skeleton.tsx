@@ -1,5 +1,5 @@
 const CalendarDayViewSkeleton = () => {
-  const hours = Array.from({ length: 11 }, (_, i) => i + 8)
+  const hours = Array.from({ length: 11 }, (_, i) => i + 8);
 
   return (
     <div className="w-full h-full flex">
@@ -28,9 +28,11 @@ const CalendarDayViewSkeleton = () => {
           <div className="flex h-full">
             <div className="relative w-18">
               {hours.map((hour, index) => (
-                <div key={hour} className="relative" style={{ height: '96px' }}>
+                <div key={hour} className="relative" style={{ height: "96px" }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
-                    {index !== 0 && <div className="h-3 w-10 bg-muted animate-pulse rounded" />}
+                    {index !== 0 && (
+                      <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -38,8 +40,10 @@ const CalendarDayViewSkeleton = () => {
 
             <div className="relative flex-1 border-l">
               {hours.map((hour, index) => (
-                <div key={hour} className="relative" style={{ height: '96px' }}>
-                  {index !== 0 && <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />}
+                <div key={hour} className="relative" style={{ height: "96px" }}>
+                  {index !== 0 && (
+                    <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />
+                  )}
                   <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed" />
                 </div>
               ))}
@@ -70,7 +74,7 @@ const CalendarDayViewSkeleton = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarDayViewSkeleton }
+export { CalendarDayViewSkeleton };

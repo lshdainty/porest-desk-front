@@ -1,1 +1,1 @@
-export { MemoPage } from './ui/MemoPage'
+export { MemoPage } from "./ui/MemoPage";

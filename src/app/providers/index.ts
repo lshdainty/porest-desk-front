@@ -1,1 +1,1 @@
-export { QueryProvider } from './QueryProvider'
+export { QueryProvider } from "./QueryProvider";

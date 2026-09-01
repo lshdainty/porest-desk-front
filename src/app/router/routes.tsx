@@ -1,36 +1,104 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
-import { ProtectedRoute } from './ProtectedRoute'
-import { Spinner } from '@/shared/ui/spinner'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { ProtectedRoute } from "./ProtectedRoute";
+import { Spinner } from "@/shared/ui/spinner";
 
-const AppLayout = lazy(() => import('@/widgets/layout/ui/AppLayout').then(m => ({ default: m.AppLayout })))
-const DashboardPage = lazy(() => import('@/pages/dashboard/ui/DashboardPage').then(m => ({ default: m.DashboardPage })))
-const TodoPage = lazy(() => import('@/pages/todo/ui/TodoPage').then(m => ({ default: m.TodoPage })))
-const CalendarPage = lazy(() => import('@/pages/calendar/ui/CalendarPage').then(m => ({ default: m.CalendarPage })))
-const MemoPage = lazy(() => import('@/pages/memo/ui/MemoPage').then(m => ({ default: m.MemoPage })))
-const ExpensePage = lazy(() => import('@/pages/expense/ui/ExpensePage').then(m => ({ default: m.ExpensePage })))
-const AssetPage = lazy(() => import('@/pages/asset/ui/AssetPage').then(m => ({ default: m.AssetPage })))
-const StocksPage = lazy(() => import('@/pages/stocks/ui/StocksPage').then(m => ({ default: m.StocksPage })))
-import { SecuritiesGate } from '@/features/subscription/ui/SecuritiesGate'
-const DutchPayPage = lazy(() => import('@/pages/dutch-pay/ui/DutchPayPage').then(m => ({ default: m.DutchPayPage })))
-const StatsPage = lazy(() => import('@/pages/stats/ui/StatsPage').then(m => ({ default: m.StatsPage })))
-const BudgetPage = lazy(() => import('@/pages/budget/ui/BudgetPage').then(m => ({ default: m.BudgetPage })))
-const SettingsPage = lazy(() => import('@/pages/settings/ui/SettingsPage').then(m => ({ default: m.SettingsPage })))
-const MorePage = lazy(() => import('@/pages/more/ui/MorePage').then(m => ({ default: m.MorePage })))
-const SearchPage = lazy(() => import('@/pages/search/ui/SearchPage').then(m => ({ default: m.SearchPage })))
-const NotificationsPage = lazy(() => import('@/pages/notifications/ui/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
-const CardDetailPage = lazy(() => import('@/pages/card').then(m => ({ default: m.CardDetailPage })))
-const CardBenefitPage = lazy(() => import('@/pages/card-benefit').then(m => ({ default: m.CardBenefitPage })))
-const LoginPage = lazy(() => import('@/pages/login/ui/LoginPage').then(m => ({ default: m.LoginPage })))
-const DownloadPage = lazy(() => import('@/pages/download/ui/DownloadPage').then(m => ({ default: m.DownloadPage })))
-const AuthCallbackPage = lazy(() => import('@/pages/auth-callback/ui/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })))
-const EmbedStockChartPage = lazy(() => import('@/pages/stocks/ui/EmbedStockChartPage').then(m => ({ default: m.EmbedStockChartPage })))
+const AppLayout = lazy(() =>
+  import("@/widgets/layout/ui/AppLayout").then((m) => ({
+    default: m.AppLayout,
+  })),
+);
+const DashboardPage = lazy(() =>
+  import("@/pages/dashboard/ui/DashboardPage").then((m) => ({
+    default: m.DashboardPage,
+  })),
+);
+const TodoPage = lazy(() =>
+  import("@/pages/todo/ui/TodoPage").then((m) => ({ default: m.TodoPage })),
+);
+const CalendarPage = lazy(() =>
+  import("@/pages/calendar/ui/CalendarPage").then((m) => ({
+    default: m.CalendarPage,
+  })),
+);
+const MemoPage = lazy(() =>
+  import("@/pages/memo/ui/MemoPage").then((m) => ({ default: m.MemoPage })),
+);
+const ExpensePage = lazy(() =>
+  import("@/pages/expense/ui/ExpensePage").then((m) => ({
+    default: m.ExpensePage,
+  })),
+);
+const AssetPage = lazy(() =>
+  import("@/pages/asset/ui/AssetPage").then((m) => ({ default: m.AssetPage })),
+);
+const StocksPage = lazy(() =>
+  import("@/pages/stocks/ui/StocksPage").then((m) => ({
+    default: m.StocksPage,
+  })),
+);
+import { SecuritiesGate } from "@/features/subscription/ui/SecuritiesGate";
+const DutchPayPage = lazy(() =>
+  import("@/pages/dutch-pay/ui/DutchPayPage").then((m) => ({
+    default: m.DutchPayPage,
+  })),
+);
+const StatsPage = lazy(() =>
+  import("@/pages/stats/ui/StatsPage").then((m) => ({ default: m.StatsPage })),
+);
+const BudgetPage = lazy(() =>
+  import("@/pages/budget/ui/BudgetPage").then((m) => ({
+    default: m.BudgetPage,
+  })),
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/settings/ui/SettingsPage").then((m) => ({
+    default: m.SettingsPage,
+  })),
+);
+const MorePage = lazy(() =>
+  import("@/pages/more/ui/MorePage").then((m) => ({ default: m.MorePage })),
+);
+const SearchPage = lazy(() =>
+  import("@/pages/search/ui/SearchPage").then((m) => ({
+    default: m.SearchPage,
+  })),
+);
+const NotificationsPage = lazy(() =>
+  import("@/pages/notifications/ui/NotificationsPage").then((m) => ({
+    default: m.NotificationsPage,
+  })),
+);
+const CardDetailPage = lazy(() =>
+  import("@/pages/card").then((m) => ({ default: m.CardDetailPage })),
+);
+const CardBenefitPage = lazy(() =>
+  import("@/pages/card-benefit").then((m) => ({ default: m.CardBenefitPage })),
+);
+const LoginPage = lazy(() =>
+  import("@/pages/login/ui/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const DownloadPage = lazy(() =>
+  import("@/pages/download/ui/DownloadPage").then((m) => ({
+    default: m.DownloadPage,
+  })),
+);
+const AuthCallbackPage = lazy(() =>
+  import("@/pages/auth-callback/ui/AuthCallbackPage").then((m) => ({
+    default: m.AuthCallbackPage,
+  })),
+);
+const EmbedStockChartPage = lazy(() =>
+  import("@/pages/stocks/ui/EmbedStockChartPage").then((m) => ({
+    default: m.EmbedStockChartPage,
+  })),
+);
 
 const Loading = () => (
   <div className="flex h-screen items-center justify-center">
     <Spinner size="lg" />
   </div>
-)
+);
 
 export const AppRouter = () => {
   return (
@@ -42,7 +110,10 @@ export const AppRouter = () => {
           {/* 앱 받기 — 로그인 없이 열린다. 링크만 알면 누구나 받을 수 있게(사용자 결정). */}
           <Route path="/download" element={<DownloadPage />} />
           {/* 임베드 차트 — ProtectedRoute 밖 (querystring 의 60초 embed_token 으로 인증) */}
-          <Route path="/embed/stocks/:symbol" element={<EmbedStockChartPage />} />
+          <Route
+            path="/embed/stocks/:symbol"
+            element={<EmbedStockChartPage />}
+          />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/desk" element={<DashboardPage />} />
@@ -50,8 +121,22 @@ export const AppRouter = () => {
               {/* 증권사는 경로가 고른다 — 사이드바 하위 메뉴가 가리키는 자리.
                   부모 `/desk/stocks` 는 남긴다(기존 북마크 · 모바일 전체 메뉴 ·
                   AppLayout FULLSCREEN_PATHS 접두사) — 들어오면 StocksPage 가 기본 증권사로 넘긴다. */}
-              <Route path="/desk/stocks" element={<SecuritiesGate><StocksPage /></SecuritiesGate>} />
-              <Route path="/desk/stocks/:broker" element={<SecuritiesGate><StocksPage /></SecuritiesGate>} />
+              <Route
+                path="/desk/stocks"
+                element={
+                  <SecuritiesGate>
+                    <StocksPage />
+                  </SecuritiesGate>
+                }
+              />
+              <Route
+                path="/desk/stocks/:broker"
+                element={
+                  <SecuritiesGate>
+                    <StocksPage />
+                  </SecuritiesGate>
+                }
+              />
               <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/stats" element={<StatsPage />} />
               <Route path="/desk/budget" element={<BudgetPage />} />
@@ -59,12 +144,18 @@ export const AppRouter = () => {
               <Route path="/desk/todo" element={<TodoPage />} />
               <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
               <Route path="/desk/memo" element={<MemoPage />} />
-              <Route path="/desk/card/:assetRowId" element={<CardDetailPage />} />
+              <Route
+                path="/desk/card/:assetRowId"
+                element={<CardDetailPage />}
+              />
               <Route path="/desk/card-benefit" element={<CardBenefitPage />} />
               <Route path="/desk/settings" element={<SettingsPage />} />
               <Route path="/desk/more" element={<MorePage />} />
               <Route path="/desk/search" element={<SearchPage />} />
-              <Route path="/desk/notifications" element={<NotificationsPage />} />
+              <Route
+                path="/desk/notifications"
+                element={<NotificationsPage />}
+              />
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/desk" replace />} />
@@ -72,5 +163,5 @@ export const AppRouter = () => {
         </Routes>
       </Suspense>
     </BrowserRouter>
-  )
-}
+  );
+};

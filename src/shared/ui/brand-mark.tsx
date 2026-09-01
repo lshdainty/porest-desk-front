@@ -3,7 +3,13 @@
  * 인라인 svg + fg-brand 토큰이라 다크에서 자동으로 밝은 색(primary-light) 전환.
  * 사용처: 로그인, 사이드바 접힘 헤더. (img 자산은 색 고정이라 다크 전환 불가 — 이걸 사용)
  */
-export function BrandMark({ size = 40, className }: { size?: number; className?: string }) {
+export function BrandMark({
+  size = 40,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       width={size}
@@ -18,5 +24,5 @@ export function BrandMark({ size = 40, className }: { size?: number; className?:
       <rect x="21" y="54" width="58" height="12" rx="6" />
       <rect x="44.5" y="72" width="11" height="10" rx="5" />
     </svg>
-  )
+  );
 }

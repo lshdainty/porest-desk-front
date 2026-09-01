@@ -1,12 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useOutletContext, useSearchParams } from 'react-router-dom'
-import { Trans, useTranslation } from 'react-i18next'
-import { Calendar, ChevronLeft, ChevronRight, Download, Filter, List, Pencil, Plus, ReceiptText, SlidersHorizontal, Trash2, X } from 'lucide-react'
-import { KRW, formatDay, isEn } from '@/shared/lib/porest/format'
-import { formatMonthDayWeekday, formatYearMonth } from '@/shared/lib/date'
-import { MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { HIDE_AMOUNTS_MASK, useHideAmounts, wonPre } from '@/shared/lib/porest/hide-amounts-core'
-import { Button } from '@/shared/ui/button'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Filter,
+  List,
+  Pencil,
+  Plus,
+  ReceiptText,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
+import { KRW, formatDay, isEn } from "@/shared/lib/porest/format";
+import { formatMonthDayWeekday, formatYearMonth } from "@/shared/lib/date";
+import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
+import {
+  HIDE_AMOUNTS_MASK,
+  useHideAmounts,
+  wonPre,
+} from "@/shared/lib/porest/hide-amounts-core";
+import { Button } from "@/shared/ui/button";
 import {
   LedgerCalendar,
   LedgerCell,
@@ -37,82 +54,91 @@ import {
   LedgerTotal,
   LedgerWeek,
   useLedgerScroll,
-} from '@/shared/ui/porest/ledger'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { DateGroupHeader } from '@/shared/ui/date-group-header'
-import { ExpenseRow, TransferRow } from '@/shared/ui/porest/expense-row'
-import { TransferDetailDialog } from '@/features/porest/dialogs/TransferDetailDialog'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
+} from "@/shared/ui/porest/ledger";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { DateGroupHeader } from "@/shared/ui/date-group-header";
+import { ExpenseRow, TransferRow } from "@/shared/ui/porest/expense-row";
+import { TransferDetailDialog } from "@/features/porest/dialogs/TransferDetailDialog";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
-import { CalendarProvider } from '@/features/calendar/model/calendar-context'
-import { CalendarMonthView } from '@/features/calendar/ui/month-view/calendar-month-view'
-import { convertExpenseToIEvent } from '@/features/calendar/lib/helpers'
+import { CalendarProvider } from "@/features/calendar/model/calendar-context";
+import { CalendarMonthView } from "@/features/calendar/ui/month-view/calendar-month-view";
+import { convertExpenseToIEvent } from "@/features/calendar/lib/helpers";
 import {
   useExpenses,
   useRangeSummary,
   useExpenseCategories,
   useDeleteExpense,
-} from '@/features/expense'
-import { SwipeActions, type SwipeAction } from '@/shared/ui/swipe-actions'
-import type { HideCardKey } from '@/shared/lib/porest/hide-amounts-cards'
+} from "@/features/expense";
+import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
+import type { HideCardKey } from "@/shared/lib/porest/hide-amounts-cards";
 
 /**
  * 캘린더 셀의 일별 지출·수입은 두 카드에 걸친다 — '캘린더 금액' 이면서 '거래 목록' 의
  * 일별 합계이기도 하다. 한쪽에만 걸면 다른 쪽을 켠 사람에게는 그대로 보인다.
  */
-const CALENDAR_CELL_CARDS: HideCardKey[] = ['ledger.calendar', 'ledger.txList']
+const CALENDAR_CELL_CARDS: HideCardKey[] = ["ledger.calendar", "ledger.txList"];
 
 /**
  * 월 인사이트("지난달보다 N만원 덜 썼어요")는 가려진 월 지출 히어로 **바로 아래**에서
  * 두 달의 차액을 평문으로 말한다 — 히어로를 가려도 여기서 크기가 드러난다.
  * 모바일 히어로는 '거래 목록', 데스크톱 요약은 '월 합계' 카드를 쓰므로 둘 다에 건다.
  */
-const INSIGHT_CARDS: HideCardKey[] = ['ledger.monthSummary', 'ledger.txList']
-import { useAsset, useAssets, useAssetTransfers } from '@/features/asset'
-import type { AssetTransfer } from '@/entities/asset'
-import type { Expense, ExpenseType, ExpenseCategory } from '@/entities/expense'
-import { FilterDialog, type FilterValue, DEFAULT_FILTER } from '@/features/porest/dialogs'
-import { countableTx, expenseSum, incomeSum, isRefundTx } from '@/shared/lib/porest/expense-aggregate'
-import { AddTxSheet } from '@/features/porest/add-tx/AddTxSheet'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { TxDetailDialog } from '@/features/porest/dialogs/TxDetailDialog'
+const INSIGHT_CARDS: HideCardKey[] = ["ledger.monthSummary", "ledger.txList"];
+import { useAsset, useAssets, useAssetTransfers } from "@/features/asset";
+import type { AssetTransfer } from "@/entities/asset";
+import type { Expense, ExpenseType, ExpenseCategory } from "@/entities/expense";
+import {
+  FilterDialog,
+  type FilterValue,
+  DEFAULT_FILTER,
+} from "@/features/porest/dialogs";
+import {
+  countableTx,
+  expenseSum,
+  incomeSum,
+  isRefundTx,
+} from "@/shared/lib/porest/expense-aggregate";
+import { AddTxSheet } from "@/features/porest/add-tx/AddTxSheet";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { TxDetailDialog } from "@/features/porest/dialogs/TxDetailDialog";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
-type Filter = 'all' | 'income' | 'expense'
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
+type Filter = "all" | "income" | "expense";
 
 const CHIPS: { id: Filter; labelKey: string }[] = [
-  { id: 'all', labelKey: 'chip.all' },
-  { id: 'expense', labelKey: 'expense' },
-  { id: 'income', labelKey: 'income' },
-]
+  { id: "all", labelKey: "chip.all" },
+  { id: "expense", labelKey: "expense" },
+  { id: "income", labelKey: "income" },
+];
 
 function notifyComing(): void {
-  console.log('[expense] 개발 중입니다')
+  console.log("[expense] 개발 중입니다");
 }
 
 function currentMonthKey(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function monthRange(monthKey: string): { startDate: string; endDate: string } {
-  const [ys, ms] = monthKey.split('-')
-  const y = Number(ys)
-  const m = Number(ms)
-  const lastDay = new Date(y, m, 0).getDate()
-  const mm = String(m).padStart(2, '0')
+  const [ys, ms] = monthKey.split("-");
+  const y = Number(ys);
+  const m = Number(ms);
+  const lastDay = new Date(y, m, 0).getDate();
+  const mm = String(m).padStart(2, "0");
   return {
     startDate: `${y}-${mm}-01`,
-    endDate: `${y}-${mm}-${String(lastDay).padStart(2, '0')}`,
-  }
+    endDate: `${y}-${mm}-${String(lastDay).padStart(2, "0")}`,
+  };
 }
 
 function dayKey(expenseDate: string): string {
   // supports "YYYY-MM-DD" or ISO datetime; take first 10 chars
-  return expenseDate.slice(0, 10)
+  return expenseDate.slice(0, 10);
 }
 
 /**
@@ -120,50 +146,54 @@ function dayKey(expenseDate: string): string {
  * 표시 단계에서만 합류시킨다(통계·폼 같은 지출 전용 경로에 새지 않게).
  */
 type LedgerItem =
-  | { kind: 'expense'; expense: Expense }
-  | { kind: 'transfer'; transfer: AssetTransfer }
+  | { kind: "expense"; expense: Expense }
+  | { kind: "transfer"; transfer: AssetTransfer };
 
 const ledgerKey = (i: LedgerItem) =>
-  i.kind === 'expense' ? `e${i.expense.rowId}` : `t${i.transfer.rowId}`
+  i.kind === "expense" ? `e${i.expense.rowId}` : `t${i.transfer.rowId}`;
 
 /** 정렬·그룹 기준 시각. 이체도 DATETIME 이라 지출과 같은 기준으로 섞인다. */
 const ledgerAt = (i: LedgerItem) =>
-  i.kind === 'expense' ? i.expense.expenseDate : i.transfer.transferDate
+  i.kind === "expense" ? i.expense.expenseDate : i.transfer.transferDate;
 
 function groupLedgerByDay(
   expenses: Expense[],
   transfers: AssetTransfer[],
 ): [string, LedgerItem[]][] {
   const items: LedgerItem[] = [
-    ...expenses.map(e => ({ kind: 'expense', expense: e }) as LedgerItem),
-    ...transfers.map(t => ({ kind: 'transfer', transfer: t }) as LedgerItem),
-  ]
-  const map = new Map<string, LedgerItem[]>()
+    ...expenses.map((e) => ({ kind: "expense", expense: e }) as LedgerItem),
+    ...transfers.map((t) => ({ kind: "transfer", transfer: t }) as LedgerItem),
+  ];
+  const map = new Map<string, LedgerItem[]>();
   for (const i of items) {
-    const k = dayKey(ledgerAt(i))
-    const arr = map.get(k) ?? []
-    arr.push(i)
-    map.set(k, arr)
+    const k = dayKey(ledgerAt(i));
+    const arr = map.get(k) ?? [];
+    arr.push(i);
+    map.set(k, arr);
   }
-  const sortedKeys = [...map.keys()].sort((a, b) => b.localeCompare(a))
-  return sortedKeys.map(k => {
-    const day = (map.get(k) ?? []).slice().sort((a, b) => ledgerAt(b).localeCompare(ledgerAt(a)))
-    return [k, day] as [string, LedgerItem[]]
-  })
+  const sortedKeys = [...map.keys()].sort((a, b) => b.localeCompare(a));
+  return sortedKeys.map((k) => {
+    const day = (map.get(k) ?? [])
+      .slice()
+      .sort((a, b) => ledgerAt(b).localeCompare(ledgerAt(a)));
+    return [k, day] as [string, LedgerItem[]];
+  });
 }
 
 /** Expense 페이지 진입 시 사용하는 모든 useQuery 의 isLoading 을 한곳에서 집계. */
 function useExpensePageData(month: string) {
-  const { startDate, endDate } = monthRange(month)
-  const expensesQ = useExpenses({ startDate, endDate })
-  const summaryQ = useRangeSummary(startDate, endDate)
-  const categoriesQ = useExpenseCategories()
-  const assetsQ = useAssets()
+  const { startDate, endDate } = monthRange(month);
+  const expensesQ = useExpenses({ startDate, endDate });
+  const summaryQ = useRangeSummary(startDate, endDate);
+  const categoriesQ = useExpenseCategories();
+  const assetsQ = useAssets();
   return {
     isLoading:
-      expensesQ.isLoading || summaryQ.isLoading
-      || categoriesQ.isLoading || assetsQ.isLoading,
-  }
+      expensesQ.isLoading ||
+      summaryQ.isLoading ||
+      categoriesQ.isLoading ||
+      assetsQ.isLoading,
+  };
 }
 
 function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
@@ -171,28 +201,44 @@ function ExpenseSummarySkeleton({ mobile }: { mobile: boolean }) {
   // [다음화살표] + marginLeft auto[ViewModeToggle], 본문은 3-col(수입/지출/합계) 라벨+금액.
   return (
     <Card
-      variant={mobile ? 'raised' : undefined}
+      variant={mobile ? "raised" : undefined}
       style={{
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 0 : 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 14,
+        }}
+      >
         <SkeletonBase className="h-7 w-7 rounded-md" />
         <SkeletonBase className="h-5 w-24" />
         <SkeletonBase className="h-7 w-7 rounded-md" />
-        <SkeletonBase className="h-7 w-16 rounded-md" style={{ marginLeft: 'auto' }} />
+        <SkeletonBase
+          className="h-7 w-16 rounded-md"
+          style={{ marginLeft: "auto" }}
+        />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {[0, 1, 2].map(i => (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
           <div key={i}>
             <SkeletonBase className="h-3 w-8 mb-1.5" />
-            <SkeletonBase className={mobile ? 'h-4 w-24' : 'h-[18px] w-28'} />
+            <SkeletonBase className={mobile ? "h-4 w-24" : "h-[18px] w-28"} />
           </div>
         ))}
       </div>
     </Card>
-  )
+  );
 }
 
 function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
@@ -203,9 +249,9 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
     <div
       key={i}
       style={{
-        padding: '12px 0 12px 2px',
-        display: 'flex',
-        alignItems: 'center',
+        padding: "12px 0 12px 2px",
+        display: "flex",
+        alignItems: "center",
         gap: 12,
       }}
     >
@@ -216,17 +262,17 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
       </div>
       <SkeletonBase className="h-3.5 w-20 shrink-0" />
     </div>
-  ))
+  ));
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <SkeletonBase className="h-4 w-12" />
         <SkeletonBase className="h-4 w-5" />
         <SkeletonBase className="h-3.5 w-16 ml-auto" />
       </div>
       {rowNodes}
     </div>
-  )
+  );
 }
 
 /** Calendar grid skeleton — viewMode='calendar' (default) 의 외곽 카드 모양 + 7-col 요일
@@ -236,12 +282,12 @@ function ExpenseCalendarSkeleton() {
   return (
     <Card
       className="max-w-[430px] lg:max-w-none h-full min-h-0"
-      style={{ overflow: 'hidden' }}
+      style={{ overflow: "hidden" }}
     >
       <div className="flex flex-col h-full">
         {/* 요일 헤더 (일~토) */}
         <div className="grid grid-cols-7 border-b border-[var(--border-subtle)] px-1 py-2">
-          {[0, 1, 2, 3, 4, 5, 6].map(i => (
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="flex justify-center">
               <SkeletonBase className="h-3 w-4" />
             </div>
@@ -261,38 +307,54 @@ function ExpenseCalendarSkeleton() {
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 /** Expense 페이지 구조에 맞춘 skeleton — Summary 카드 + Calendar grid (default mode).
  *  ExpenseMobile/Desktop 와 동일한 viewport fit 패턴 — AppLayout scroll wrapper 가
  *  flex-col 이므로 페이지 wrapper 는 flex-1 + min-h-0 으로 부모 전체 height 차지. */
-function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: string }) {
-  const { t } = useTranslation('expense')
+function ExpensePageSkeleton({
+  mobile,
+  month,
+}: {
+  mobile: boolean;
+  month?: string;
+}) {
+  const { t } = useTranslation("expense");
   if (mobile) {
     // 정적 틀(월네비/소비요약 버튼/요일/expand)은 실제 렌더 — 스켈레톤은 서버 데이터만
     // (총액·인사이트·셀 금액·리스트). feedback_skeleton_server_data_only.
-    const mk = month ?? currentMonthKey()
-    const now = new Date()
+    const mk = month ?? currentMonthKey();
+    const now = new Date();
     const weekDays = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(now)
-      d.setDate(now.getDate() - (now.getDay() - i))
-      return d
-    })
-    const [y, m] = mk.split('-').map(Number)
-    const inMonth = (d: Date) => d.getFullYear() === y && d.getMonth() + 1 === m
-    const dowLabels = Array.from({ length: 7 }, (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow)
+      const d = new Date(now);
+      d.setDate(now.getDate() - (now.getDay() - i));
+      return d;
+    });
+    const [y, m] = mk.split("-").map(Number);
+    const inMonth = (d: Date) =>
+      d.getFullYear() === y && d.getMonth() + 1 === m;
+    const dowLabels = Array.from(
+      { length: 7 },
+      (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow,
+    );
     return (
       <LedgerShell>
         <LedgerPin>
           <LedgerMonthNav>
-            <LedgerNavBtn aria-label={t('prevMonth')}><ChevronLeft size={19} /></LedgerNavBtn>
+            <LedgerNavBtn aria-label={t("prevMonth")}>
+              <ChevronLeft size={19} />
+            </LedgerNavBtn>
             <LedgerMonthLabel>{txmMonthLabel(mk)}</LedgerMonthLabel>
-            <LedgerNavBtn aria-label={t('nextMonth')}><ChevronRight size={19} /></LedgerNavBtn>
-            <LedgerNavBtn className="ml-auto" aria-label={t('filter.title')}>
+            <LedgerNavBtn aria-label={t("nextMonth")}>
+              <ChevronRight size={19} />
+            </LedgerNavBtn>
+            <LedgerNavBtn className="ml-auto" aria-label={t("filter.title")}>
               <SlidersHorizontal size={18} />
             </LedgerNavBtn>
-            <LedgerNavBtn aria-label={t('addTransaction')}><Plus size={19} /></LedgerNavBtn>
+            <LedgerNavBtn aria-label={t("addTransaction")}>
+              <Plus size={19} />
+            </LedgerNavBtn>
           </LedgerMonthNav>
           <LedgerCollapse>
             <LedgerHead>
@@ -300,21 +362,34 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
                 <SkeletonBase className="h-8 w-40" />
                 <SkeletonBase className="mt-2 h-4 w-52" />
               </div>
-              <LedgerSumBtn>{t('txm.spendSummary')}</LedgerSumBtn>
+              <LedgerSumBtn>{t("txm.spendSummary")}</LedgerSumBtn>
             </LedgerHead>
           </LedgerCollapse>
           <LedgerCalendar>
             <LedgerDow
               labels={dowLabels}
-              colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
+              colorFor={(i) =>
+                i === 0
+                  ? "var(--fg-expense)"
+                  : i === 6
+                    ? "var(--fg-brand)"
+                    : undefined
+              }
             />
             <LedgerWeek>
               {weekDays.map((d, i) => (
                 <LedgerCell key={i} empty>
-                  <LedgerCellNum style={{ color: 'var(--fg-primary)', opacity: inMonth(d) ? 1 : 0.35 }}>
+                  <LedgerCellNum
+                    style={{
+                      color: "var(--fg-primary)",
+                      opacity: inMonth(d) ? 1 : 0.35,
+                    }}
+                  >
                     {d.getDate()}
                   </LedgerCellNum>
-                  <LedgerCellAmt><SkeletonBase className="h-2.5 w-8" /></LedgerCellAmt>
+                  <LedgerCellAmt>
+                    <SkeletonBase className="h-2.5 w-8" />
+                  </LedgerCellAmt>
                 </LedgerCell>
               ))}
             </LedgerWeek>
@@ -322,20 +397,30 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
           </LedgerCalendar>
           <LedgerDivider />
         </LedgerPin>
-        <LedgerList style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <LedgerList
+          style={{
+            paddingTop: 24,
+            display: "flex",
+            flexDirection: "column",
+            gap: 24,
+          }}
+        >
           <ExpenseDayGroupSkeleton rows={3} />
           <ExpenseDayGroupSkeleton rows={2} />
         </LedgerList>
       </LedgerShell>
-    )
+    );
   }
 
   return (
-    <div className="page flex flex-col flex-1 min-h-0" style={{ paddingBottom: 24 }}>
+    <div
+      className="page flex flex-col flex-1 min-h-0"
+      style={{ paddingBottom: 24 }}
+    >
       <div className="page__head">
         <div>
-          <h1>{t('title')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("title")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
       </div>
       <ExpenseSummarySkeleton mobile={false} />
@@ -343,20 +428,21 @@ function ExpensePageSkeleton({ mobile, month }: { mobile: boolean; month?: strin
         <ExpenseCalendarSkeleton />
       </div>
     </div>
-  )
+  );
 }
 
 export const ExpensePage = () => {
-  const { onAddTx, mobile } = useOutletContext<OutletCtx>()
-  const [searchParams] = useSearchParams()
-  const initialMonth = searchParams.get('month') || currentMonthKey()
-  const { isLoading } = useExpensePageData(initialMonth)
-  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+  const { onAddTx, mobile } = useOutletContext<OutletCtx>();
+  const [searchParams] = useSearchParams();
+  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const { isLoading } = useExpensePageData(initialMonth);
+  const [hasEverLoaded, setHasEverLoaded] = useState(false);
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
-  if (!isLoading && !hasEverLoaded) setHasEverLoaded(true)
-  if (isLoading && !hasEverLoaded) return <ExpensePageSkeleton mobile={mobile} month={initialMonth} />
-  return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />
-}
+  if (!isLoading && !hasEverLoaded) setHasEverLoaded(true);
+  if (isLoading && !hasEverLoaded)
+    return <ExpensePageSkeleton mobile={mobile} month={initialMonth} />;
+  return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />;
+};
 
 function Summary({
   month,
@@ -367,72 +453,147 @@ function Summary({
   isLoading,
   headerRight,
 }: {
-  month: string
-  onMonthChange: (m: string) => void
-  mobile: boolean
-  monthIn: number
-  monthOut: number
-  isLoading: boolean
+  month: string;
+  onMonthChange: (m: string) => void;
+  mobile: boolean;
+  monthIn: number;
+  monthOut: number;
+  isLoading: boolean;
   /** month header row 우측 슬롯 (예: ViewModeToggle). 클로드 디자인 정합. */
-  headerRight?: React.ReactNode
+  headerRight?: React.ReactNode;
 }) {
-  const { t } = useTranslation('expense')
-  const balance = monthIn - monthOut
-  const [y, m] = month.split('-')
+  const { t } = useTranslation("expense");
+  const balance = monthIn - monthOut;
+  const [y, m] = month.split("-");
   return (
     // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 월 네비+요약 (design TxScreen).
     <Card
-      variant={mobile ? 'raised' : undefined}
+      variant={mobile ? "raised" : undefined}
       style={{
         padding: mobile ? 16 : 20,
         marginBottom: mobile ? 0 : 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 14,
+        }}
+      >
         <MonthArrowButton dir="prev" month={month} onChange={onMonthChange} />
-        <div style={{ fontSize: 'var(--text-body-lg)', fontWeight: '700', letterSpacing: '-0.022em' }}>
+        <div
+          style={{
+            fontSize: "var(--text-body-lg)",
+            fontWeight: "700",
+            letterSpacing: "-0.022em",
+          }}
+        >
           {formatYearMonth(new Date(Number(y), Number(m) - 1))}
         </div>
         <MonthArrowButton dir="next" month={month} onChange={onMonthChange} />
-        {headerRight && <div style={{ marginLeft: 'auto' }}>{headerRight}</div>}
+        {headerRight && <div style={{ marginLeft: "auto" }}>{headerRight}</div>}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+        }}
+      >
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('income')}</div>
           <div
-            className="num"
-            style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-brand)' }}
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 2,
+            }}
           >
-            {isLoading ? '—' : <MaskAmount card="ledger.monthSummary" kind="income">+{KRW(monthIn)}</MaskAmount>}
+            {t("income")}
           </div>
-        </div>
-        <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('expense')}</div>
-          <div className="num" style={{ fontSize: mobile ? 16 : 18, fontWeight: '700', color: 'var(--fg-expense)' }}>
-            {isLoading ? '—' : <MaskAmount card="ledger.monthSummary" kind="expense">−{KRW(monthOut)}</MaskAmount>}
-          </div>
-        </div>
-        <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>{t('txDetail.sumLabel')}</div>
           <div
             className="num"
             style={{
               fontSize: mobile ? 16 : 18,
-              fontWeight: '700',
-              color: balance >= 0 ? 'var(--fg-brand-strong)' : 'var(--fg-expense)',
+              fontWeight: "700",
+              color: "var(--fg-brand)",
             }}
           >
-            {isLoading
-              ? '—'
-              : <MaskAmount card="ledger.monthSummary" kind="net">{balance >= 0 ? '+' : '−'}{KRW(Math.abs(balance))}</MaskAmount>}
+            {isLoading ? (
+              "—"
+            ) : (
+              <MaskAmount card="ledger.monthSummary" kind="income">
+                +{KRW(monthIn)}
+              </MaskAmount>
+            )}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 2,
+            }}
+          >
+            {t("expense")}
+          </div>
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 16 : 18,
+              fontWeight: "700",
+              color: "var(--fg-expense)",
+            }}
+          >
+            {isLoading ? (
+              "—"
+            ) : (
+              <MaskAmount card="ledger.monthSummary" kind="expense">
+                −{KRW(monthOut)}
+              </MaskAmount>
+            )}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 2,
+            }}
+          >
+            {t("txDetail.sumLabel")}
+          </div>
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 16 : 18,
+              fontWeight: "700",
+              color:
+                balance >= 0 ? "var(--fg-brand-strong)" : "var(--fg-expense)",
+            }}
+          >
+            {isLoading ? (
+              "—"
+            ) : (
+              <MaskAmount card="ledger.monthSummary" kind="net">
+                {balance >= 0 ? "+" : "−"}
+                {KRW(Math.abs(balance))}
+              </MaskAmount>
+            )}
           </div>
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
-type ViewMode = 'calendar' | 'list'
+type ViewMode = "calendar" | "list";
 
 /** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
  *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
@@ -444,52 +605,62 @@ function ExpenseCalendar({
   expenses,
   mobile,
 }: {
-  month: string
-  expenses: Expense[]
-  mobile: boolean
+  month: string;
+  expenses: Expense[];
+  mobile: boolean;
 }) {
   const events = useMemo(() => {
-    return expenses.map(e => {
-      const ev = convertExpenseToIEvent(e)
-      const dateOnly = (e.expenseDate ?? '').slice(0, 10)
-      const localISO = `${dateOnly}T00:00:00`
-      return { ...ev, startDate: localISO, endDate: localISO }
-    })
-  }, [expenses])
+    return expenses.map((e) => {
+      const ev = convertExpenseToIEvent(e);
+      const dateOnly = (e.expenseDate ?? "").slice(0, 10);
+      const localISO = `${dateOnly}T00:00:00`;
+      return { ...ev, startDate: localISO, endDate: localISO };
+    });
+  }, [expenses]);
   const initialDate = useMemo(() => {
-    const [ys, ms] = month.split('-')
-    return new Date(Number(ys), Number(ms) - 1, 1)
-  }, [month])
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+    const [ys, ms] = month.split("-");
+    return new Date(Number(ys), Number(ms) - 1, 1);
+  }, [month]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
-  const [detail, setDetail] = useState<Expense | null>(null)
-  const [editing, setEditing] = useState<Expense | null>(null)
+  const [detail, setDetail] = useState<Expense | null>(null);
+  const [editing, setEditing] = useState<Expense | null>(null);
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null)
+  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 일별 drawer '거래 추가' → 그 날짜 seed 로 신규 AddTxSheet.
-  const [addSeedDate, setAddSeedDate] = useState<string | null>(null)
+  const [addSeedDate, setAddSeedDate] = useState<string | null>(null);
   const dayItems = useMemo(() => {
-    if (!selectedDate) return [] as Expense[]
-    const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
-    return expenses.filter(e => (e.expenseDate ?? '').slice(0, 10) === ymd)
-  }, [selectedDate, expenses])
+    if (!selectedDate) return [] as Expense[];
+    const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+    return expenses.filter((e) => (e.expenseDate ?? "").slice(0, 10) === ymd);
+  }, [selectedDate, expenses]);
   const calInner = (
-    <CalendarProvider events={events} initialView="month" initialDate={initialDate} key={month}>
+    <CalendarProvider
+      events={events}
+      initialView="month"
+      initialDate={initialDate}
+      key={month}
+    >
       <CalendarMonthView
         singleDayEvents={events}
         multiDayEvents={[]}
         onDayClick={(date) => setSelectedDate(date)}
       />
     </CalendarProvider>
-  )
+  );
   return (
     <>
       {mobile ? (
         // 카드 다이어트 — 모바일 캘린더는 shadow 없는 플랫(design TxCalendar). 셀 구분선도 lg: 전용이라
         // 모바일에선 시원한 무테 그리드가 된다. 월 네비+요약만 keep(raised) 카드로 유지.
-        <div className="max-w-[430px] h-full min-h-0 overflow-hidden">{calInner}</div>
+        <div className="max-w-[430px] h-full min-h-0 overflow-hidden">
+          {calInner}
+        </div>
       ) : (
-        <Card className="lg:max-w-none h-full min-h-0" style={{ overflow: 'hidden' }}>
+        <Card
+          className="lg:max-w-none h-full min-h-0"
+          style={{ overflow: "hidden" }}
+        >
           {calInner}
         </Card>
       )}
@@ -501,10 +672,10 @@ function ExpenseCalendar({
           onClose={() => setSelectedDate(null)}
           onItemClick={(e) => setDetail(e)}
           onAddForDay={() => {
-            if (!selectedDate) return
-            const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
-            setSelectedDate(null)
-            setAddSeedDate(ymd)
+            if (!selectedDate) return;
+            const ymd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+            setSelectedDate(null);
+            setAddSeedDate(ymd);
           }}
         />
       )}
@@ -513,8 +684,14 @@ function ExpenseCalendar({
           expense={detail}
           mobile={mobile}
           onClose={() => setDetail(null)}
-          onEdit={(e) => { setDetail(null); setEditing(e) }}
-          onRefund={(e) => { setDetail(null); setRefunding(e) }}
+          onEdit={(e) => {
+            setDetail(null);
+            setEditing(e);
+          }}
+          onRefund={(e) => {
+            setDetail(null);
+            setRefunding(e);
+          }}
         />
       )}
       {editing && (
@@ -539,7 +716,7 @@ function ExpenseCalendar({
         />
       )}
     </>
-  )
+  );
 }
 
 /** 그날 거래 내역 dialog — App _DayDetailBody 정합. ModalShell 의 mobile=drawer /
@@ -552,18 +729,18 @@ function DayDetailDialog({
   onItemClick,
   onAddForDay,
 }: {
-  date: Date
-  items: Expense[]
-  mobile: boolean
-  onClose: () => void
-  onItemClick?: (e: Expense) => void
-  onAddForDay?: () => void
+  date: Date;
+  items: Expense[];
+  mobile: boolean;
+  onClose: () => void;
+  onItemClick?: (e: Expense) => void;
+  onAddForDay?: () => void;
 }) {
-  const { t } = useTranslation('expense')
-  const title = formatMonthDayWeekday(date)
+  const { t } = useTranslation("expense");
+  const title = formatMonthDayWeekday(date);
   // 서버 집계와 같은 규칙 — 환불은 수입이 아니라 지출 상계이고, 아직 안 온 건 안 센다.
-  const incomeTotal = incomeSum(items)
-  const expenseTotal = expenseSum(items)
+  const incomeTotal = incomeSum(items);
+  const expenseTotal = expenseSum(items);
   return (
     <ModalShell
       title={title}
@@ -573,7 +750,7 @@ function DayDetailDialog({
       mobileMinHeight="85dvh"
       footer={
         <Button size="md" className="w-full" onClick={onAddForDay}>
-          <Plus size={16} /> {t('addTransaction')}
+          <Plus size={16} /> {t("addTransaction")}
         </Button>
       }
     >
@@ -581,23 +758,35 @@ function DayDetailDialog({
       <Card variant="muted" className="mb-[var(--spacing-md)]">
         <CardContent className="!py-[var(--spacing-md)] flex items-center gap-[var(--spacing-md)]">
           <div className="flex-1 text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
-            {t('dayCount', { count: items.length })}
+            {t("dayCount", { count: items.length })}
           </div>
           {/* 수입+지출 같이 있을 때 두 column horizontal (모바일 정합). 단독은 1 column. */}
           <div className="flex items-end gap-[var(--spacing-lg)]">
             {incomeTotal > 0 && (
               <div className="flex flex-col items-end">
-                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('income')}</span>
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
+                  {t("income")}
+                </span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-brand)]">
-                  <MaskAmount card="ledger.txList" kind="income">+{wonPre()}{KRW(incomeTotal)}</MaskAmount><WonUnit card="ledger.txList" kind="income" />
+                  <MaskAmount card="ledger.txList" kind="income">
+                    +{wonPre()}
+                    {KRW(incomeTotal)}
+                  </MaskAmount>
+                  <WonUnit card="ledger.txList" kind="income" />
                 </span>
               </div>
             )}
             {expenseTotal > 0 && (
               <div className="flex flex-col items-end">
-                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">{t('expense')}</span>
+                <span className="text-[length:var(--text-caption)] text-[var(--fg-tertiary)]">
+                  {t("expense")}
+                </span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
-                  <MaskAmount card="ledger.txList" kind="expense">−{wonPre()}{KRW(expenseTotal)}</MaskAmount><WonUnit card="ledger.txList" kind="expense" />
+                  <MaskAmount card="ledger.txList" kind="expense">
+                    −{wonPre()}
+                    {KRW(expenseTotal)}
+                  </MaskAmount>
+                  <WonUnit card="ledger.txList" kind="expense" />
                 </span>
               </div>
             )}
@@ -607,7 +796,7 @@ function DayDetailDialog({
       {/* 거래 row 들 — item 사이 border 없이 자연 spacing (모바일 정합) */}
       {items.length === 0 ? (
         <div className="py-[var(--spacing-xl)] text-center text-[length:var(--text-label-sm)] text-[var(--fg-tertiary)]">
-          {t('emptyDay')}
+          {t("emptyDay")}
         </div>
       ) : (
         // card 없이 깔끔한 리스트 — 앱 _DayDetailBody 정합(TxDetail/AssetDetail 와 동일 패턴)
@@ -618,44 +807,57 @@ function DayDetailDialog({
         </div>
       )}
     </ModalShell>
-  )
+  );
 }
 
-function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
+function ViewModeToggle({
+  value,
+  onChange,
+}: {
+  value: ViewMode;
+  onChange: (v: ViewMode) => void;
+}) {
   // 단일 toggle button — 현재 mode 의 반대를 보여줌 (calendar 모드면 "목록" 버튼).
-  const { t } = useTranslation('expense')
-  const isCalendar = value === 'calendar'
+  const { t } = useTranslation("expense");
+  const isCalendar = value === "calendar";
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => onChange(isCalendar ? 'list' : 'calendar')}
-      aria-label={isCalendar ? t('listViewLabel') : t('calendarViewLabel')}
+      onClick={() => onChange(isCalendar ? "list" : "calendar")}
+      aria-label={isCalendar ? t("listViewLabel") : t("calendarViewLabel")}
     >
       {isCalendar ? <List size={14} /> : <Calendar size={14} />}
-      <span style={{ marginLeft: 4 }}>{isCalendar ? t('viewList') : t('viewCalendar')}</span>
+      <span style={{ marginLeft: 4 }}>
+        {isCalendar ? t("viewList") : t("viewCalendar")}
+      </span>
     </Button>
-  )
+  );
 }
 
-
-function Chips({ filter, onChange }: { filter: Filter; onChange: (f: Filter) => void }) {
-  const { t } = useTranslation('expense')
+function Chips({
+  filter,
+  onChange,
+}: {
+  filter: Filter;
+  onChange: (f: Filter) => void;
+}) {
+  const { t } = useTranslation("expense");
   return (
     <Tabs
       value={filter}
       onValueChange={(v) => v && onChange(v as Filter)}
-      style={{ marginBottom: 8, overflowX: 'auto', paddingBottom: 4 }}
+      style={{ marginBottom: 8, overflowX: "auto", paddingBottom: 4 }}
     >
       <TabsList variant="pills" size="sm">
-        {CHIPS.map(c => (
+        {CHIPS.map((c) => (
           <TabsTrigger key={c.id} variant="pills" size="sm" value={c.id}>
             {t(c.labelKey)}
           </TabsTrigger>
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }
 
 function ExpenseList({
@@ -667,121 +869,167 @@ function ExpenseList({
   onTransferClick,
   focusTxId,
 }: {
-  expenses: Expense[]
-  transfers?: AssetTransfer[]
-  mobile: boolean
-  isLoading: boolean
-  onItemClick?: (expense: Expense) => void
-  onTransferClick?: (transfer: AssetTransfer) => void
-  focusTxId?: number | null
+  expenses: Expense[];
+  transfers?: AssetTransfer[];
+  mobile: boolean;
+  isLoading: boolean;
+  onItemClick?: (expense: Expense) => void;
+  onTransferClick?: (transfer: AssetTransfer) => void;
+  focusTxId?: number | null;
 }) {
-  const { t } = useTranslation('expense')
-  const grouped = useMemo(() => groupLedgerByDay(expenses, transfers), [expenses, transfers])
-  const focusRef = useRef<HTMLDivElement | null>(null)
+  const { t } = useTranslation("expense");
+  const grouped = useMemo(
+    () => groupLedgerByDay(expenses, transfers),
+    [expenses, transfers],
+  );
+  const focusRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (focusTxId && focusRef.current) {
-      focusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      focusRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [focusTxId, expenses.length])
+  }, [focusTxId, expenses.length]);
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 24 : 18 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: mobile ? 24 : 18,
+        }}
+      >
         <ExpenseDayGroupSkeleton rows={3} />
         <ExpenseDayGroupSkeleton rows={2} />
       </div>
-    )
+    );
   }
 
   if (grouped.length === 0) {
     if (mobile) {
       // 카드 다이어트 — 빈 상태도 배경 위 플랫.
       return (
-        <div style={{ padding: '32px 0', textAlign: 'center', fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: 500 }}>
-          {t('emptyList')}
+        <div
+          style={{
+            padding: "32px 0",
+            textAlign: "center",
+            fontSize: "var(--text-body-sm)",
+            color: "var(--fg-tertiary)",
+            fontWeight: 500,
+          }}
+        >
+          {t("emptyList")}
         </div>
-      )
+      );
     }
     return (
       <Card>
-        <CardContent style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-            {t('emptyList')}
+        <CardContent style={{ textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: "var(--text-body-sm)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+            }}
+          >
+            {t("emptyList")}
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
     // 카드 다이어트 — 날짜 그룹은 카드 없이 헤더+행, 그룹 사이 24px (design .tx-list).
     // 데스크톱/태블릿도 동일(사용자 결정) — 카드·divider·행 inset 없이 플랫.
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {grouped.map(([d, items]) => {
-        const { md, dow } = formatDay(d)
+        const { md, dow } = formatDay(d);
         // 날짜 헤더의 지출/수입 합계 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
         const out = items
-          .filter(i => i.kind === 'expense' && i.expense.expenseType === 'EXPENSE')
-          .reduce((s, i) => s + Math.abs((i as { expense: Expense }).expense.amount), 0)
+          .filter(
+            (i) => i.kind === "expense" && i.expense.expenseType === "EXPENSE",
+          )
+          .reduce(
+            (s, i) => s + Math.abs((i as { expense: Expense }).expense.amount),
+            0,
+          );
         const inn = items
-          .filter(i => i.kind === 'expense' && i.expense.expenseType === 'INCOME')
-          .reduce((s, i) => s + Math.abs((i as { expense: Expense }).expense.amount), 0)
+          .filter(
+            (i) => i.kind === "expense" && i.expense.expenseType === "INCOME",
+          )
+          .reduce(
+            (s, i) => s + Math.abs((i as { expense: Expense }).expense.amount),
+            0,
+          );
         return (
           <div key={d}>
             {/* 날짜 헤더 — 평문 */}
-            <DateGroupHeader date={md} weekday={dow} expense={out} income={inn} />
-            {items.map(item => {
+            <DateGroupHeader
+              date={md}
+              weekday={dow}
+              expense={out}
+              income={inn}
+            />
+            {items.map((item) => {
               // 지출·이체가 다른 테이블이라 rowId 가 겹칠 수 있다 — key 와 포커스는 종류까지 합쳐 판별.
-              const isFocus = item.kind === 'expense' && focusTxId === item.expense.rowId
+              const isFocus =
+                item.kind === "expense" && focusTxId === item.expense.rowId;
               return (
                 <div
                   key={ledgerKey(item)}
                   ref={isFocus ? focusRef : undefined}
                   style={{
-                    background: isFocus ? 'var(--bg-brand-subtle)' : undefined,
-                    transition: 'background 0.4s',
+                    background: isFocus ? "var(--bg-brand-subtle)" : undefined,
+                    transition: "background 0.4s",
                     borderRadius: 10,
                   }}
                 >
-                  {item.kind === 'expense'
-                    ? <ExpenseRow expense={item.expense} onClick={onItemClick} />
-                    : <TransferRow transfer={item.transfer} onClick={onTransferClick} />}
+                  {item.kind === "expense" ? (
+                    <ExpenseRow expense={item.expense} onClick={onItemClick} />
+                  ) : (
+                    <TransferRow
+                      transfer={item.transfer}
+                      onClick={onTransferClick}
+                    />
+                  )}
                 </div>
-              )
+              );
             })}
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 function computeFilterRange(
-  period: FilterValue['period'],
+  period: FilterValue["period"],
   monthKey: string,
   customStart?: string,
   customEnd?: string,
 ): { startDate: string; endDate: string } {
-  if (period === 'custom') {
-    if (customStart && customEnd) return { startDate: customStart, endDate: customEnd }
-    return monthRange(monthKey)
+  if (period === "custom") {
+    if (customStart && customEnd)
+      return { startDate: customStart, endDate: customEnd };
+    return monthRange(monthKey);
   }
-  if (period === 'month') return monthRange(monthKey)
-  const today = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-  if (period === 'week') {
-    const dow = today.getDay() // 0=Sun
-    const mondayOffset = dow === 0 ? -6 : 1 - dow
-    const start = new Date(today)
-    start.setDate(today.getDate() + mondayOffset)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 6)
-    return { startDate: fmt(start), endDate: fmt(end) }
+  if (period === "month") return monthRange(monthKey);
+  const today = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (period === "week") {
+    const dow = today.getDay(); // 0=Sun
+    const mondayOffset = dow === 0 ? -6 : 1 - dow;
+    const start = new Date(today);
+    start.setDate(today.getDate() + mondayOffset);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return { startDate: fmt(start), endDate: fmt(end) };
   }
   // '3m' — 3개월 전 1일 ~ 오늘
-  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1)
-  return { startDate: fmt(start), endDate: fmt(today) }
+  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+  return { startDate: fmt(start), endDate: fmt(today) };
 }
 
 function useExpenseData(
@@ -798,97 +1046,120 @@ function useExpenseData(
         month,
         filterValue.startDate,
         filterValue.endDate,
-      )
+      );
     }
-    return monthRange(month)
-  }, [month, filterValue])
+    return monthRange(month);
+  }, [month, filterValue]);
 
-  const [yStr, mStr] = month.split('-')
-  const year = Number(yStr)
-  const m = Number(mStr)
+  const [yStr, mStr] = month.split("-");
+  const year = Number(yStr);
+  const m = Number(mStr);
 
   const chipType: ExpenseType | undefined =
-    filter === 'income' ? 'INCOME' : filter === 'expense' ? 'EXPENSE' : undefined
+    filter === "income"
+      ? "INCOME"
+      : filter === "expense"
+        ? "EXPENSE"
+        : undefined;
 
   // 다이얼로그 필터가 적용된 상태면 types은 클라이언트에서 처리 (다중 타입 가능)
-  const serverType = filterValue ? undefined : chipType
+  const serverType = filterValue ? undefined : chipType;
 
-  const expensesQ = useExpenses({ startDate, endDate, expenseType: serverType, assetId })
+  const expensesQ = useExpenses({
+    startDate,
+    endDate,
+    expenseType: serverType,
+    assetId,
+  });
   // 월 헤더용 합계 — 현재 monthKey 의 한 달 범위
-  const monthStart = `${year}-${String(m).padStart(2, '0')}-01`
-  const monthEndDay = new Date(year, m, 0).getDate()
-  const monthEnd = `${year}-${String(m).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`
+  const monthStart = `${year}-${String(m).padStart(2, "0")}-01`;
+  const monthEndDay = new Date(year, m, 0).getDate();
+  const monthEnd = `${year}-${String(m).padStart(2, "0")}-${String(monthEndDay).padStart(2, "0")}`;
   // 자산 필터를 합계에도 건다 — 목록·캘린더만 걸러지고 상단 수입/지출은 전체 값이었다.
-  const monthlyQ = useRangeSummary(monthStart, monthEnd, assetId ?? null)
+  const monthlyQ = useRangeSummary(monthStart, monthEnd, assetId ?? null);
 
   // 선택한 부모 카테고리의 자식 rowId까지 모두 허용 집합에 추가
   const allowedCatIds = useMemo(() => {
-    if (!filterValue || filterValue.categoryIds.length === 0) return null
-    const set = new Set<number>(filterValue.categoryIds)
+    if (!filterValue || filterValue.categoryIds.length === 0) return null;
+    const set = new Set<number>(filterValue.categoryIds);
     for (const cat of categories ?? []) {
-      if (cat.parentRowId != null && filterValue.categoryIds.includes(cat.parentRowId)) {
-        set.add(cat.rowId)
+      if (
+        cat.parentRowId != null &&
+        filterValue.categoryIds.includes(cat.parentRowId)
+      ) {
+        set.add(cat.rowId);
       }
     }
-    return set
-  }, [filterValue, categories])
+    return set;
+  }, [filterValue, categories]);
 
   const filtered = useMemo(() => {
-    let list = expensesQ.data ?? []
+    let list = expensesQ.data ?? [];
     if (filterValue) {
       if (filterValue.types.length > 0 && filterValue.types.length < 2) {
-        list = list.filter(e => filterValue.types.includes(e.expenseType))
+        list = list.filter((e) => filterValue.types.includes(e.expenseType));
       }
       if (allowedCatIds) {
         // split-aware: 거래 카테고리 또는 분할 항목 카테고리 중 하나라도 선택 집합에 들면 노출(전액).
-        list = list.filter(e =>
-          allowedCatIds.has(e.categoryRowId)
-          || (e.splitCategoryRowIds ?? []).some(id => allowedCatIds.has(id)),
-        )
+        list = list.filter(
+          (e) =>
+            allowedCatIds.has(e.categoryRowId) ||
+            (e.splitCategoryRowIds ?? []).some((id) => allowedCatIds.has(id)),
+        );
       }
       if (filterValue.assetIds.length > 0) {
         list = list.filter(
-          e => e.assetRowId != null && filterValue.assetIds.includes(e.assetRowId),
-        )
+          (e) =>
+            e.assetRowId != null && filterValue.assetIds.includes(e.assetRowId),
+        );
       }
-      const minN = filterValue.min ? Number(filterValue.min) : null
-      const maxN = filterValue.max ? Number(filterValue.max) : null
-      if (minN != null) list = list.filter(e => e.amount >= minN)
-      if (maxN != null) list = list.filter(e => e.amount <= maxN)
+      const minN = filterValue.min ? Number(filterValue.min) : null;
+      const maxN = filterValue.max ? Number(filterValue.max) : null;
+      if (minN != null) list = list.filter((e) => e.amount >= minN);
+      if (maxN != null) list = list.filter((e) => e.amount <= maxN);
     }
-    return list
-  }, [expensesQ.data, filterValue, allowedCatIds])
+    return list;
+  }, [expensesQ.data, filterValue, allowedCatIds]);
 
   // 이체는 지출/수입이 아니라 자산 간 이동이라 expense 목록에 섞여 오지 않는다(별도 테이블).
   // 목록에 함께 보여주기 위해 같은 기간으로 따로 받아 화면 단에서만 합친다 —
   // 통계·예산 같은 지출 전용 경로에 이체가 새지 않게 하려는 의도적 분리.
-  const transfersQ = useAssetTransfers({ startDate, endDate })
+  const transfersQ = useAssetTransfers({ startDate, endDate });
 
   const filteredTransfers = useMemo(() => {
-    let list = transfersQ.data?.transfers ?? []
+    let list = transfersQ.data?.transfers ?? [];
     // 카테고리·유형·거래처 필터는 이체에 해당 개념이 없다 → 필터가 걸리면 이체는 대상에서 빠진다.
-    if (serverType || allowedCatIds) return []
-    if (filterValue && filterValue.types.length > 0 && filterValue.types.length < 2) return []
+    if (serverType || allowedCatIds) return [];
+    if (
+      filterValue &&
+      filterValue.types.length > 0 &&
+      filterValue.types.length < 2
+    )
+      return [];
     // 자산 필터는 보내는 쪽·받는 쪽 둘 다 매칭(한 건이 자산 두 개에 걸침).
     if (assetId != null) {
-      list = list.filter(t => t.fromAssetRowId === assetId || t.toAssetRowId === assetId)
+      list = list.filter(
+        (t) => t.fromAssetRowId === assetId || t.toAssetRowId === assetId,
+      );
     }
     if (filterValue && filterValue.assetIds.length > 0) {
       list = list.filter(
-        t => filterValue.assetIds.includes(t.fromAssetRowId) || filterValue.assetIds.includes(t.toAssetRowId),
-      )
+        (t) =>
+          filterValue.assetIds.includes(t.fromAssetRowId) ||
+          filterValue.assetIds.includes(t.toAssetRowId),
+      );
     }
     if (filterValue) {
-      const minN = filterValue.min ? Number(filterValue.min) : null
-      const maxN = filterValue.max ? Number(filterValue.max) : null
-      if (minN != null) list = list.filter(t => t.amount >= minN)
-      if (maxN != null) list = list.filter(t => t.amount <= maxN)
+      const minN = filterValue.min ? Number(filterValue.min) : null;
+      const maxN = filterValue.max ? Number(filterValue.max) : null;
+      if (minN != null) list = list.filter((t) => t.amount >= minN);
+      if (maxN != null) list = list.filter((t) => t.amount <= maxN);
     }
-    return list
-  }, [transfersQ.data, filterValue, allowedCatIds, serverType, assetId])
+    return list;
+  }, [transfersQ.data, filterValue, allowedCatIds, serverType, assetId]);
 
-  const monthIn = monthlyQ.data?.totalIncome ?? 0
-  const monthOut = monthlyQ.data?.totalExpense ?? 0
+  const monthIn = monthlyQ.data?.totalIncome ?? 0;
+  const monthOut = monthlyQ.data?.totalExpense ?? 0;
 
   return {
     expenses: filtered,
@@ -897,21 +1168,25 @@ function useExpenseData(
     monthOut,
     isLoadingList: expensesQ.isLoading || transfersQ.isLoading,
     isLoadingSummary: monthlyQ.isLoading,
-  }
+  };
 }
 
 function useAssetFilter() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const raw = searchParams.get('assetId')
-  const assetId = raw ? Number(raw) : undefined
-  const enabled = !!assetId && !Number.isNaN(assetId)
-  const { data: asset } = useAsset(enabled ? assetId! : 0)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const raw = searchParams.get("assetId");
+  const assetId = raw ? Number(raw) : undefined;
+  const enabled = !!assetId && !Number.isNaN(assetId);
+  const { data: asset } = useAsset(enabled ? assetId! : 0);
   const clear = () => {
-    const next = new URLSearchParams(searchParams)
-    next.delete('assetId')
-    setSearchParams(next, { replace: true })
-  }
-  return { assetId: enabled ? assetId : undefined, asset: enabled ? asset : undefined, clear }
+    const next = new URLSearchParams(searchParams);
+    next.delete("assetId");
+    setSearchParams(next, { replace: true });
+  };
+  return {
+    assetId: enabled ? assetId : undefined,
+    asset: enabled ? asset : undefined,
+    clear,
+  };
 }
 
 /** 필터 활성 시 — 적용 항목별 칩 가로 스크롤(스크롤바 숨김), 개별 ✕ 제거 (사용자 결정). */
@@ -923,105 +1198,166 @@ function FilterChipsRow({
   categories,
   assets,
 }: {
-  filterValue: FilterValue | null
-  onChange: (v: FilterValue | null) => void
-  assetName?: string
-  onClearAsset: () => void
-  categories: ExpenseCategory[]
-  assets: { rowId: number; assetName: string }[]
+  filterValue: FilterValue | null;
+  onChange: (v: FilterValue | null) => void;
+  assetName?: string;
+  onClearAsset: () => void;
+  categories: ExpenseCategory[];
+  assets: { rowId: number; assetName: string }[];
 }) {
-  const { t } = useTranslation('expense')
-  const { t: tStats } = useTranslation('expense')
-  const v = filterValue
-  const chips: { key: string; label: string; onRemove: () => void }[] = []
+  const { t } = useTranslation("expense");
+  const { t: tStats } = useTranslation("expense");
+  const v = filterValue;
+  const chips: { key: string; label: string; onRemove: () => void }[] = [];
   if (assetName) {
-    chips.push({ key: 'assetQ', label: t('assetFilterBadge', { name: assetName }), onRemove: onClearAsset })
+    chips.push({
+      key: "assetQ",
+      label: t("assetFilterBadge", { name: assetName }),
+      onRemove: onClearAsset,
+    });
   }
   if (v) {
     if (v.period !== DEFAULT_FILTER.period) {
       const label =
-        v.period === 'week' ? t('filter.period.week')
-        : v.period === 'month' ? t('filter.period.month')
-        : tStats('stats.period3m')
-      chips.push({ key: 'period', label, onRemove: () => onChange({ ...v, period: 'custom', startDate: '', endDate: '' }) })
+        v.period === "week"
+          ? t("filter.period.week")
+          : v.period === "month"
+            ? t("filter.period.month")
+            : tStats("stats.period3m");
+      chips.push({
+        key: "period",
+        label,
+        onRemove: () =>
+          onChange({ ...v, period: "custom", startDate: "", endDate: "" }),
+      });
     } else if (v.startDate && v.endDate) {
       chips.push({
-        key: 'range',
-        label: `${v.startDate.slice(5).replace('-', '.')}~${v.endDate.slice(5).replace('-', '.')}`,
-        onRemove: () => onChange({ ...v, startDate: '', endDate: '' }),
-      })
+        key: "range",
+        label: `${v.startDate.slice(5).replace("-", ".")}~${v.endDate.slice(5).replace("-", ".")}`,
+        onRemove: () => onChange({ ...v, startDate: "", endDate: "" }),
+      });
     }
     if (v.types.length !== DEFAULT_FILTER.types.length) {
-      const only = v.types[0]
+      const only = v.types[0];
       chips.push({
-        key: 'type',
-        label: only === 'EXPENSE' ? t('expense') : t('income'),
-        onRemove: () => onChange({ ...v, types: ['EXPENSE', 'INCOME'] }),
-      })
+        key: "type",
+        label: only === "EXPENSE" ? t("expense") : t("income"),
+        onRemove: () => onChange({ ...v, types: ["EXPENSE", "INCOME"] }),
+      });
     }
     for (const id of v.categoryIds) {
-      const name = categories.find(c => c.rowId === id)?.categoryName ?? String(id)
-      chips.push({ key: `cat${id}`, label: name, onRemove: () => onChange({ ...v, categoryIds: v.categoryIds.filter(x => x !== id) }) })
+      const name =
+        categories.find((c) => c.rowId === id)?.categoryName ?? String(id);
+      chips.push({
+        key: `cat${id}`,
+        label: name,
+        onRemove: () =>
+          onChange({
+            ...v,
+            categoryIds: v.categoryIds.filter((x) => x !== id),
+          }),
+      });
     }
     for (const id of v.assetIds) {
-      const name = assets.find(a => a.rowId === id)?.assetName ?? String(id)
-      chips.push({ key: `asset${id}`, label: name, onRemove: () => onChange({ ...v, assetIds: v.assetIds.filter(x => x !== id) }) })
+      const name = assets.find((a) => a.rowId === id)?.assetName ?? String(id);
+      chips.push({
+        key: `asset${id}`,
+        label: name,
+        onRemove: () =>
+          onChange({ ...v, assetIds: v.assetIds.filter((x) => x !== id) }),
+      });
     }
     if (v.min) {
-      chips.push({ key: 'min', label: t('filter.chipMin', { amount: `${wonPre()}${KRW(Number(v.min))}${isEn() ? '' : '원'}` }), onRemove: () => onChange({ ...v, min: '' }) })
+      chips.push({
+        key: "min",
+        label: t("filter.chipMin", {
+          amount: `${wonPre()}${KRW(Number(v.min))}${isEn() ? "" : "원"}`,
+        }),
+        onRemove: () => onChange({ ...v, min: "" }),
+      });
     }
     if (v.max) {
-      chips.push({ key: 'max', label: t('filter.chipMax', { amount: `${wonPre()}${KRW(Number(v.max))}${isEn() ? '' : '원'}` }), onRemove: () => onChange({ ...v, max: '' }) })
+      chips.push({
+        key: "max",
+        label: t("filter.chipMax", {
+          amount: `${wonPre()}${KRW(Number(v.max))}${isEn() ? "" : "원"}`,
+        }),
+        onRemove: () => onChange({ ...v, max: "" }),
+      });
     }
   }
-  if (chips.length === 0) return null
+  if (chips.length === 0) return null;
   return (
     <div
       className="scrollbar-hide -mx-[var(--spacing-xl)] px-[var(--spacing-xl)]"
-      style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingTop: 8, alignItems: 'center' }}
+      style={{
+        display: "flex",
+        gap: 8,
+        overflowX: "auto",
+        paddingTop: 8,
+        alignItems: "center",
+      }}
     >
-      {chips.map(c => (
+      {chips.map((c) => (
         <span
           key={c.key}
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
-            padding: '6px 8px 6px 12px',
-            background: 'var(--bg-brand-subtle)',
-            color: 'var(--fg-brand-strong)',
-            border: '1px solid var(--border-brand)',
-            borderRadius: 'var(--radius-pill)',
-            fontSize: 'var(--text-label-sm)',
-            fontWeight: '600',
-            whiteSpace: 'nowrap',
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            flexShrink: 0,
+            padding: "6px 8px 6px 12px",
+            background: "var(--bg-brand-subtle)",
+            color: "var(--fg-brand-strong)",
+            border: "1px solid var(--border-brand)",
+            borderRadius: "var(--radius-pill)",
+            fontSize: "var(--text-label-sm)",
+            fontWeight: "600",
+            whiteSpace: "nowrap",
           }}
         >
           <span>{c.label}</span>
           <button
             onClick={c.onRemove}
-            aria-label={t('filter.reset')}
-            style={{ border: 0, background: 'transparent', color: 'var(--fg-brand)', cursor: 'pointer', display: 'inline-flex', padding: 0 }}
+            aria-label={t("filter.reset")}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: "var(--fg-brand)",
+              cursor: "pointer",
+              display: "inline-flex",
+              padding: 0,
+            }}
           >
             <X size={14} />
           </button>
         </span>
       ))}
     </div>
-  )
+  );
 }
 
-function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void }) {
-  const { t } = useTranslation('expense')
+function AssetFilterBadge({
+  name,
+  onClear,
+}: {
+  name: string;
+  onClear: () => void;
+}) {
+  const { t } = useTranslation("expense");
   return (
     <div
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '6px 10px 6px 12px',
-        background: 'var(--bg-brand-subtle)',
-        color: 'var(--fg-brand-strong)',
-        border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-pill)',
-        fontSize: 'var(--text-label-sm)',
-        fontWeight: '600',
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 10px 6px 12px",
+        background: "var(--bg-brand-subtle)",
+        color: "var(--fg-brand-strong)",
+        border: "1px solid var(--border-brand)",
+        borderRadius: "var(--radius-pill)",
+        fontSize: "var(--text-label-sm)",
+        fontWeight: "600",
         marginBottom: 12,
       }}
     >
@@ -1029,28 +1365,32 @@ function AssetFilterBadge({ name, onClear }: { name: string; onClear: () => void
       <button
         type="button"
         onClick={onClear}
-        aria-label={t('clearFilter')}
+        aria-label={t("clearFilter")}
         style={{
-          background: 'transparent', border: 0, padding: 2, cursor: 'pointer',
-          color: 'var(--fg-brand)', display: 'inline-flex',
+          background: "transparent",
+          border: 0,
+          padding: 2,
+          cursor: "pointer",
+          color: "var(--fg-brand)",
+          display: "inline-flex",
         }}
       >
         <X size={13} />
       </button>
     </div>
-  )
+  );
 }
 
 function filterActiveCount(v: FilterValue | null): number {
-  if (!v) return 0
-  let n = 0
-  if (v.period !== DEFAULT_FILTER.period) n += 1
-  if (v.types.length !== DEFAULT_FILTER.types.length) n += 1
-  if (v.categoryIds.length > 0) n += 1
-  if (v.assetIds.length > 0) n += 1
-  if (v.min) n += 1
-  if (v.max) n += 1
-  return n
+  if (!v) return 0;
+  let n = 0;
+  if (v.period !== DEFAULT_FILTER.period) n += 1;
+  if (v.types.length !== DEFAULT_FILTER.types.length) n += 1;
+  if (v.categoryIds.length > 0) n += 1;
+  if (v.assetIds.length > 0) n += 1;
+  if (v.min) n += 1;
+  if (v.max) n += 1;
+  return n;
 }
 
 /** 행 클릭 → 상세 TxDetailDialog → 편집 버튼 → AddTxSheet. Desktop/Mobile 공용. */
@@ -1061,20 +1401,24 @@ function EditableList({
   mobile,
   focusTxId,
 }: {
-  expenses: Expense[]
-  transfers?: AssetTransfer[]
-  isLoading: boolean
-  mobile: boolean
-  focusTxId?: number | null
+  expenses: Expense[];
+  transfers?: AssetTransfer[];
+  isLoading: boolean;
+  mobile: boolean;
+  focusTxId?: number | null;
 }) {
   // detail: 상세 보기, editing: 편집 폼
-  const [detail, setDetail] = useState<Expense | null>(null)
-  const [editing, setEditing] = useState<Expense | null>(null)
+  const [detail, setDetail] = useState<Expense | null>(null);
+  const [editing, setEditing] = useState<Expense | null>(null);
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null)
+  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
-  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
-  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(null)
+  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(
+    null,
+  );
+  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(
+    null,
+  );
 
   return (
     <>
@@ -1092,7 +1436,10 @@ function EditableList({
           transfer={transferDetail}
           mobile={mobile}
           onClose={() => setTransferDetail(null)}
-          onEdit={(tr) => { setTransferDetail(null); setEditingTransfer(tr) }}
+          onEdit={(tr) => {
+            setTransferDetail(null);
+            setEditingTransfer(tr);
+          }}
         />
       )}
       {editingTransfer && (
@@ -1108,12 +1455,12 @@ function EditableList({
           mobile={mobile}
           onClose={() => setDetail(null)}
           onEdit={(e) => {
-            setDetail(null)
-            setEditing(e)
+            setDetail(null);
+            setEditing(e);
           }}
           onRefund={(e) => {
-            setDetail(null)
-            setRefunding(e)
+            setDetail(null);
+            setRefunding(e);
           }}
         />
       )}
@@ -1132,57 +1479,81 @@ function EditableList({
         />
       )}
     </>
-  )
+  );
 }
 
 function ExpenseDesktop() {
-  const { t } = useTranslation('expense')
-  const [searchParams] = useSearchParams()
-  const initialMonth = searchParams.get('month') || currentMonthKey()
-  const focusTxId = Number(searchParams.get('txId')) || null
-  const [filter, setFilter] = useState<Filter>('all')
-  const [month, setMonth] = useState<string>(initialMonth)
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar')
-  const { assetId, asset, clear } = useAssetFilter()
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
+  const { t } = useTranslation("expense");
+  const [searchParams] = useSearchParams();
+  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const focusTxId = Number(searchParams.get("txId")) || null;
+  const [filter, setFilter] = useState<Filter>("all");
+  const [month, setMonth] = useState<string>(initialMonth);
+  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const { assetId, asset, clear } = useAssetFilter();
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterValue, setFilterValue] = useState<FilterValue | null>(null);
 
-  const categoriesQ = useExpenseCategories()
-  const assetsQ = useAssets()
+  const categoriesQ = useExpenseCategories();
+  const assetsQ = useAssets();
 
-  const { expenses, transfers, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
-    month, filter, filterValue, assetId, categoriesQ.data ?? null,
-  )
+  const {
+    expenses,
+    transfers,
+    monthIn,
+    monthOut,
+    isLoadingList,
+    isLoadingSummary,
+  } = useExpenseData(
+    month,
+    filter,
+    filterValue,
+    assetId,
+    categoriesQ.data ?? null,
+  );
 
-  const activeCount = filterActiveCount(filterValue)
+  const activeCount = filterActiveCount(filterValue);
 
   // calendar 모드는 viewport fit (스크롤 없이 캘린더가 남은 공간 fill) — AppLayout 의
   // scroll wrapper 가 flex-col 이므로 페이지를 flex-1 + min-h-0 으로 부모 전체 차지.
   // 그 안에서 Calendar wrap 만 flex-1 로 Summary 아래 남은 공간 grow. list 모드는
   // 기존대로 자연 height (콘텐츠가 길면 부모 scroll wrapper 가 scroll).
-  const isCalendarMode = viewMode === 'calendar'
+  const isCalendarMode = viewMode === "calendar";
   return (
     <div
-      className={isCalendarMode ? 'page flex flex-col flex-1 min-h-0' : 'page'}
+      className={isCalendarMode ? "page flex flex-col flex-1 min-h-0" : "page"}
       style={isCalendarMode ? { paddingBottom: 24 } : undefined}
     >
       <div className="page__head">
         <div>
-          <h1>{t('title')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("title")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">
-          <Button variant="secondary" size="sm" onClick={() => setFilterOpen(true)}>
-            <Filter size={13} /> {t('filter.title')}{activeCount > 0 && ` · ${activeCount}`}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setFilterOpen(true)}
+          >
+            <Filter size={13} /> {t("filter.title")}
+            {activeCount > 0 && ` · ${activeCount}`}
           </Button>
           <Button variant="secondary" size="sm" onClick={notifyComing}>
-            <Download size={13} /> {t('export')}
+            <Download size={13} /> {t("export")}
           </Button>
         </div>
       </div>
-      {asset && <AssetFilterBadge name={t('assetFilterBadge', { name: asset.assetName })} onClear={clear} />}
+      {asset && (
+        <AssetFilterBadge
+          name={t("assetFilterBadge", { name: asset.assetName })}
+          onClear={clear}
+        />
+      )}
       {activeCount > 0 && (
-        <AssetFilterBadge name={t('filterAppliedBadge', { count: activeCount })} onClear={() => setFilterValue(null)} />
+        <AssetFilterBadge
+          name={t("filterAppliedBadge", { count: activeCount })}
+          onClear={() => setFilterValue(null)}
+        />
       )}
       <Summary
         month={month}
@@ -1195,7 +1566,11 @@ function ExpenseDesktop() {
       />
       {isCalendarMode ? (
         <div className="flex-1 min-h-0 flex flex-col">
-          {isLoadingList ? <ExpenseCalendarSkeleton /> : <ExpenseCalendar month={month} expenses={expenses} mobile={false} />}
+          {isLoadingList ? (
+            <ExpenseCalendarSkeleton />
+          ) : (
+            <ExpenseCalendar month={month} expenses={expenses} mobile={false} />
+          )}
         </div>
       ) : (
         <>
@@ -1216,66 +1591,86 @@ function ExpenseDesktop() {
           assets={assetsQ.data?.assets ?? []}
           onClose={() => setFilterOpen(false)}
           onApply={(v) => {
-            setFilterValue(v)
-            setFilterOpen(false)
+            setFilterValue(v);
+            setFilterOpen(false);
           }}
           mobile={false}
         />
       )}
     </div>
-  )
+  );
 }
 
 /** 모바일 가계부 — 캘린더 스트립 + 리스트 통합 뷰 (design tx-mobile.jsx SoT, 현대카드 모티브).
  *  탭 전환 없음: 월네비 → 총액+인사이트+[소비 요약] → 접이식 캘린더(일별 합계) → 날짜그룹 리스트. */
-const TXM_PAD = (n: number) => String(n).padStart(2, '0')
+const TXM_PAD = (n: number) => String(n).padStart(2, "0");
 
 function shiftMonthKey(monthKey: string, delta: number): string {
-  const [yStr, mStr] = monthKey.split('-')
-  let y = Number(yStr)
-  let m = Number(mStr) + delta
-  while (m < 1) { y -= 1; m += 12 }
-  while (m > 12) { y += 1; m -= 12 }
-  return `${y}-${TXM_PAD(m)}`
+  const [yStr, mStr] = monthKey.split("-");
+  let y = Number(yStr);
+  let m = Number(mStr) + delta;
+  while (m < 1) {
+    y -= 1;
+    m += 12;
+  }
+  while (m > 12) {
+    y += 1;
+    m -= 12;
+  }
+  return `${y}-${TXM_PAD(m)}`;
 }
 
 /** 월 라벨 — ko "7월" / en "Jul" (디자인 monthnav·prevbtn·empty 문구 공용). */
 function txmMonthLabel(monthKey: string): string {
-  const [y = 0, m = 1] = monthKey.split('-').map(Number)
-  return isEn() ? new Date(y, m - 1, 1).toLocaleDateString('en', { month: 'short' }) : `${m}월`
+  const [y = 0, m = 1] = monthKey.split("-").map(Number);
+  return isEn()
+    ? new Date(y, m - 1, 1).toLocaleDateString("en", { month: "short" })
+    : `${m}월`;
 }
 
 function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
-  const { t } = useTranslation('expense')
-  const [searchParams] = useSearchParams()
-  const initialMonth = searchParams.get('month') || currentMonthKey()
-  const focusTxId = Number(searchParams.get('txId')) || null
-  const [month, setMonth] = useState<string>(initialMonth)
-  const { assetId, asset, clear } = useAssetFilter()
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterValue, setFilterValue] = useState<FilterValue | null>(null)
-  const [expanded, setExpanded] = useState(false)
-  const [sumOpen, setSumOpen] = useState(false)
-  const now = new Date()
-  const todayStr = `${now.getFullYear()}-${TXM_PAD(now.getMonth() + 1)}-${TXM_PAD(now.getDate())}`
+  const { t } = useTranslation("expense");
+  const [searchParams] = useSearchParams();
+  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const focusTxId = Number(searchParams.get("txId")) || null;
+  const [month, setMonth] = useState<string>(initialMonth);
+  const { assetId, asset, clear } = useAssetFilter();
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterValue, setFilterValue] = useState<FilterValue | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [sumOpen, setSumOpen] = useState(false);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${TXM_PAD(now.getMonth() + 1)}-${TXM_PAD(now.getDate())}`;
   // 셀 차트형 툴팁(지출·수입) — hover 셀 기준 좌표 (사용자 결정).
-  const [cellTip, setCellTip] = useState<{ ds: string; left: number; top: number } | null>(null)
-  const calRef = useRef<HTMLDivElement | null>(null)
+  const [cellTip, setCellTip] = useState<{
+    ds: string;
+    left: number;
+    top: number;
+  } | null>(null);
+  const calRef = useRef<HTMLDivElement | null>(null);
   // pin compact·스크롤 스파이·lock — 공용 원장 훅 (design txm-pin).
-  const { rootRef, pinRef, compact, selected, setSelected, lock, scrollToDay, scrollToTop } =
-    useLedgerScroll({
-      initialSelected: todayStr.startsWith(initialMonth) ? todayStr : null,
-      onCompactEnter: () => setExpanded(false),
-    })
+  const {
+    rootRef,
+    pinRef,
+    compact,
+    selected,
+    setSelected,
+    lock,
+    scrollToDay,
+    scrollToTop,
+  } = useLedgerScroll({
+    initialSelected: todayStr.startsWith(initialMonth) ? todayStr : null,
+    onCompactEnter: () => setExpanded(false),
+  });
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
-  const [detail, setDetail] = useState<Expense | null>(null)
-  const [editing, setEditing] = useState<Expense | null>(null)
+  const [detail, setDetail] = useState<Expense | null>(null);
+  const [editing, setEditing] = useState<Expense | null>(null);
   // 스와이프 액션 — 상세 다이얼로그와 같은 뮤테이션·같은 확인 문구를 쓴다.
-  const { t: tc } = useTranslation('common')
-  const deleteExpense = useDeleteExpense()
+  const { t: tc } = useTranslation("common");
+  const deleteExpense = useDeleteExpense();
 
   const rowLabelOf = (e: Expense) =>
-    e.merchant ?? e.description ?? e.categoryName ?? tc('transaction')
+    e.merchant ?? e.description ?? e.categoryName ?? tc("transaction");
 
   /**
    * 밀었을 때 드러나는 액션 — 의미 순서 그대로 [수정, 삭제] 로 넘긴다.
@@ -1283,402 +1678,613 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
    */
   const swipeActionsFor = (e: Expense): SwipeAction[] => [
     {
-      label: tc('edit'),
+      label: tc("edit"),
       icon: <Pencil />,
-      kind: 'primary',
+      kind: "primary",
       // 상세를 닫고 수정으로 — 상세 footer 의 수정과 같은 목적지(AddTxSheet).
       onSelect: () => {
-        setDetail(null)
-        setEditing(e)
+        setDetail(null);
+        setEditing(e);
       },
     },
     {
-      label: tc('delete'),
+      label: tc("delete"),
       icon: <Trash2 />,
-      kind: 'destructive',
+      kind: "destructive",
       confirm: {
-        title: t('deleteConfirm.title'),
+        title: t("deleteConfirm.title"),
         // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
         message:
           (e.refundCount ?? 0) > 0 ? (
             <>
-              {t('txDetail.deleteMessage', { name: rowLabelOf(e) })}
+              {t("txDetail.deleteMessage", { name: rowLabelOf(e) })}
               <br />
               <br />
-              {t('addTx.deleteRefundWarn', {
+              {t("addTx.deleteRefundWarn", {
                 count: e.refundCount,
                 amount: KRW(e.refundedAmount),
               })}
             </>
           ) : (
-            t('txDetail.deleteMessage', { name: rowLabelOf(e) })
+            t("txDetail.deleteMessage", { name: rowLabelOf(e) })
           ),
         loading: deleteExpense.isPending,
       },
       onSelect: () => deleteExpense.mutateAsync(e.rowId),
     },
-  ]
+  ];
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null)
+  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
-  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(null)
-  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(null)
+  const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(
+    null,
+  );
+  const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(
+    null,
+  );
 
-  const categoriesQ = useExpenseCategories()
-  const assetsQ = useAssets()
-  const { expenses, transfers, monthIn, monthOut, isLoadingList, isLoadingSummary } = useExpenseData(
-    month, 'all', filterValue, assetId, categoriesQ.data ?? null,
-  )
-  const activeCount = filterActiveCount(filterValue)
+  const categoriesQ = useExpenseCategories();
+  const assetsQ = useAssets();
+  const {
+    expenses,
+    transfers,
+    monthIn,
+    monthOut,
+    isLoadingList,
+    isLoadingSummary,
+  } = useExpenseData(
+    month,
+    "all",
+    filterValue,
+    assetId,
+    categoriesQ.data ?? null,
+  );
+  const activeCount = filterActiveCount(filterValue);
 
   // 인사이트 — 지난달 지출 대비 / 없으면 이번 달 최다 지출 카테고리.
-  const prevRange = monthRange(shiftMonthKey(month, -1))
-  const prevQ = useRangeSummary(prevRange.startDate, prevRange.endDate)
-  const curRange = monthRange(month)
-  const curSummaryQ = useRangeSummary(curRange.startDate, curRange.endDate)
+  const prevRange = monthRange(shiftMonthKey(month, -1));
+  const prevQ = useRangeSummary(prevRange.startDate, prevRange.endDate);
+  const curRange = monthRange(month);
+  const curSummaryQ = useRangeSummary(curRange.startDate, curRange.endDate);
 
-  const insightHidden = useHideAmounts(INSIGHT_CARDS, 'expense')
+  const insightHidden = useHideAmounts(INSIGHT_CARDS, "expense");
   const insight = useMemo(() => {
-    if (isLoadingList || isLoadingSummary) return null
-    if (expenses.length === 0) return <>{t('txm.insightNone')}</>
-    const prevOut = prevQ.data?.totalExpense ?? 0
+    if (isLoadingList || isLoadingSummary) return null;
+    if (expenses.length === 0) return <>{t("txm.insightNone")}</>;
+    const prevOut = prevQ.data?.totalExpense ?? 0;
     if (prevOut > 0) {
-      const diff = prevOut - monthOut
-      const man = Math.abs(Math.round(diff / 10000))
-      if (man < 1) return <>{t('txm.insightSame')}</>
+      const diff = prevOut - monthOut;
+      const man = Math.abs(Math.round(diff / 10000));
+      if (man < 1) return <>{t("txm.insightSame")}</>;
       // 문장은 남기고 금액만 가린다 — 방향(덜/더)은 크기가 아니라서 그대로 둔다.
       const amount = insightHidden
         ? HIDE_AMOUNTS_MASK
-        : isEn() ? `\u20a9${KRW(Math.abs(diff))}` : `${KRW(man)}만원`
+        : isEn()
+          ? `\u20a9${KRW(Math.abs(diff))}`
+          : `${KRW(man)}만원`;
       return (
         <Trans
           t={t}
-          i18nKey={diff > 0 ? 'txm.insightLess' : 'txm.insightMore'}
+          i18nKey={diff > 0 ? "txm.insightLess" : "txm.insightMore"}
           values={{ amount }}
-          components={{ hl: <b className={diff > 0 ? 'font-bold text-[var(--fg-brand)]' : 'font-bold text-[var(--fg-expense)]'} /> }}
+          components={{
+            hl: (
+              <b
+                className={
+                  diff > 0
+                    ? "font-bold text-[var(--fg-brand)]"
+                    : "font-bold text-[var(--fg-expense)]"
+                }
+              />
+            ),
+          }}
         />
-      )
+      );
     }
     const top = (curSummaryQ.data?.categoryBreakdown ?? [])
-      .filter(b => b.expenseType === 'EXPENSE')
+      .filter((b) => b.expenseType === "EXPENSE")
       .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount)[0]
+      .sort((a, b) => b.totalAmount - a.totalAmount)[0];
     if (top) {
       return (
         <Trans
           t={t}
           i18nKey="txm.insightTopCat"
           values={{ cat: top.categoryName }}
-          components={{ hl: <b className="font-bold text-[var(--fg-brand)]" /> }}
+          components={{
+            hl: <b className="font-bold text-[var(--fg-brand)]" />,
+          }}
         />
-      )
+      );
     }
-    return null
-  }, [isLoadingList, isLoadingSummary, expenses.length, prevQ.data, curSummaryQ.data, monthOut, insightHidden, t])
+    return null;
+  }, [
+    isLoadingList,
+    isLoadingSummary,
+    expenses.length,
+    prevQ.data,
+    curSummaryQ.data,
+    monthOut,
+    insightHidden,
+    t,
+  ]);
 
   // 일별 합계 — 캘린더 셀 밑 금액.
   const byDay = useMemo(() => {
-    const m: Record<string, { out: number; inn: number }> = {}
+    const m: Record<string, { out: number; inn: number }> = {};
     // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
     for (const e of countableTx(expenses)) {
-      const k = dayKey(e.expenseDate)
-      m[k] = m[k] || { out: 0, inn: 0 }
-      if (isRefundTx(e)) m[k].out -= Math.abs(e.amount)
-      else if (e.expenseType === 'EXPENSE') m[k].out += Math.abs(e.amount)
-      else m[k].inn += Math.abs(e.amount)
+      const k = dayKey(e.expenseDate);
+      m[k] = m[k] || { out: 0, inn: 0 };
+      if (isRefundTx(e)) m[k].out -= Math.abs(e.amount);
+      else if (e.expenseType === "EXPENSE") m[k].out += Math.abs(e.amount);
+      else m[k].inn += Math.abs(e.amount);
     }
-    return m
-  }, [expenses])
+    return m;
+  }, [expenses]);
 
   // 캘린더 주(week) 구성.
   const weeks = useMemo(() => {
-    const [y = 0, m = 1] = month.split('-').map(Number)
-    const firstDow = new Date(y, m - 1, 1).getDay()
-    const dim = new Date(y, m, 0).getDate()
-    const cells: ({ d: number; ds: string } | null)[] = []
-    for (let i = 0; i < firstDow; i++) cells.push(null)
-    for (let d = 1; d <= dim; d++) cells.push({ d, ds: `${month}-${TXM_PAD(d)}` })
-    while (cells.length % 7) cells.push(null)
-    const out: (typeof cells)[] = []
-    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7))
-    return out
-  }, [month])
-  let selWeek = weeks.findIndex(w => w.some(c => c && c.ds === selected))
-  if (selWeek < 0) selWeek = weeks.findIndex(w => w.some(c => c && c.ds === todayStr))
-  if (selWeek < 0) selWeek = 0
+    const [y = 0, m = 1] = month.split("-").map(Number);
+    const firstDow = new Date(y, m - 1, 1).getDay();
+    const dim = new Date(y, m, 0).getDate();
+    const cells: ({ d: number; ds: string } | null)[] = [];
+    for (let i = 0; i < firstDow; i++) cells.push(null);
+    for (let d = 1; d <= dim; d++)
+      cells.push({ d, ds: `${month}-${TXM_PAD(d)}` });
+    while (cells.length % 7) cells.push(null);
+    const out: (typeof cells)[] = [];
+    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
+    return out;
+  }, [month]);
+  let selWeek = weeks.findIndex((w) => w.some((c) => c && c.ds === selected));
+  if (selWeek < 0)
+    selWeek = weeks.findIndex((w) => w.some((c) => c && c.ds === todayStr));
+  if (selWeek < 0) selWeek = 0;
 
   const goMonth = (dir: -1 | 1) => {
-    const next = shiftMonthKey(month, dir)
-    setMonth(next)
-    setSelected(todayStr.startsWith(next) ? todayStr : null)
-    setExpanded(false)
-    lock(800)
-    scrollToTop()
-  }
+    const next = shiftMonthKey(month, dir);
+    setMonth(next);
+    setSelected(todayStr.startsWith(next) ? todayStr : null);
+    setExpanded(false);
+    lock(800);
+    scrollToTop();
+  };
 
   const numColor = (ds: string, dow: number): string => {
-    if (ds > todayStr) return 'var(--fg-tertiary)'
-    if (dow === 0) return 'var(--fg-expense)' // 캘린더 일요일 정합(사용자 결정)
-    if (dow === 6) return 'var(--fg-brand)'
-    return 'var(--fg-primary)'
-  }
+    if (ds > todayStr) return "var(--fg-tertiary)";
+    if (dow === 0) return "var(--fg-expense)"; // 캘린더 일요일 정합(사용자 결정)
+    if (dow === 6) return "var(--fg-brand)";
+    return "var(--fg-primary)";
+  };
 
   const dowLabels = useMemo(() => {
     // 요일 라벨 — formatDay 로케일 반환 재사용(2026-02-01 = 일요일).
-    return Array.from({ length: 7 }, (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow)
-  }, [])
+    return Array.from(
+      { length: 7 },
+      (_, i) => formatDay(`2026-02-${TXM_PAD(i + 1)}`).dow,
+    );
+  }, []);
 
-  const grouped = useMemo(() => groupLedgerByDay(expenses, transfers), [expenses, transfers])
-  const yest = new Date(now); yest.setDate(now.getDate() - 1)
-  const yesterdayStr = `${yest.getFullYear()}-${TXM_PAD(yest.getMonth() + 1)}-${TXM_PAD(yest.getDate())}`
-  const relOf = (d: string) => (d === todayStr ? t('txm.today') : d === yesterdayStr ? t('txm.yesterday') : null)
+  const grouped = useMemo(
+    () => groupLedgerByDay(expenses, transfers),
+    [expenses, transfers],
+  );
+  const yest = new Date(now);
+  yest.setDate(now.getDate() - 1);
+  const yesterdayStr = `${yest.getFullYear()}-${TXM_PAD(yest.getMonth() + 1)}-${TXM_PAD(yest.getDate())}`;
+  const relOf = (d: string) =>
+    d === todayStr
+      ? t("txm.today")
+      : d === yesterdayStr
+        ? t("txm.yesterday")
+        : null;
 
-  const focusRef = useRef<HTMLDivElement | null>(null)
+  const focusRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (focusTxId && focusRef.current) {
-      focusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      focusRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [focusTxId, expenses.length])
+  }, [focusTxId, expenses.length]);
 
   // 필터 활성 시 — 월선택/총액/캘린더/divider 숨기고 온전히 리스트만(사용자 결정).
-  const filterActive = activeCount > 0 || !!asset
+  const filterActive = activeCount > 0 || !!asset;
 
   return (
     <LedgerShell ref={rootRef}>
       {/* 고정 영역 — 월네비 + 총액(스크롤 시 접힘) + 캘린더. 리스트만 스크롤(design txm-pin). */}
       <LedgerPin ref={pinRef} compact={compact}>
-      {/* 월 네비 + 필터/추가 */}
-      <LedgerMonthNav>
-        {!filterActive && (
-          <>
-            <LedgerNavBtn onClick={() => goMonth(-1)} aria-label={t('prevMonth')}>
-              <ChevronLeft size={19} />
-            </LedgerNavBtn>
-            <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
-            <LedgerNavBtn onClick={() => goMonth(1)} aria-label={t('nextMonth')}>
-              <ChevronRight size={19} />
-            </LedgerNavBtn>
-          </>
-        )}
-        <LedgerNavBtn
-          className="ml-auto relative"
-          active={activeCount > 0}
-          onClick={() => setFilterOpen(true)}
-          aria-label={t('filter.title')}
-        >
-          <SlidersHorizontal size={18} />
-          {activeCount > 0 && (
-            <span
-              aria-hidden
-              className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[length:var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
-            >
-              {activeCount}
-            </span>
+        {/* 월 네비 + 필터/추가 */}
+        <LedgerMonthNav>
+          {!filterActive && (
+            <>
+              <LedgerNavBtn
+                onClick={() => goMonth(-1)}
+                aria-label={t("prevMonth")}
+              >
+                <ChevronLeft size={19} />
+              </LedgerNavBtn>
+              <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
+              <LedgerNavBtn
+                onClick={() => goMonth(1)}
+                aria-label={t("nextMonth")}
+              >
+                <ChevronRight size={19} />
+              </LedgerNavBtn>
+            </>
           )}
-        </LedgerNavBtn>
-        <LedgerNavBtn onClick={onAddTx} aria-label={t('addTransaction')}>
-          <Plus size={19} />
-        </LedgerNavBtn>
-      </LedgerMonthNav>
+          <LedgerNavBtn
+            className="ml-auto relative"
+            active={activeCount > 0}
+            onClick={() => setFilterOpen(true)}
+            aria-label={t("filter.title")}
+          >
+            <SlidersHorizontal size={18} />
+            {activeCount > 0 && (
+              <span
+                aria-hidden
+                className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[length:var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
+              >
+                {activeCount}
+              </span>
+            )}
+          </LedgerNavBtn>
+          <LedgerNavBtn onClick={onAddTx} aria-label={t("addTransaction")}>
+            <Plus size={19} />
+          </LedgerNavBtn>
+        </LedgerMonthNav>
 
-      {filterActive && (
-        <FilterChipsRow
-          filterValue={filterValue}
-          onChange={(v) => setFilterValue(v && filterActiveCount(v) > 0 ? v : null)}
-          assetName={asset?.assetName}
-          onClearAsset={clear}
-          categories={categoriesQ.data ?? []}
-          assets={assetsQ.data?.assets ?? []}
-        />
-      )}
-
-      {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
-      {!filterActive && (
-      <LedgerCollapse>
-      <LedgerHead>
-        <div style={{ minWidth: 0 }}>
-          <LedgerTotal className="num">
-            {isLoadingSummary ? '—' : <><MaskAmount card="ledger.txList" kind="expense">{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit card="ledger.txList" kind="expense" /></>}
-          </LedgerTotal>
-          {insight && <LedgerSub>{insight}</LedgerSub>}
-        </div>
-        <LedgerSumBtn active={sumOpen} onClick={() => setSumOpen(v => !v)} aria-expanded={sumOpen}>
-          {t('txm.spendSummary')}
-        </LedgerSumBtn>
-      </LedgerHead>
-
-      {sumOpen && (
-        <LedgerSummary>
-          <LedgerSummaryRow>
-            <span>{t('income')}</span>
-            <span className="num" style={{ color: 'var(--fg-brand)' }}>
-              <MaskAmount card="ledger.txList" kind="income">+{wonPre()}{KRW(monthIn)}</MaskAmount><WonUnit card="ledger.txList" kind="income" />
-            </span>
-          </LedgerSummaryRow>
-          <LedgerSummaryRow>
-            <span>{t('expense')}</span>
-            <span className="num" style={{ color: 'var(--fg-expense)' }}>
-              <MaskAmount card="ledger.txList" kind="expense">−{wonPre()}{KRW(monthOut)}</MaskAmount><WonUnit card="ledger.txList" kind="expense" />
-            </span>
-          </LedgerSummaryRow>
-          <LedgerSummaryRow total>
-            <span>{t('txDetail.sumLabel')}</span>
-            <span className="num">
-              <MaskAmount card="ledger.txList" kind="net">{monthIn - monthOut >= 0 ? '+' : '−'}{wonPre()}{KRW(Math.abs(monthIn - monthOut))}</MaskAmount><WonUnit card="ledger.txList" kind="net" />
-            </span>
-          </LedgerSummaryRow>
-        </LedgerSummary>
-      )}
-      </LedgerCollapse>
-      )}
-
-      {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
-      {!filterActive && (
-      <LedgerCalendar ref={calRef}>
-        <LedgerDow
-          labels={dowLabels}
-          // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
-          // 카테고리 팔레트의 빨강(--color-cat-red)을 쓰고 있어 헤더만 톤이 달랐다.
-          colorFor={i => (i === 0 ? 'var(--fg-expense)' : i === 6 ? 'var(--fg-brand)' : undefined)}
-        />
-        {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
-          <LedgerWeek key={wi}>
-            {w.map((c, i) => {
-              if (!c) return <LedgerCell key={`e${i}`} empty />
-              const isSel = c.ds === selected
-              const data = byDay[c.ds]
-              return (
-                <LedgerCell
-                  key={c.ds}
-                  selected={isSel}
-                  onClick={() => { setSelected(c.ds); if (data) { lock(800); scrollToDay(c.ds) } }}
-                  onMouseEnter={(e) => {
-                    if (!data || !calRef.current) return
-                    const cell = e.currentTarget.getBoundingClientRect()
-                    const cal = calRef.current.getBoundingClientRect()
-                    setCellTip({ ds: c.ds, left: cell.left - cal.left + cell.width / 2, top: cell.top - cal.top })
-                  }}
-                  onMouseLeave={() => setCellTip(null)}
-                >
-                  <LedgerCellNum
-                    selected={isSel}
-                    style={isSel ? undefined : { color: numColor(c.ds, i % 7), opacity: c.ds > todayStr ? 0.55 : 1 }}
-                  >
-                    {c.d}
-                  </LedgerCellNum>
-                  {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
-                  {data && data.out > 0 && (
-                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-expense)' }}>
-                      <MaskAmount card={CALENDAR_CELL_CARDS} kind="expense" mask="••">-{KRW(data.out)}</MaskAmount>
-                    </LedgerCellAmt>
-                  )}
-                  {data && data.inn > 0 && (
-                    <LedgerCellAmt className="num" style={{ color: 'var(--fg-brand)' }}>
-                      <MaskAmount card={CALENDAR_CELL_CARDS} kind="income" mask="••">+{KRW(data.inn)}</MaskAmount>
-                    </LedgerCellAmt>
-                  )}
-                  {!data && <LedgerCellAmt className="num" />}
-                </LedgerCell>
-              )
-            })}
-          </LedgerWeek>
-        ))}
-        <LedgerExpand
-          expanded={expanded}
-          onClick={() => setExpanded(v => !v)}
-          aria-label={expanded ? t('viewCalendar') : t('viewList')}
-        />
-        {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
-        {cellTip && byDay[cellTip.ds] && (
-          <LedgerCellTip
-            left={cellTip.left}
-            top={cellTip.top}
-            title={<>{Number(cellTip.ds.slice(5, 7))}. {Number(cellTip.ds.slice(8, 10))}</>}
-            rows={[
-              { label: t('expense'), color: 'var(--fg-expense)', value: <><MaskAmount card="ledger.txList" kind="expense">−{wonPre()}{KRW(byDay[cellTip.ds]?.out ?? 0)}</MaskAmount><WonUnit card="ledger.txList" kind="expense" /></> },
-              { label: t('income'), color: 'var(--fg-brand)', value: <><MaskAmount card="ledger.txList" kind="income">+{wonPre()}{KRW(byDay[cellTip.ds]?.inn ?? 0)}</MaskAmount><WonUnit card="ledger.txList" kind="income" /></> },
-            ]}
+        {filterActive && (
+          <FilterChipsRow
+            filterValue={filterValue}
+            onChange={(v) =>
+              setFilterValue(v && filterActiveCount(v) > 0 ? v : null)
+            }
+            assetName={asset?.assetName}
+            onClearAsset={clear}
+            categories={categoriesQ.data ?? []}
+            assets={assetsQ.data?.assets ?? []}
           />
         )}
-      </LedgerCalendar>
-      )}
 
-      {!filterActive && <LedgerDivider />}
+        {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
+        {!filterActive && (
+          <LedgerCollapse>
+            <LedgerHead>
+              <div style={{ minWidth: 0 }}>
+                <LedgerTotal className="num">
+                  {isLoadingSummary ? (
+                    "—"
+                  ) : (
+                    <>
+                      <MaskAmount card="ledger.txList" kind="expense">
+                        {wonPre()}
+                        {KRW(monthOut)}
+                      </MaskAmount>
+                      <WonUnit card="ledger.txList" kind="expense" />
+                    </>
+                  )}
+                </LedgerTotal>
+                {insight && <LedgerSub>{insight}</LedgerSub>}
+              </div>
+              <LedgerSumBtn
+                active={sumOpen}
+                onClick={() => setSumOpen((v) => !v)}
+                aria-expanded={sumOpen}
+              >
+                {t("txm.spendSummary")}
+              </LedgerSumBtn>
+            </LedgerHead>
+
+            {sumOpen && (
+              <LedgerSummary>
+                <LedgerSummaryRow>
+                  <span>{t("income")}</span>
+                  <span className="num" style={{ color: "var(--fg-brand)" }}>
+                    <MaskAmount card="ledger.txList" kind="income">
+                      +{wonPre()}
+                      {KRW(monthIn)}
+                    </MaskAmount>
+                    <WonUnit card="ledger.txList" kind="income" />
+                  </span>
+                </LedgerSummaryRow>
+                <LedgerSummaryRow>
+                  <span>{t("expense")}</span>
+                  <span className="num" style={{ color: "var(--fg-expense)" }}>
+                    <MaskAmount card="ledger.txList" kind="expense">
+                      −{wonPre()}
+                      {KRW(monthOut)}
+                    </MaskAmount>
+                    <WonUnit card="ledger.txList" kind="expense" />
+                  </span>
+                </LedgerSummaryRow>
+                <LedgerSummaryRow total>
+                  <span>{t("txDetail.sumLabel")}</span>
+                  <span className="num">
+                    <MaskAmount card="ledger.txList" kind="net">
+                      {monthIn - monthOut >= 0 ? "+" : "−"}
+                      {wonPre()}
+                      {KRW(Math.abs(monthIn - monthOut))}
+                    </MaskAmount>
+                    <WonUnit card="ledger.txList" kind="net" />
+                  </span>
+                </LedgerSummaryRow>
+              </LedgerSummary>
+            )}
+          </LedgerCollapse>
+        )}
+
+        {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
+        {!filterActive && (
+          <LedgerCalendar ref={calRef}>
+            <LedgerDow
+              labels={dowLabels}
+              // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
+              // 카테고리 팔레트의 빨강(--color-cat-red)을 쓰고 있어 헤더만 톤이 달랐다.
+              colorFor={(i) =>
+                i === 0
+                  ? "var(--fg-expense)"
+                  : i === 6
+                    ? "var(--fg-brand)"
+                    : undefined
+              }
+            />
+            {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
+              <LedgerWeek key={wi}>
+                {w.map((c, i) => {
+                  if (!c) return <LedgerCell key={`e${i}`} empty />;
+                  const isSel = c.ds === selected;
+                  const data = byDay[c.ds];
+                  return (
+                    <LedgerCell
+                      key={c.ds}
+                      selected={isSel}
+                      onClick={() => {
+                        setSelected(c.ds);
+                        if (data) {
+                          lock(800);
+                          scrollToDay(c.ds);
+                        }
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!data || !calRef.current) return;
+                        const cell = e.currentTarget.getBoundingClientRect();
+                        const cal = calRef.current.getBoundingClientRect();
+                        setCellTip({
+                          ds: c.ds,
+                          left: cell.left - cal.left + cell.width / 2,
+                          top: cell.top - cal.top,
+                        });
+                      }}
+                      onMouseLeave={() => setCellTip(null)}
+                    >
+                      <LedgerCellNum
+                        selected={isSel}
+                        style={
+                          isSel
+                            ? undefined
+                            : {
+                                color: numColor(c.ds, i % 7),
+                                opacity: c.ds > todayStr ? 0.55 : 1,
+                              }
+                        }
+                      >
+                        {c.d}
+                      </LedgerCellNum>
+                      {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
+                      {data && data.out > 0 && (
+                        <LedgerCellAmt
+                          className="num"
+                          style={{ color: "var(--fg-expense)" }}
+                        >
+                          <MaskAmount
+                            card={CALENDAR_CELL_CARDS}
+                            kind="expense"
+                            mask="••"
+                          >
+                            -{KRW(data.out)}
+                          </MaskAmount>
+                        </LedgerCellAmt>
+                      )}
+                      {data && data.inn > 0 && (
+                        <LedgerCellAmt
+                          className="num"
+                          style={{ color: "var(--fg-brand)" }}
+                        >
+                          <MaskAmount
+                            card={CALENDAR_CELL_CARDS}
+                            kind="income"
+                            mask="••"
+                          >
+                            +{KRW(data.inn)}
+                          </MaskAmount>
+                        </LedgerCellAmt>
+                      )}
+                      {!data && <LedgerCellAmt className="num" />}
+                    </LedgerCell>
+                  );
+                })}
+              </LedgerWeek>
+            ))}
+            <LedgerExpand
+              expanded={expanded}
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={expanded ? t("viewCalendar") : t("viewList")}
+            />
+            {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
+            {cellTip && byDay[cellTip.ds] && (
+              <LedgerCellTip
+                left={cellTip.left}
+                top={cellTip.top}
+                title={
+                  <>
+                    {Number(cellTip.ds.slice(5, 7))}.{" "}
+                    {Number(cellTip.ds.slice(8, 10))}
+                  </>
+                }
+                rows={[
+                  {
+                    label: t("expense"),
+                    color: "var(--fg-expense)",
+                    value: (
+                      <>
+                        <MaskAmount card="ledger.txList" kind="expense">
+                          −{wonPre()}
+                          {KRW(byDay[cellTip.ds]?.out ?? 0)}
+                        </MaskAmount>
+                        <WonUnit card="ledger.txList" kind="expense" />
+                      </>
+                    ),
+                  },
+                  {
+                    label: t("income"),
+                    color: "var(--fg-brand)",
+                    value: (
+                      <>
+                        <MaskAmount card="ledger.txList" kind="income">
+                          +{wonPre()}
+                          {KRW(byDay[cellTip.ds]?.inn ?? 0)}
+                        </MaskAmount>
+                        <WonUnit card="ledger.txList" kind="income" />
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </LedgerCalendar>
+        )}
+
+        {!filterActive && <LedgerDivider />}
       </LedgerPin>
 
       {/* 거래 리스트 — 날짜 그룹 */}
       <LedgerList>
         {isLoadingList ? (
-          <div style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div
+            style={{
+              paddingTop: 24,
+              display: "flex",
+              flexDirection: "column",
+              gap: 24,
+            }}
+          >
             <ExpenseDayGroupSkeleton rows={3} />
             <ExpenseDayGroupSkeleton rows={2} />
           </div>
         ) : (
           grouped.map(([d, items]) => {
-            const [yy, mm, dd] = d.split('-')
-            const dow = formatDay(d).dow
-            const rel = relOf(d)
+            const [yy, mm, dd] = d.split("-");
+            const dow = formatDay(d).dow;
+            const rel = relOf(d);
             // 일별 합계 — 이체는 자산 간 이동이라 지출/수입 어느 쪽에도 넣지 않는다.
-            const dayExpenses = items.flatMap(i => (i.kind === 'expense' ? [i.expense] : []))
-            const dOut = expenseSum(dayExpenses)
-            const dIn = incomeSum(dayExpenses)
+            const dayExpenses = items.flatMap((i) =>
+              i.kind === "expense" ? [i.expense] : [],
+            );
+            const dOut = expenseSum(dayExpenses);
+            const dIn = incomeSum(dayExpenses);
             return (
               <LedgerDayGroup key={d} day={d}>
                 <LedgerDayHead>
-                  <LedgerDayDate>{(yy ?? '').slice(2)}. {Number(mm)}. {Number(dd)}({dow})</LedgerDayDate>
+                  <LedgerDayDate>
+                    {(yy ?? "").slice(2)}. {Number(mm)}. {Number(dd)}({dow})
+                  </LedgerDayDate>
                   {rel && <LedgerDayRel>&nbsp;· {rel}</LedgerDayRel>}
                   <LedgerDaySum className="num">
-                    {dOut > 0 && <span className="font-semibold text-[var(--fg-expense)]"><MaskAmount card="ledger.txList" kind="expense">-{wonPre()}{KRW(dOut)}</MaskAmount><WonUnit card="ledger.txList" kind="expense" /></span>}
-                    {dIn > 0 && <span className="ml-2 font-semibold text-[var(--fg-brand)]"><MaskAmount card="ledger.txList" kind="income">+{wonPre()}{KRW(dIn)}</MaskAmount><WonUnit card="ledger.txList" kind="income" /></span>}
+                    {dOut > 0 && (
+                      <span className="font-semibold text-[var(--fg-expense)]">
+                        <MaskAmount card="ledger.txList" kind="expense">
+                          -{wonPre()}
+                          {KRW(dOut)}
+                        </MaskAmount>
+                        <WonUnit card="ledger.txList" kind="expense" />
+                      </span>
+                    )}
+                    {dIn > 0 && (
+                      <span className="ml-2 font-semibold text-[var(--fg-brand)]">
+                        <MaskAmount card="ledger.txList" kind="income">
+                          +{wonPre()}
+                          {KRW(dIn)}
+                        </MaskAmount>
+                        <WonUnit card="ledger.txList" kind="income" />
+                      </span>
+                    )}
                   </LedgerDaySum>
                 </LedgerDayHead>
                 <div>
-                  {items.map(item => {
+                  {items.map((item) => {
                     // 지출·이체는 다른 테이블이라 rowId 가 겹칠 수 있다 — key·포커스는 종류까지 합쳐 판별.
-                    const isFocus = item.kind === 'expense' && focusTxId === item.expense.rowId
-                    return (
-                      item.kind === 'expense' ? (
-                        <SwipeActions
-                          key={ledgerKey(item)}
-                          ref={isFocus ? focusRef : undefined}
-                          rowId={`expense-${item.expense.rowId}`}
-                          groupTag="expense-list"
-                          rowLabel={rowLabelOf(item.expense)}
-                          // 데스크톱 통과는 spec Platform — 이 브랜치는 이미 모바일 전용이라
-                          // 실질 no-op 이지만, 공용 컴포넌트로 옮겨질 때 새지 않게 의미를 남긴다.
-                          enabled
-                          style={{
-                            background: isFocus ? 'var(--bg-brand-subtle)' : 'var(--bg-surface)',
-                            transition: 'background 0.4s',
-                            borderRadius: 10,
-                          }}
-                          // 시스템이 만든 거래(매도 실현손익·이체 이자)는 원본을 지워야 사라진다 —
-                          // 상세 다이얼로그가 버튼을 감추는 것과 같은 조건으로 액션 자체를 없앤다.
-                          actions={item.expense.autoSource != null ? [] : swipeActionsFor(item.expense)}
-                        >
-                          <ExpenseRow expense={item.expense} onClick={(ex) => setDetail(ex)} />
-                        </SwipeActions>
-                      ) : (
-                        // 이체 행은 감싸지 않는다 — 앱도 제외한다.
-                        <div key={ledgerKey(item)}>
-                          <TransferRow transfer={item.transfer} onClick={(tr) => setTransferDetail(tr)} />
-                        </div>
-                      )
-                    )
+                    const isFocus =
+                      item.kind === "expense" &&
+                      focusTxId === item.expense.rowId;
+                    return item.kind === "expense" ? (
+                      <SwipeActions
+                        key={ledgerKey(item)}
+                        ref={isFocus ? focusRef : undefined}
+                        rowId={`expense-${item.expense.rowId}`}
+                        groupTag="expense-list"
+                        rowLabel={rowLabelOf(item.expense)}
+                        // 데스크톱 통과는 spec Platform — 이 브랜치는 이미 모바일 전용이라
+                        // 실질 no-op 이지만, 공용 컴포넌트로 옮겨질 때 새지 않게 의미를 남긴다.
+                        enabled
+                        style={{
+                          background: isFocus
+                            ? "var(--bg-brand-subtle)"
+                            : "var(--bg-surface)",
+                          transition: "background 0.4s",
+                          borderRadius: 10,
+                        }}
+                        // 시스템이 만든 거래(매도 실현손익·이체 이자)는 원본을 지워야 사라진다 —
+                        // 상세 다이얼로그가 버튼을 감추는 것과 같은 조건으로 액션 자체를 없앤다.
+                        actions={
+                          item.expense.autoSource != null
+                            ? []
+                            : swipeActionsFor(item.expense)
+                        }
+                      >
+                        <ExpenseRow
+                          expense={item.expense}
+                          onClick={(ex) => setDetail(ex)}
+                        />
+                      </SwipeActions>
+                    ) : (
+                      // 이체 행은 감싸지 않는다 — 앱도 제외한다.
+                      <div key={ledgerKey(item)}>
+                        <TransferRow
+                          transfer={item.transfer}
+                          onClick={(tr) => setTransferDetail(tr)}
+                        />
+                      </div>
+                    );
                   })}
                 </div>
               </LedgerDayGroup>
-            )
+            );
           })
         )}
         {!isLoadingList && expenses.length === 0 && transfers.length === 0 && (
-          <div style={{ padding: '56px 0', textAlign: 'center' }}>
-            <ReceiptText size={36} style={{ color: 'var(--fg-tertiary)', margin: '0 auto 12px' }} />
-            <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: 700, color: 'var(--fg-primary)', marginBottom: 4 }}>
-              {t('txm.emptyMonth', { month: txmMonthLabel(month) })}
+          <div style={{ padding: "56px 0", textAlign: "center" }}>
+            <ReceiptText
+              size={36}
+              style={{ color: "var(--fg-tertiary)", margin: "0 auto 12px" }}
+            />
+            <div
+              style={{
+                fontSize: "var(--text-body-sm)",
+                fontWeight: 700,
+                color: "var(--fg-primary)",
+                marginBottom: 4,
+              }}
+            >
+              {t("txm.emptyMonth", { month: txmMonthLabel(month) })}
             </div>
-            <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)' }}>
-              {t('txm.emptyMonthDesc')}
+            <div
+              style={{
+                fontSize: "var(--text-label-sm)",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              {t("txm.emptyMonthDesc")}
             </div>
           </div>
         )}
@@ -1686,7 +2292,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
       {!filterActive && (
         <LedgerPrevBtn onClick={() => goMonth(-1)}>
-          {t('txm.prevMonthBtn', { month: txmMonthLabel(shiftMonthKey(month, -1)) })}
+          {t("txm.prevMonthBtn", {
+            month: txmMonthLabel(shiftMonthKey(month, -1)),
+          })}
         </LedgerPrevBtn>
       )}
 
@@ -1695,22 +2303,35 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           expense={detail}
           mobile
           onClose={() => setDetail(null)}
-          onEdit={(e) => { setDetail(null); setEditing(e) }}
-          onRefund={(e) => { setDetail(null); setRefunding(e) }}
+          onEdit={(e) => {
+            setDetail(null);
+            setEditing(e);
+          }}
+          onRefund={(e) => {
+            setDetail(null);
+            setRefunding(e);
+          }}
         />
       )}
       {editing && (
         <AddTxSheet expense={editing} mobile onClose={() => setEditing(null)} />
       )}
       {refunding && (
-        <AddTxSheet refundOf={refunding} mobile onClose={() => setRefunding(null)} />
+        <AddTxSheet
+          refundOf={refunding}
+          mobile
+          onClose={() => setRefunding(null)}
+        />
       )}
       {transferDetail && !editingTransfer && (
         <TransferDetailDialog
           transfer={transferDetail}
           mobile
           onClose={() => setTransferDetail(null)}
-          onEdit={(tr) => { setTransferDetail(null); setEditingTransfer(tr) }}
+          onEdit={(tr) => {
+            setTransferDetail(null);
+            setEditingTransfer(tr);
+          }}
         />
       )}
       {editingTransfer && (
@@ -1726,16 +2347,18 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           categories={categoriesQ.data ?? []}
           assets={assetsQ.data?.assets ?? []}
           onClose={() => setFilterOpen(false)}
-          onApply={(v) => { setFilterValue(v); setFilterOpen(false) }}
+          onApply={(v) => {
+            setFilterValue(v);
+            setFilterOpen(false);
+          }}
           mobile
         />
       )}
     </LedgerShell>
-  )
+  );
 }
 
-
-export default ExpensePage
+export default ExpensePage;
 
 /**
  * 월 ± 1 이동 화살표 버튼.
@@ -1746,28 +2369,34 @@ function MonthArrowButton({
   month,
   onChange,
 }: {
-  dir: 'prev' | 'next'
-  month: string
-  onChange: (m: string) => void
+  dir: "prev" | "next";
+  month: string;
+  onChange: (m: string) => void;
 }) {
-  const { t } = useTranslation('expense')
+  const { t } = useTranslation("expense");
   const handle = () => {
-    const [yStr, mStr] = month.split('-')
-    let y = Number(yStr)
-    let m = Number(mStr) + (dir === 'prev' ? -1 : 1)
-    if (m < 1) { y -= 1; m = 12 }
-    if (m > 12) { y += 1; m = 1 }
-    onChange(`${y}-${String(m).padStart(2, '0')}`)
-  }
+    const [yStr, mStr] = month.split("-");
+    let y = Number(yStr);
+    let m = Number(mStr) + (dir === "prev" ? -1 : 1);
+    if (m < 1) {
+      y -= 1;
+      m = 12;
+    }
+    if (m > 12) {
+      y += 1;
+      m = 1;
+    }
+    onChange(`${y}-${String(m).padStart(2, "0")}`);
+  };
   return (
     <Button
       variant="ghost"
       size="icon"
-      aria-label={dir === 'prev' ? t('prevMonth') : t('nextMonth')}
+      aria-label={dir === "prev" ? t("prevMonth") : t("nextMonth")}
       onClick={handle}
       className="h-7 w-7 text-text-secondary"
     >
-      {dir === 'prev' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+      {dir === "prev" ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
     </Button>
-  )
+  );
 }

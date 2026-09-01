@@ -1,32 +1,34 @@
-import type { ReactNode } from 'react'
-import { ChevronRight, X } from 'lucide-react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { Trans, useTranslation } from 'react-i18next'
-import { Button } from '@/shared/ui/button'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
+import type { ReactNode } from "react";
+import { ChevronRight, X } from "lucide-react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
+import { Button } from "@/shared/ui/button";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 import {
   useDeleteNotification,
   useMarkAllRead,
   useMarkRead,
   useNotifications,
   useUnreadCount,
-} from '@/features/notification'
-import { useNow } from '@/shared/hooks'
-import { NotificationRow } from '@/entities/notification'
-import type { Notification } from '@/entities/notification'
+} from "@/features/notification";
+import { useNow } from "@/shared/hooks";
+import { NotificationRow } from "@/entities/notification";
+import type { Notification } from "@/entities/notification";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 /** 알림 목록 skeleton — icon(34x34) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
 function NotificationsPageSkeleton() {
   return (
-    <div style={{ padding: '4px 0' }}>
+    <div style={{ padding: "4px 0" }}>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="notif-row" style={{ pointerEvents: 'none' }}>
+        <div key={i} className="notif-row" style={{ pointerEvents: "none" }}>
           <SkeletonBase className="h-[34px] w-[34px] rounded-md shrink-0 notif-row__icon" />
           <div className="notif-row__text">
-            <SkeletonBase className={`h-3.5 mb-[3px] ${i % 3 === 0 ? 'w-36' : i % 3 === 1 ? 'w-28' : 'w-40'}`} />
+            <SkeletonBase
+              className={`h-3.5 mb-[3px] ${i % 3 === 0 ? "w-36" : i % 3 === 1 ? "w-28" : "w-40"}`}
+            />
             <SkeletonBase className="h-3 w-48" />
           </div>
           <SkeletonBase className="h-3 w-8 shrink-0 mt-[2px]" />
@@ -34,7 +36,7 @@ function NotificationsPageSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -46,22 +48,22 @@ function NotificationsPageSkeleton() {
  *       unreadCount 는 별도 useUnreadCount 쿼리.
  */
 export function NotificationsPage() {
-  const { t } = useTranslation('notification')
-  const { t: tCommon } = useTranslation('common')
-  const navigate = useNavigate()
-  const { mobile } = useOutletContext<OutletCtx>()
+  const { t } = useTranslation("notification");
+  const { t: tCommon } = useTranslation("common");
+  const navigate = useNavigate();
+  const { mobile } = useOutletContext<OutletCtx>();
   // 상대시각 기준점 — 벨(NotificationBell)과 **같은 훅**을 쓴다. 기준이 갈리면 같은
   // 알림이 여기선 "2시간 전", 벨에선 "방금" 으로 보인다(실제로 그랬다).
-  const now = useNow()
-  const { data: notifications = [], isLoading } = useNotifications()
-  const { data: unreadCount = 0 } = useUnreadCount()
-  const markRead = useMarkRead()
-  const markAllRead = useMarkAllRead()
-  const deleteNotif = useDeleteNotification()
+  const now = useNow();
+  const { data: notifications = [], isLoading } = useNotifications();
+  const { data: unreadCount = 0 } = useUnreadCount();
+  const markRead = useMarkRead();
+  const markAllRead = useMarkAllRead();
+  const deleteNotif = useDeleteNotification();
 
   const handleClick = (n: Notification) => {
-    if (!n.isRead) markRead.mutate(n.rowId)
-  }
+    if (!n.isRead) markRead.mutate(n.rowId);
+  };
 
   const markAllButton =
     unreadCount > 0 ? (
@@ -72,24 +74,24 @@ export function NotificationsPage() {
         onClick={() => markAllRead.mutate()}
         className="text-[var(--fg-primary)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-primary)]"
       >
-        {t('markAllRead')}
+        {t("markAllRead")}
       </Button>
-    ) : null
+    ) : null;
 
   // 본문 — 데스크탑/모바일 공용. unread 서브 바는 본문 상단(SoT 헤더 서브 위치 참고).
-  let body: ReactNode
+  let body: ReactNode;
   if (isLoading) {
-    body = <NotificationsPageSkeleton />
+    body = <NotificationsPageSkeleton />;
   } else if (notifications.length === 0) {
     body = (
       <div className="px-5 py-10 text-center text-sm text-[var(--fg-tertiary)]">
-        {t('popover.empty')}
+        {t("popover.empty")}
       </div>
-    )
+    );
   } else {
     body = (
-      <div style={{ padding: '4px 0' }}>
-        {notifications.map(n => (
+      <div style={{ padding: "4px 0" }}>
+        {notifications.map((n) => (
           <NotificationRow
             key={n.rowId}
             notification={n}
@@ -100,12 +102,12 @@ export function NotificationsPage() {
                 variant="ghost"
                 size="icon"
                 loading={deleteNotif.isPending}
-                onClick={e => {
-                  e.stopPropagation()
-                  deleteNotif.mutate(n.rowId)
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNotif.mutate(n.rowId);
                 }}
                 className="h-7 w-7 text-[var(--fg-tertiary)]"
-                aria-label={tCommon('delete')}
+                aria-label={tCommon("delete")}
               >
                 <X size={12} />
               </Button>
@@ -113,7 +115,7 @@ export function NotificationsPage() {
           />
         ))}
       </div>
-    )
+    );
   }
 
   // unread 카운터 서브 바 — 본문 상단. 모바일은 '모두 읽음'을 헤더로 옮기므로 카운터만 표시.
@@ -121,12 +123,12 @@ export function NotificationsPage() {
     !isLoading && unreadCount > 0 ? (
       <div
         style={{
-          padding: '12px 20px 8px',
-          display: 'flex',
-          alignItems: 'center',
+          padding: "12px 20px 8px",
+          display: "flex",
+          alignItems: "center",
           gap: 8,
-          color: 'var(--fg-secondary)',
-          fontSize: 'var(--text-label-sm)',
+          color: "var(--fg-secondary)",
+          fontSize: "var(--text-label-sm)",
         }}
       >
         <span>
@@ -134,46 +136,52 @@ export function NotificationsPage() {
             t={t}
             i18nKey="popover.unread"
             values={{ count: unreadCount }}
-            components={{ b: <b style={{ color: 'var(--fg-brand-strong)', fontWeight: '700' }} /> }}
+            components={{
+              b: (
+                <b
+                  style={{ color: "var(--fg-brand-strong)", fontWeight: "700" }}
+                />
+              ),
+            }}
           />
         </span>
         {!mobile && <div className="ml-auto">{markAllButton}</div>}
       </div>
-    ) : null
+    ) : null;
 
   const footer = (
     <div
       style={{
-        padding: '10px 14px',
-        borderTop: '1px solid var(--border-subtle)',
+        padding: "10px 14px",
+        borderTop: "1px solid var(--border-subtle)",
         /* 앱 footer(bg-page-dark) 정합 — sunken(input,더밝음) 대신 canvas */
-        background: 'var(--bg-canvas)',
+        background: "var(--bg-canvas)",
       }}
     >
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        onClick={() => navigate('/desk/settings?section=notifications')}
+        onClick={() => navigate("/desk/settings?section=notifications")}
         className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
       >
-        {t('prefs.title')} <ChevronRight size={12} />
+        {t("prefs.title")} <ChevronRight size={12} />
       </Button>
     </div>
-  )
+  );
 
   // ── 모바일 — 풀스크린(← 헤더 + 우측 '모두 읽음'). 본문 스크롤 후 footer 고정. ──────────
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t('title')} trailing={markAllButton} />
+        <MobileBackHeader title={t("title")} trailing={markAllButton} />
         <div className="m-scroll" style={{ padding: 0 }}>
           {unreadSub}
           {body}
           {footer}
         </div>
       </>
-    )
+    );
   }
 
   // ── 데스크탑 ────────────────────────────────────────────────────────────────
@@ -183,5 +191,5 @@ export function NotificationsPage() {
       {body}
       {footer}
     </div>
-  )
+  );
 }

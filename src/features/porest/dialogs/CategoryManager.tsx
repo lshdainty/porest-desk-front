@@ -1,6 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ChevronDown, ChevronRight, GripVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  ChevronDown,
+  ChevronRight,
+  GripVertical,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import {
   DndContext,
   PointerSensor,
@@ -9,23 +17,31 @@ import {
   useSensors,
   closestCenter,
   type DragEndEvent,
-} from '@dnd-kit/core'
+} from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
   arrayMove,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { Icon } from '@/shared/ui/porest/primitives'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { ConfirmDialog } from '@/shared/ui/porest/dialogs'
-import { MANAGE_ROW, manageRowClass } from '@/shared/ui/porest/manage-row-tokens'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { MANAGER_LAYOUT, ManagerHead, ManagerShell, ManagerTabs } from '@/shared/ui/porest/manager-layout'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Icon } from "@/shared/ui/porest/primitives";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import {
+  MANAGE_ROW,
+  manageRowClass,
+} from "@/shared/ui/porest/manage-row-tokens";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+  MANAGER_LAYOUT,
+  ManagerHead,
+  ManagerShell,
+  ManagerTabs,
+} from "@/shared/ui/porest/manager-layout";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -34,192 +50,233 @@ import {
   useReorderExpenseCategories,
   useExpenseBudgets,
   useRangeSummary,
-} from '@/features/expense'
-import { KRW } from '@/shared/lib/porest/format'
+} from "@/features/expense";
+import { KRW } from "@/shared/lib/porest/format";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
   ExpenseType,
-} from '@/entities/expense'
-import { CategoryEditDialog, getPaletteByColor } from './CategoryEditDialog'
-import { CategoryMoveTxDialog } from './CategoryMoveTxDialog'
+} from "@/entities/expense";
+import { CategoryEditDialog, getPaletteByColor } from "./CategoryEditDialog";
+import { CategoryMoveTxDialog } from "./CategoryMoveTxDialog";
 
-type EditingState = ExpenseCategory | { kind: 'new'; parentRowId?: number | null } | null
+type EditingState =
+  ExpenseCategory | { kind: "new"; parentRowId?: number | null } | null;
 
 /** reorderMode — 모바일 순서 편집(디자인 editMode): 켜야만 grip 노출·드래그 가능, 하위 강제 표시. */
-export function CategoryManager({ mobile, reorderMode = false }: { mobile: boolean; reorderMode?: boolean }) {
-  const { t } = useTranslation('category')
-  const { t: tc } = useTranslation('common')
-  const { t: te } = useTranslation('expense')
-  const { data: categories, isLoading } = useExpenseCategories()
-  const createMut = useCreateExpenseCategory()
-  const updateMut = useUpdateExpenseCategory()
-  const deleteMut = useDeleteExpenseCategory()
-  const reorderMut = useReorderExpenseCategories()
+export function CategoryManager({
+  mobile,
+  reorderMode = false,
+}: {
+  mobile: boolean;
+  reorderMode?: boolean;
+}) {
+  const { t } = useTranslation("category");
+  const { t: tc } = useTranslation("common");
+  const { t: te } = useTranslation("expense");
+  const { data: categories, isLoading } = useExpenseCategories();
+  const createMut = useCreateExpenseCategory();
+  const updateMut = useUpdateExpenseCategory();
+  const deleteMut = useDeleteExpenseCategory();
+  const reorderMut = useReorderExpenseCategories();
 
-  const [tab, setTab] = useState<ExpenseType>('EXPENSE')
-  const [query, setQuery] = useState('')
-  const [editing, setEditing] = useState<EditingState>(null)
-  const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(null)
+  const [tab, setTab] = useState<ExpenseType>("EXPENSE");
+  const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState<EditingState>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(
+    null,
+  );
   // 거래가 달려 하위를 만들 수 없는 카테고리를 푸는 경로 — 거래를 다른 곳으로 옮긴다.
-  const [movingTx, setMovingTx] = useState<ExpenseCategory | null>(null)
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+  const [movingTx, setMovingTx] = useState<ExpenseCategory | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
   // 자식 이동 시 새 부모 예산 초과 확인 — 승인하면 저장 진행.
-  const [pendingMove, setPendingMove] = useState<
-    { values: ExpenseCategoryFormValues; id: number; parentName: string; over: number } | null
-  >(null)
+  const [pendingMove, setPendingMove] = useState<{
+    values: ExpenseCategoryFormValues;
+    id: number;
+    parentName: string;
+    over: number;
+  } | null>(null);
 
   // 이번 달 예산/지출 — 카테고리 삭제(예산 동반) 안내 + 이동 초과 경고용.
-  const cmNow = new Date()
-  const cmYM = { year: cmNow.getFullYear(), month: cmNow.getMonth() + 1 }
-  const cmStart = `${cmYM.year}-${String(cmYM.month).padStart(2, '0')}-01`
-  const cmEnd = `${cmYM.year}-${String(cmYM.month).padStart(2, '0')}-${String(new Date(cmYM.year, cmYM.month, 0).getDate()).padStart(2, '0')}`
-  const { data: budgets } = useExpenseBudgets(cmYM)
-  const { data: rangeSummary } = useRangeSummary(cmStart, cmEnd)
+  const cmNow = new Date();
+  const cmYM = { year: cmNow.getFullYear(), month: cmNow.getMonth() + 1 };
+  const cmStart = `${cmYM.year}-${String(cmYM.month).padStart(2, "0")}-01`;
+  const cmEnd = `${cmYM.year}-${String(cmYM.month).padStart(2, "0")}-${String(new Date(cmYM.year, cmYM.month, 0).getDate()).padStart(2, "0")}`;
+  const { data: budgets } = useExpenseBudgets(cmYM);
+  const { data: rangeSummary } = useRangeSummary(cmStart, cmEnd);
 
   const budgetOf = (categoryRowId: number): number | null =>
-    budgets?.find(b => b.categoryRowId === categoryRowId)?.budgetAmount ?? null
+    budgets?.find((b) => b.categoryRowId === categoryRowId)?.budgetAmount ??
+    null;
   // 카테고리 본인 + 자식 지출 roll-up (백엔드 categoryBreakdown 의 parentCategoryRowId 기준).
   const spentRollup = (categoryRowId: number): number =>
     (rangeSummary?.categoryBreakdown ?? [])
-      .filter(c => c.categoryRowId === categoryRowId || c.parentCategoryRowId === categoryRowId)
-      .reduce((s, c) => s + c.totalAmount, 0)
+      .filter(
+        (c) =>
+          c.categoryRowId === categoryRowId ||
+          c.parentCategoryRowId === categoryRowId,
+      )
+      .reduce((s, c) => s + c.totalAmount, 0);
   const ownSpent = (categoryRowId: number): number =>
     (rangeSummary?.categoryBreakdown ?? [])
-      .filter(c => c.categoryRowId === categoryRowId)
-      .reduce((s, c) => s + c.totalAmount, 0)
+      .filter((c) => c.categoryRowId === categoryRowId)
+      .reduce((s, c) => s + c.totalAmount, 0);
 
-  const list = useMemo(() => categories ?? [], [categories])
+  const list = useMemo(() => categories ?? [], [categories]);
 
   const counts = useMemo(
     () => ({
-      expense: list.filter(c => c.expenseType === 'EXPENSE').length,
-      income: list.filter(c => c.expenseType === 'INCOME').length,
+      expense: list.filter((c) => c.expenseType === "EXPENSE").length,
+      income: list.filter((c) => c.expenseType === "INCOME").length,
     }),
     [list],
-  )
+  );
 
   // 현재 탭의 부모-자식 트리 구성 (검색어 매칭된 것만 노출)
-  type Tree = { parent: ExpenseCategory; children: ExpenseCategory[] }[]
+  type Tree = { parent: ExpenseCategory; children: ExpenseCategory[] }[];
   const tree: Tree = useMemo(() => {
-    const inTab = list.filter(c => c.expenseType === tab)
-    const sorted = inTab.slice().sort((a, b) => a.sortOrder - b.sortOrder)
-    const byParent = new Map<number, ExpenseCategory[]>()
-    const parents: ExpenseCategory[] = []
+    const inTab = list.filter((c) => c.expenseType === tab);
+    const sorted = inTab.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+    const byParent = new Map<number, ExpenseCategory[]>();
+    const parents: ExpenseCategory[] = [];
     for (const c of sorted) {
-      if (c.parentRowId == null) parents.push(c)
+      if (c.parentRowId == null) parents.push(c);
       else {
-        const arr = byParent.get(c.parentRowId) ?? []
-        arr.push(c)
-        byParent.set(c.parentRowId, arr)
+        const arr = byParent.get(c.parentRowId) ?? [];
+        arr.push(c);
+        byParent.set(c.parentRowId, arr);
       }
     }
-    const q = query.trim()
+    const q = query.trim();
     return parents
-      .map(p => {
-        const children = byParent.get(p.rowId) ?? []
-        if (q === '') return { parent: p, children }
+      .map((p) => {
+        const children = byParent.get(p.rowId) ?? [];
+        if (q === "") return { parent: p, children };
         // 검색: 부모 또는 자식 중 하나라도 매칭되면 해당 그룹 노출
-        const parentMatch = p.categoryName.includes(q)
-        const filteredChildren = parentMatch ? children : children.filter(c => c.categoryName.includes(q))
-        if (!parentMatch && filteredChildren.length === 0) return null
-        return { parent: p, children: filteredChildren }
+        const parentMatch = p.categoryName.includes(q);
+        const filteredChildren = parentMatch
+          ? children
+          : children.filter((c) => c.categoryName.includes(q));
+        if (!parentMatch && filteredChildren.length === 0) return null;
+        return { parent: p, children: filteredChildren };
       })
-      .filter((x): x is { parent: ExpenseCategory; children: ExpenseCategory[] } => x != null)
-  }, [list, tab, query])
+      .filter(
+        (x): x is { parent: ExpenseCategory; children: ExpenseCategory[] } =>
+          x != null,
+      );
+  }, [list, tab, query]);
 
-  const submitting = createMut.isPending || updateMut.isPending
+  const submitting = createMut.isPending || updateMut.isPending;
 
   // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
   useEffect(() => {
-    if (reorderMode) setQuery('')
-  }, [reorderMode])
+    if (reorderMode) setQuery("");
+  }, [reorderMode]);
 
   const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
-    updateMut.mutate({ id, data: values }, { onSuccess: () => setEditing(null) })
-  }
+    updateMut.mutate(
+      { id, data: values },
+      { onSuccess: () => setEditing(null) },
+    );
+  };
 
   const onSave = (values: ExpenseCategoryFormValues) => {
-    if (editing && 'rowId' in editing) {
+    if (editing && "rowId" in editing) {
       // 자식을 다른 부모로 이동 — 새 부모 예산 초과 시 한 번 확인 (룰3).
       const movedToNewParent =
-        values.parentRowId != null && values.parentRowId !== editing.parentRowId
+        values.parentRowId != null &&
+        values.parentRowId !== editing.parentRowId;
       if (movedToNewParent) {
-        const newParentBudget = budgetOf(values.parentRowId!)
+        const newParentBudget = budgetOf(values.parentRowId!);
         if (newParentBudget != null) {
-          const projected = spentRollup(values.parentRowId!) + ownSpent(editing.rowId)
+          const projected =
+            spentRollup(values.parentRowId!) + ownSpent(editing.rowId);
           if (projected > newParentBudget) {
-            const parent = list.find(c => c.rowId === values.parentRowId)
+            const parent = list.find((c) => c.rowId === values.parentRowId);
             setPendingMove({
               values,
               id: editing.rowId,
-              parentName: parent?.categoryName ?? t('parentFallback'),
+              parentName: parent?.categoryName ?? t("parentFallback"),
               over: projected - newParentBudget,
-            })
-            return
+            });
+            return;
           }
         }
       }
-      doUpdate(editing.rowId, values)
+      doUpdate(editing.rowId, values);
     } else {
-      createMut.mutate(values, { onSuccess: () => setEditing(null) })
+      createMut.mutate(values, { onSuccess: () => setEditing(null) });
     }
-  }
+  };
 
   const onDelete = (c: ExpenseCategory) => {
-    deleteMut.mutate(c.rowId, { onSuccess: () => setConfirmDelete(null) })
-  }
+    deleteMut.mutate(c.rowId, { onSuccess: () => setConfirmDelete(null) });
+  };
 
   const toggleCollapse = (parentRowId: number) => {
-    setCollapsed(prev => {
-      const next = new Set(prev)
-      if (next.has(parentRowId)) next.delete(parentRowId)
-      else next.add(parentRowId)
-      return next
-    })
-  }
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(parentRowId)) next.delete(parentRowId);
+      else next.add(parentRowId);
+      return next;
+    });
+  };
 
   // DnD: 같은 형제 레벨(최상위 또는 같은 부모)끼리만 정렬 가능
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  )
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const handleDragEnd = (ev: DragEndEvent, siblingIds: number[]) => {
-    const { active, over } = ev
-    if (!over || active.id === over.id) return
-    const oldIndex = siblingIds.indexOf(Number(active.id))
-    const newIndex = siblingIds.indexOf(Number(over.id))
-    if (oldIndex < 0 || newIndex < 0) return
-    const reordered = arrayMove(siblingIds, oldIndex, newIndex)
+    const { active, over } = ev;
+    if (!over || active.id === over.id) return;
+    const oldIndex = siblingIds.indexOf(Number(active.id));
+    const newIndex = siblingIds.indexOf(Number(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(siblingIds, oldIndex, newIndex);
     const items = reordered.map((id, idx) => {
-      const cat = list.find(c => c.rowId === id)!
+      const cat = list.find((c) => c.rowId === id)!;
       return {
         categoryRowId: id,
         sortOrder: idx,
         parentRowId: cat.parentRowId,
-      }
-    })
-    reorderMut.mutate(items)
-  }
+      };
+    });
+    reorderMut.mutate(items);
+  };
 
   // 검색바(label)+list 를 한 묶음으로 쓰기 위해 list 를 변수 추출(mobile/desktop 공유).
   const listBlock = (
-    <div className={mobile ? undefined : 'cat-list'} style={mobile ? { display: 'flex', flexDirection: 'column' } : undefined}>
+    <div
+      className={mobile ? undefined : "cat-list"}
+      style={mobile ? { display: "flex", flexDirection: "column" } : undefined}
+    >
       {isLoading ? (
         <CategoryManagerSkeleton mobile={mobile} />
       ) : list.length === 0 ? (
-        <div className="cat-list__empty"><span>{t('empty')}</span></div>
+        <div className="cat-list__empty">
+          <span>{t("empty")}</span>
+        </div>
       ) : tree.length === 0 ? (
-        <div className="cat-list__empty"><span>{t('noSearchResults')}</span></div>
+        <div className="cat-list__empty">
+          <span>{t("noSearchResults")}</span>
+        </div>
       ) : (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={(ev) => handleDragEnd(ev, tree.map(t => t.parent.rowId))}
+          onDragEnd={(ev) =>
+            handleDragEnd(
+              ev,
+              tree.map((t) => t.parent.rowId),
+            )
+          }
         >
           <SortableContext
-            items={tree.map(t => t.parent.rowId)}
+            items={tree.map((t) => t.parent.rowId)}
             strategy={verticalListSortingStrategy}
           >
             {tree.map(({ parent, children }) => (
@@ -233,8 +290,15 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
                 onToggle={() => toggleCollapse(parent.rowId)}
                 onEdit={(c) => setEditing(c)}
                 onDelete={(c) => setConfirmDelete(c)}
-                onAddChild={() => setEditing({ kind: 'new', parentRowId: parent.rowId })}
-                onChildrenDragEnd={(ev) => handleDragEnd(ev, children.map(c => c.rowId))}
+                onAddChild={() =>
+                  setEditing({ kind: "new", parentRowId: parent.rowId })
+                }
+                onChildrenDragEnd={(ev) =>
+                  handleDragEnd(
+                    ev,
+                    children.map((c) => c.rowId),
+                  )
+                }
                 dndSensors={sensors}
               />
             ))}
@@ -242,19 +306,19 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
         </DndContext>
       )}
     </div>
-  )
+  );
 
   return (
     <>
       <ManagerShell>
         {!mobile && (
           <ManagerHead
-            title={te('categories')}
-            description={t('manager.description')}
+            title={te("categories")}
+            description={t("manager.description")}
             actions={
-              <Button size="sm" onClick={() => setEditing({ kind: 'new' })}>
+              <Button size="sm" onClick={() => setEditing({ kind: "new" })}>
                 <Plus size={14} strokeWidth={2.4} />
-                {t('add')}
+                {t("add")}
               </Button>
             }
           />
@@ -266,41 +330,79 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
                 sticky 기준은 컨테이너 content box(=padding-top 24 아래)라, 시각 최상단에 딱 붙여 고정하려면
                 top 도 padding-top 만큼 음수(-24) 여야 함. top:0 이면 24px 떠 보임.
                 margin/top 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치. */}
-            <div style={{ background: 'var(--bg-surface)', margin: '-24px -20px 0', position: 'sticky', top: -24, zIndex: 5 }}>
-              <Tabs value={tab} onValueChange={v => setTab(v as ExpenseType)}>
+            <div
+              style={{
+                background: "var(--bg-surface)",
+                margin: "-24px -20px 0",
+                position: "sticky",
+                top: -24,
+                zIndex: 5,
+              }}
+            >
+              <Tabs value={tab} onValueChange={(v) => setTab(v as ExpenseType)}>
                 <TabsList variant="underline" className="w-full">
-                  <TabsTrigger variant="underline" value="EXPENSE" className="flex-1">
-                    {te('expense')} {counts.expense}
+                  <TabsTrigger
+                    variant="underline"
+                    value="EXPENSE"
+                    className="flex-1"
+                  >
+                    {te("expense")} {counts.expense}
                   </TabsTrigger>
-                  <TabsTrigger variant="underline" value="INCOME" className="flex-1">
-                    {te('income')} {counts.income}
+                  <TabsTrigger
+                    variant="underline"
+                    value="INCOME"
+                    className="flex-1"
+                  >
+                    {te("income")} {counts.income}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
             {/* 검색바(label) + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라
                 밀착) / 데스크톱 8 — 아래가 카드라 검색바가 붙으면 답답함. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: mobile ? 0 : 12,
+              }}
+            >
               {reorderMode ? (
                 // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
-                <div style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-tertiary)', lineHeight: 1.5 }}>
-                  {t('reorderHint')}
+                <div
+                  style={{
+                    fontSize: "var(--text-label-sm)",
+                    color: "var(--fg-tertiary)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {t("reorderHint")}
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ ...MANAGER_LAYOUT.searchWrapStyle, flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      ...MANAGER_LAYOUT.searchWrapStyle,
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
                     <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
                     <Input
                       search
                       value={query}
-                      onChange={e => setQuery(e.target.value)}
-                      placeholder={t('searchPlaceholder')}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t("searchPlaceholder")}
                       className="w-full min-w-0 pl-9"
                     />
                   </div>
-                  <Button variant="accent" size="sm" onClick={() => setEditing({ kind: 'new' })}>
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={() => setEditing({ kind: "new" })}
+                  >
                     <Plus size={14} strokeWidth={2.4} />
-                    {t('add')}
+                    {t("add")}
                   </Button>
                 </div>
               )}
@@ -313,8 +415,12 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
               value={tab}
               onChange={setTab}
               options={[
-                { value: 'EXPENSE', label: te('expense'), count: counts.expense },
-                { value: 'INCOME', label: te('income'), count: counts.income },
+                {
+                  value: "EXPENSE",
+                  label: te("expense"),
+                  count: counts.expense,
+                },
+                { value: "INCOME", label: te("income"), count: counts.income },
               ]}
             />
             <div style={MANAGER_LAYOUT.searchWrapStyle}>
@@ -322,8 +428,8 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
               <Input
                 search
                 value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("searchPlaceholder")}
                 className="w-[220px] pl-9"
               />
             </div>
@@ -333,7 +439,6 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
         {/* desktop 은 toolbar(탭+검색)과 list 를 부모 gap 으로 분리(기존 유지).
             mobile 은 검색바(label) 묶음 안에서 list 렌더 — label·list 는 한 div. */}
         {!mobile && listBlock}
-
       </ManagerShell>
 
       {movingTx && (
@@ -346,24 +451,26 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
       )}
       {editing && (
         <CategoryEditDialog
-          cat={editing && 'rowId' in editing ? editing : null}
+          cat={editing && "rowId" in editing ? editing : null}
           defaultKind={tab}
-          defaultParentRowId={editing && 'kind' in editing ? editing.parentRowId ?? null : null}
+          defaultParentRowId={
+            editing && "kind" in editing ? (editing.parentRowId ?? null) : null
+          }
           onClose={() => setEditing(null)}
           onSave={onSave}
           onDelete={
-            editing && 'rowId' in editing
+            editing && "rowId" in editing
               ? () => {
-                  setConfirmDelete(editing)
-                  setEditing(null)
+                  setConfirmDelete(editing);
+                  setEditing(null);
                 }
               : undefined
           }
           onMoveTx={
-            editing && 'rowId' in editing
+            editing && "rowId" in editing
               ? () => {
-                  setMovingTx(editing)
-                  setEditing(null)
+                  setMovingTx(editing);
+                  setEditing(null);
                 }
               : undefined
           }
@@ -379,20 +486,22 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
         (confirmDelete.hasChildren ? (
           <ConfirmDialog
             singleAction
-            title={t('deleteBlockedTitle')}
-            message={t('deleteHasChildren', { name: confirmDelete.categoryName })}
+            title={t("deleteBlockedTitle")}
+            message={t("deleteHasChildren", {
+              name: confirmDelete.categoryName,
+            })}
             onCancel={() => setConfirmDelete(null)}
             onConfirm={() => setConfirmDelete(null)}
           />
         ) : (
           <ConfirmDialog
-            title={t('deleteTitle')}
+            title={t("deleteTitle")}
             message={
               budgetOf(confirmDelete.rowId) != null
-                ? t('deleteWithBudget', { name: confirmDelete.categoryName })
-                : t('deleteConfirm', { name: confirmDelete.categoryName })
+                ? t("deleteWithBudget", { name: confirmDelete.categoryName })
+                : t("deleteConfirm", { name: confirmDelete.categoryName })
             }
-            confirmLabel={tc('delete')}
+            confirmLabel={tc("delete")}
             danger
             loading={deleteMut.isPending}
             onCancel={() => setConfirmDelete(null)}
@@ -401,30 +510,29 @@ export function CategoryManager({ mobile, reorderMode = false }: { mobile: boole
         ))}
       {pendingMove && (
         <ConfirmDialog
-          title={t('overBudgetTitle')}
-          message={t('overBudgetMessage', { parent: pendingMove.parentName, amount: KRW(pendingMove.over) })}
-          confirmLabel={t('move')}
+          title={t("overBudgetTitle")}
+          message={t("overBudgetMessage", {
+            parent: pendingMove.parentName,
+            amount: KRW(pendingMove.over),
+          })}
+          confirmLabel={t("move")}
           loading={updateMut.isPending}
           onCancel={() => setPendingMove(null)}
           onConfirm={() => {
-            doUpdate(pendingMove.id, pendingMove.values)
-            setPendingMove(null)
+            doUpdate(pendingMove.id, pendingMove.values);
+            setPendingMove(null);
           }}
         />
       )}
     </>
-  )
+  );
 }
 
 /** CategoryManager skeleton — 트리 구조(부모+자식 들여쓰기) 1:1 미러. */
 function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
   // 부모 행: grip + chevron + icon + name+meta + add/edit/delete (desktop) | chevron (mobile)
   // 자식 행: paddingLeft:28 + grip + icon + name + edit/delete (desktop) | chevron (mobile)
-  const entries = [
-    { childCount: 2 },
-    { childCount: 1 },
-    { childCount: 0 },
-  ]
+  const entries = [{ childCount: 2 }, { childCount: 1 }, { childCount: 0 }];
   return (
     <>
       {entries.map((e, i) => (
@@ -479,7 +587,7 @@ function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       ))}
     </>
-  )
+  );
 }
 
 function ParentBlock({
@@ -495,17 +603,17 @@ function ParentBlock({
   onChildrenDragEnd,
   dndSensors,
 }: {
-  parent: ExpenseCategory
-  children_: ExpenseCategory[]
-  mobile: boolean
-  reorderMode?: boolean
-  isCollapsed: boolean
-  onToggle: () => void
-  onEdit: (c: ExpenseCategory) => void
-  onDelete: (c: ExpenseCategory) => void
-  onAddChild: () => void
-  onChildrenDragEnd: (ev: DragEndEvent) => void
-  dndSensors: ReturnType<typeof useSensors>
+  parent: ExpenseCategory;
+  children_: ExpenseCategory[];
+  mobile: boolean;
+  reorderMode?: boolean;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  onEdit: (c: ExpenseCategory) => void;
+  onDelete: (c: ExpenseCategory) => void;
+  onAddChild: () => void;
+  onChildrenDragEnd: (ev: DragEndEvent) => void;
+  dndSensors: ReturnType<typeof useSensors>;
 }) {
   return (
     <div>
@@ -529,8 +637,11 @@ function ParentBlock({
             collisionDetection={closestCenter}
             onDragEnd={onChildrenDragEnd}
           >
-            <SortableContext items={children_.map(c => c.rowId)} strategy={verticalListSortingStrategy}>
-              {children_.map(c => (
+            <SortableContext
+              items={children_.map((c) => c.rowId)}
+              strategy={verticalListSortingStrategy}
+            >
+              {children_.map((c) => (
                 <SortableRow
                   key={c.rowId}
                   cat={c}
@@ -545,7 +656,7 @@ function ParentBlock({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function SortableRow({
@@ -560,47 +671,54 @@ function SortableRow({
   onDelete,
   onAddChild,
 }: {
-  cat: ExpenseCategory
-  mobile: boolean
-  reorderMode?: boolean
-  isParent?: boolean
-  hasChildren?: boolean
-  isCollapsed?: boolean
-  onToggle?: () => void
-  onEdit: () => void
-  onDelete: () => void
-  onAddChild?: () => void
+  cat: ExpenseCategory;
+  mobile: boolean;
+  reorderMode?: boolean;
+  isParent?: boolean;
+  hasChildren?: boolean;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onAddChild?: () => void;
 }) {
-  const { t } = useTranslation('category')
-  const { t: te } = useTranslation('expense')
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { t } = useTranslation("category");
+  const { t: te } = useTranslation("expense");
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: cat.rowId,
-  })
-  const palette = getPaletteByColor(cat.color)
+  });
+  const palette = getPaletteByColor(cat.color);
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : 1,
-  }
+  };
   // 모바일은 편집 모드에서만 grip·드래그(디자인 editMode). 데스크톱은 항상.
-  const showGrip = !mobile || reorderMode
+  const showGrip = !mobile || reorderMode;
 
   return (
     <div ref={setNodeRef} style={style} className={manageRowClass(mobile)}>
       {showGrip && (
         <button
           type="button"
-          aria-label={t('dragReorder')}
+          aria-label={t("dragReorder")}
           {...attributes}
           {...listeners}
           style={{
-            cursor: 'grab',
-            touchAction: 'none',
-            background: 'transparent',
+            cursor: "grab",
+            touchAction: "none",
+            background: "transparent",
             border: 0,
-            color: 'var(--fg-tertiary)',
+            color: "var(--fg-tertiary)",
             padding: 0,
-            display: 'inline-flex',
+            display: "inline-flex",
           }}
         >
           <GripVertical size={16} />
@@ -621,40 +739,53 @@ function SortableRow({
       {!reorderMode && (
         <span
           aria-hidden={!(isParent && hasChildren)}
-          style={{ width: 18, flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}
+          style={{
+            width: 18,
+            flexShrink: 0,
+            display: "inline-flex",
+            justifyContent: "center",
+          }}
         >
           {isParent && hasChildren && (
             <button
               type="button"
               onClick={onToggle}
-              aria-label={isCollapsed ? t('expand') : t('collapse')}
+              aria-label={isCollapsed ? t("expand") : t("collapse")}
               style={{
-                background: 'transparent',
+                background: "transparent",
                 border: 0,
                 padding: 2,
-                cursor: 'pointer',
-                color: 'var(--fg-secondary)',
-                display: 'inline-flex',
+                cursor: "pointer",
+                color: "var(--fg-secondary)",
+                display: "inline-flex",
               }}
             >
-              {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+              {isCollapsed ? (
+                <ChevronRight size={14} />
+              ) : (
+                <ChevronDown size={14} />
+              )}
             </button>
           )}
         </span>
       )}
       <span
-        style={{ ...MANAGE_ROW.iconStyle, background: palette.bg, color: palette.color }}
+        style={{
+          ...MANAGE_ROW.iconStyle,
+          background: palette.bg,
+          color: palette.color,
+        }}
       >
-        <Icon name={cat.icon ?? 'tag'} size={18} strokeWidth={1.9} />
+        <Icon name={cat.icon ?? "tag"} size={18} strokeWidth={1.9} />
       </span>
       <div style={MANAGE_ROW.textStyle}>
         <div style={MANAGE_ROW.labelStyle}>{cat.categoryName}</div>
         <div style={MANAGE_ROW.metaStyle}>
-          {cat.expenseType === 'EXPENSE' ? te('expense') : te('income')}
+          {cat.expenseType === "EXPENSE" ? te("expense") : te("income")}
           {isParent && hasChildren && (
             <>
               <span className="dot-sep" />
-              {t('hasSubcategories')}
+              {t("hasSubcategories")}
             </>
           )}
         </div>
@@ -662,11 +793,21 @@ function SortableRow({
       {!mobile ? (
         <div className={MANAGE_ROW.actionsClassName}>
           {isParent && onAddChild && (
-            <Button variant="ghost" size="icon" onClick={onAddChild} title={t('addSub')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAddChild}
+              title={t("addSub")}
+            >
               <Plus size={13} />
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={onEdit} title={t('edit')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onEdit}
+            title={t("edit")}
+          >
             <Pencil size={13} />
           </Button>
           <Button
@@ -684,5 +825,5 @@ function SortableRow({
         </button>
       )}
     </div>
-  )
+  );
 }

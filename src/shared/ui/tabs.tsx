@@ -1,8 +1,8 @@
-import * as React from "react"
-import * as TabsPrimitive from "@radix-ui/react-tabs"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib"
+import { cn } from "@/shared/lib";
 
 /*
  * Porest Tabs — porest-design specs/components/tabs.md SoT 기반.
@@ -21,7 +21,7 @@ import { cn } from "@/shared/lib"
  * - Radix Tabs 베이스. 키보드 네비/ARIA 자동.
  */
 
-const Tabs = TabsPrimitive.Root
+const Tabs = TabsPrimitive.Root;
 
 const tabsListVariants = cva("", {
   variants: {
@@ -39,7 +39,7 @@ const tabsListVariants = cva("", {
     { variant: "pill", size: "sm", class: "h-8 p-0.5" },
   ],
   defaultVariants: { variant: "pill", size: "default" },
-})
+});
 
 const tabsTriggerVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap font-sans font-medium ring-offset-bg-page transition-all duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -85,14 +85,14 @@ const tabsTriggerVariants = cva(
     ],
     defaultVariants: { variant: "pill", size: "default" },
   },
-)
+);
 
 // pill size 를 List → Trigger 로 전파 (trigger 마다 size 재지정 불필요)
-type TabsCtx = VariantProps<typeof tabsTriggerVariants>
-const TabsContext = React.createContext<TabsCtx>({})
+type TabsCtx = VariantProps<typeof tabsTriggerVariants>;
+const TabsContext = React.createContext<TabsCtx>({});
 
 type TabsListProps = React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> &
-  VariantProps<typeof tabsListVariants>
+  VariantProps<typeof tabsListVariants>;
 
 const TabsList = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.List>,
@@ -105,19 +105,19 @@ const TabsList = React.forwardRef<
       {...props}
     />
   </TabsContext.Provider>
-))
-TabsList.displayName = TabsPrimitive.List.displayName
+));
+TabsList.displayName = TabsPrimitive.List.displayName;
 
 type TabsTriggerProps = React.ComponentPropsWithoutRef<
   typeof TabsPrimitive.Trigger
 > &
-  VariantProps<typeof tabsTriggerVariants>
+  VariantProps<typeof tabsTriggerVariants>;
 
 const TabsTrigger = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
 >(({ className, variant, size, ...props }, ref) => {
-  const ctx = React.useContext(TabsContext)
+  const ctx = React.useContext(TabsContext);
   return (
     <TabsPrimitive.Trigger
       ref={ref}
@@ -130,9 +130,9 @@ const TabsTrigger = React.forwardRef<
       )}
       {...props}
     />
-  )
-})
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+  );
+});
+TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const TabsContent = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Content>,
@@ -146,7 +146,7 @@ const TabsContent = React.forwardRef<
     )}
     {...props}
   />
-))
-TabsContent.displayName = TabsPrimitive.Content.displayName
+));
+TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+export { Tabs, TabsList, TabsTrigger, TabsContent };

@@ -1,0 +1,8 @@
+# git blame 에서 건너뛸 커밋 — 서식만 바꾼 대규모 커밋.
+#
+# 로컬에도 적용하려면 한 번만:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub 웹 blame 은 이 파일을 자동으로 읽는다)
+
+# style: prettier 전면 적용 (478 파일)
+7918a887860d50eb59c2281c938b5c1e50c28930

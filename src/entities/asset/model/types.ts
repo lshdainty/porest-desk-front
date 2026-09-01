@@ -1,12 +1,19 @@
-export type AssetType = 'BANK_ACCOUNT' | 'CREDIT_CARD' | 'CHECK_CARD' | 'CASH' | 'SAVINGS' | 'LOAN' | 'INVESTMENT'
-export type YNType = 'Y' | 'N'
+export type AssetType =
+  | "BANK_ACCOUNT"
+  | "CREDIT_CARD"
+  | "CHECK_CARD"
+  | "CASH"
+  | "SAVINGS"
+  | "LOAN"
+  | "INVESTMENT";
+export type YNType = "Y" | "N";
 
 export interface AssetCardCatalogBrief {
-  rowId: number
-  cardName: string
-  imgUrl: string | null
-  companyName: string | null
-  companyLogoUrl: string | null
+  rowId: number;
+  cardName: string;
+  imgUrl: string | null;
+  companyName: string | null;
+  companyLogoUrl: string | null;
 }
 
 /**
@@ -15,13 +22,13 @@ export interface AssetCardCatalogBrief {
  * linked=false → holdingName+holdingValue(직접 입력 평가액).
  */
 /** 보유 유형 — 수량 단위가 다르다(주식 주 / 금 g / 코인 개). 토스 시세 연동은 STOCK 만 가능. */
-export type HoldingType = 'STOCK' | 'GOLD' | 'CRYPTO'
+export type HoldingType = "STOCK" | "GOLD" | "CRYPTO";
 
 export interface AssetHolding {
-  rowId?: number
+  rowId?: number;
   /** 구버전 응답이면 없음 — STOCK 으로 간주 */
-  holdingType?: HoldingType
-  linked: boolean
+  holdingType?: HoldingType;
+  linked: boolean;
   /**
    * 종목 마스터 기준 시장코드(NAS·KOSPI …) — 선택.
    *
@@ -29,45 +36,45 @@ export interface AssetHolding {
    * 저장할 때 그대로 돌려보내면 서버가 종목을 확정한다. 안 보내면 서버가 심볼로 해석하고,
    * 여러 시장에 걸리면 비워 둔다.
    */
-  marketCode?: string | null
-  tossSymbol?: string | null
+  marketCode?: string | null;
+  tossSymbol?: string | null;
   /**
    * 코인 0.05·금 3.75g 등 소수 허용. 미연동도 기록 가능(선택).
    * 서버는 decimal(28,8)/BigDecimal 이고 JS number 는 십진 소수를 정확히 담지 못한다 —
    * 왕복 정밀도를 지키려 문자열로 주고받는다(Jackson 이 문자열→BigDecimal 로 받는다).
    */
-  quantity?: string | null
-  holdingName?: string | null
-  holdingValue?: number | null
+  quantity?: string | null;
+  holdingName?: string | null;
+  holdingValue?: number | null;
   /** 총 매수원가 (원화, 수수료 포함). 평가액과의 차이가 평가손익이다. */
-  totalCost?: number | null
+  totalCost?: number | null;
   /** 평단가 — 총원가 / 수량. 서버 파생값이라 읽기 전용. */
-  avgPrice?: string | null
-  sortOrder?: number
+  avgPrice?: string | null;
+  sortOrder?: number;
 }
 
 /** 매수·매도 거래 유형. OPENING 은 앱을 쓰기 전부터 갖고 있던 보유라 돈이 오가지 않는다. */
-export type TradeType = 'OPENING' | 'BUY' | 'SELL'
+export type TradeType = "OPENING" | "BUY" | "SELL";
 
 export interface AssetTrade {
-  rowId: number
-  assetRowId: number
-  tradeType: TradeType
-  holdingType: HoldingType
+  rowId: number;
+  assetRowId: number;
+  tradeType: TradeType;
+  holdingType: HoldingType;
   /** 종목 식별자 — 연동은 토스 종목코드, 미연동은 항목명. */
-  holdingKey: string
-  linked: boolean
+  holdingKey: string;
+  linked: boolean;
   /** 소수 허용이라 문자열로 주고받는다(AssetHolding.quantity 와 같은 이유). */
-  quantity: string
+  quantity: string;
   /** 거래대금 — 수수료 제외. */
-  amount: number
-  fee: number
+  amount: number;
+  fee: number;
   /** 실현손익 (매도 전용). 이익 양수 / 손실 음수. */
-  realizedPl?: number | null
-  tradeDate: string
-  description?: string | null
+  realizedPl?: number | null;
+  tradeDate: string;
+  description?: string | null;
   /** 결제 계좌 — 지정하면 증권계좌 예수금 대신 이 계좌에서 오간다. */
-  settlementAssetRowId?: number | null
+  settlementAssetRowId?: number | null;
 }
 
 /**
@@ -78,191 +85,191 @@ export interface AssetTrade {
  */
 export interface AssetTradePreview {
   /** 이번에 파는 만큼의 취득원가 (매도 전용). */
-  soldCost: number | null
+  soldCost: number | null;
   /** 실현손익 — 이익 양수 / 손실 음수 (매도 전용). */
-  realizedPl: number | null
+  realizedPl: number | null;
   /** 이 거래로 예수금이 움직이는 양 — 매수 음수 / 매도 양수. */
-  cashDelta: number
+  cashDelta: number;
   /** 거래 후 예수금. */
-  cashAfter: number
+  cashAfter: number;
   /** 예수금이 모자라 결제 계좌에서 끌어올 금액 — 0 이면 이체가 생기지 않는다. */
-  fundingAmount: number
+  fundingAmount: number;
 }
 
 export interface AssetTradeFormValues {
-  assetRowId: number
-  tradeType: TradeType
-  holdingType: HoldingType
-  holdingKey: string
-  linked: boolean
-  quantity: string
-  amount: number
-  fee?: number
-  tradeDate: string
-  description?: string
-  settlementAssetRowId?: number | null
+  assetRowId: number;
+  tradeType: TradeType;
+  holdingType: HoldingType;
+  holdingKey: string;
+  linked: boolean;
+  quantity: string;
+  amount: number;
+  fee?: number;
+  tradeDate: string;
+  description?: string;
+  settlementAssetRowId?: number | null;
 }
 
 export interface Asset {
-  rowId: number
-  userRowId: number
-  assetName: string
-  assetType: AssetType
-  balance: number
+  rowId: number;
+  userRowId: number;
+  assetName: string;
+  assetType: AssetType;
+  balance: number;
   /** 예수금·현금 잔액 (투자 계좌의 매수 대기 자금). balance = cashBalance + holdingBalance */
-  cashBalance: number
+  cashBalance: number;
   /** 보유 종목 평가금액. 보유가 없으면 0 */
-  holdingBalance: number
-  currency: string
+  holdingBalance: number;
+  currency: string;
   /** 원화 환산율 (통화 1단위당 원화). KRW 는 1 — 순자산은 balance × 이 값으로 환산된다 */
-  exchangeRate: number
-  color: string | null
-  institution: string | null
-  memo: string | null
-  sortOrder: number
-  isIncludedInTotal: YNType
-  cardCatalog: AssetCardCatalogBrief | null
+  exchangeRate: number;
+  color: string | null;
+  institution: string | null;
+  memo: string | null;
+  sortOrder: number;
+  isIncludedInTotal: YNType;
+  cardCatalog: AssetCardCatalogBrief | null;
   /** 신용카드 한도 (CREDIT_CARD 전용, nullable) */
-  creditLimit?: number | null
+  creditLimit?: number | null;
   /** 결제일 1~31 (CREDIT_CARD 전용, nullable) */
-  paymentDay?: number | null
+  paymentDay?: number | null;
   /** 결제 출금계좌 자산 rowId (CREDIT_CARD 전용, nullable) */
-  paymentAssetRowId?: number | null
+  paymentAssetRowId?: number | null;
   /** 연동 종목의 시장코드 (nullable) — 서버가 확정 못 했으면 없다 */
-  marketCode?: string | null
+  marketCode?: string | null;
   /** 토스 연동 종목코드 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */
-  tossSymbol?: string | null
+  tossSymbol?: string | null;
   /** 토스 연동 보유수량 (INVESTMENT 시세×수량 평가, nullable) — holdings 도입으로 deprecated */
-  tossQuantity?: number | null
+  tossQuantity?: number | null;
   /** 투자 보유 항목들 (INVESTMENT 전용, 구버전 응답이면 없음) */
-  holdings?: AssetHolding[]
+  holdings?: AssetHolding[];
   /** 이번 달(1일~말일) 사용 합계 — CHECK_CARD 전용, 서버 계산(예정 제외·환불 상계).
       연결계좌 즉시 차감으로 잔액이 늘 0 이라, 행·상세는 잔액 대신 이 값을 보여준다 */
-  monthlyUsedAmount?: number | null
-  createAt: string
-  modifyAt: string
+  monthlyUsedAmount?: number | null;
+  createAt: string;
+  modifyAt: string;
 }
 
 export interface AssetFormValues {
-  assetName: string
-  assetType: AssetType
+  assetName: string;
+  assetType: AssetType;
   /** 미전달 = 서버 산정. 투자+holdings 는 서버가 평가액을 BigDecimal 로 잡으므로 보내지 않는다 */
-  balance?: number
-  currency?: string
+  balance?: number;
+  currency?: string;
   /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
-  exchangeRate?: number | null
-  color?: string
-  institution?: string
-  memo?: string
-  sortOrder?: number
-  isIncludedInTotal?: YNType
-  cardCatalogRowId?: number | null
-  creditLimit?: number | null
-  paymentDay?: number | null
-  paymentAssetRowId?: number | null
+  exchangeRate?: number | null;
+  color?: string;
+  institution?: string;
+  memo?: string;
+  sortOrder?: number;
+  isIncludedInTotal?: YNType;
+  cardCatalogRowId?: number | null;
+  creditLimit?: number | null;
+  paymentDay?: number | null;
+  paymentAssetRowId?: number | null;
   /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
-  holdings?: AssetHolding[]
+  holdings?: AssetHolding[];
 }
 
 export interface AssetUpdateFormValues {
-  assetName: string
-  assetType: AssetType
+  assetName: string;
+  assetType: AssetType;
   /** 미전달 = 기존 잔액 유지(투자+holdings 는 서버 산정) */
-  balance?: number
-  currency?: string
+  balance?: number;
+  currency?: string;
   /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
-  exchangeRate?: number | null
-  color?: string
-  institution?: string
-  memo?: string
-  isIncludedInTotal?: YNType
-  cardCatalogRowId?: number | null
-  creditLimit?: number | null
-  paymentDay?: number | null
-  paymentAssetRowId?: number | null
+  exchangeRate?: number | null;
+  color?: string;
+  institution?: string;
+  memo?: string;
+  isIncludedInTotal?: YNType;
+  cardCatalogRowId?: number | null;
+  creditLimit?: number | null;
+  paymentDay?: number | null;
+  paymentAssetRowId?: number | null;
   /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
-  holdings?: AssetHolding[]
+  holdings?: AssetHolding[];
 }
 
-export type BillingStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'
+export type BillingStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPED";
 
 export interface BillingItem {
-  rowId: number
-  cardAssetRowId: number
-  paymentAssetRowId: number | null
-  billingAmount: number
+  rowId: number;
+  cardAssetRowId: number;
+  paymentAssetRowId: number | null;
+  billingAmount: number;
   /** "yyyy-MM-dd" */
-  periodStart: string
+  periodStart: string;
   /** "yyyy-MM-dd" */
-  periodEnd: string
+  periodEnd: string;
   /** "yyyy-MM-dd" */
-  paymentDate: string
-  status: BillingStatus
-  transferRowId: number | null
-  failureReason: string | null
+  paymentDate: string;
+  status: BillingStatus;
+  transferRowId: number | null;
+  failureReason: string | null;
 }
 
 export interface CardBilling {
-  cardAssetRowId: number
+  cardAssetRowId: number;
   /**
    * 다가오는 결제 회차의 결제예정액 = 청구 기간(결제일의 전월 1일~말일) 순사용액
    * − 같은 회차 기결제액(선결제 차감). 결제일 미설정 시 잔액 전액 fallback.
    */
-  upcomingAmount: number
+  upcomingAmount: number;
   /** 다가오는 회차 청구 기간 "yyyy-MM-dd" | null (결제일 미설정 시 null) */
-  upcomingPeriodStart: string | null
-  upcomingPeriodEnd: string | null
+  upcomingPeriodStart: string | null;
+  upcomingPeriodEnd: string | null;
   /** "yyyy-MM-dd" | null */
-  nextPaymentDate: string | null
-  paymentDay: number | null
-  paymentAssetRowId: number | null
-  history: BillingItem[]
+  nextPaymentDate: string | null;
+  paymentDay: number | null;
+  paymentAssetRowId: number | null;
+  history: BillingItem[];
 }
 
 export interface AssetSummary {
-  totalBalance: number
-  totalAssets: number
-  totalDebt: number
-  netWorth: number
-  lastMonthNetWorth: number
-  changeAmount: number
-  changePercent: number
-  byType: AssetTypeSummary[]
+  totalBalance: number;
+  totalAssets: number;
+  totalDebt: number;
+  netWorth: number;
+  lastMonthNetWorth: number;
+  changeAmount: number;
+  changePercent: number;
+  byType: AssetTypeSummary[];
 }
 
 export interface AssetTypeSummary {
-  assetType: AssetType
-  totalBalance: number
-  count: number
+  assetType: AssetType;
+  totalBalance: number;
+  count: number;
 }
 
 export interface NetWorthTrendPoint {
-  year: number
-  month: number
-  netWorth: number
+  year: number;
+  month: number;
+  netWorth: number;
 }
 
 export interface AssetBalancePoint {
   /** 주 시작일 (월요일) — "YYYY-MM-DD" */
-  weekStart: string
+  weekStart: string;
   /** 해당 주 말 시점 자산 잔액 */
-  balance: number
+  balance: number;
 }
 
 export interface AssetTransfer {
-  rowId: number
-  userRowId: number
-  fromAssetRowId: number
-  fromAssetName: string
-  toAssetRowId: number
-  toAssetName: string
-  amount: number
-  fee: number
+  rowId: number;
+  userRowId: number;
+  fromAssetRowId: number;
+  fromAssetName: string;
+  toAssetRowId: number;
+  toAssetName: string;
+  amount: number;
+  fee: number;
   /** 이자 (대출 상환 시). amount 중 이 금액은 부채를 줄이지 않고 지출로 잡힌다. */
-  interestAmount: number
+  interestAmount: number;
   /** 원금 = amount − interestAmount. 입금 자산(대출)에 실제로 반영된 금액. */
-  principalAmount: number
-  description: string | null
+  principalAmount: number;
+  description: string | null;
   /**
    * 시스템이 만든 이체의 출처 — `TRADE_SETTLEMENT`(매수 예수금 충당) /
    * `CARD_PAYMENT`(카드 자동결제) / `CARD_REFUND`(카드 과납금을 결제계좌로 환급).
@@ -271,25 +278,25 @@ export interface AssetTransfer {
    * <p>값이 있으면 금액이 원본(매수·청구)과 묶여 있어 고칠 수 없다. 화면은 수정·삭제
    * 버튼을 감춘다.
    */
-  autoSource: string | null
+  autoSource: string | null;
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
-  transferDate: string
-  createAt: string
+  transferDate: string;
+  createAt: string;
 }
 
 export interface AssetTransferFormValues {
-  fromAssetRowId: number
-  toAssetRowId: number
-  amount: number
-  fee?: number
+  fromAssetRowId: number;
+  toAssetRowId: number;
+  amount: number;
+  fee?: number;
   /** 이자 (대출 상환 시). 상환액 중 이자 몫 — 부채는 amount − interestAmount 만큼만 줄어든다. */
-  interestAmount?: number
-  description?: string
+  interestAmount?: number;
+  description?: string;
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss) */
-  transferDate: string
+  transferDate: string;
 }
 
 export interface ReorderItem {
-  assetId: number
-  sortOrder: number
+  assetId: number;
+  sortOrder: number;
 }

@@ -1,127 +1,208 @@
-import { useMemo, useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
-import { KRW, isEn } from '@/shared/lib/porest/format'
-import { formatMonthShort } from '@/shared/lib/date'
-import { HideUnit, MaskAmount, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/shared/ui/chart'
-import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Section } from '@/shared/ui/porest/section'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { Icon, MonthPicker } from '@/shared/ui/porest/primitives'
+import { useMemo, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { KRW, isEn } from "@/shared/lib/porest/format";
+import { formatMonthShort } from "@/shared/lib/date";
+import {
+  HideUnit,
+  MaskAmount,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
+import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/shared/ui/chart";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Section } from "@/shared/ui/porest/section";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
 import {
   useBudgetCompliance,
   useExpenseBudgets,
   useExpenseCategories,
   useRangeSummary,
-} from '@/features/expense'
-import { useUserPreferences } from '@/features/user'
-import type { ExpenseBudget, ExpenseCategory } from '@/entities/expense'
-import { getPaletteByColor } from '@/features/porest/dialogs'
+} from "@/features/expense";
+import { useUserPreferences } from "@/features/user";
+import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
+import { getPaletteByColor } from "@/features/porest/dialogs";
 
-type OutletCtx = { mobile: boolean }
+type OutletCtx = { mobile: boolean };
 
 const currentMonthKey = () => {
-  const n = new Date()
-  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`
-}
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
+};
 
 type ComplianceTickProps = {
-  x?: string | number
-  y?: string | number
-  payload?: { value?: string; index?: number }
-}
+  x?: string | number;
+  y?: string | number;
+  payload?: { value?: string; index?: number };
+};
 
 // 마지막(이번 달) 레이블만 볼드 + primary 컬러.
 function ComplianceMonthTick({ x, y, payload }: ComplianceTickProps) {
-  const last = (payload?.index ?? 0) === 5
-  const yNum = typeof y === 'number' ? y : Number(y ?? 0)
+  const last = (payload?.index ?? 0) === 5;
+  const yNum = typeof y === "number" ? y : Number(y ?? 0);
   return (
     <text
       x={x}
       y={yNum + 14}
       textAnchor="middle"
       style={{
-        fontSize: 'var(--text-badge)',
+        fontSize: "var(--text-badge)",
         fontWeight: last ? 700 : 500,
-        fill: last ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+        fill: last ? "var(--fg-primary)" : "var(--fg-tertiary)",
       }}
     >
       {payload?.value}
     </text>
-  )
+  );
 }
 
 type CompliancePayload = {
-  payload?: { label?: string; percent?: number; limit?: number; spent?: number }
-}
+  payload?: {
+    label?: string;
+    percent?: number;
+    limit?: number;
+    spent?: number;
+  };
+};
 
-function ComplianceTooltip({ active, payload }: { active?: boolean; payload?: CompliancePayload[] }) {
-  const { t } = useTranslation('budget')
-  if (!active || !payload?.length) return null
-  const d = payload[0]?.payload
-  if (!d) return null
-  const p = Number(d.percent ?? 0)
-  const over = p > 100
+function ComplianceTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: CompliancePayload[];
+}) {
+  const { t } = useTranslation("budget");
+  if (!active || !payload?.length) return null;
+  const d = payload[0]?.payload;
+  if (!d) return null;
+  const p = Number(d.percent ?? 0);
+  const over = p > 100;
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-tile)',
-        boxShadow: 'var(--shadow-md)',
-        padding: '8px 12px',
-        fontSize: 'var(--text-caption)',
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-tile)",
+        boxShadow: "var(--shadow-md)",
+        padding: "8px 12px",
+        fontSize: "var(--text-caption)",
         minWidth: 160,
       }}
     >
-      <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '600', marginBottom: 4 }}>
+      <div
+        style={{
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-tertiary)",
+          fontWeight: "600",
+          marginBottom: 4,
+        }}
+      >
         {d.label}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <span
           style={{
-            width: 8, height: 8, borderRadius: 'var(--radius-xs)',
-            background: over ? 'var(--fg-expense)' : 'var(--bg-brand)',
+            width: 8,
+            height: 8,
+            borderRadius: "var(--radius-xs)",
+            background: over ? "var(--fg-expense)" : "var(--bg-brand)",
           }}
         />
-        <span style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>{t('vsLimit')}</span>
+        <span
+          style={{
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          {t("vsLimit")}
+        </span>
         <span
           className="num"
           style={{
-            marginLeft: 'auto', fontSize: 'var(--text-caption)', fontWeight: '700',
-            color: over ? 'var(--fg-expense)' : 'var(--fg-primary)',
+            marginLeft: "auto",
+            fontSize: "var(--text-caption)",
+            fontWeight: "700",
+            color: over ? "var(--fg-expense)" : "var(--fg-primary)",
           }}
         >
           {p.toFixed(1)}%
         </span>
       </div>
-      <div style={{
-        marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--border-subtle)',
-        display: 'flex', flexDirection: 'column', gap: 3,
-      }}>
-        <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
-          <span>{t('spent')}</span>
-          <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
-            <MaskAmount card="budget.compliance" mask="••••">{wonPre()}{Number(d.spent ?? 0).toLocaleString('ko-KR')}</MaskAmount>
+      <div
+        style={{
+          marginTop: 6,
+          paddingTop: 6,
+          borderTop: "1px solid var(--border-subtle)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          <span>{t("spent")}</span>
+          <span
+            className="num"
+            style={{ marginLeft: "auto", fontWeight: "600" }}
+          >
+            <MaskAmount card="budget.compliance" mask="••••">
+              {wonPre()}
+              {Number(d.spent ?? 0).toLocaleString("ko-KR")}
+            </MaskAmount>
             <WonUnit />
           </span>
         </div>
-        <div style={{ display: 'flex', fontSize: 'var(--text-badge)', color: 'var(--fg-secondary)' }}>
-          <span>{t('limit')}</span>
-          <span className="num" style={{ marginLeft: 'auto', fontWeight: '600' }}>
-            <MaskAmount card="budget.compliance" mask="••••">{wonPre()}{Number(d.limit ?? 0).toLocaleString('ko-KR')}</MaskAmount>
+        <div
+          style={{
+            display: "flex",
+            fontSize: "var(--text-badge)",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          <span>{t("limit")}</span>
+          <span
+            className="num"
+            style={{ marginLeft: "auto", fontWeight: "600" }}
+          >
+            <MaskAmount card="budget.compliance" mask="••••">
+              {wonPre()}
+              {Number(d.limit ?? 0).toLocaleString("ko-KR")}
+            </MaskAmount>
             <WonUnit />
           </span>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /** Budget 페이지 구조에 맞춘 skeleton — HeaderCard + PaceCard + StatusTiles + ListCard + ComplianceCard. */
@@ -138,42 +219,58 @@ function SkelSection({
   headGap,
   children,
 }: {
-  mobile: boolean
-  head: React.ReactNode
-  headGap?: number
-  children: React.ReactNode
+  mobile: boolean;
+  head: React.ReactNode;
+  headGap?: number;
+  children: React.ReactNode;
 }) {
   return (
     <Section mobile={mobile} title={head} headGap={headGap}>
       {children}
     </Section>
-  )
+  );
 }
 
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('budget')
+  const { t } = useTranslation("budget");
   const HeaderCardSkeleton = (
     <Card>
       <CardContent>
         <SkeletonBase className="h-3 w-24 mb-2" />
         <SkeletonBase className="h-3 w-3/4 mb-3" />
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-          <SkeletonBase className={mobile ? 'h-7 w-32' : 'h-9 w-40'} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 6,
+            marginBottom: 12,
+          }}
+        >
+          <SkeletonBase className={mobile ? "h-7 w-32" : "h-9 w-40"} />
           <SkeletonBase className="h-4 w-28" />
         </div>
         <SkeletonBase className="h-2.5 w-full rounded-full" />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: 8,
+          }}
+        >
           <SkeletonBase className="h-3 w-16" />
           <SkeletonBase className="h-3 w-24" />
         </div>
         <div
           style={{
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
-            paddingTop: 14, marginTop: 14,
-            borderTop: '1px solid var(--border-subtle)',
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            paddingTop: 14,
+            marginTop: 14,
+            borderTop: "1px solid var(--border-subtle)",
           }}
         >
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2].map((i) => (
             <div key={i}>
               <SkeletonBase className="h-3 w-16 mb-2" />
               <SkeletonBase className="h-4 w-20" />
@@ -182,28 +279,39 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const PaceCardSkeleton = (
     <SkelSection
       mobile={mobile}
-      head={<>
-        <SkeletonBase className="h-5 w-24" />
-        <SkeletonBase className="h-6 w-16 rounded-full ml-auto" />
-      </>}
+      head={
+        <>
+          <SkeletonBase className="h-5 w-24" />
+          <SkeletonBase className="h-6 w-16 rounded-full ml-auto" />
+        </>
+      }
     >
       <SkeletonBase className="h-3 w-full rounded-full mb-3" />
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <SkeletonBase className="h-3 w-16" />
         <SkeletonBase className="h-3 w-24" />
       </div>
       <div
         style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
-          paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 12,
+          paddingTop: 16,
+          borderTop: "1px solid var(--border-subtle)",
         }}
       >
-        {[0, 1].map(i => (
+        {[0, 1].map((i) => (
           <div key={i}>
             <SkeletonBase className="h-3 w-20 mb-2" />
             <SkeletonBase className="h-6 w-28" />
@@ -211,19 +319,19 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         ))}
       </div>
     </SkelSection>
-  )
+  );
 
   const StatusTilesSkeleton = (
     <SkelSection mobile={mobile} head={<SkeletonBase className="h-5 w-20" />}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        {[0, 1].map(i => (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {[0, 1].map((i) => (
           <div
             key={i}
             style={{
               padding: 12,
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)',
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-lg)",
             }}
           >
             <SkeletonBase className="h-3 w-10 mb-2" />
@@ -232,28 +340,37 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         ))}
       </div>
     </SkelSection>
-  )
+  );
 
   const ListCardSkeleton = (
     <SkelSection
       mobile={mobile}
       // 실렌더 Section 과 같은 헤드↔리스트 간격(홈 예산 정합).
       headGap={28}
-      head={<>
-        <SkeletonBase className="h-5 w-28" />
-        <SkeletonBase className="h-3 w-16 ml-auto" />
-      </>}
+      head={
+        <>
+          <SkeletonBase className="h-5 w-28" />
+          <SkeletonBase className="h-3 w-16 ml-auto" />
+        </>
+      }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        {[0, 1, 2, 3].map(i => (
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {[0, 1, 2, 3].map((i) => (
           <div key={i}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 8,
+              }}
+            >
               <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <SkeletonBase className="h-4 w-1/2 mb-1.5" />
                 <SkeletonBase className="h-3 w-1/3" />
               </div>
-              <div style={{ textAlign: 'right', minWidth: 90 }}>
+              <div style={{ textAlign: "right", minWidth: 90 }}>
                 <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
                 <SkeletonBase className="h-3 w-16 ml-auto" />
               </div>
@@ -263,17 +380,27 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         ))}
       </div>
     </SkelSection>
-  )
+  );
 
   const ComplianceCardSkeleton = (
     <SkelSection
       mobile={mobile}
-      head={<>
-        <SkeletonBase className="h-5 w-44" />
-        <SkeletonBase className="h-3 w-24 ml-auto" />
-      </>}
+      head={
+        <>
+          <SkeletonBase className="h-5 w-44" />
+          <SkeletonBase className="h-3 w-24 ml-auto" />
+        </>
+      }
     >
-      <div style={{ height: 180, display: 'flex', alignItems: 'flex-end', gap: 12, paddingTop: 24 }}>
+      <div
+        style={{
+          height: 180,
+          display: "flex",
+          alignItems: "flex-end",
+          gap: 12,
+          paddingTop: 24,
+        }}
+      >
         {[0.6, 0.8, 0.5, 0.9, 0.7, 1.0].map((h, i) => (
           <SkeletonBase
             key={i}
@@ -283,17 +410,31 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
         ))}
       </div>
     </SkelSection>
-  )
+  );
 
   if (mobile) {
     return (
       // 카드 다이어트 — 실렌더(브랜드 헤더 카드 + flat 섹션, gap 36)와 동일 구조.
-      <div style={{ padding: '16px 24px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div style={{ padding: "16px 24px 24px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 12,
+            flexWrap: "wrap",
+          }}
+        >
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--spacing-2xl)",
+          }}
+        >
           {HeaderCardSkeleton}
           {PaceCardSkeleton}
           {StatusTilesSkeleton}
@@ -301,467 +442,670 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
           {ComplianceCardSkeleton}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>{t('pageTitle')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("pageTitle")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1.5fr",
+          gap: 20,
+          alignItems: "start",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {HeaderCardSkeleton}
           {PaceCardSkeleton}
           {StatusTilesSkeleton}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {ListCardSkeleton}
           {ComplianceCardSkeleton}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export const BudgetPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { t } = useTranslation('budget')
-  const navigate = useNavigate()
-  const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
-  const [year, month] = monthKey.split('-').map(Number) as [number, number]
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { t } = useTranslation("budget");
+  const navigate = useNavigate();
+  const [monthKey, setMonthKey] = useState<string>(currentMonthKey());
+  const [year, month] = monthKey.split("-").map(Number) as [number, number];
 
-  const budgetsQ = useExpenseBudgets({ year, month })
-  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
-  const monthEndDay = new Date(year, month, 0).getDate()
-  const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`
-  const summaryQ = useRangeSummary(monthStart, monthEnd)
-  const categoriesQ = useExpenseCategories()
-  const complianceQ = useBudgetCompliance(6)
-  const preferencesQ = useUserPreferences()
+  const budgetsQ = useExpenseBudgets({ year, month });
+  const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
+  const monthEndDay = new Date(year, month, 0).getDate();
+  const monthEnd = `${year}-${String(month).padStart(2, "0")}-${String(monthEndDay).padStart(2, "0")}`;
+  const summaryQ = useRangeSummary(monthStart, monthEnd);
+  const categoriesQ = useExpenseCategories();
+  const complianceQ = useBudgetCompliance(6);
+  const preferencesQ = useUserPreferences();
 
   // 첫 진입 시 모든 데이터 도착 전까지 한 번만 skeleton — 이후 monthKey 변경은 부분 로딩.
   const pageDataLoading =
-    budgetsQ.isLoading || summaryQ.isLoading || categoriesQ.isLoading
-    || complianceQ.isLoading || preferencesQ.isLoading
-  const [hasEverLoaded, setHasEverLoaded] = useState(false)
+    budgetsQ.isLoading ||
+    summaryQ.isLoading ||
+    categoriesQ.isLoading ||
+    complianceQ.isLoading ||
+    preferencesQ.isLoading;
+  const [hasEverLoaded, setHasEverLoaded] = useState(false);
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
-  if (!pageDataLoading && !hasEverLoaded) setHasEverLoaded(true)
-  const shouldShowSkeleton = pageDataLoading && !hasEverLoaded
+  if (!pageDataLoading && !hasEverLoaded) setHasEverLoaded(true);
+  const shouldShowSkeleton = pageDataLoading && !hasEverLoaded;
 
-  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85
-  const warnRatio = warnThreshold / 100
+  const warnThreshold = preferencesQ.data?.budgetAlertThreshold ?? 85;
+  const warnRatio = warnThreshold / 100;
 
-  const goToSettings = () => navigate('/desk/settings?section=budget')
+  const goToSettings = () => navigate("/desk/settings?section=budget");
 
-  const budgets: ExpenseBudget[] = budgetsQ.data ?? []
+  const budgets: ExpenseBudget[] = budgetsQ.data ?? [];
   const categoryMap = useMemo(() => {
-    const map = new Map<number, ExpenseCategory>()
-    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c)
-    return map
-  }, [categoriesQ.data])
+    const map = new Map<number, ExpenseCategory>();
+    for (const c of categoriesQ.data ?? []) map.set(c.rowId, c);
+    return map;
+  }, [categoriesQ.data]);
 
   const spentByCategory = useMemo(() => {
-    const map = new Map<number, number>()
+    const map = new Map<number, number>();
     for (const c of summaryQ.data?.categoryBreakdown ?? []) {
       // 미분류는 특정 카테고리가 없으니 카테고리 예산에서 빼지 않는다 —
       // 전체 예산에서만 차감된다(서버도 같은 규칙).
-      if (c.categoryRowId == null) continue
-      map.set(c.categoryRowId, (map.get(c.categoryRowId) ?? 0) + c.totalAmount)
+      if (c.categoryRowId == null) continue;
+      map.set(c.categoryRowId, (map.get(c.categoryRowId) ?? 0) + c.totalAmount);
       if (c.parentCategoryRowId != null) {
-        map.set(c.parentCategoryRowId, (map.get(c.parentCategoryRowId) ?? 0) + c.totalAmount)
+        map.set(
+          c.parentCategoryRowId,
+          (map.get(c.parentCategoryRowId) ?? 0) + c.totalAmount,
+        );
       }
     }
-    return map
-  }, [summaryQ.data])
+    return map;
+  }, [summaryQ.data]);
 
-  const totalExpense = summaryQ.data?.totalExpense ?? 0
-  const overallBudget = budgets.find(b => b.categoryRowId === null)
-  const categoryBudgets = budgets.filter(b => b.categoryRowId !== null)
+  const totalExpense = summaryQ.data?.totalExpense ?? 0;
+  const overallBudget = budgets.find((b) => b.categoryRowId === null);
+  const categoryBudgets = budgets.filter((b) => b.categoryRowId !== null);
 
   // 카테고리 한도 합
-  const categoryLimitSum = categoryBudgets.reduce((s, b) => s + b.budgetAmount, 0)
+  const categoryLimitSum = categoryBudgets.reduce(
+    (s, b) => s + b.budgetAmount,
+    0,
+  );
   // 월 전체 상한(overall). 없으면 카테고리 합을 대체 값으로 사용.
-  const totalLimit = overallBudget?.budgetAmount ?? categoryLimitSum
+  const totalLimit = overallBudget?.budgetAmount ?? categoryLimitSum;
   // 전체 지출은 언제나 이번 달 EXPENSE 총합 (미분류 포함)
-  const totalSpent = totalExpense
-  const pct = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0
-  const headerState = pct > 100 ? 'over' : pct > warnThreshold ? 'warn' : ''
-  const isLoading = budgetsQ.isLoading || summaryQ.isLoading
+  const totalSpent = totalExpense;
+  const pct = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
+  const headerState = pct > 100 ? "over" : pct > warnThreshold ? "warn" : "";
+  const isLoading = budgetsQ.isLoading || summaryQ.isLoading;
 
   // 전체 상한 대비 카테고리 할당 상태
-  const overallLimit = overallBudget?.budgetAmount ?? 0
-  const allocable = overallLimit - categoryLimitSum
-  const overAllocated = overallBudget != null && categoryLimitSum > overallLimit
+  const overallLimit = overallBudget?.budgetAmount ?? 0;
+  const allocable = overallLimit - categoryLimitSum;
+  const overAllocated =
+    overallBudget != null && categoryLimitSum > overallLimit;
 
   // Pace
-  const today = new Date()
-  const daysInMonth = new Date(year, month, 0).getDate()
-  const dayOfMonth = today.getFullYear() === year && today.getMonth() + 1 === month
-    ? today.getDate()
-    : daysInMonth
-  const daysElapsedPct = (dayOfMonth / daysInMonth) * 100
-  const daysRemaining = Math.max(1, daysInMonth - dayOfMonth)
-  const dailyActual = Math.round(totalSpent / Math.max(1, dayOfMonth))
-  const dailyTarget = Math.round(Math.max(0, totalLimit - totalSpent) / daysRemaining)
-  const onTrack = pct <= daysElapsedPct + 5
+  const today = new Date();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const dayOfMonth =
+    today.getFullYear() === year && today.getMonth() + 1 === month
+      ? today.getDate()
+      : daysInMonth;
+  const daysElapsedPct = (dayOfMonth / daysInMonth) * 100;
+  const daysRemaining = Math.max(1, daysInMonth - dayOfMonth);
+  const dailyActual = Math.round(totalSpent / Math.max(1, dayOfMonth));
+  const dailyTarget = Math.round(
+    Math.max(0, totalLimit - totalSpent) / daysRemaining,
+  );
+  const onTrack = pct <= daysElapsedPct + 5;
 
   // 상태 집계
-  const overList = categoryBudgets.filter(b => {
-    if (b.categoryRowId == null) return false
-    const spent = spentByCategory.get(b.categoryRowId) ?? 0
-    return spent > b.budgetAmount
-  })
-  const healthyList = categoryBudgets.filter(b => {
-    if (b.categoryRowId == null) return false
-    const spent = spentByCategory.get(b.categoryRowId) ?? 0
-    return b.budgetAmount > 0 && spent / b.budgetAmount <= warnRatio
-  })
+  const overList = categoryBudgets.filter((b) => {
+    if (b.categoryRowId == null) return false;
+    const spent = spentByCategory.get(b.categoryRowId) ?? 0;
+    return spent > b.budgetAmount;
+  });
+  const healthyList = categoryBudgets.filter((b) => {
+    if (b.categoryRowId == null) return false;
+    const spent = spentByCategory.get(b.categoryRowId) ?? 0;
+    return b.budgetAmount > 0 && spent / b.budgetAmount <= warnRatio;
+  });
 
   // ---- Cards ----
   const HeaderCard = (
     // 가계부 취합 카드 정합(사용자 결정) — raised(surface-raised + shadow-lg) 히어로.
     <Card variant="raised">
       <CardContent>
-      <div
-        style={{
-          fontSize: 'var(--text-caption)',
-          color: 'var(--fg-brand-strong)',
-          fontWeight: '600',
-          letterSpacing: '0.04em',
-          marginBottom: 2,
-        }}
-      >
-        {t('monthlyCap', { month })}
-      </div>
-      <div
-        style={{
-          fontSize: 'var(--text-caption)',
-          color: 'var(--fg-tertiary)',
-          lineHeight: '1.5',
-          marginBottom: 10,
-        }}
-      >
-        {t('capHint')}
-      </div>
-      {overallBudget ? (
-        <>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-brand-strong)",
+            fontWeight: "600",
+            letterSpacing: "0.04em",
+            marginBottom: 2,
+          }}
+        >
+          {t("monthlyCap", { month })}
+        </div>
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            lineHeight: "1.5",
+            marginBottom: 10,
+          }}
+        >
+          {t("capHint")}
+        </div>
+        {overallBudget ? (
+          <>
             <div
-              className="num"
-              style={{ fontSize: mobile ? 24 : 30, fontWeight: '800', letterSpacing: '-0.022em' }}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 6,
+                marginBottom: 12,
+              }}
             >
-              <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalSpent)}</MaskAmount>
-            </div>
-            <div style={{ fontSize: 'var(--text-body-sm)', color: 'var(--fg-secondary)', fontWeight: '500' }}>
-              / <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalLimit)}</MaskAmount>
-              <WonUnit card="budget.header" />
-            </div>
-          </div>
-          <div className="budget-bar" style={{ height: 10 }}>
-            <div
-              className={`budget-bar__fill ${headerState}`}
-              style={{ width: `${Math.min(100, pct)}%` }}
-            />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-secondary)',
-              marginTop: 8,
-            }}
-          >
-            <span>{pct.toFixed(0)}% {t('manager.spent')}</span>
-            <span style={{ color: totalLimit - totalSpent < 0 ? 'var(--fg-expense)' : undefined }}>
-              {totalLimit - totalSpent >= 0
-                ? <>{t('manager.remaining')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalLimit - totalSpent)}</MaskAmount><WonUnit card="budget.header" /></>
-                : <>{t('limit')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(totalSpent - totalLimit)}</MaskAmount><WonUnit card="budget.header" /> {t('over')}</>}
-            </span>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 12,
-              paddingTop: 14,
-              marginTop: 14,
-              borderTop: '1px solid color-mix(in srgb, var(--border-strong) 28%, var(--border-subtle))',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                {t('totalCap')}
-              </div>
-              <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(overallLimit)}</MaskAmount>
-                <WonUnit card="budget.header" />
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                {t('categoryAllocated')}
-              </div>
-              <div className="num" style={{ fontSize: 'var(--text-body-sm)', fontWeight: '700' }}>
-                <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount>
-                <WonUnit card="budget.header" />
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 2 }}>
-                {t('manager.assignable')}
-              </div>
               <div
                 className="num"
                 style={{
-                  fontSize: 'var(--text-body-sm)',
-                  fontWeight: '700',
-                  color: overAllocated ? 'var(--fg-expense)' : 'var(--fg-income)',
+                  fontSize: mobile ? 24 : 30,
+                  fontWeight: "800",
+                  letterSpacing: "-0.022em",
                 }}
               >
                 <MaskAmount card="budget.header" mask="••••">
-                  {overAllocated ? '−' : '+'}
                   {wonPre()}
-                  {KRW(Math.abs(allocable))}
+                  {KRW(totalSpent)}
+                </MaskAmount>
+              </div>
+              <div
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  color: "var(--fg-secondary)",
+                  fontWeight: "500",
+                }}
+              >
+                /{" "}
+                <MaskAmount card="budget.header" mask="••••">
+                  {wonPre()}
+                  {KRW(totalLimit)}
                 </MaskAmount>
                 <WonUnit card="budget.header" />
               </div>
             </div>
-          </div>
-          {overAllocated && (
+            <div className="budget-bar" style={{ height: 10 }}>
+              <div
+                className={`budget-bar__fill ${headerState}`}
+                style={{ width: `${Math.min(100, pct)}%` }}
+              />
+            </div>
             <div
               style={{
-                marginTop: 10,
-                padding: '8px 12px',
-                background: 'var(--status-danger-subtle)',
-                border: '1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--status-danger-fg)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 6,
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
+                marginTop: 8,
               }}
             >
-              <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                {t('manager.overCapPre')} <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum - overallLimit)}</MaskAmount><WonUnit card="budget.header" /> {t('manager.overCapPost')}
+                {pct.toFixed(0)}% {t("manager.spent")}
+              </span>
+              <span
+                style={{
+                  color:
+                    totalLimit - totalSpent < 0
+                      ? "var(--fg-expense)"
+                      : undefined,
+                }}
+              >
+                {totalLimit - totalSpent >= 0 ? (
+                  <>
+                    {t("manager.remaining")}{" "}
+                    <MaskAmount card="budget.header" mask="••••">
+                      {wonPre()}
+                      {KRW(totalLimit - totalSpent)}
+                    </MaskAmount>
+                    <WonUnit card="budget.header" />
+                  </>
+                ) : (
+                  <>
+                    {t("limit")}{" "}
+                    <MaskAmount card="budget.header" mask="••••">
+                      {wonPre()}
+                      {KRW(totalSpent - totalLimit)}
+                    </MaskAmount>
+                    <WonUnit card="budget.header" /> {t("over")}
+                  </>
+                )}
               </span>
             </div>
-          )}
-        </>
-      ) : (
-        <div
-          style={{
-            padding: '14px 0 2px',
-            fontSize: 'var(--text-label-sm)',
-            color: 'var(--fg-secondary)',
-            lineHeight: '1.7',
-          }}
-        >
-          {t('capUnsetPre')} <strong>{t('manager.setBudget')}</strong> {t('capUnsetPost')}
-          {categoryLimitSum > 0 && (
-            <div style={{ marginTop: 8, fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-              {t('currentCategorySum')}: <MaskAmount card="budget.header" mask="••••">{wonPre()}{KRW(categoryLimitSum)}</MaskAmount><WonUnit card="budget.header" />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 12,
+                paddingTop: 14,
+                marginTop: 14,
+                borderTop:
+                  "1px solid color-mix(in srgb, var(--border-strong) 28%, var(--border-subtle))",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 2,
+                  }}
+                >
+                  {t("totalCap")}
+                </div>
+                <div
+                  className="num"
+                  style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
+                >
+                  <MaskAmount card="budget.header" mask="••••">
+                    {wonPre()}
+                    {KRW(overallLimit)}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" />
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 2,
+                  }}
+                >
+                  {t("categoryAllocated")}
+                </div>
+                <div
+                  className="num"
+                  style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
+                >
+                  <MaskAmount card="budget.header" mask="••••">
+                    {wonPre()}
+                    {KRW(categoryLimitSum)}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" />
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginBottom: 2,
+                  }}
+                >
+                  {t("manager.assignable")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-body-sm)",
+                    fontWeight: "700",
+                    color: overAllocated
+                      ? "var(--fg-expense)"
+                      : "var(--fg-income)",
+                  }}
+                >
+                  <MaskAmount card="budget.header" mask="••••">
+                    {overAllocated ? "−" : "+"}
+                    {wonPre()}
+                    {KRW(Math.abs(allocable))}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" />
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+            {overAllocated && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "8px 12px",
+                  background: "var(--status-danger-subtle)",
+                  border:
+                    "1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)",
+                  borderRadius: "var(--radius-md)",
+                  fontSize: "var(--text-caption)",
+                  color: "var(--status-danger-fg)",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 6,
+                }}
+              >
+                <AlertTriangle
+                  size={13}
+                  style={{ flexShrink: 0, marginTop: 1 }}
+                />
+                <span>
+                  {t("manager.overCapPre")}{" "}
+                  <MaskAmount card="budget.header" mask="••••">
+                    {wonPre()}
+                    {KRW(categoryLimitSum - overallLimit)}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" /> {t("manager.overCapPost")}
+                </span>
+              </div>
+            )}
+          </>
+        ) : (
+          <div
+            style={{
+              padding: "14px 0 2px",
+              fontSize: "var(--text-label-sm)",
+              color: "var(--fg-secondary)",
+              lineHeight: "1.7",
+            }}
+          >
+            {t("capUnsetPre")} <strong>{t("manager.setBudget")}</strong>{" "}
+            {t("capUnsetPost")}
+            {categoryLimitSum > 0 && (
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                }}
+              >
+                {t("currentCategorySum")}:{" "}
+                <MaskAmount card="budget.header" mask="••••">
+                  {wonPre()}
+                  {KRW(categoryLimitSum)}
+                </MaskAmount>
+                <WonUnit card="budget.header" />
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
-  )
+  );
 
   const PaceCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={t('spendingPace')}
+      title={t("spendingPace")}
       action={
         <Badge
-          variant={onTrack ? 'success' : 'warning'}
+          variant={onTrack ? "success" : "warning"}
           // 색은 앱 정합 — 다크에서 -fg(light variant)·-subtle 로 (text-warning 고정 base 대신)
-          className={onTrack
-            ? 'bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]'
-            : 'bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]'}
+          className={
+            onTrack
+              ? "bg-[var(--status-success-subtle)] text-[var(--status-success-fg)]"
+              : "bg-[var(--status-warning-subtle)] text-[var(--status-warning-fg)]"
+          }
         >
-          {onTrack ? t('paceNormal') : t('paceFast')}
+          {onTrack ? t("paceNormal") : t("paceFast")}
         </Badge>
       }
     >
       <div
         style={{
-          position: 'relative',
+          position: "relative",
           height: 12,
-          background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-pill)',
-          overflow: 'hidden',
+          background: "var(--bg-sunken)",
+          borderRadius: "var(--radius-pill)",
+          overflow: "hidden",
           marginBottom: 10,
         }}
       >
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             left: 0,
             top: 0,
-            height: '100%',
+            height: "100%",
             width: `${Math.min(100, pct)}%`,
-            background: pct > 100 ? 'var(--fg-expense)' : 'var(--bg-brand)',
-            borderRadius: 'var(--radius-pill)',
+            background: pct > 100 ? "var(--fg-expense)" : "var(--bg-brand)",
+            borderRadius: "var(--radius-pill)",
           }}
         />
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             left: `${daysElapsedPct}%`,
             top: -3,
             width: 2,
             height: 18,
-            background: 'var(--fg-primary)',
-            borderRadius: 'var(--radius-xs)',
+            background: "var(--fg-primary)",
+            borderRadius: "var(--radius-xs)",
           }}
         />
       </div>
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: 'var(--text-caption)',
-          color: 'var(--fg-tertiary)',
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "var(--text-caption)",
+          color: "var(--fg-tertiary)",
           marginBottom: 16,
         }}
       >
-        <span>{pct.toFixed(0)}% {t('manager.spent')}</span>
-        <span>{t('monthElapsed', { percent: daysElapsedPct.toFixed(0) })}</span>
+        <span>
+          {pct.toFixed(0)}% {t("manager.spent")}
+        </span>
+        <span>{t("monthElapsed", { percent: daysElapsedPct.toFixed(0) })}</span>
       </div>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: 12,
           paddingTop: 16,
-          borderTop: '1px solid var(--border-subtle)',
+          borderTop: "1px solid var(--border-subtle)",
         }}
       >
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>
-            {t('dailyAvg')}
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 4,
+            }}
+          >
+            {t("dailyAvg")}
           </div>
-          <div className="num" style={{ fontSize: 'var(--text-title-md)', fontWeight: '700', letterSpacing: '-0.022em' }}>
-            <MaskAmount card="budget.pace" mask="••••">{wonPre()}{KRW(dailyActual)}</MaskAmount>
+          <div
+            className="num"
+            style={{
+              fontSize: "var(--text-title-md)",
+              fontWeight: "700",
+              letterSpacing: "-0.022em",
+            }}
+          >
+            <MaskAmount card="budget.pace" mask="••••">
+              {wonPre()}
+              {KRW(dailyActual)}
+            </MaskAmount>
             {!isEn() && (
               <HideUnit>
-                <span style={{ fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+                <span
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    fontWeight: "600",
+                    color: "var(--fg-tertiary)",
+                    marginLeft: 2,
+                  }}
+                >
+                  원
+                </span>
               </HideUnit>
             )}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500', marginBottom: 4 }}>
-            {t('recommendedDaily')}
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 4,
+            }}
+          >
+            {t("recommendedDaily")}
           </div>
           <div
             className="num"
             style={{
-              fontSize: 'var(--text-title-md)',
-              fontWeight: '700',
-              letterSpacing: '-0.022em',
-              color: 'var(--fg-brand-strong)',
+              fontSize: "var(--text-title-md)",
+              fontWeight: "700",
+              letterSpacing: "-0.022em",
+              color: "var(--fg-brand-strong)",
             }}
           >
-            <MaskAmount card="budget.pace" mask="••••">{wonPre()}{KRW(dailyTarget)}</MaskAmount>
+            <MaskAmount card="budget.pace" mask="••••">
+              {wonPre()}
+              {KRW(dailyTarget)}
+            </MaskAmount>
             {!isEn() && (
               <HideUnit>
-                <span style={{ fontSize: 'var(--text-caption)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 2 }}>원</span>
+                <span
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    fontWeight: "600",
+                    color: "var(--fg-tertiary)",
+                    marginLeft: 2,
+                  }}
+                >
+                  원
+                </span>
               </HideUnit>
             )}
           </div>
         </div>
       </div>
     </Section>
-  )
+  );
 
   const StatusTiles = (
     // 모바일 = 카드 다이어트(flat Section) — 내부 상태 타일(bordered 미니 타일)은 유지.
-    <Section mobile={mobile} title={t('status')}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+    <Section mobile={mobile} title={t("status")}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div
           style={{
             padding: 12,
-            background: overList.length > 0 ? 'var(--status-danger-subtle)' : 'var(--bg-surface)',
-            border: `1px solid ${overList.length > 0 ? 'color-mix(in oklch, var(--fg-expense) 30%, transparent)' : 'var(--border-subtle)'}`,
-            borderRadius: 'var(--radius-lg)',
+            background:
+              overList.length > 0
+                ? "var(--status-danger-subtle)"
+                : "var(--bg-surface)",
+            border: `1px solid ${overList.length > 0 ? "color-mix(in oklch, var(--fg-expense) 30%, transparent)" : "var(--border-subtle)"}`,
+            borderRadius: "var(--radius-lg)",
           }}
         >
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 4,
-              fontSize: 'var(--text-caption)',
-              color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-tertiary)',
-              fontWeight: '600',
+              fontSize: "var(--text-caption)",
+              color:
+                overList.length > 0
+                  ? "var(--fg-expense)"
+                  : "var(--fg-tertiary)",
+              fontWeight: "600",
               marginBottom: 4,
             }}
           >
-            <AlertTriangle size={13} /> {t('over')}
+            <AlertTriangle size={13} /> {t("over")}
           </div>
           <div
             className="num"
             style={{
-              fontSize: 'var(--text-display-sm)',
-              fontWeight: '700',
-              letterSpacing: '-0.022em',
-              color: overList.length > 0 ? 'var(--fg-expense)' : 'var(--fg-primary)',
+              fontSize: "var(--text-display-sm)",
+              fontWeight: "700",
+              letterSpacing: "-0.022em",
+              color:
+                overList.length > 0 ? "var(--fg-expense)" : "var(--fg-primary)",
             }}
           >
             {overList.length}
-            <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
-              {t('edit.categoryLabel')}
+            <span
+              style={{
+                fontSize: "var(--text-label-sm)",
+                fontWeight: "600",
+                color: "var(--fg-tertiary)",
+                marginLeft: 4,
+              }}
+            >
+              {t("edit.categoryLabel")}
             </span>
           </div>
         </div>
         <div
           style={{
             padding: 12,
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
           }}
         >
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 4,
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-income)',
-              fontWeight: '600',
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-income)",
+              fontWeight: "600",
               marginBottom: 4,
             }}
           >
-            <CheckCircle2 size={13} /> {t('healthy')}
+            <CheckCircle2 size={13} /> {t("healthy")}
           </div>
-          <div className="num" style={{ fontSize: 'var(--text-display-sm)', fontWeight: '700', letterSpacing: '-0.022em' }}>
+          <div
+            className="num"
+            style={{
+              fontSize: "var(--text-display-sm)",
+              fontWeight: "700",
+              letterSpacing: "-0.022em",
+            }}
+          >
             {healthyList.length}
-            <span style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-tertiary)', marginLeft: 4 }}>
-              {t('edit.categoryLabel')}
+            <span
+              style={{
+                fontSize: "var(--text-label-sm)",
+                fontWeight: "600",
+                color: "var(--fg-tertiary)",
+                marginLeft: 4,
+              }}
+            >
+              {t("edit.categoryLabel")}
             </span>
           </div>
         </div>
       </div>
     </Section>
-  )
+  );
 
   const ComplianceCard = (() => {
-    const rows = complianceQ.data ?? []
+    const rows = complianceQ.data ?? [];
     const complianceChartConfig = {
-      percent: { label: t('complianceRate'), color: 'var(--bg-brand)' },
-    } satisfies ChartConfig
-    const data = rows.map(b => ({
+      percent: { label: t("complianceRate"), color: "var(--bg-brand)" },
+    } satisfies ChartConfig;
+    const data = rows.map((b) => ({
       label: formatMonthShort(b.month),
       percent: b.compliancePercent,
       limit: b.totalLimit,
@@ -769,20 +1113,34 @@ export const BudgetPage = () => {
       year: b.year,
       month: b.month,
       active: b.year === year && b.month === month,
-    }))
+    }));
     return (
       // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
       <Section
         mobile={mobile}
-        title={t('complianceTitle')}
+        title={t("complianceTitle")}
         action={
-          <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-            {t('vsLimitSpending')}
+          <span
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+            }}
+          >
+            {t("vsLimitSpending")}
           </span>
         }
       >
         {complianceQ.isLoading ? (
-          <div style={{ height: 180, display: 'flex', alignItems: 'end', justifyContent: 'space-around', padding: '24px 8px 8px', gap: 12 }}>
+          <div
+            style={{
+              height: 180,
+              display: "flex",
+              alignItems: "end",
+              justifyContent: "space-around",
+              padding: "24px 8px 8px",
+              gap: 12,
+            }}
+          >
             {[60, 80, 45, 70, 90, 55].map((h, i) => (
               <SkeletonBase
                 key={i}
@@ -792,8 +1150,15 @@ export const BudgetPage = () => {
             ))}
           </div>
         ) : data.length === 0 ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-caption)' }}>
-            {t('noComplianceData')}
+          <div
+            style={{
+              padding: "24px 0",
+              textAlign: "center",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-caption)",
+            }}
+          >
+            {t("noComplianceData")}
           </div>
         ) : (
           <ChartContainer
@@ -801,8 +1166,16 @@ export const BudgetPage = () => {
             className="aspect-auto w-full"
             style={{ height: 180 }}
           >
-            <BarChart data={data} margin={{ top: 24, right: 8, left: 8, bottom: 8 }} barCategoryGap="25%">
-              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="3 3" />
+            <BarChart
+              data={data}
+              margin={{ top: 24, right: 8, left: 8, bottom: 8 }}
+              barCategoryGap="25%"
+            >
+              <CartesianGrid
+                vertical={false}
+                stroke="var(--border-subtle)"
+                strokeDasharray="3 3"
+              />
               <XAxis
                 dataKey="label"
                 tickLine={false}
@@ -812,19 +1185,19 @@ export const BudgetPage = () => {
               />
               <YAxis hide domain={[0, (dmax: number) => Math.max(100, dmax)]} />
               <ChartTooltip
-                cursor={{ fill: 'var(--border-brand)', fillOpacity: 0.06 }}
+                cursor={{ fill: "var(--border-brand)", fillOpacity: 0.06 }}
                 content={<ComplianceTooltip />}
               />
               <Bar dataKey="percent" radius={[6, 6, 0, 0]} isAnimationActive>
-                {data.map(d => (
+                {data.map((d) => (
                   <Cell
                     key={`${d.year}-${d.month}`}
                     fill={
                       d.percent > 100
-                        ? 'var(--fg-expense)'
+                        ? "var(--fg-expense)"
                         : d.active
-                          ? 'var(--bg-brand)'
-                          : 'var(--border-strong)'
+                          ? "var(--bg-brand)"
+                          : "var(--border-strong)"
                     }
                   />
                 ))}
@@ -832,41 +1205,57 @@ export const BudgetPage = () => {
                   dataKey="percent"
                   position="top"
                   formatter={(v: unknown) => `${Math.round(Number(v ?? 0))}%`}
-                  style={{ fontSize: 'var(--text-badge)', fontWeight: '700', fill: 'var(--fg-primary)' }}
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    fontWeight: "700",
+                    fill: "var(--fg-primary)",
+                  }}
                 />
               </Bar>
             </BarChart>
           </ChartContainer>
         )}
       </Section>
-    )
-  })()
+    );
+  })();
 
   const ListCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section
       mobile={mobile}
-      title={t('categoryBudgets')}
+      title={t("categoryBudgets")}
       // 홈 예산 섹션과 같은 간격 — 홈은 sec-head 14 위에 행 자체 상단 14 가 얹혀
       // 합 28 이다. 여기 행은 세로 패딩이 없어(행 사이 gap 18 뿐) 헤드가 28 을 다 쥔다.
       headGap={28}
       action={
-        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)' }}>
-          {t('countSet', { count: categoryBudgets.length })}
+        <span
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {t("countSet", { count: categoryBudgets.length })}
         </span>
       }
     >
       {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {[0, 1, 2, 3].map(i => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {[0, 1, 2, 3].map((i) => (
             <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 8,
+                }}
+              >
                 <SkeletonBase className="h-9 w-9 rounded-lg shrink-0" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <SkeletonBase className="h-4 w-1/2 mb-1.5" />
                   <SkeletonBase className="h-3 w-1/3" />
                 </div>
-                <div style={{ textAlign: 'right', minWidth: 90 }}>
+                <div style={{ textAlign: "right", minWidth: 90 }}>
                   <SkeletonBase className="h-4 w-20 mb-1 ml-auto" />
                   <SkeletonBase className="h-3 w-16 ml-auto" />
                 </div>
@@ -876,69 +1265,139 @@ export const BudgetPage = () => {
           ))}
         </div>
       ) : categoryBudgets.length === 0 ? (
-        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
-          <div>{t('noCategoryBudgets')}</div>
+        <div
+          style={{
+            padding: "32px 0",
+            textAlign: "center",
+            color: "var(--fg-tertiary)",
+            fontSize: "var(--text-label-sm)",
+          }}
+        >
+          <div>{t("noCategoryBudgets")}</div>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            style={{ marginTop: 10, color: 'var(--fg-brand-strong)' }}
+            style={{ marginTop: 10, color: "var(--fg-brand-strong)" }}
             onClick={goToSettings}
           >
-            {t('goSetBudget')}
+            {t("goSetBudget")}
           </Button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {categoryBudgets.map(b => {
-            const catId = b.categoryRowId as number
-            const cat = categoryMap.get(catId)
-            const palette = getPaletteByColor(cat?.color)
-            const name = cat?.categoryName ?? b.categoryName ?? t('manager.categoryFallback', { id: catId })
-            const spent = spentByCategory.get(catId) ?? 0
-            const limit = b.budgetAmount
-            const p = limit > 0 ? (spent / limit) * 100 : 0
-            const state = p > 100 ? 'over' : p > warnThreshold ? 'warn' : ''
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {categoryBudgets.map((b) => {
+            const catId = b.categoryRowId as number;
+            const cat = categoryMap.get(catId);
+            const palette = getPaletteByColor(cat?.color);
+            const name =
+              cat?.categoryName ??
+              b.categoryName ??
+              t("manager.categoryFallback", { id: catId });
+            const spent = spentByCategory.get(catId) ?? 0;
+            const limit = b.budgetAmount;
+            const p = limit > 0 ? (spent / limit) * 100 : 0;
+            const state = p > 100 ? "over" : p > warnThreshold ? "warn" : "";
 
             return (
               <div key={b.rowId}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 8,
+                  }}
+                >
                   <span
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: 'var(--radius-tile)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      borderRadius: "var(--radius-tile)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       flexShrink: 0,
-                      fontWeight: '700',
+                      fontWeight: "700",
                       background: palette.bg,
                       color: palette.color,
                     }}
                   >
-                    <Icon name={cat?.icon ?? 'tag'} size={18} strokeWidth={1.9} />
+                    <Icon
+                      name={cat?.icon ?? "tag"}
+                      size={18}
+                      strokeWidth={1.9}
+                    />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{name}</div>
-                    <div style={{ fontSize: 'var(--text-caption)', color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-tertiary)', marginTop: 1 }}>
-                      {state === 'over'
-                        ? <>{t('limit')} <MaskAmount card="budget.categories" mask="••••">{wonPre()}{KRW(spent - limit)}</MaskAmount><WonUnit card="budget.categories" /> {t('over')}</>
-                        : <>{t('manager.remaining')} <MaskAmount card="budget.categories" mask="••••">{wonPre()}{KRW(Math.max(0, limit - spent))}</MaskAmount><WonUnit card="budget.categories" /></>}
-                    </div>
-                  </div>
-                  <div className="num" style={{ textAlign: 'right', minWidth: 90 }}>
                     <div
                       style={{
-                        fontSize: 'var(--text-body-sm)',
-                        fontWeight: '700',
-                        color: state === 'over' ? 'var(--fg-expense)' : 'var(--fg-primary)',
+                        fontSize: "var(--text-body-sm)",
+                        fontWeight: "600",
                       }}
                     >
-                      <MaskAmount card="budget.categories" mask="••••">{KRW(spent)}</MaskAmount>
+                      {name}
                     </div>
-                    <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', fontWeight: '500' }}>
-                      / <MaskAmount card="budget.categories" mask="••••">{KRW(limit)}</MaskAmount>
+                    <div
+                      style={{
+                        fontSize: "var(--text-caption)",
+                        color:
+                          state === "over"
+                            ? "var(--fg-expense)"
+                            : "var(--fg-tertiary)",
+                        marginTop: 1,
+                      }}
+                    >
+                      {state === "over" ? (
+                        <>
+                          {t("limit")}{" "}
+                          <MaskAmount card="budget.categories" mask="••••">
+                            {wonPre()}
+                            {KRW(spent - limit)}
+                          </MaskAmount>
+                          <WonUnit card="budget.categories" /> {t("over")}
+                        </>
+                      ) : (
+                        <>
+                          {t("manager.remaining")}{" "}
+                          <MaskAmount card="budget.categories" mask="••••">
+                            {wonPre()}
+                            {KRW(Math.max(0, limit - spent))}
+                          </MaskAmount>
+                          <WonUnit card="budget.categories" />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className="num"
+                    style={{ textAlign: "right", minWidth: 90 }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "var(--text-body-sm)",
+                        fontWeight: "700",
+                        color:
+                          state === "over"
+                            ? "var(--fg-expense)"
+                            : "var(--fg-primary)",
+                      }}
+                    >
+                      <MaskAmount card="budget.categories" mask="••••">
+                        {KRW(spent)}
+                      </MaskAmount>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-badge)",
+                        color: "var(--fg-tertiary)",
+                        fontWeight: "500",
+                      }}
+                    >
+                      /{" "}
+                      <MaskAmount card="budget.categories" mask="••••">
+                        {KRW(limit)}
+                      </MaskAmount>
                     </div>
                   </div>
                 </div>
@@ -949,28 +1408,50 @@ export const BudgetPage = () => {
                   />
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
     </Section>
-  )
+  );
 
   const adjustMonth = (delta: number) => {
-    const [y, m] = monthKey.split('-').map(Number) as [number, number]
-    let ny = y
-    let nm = m + delta
-    if (nm < 1) { ny -= 1; nm = 12 }
-    if (nm > 12) { ny += 1; nm = 1 }
-    setMonthKey(`${ny}-${String(nm).padStart(2, '0')}`)
-  }
+    const [y, m] = monthKey.split("-").map(Number) as [number, number];
+    let ny = y;
+    let nm = m + delta;
+    if (nm < 1) {
+      ny -= 1;
+      nm = 12;
+    }
+    if (nm > 12) {
+      ny += 1;
+      nm = 1;
+    }
+    setMonthKey(`${ny}-${String(nm).padStart(2, "0")}`);
+  };
   const PageControls = (
     <>
-      <Button variant="ghost" size="icon" type="button" aria-label={t('prevMonth')} onClick={() => adjustMonth(-1)}>
+      <Button
+        variant="ghost"
+        size="icon"
+        type="button"
+        aria-label={t("prevMonth")}
+        onClick={() => adjustMonth(-1)}
+      >
         <ChevronLeft size={16} />
       </Button>
-      <MonthPicker value={monthKey} onChange={setMonthKey} variant="borderless" />
-      <Button variant="ghost" size="icon" type="button" aria-label={t('nextMonth')} onClick={() => adjustMonth(1)}>
+      <MonthPicker
+        value={monthKey}
+        onChange={setMonthKey}
+        variant="borderless"
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        type="button"
+        aria-label={t("nextMonth")}
+        onClick={() => adjustMonth(1)}
+      >
         <ChevronRight size={16} />
       </Button>
       <Button
@@ -978,23 +1459,37 @@ export const BudgetPage = () => {
         size="sm"
         type="button"
         onClick={goToSettings}
-        style={{ marginLeft: 'auto' }}
+        style={{ marginLeft: "auto" }}
       >
-        <Settings size={14} /> {t('settings')}
+        <Settings size={14} /> {t("settings")}
       </Button>
     </>
-  )
+  );
 
-  if (shouldShowSkeleton) return <BudgetPageSkeleton mobile={mobile} />
+  if (shouldShowSkeleton) return <BudgetPageSkeleton mobile={mobile} />;
 
   if (mobile) {
     return (
       // 카드 다이어트 — 브랜드 헤더만 카드 유지, 나머지 flat 섹션 + gap 36 (design BudgetScreen).
-      <div style={{ padding: '16px 24px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div style={{ padding: "16px 24px 24px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 12,
+            flexWrap: "wrap",
+          }}
+        >
           {PageControls}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2xl)' }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--spacing-2xl)",
+          }}
+        >
           {HeaderCard}
           {PaceCard}
           {StatusTiles}
@@ -1002,29 +1497,36 @@ export const BudgetPage = () => {
           {ComplianceCard}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h1>{t('pageTitle')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("pageTitle")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">{PageControls}</div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1.5fr",
+          gap: 20,
+          alignItems: "start",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {HeaderCard}
           {PaceCard}
           {StatusTiles}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {ListCard}
           {ComplianceCard}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

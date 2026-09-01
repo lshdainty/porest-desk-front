@@ -1,104 +1,104 @@
-import type { YNType } from '@/entities/asset'
+import type { YNType } from "@/entities/asset";
 
-export type CardType = 'CREDIT' | 'CHECK'
-export type CardBenefitType = 'DISCOUNT' | 'MILEAGE' | 'POINT'
+export type CardType = "CREDIT" | "CHECK";
+export type CardBenefitType = "DISCOUNT" | "MILEAGE" | "POINT";
 
 export interface CardCompany {
-  rowId: number
-  name: string
-  nameEng: string
-  logoUrl: string | null
+  rowId: number;
+  name: string;
+  nameEng: string;
+  logoUrl: string | null;
 }
 
 export interface CardAnnualFee {
-  amount: number
-  label: string | null
+  amount: number;
+  label: string | null;
 }
 
 export interface CardPerformanceMeta {
-  requiredAmount: number
-  requiredText: string | null
-  isRequired: YNType
+  requiredAmount: number;
+  requiredText: string | null;
+  isRequired: YNType;
 }
 
 export interface CardCatalogSummary {
-  rowId: number
-  externalCardId: number
-  company: CardCompany | null
-  cardName: string
-  cardType: CardType
-  benefitType: CardBenefitType
-  isDiscontinued: YNType
-  onlyOnline: YNType
-  launchDate: string | null
-  imgUrl: string | null
-  detailUrl: string | null
+  rowId: number;
+  externalCardId: number;
+  company: CardCompany | null;
+  cardName: string;
+  cardType: CardType;
+  benefitType: CardBenefitType;
+  isDiscontinued: YNType;
+  onlyOnline: YNType;
+  launchDate: string | null;
+  imgUrl: string | null;
+  detailUrl: string | null;
   /** 연회비 정보가 없으면 null. amount=0 은 '0원'이지 '모름'이 아니다 —
    *  백엔드가 amount=0 이고 label 도 없을 때만 null 로 내린다. */
-  annualFee: CardAnnualFee | null
-  performance: CardPerformanceMeta
+  annualFee: CardAnnualFee | null;
+  performance: CardPerformanceMeta;
 }
 
 export interface CardBenefit {
-  rowId: number
-  category: string
-  categoryIcon: string | null
-  title: string | null
-  summary: string | null
-  detail: string | null
-  sortOrder: number
+  rowId: number;
+  category: string;
+  categoryIcon: string | null;
+  title: string | null;
+  summary: string | null;
+  detail: string | null;
+  sortOrder: number;
 }
 
 export interface CardTagGroup {
-  category: string
-  tags: string[]
+  category: string;
+  tags: string[];
 }
 
 export interface CardCatalogDetail {
-  summary: CardCatalogSummary
-  brands: string[]
-  benefits: CardBenefit[]
-  cautions: CardBenefit[]
-  topBenefits: CardTagGroup[]
-  searchBenefits: CardTagGroup[]
+  summary: CardCatalogSummary;
+  brands: string[];
+  benefits: CardBenefit[];
+  cautions: CardBenefit[];
+  topBenefits: CardTagGroup[];
+  searchBenefits: CardTagGroup[];
 }
 
 export interface CardCatalogSearchParams {
-  keyword?: string
-  cardType?: CardType
-  benefitType?: CardBenefitType
-  includeDiscontinued?: boolean
-  page?: number
-  size?: number
+  keyword?: string;
+  cardType?: CardType;
+  benefitType?: CardBenefitType;
+  includeDiscontinued?: boolean;
+  page?: number;
+  size?: number;
 }
 
 export interface CardPerformance {
-  assetRowId: number
-  yearMonth: string
-  requiredAmount: number
-  requiredText: string | null
-  isRequired: boolean
-  currentAmount: number
-  achievementRate: number
-  isAchieved: boolean
-  remainingAmount: number | null
+  assetRowId: number;
+  yearMonth: string;
+  requiredAmount: number;
+  requiredText: string | null;
+  isRequired: boolean;
+  currentAmount: number;
+  achievementRate: number;
+  isAchieved: boolean;
+  remainingAmount: number | null;
 }
 
 /**
  * Page 응답 (백엔드 PageResponse)
  */
 export interface PageMeta {
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
-  first: boolean
-  last: boolean
-  hasNext: boolean
-  hasPrevious: boolean
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 export interface PageResponse<T> {
-  content: T[]
-  meta: PageMeta
+  content: T[];
+  meta: PageMeta;
 }

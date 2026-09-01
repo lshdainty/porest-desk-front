@@ -1,4 +1,4 @@
-export { dutchPayApi } from './api/dutchPayApi'
+export { dutchPayApi } from "./api/dutchPayApi";
 export {
   useDutchPays,
   useDutchPay,
@@ -7,4 +7,4 @@ export {
   useDeleteDutchPay,
   useMarkParticipantPaid,
   useSettleAll,
-} from './model/useDutchPay'
+} from "./model/useDutchPay";

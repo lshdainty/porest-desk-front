@@ -1,1 +1,1 @@
-export { MorePage } from './ui/MorePage'
+export { MorePage } from "./ui/MorePage";

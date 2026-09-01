@@ -1,5 +1,5 @@
-import { i18n } from '@/shared/i18n/config'
-import { parseServerUtc, toLocalDateKey } from '@/shared/lib/date'
+import { i18n } from "@/shared/i18n/config";
+import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
 
 /**
  * 알림 상대시간 포맷 — 벨(Popover)·Page 공용 single source(SoT 정합).
@@ -24,16 +24,16 @@ import { parseServerUtc, toLocalDateKey } from '@/shared/lib/date'
  * 화면에서는 시계가 그 자리에 얼어붙는다.
  */
 export function relativeTime(createAt: string, now: number): string {
-  const then = parseServerUtc(createAt)
-  if (!then) return ''
-  const m = Math.floor((now - then.getTime()) / 60_000)
-  if (m < 1) return i18n.t('date:justNow')
-  if (m < 60) return i18n.t('date:minutesAgo', { count: m })
-  const h = Math.floor(m / 60)
-  if (h < 24) return i18n.t('date:hoursAgo', { count: h })
-  const d = Math.floor(h / 24)
-  if (d === 1) return i18n.t('date:yesterday')
-  if (d < 7) return i18n.t('date:daysAgo', { count: d })
+  const then = parseServerUtc(createAt);
+  if (!then) return "";
+  const m = Math.floor((now - then.getTime()) / 60_000);
+  if (m < 1) return i18n.t("date:justNow");
+  if (m < 60) return i18n.t("date:minutesAgo", { count: m });
+  const h = Math.floor(m / 60);
+  if (h < 24) return i18n.t("date:hoursAgo", { count: h });
+  const d = Math.floor(h / 24);
+  if (d === 1) return i18n.t("date:yesterday");
+  if (d < 7) return i18n.t("date:daysAgo", { count: d });
   // 1주 이상 지난 건 날짜만
-  return toLocalDateKey(createAt) ?? ''
+  return toLocalDateKey(createAt) ?? "";
 }

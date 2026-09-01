@@ -1,15 +1,15 @@
-import { isToday, isSameDay, isSameMonth } from '@/shared/lib/date'
-import { cn } from '@/shared/lib'
-import type { CalendarEvent } from '@/entities/calendar'
-import { EventBadge } from './EventBadge'
+import { isToday, isSameDay, isSameMonth } from "@/shared/lib/date";
+import { cn } from "@/shared/lib";
+import type { CalendarEvent } from "@/entities/calendar";
+import { EventBadge } from "./EventBadge";
 
 interface DayCellProps {
-  date: Date
-  currentMonth: Date
-  selectedDate: Date
-  events: CalendarEvent[]
-  onClick: (date: Date) => void
-  compact?: boolean
+  date: Date;
+  currentMonth: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onClick: (date: Date) => void;
+  compact?: boolean;
 }
 
 export const DayCell = ({
@@ -20,31 +20,31 @@ export const DayCell = ({
   onClick,
   compact,
 }: DayCellProps) => {
-  const today = isToday(date)
-  const selected = isSameDay(date, selectedDate)
-  const inMonth = isSameMonth(date, currentMonth)
-  const dayEvents = events.slice(0, 3)
-  const moreCount = events.length - 3
+  const today = isToday(date);
+  const selected = isSameDay(date, selectedDate);
+  const inMonth = isSameMonth(date, currentMonth);
+  const dayEvents = events.slice(0, 3);
+  const moreCount = events.length - 3;
 
   return (
     <button
       onClick={() => onClick(date)}
       className={cn(
-        'flex flex-col items-center p-1 transition-colors',
+        "flex flex-col items-center p-1 transition-colors",
         compact
-          ? 'min-w-[40px] gap-1 rounded-lg py-2'
-          : 'min-h-[80px] items-start rounded-md md:min-h-[100px]',
-        !inMonth && 'opacity-40',
-        selected && 'bg-primary/10 ring-1 ring-primary/30',
-        !selected && 'hover:bg-muted'
+          ? "min-w-[40px] gap-1 rounded-lg py-2"
+          : "min-h-[80px] items-start rounded-md md:min-h-[100px]",
+        !inMonth && "opacity-40",
+        selected && "bg-primary/10 ring-1 ring-primary/30",
+        !selected && "hover:bg-muted",
       )}
     >
       <span
         className={cn(
-          'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
-          today && 'bg-primary text-primary-foreground',
-          selected && !today && 'bg-primary/20 text-primary',
-          !today && !selected && 'text-foreground'
+          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
+          today && "bg-primary text-primary-foreground",
+          selected && !today && "bg-primary/20 text-primary",
+          !today && !selected && "text-foreground",
         )}
       >
         {date.getDate()}
@@ -82,5 +82,5 @@ export const DayCell = ({
         </div>
       )}
     </button>
-  )
-}
+  );
+};

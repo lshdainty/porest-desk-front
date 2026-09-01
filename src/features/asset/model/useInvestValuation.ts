@@ -1,13 +1,13 @@
-import { useMemo } from 'react'
-import { useMyFeatures } from '@/features/subscription/model/useSubscription'
-import { useLivePrices } from '@/features/stock/model/useLivePrices'
-import { qtyNumber, type Asset, type AssetHolding } from '@/entities/asset'
+import { useMemo } from "react";
+import { useMyFeatures } from "@/features/subscription/model/useSubscription";
+import { useLivePrices } from "@/features/stock/model/useLivePrices";
+import { qtyNumber, type Asset, type AssetHolding } from "@/entities/asset";
 
 /** 투자 자산의 라이브 평가 요약 — value(평가액), changeAmt/changePct(전일 대비, 연동 종목만). */
 export interface InvestValuation {
-  value: number
-  changeAmt: number | null
-  changePct: number | null
+  value: number;
+  changeAmt: number | null;
+  changePct: number | null;
 }
 
 /**
@@ -15,28 +15,30 @@ export interface InvestValuation {
  * (tossSymbol+tossQuantity)만 있으면 linked 1건으로 합성(하위호환).
  */
 export function holdingsOf(a: Asset): AssetHolding[] {
-  if (a.holdings && a.holdings.length > 0) return a.holdings
+  if (a.holdings && a.holdings.length > 0) return a.holdings;
   if (a.tossSymbol && a.tossQuantity != null) {
     // tossQuantity 는 구버전 bigint 컬럼(정수) — 문자열 수량 계약에 맞춰 넘긴다.
-    return [{
-      linked: true,
-      marketCode: a.marketCode ?? null,
-      tossSymbol: a.tossSymbol,
-      quantity: String(a.tossQuantity),
-    }]
+    return [
+      {
+        linked: true,
+        marketCode: a.marketCode ?? null,
+        tossSymbol: a.tossSymbol,
+        quantity: String(a.tossQuantity),
+      },
+    ];
   }
-  return []
+  return [];
 }
 
 /** 보유 목록에서 연동 심볼만 중복 없이 추출. */
 export function linkedSymbolsOf(assets: Asset[]): string[] {
-  const set = new Set<string>()
+  const set = new Set<string>();
   for (const a of assets) {
     for (const h of holdingsOf(a)) {
-      if (h.linked && h.tossSymbol) set.add(h.tossSymbol)
+      if (h.linked && h.tossSymbol) set.add(h.tossSymbol);
     }
   }
-  return [...set]
+  return [...set];
 }
 
 /**
@@ -51,66 +53,80 @@ export function linkedSymbolsOf(assets: Asset[]): string[] {
  * - 등락(changeAmt/Pct)은 전일 종가가 확보된 연동 종목만 합산. 기준이 하나도 없으면 null.
  * - 10초 폴링 → 자산 화면 실시간 갱신.
  */
-export function useInvestValuation(investAssets: Asset[]): Map<number, InvestValuation> {
-  const { data: features } = useMyFeatures()
+export function useInvestValuation(
+  investAssets: Asset[],
+): Map<number, InvestValuation> {
+  const { data: features } = useMyFeatures();
   const enabled =
-    (features?.features?.includes('SECURITIES') ?? false) && ((features?.connectedBrokers?.length ?? 0) > 0)
-  const symbols = useMemo(() => linkedSymbolsOf(investAssets), [investAssets])
+    (features?.features?.includes("SECURITIES") ?? false) &&
+    (features?.connectedBrokers?.length ?? 0) > 0;
+  const symbols = useMemo(() => linkedSymbolsOf(investAssets), [investAssets]);
   // 증권 API 는 서버 게이트(SECURITIES 구독) 대상 — 미구독자가 호출하면 403.
-  const active = enabled && symbols.length > 0
-  const activeSymbols = useMemo(() => (active ? symbols : []), [active, symbols])
-  const live = useLivePrices(activeSymbols, active)
+  const active = enabled && symbols.length > 0;
+  const activeSymbols = useMemo(
+    () => (active ? symbols : []),
+    [active, symbols],
+  );
+  const live = useLivePrices(activeSymbols, active);
 
   return useMemo(() => {
-    const map = new Map<number, InvestValuation>()
-    if (!active) return map
+    const map = new Map<number, InvestValuation>();
+    if (!active) return map;
 
     for (const a of investAssets) {
-      const hs = holdingsOf(a)
-      const linked = hs.filter(h => h.linked && h.tossSymbol)
-      if (linked.length === 0) continue // 수동 전용은 DB balance 그대로 사용
-      let value = 0
-      let changeAmt = 0
-      let hasChangeBase = false
-      let complete = true
+      const hs = holdingsOf(a);
+      const linked = hs.filter((h) => h.linked && h.tossSymbol);
+      if (linked.length === 0) continue; // 수동 전용은 DB balance 그대로 사용
+      let value = 0;
+      let changeAmt = 0;
+      let hasChangeBase = false;
+      let complete = true;
       for (const h of hs) {
         if (h.linked && h.tossSymbol) {
           // 수량은 문자열(BigDecimal 계약) — 화면 표시용 합계라 여기서만 숫자로 푼다.
-          const qty = qtyNumber(h.quantity) ?? 0
-          const krw = live.unitKrw(h.tossSymbol)
+          const qty = qtyNumber(h.quantity) ?? 0;
+          const krw = live.unitKrw(h.tossSymbol);
           if (krw == null) {
-            complete = false
-            break
+            complete = false;
+            break;
           }
-          value += Math.round(krw * qty)
-          const prevKrw = live.prevUnitKrw(h.tossSymbol)
+          value += Math.round(krw * qty);
+          const prevKrw = live.prevUnitKrw(h.tossSymbol);
           if (prevKrw != null) {
-            changeAmt += Math.round((krw - prevKrw) * qty)
-            hasChangeBase = true
+            changeAmt += Math.round((krw - prevKrw) * qty);
+            hasChangeBase = true;
           }
         } else {
-          value += h.holdingValue ?? 0
+          value += h.holdingValue ?? 0;
         }
       }
-      if (!complete) continue
-      const base = value - changeAmt
+      if (!complete) continue;
+      const base = value - changeAmt;
       const changePct =
-        hasChangeBase && base !== 0 ? Math.round((changeAmt / base) * 1000) / 10 : null
-      map.set(a.rowId, { value, changeAmt: hasChangeBase ? changeAmt : null, changePct })
+        hasChangeBase && base !== 0
+          ? Math.round((changeAmt / base) * 1000) / 10
+          : null;
+      map.set(a.rowId, {
+        value,
+        changeAmt: hasChangeBase ? changeAmt : null,
+        changePct,
+      });
     }
-    return map
-  }, [active, investAssets, live])
+    return map;
+  }, [active, investAssets, live]);
 }
 
 /**
  * (하위호환) 연동 투자 자산의 라이브 평가액(KRW) 맵 (assetRowId → 평가액).
  * holdings 도입 후에도 기존 호출부(합계 보정 등)가 값만 쓰는 경우를 위해 유지.
  */
-export function useInvestValuationMap(linkedAssets: Asset[]): Map<number, number> {
-  const full = useInvestValuation(linkedAssets)
+export function useInvestValuationMap(
+  linkedAssets: Asset[],
+): Map<number, number> {
+  const full = useInvestValuation(linkedAssets);
   return useMemo(() => {
-    const map = new Map<number, number>()
-    for (const [k, v] of full) map.set(k, v.value)
-    return map
-  }, [full])
+    const map = new Map<number, number>();
+    for (const [k, v] of full) map.set(k, v.value);
+    return map;
+  }, [full]);
 }

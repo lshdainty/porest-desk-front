@@ -6,19 +6,19 @@
 
 /** [rough] 이상이 되는 가장 가까운 "깔끔한" 간격 (1·2·2.5·5×10ⁿ). */
 export function niceStep(rough: number): number {
-  if (rough <= 0) return 1
-  const exp = Math.floor(Math.log10(rough))
-  const pow10 = Math.pow(10, exp)
-  const frac = rough / pow10 // [1, 10)
+  if (rough <= 0) return 1;
+  const exp = Math.floor(Math.log10(rough));
+  const pow10 = Math.pow(10, exp);
+  const frac = rough / pow10; // [1, 10)
   const niceFrac =
-    frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10
-  return niceFrac * pow10
+    frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10;
+  return niceFrac * pow10;
 }
 
 export interface NiceAxis {
-  min: number
-  max: number
-  ticks: number[]
+  min: number;
+  max: number;
+  ticks: number[];
 }
 
 /**
@@ -26,22 +26,26 @@ export interface NiceAxis {
  * 끝점·간격을 nice 값으로 ceil-tight 하게 맞춘 {min, max, ticks} 반환.
  * 예) max 60,881,200 → { min: 0, max: 80,000,000, ticks: [0,2천만,4천만,6천만,8천만] }.
  */
-export function niceAxis(dataMin: number, dataMax: number, targetSteps = 4): NiceAxis {
-  const lo = Math.min(0, dataMin)
-  let hi = Math.max(0, dataMax)
-  if (lo === hi) hi = lo + 1
-  const step = niceStep((hi - lo) / targetSteps)
-  const min = Math.round(Math.floor(lo / step) * step)
-  const max = Math.round(Math.ceil(hi / step) * step)
-  const ticks: number[] = []
-  for (let v = min; v <= max + step * 0.5; v += step) ticks.push(Math.round(v))
-  return { min, max, ticks }
+export function niceAxis(
+  dataMin: number,
+  dataMax: number,
+  targetSteps = 4,
+): NiceAxis {
+  const lo = Math.min(0, dataMin);
+  let hi = Math.max(0, dataMax);
+  if (lo === hi) hi = lo + 1;
+  const step = niceStep((hi - lo) / targetSteps);
+  const min = Math.round(Math.floor(lo / step) * step);
+  const max = Math.round(Math.ceil(hi / step) * step);
+  const ticks: number[] = [];
+  for (let v = min; v <= max + step * 0.5; v += step) ticks.push(Math.round(v));
+  return { min, max, ticks };
 }
 
 export interface NiceCeil {
-  max: number
-  step: number
-  ticks: number[]
+  max: number;
+  step: number;
+  ticks: number[];
 }
 
 /**
@@ -50,17 +54,33 @@ export interface NiceCeil {
  * 앱 `stats_screen.dart` 의 `_niceCeil` 과 동일.
  */
 export function niceCeil(rawMax: number, ticks = 5): NiceCeil {
-  const n = ticks - 1
+  const n = ticks - 1;
   if (rawMax <= 0) {
-    const step = 1 / n
-    return { max: 1, step, ticks: Array.from({ length: ticks }, (_, i) => i * step) }
+    const step = 1 / n;
+    return {
+      max: 1,
+      step,
+      ticks: Array.from({ length: ticks }, (_, i) => i * step),
+    };
   }
-  const roughStep = rawMax / n
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
-  const mantissa = roughStep / magnitude
+  const roughStep = rawMax / n;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const mantissa = roughStep / magnitude;
   const niceMantissa =
-    mantissa <= 1 ? 1 : mantissa <= 2 ? 2 : mantissa <= 2.5 ? 2.5 : mantissa <= 5 ? 5 : 10
-  const step = niceMantissa * magnitude
-  const max = step * n
-  return { max, step, ticks: Array.from({ length: ticks }, (_, i) => Math.round(i * step)) }
+    mantissa <= 1
+      ? 1
+      : mantissa <= 2
+        ? 2
+        : mantissa <= 2.5
+          ? 2.5
+          : mantissa <= 5
+            ? 5
+            : 10;
+  const step = niceMantissa * magnitude;
+  const max = step * n;
+  return {
+    max,
+    step,
+    ticks: Array.from({ length: ticks }, (_, i) => Math.round(i * step)),
+  };
 }

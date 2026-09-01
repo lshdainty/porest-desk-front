@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   ChevronRight,
@@ -12,28 +12,31 @@ import {
   RefreshCw,
   Trash2,
   Users,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/shared/ui/button'
-import { Badge } from '@/shared/ui/badge'
-import { Card, CardContent } from '@/shared/ui/card'
-import { settingsRowPadding } from '@/shared/ui/porest/manage-row-tokens'
-import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { Field, FieldLabel } from '@/shared/ui/field'
-import { Input } from '@/shared/ui/input'
-import { ManagerHead, ManagerShell } from '@/shared/ui/porest/manager-layout'
+} from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
+import { settingsRowPadding } from "@/shared/ui/porest/manage-row-tokens";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { getPaletteByColor, CAT_PALETTE } from '@/shared/lib/porest/chart-palette'
-import { ColorSwatchGroup } from '@/shared/ui/color-swatch'
-import { useCurrentUser } from '@/features/user'
+} from "@/shared/ui/select";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import {
+  getPaletteByColor,
+  CAT_PALETTE,
+} from "@/shared/lib/porest/chart-palette";
+import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
+import { useCurrentUser } from "@/features/user";
 import {
   useCalendarMembers,
   useChangeCalendarMemberRole,
@@ -44,62 +47,90 @@ import {
   useRemoveCalendarMember,
   useUpdateUserCalendar,
   useUserCalendars,
-} from '@/features/user-calendar'
-import type { CalendarMember, CalendarRole, UserCalendar } from '@/entities/user-calendar'
+} from "@/features/user-calendar";
+import type {
+  CalendarMember,
+  CalendarRole,
+  UserCalendar,
+} from "@/entities/user-calendar";
 
 const ROLE_ICON: Record<CalendarRole, typeof Crown> = {
   OWNER: Crown,
   EDIT: Pencil,
   READ: Eye,
-}
+};
 
 // 권한 배지 — badge.md "같은 카테고리는 한 style(outline)" 규칙: 색만 분기.
-const ROLE_BADGE_VARIANT: Record<CalendarRole, 'outline-info' | 'outline-success' | 'outline'> = {
-  OWNER: 'outline-info',
-  EDIT: 'outline-success',
-  READ: 'outline',
-}
+const ROLE_BADGE_VARIANT: Record<
+  CalendarRole,
+  "outline-info" | "outline-success" | "outline"
+> = {
+  OWNER: "outline-info",
+  EDIT: "outline-success",
+  READ: "outline",
+};
 
 // 멤버 아바타 — 권한 색 톤 (소유자 info / 편집 success / 읽기 neutral).
 const ROLE_AVATAR: Record<CalendarRole, { bg: string; fg: string }> = {
-  OWNER: { bg: 'color-mix(in srgb, var(--color-info) 14%, transparent)', fg: 'var(--color-info)' },
-  EDIT: { bg: 'color-mix(in srgb, var(--color-success) 14%, transparent)', fg: 'var(--color-success)' },
-  READ: { bg: 'var(--bg-sunken)', fg: 'var(--fg-tertiary)' },
-}
+  OWNER: {
+    bg: "color-mix(in srgb, var(--color-info) 14%, transparent)",
+    fg: "var(--color-info)",
+  },
+  EDIT: {
+    bg: "color-mix(in srgb, var(--color-success) 14%, transparent)",
+    fg: "var(--color-success)",
+  },
+  READ: { bg: "var(--bg-sunken)", fg: "var(--fg-tertiary)" },
+};
 
 // 모바일 카드 다이어트 — 초대 코드 행 셸: 모바일은 플랫, 데스크톱은 Card (.m-subpage 정합).
-function JoinShell({ mobile, children }: { mobile: boolean; children: React.ReactNode }) {
-  return mobile
-    ? <div style={{ padding: '4px 0' }}>{children}</div>
-    : <Card><CardContent style={{ padding: 'var(--spacing-lg)' }}>{children}</CardContent></Card>
+function JoinShell({
+  mobile,
+  children,
+}: {
+  mobile: boolean;
+  children: React.ReactNode;
+}) {
+  return mobile ? (
+    <div style={{ padding: "4px 0" }}>{children}</div>
+  ) : (
+    <Card>
+      <CardContent style={{ padding: "var(--spacing-lg)" }}>
+        {children}
+      </CardContent>
+    </Card>
+  );
 }
 
 export function CalendarShareSection({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('calendar')
-  const { data: calendars, isLoading } = useUserCalendars()
-  const createMut = useCreateUserCalendar()
-  const deleteMut = useDeleteUserCalendar()
-  const joinMut = useJoinCalendar()
+  const { t } = useTranslation("calendar");
+  const { data: calendars, isLoading } = useUserCalendars();
+  const createMut = useCreateUserCalendar();
+  const deleteMut = useDeleteUserCalendar();
+  const joinMut = useJoinCalendar();
 
-  const [managingId, setManagingId] = useState<number | null>(null)
-  const [creating, setCreating] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState<UserCalendar | null>(null)
-  const [joining, setJoining] = useState(false)
+  const [managingId, setManagingId] = useState<number | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<UserCalendar | null>(null);
+  const [joining, setJoining] = useState(false);
 
-  const list = useMemo(() => calendars ?? [], [calendars])
-  const owned = useMemo(() => list.filter(c => c.isOwner), [list])
-  const shared = useMemo(() => list.filter(c => !c.isOwner), [list])
+  const list = useMemo(() => calendars ?? [], [calendars]);
+  const owned = useMemo(() => list.filter((c) => c.isOwner), [list]);
+  const shared = useMemo(() => list.filter((c) => !c.isOwner), [list]);
 
   const handleDelete = (cal: UserCalendar) => {
     deleteMut.mutate(cal.rowId, {
       onSuccess: () => {
-        setConfirmDelete(null)
-        if (managingId === cal.rowId) setManagingId(null)
+        setConfirmDelete(null);
+        if (managingId === cal.rowId) setManagingId(null);
       },
-    })
-  }
+    });
+  };
 
-  const managing = managingId != null ? list.find(c => c.rowId === managingId) ?? null : null
+  const managing =
+    managingId != null
+      ? (list.find((c) => c.rowId === managingId) ?? null)
+      : null;
 
   return (
     <>
@@ -107,36 +138,54 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
       <ManagerShell className="!gap-[var(--spacing-2xl)]">
         {!mobile && (
           <ManagerHead
-            title={t('shareSection.title')}
-            description={t('shareSection.description')}
+            title={t("shareSection.title")}
+            description={t("shareSection.description")}
           />
         )}
 
         {/* 안내 카드 — 앱 정합: brand-subtle bg + brand 보더 */}
-        <Card style={{ background: 'var(--bg-brand-subtle)', border: '1px solid var(--border-brand)' }}>
-          <CardContent style={{ padding: 'var(--spacing-lg)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <Card
+          style={{
+            background: "var(--bg-brand-subtle)",
+            border: "1px solid var(--border-brand)",
+          }}
+        >
+          <CardContent style={{ padding: "var(--spacing-lg)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <span
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-brand)',
-                  color: 'var(--fg-on-brand)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  borderRadius: "var(--radius-md)",
+                  background: "var(--bg-brand)",
+                  color: "var(--fg-on-brand)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   flexShrink: 0,
                 }}
               >
                 <Users size={18} strokeWidth={1.9} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                  {t('shareSection.infoTitle')}
+                <div
+                  style={{
+                    fontSize: "var(--text-label-sm)",
+                    fontWeight: "700",
+                    color: "var(--fg-primary)",
+                  }}
+                >
+                  {t("shareSection.infoTitle")}
                 </div>
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
-                  {t('shareSection.infoDesc')}
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-secondary)",
+                    marginTop: 2,
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {t("shareSection.infoDesc")}
                 </div>
               </div>
             </div>
@@ -144,10 +193,10 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
         </Card>
 
         <CalendarListSection
-          title={`${t('shareSection.myCalendars')} · ${owned.length}`}
+          title={`${t("shareSection.myCalendars")} · ${owned.length}`}
           calendars={owned}
           isLoading={isLoading}
-          emptyText={t('shareSection.emptyOwned')}
+          emptyText={t("shareSection.emptyOwned")}
           onManage={setManagingId}
           mobile={mobile}
           action={
@@ -155,19 +204,19 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
             <Button
               type="button"
               variant="accent"
-              style={{ padding: '7px 12px', fontSize: 'var(--text-label-sm)' }}
+              style={{ padding: "7px 12px", fontSize: "var(--text-label-sm)" }}
               onClick={() => setCreating(true)}
             >
-              <Plus size={14} /> {t('newCalendar')}
+              <Plus size={14} /> {t("newCalendar")}
             </Button>
           }
         />
 
         <CalendarListSection
-          title={`${t('shareSection.sharedCalendars')} · ${shared.length}`}
+          title={`${t("shareSection.sharedCalendars")} · ${shared.length}`}
           calendars={shared}
           isLoading={false}
-          emptyText={t('shareSection.emptyShared')}
+          emptyText={t("shareSection.emptyShared")}
           onManage={setManagingId}
           mobile={mobile}
         />
@@ -175,34 +224,51 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
         {/* 초대 코드로 참여 — 앱 정합: 컴팩트 카드 + 참여 버튼(다이얼로그).
             모바일 카드 다이어트 — 셸 카드 벗기고 플랫 행. */}
         <JoinShell mobile={mobile}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "var(--radius-md)",
+                background: "var(--bg-muted)",
+                color: "var(--fg-secondary)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Link size={18} strokeWidth={1.9} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-muted)',
-                  color: 'var(--fg-secondary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
+                  fontSize: "var(--text-label-sm)",
+                  fontWeight: "700",
+                  color: "var(--fg-primary)",
                 }}
               >
-                <Link size={18} strokeWidth={1.9} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-                  {t('joinByCode')}
-                </div>
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 2, lineHeight: '1.5' }}>
-                  {t('shareSection.joinDesc')}
-                </div>
+                {t("joinByCode")}
               </div>
-              <Button variant="secondary" size="sm" onClick={() => setJoining(true)}>
-                {t('join')}
-              </Button>
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-secondary)",
+                  marginTop: 2,
+                  lineHeight: "1.5",
+                }}
+              >
+                {t("shareSection.joinDesc")}
+              </div>
             </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setJoining(true)}
+            >
+              {t("join")}
+            </Button>
+          </div>
         </JoinShell>
       </ManagerShell>
 
@@ -210,7 +276,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
         <CalendarManageDialog
           calendar={managing}
           onClose={() => setManagingId(null)}
-          onRequestDelete={c => setConfirmDelete(c)}
+          onRequestDelete={(c) => setConfirmDelete(c)}
           mobile={mobile}
         />
       )}
@@ -221,7 +287,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           onCreate={(values, onDone) =>
             createMut.mutate(values, {
               onSuccess: () => {
-                onDone()
+                onDone();
               },
             })
           }
@@ -236,10 +302,15 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
           onJoin={(code, onDone) =>
             joinMut.mutate(code, {
               onSuccess: () => {
-                onDone()
-                toast.success(t('shareSection.toast.joined'), { id: 'cal-join-success' })
+                onDone();
+                toast.success(t("shareSection.toast.joined"), {
+                  id: "cal-join-success",
+                });
               },
-              onError: () => toast.error(t('shareSection.toast.joinError'), { id: 'cal-join-err' }),
+              onError: () =>
+                toast.error(t("shareSection.toast.joinError"), {
+                  id: "cal-join-err",
+                }),
             })
           }
           submitting={joinMut.isPending}
@@ -249,9 +320,11 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
 
       {confirmDelete && (
         <ConfirmDialog
-          title={t('deleteCalendar')}
-          message={t('shareSection.deleteMessage', { name: confirmDelete.calendarName })}
-          confirmLabel={t('shareSection.permanentDelete')}
+          title={t("deleteCalendar")}
+          message={t("shareSection.deleteMessage", {
+            name: confirmDelete.calendarName,
+          })}
+          confirmLabel={t("shareSection.permanentDelete")}
           danger
           loading={deleteMut.isPending}
           onCancel={() => setConfirmDelete(null)}
@@ -259,7 +332,7 @@ export function CalendarShareSection({ mobile }: { mobile: boolean }) {
         />
       )}
     </>
-  )
+  );
 }
 
 function CalendarListSection({
@@ -271,33 +344,60 @@ function CalendarListSection({
   mobile = false,
   action,
 }: {
-  title: string
-  calendars: UserCalendar[]
-  isLoading: boolean
-  emptyText: string
-  onManage: (id: number) => void
+  title: string;
+  calendars: UserCalendar[];
+  isLoading: boolean;
+  emptyText: string;
+  onManage: (id: number) => void;
   /** 라벨행 우측 액션(텍스트 버튼 등) — 없으면 라벨만 */
-  action?: React.ReactNode
+  action?: React.ReactNode;
   /** 모바일 카드 다이어트 — 리스트 셸 카드 벗김 (.m-subpage) */
-  mobile?: boolean
+  mobile?: boolean;
 }) {
   const list = isLoading ? (
     <ShareListSkeleton mobile={mobile} />
   ) : calendars.length === 0 ? (
-    <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--fg-tertiary)', fontSize: 'var(--text-label-sm)' }}>
+    <div
+      style={{
+        padding: "28px 16px",
+        textAlign: "center",
+        color: "var(--fg-tertiary)",
+        fontSize: "var(--text-label-sm)",
+      }}
+    >
       {emptyText}
     </div>
   ) : (
     calendars.map((cal, i) => (
-      <CalendarRow key={cal.rowId} cal={cal} first={i === 0} onManage={onManage} mobile={mobile} />
+      <CalendarRow
+        key={cal.rowId}
+        cal={cal}
+        first={i === 0}
+        onManage={onManage}
+        mobile={mobile}
+      />
     ))
-  )
+  );
   return (
     // label + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라 밀착)
     // / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함.
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 0 : 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: mobile ? 0 : 12 }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "var(--text-label-sm)",
+            fontWeight: "700",
+            color: "var(--fg-primary)",
+          }}
+        >
           {title}
         </div>
         {action}
@@ -306,57 +406,68 @@ function CalendarListSection({
         <div>{list}</div>
       ) : (
         // overflow hidden — 행 hover 배경이 카드 라운드 밖으로 새지 않게.
-        <Card style={{ overflow: 'hidden' }}>
+        <Card style={{ overflow: "hidden" }}>
           <CardContent style={{ padding: 0 }}>{list}</CardContent>
         </Card>
       )}
     </div>
-  )
+  );
 }
 
-function CalendarRow({ cal, first, onManage, mobile }: { cal: UserCalendar; first: boolean; onManage: (id: number) => void; mobile?: boolean }) {
-  const { t } = useTranslation('calendar')
-  const pal = getPaletteByColor(cal.color)
+function CalendarRow({
+  cal,
+  first,
+  onManage,
+  mobile,
+}: {
+  cal: UserCalendar;
+  first: boolean;
+  onManage: (id: number) => void;
+  mobile?: boolean;
+}) {
+  const { t } = useTranslation("calendar");
+  const pal = getPaletteByColor(cal.color);
   return (
     <div
       onClick={() => onManage(cal.rowId)}
       className="hover:bg-[var(--bg-muted)]"
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 12,
         padding: settingsRowPadding(mobile),
-        borderTop: first ? 'none' : '1px solid var(--border-subtle)',
-        cursor: 'pointer',
-        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+        borderTop: first ? "none" : "1px solid var(--border-subtle)",
+        cursor: "pointer",
+        transition:
+          "background var(--motion-duration-fast) var(--motion-ease-out)",
       }}
     >
       <span
         style={{
           width: 36,
           height: 36,
-          borderRadius: 'var(--radius-md)',
+          borderRadius: "var(--radius-md)",
           background: pal.bg,
           color: pal.color,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           flexShrink: 0,
         }}
       >
         <Calendar size={18} strokeWidth={2} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span
             style={{
-              fontSize: 'var(--text-body-sm)',
-              fontWeight: '600',
+              fontSize: "var(--text-body-sm)",
+              fontWeight: "600",
               lineHeight: 1.5,
-              color: 'var(--fg-primary)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              color: "var(--fg-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {cal.calendarName}
@@ -364,17 +475,32 @@ function CalendarRow({ cal, first, onManage, mobile }: { cal: UserCalendar; firs
           {cal.isDefault && (
             // 공용 Badge(secondary) — pill·secondary 회색·8/2 패딩으로 앱 PBadge 정합.
             // font-bold(w700)로 앱 PBadge 굵기와 일치(badge.md SoT는 600 — 아래 노트 참고).
-            <Badge variant="secondary" className="font-bold" style={{ flexShrink: 0 }}>
-              {t('default')}
+            <Badge
+              variant="secondary"
+              className="font-bold"
+              style={{ flexShrink: 0 }}
+            >
+              {t("default")}
             </Badge>
           )}
         </div>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {cal.memberCount <= 1 ? t('shareSection.onlyMe') : t('shareSection.memberCount', { count: cal.memberCount })}
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            marginTop: 2,
+          }}
+        >
+          {cal.memberCount <= 1
+            ? t("shareSection.onlyMe")
+            : t("shareSection.memberCount", { count: cal.memberCount })}
         </div>
       </div>
       {!cal.isOwner && (
-        <Badge variant={ROLE_BADGE_VARIANT[cal.myRole]} style={{ flexShrink: 0 }}>
+        <Badge
+          variant={ROLE_BADGE_VARIANT[cal.myRole]}
+          style={{ flexShrink: 0 }}
+        >
           {t(`role.${cal.myRole}`)}
         </Badge>
       )}
@@ -385,25 +511,28 @@ function CalendarRow({ cal, first, onManage, mobile }: { cal: UserCalendar; firs
           탭이 편집이 아니라 관리 화면(멤버·공유) 진입이라 '수정·삭제' 두 액션이
           성립하지 않는다. */}
       {!mobile && (
-        <ChevronRight size={16} style={{ color: 'var(--fg-tertiary)', flexShrink: 0 }} />
+        <ChevronRight
+          size={16}
+          style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+        />
       )}
     </div>
-  )
+  );
 }
 
 function ShareListSkeleton({ mobile }: { mobile?: boolean }) {
   return (
     <>
-      {[0, 1].map(i => (
+      {[0, 1].map((i) => (
         <div
           key={i}
           // 실제 CalendarRow 와 같은 gap 12 · 아이콘 36.
           style={{
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             gap: 12,
             padding: settingsRowPadding(mobile),
-            borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+            borderTop: i === 0 ? "none" : "1px solid var(--border-subtle)",
           }}
         >
           <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
@@ -417,7 +546,7 @@ function ShareListSkeleton({ mobile }: { mobile?: boolean }) {
         </div>
       ))}
     </>
-  )
+  );
 }
 
 function CalendarManageDialog({
@@ -426,74 +555,82 @@ function CalendarManageDialog({
   onRequestDelete,
   mobile,
 }: {
-  calendar: UserCalendar
-  onClose: () => void
-  onRequestDelete: (cal: UserCalendar) => void
-  mobile: boolean
+  calendar: UserCalendar;
+  onClose: () => void;
+  onRequestDelete: (cal: UserCalendar) => void;
+  mobile: boolean;
 }) {
-  const { t } = useTranslation('calendar')
-  const { t: tc } = useTranslation('common')
-  const { data: currentUser } = useCurrentUser()
-  const { data: members, isLoading } = useCalendarMembers(calendar.rowId)
-  const regenMut = useRegenerateCalendarInviteCode()
-  const removeMut = useRemoveCalendarMember()
-  const roleMut = useChangeCalendarMemberRole()
-  const updateMut = useUpdateUserCalendar()
+  const { t } = useTranslation("calendar");
+  const { t: tc } = useTranslation("common");
+  const { data: currentUser } = useCurrentUser();
+  const { data: members, isLoading } = useCalendarMembers(calendar.rowId);
+  const regenMut = useRegenerateCalendarInviteCode();
+  const removeMut = useRemoveCalendarMember();
+  const roleMut = useChangeCalendarMemberRole();
+  const updateMut = useUpdateUserCalendar();
 
-  const isOwner = calendar.isOwner
-  const [name, setName] = useState(calendar.calendarName)
-  const [color, setColor] = useState(calendar.color)
-  const dirty = name.trim() !== calendar.calendarName || color !== calendar.color
+  const isOwner = calendar.isOwner;
+  const [name, setName] = useState(calendar.calendarName);
+  const [color, setColor] = useState(calendar.color);
+  const dirty =
+    name.trim() !== calendar.calendarName || color !== calendar.color;
 
   const handleSaveMeta = () => {
-    if (!name.trim()) return
-    updateMut.mutate(
-      { id: calendar.rowId, data: { calendarName: name.trim(), color } },
-    )
-  }
+    if (!name.trim()) return;
+    updateMut.mutate({
+      id: calendar.rowId,
+      data: { calendarName: name.trim(), color },
+    });
+  };
 
   const handleCopyCode = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(code)
+      await navigator.clipboard.writeText(code);
     } catch {
-      const ta = document.createElement('textarea')
-      ta.value = code
-      ta.style.position = 'fixed'
-      ta.style.opacity = '0'
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
+      const ta = document.createElement("textarea");
+      ta.value = code;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
     }
-    toast.success(t('shareSection.toast.codeCopied'), { id: 'cal-code-copy' })
-  }
+    toast.success(t("shareSection.toast.codeCopied"), { id: "cal-code-copy" });
+  };
 
   const handleRegenerate = () => {
     regenMut.mutate(calendar.rowId, {
-      onSuccess: () => toast.success(t('shareSection.toast.codeRegenerated'), { id: 'cal-code-regen' }),
-    })
-  }
+      onSuccess: () =>
+        toast.success(t("shareSection.toast.codeRegenerated"), {
+          id: "cal-code-regen",
+        }),
+    });
+  };
 
   // 내보내면 그 사람은 캘린더를 잃는다 — 앱은 이미 한 번 더 묻는다.
-  const [confirmRemove, setConfirmRemove] = useState<CalendarMember | null>(null)
-  const handleRemove = (member: CalendarMember) => setConfirmRemove(member)
+  const [confirmRemove, setConfirmRemove] = useState<CalendarMember | null>(
+    null,
+  );
+  const handleRemove = (member: CalendarMember) => setConfirmRemove(member);
 
   const doRemove = (member: CalendarMember) => {
     removeMut.mutate(
       { id: calendar.rowId, memberId: member.rowId },
       {
         onSuccess: () => {
-          setConfirmRemove(null)
+          setConfirmRemove(null);
         },
       },
-    )
-  }
+    );
+  };
 
-  const handleChangeRole = (member: CalendarMember, permission: CalendarRole) => {
-    roleMut.mutate(
-      { id: calendar.rowId, memberId: member.rowId, permission },
-    )
-  }
+  const handleChangeRole = (
+    member: CalendarMember,
+    permission: CalendarRole,
+  ) => {
+    roleMut.mutate({ id: calendar.rowId, memberId: member.rowId, permission });
+  };
 
   // 관리 시트는 상세 화면이 따로 없어 폼이 곧 상세다 — 삭제를 여기 남기고 `취소/닫기` 는
   // 우상단 X 에 맡긴다(spec drawer.md 액션 구성 · 상세 화면이 없는 흐름).
@@ -502,56 +639,91 @@ function CalendarManageDialog({
   const Footer = isOwner ? (
     <ModalFooter
       onSave={handleSaveMeta}
-      saveLabel={tc('save')}
+      saveLabel={tc("save")}
       saving={updateMut.isPending}
       saveDisabled={!dirty || !name.trim()}
       onDelete={
         calendar.isDefault
           ? undefined
           : () => {
-              onRequestDelete(calendar)
-              onClose()
+              onRequestDelete(calendar);
+              onClose();
             }
       }
-      deleteLabel={t('deleteCalendar')}
+      deleteLabel={t("deleteCalendar")}
     />
-  ) : undefined
+  ) : undefined;
 
   return (
-    <ModalShell title={`${calendar.calendarName} · ${t('shareSection.manageSuffix')}`} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={`${calendar.calendarName} · ${t("shareSection.manageSuffix")}`}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       {isOwner && (
         <>
           {/* 이름 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('name')}</FieldLabel>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('shareSection.namePlaceholder')} />
+            <FieldLabel>{t("name")}</FieldLabel>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("shareSection.namePlaceholder")}
+            />
           </Field>
 
           {/* 색상 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('form.color')}</FieldLabel>
+            <FieldLabel>{t("form.color")}</FieldLabel>
             <ColorSwatchGroup
               columns={5}
               value={color}
               onValueChange={setColor}
-              options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
+              options={CAT_PALETTE.map((p) => ({
+                value: p.baseHex,
+                bg: p.bg,
+                fg: p.color,
+              }))}
             />
           </Field>
 
           {/* 초대 코드 */}
           <Field style={{ marginBottom: 18 }}>
-            <FieldLabel>{t('inviteCode')}</FieldLabel>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Input value={calendar.inviteCode ?? ''} readOnly style={{ flex: 1, minWidth: 0 }} />
-              <Button variant="outline" size="icon" aria-label={t('shareSection.copyCode')} onClick={() => handleCopyCode(calendar.inviteCode ?? '')}>
+            <FieldLabel>{t("inviteCode")}</FieldLabel>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Input
+                value={calendar.inviteCode ?? ""}
+                readOnly
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("shareSection.copyCode")}
+                onClick={() => handleCopyCode(calendar.inviteCode ?? "")}
+              >
                 <Copy size={14} />
               </Button>
-              <Button variant="outline" size="icon" aria-label={t('shareSection.regenCode')} onClick={handleRegenerate} loading={regenMut.isPending}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("shareSection.regenCode")}
+                onClick={handleRegenerate}
+                loading={regenMut.isPending}
+              >
                 {!regenMut.isPending && <RefreshCw size={14} />}
               </Button>
             </div>
-            <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-tertiary)', marginTop: 6 }}>
-              {t('shareSection.codeHint')}
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                marginTop: 6,
+              }}
+            >
+              {t("shareSection.codeHint")}
             </div>
           </Field>
         </>
@@ -560,94 +732,142 @@ function CalendarManageDialog({
       {/* 멤버 리스트 */}
       <div
         style={{
-          fontSize: 'var(--text-badge)',
-          fontWeight: '700',
-          color: 'var(--fg-tertiary)',
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
+          fontSize: "var(--text-badge)",
+          fontWeight: "700",
+          color: "var(--fg-tertiary)",
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
           marginBottom: 8,
           paddingLeft: 4,
         }}
       >
-        {t('shareSection.members')} · {members?.length ?? 0}
+        {t("shareSection.members")} · {members?.length ?? 0}
       </div>
       {isLoading || !members ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <SkeletonBase className="h-12 w-full rounded-md" />
           <SkeletonBase className="h-12 w-full rounded-md" />
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {members.map((member, i) => {
-            const RoleIcon = ROLE_ICON[member.permission]
-            const isSelf = member.userRowId === currentUser?.rowId
-            const canManage = isOwner && member.permission !== 'OWNER' && !isSelf
+            const RoleIcon = ROLE_ICON[member.permission];
+            const isSelf = member.userRowId === currentUser?.rowId;
+            const canManage =
+              isOwner && member.permission !== "OWNER" && !isSelf;
             return (
               <div
                 key={member.rowId}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 12,
-                  padding: '12px 4px',
-                  borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+                  padding: "12px 4px",
+                  borderTop:
+                    i === 0 ? "none" : "1px solid var(--border-subtle)",
                 }}
               >
                 <span
                   style={{
                     width: 36,
                     height: 36,
-                    borderRadius: 'var(--radius-pill)',
+                    borderRadius: "var(--radius-pill)",
                     background: ROLE_AVATAR[member.permission].bg,
                     color: ROLE_AVATAR[member.permission].fg,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     flexShrink: 0,
                   }}
                 >
                   <RoleIcon size={16} strokeWidth={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600', color: 'var(--fg-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div
+                    style={{
+                      fontSize: "var(--text-body-sm)",
+                      fontWeight: "600",
+                      color: "var(--fg-primary)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {member.userName}
-                    {isSelf && <span style={{ color: 'var(--fg-tertiary)', fontWeight: '500' }}> {t('shareSection.you')}</span>}
+                    {isSelf && (
+                      <span
+                        style={{
+                          color: "var(--fg-tertiary)",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {" "}
+                        {t("shareSection.you")}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div
+                    style={{
+                      fontSize: "var(--text-caption)",
+                      color: "var(--fg-tertiary)",
+                      marginTop: 2,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {member.userEmail}
                   </div>
                 </div>
                 {canManage ? (
                   <>
-                    <Select value={member.permission} onValueChange={v => handleChangeRole(member, v as CalendarRole)} disabled={roleMut.isPending}>
+                    <Select
+                      value={member.permission}
+                      onValueChange={(v) =>
+                        handleChangeRole(member, v as CalendarRole)
+                      }
+                      disabled={roleMut.isPending}
+                    >
                       <SelectTrigger className="h-8 w-28 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="EDIT">{t('role.EDIT')}</SelectItem>
-                        <SelectItem value="READ">{t('role.READ')}</SelectItem>
+                        <SelectItem value="EDIT">{t("role.EDIT")}</SelectItem>
+                        <SelectItem value="READ">{t("role.READ")}</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="ghost" size="icon" className="!text-[var(--fg-expense)]" aria-label={t('shareSection.removeMember')} onClick={() => handleRemove(member)} loading={removeMut.isPending}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="!text-[var(--fg-expense)]"
+                      aria-label={t("shareSection.removeMember")}
+                      onClick={() => handleRemove(member)}
+                      loading={removeMut.isPending}
+                    >
                       {!removeMut.isPending && <Trash2 size={14} />}
                     </Button>
                   </>
                 ) : (
-                  <Badge variant={ROLE_BADGE_VARIANT[member.permission]} style={{ flexShrink: 0 }}>
+                  <Badge
+                    variant={ROLE_BADGE_VARIANT[member.permission]}
+                    style={{ flexShrink: 0 }}
+                  >
                     <RoleIcon size={11} strokeWidth={2.2} />
                     {t(`role.${member.permission}`)}
                   </Badge>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       )}
       {confirmRemove && (
         <ConfirmDialog
-          title={t('shareSection.removeMember')}
-          message={t('shareSection.removeMemberConfirm', { name: confirmRemove.userName })}
-          confirmLabel={t('shareSection.removeMemberAction')}
+          title={t("shareSection.removeMember")}
+          message={t("shareSection.removeMemberConfirm", {
+            name: confirmRemove.userName,
+          })}
+          confirmLabel={t("shareSection.removeMemberAction")}
           danger
           loading={removeMut.isPending}
           onCancel={() => setConfirmRemove(null)}
@@ -655,7 +875,7 @@ function CalendarManageDialog({
         />
       )}
     </ModalShell>
-  )
+  );
 }
 
 function CalendarCreateDialog({
@@ -664,64 +884,87 @@ function CalendarCreateDialog({
   submitting,
   mobile,
 }: {
-  onClose: () => void
-  onCreate: (values: { calendarName: string; color: string }, onDone: () => void) => void
-  submitting?: boolean
-  mobile: boolean
+  onClose: () => void;
+  onCreate: (
+    values: { calendarName: string; color: string },
+    onDone: () => void,
+  ) => void;
+  submitting?: boolean;
+  mobile: boolean;
 }) {
-  const { t } = useTranslation('calendar')
-  const [name, setName] = useState('')
-  const [color, setColor] = useState('#2c70bf')
-  const [touched, setTouched] = useState(false)
+  const { t } = useTranslation("calendar");
+  const [name, setName] = useState("");
+  const [color, setColor] = useState("#2c70bf");
+  const [touched, setTouched] = useState(false);
 
-  const nameTrim = name.trim()
-  const valid = nameTrim.length > 0
-  const err = touched && !valid ? t('shareSection.nameRequired') : null
+  const nameTrim = name.trim();
+  const valid = nameTrim.length > 0;
+  const err = touched && !valid ? t("shareSection.nameRequired") : null;
 
   const save = () => {
-    setTouched(true)
-    if (!valid) return
-    onCreate({ calendarName: nameTrim, color }, onClose)
-  }
+    setTouched(true);
+    if (!valid) return;
+    onCreate({ calendarName: nameTrim, color }, onClose);
+  };
 
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={t('shareSection.create')}
+      saveLabel={t("shareSection.create")}
       saving={submitting}
       saveDisabled={touched && !valid}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
-    <ModalShell title={t('newCalendar')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("newCalendar")}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t('name')}</FieldLabel>
+        <FieldLabel>{t("name")}</FieldLabel>
         <Input
           aria-invalid={!!err}
           value={name}
-          onChange={e => {
-            setName(e.target.value)
-            setTouched(true)
+          onChange={(e) => {
+            setName(e.target.value);
+            setTouched(true);
           }}
-          placeholder={t('shareSection.createNamePlaceholder')}
+          placeholder={t("shareSection.createNamePlaceholder")}
           autoFocus
         />
-        {err && <div style={{ fontSize: 'var(--text-badge)', color: 'var(--fg-expense)', marginTop: 4 }}>{err}</div>}
+        {err && (
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-expense)",
+              marginTop: 4,
+            }}
+          >
+            {err}
+          </div>
+        )}
       </Field>
 
       <Field>
-        <FieldLabel>{t('form.color')}</FieldLabel>
+        <FieldLabel>{t("form.color")}</FieldLabel>
         <ColorSwatchGroup
           columns={5}
           value={color}
           onValueChange={setColor}
-          options={CAT_PALETTE.map(p => ({ value: p.baseHex, bg: p.bg, fg: p.color }))}
+          options={CAT_PALETTE.map((p) => ({
+            value: p.baseHex,
+            bg: p.bg,
+            fg: p.color,
+          }))}
         />
       </Field>
     </ModalShell>
-  )
+  );
 }
 
 function CalendarJoinDialog({
@@ -730,43 +973,49 @@ function CalendarJoinDialog({
   submitting,
   mobile,
 }: {
-  onClose: () => void
-  onJoin: (code: string, onDone: () => void) => void
-  submitting?: boolean
-  mobile: boolean
+  onClose: () => void;
+  onJoin: (code: string, onDone: () => void) => void;
+  submitting?: boolean;
+  mobile: boolean;
 }) {
-  const { t } = useTranslation('calendar')
-  const [code, setCode] = useState('')
-  const valid = code.trim().length > 0
+  const { t } = useTranslation("calendar");
+  const [code, setCode] = useState("");
+  const valid = code.trim().length > 0;
   const submit = () => {
-    if (!valid) return
-    onJoin(code.trim().toUpperCase(), onClose)
-  }
+    if (!valid) return;
+    onJoin(code.trim().toUpperCase(), onClose);
+  };
 
   const Footer = (
     <ModalFooter
       onSave={submit}
-      saveLabel={t('join')}
+      saveLabel={t("join")}
       saving={submitting}
       saveDisabled={!valid}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
-    <ModalShell title={t('joinByCode')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("joinByCode")}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       <Field>
-        <FieldLabel>{t('inviteCode')}</FieldLabel>
+        <FieldLabel>{t("inviteCode")}</FieldLabel>
         <Input
           value={code}
-          onChange={e => setCode(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') submit()
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
           }}
-          placeholder={t('shareSection.joinCodePlaceholder')}
+          placeholder={t("shareSection.joinCodePlaceholder")}
           autoFocus
         />
       </Field>
     </ModalShell>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-import * as React from "react"
-import { useLocation } from "react-router-dom"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { useLocation } from "react-router-dom";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs"
+import { cn } from "@/shared/lib/index";
+import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import {
   clampOffset,
   resolveAxis,
@@ -17,7 +17,7 @@ import {
   SWIPE_LABEL_GAP,
   SWIPE_MIN_HEIGHT,
   type SwipeAxis,
-} from "@/shared/ui/swipe-actions-geometry"
+} from "@/shared/ui/swipe-actions-geometry";
 
 /*
  * Porest SwipeActions — porest-design specs/components/swipe-actions.md SoT 미러.
@@ -44,16 +44,16 @@ import {
 
 /* ─── 그룹 (한 번에 한 행 · 스크롤하면 닫힘) ─────────────────────────── */
 
-type SwipeEntry = { group: string; close: () => void }
+type SwipeEntry = { group: string; close: () => void };
 
 type SwipeGroupApi = {
-  register: (rowId: string, entry: SwipeEntry) => void
-  unregister: (rowId: string) => void
-  requestOpen: (group: string, rowId: string) => void
-  closeAll: () => void
-}
+  register: (rowId: string, entry: SwipeEntry) => void;
+  unregister: (rowId: string) => void;
+  requestOpen: (group: string, rowId: string) => void;
+  closeAll: () => void;
+};
 
-const SwipeGroupContext = React.createContext<SwipeGroupApi | null>(null)
+const SwipeGroupContext = React.createContext<SwipeGroupApi | null>(null);
 
 /**
  * "한 번에 한 행만 열린다" 와 "리스트 스크롤 시 닫힌다" 를 맡는 조상.
@@ -62,58 +62,70 @@ const SwipeGroupContext = React.createContext<SwipeGroupApi | null>(null)
  * 붙일 때 까먹어서 여러 행이 열린 채 남는다 — 앱이 실제로 그 버그를 겪고 컨테이너를
  * 루트 하나로 옮겼다.
  */
-export function SwipeActionsProvider({ children }: { children: React.ReactNode }) {
-  const rows = React.useRef(new Map<string, SwipeEntry>())
-  const openRow = React.useRef<string | null>(null)
-  const location = useLocation()
+export function SwipeActionsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const rows = React.useRef(new Map<string, SwipeEntry>());
+  const openRow = React.useRef<string | null>(null);
+  const location = useLocation();
 
   const api = React.useMemo<SwipeGroupApi>(() => {
     const closeAll = () => {
-      for (const entry of rows.current.values()) entry.close()
-      openRow.current = null
-    }
+      for (const entry of rows.current.values()) entry.close();
+      openRow.current = null;
+    };
     return {
       register: (rowId, entry) => {
-        rows.current.set(rowId, entry)
+        rows.current.set(rowId, entry);
       },
       // 행이 사라지는 경로가 많다 — 월·필터·검색어 변경, 고정 토글로 인한 섹션 이동,
       // 삭제 후 목록 갱신. 해제하지 않으면 이미 없는 행의 close() 를 부르게 된다.
       unregister: (rowId) => {
-        rows.current.delete(rowId)
-        if (openRow.current === rowId) openRow.current = null
+        rows.current.delete(rowId);
+        if (openRow.current === rowId) openRow.current = null;
       },
       requestOpen: (group, rowId) => {
-        const prev = openRow.current
+        const prev = openRow.current;
         if (prev && prev !== rowId) {
-          const entry = rows.current.get(prev)
-          if (entry && entry.group === group) entry.close()
+          const entry = rows.current.get(prev);
+          if (entry && entry.group === group) entry.close();
         }
-        openRow.current = rowId
+        openRow.current = rowId;
       },
       closeAll,
-    }
-  }, [])
+    };
+  }, []);
 
   // 스크롤하면 닫는다. viewport-fit 페이지는 .m-scroll 이 아니라 안쪽 overflow-y-auto 가
   // 스크롤러라, document 캡처 위임으로 셸 안 모든 세로 스크롤러를 듣는다(TabBar 와 같은 방식).
   React.useEffect(() => {
     const onScroll = (e: Event) => {
-      const el = e.target
-      if (!(el instanceof HTMLElement)) return
-      if (!el.closest(".m-app")) return
-      if (el.scrollHeight - el.clientHeight <= 10) return // 가로 스크롤러(필터 칩 등) 제외
-      api.closeAll()
-    }
-    document.addEventListener("scroll", onScroll, { capture: true, passive: true })
-    return () => document.removeEventListener("scroll", onScroll, { capture: true })
-  }, [api])
+      const el = e.target;
+      if (!(el instanceof HTMLElement)) return;
+      if (!el.closest(".m-app")) return;
+      if (el.scrollHeight - el.clientHeight <= 10) return; // 가로 스크롤러(필터 칩 등) 제외
+      api.closeAll();
+    };
+    document.addEventListener("scroll", onScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      document.removeEventListener("scroll", onScroll, { capture: true });
+  }, [api]);
 
   // 화면을 옮기면 열린 채로 남지 않게.
   React.useEffect(() => {
-    api.closeAll()
-  }, [api, location.pathname])
+    api.closeAll();
+  }, [api, location.pathname]);
 
-  return <SwipeGroupContext.Provider value={api}>{children}</SwipeGroupContext.Provider>
+  return (
+    <SwipeGroupContext.Provider value={api}>
+      {children}
+    </SwipeGroupContext.Provider>
+  );
 }
 
 /* ─── 액션 ─────────────────────────────────────────────────────────── */
@@ -150,7 +162,7 @@ const swipeActionVariants = cva(
     },
     defaultVariants: { kind: "neutral" },
   },
-)
+);
 
 /**
  * 확인 다이얼로그의 **제목과 확인 버튼은 액션 라벨을 그대로 쓴다** — 호출부가 정하지
@@ -164,28 +176,28 @@ export interface SwipeConfirm {
    * spec `alert-dialog` 의 "같은 동작이면 어디서 불렀든 제목·설명이 같다".
    * 컴포넌트가 감싼 행이 무엇인지 모르므로 그 행을 아는 호출부가 정한다.
    */
-  title: string
+  title: string;
   /**
    * ConfirmDialog 는 `white-space` 지정 없는 `<p>` 에 넣는다 — `\n\n` 는 공백 하나로
    * 접히므로 줄을 나누려면 `<br />` 를 쓴다.
    */
-  message: React.ReactNode
-  cancelLabel?: string
+  message: React.ReactNode;
+  cancelLabel?: string;
   /**
    * 뮤테이션 pending. 기존 삭제 확인 3곳(거래·할일·메모 상세)이 전부 끝날 때까지
    * 다이얼로그를 열어 둔 채 스피너를 돌린다 — 스와이프만 즉시 닫으면 같은 삭제가
    * 두 거동이 되고 연타 시 DELETE 가 중복 발사된다.
    */
-  loading?: boolean
+  loading?: boolean;
 }
 
 interface SwipeActionBase extends VariantProps<typeof swipeActionVariants> {
   /** 한글 두 글자 권장 — 그보다 길면 48px 슬롯 안에서 줄바꿈된다. */
-  label: string
-  icon?: React.ReactNode
-  disabled?: boolean
+  label: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
   /** Promise 를 돌려주면 컴포넌트가 pending 으로 잡는다. */
-  onSelect: () => void | Promise<unknown>
+  onSelect: () => void | Promise<unknown>;
 }
 
 /**
@@ -196,28 +208,30 @@ interface SwipeActionBase extends VariantProps<typeof swipeActionVariants> {
  */
 export type SwipeAction =
   | (SwipeActionBase & { kind?: "neutral" | "primary"; confirm?: never })
-  | (SwipeActionBase & { kind: "destructive"; confirm: SwipeConfirm })
+  | (SwipeActionBase & { kind: "destructive"; confirm: SwipeConfirm });
 
-export interface SwipeActionsProps
-  extends Omit<React.ComponentProps<"div">, "children" | "ref"> {
+export interface SwipeActionsProps extends Omit<
+  React.ComponentProps<"div">,
+  "children" | "ref"
+> {
   /**
    * 0~3개. 의미 순서 그대로 넘긴다 — 렌더는 컴포넌트가 뒤집는다.
    * **빈 배열이면 children 을 그대로 통과시킨다** — 행 단위로 액션이 성립하지 않는
    * 경우(시스템 생성 거래 등)는 `enabled` 가 아니라 이쪽이다.
    */
-  actions: SwipeAction[]
+  actions: SwipeAction[];
   /** 리스트 안에서 안정된 행 식별자 — "한 번에 하나" 판정 키다. */
-  rowId: string
+  rowId: string;
   /** 리스트 단위 그룹. 다른 그룹끼리는 서로 닫지 않는다. */
-  groupTag?: string
+  groupTag?: string;
   /** 액션 접근명에 붙는 행 제목 — "삭제: 스타벅스". */
-  rowLabel?: string
+  rowLabel?: string;
   /**
    * spec Platform 의 **데스크톱 통과 전용** 스위치. 뷰포트 판정만 넣는다 —
    * 행 단위 조건을 여기 겹쳐 담지 않는다.
    */
-  enabled?: boolean
-  children: React.ReactNode
+  enabled?: boolean;
+  children: React.ReactNode;
 }
 
 export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
@@ -234,104 +248,106 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
     },
     ref,
   ) {
-    const group = React.useContext(SwipeGroupContext)
-    const [open, setOpen] = React.useState(false)
-    const [dragging, setDragging] = React.useState(false)
-    const [pending, setPending] = React.useState<SwipeAction | null>(null)
-    const [running, setRunning] = React.useState(false)
+    const group = React.useContext(SwipeGroupContext);
+    const [open, setOpen] = React.useState(false);
+    const [dragging, setDragging] = React.useState(false);
+    const [pending, setPending] = React.useState<SwipeAction | null>(null);
+    const [running, setRunning] = React.useState(false);
 
-    const rowRef = React.useRef<HTMLDivElement>(null)
-    const start = React.useRef<{ x: number; y: number; offset: number } | null>(null)
-    const axis = React.useRef<SwipeAxis>("none")
-    const offset = React.useRef(0)
+    const rowRef = React.useRef<HTMLDivElement>(null);
+    const start = React.useRef<{ x: number; y: number; offset: number } | null>(
+      null,
+    );
+    const axis = React.useRef<SwipeAxis>("none");
+    const offset = React.useRef(0);
     /** 드래그였던 제스처의 click 은 삼킨다 — 밀고 손을 뗀 자리에서 상세가 열리면 안 된다. */
-    const dragged = React.useRef(false)
+    const dragged = React.useRef(false);
 
-    const trayWidth = swipeTrayWidth(actions.length)
+    const trayWidth = swipeTrayWidth(actions.length);
 
     /**
      * 드래그 추종은 리렌더 없이 CSS 변수로만 반영한다. 가상 스크롤이 없어 리스트가
      * 전량 렌더되므로 move 마다 리렌더를 태우면 긴 목록에서 프레임이 죽는다.
      */
     const paint = (next: number) => {
-      offset.current = next
-      rowRef.current?.style.setProperty("--swipe-offset", `${next}px`)
-    }
+      offset.current = next;
+      rowRef.current?.style.setProperty("--swipe-offset", `${next}px`);
+    };
 
     const close = React.useCallback(() => {
-      setOpen(false)
-      offset.current = 0
-      rowRef.current?.style.setProperty("--swipe-offset", "0px")
-    }, [])
+      setOpen(false);
+      offset.current = 0;
+      rowRef.current?.style.setProperty("--swipe-offset", "0px");
+    }, []);
 
     // 그룹 등록/해제 — 해제를 빠뜨리면 이미 사라진 행의 close() 를 부르게 된다.
     React.useEffect(() => {
-      if (!group) return
-      group.register(rowId, { group: groupTag, close })
-      return () => group.unregister(rowId)
-    }, [group, rowId, groupTag, close])
+      if (!group) return;
+      group.register(rowId, { group: groupTag, close });
+      return () => group.unregister(rowId);
+    }, [group, rowId, groupTag, close]);
 
     React.useEffect(() => {
       if (import.meta.env.DEV && !group) {
         console.warn(
           "[SwipeActions] SwipeActionsProvider 밖이다 — 한 번에 한 행만 열림·스크롤 시 닫힘이 동작하지 않는다.",
-        )
+        );
       }
-    }, [group])
+    }, [group]);
 
     const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-      start.current = { x: e.clientX, y: e.clientY, offset: offset.current }
-      axis.current = "none"
-      dragged.current = false
-    }
+      start.current = { x: e.clientX, y: e.clientY, offset: offset.current };
+      axis.current = "none";
+      dragged.current = false;
+    };
 
     const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-      const s = start.current
-      if (!s) return
+      const s = start.current;
+      if (!s) return;
 
-      const rawX = e.clientX - s.x
-      const rawY = e.clientY - s.y
+      const rawX = e.clientX - s.x;
+      const rawY = e.clientY - s.y;
 
       if (axis.current === "none") {
-        const next = resolveAxis(rawX, rawY)
-        if (next === "none") return
-        axis.current = next
+        const next = resolveAxis(rawX, rawY);
+        if (next === "none") return;
+        axis.current = next;
         // 세로로 확정되면 이번 제스처는 포기한다 — 스크롤은 브라우저가 처리 중이다.
         if (next === "y") {
-          start.current = null
-          return
+          start.current = null;
+          return;
         }
-        e.currentTarget.setPointerCapture(e.pointerId)
-        dragged.current = true
-        setDragging(true)
-        group?.requestOpen(groupTag, rowId)
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragged.current = true;
+        setDragging(true);
+        group?.requestOpen(groupTag, rowId);
       }
 
       // RTL 은 미는 방향이 뒤집힌다 — 트레이가 드러나는 거리를 양수로 맞춘다.
-      const rtl = getComputedStyle(e.currentTarget).direction === "rtl"
-      paint(clampOffset(s.offset + (rtl ? rawX : -rawX), trayWidth))
-    }
+      const rtl = getComputedStyle(e.currentTarget).direction === "rtl";
+      paint(clampOffset(s.offset + (rtl ? rawX : -rawX), trayWidth));
+    };
 
     const settle = () => {
-      const s = start.current
-      start.current = null
+      const s = start.current;
+      start.current = null;
       if (axis.current !== "x") {
-        axis.current = "none"
-        return
+        axis.current = "none";
+        return;
       }
-      axis.current = "none"
-      setDragging(false)
+      axis.current = "none";
+      setDragging(false);
 
       // 열 때와 닫을 때가 다른 값을 쓴다 — 같은 값을 걸면 두 범위가 맞물려 아예 열리지 않는다.
-      const wasOpen = (s?.offset ?? 0) > 0
+      const wasOpen = (s?.offset ?? 0) > 0;
       const next = wasOpen
         ? !shouldSnapClose(offset.current, trayWidth)
-        : shouldSnapOpen(offset.current, trayWidth)
+        : shouldSnapOpen(offset.current, trayWidth);
 
-      setOpen(next)
-      paint(next ? trayWidth : 0)
-      if (next) group?.requestOpen(groupTag, rowId)
-    }
+      setOpen(next);
+      paint(next ? trayWidth : 0);
+      if (next) group?.requestOpen(groupTag, rowId);
+    };
 
     /**
      * 액션 탭 — 트레이를 **먼저 닫고** 나서 실행한다(spec Behavior).
@@ -339,27 +355,27 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
      * 실행한 경우엔 사라진 행 자리에 트레이만 남는다.
      */
     const select = (action: SwipeAction) => {
-      close()
+      close();
       if (action.confirm) {
-        setPending(action)
-        return
+        setPending(action);
+        return;
       }
-      void action.onSelect()
-    }
+      void action.onSelect();
+    };
 
     const runPending = async () => {
-      const action = pending
-      if (!action) return
-      setRunning(true)
+      const action = pending;
+      if (!action) return;
+      setRunning(true);
       try {
-        await action.onSelect()
-        setPending(null)
+        await action.onSelect();
+        setPending(null);
       } finally {
-        setRunning(false)
+        setRunning(false);
       }
-    }
+    };
 
-    if (!enabled || actions.length === 0) return <>{children}</>
+    if (!enabled || actions.length === 0) return <>{children}</>;
 
     return (
       <>
@@ -375,8 +391,8 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
           )}
           onKeyDown={(e) => {
             if (e.key === "Escape" && open) {
-              close()
-              rowRef.current?.focus()
+              close();
+              rowRef.current?.focus();
             }
           }}
           {...props}
@@ -392,12 +408,15 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
                 type="button"
                 disabled={action.disabled}
                 tabIndex={open ? 0 : -1}
-                aria-label={rowLabel ? `${action.label}: ${rowLabel}` : action.label}
+                aria-label={
+                  rowLabel ? `${action.label}: ${rowLabel}` : action.label
+                }
                 className={swipeActionVariants({ kind: action.kind })}
                 // 간격을 배지 앞에만 둬 마지막 액션이 트레이 끝에 딱 붙는다.
                 style={{
                   inlineSize: swipeSlotWidth(i),
-                  paddingInlineStart: i === 0 ? SWIPE_GAP_LEAD : SWIPE_GAP_BETWEEN,
+                  paddingInlineStart:
+                    i === 0 ? SWIPE_GAP_LEAD : SWIPE_GAP_BETWEEN,
                   minBlockSize: SWIPE_MIN_HEIGHT,
                   gap: SWIPE_LABEL_GAP,
                 }}
@@ -405,7 +424,10 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
               >
                 <span
                   className="swipe-badge flex items-center justify-center rounded-full [&>svg]:size-[18px]"
-                  style={{ inlineSize: SWIPE_BADGE_SIZE, blockSize: SWIPE_BADGE_SIZE }}
+                  style={{
+                    inlineSize: SWIPE_BADGE_SIZE,
+                    blockSize: SWIPE_BADGE_SIZE,
+                  }}
                 >
                   {action.icon}
                 </span>
@@ -424,7 +446,8 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
                 "transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] motion-reduce:transition-none",
             )}
             style={{
-              transform: "translateX(calc(var(--swipe-dir) * var(--swipe-offset)))",
+              transform:
+                "translateX(calc(var(--swipe-dir) * var(--swipe-offset)))",
             }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -433,11 +456,11 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
             // 열려 있으면 탭은 닫기만 한다 — 열어 둔 걸 못 보고 누르는 경우가 많다.
             // capture 단계라 행 안쪽 버튼(할일 체크 등)의 stopPropagation 보다 먼저 잡는다.
             onClickCapture={(e) => {
-              if (!open && !dragged.current) return
-              e.preventDefault()
-              e.stopPropagation()
-              dragged.current = false
-              close()
+              if (!open && !dragged.current) return;
+              e.preventDefault();
+              e.stopPropagation();
+              dragged.current = false;
+              close();
             }}
           >
             {children}
@@ -461,6 +484,6 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
           />
         )}
       </>
-    )
+    );
   },
-)
+);

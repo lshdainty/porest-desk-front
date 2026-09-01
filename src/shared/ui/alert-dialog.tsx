@@ -1,10 +1,10 @@
-import * as React from "react"
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/index"
-import { buttonVariants } from "@/shared/ui/button-variants"
-import { Spinner } from "@/shared/ui/spinner"
+import { cn } from "@/shared/lib/index";
+import { buttonVariants } from "@/shared/ui/button-variants";
+import { Spinner } from "@/shared/ui/spinner";
 
 /*
  * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
@@ -20,9 +20,9 @@ import { Spinner } from "@/shared/ui/spinner"
  *   - overlay click 무시 / close button(X) 없음 / default focus = Cancel
  */
 
-const AlertDialog = AlertDialogPrimitive.Root
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger
-const AlertDialogPortal = AlertDialogPrimitive.Portal
+const AlertDialog = AlertDialogPrimitive.Root;
+const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
+const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
@@ -38,8 +38,8 @@ const AlertDialogOverlay = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
+));
+AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const alertDialogContentVariants = cva(
   [
@@ -60,10 +60,11 @@ const alertDialogContentVariants = cva(
     },
     defaultVariants: { size: "md" },
   },
-)
+);
 
 export interface AlertDialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>,
+  extends
+    React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>,
     VariantProps<typeof alertDialogContentVariants> {}
 
 const AlertDialogContent = React.forwardRef<
@@ -79,22 +80,19 @@ const AlertDialogContent = React.forwardRef<
       {...props}
     />
   </AlertDialogPortal>
-))
-AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
+));
+AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
 const AlertDialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      "flex flex-col gap-[var(--spacing-md)] text-left",
-      className,
-    )}
+    className={cn("flex flex-col gap-[var(--spacing-md)] text-left", className)}
     {...props}
   />
-)
-AlertDialogHeader.displayName = "AlertDialogHeader"
+);
+AlertDialogHeader.displayName = "AlertDialogHeader";
 
 const AlertDialogFooter = ({
   className,
@@ -113,8 +111,8 @@ const AlertDialogFooter = ({
     )}
     {...props}
   />
-)
-AlertDialogFooter.displayName = "AlertDialogFooter"
+);
+AlertDialogFooter.displayName = "AlertDialogFooter";
 
 const AlertDialogTitle = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Title>,
@@ -128,8 +126,8 @@ const AlertDialogTitle = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
+));
+AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
 const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
@@ -140,14 +138,15 @@ const AlertDialogDescription = React.forwardRef<
     className={cn("text-body-md leading-[1.6] text-text-secondary", className)}
     {...props}
   />
-))
-AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName
+));
+AlertDialogDescription.displayName =
+  AlertDialogPrimitive.Description.displayName;
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
     /** true면 좌측에 spinner 표시 + disabled 처리. */
-    loading?: boolean
+    loading?: boolean;
   }
 >(({ className, loading = false, disabled, children, ...props }, ref) => (
   <AlertDialogPrimitive.Action
@@ -168,15 +167,15 @@ const AlertDialogAction = React.forwardRef<
         size="sm"
         aria-hidden
         style={{
-          borderColor: 'color-mix(in srgb, currentColor 30%, transparent)',
-          borderTopColor: 'currentColor',
+          borderColor: "color-mix(in srgb, currentColor 30%, transparent)",
+          borderTopColor: "currentColor",
         }}
       />
     )}
     {children}
   </AlertDialogPrimitive.Action>
-))
-AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
+));
+AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
@@ -195,8 +194,8 @@ const AlertDialogCancel = React.forwardRef<
     )}
     {...props}
   />
-))
-AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
+));
+AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;
 
 export {
   AlertDialog,
@@ -210,4 +209,4 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
-}
+};

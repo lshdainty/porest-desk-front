@@ -30,8 +30,8 @@ const AgendaDayGroupSkeleton = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const CalendarAgendaViewSkeleton = () => {
   return (
@@ -42,7 +42,7 @@ const CalendarAgendaViewSkeleton = () => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarAgendaViewSkeleton }
+export { CalendarAgendaViewSkeleton };

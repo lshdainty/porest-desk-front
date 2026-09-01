@@ -1,8 +1,12 @@
-import type { CategoryBreakdown, ExpenseCategory, ExpenseType } from '../model/types'
+import type {
+  CategoryBreakdown,
+  ExpenseCategory,
+  ExpenseType,
+} from "../model/types";
 
 export interface SeparatedBreakdown {
-  incomeBreakdown: CategoryBreakdown[]
-  expenseBreakdown: CategoryBreakdown[]
+  incomeBreakdown: CategoryBreakdown[];
+  expenseBreakdown: CategoryBreakdown[];
 }
 
 /**
@@ -12,27 +16,30 @@ export function separateBreakdownByType(
   breakdown: CategoryBreakdown[],
   categories: ExpenseCategory[],
 ): SeparatedBreakdown {
-  const typeMap = new Map<number, ExpenseType>()
-  categories.forEach((cat) => typeMap.set(cat.rowId, cat.expenseType))
+  const typeMap = new Map<number, ExpenseType>();
+  categories.forEach((cat) => typeMap.set(cat.rowId, cat.expenseType));
 
-  const incomeBreakdown: CategoryBreakdown[] = []
-  const expenseBreakdown: CategoryBreakdown[] = []
+  const incomeBreakdown: CategoryBreakdown[] = [];
+  const expenseBreakdown: CategoryBreakdown[] = [];
 
   breakdown.forEach((item) => {
     // 자식 카테고리는 부모의 타입을 따르므로 parentCategoryRowId 우선 조회.
     // 미분류(카테고리 없음)는 룩업할 게 없으니 항목이 들고 온 유형을 그대로 쓴다 —
     // 서버가 수입/지출을 갈라 보낸다.
-    const lookupId = item.parentCategoryRowId ?? item.categoryRowId
-    const type = lookupId != null ? typeMap.get(lookupId) ?? 'EXPENSE' : item.expenseType
+    const lookupId = item.parentCategoryRowId ?? item.categoryRowId;
+    const type =
+      lookupId != null
+        ? (typeMap.get(lookupId) ?? "EXPENSE")
+        : item.expenseType;
 
-    if (type === 'INCOME') {
-      incomeBreakdown.push(item)
+    if (type === "INCOME") {
+      incomeBreakdown.push(item);
     } else {
-      expenseBreakdown.push(item)
+      expenseBreakdown.push(item);
     }
-  })
+  });
 
-  return { incomeBreakdown, expenseBreakdown }
+  return { incomeBreakdown, expenseBreakdown };
 }
 
 /**
@@ -41,11 +48,11 @@ export function separateBreakdownByType(
 export function withPercentages(
   breakdown: CategoryBreakdown[],
 ): Array<CategoryBreakdown & { percentage: number }> {
-  const total = breakdown.reduce((sum, item) => sum + item.totalAmount, 0)
-  if (total === 0) return breakdown.map((item) => ({ ...item, percentage: 0 }))
+  const total = breakdown.reduce((sum, item) => sum + item.totalAmount, 0);
+  if (total === 0) return breakdown.map((item) => ({ ...item, percentage: 0 }));
 
   return breakdown.map((item) => ({
     ...item,
     percentage: Math.round((item.totalAmount / total) * 1000) / 10,
-  }))
+  }));
 }

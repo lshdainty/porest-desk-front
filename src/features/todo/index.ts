@@ -1,5 +1,5 @@
-export { todoApi } from './api/todoApi'
-export type { TodoListParams } from './api/todoApi'
+export { todoApi } from "./api/todoApi";
+export type { TodoListParams } from "./api/todoApi";
 export {
   useTodos,
   useTodo,
@@ -12,4 +12,4 @@ export {
   useSubtasks,
   useUpdateTodoTags,
   useTodoStats,
-} from './model/useTodos'
+} from "./model/useTodos";

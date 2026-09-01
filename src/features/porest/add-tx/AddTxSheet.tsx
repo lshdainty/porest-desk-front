@@ -1,18 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Bookmark, Info, MoreHorizontal, Plus, Scissors } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { Button } from '@/shared/ui/button'
-import { CategoryGrid, CategoryTile } from '@/shared/ui/category-tile'
-import { Input } from '@/shared/ui/input'
-import { Checkbox } from '@/shared/ui/checkbox'
-import { Field, FieldLabel } from '@/shared/ui/field'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { Textarea } from '@/shared/ui/textarea'
-import { renderIcon } from '@/shared/lib'
-import { getPaletteByColor } from '@/shared/lib/porest/chart-palette'
-import { KRW, money } from '@/shared/lib/porest/format'
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  AlertTriangle,
+  Bookmark,
+  Info,
+  MoreHorizontal,
+  Plus,
+  Scissors,
+} from "lucide-react";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { Button } from "@/shared/ui/button";
+import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
+import { Input } from "@/shared/ui/input";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Textarea } from "@/shared/ui/textarea";
+import { renderIcon } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { KRW, money } from "@/shared/lib/porest/format";
 import {
   Select,
   SelectContent,
@@ -22,9 +29,9 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select'
-import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { InputTimePicker } from '@/shared/ui/input-time-picker'
+} from "@/shared/ui/select";
+import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { InputTimePicker } from "@/shared/ui/input-time-picker";
 import {
   useCreateExpense,
   useCreateExpenseTemplate,
@@ -32,233 +39,290 @@ import {
   useExpenseTemplates,
   useTouchExpenseTemplate,
   useUpdateExpense,
-} from '@/features/expense'
-import { useAssets, useCreateTransfer, useUpdateTransfer } from '@/features/asset'
-import { SmsPasteField, useCommitSms, type SmsParseResult } from '@/features/sms'
-import { useExpenseSplits } from '@/features/expense-split'
-import type { Expense, ExpenseCategory, ExpenseFormValues } from '@/entities/expense'
-import type { AssetTransfer } from '@/entities/asset'
-import type { Asset, AssetType } from '@/entities/asset'
-import type { ExpenseTemplate } from '@/entities/expense-template'
-import type { ExpenseSplitFormValue } from '@/entities/expense-split'
-import { CURRENCIES, DEFAULT_CURRENCY, formatOriginalAmount } from '@/shared/lib/porest/currency'
-import { SplitTxDialog } from '../dialogs/SplitTxDialog'
+} from "@/features/expense";
+import {
+  useAssets,
+  useCreateTransfer,
+  useUpdateTransfer,
+} from "@/features/asset";
+import {
+  SmsPasteField,
+  useCommitSms,
+  type SmsParseResult,
+} from "@/features/sms";
+import { useExpenseSplits } from "@/features/expense-split";
+import type {
+  Expense,
+  ExpenseCategory,
+  ExpenseFormValues,
+} from "@/entities/expense";
+import type { AssetTransfer } from "@/entities/asset";
+import type { Asset, AssetType } from "@/entities/asset";
+import type { ExpenseTemplate } from "@/entities/expense-template";
+import type { ExpenseSplitFormValue } from "@/entities/expense-split";
+import {
+  CURRENCIES,
+  DEFAULT_CURRENCY,
+  formatOriginalAmount,
+} from "@/shared/lib/porest/currency";
+import { SplitTxDialog } from "../dialogs/SplitTxDialog";
 
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
 const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
-  CASH: ['CASH'],
-  CARD: ['CREDIT_CARD', 'CHECK_CARD'],
-  TRANSFER: ['BANK_ACCOUNT', 'SAVINGS'],
+  CASH: ["CASH"],
+  CARD: ["CREDIT_CARD", "CHECK_CARD"],
+  TRANSFER: ["BANK_ACCOUNT", "SAVINGS"],
   OTHER: null,
-}
+};
 
 /** 카드사 공통 할부 개월 — 2~12, 18, 24. */
-const INSTALLMENT_MONTHS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24] as const
+const INSTALLMENT_MONTHS = [
+  2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24,
+] as const;
 
-type TxType = 'EXPENSE' | 'INCOME' | 'TRANSFER'
+type TxType = "EXPENSE" | "INCOME" | "TRANSFER";
 
 type Props = {
-  onClose: () => void
+  onClose: () => void;
   /** Desktop=false / Mobile=true — ModalShell 패턴 전환용 */
-  mobile: boolean
+  mobile: boolean;
   /** 편집 모드일 때 전달 — 전달되면 수정/삭제, 아니면 신규 생성 */
-  expense?: Expense | null
+  expense?: Expense | null;
   /** 신규 생성 시 기본 날짜(yyyy-MM-dd). 미지정이면 오늘. expense가 있으면 무시. */
-  defaultDate?: string
+  defaultDate?: string;
   /**
    * 환불 모드 — 이 지출의 환불을 기록한다.
    * 수입으로 들어가되 원거래에 묶여 통계에서 지출을 상계한다(수입으로 부풀지 않는다).
    * 카테고리·자산·가맹점은 원거래를 승계하고 금액만 고치면 된다(부분 환불).
    */
-  refundOf?: Expense | null
+  refundOf?: Expense | null;
   /**
    * 이체 편집 모드 — 전달되면 그 이체를 고친다.
    * 서버가 이자 지출·잔액 이력을 되돌렸다 다시 만들고 rowId 는 유지한다.
    */
-  editTransfer?: AssetTransfer | null
-}
+  editTransfer?: AssetTransfer | null;
+};
 
 const todayLocal = () => {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
 const nowTimeLocal = () => {
-  const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 // "YYYY-MM-DDTHH:mm[:ss]" 또는 "YYYY-MM-DD HH:mm[:ss]" 에서 HH:mm 추출
 const extractTime = (s?: string | null) => {
-  if (!s) return null
-  const m = /[T ](\d{2}:\d{2})/.exec(s)
-  return m ? m[1] : null
-}
+  if (!s) return null;
+  const m = /[T ](\d{2}:\d{2})/.exec(s);
+  return m ? m[1] : null;
+};
 
-export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, editTransfer }: Props) {
-  const { t, i18n } = useTranslation('expense')
-  const { t: tc } = useTranslation('common')
-  const isEditTransfer = !!editTransfer
-  const isEdit = !!expense || isEditTransfer
+export function AddTxSheet({
+  onClose,
+  mobile,
+  expense,
+  defaultDate,
+  refundOf,
+  editTransfer,
+}: Props) {
+  const { t, i18n } = useTranslation("expense");
+  const { t: tc } = useTranslation("common");
+  const isEditTransfer = !!editTransfer;
+  const isEdit = !!expense || isEditTransfer;
   /**
    * 시스템이 만든 거래 — 매도 실현손익·이체 이자. 금액·날짜·자산은 계산 결과라 못 고친다.
    * 카테고리·메모는 분류라서 열어 둔다. 서버도 같은 규칙으로 거른다.
    */
-  const isAutoGenerated = !!expense?.autoSource
+  const isAutoGenerated = !!expense?.autoSource;
 
   const PAYMENT_METHODS: { v: string; l: string }[] = [
-    { v: 'CASH', l: t('form.paymentMethod.CASH') },
-    { v: 'CARD', l: t('form.paymentMethod.CARD') },
-    { v: 'TRANSFER', l: t('paymentTransferFull') },
-    { v: 'OTHER', l: t('form.paymentMethod.OTHER') },
-  ]
+    { v: "CASH", l: t("form.paymentMethod.CASH") },
+    { v: "CARD", l: t("form.paymentMethod.CARD") },
+    { v: "TRANSFER", l: t("paymentTransferFull") },
+    { v: "OTHER", l: t("form.paymentMethod.OTHER") },
+  ];
 
-  const categoriesQ = useExpenseCategories()
-  const assetsQ = useAssets()
-  const createMut = useCreateExpense()
-  const updateMut = useUpdateExpense()
-  const createTransferMut = useCreateTransfer()
-  const updateTransferMut = useUpdateTransfer()
-  const touchPresetMut = useTouchExpenseTemplate()
-  const commitSmsMut = useCommitSms()
+  const categoriesQ = useExpenseCategories();
+  const assetsQ = useAssets();
+  const createMut = useCreateExpense();
+  const updateMut = useUpdateExpense();
+  const createTransferMut = useCreateTransfer();
+  const updateTransferMut = useUpdateTransfer();
+  const touchPresetMut = useTouchExpenseTemplate();
+  const commitSmsMut = useCommitSms();
   // 편집 모드: 기존 분할 내역 — 금액 변경 시 분할 합과 일치 여부 판정용
-  const splitsQ = useExpenseSplits(expense?.rowId ?? null)
+  const splitsQ = useExpenseSplits(expense?.rowId ?? null);
 
-  const categories: ExpenseCategory[] = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data])
-  const assets: Asset[] = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data])
+  const categories: ExpenseCategory[] = useMemo(
+    () => categoriesQ.data ?? [],
+    [categoriesQ.data],
+  );
+  const assets: Asset[] = useMemo(
+    () => assetsQ.data?.assets ?? [],
+    [assetsQ.data],
+  );
 
-  const isRefundMode = !!refundOf && !isEdit
+  const isRefundMode = !!refundOf && !isEdit;
 
   // 타입 — 환불은 수입으로 들어간다(원거래 연결이 상계를 만든다)
   const [type, setType] = useState<TxType>(
-    editTransfer ? 'TRANSFER' : isRefundMode ? 'INCOME' : (expense?.expenseType ?? 'EXPENSE'),
-  )
+    editTransfer
+      ? "TRANSFER"
+      : isRefundMode
+        ? "INCOME"
+        : (expense?.expenseType ?? "EXPENSE"),
+  );
 
   // 공통 필드
   const [amount, setAmount] = useState<string>(
-    editTransfer ? String(editTransfer.amount)
-      : expense?.amount ? String(expense.amount)
-      : (refundOf ? String(refundOf.amount) : ''),
-  )
+    editTransfer
+      ? String(editTransfer.amount)
+      : expense?.amount
+        ? String(expense.amount)
+        : refundOf
+          ? String(refundOf.amount)
+          : "",
+  );
   const [description, setDescription] = useState(
-    editTransfer?.description ?? expense?.description ?? '',
-  )
+    editTransfer?.description ?? expense?.description ?? "",
+  );
   const [expenseDate, setExpenseDate] = useState<string>(
-    editTransfer ? editTransfer.transferDate.slice(0, 10)
-      : expense?.expenseDate ? expense.expenseDate.slice(0, 10)
-      : (defaultDate ?? todayLocal()),
-  )
+    editTransfer
+      ? editTransfer.transferDate.slice(0, 10)
+      : expense?.expenseDate
+        ? expense.expenseDate.slice(0, 10)
+        : (defaultDate ?? todayLocal()),
+  );
   const [expenseTime, setExpenseTime] = useState<string>(
     // 이체 편집이면 그 이체의 시각 — 안 읽으면 금액만 고쳐도 시각이 지금으로 밀린다.
-    () => extractTime(editTransfer?.transferDate ?? expense?.expenseDate) ?? nowTimeLocal(),
-  )
-  const [merchant, setMerchant] = useState(expense?.merchant ?? refundOf?.merchant ?? '')
-  const [paymentMethod, setPaymentMethod] = useState(expense?.paymentMethod ?? '')
+    () =>
+      extractTime(editTransfer?.transferDate ?? expense?.expenseDate) ??
+      nowTimeLocal(),
+  );
+  const [merchant, setMerchant] = useState(
+    expense?.merchant ?? refundOf?.merchant ?? "",
+  );
+  const [paymentMethod, setPaymentMethod] = useState(
+    expense?.paymentMethod ?? "",
+  );
   // 할부 개월 — 신용카드 결제에만 의미. '' = 일시불.
   const [installmentMonths, setInstallmentMonths] = useState<string>(
-    expense?.installmentMonths ? String(expense.installmentMonths) : '',
-  )
+    expense?.installmentMonths ? String(expense.installmentMonths) : "",
+  );
   // 해외 결제 — 원 통화 금액·환율을 남긴다. 셋이 함께여야 카드사 청구 환율과 대사할 수 있다.
   const [origCurrency, setOrigCurrency] = useState<string>(
     expense?.originalCurrency ?? DEFAULT_CURRENCY,
-  )
+  );
   const [origAmount, setOrigAmount] = useState<string>(
-    expense?.originalAmount != null ? String(expense.originalAmount) : '',
-  )
+    expense?.originalAmount != null ? String(expense.originalAmount) : "",
+  );
   const [fxRate, setFxRate] = useState<string>(
-    expense?.exchangeRate != null ? String(expense.exchangeRate) : '',
-  )
+    expense?.exchangeRate != null ? String(expense.exchangeRate) : "",
+  );
 
   // EXPENSE/INCOME 전용
   const [categoryRowId, setCategoryRowId] = useState<number | null>(
     expense?.categoryRowId ?? refundOf?.categoryRowId ?? null,
-  )
+  );
   const [assetRowId, setAssetRowId] = useState<number | null>(
     expense?.assetRowId ?? refundOf?.assetRowId ?? null,
-  )
+  );
 
   // TRANSFER 전용
   const [fromAssetRowId, setFromAssetRowId] = useState<number | null>(
     editTransfer?.fromAssetRowId ?? null,
-  )
+  );
   const [toAssetRowId, setToAssetRowId] = useState<number | null>(
     editTransfer?.toAssetRowId ?? null,
-  )
+  );
   const [fee, setFee] = useState<string>(
-    editTransfer?.fee ? String(editTransfer.fee) : '',
-  )
+    editTransfer?.fee ? String(editTransfer.fee) : "",
+  );
   // 대출 상환의 이자 — 상환액 중 이 금액은 부채를 줄이지 않고 지출로 잡힌다.
   const [interest, setInterest] = useState<string>(
-    editTransfer?.interestAmount ? String(editTransfer.interestAmount) : '',
-  )
+    editTransfer?.interestAmount ? String(editTransfer.interestAmount) : "",
+  );
 
   // 결제 문자 초안 — 있으면 저장이 문자 전용 경로로 간다(취소 차단·카드 기억이 거기 있다).
-  const [smsDraft, setSmsDraft] = useState<{ text: string; parsed: SmsParseResult } | null>(null)
-  const [rememberCard, setRememberCard] = useState(false)
+  const [smsDraft, setSmsDraft] = useState<{
+    text: string;
+    parsed: SmsParseResult;
+  } | null>(null);
+  const [rememberCard, setRememberCard] = useState(false);
 
   // 분할 합 일치화: 금액을 바꿔 기존 분할 합과 어긋날 때 맞추기 플로우
-  const [openReconcile, setOpenReconcile] = useState(false)
+  const [openReconcile, setOpenReconcile] = useState(false);
   // 이번 편집 세션에서 맞춘 분할(있으면 저장 시 금액과 함께 원자적으로 전송)
-  const [reconciledSplits, setReconciledSplits] = useState<ExpenseSplitFormValue[] | null>(null)
+  const [reconciledSplits, setReconciledSplits] = useState<
+    ExpenseSplitFormValue[] | null
+  >(null);
 
   // 프리셋: 적용 추적 + 저장 다이얼로그
-  const templatesQ = useExpenseTemplates()
-  const templates: ExpenseTemplate[] = useMemo(() => templatesQ.data ?? [], [templatesQ.data])
-  const [activePresetId, setActivePresetId] = useState<number | null>(null)
-  const [savePresetOpen, setSavePresetOpen] = useState(false)
+  const templatesQ = useExpenseTemplates();
+  const templates: ExpenseTemplate[] = useMemo(
+    () => templatesQ.data ?? [],
+    [templatesQ.data],
+  );
+  const [activePresetId, setActivePresetId] = useState<number | null>(null);
+  const [savePresetOpen, setSavePresetOpen] = useState(false);
 
   // 사용 빈도 높은 순으로 8개. 편집 모드에선 프리셋 row 자체가 안 보이므로 무관.
   const topPresets = useMemo(
     () => [...templates].sort((a, b) => b.useCount - a.useCount).slice(0, 8),
     [templates],
-  )
+  );
 
   const clearPresetMark = () => {
-    if (activePresetId != null) setActivePresetId(null)
-  }
+    if (activePresetId != null) setActivePresetId(null);
+  };
 
   const applyPreset = (p: ExpenseTemplate) => {
-    setType(p.expenseType as TxType)
-    setAmount(p.lockAmount === 'Y' && p.amount != null ? String(p.amount) : '')
-    setCategoryRowId(p.categoryRowId ?? null)
-    setAssetRowId(p.assetRowId ?? null)
-    setMerchant(p.merchant ?? '')
-    setPaymentMethod(p.paymentMethod ?? '')
-    setInstallmentMonths('')
-    setDescription(p.description ?? '')
-    setActivePresetId(p.rowId)
-  }
+    setType(p.expenseType as TxType);
+    setAmount(p.lockAmount === "Y" && p.amount != null ? String(p.amount) : "");
+    setCategoryRowId(p.categoryRowId ?? null);
+    setAssetRowId(p.assetRowId ?? null);
+    setMerchant(p.merchant ?? "");
+    setPaymentMethod(p.paymentMethod ?? "");
+    setInstallmentMonths("");
+    setDescription(p.description ?? "");
+    setActivePresetId(p.rowId);
+  };
 
   // 같은 expenseType의 최상위 카테고리 그리드 (자식은 Select로)
   const topCategories = useMemo(
     () =>
       categories
-        .filter(c => c.expenseType === type && c.parentRowId == null)
+        .filter((c) => c.expenseType === type && c.parentRowId == null)
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [categories, type],
-  )
+  );
 
   const childrenByParent = useMemo(() => {
-    const map = new Map<number, ExpenseCategory[]>()
+    const map = new Map<number, ExpenseCategory[]>();
     for (const c of categories) {
-      if (c.parentRowId == null || c.expenseType !== type) continue
-      const arr = map.get(c.parentRowId) ?? []
-      arr.push(c)
-      map.set(c.parentRowId, arr)
+      if (c.parentRowId == null || c.expenseType !== type) continue;
+      const arr = map.get(c.parentRowId) ?? [];
+      arr.push(c);
+      map.set(c.parentRowId, arr);
     }
-    for (const arr of map.values()) arr.sort((a, b) => a.sortOrder - b.sortOrder)
-    return map
-  }, [categories, type])
+    for (const arr of map.values())
+      arr.sort((a, b) => a.sortOrder - b.sortOrder);
+    return map;
+  }, [categories, type]);
 
   // 선택된 카테고리 정보 (자식이면 부모 id 도 파악)
-  const selectedCategory = categoryRowId != null
-    ? categories.find(c => c.rowId === categoryRowId)
-    : null
+  const selectedCategory =
+    categoryRowId != null
+      ? categories.find((c) => c.rowId === categoryRowId)
+      : null;
   const selectedParentId = selectedCategory
     ? (selectedCategory.parentRowId ?? selectedCategory.rowId)
-    : null
+    : null;
 
   // 이체 대상에서 카드는 뺀다.
   //   체크카드 — 잔액을 들지 않는다(긁는 즉시 연결 계좌에서 빠진다). 걸면 카드에
@@ -267,9 +331,12 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
   //     함께 card_billing 을 남기고, 자동 결제의 멱등 체크가 그 기록으로 걸린다.
   //     손으로 이체하면 기록이 없어 결제일에 자동 결제가 또 돌아 이중 차감된다.
   const transferAssets = useMemo(
-    () => assets.filter(a => a.assetType !== 'CHECK_CARD' && a.assetType !== 'CREDIT_CARD'),
+    () =>
+      assets.filter(
+        (a) => a.assetType !== "CHECK_CARD" && a.assetType !== "CREDIT_CARD",
+      ),
     [assets],
-  )
+  );
 
   // 결제 수단 + 거래 타입으로 계좌·카드 목록 필터.
   //
@@ -279,126 +346,138 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
   // 수입은 이자가 그 계좌로 직접 들어오므로 남긴다.
   const allowAsset = useCallback(
     (a: Asset) => {
-      const allowed = paymentMethod ? PAYMENT_ASSET_TYPES[paymentMethod] : null
-      if (allowed && !allowed.includes(a.assetType)) return false
-      if (type === 'EXPENSE' && a.assetType === 'SAVINGS') return false
-      return true
+      const allowed = paymentMethod ? PAYMENT_ASSET_TYPES[paymentMethod] : null;
+      if (allowed && !allowed.includes(a.assetType)) return false;
+      if (type === "EXPENSE" && a.assetType === "SAVINGS") return false;
+      return true;
     },
     [paymentMethod, type],
-  )
+  );
 
   const filteredAssets = useMemo(
     () => assets.filter(allowAsset),
     [assets, allowAsset],
-  )
+  );
 
   // 이자는 대출 상환에만 — 입금 대상이 대출 자산일 때만 의미가 있다.
   // (원금은 부채가 줄어드는 자산 이동이지만 이자는 은행으로 아예 나가는 비용이다)
   const showInterest = useMemo(() => {
-    if (type !== 'TRANSFER' || toAssetRowId == null) return false
-    return assets.find(a => a.rowId === toAssetRowId)?.assetType === 'LOAN'
-  }, [type, toAssetRowId, assets])
+    if (type !== "TRANSFER" || toAssetRowId == null) return false;
+    return assets.find((a) => a.rowId === toAssetRowId)?.assetType === "LOAN";
+  }, [type, toAssetRowId, assets]);
 
   // 대출이 아니게 되면 남아 있던 이자를 지운다(저장 시 흘러들지 않도록).
   useEffect(() => {
     if (!showInterest && interest) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInterest('')
+      setInterest("");
     }
-  }, [showInterest, interest])
+  }, [showInterest, interest]);
 
   // 할부는 신용카드 지출에만 존재한다 — 체크카드는 긁는 즉시 계좌에서 빠지고, 현금·이체는 나눌 수 없다.
   const showInstallment = useMemo(() => {
-    if (type !== 'EXPENSE') return false
-    const picked = assetRowId != null ? assets.find(a => a.rowId === assetRowId) : null
-    return picked?.assetType === 'CREDIT_CARD'
-  }, [type, assetRowId, assets])
+    if (type !== "EXPENSE") return false;
+    const picked =
+      assetRowId != null ? assets.find((a) => a.rowId === assetRowId) : null;
+    return picked?.assetType === "CREDIT_CARD";
+  }, [type, assetRowId, assets]);
 
   // 신용카드가 아니게 되면 남아 있던 할부 개월을 지운다(저장 시 흘러들지 않도록).
   useEffect(() => {
     if (!showInstallment && installmentMonths) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInstallmentMonths('')
+      setInstallmentMonths("");
     }
-  }, [showInstallment, installmentMonths])
+  }, [showInstallment, installmentMonths]);
 
   // 외화는 지출·수입에만 — 이체는 두 자산 사이의 이동이라 통화가 자산에 달려 있다.
-  const isForeignTx = type !== 'TRANSFER' && origCurrency !== DEFAULT_CURRENCY
+  const isForeignTx = type !== "TRANSFER" && origCurrency !== DEFAULT_CURRENCY;
 
   // 원화로 돌아오면 남아 있던 외화 입력을 지운다(저장 시 흘러들지 않도록).
   useEffect(() => {
     if (!isForeignTx && (origAmount || fxRate)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOrigAmount('')
+      setOrigAmount("");
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFxRate('')
+      setFxRate("");
     }
-  }, [isForeignTx, origAmount, fxRate])
+  }, [isForeignTx, origAmount, fxRate]);
 
   // 해외 결제는 $5.50 을 보고 입력하지 원화 환산액을 모른다 — 원 통화 × 환율로 금액을 채운다.
   // 카드사 실제 청구액이 다르면 금액 칸을 직접 고치면 된다(이 effect 는 원통화·환율이
   // 바뀔 때만 발화하므로 손으로 고친 금액을 덮어쓰지 않는다).
   useEffect(() => {
-    if (!isForeignTx) return
-    const a = parseFloat(origAmount)
-    const r = parseFloat(fxRate)
-    if (!Number.isFinite(a) || !Number.isFinite(r) || a <= 0 || r <= 0) return
+    if (!isForeignTx) return;
+    const a = parseFloat(origAmount);
+    const r = parseFloat(fxRate);
+    if (!Number.isFinite(a) || !Number.isFinite(r) || a <= 0 || r <= 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAmount(String(Math.round(a * r)))
+    setAmount(String(Math.round(a * r)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origAmount, fxRate, isForeignTx])
+  }, [origAmount, fxRate, isForeignTx]);
 
   // 결제 수단·거래 타입 변경 시 현재 선택한 자산이 허용 목록에 없으면 리셋
   useEffect(() => {
-    if (assetRowId == null) return
-    const picked = assets.find(a => a.rowId === assetRowId)
+    if (assetRowId == null) return;
+    const picked = assets.find((a) => a.rowId === assetRowId);
     if (picked && !allowAsset(picked)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAssetRowId(null)
+      setAssetRowId(null);
     }
-  }, [assetRowId, assets, allowAsset])
+  }, [assetRowId, assets, allowAsset]);
 
   // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
   useEffect(() => {
-    if (categoryRowId == null) return
-    const cat = categories.find(c => c.rowId === categoryRowId)
+    if (categoryRowId == null) return;
+    const cat = categories.find((c) => c.rowId === categoryRowId);
     if (!cat || cat.expenseType !== type) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCategoryRowId(null)
+      setCategoryRowId(null);
     }
-  }, [type, categoryRowId, categories])
+  }, [type, categoryRowId, categories]);
 
-  const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0
+  const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, "")) : 0;
 
   // 유효 분할 = 이번 세션에서 맞춘 분할 ?? 서버 분할. 금액이 분할 합과 어긋나면 일치화 필요.
   const serverSplitForms: ExpenseSplitFormValue[] = useMemo(
-    () => (splitsQ.data ?? []).map(s => ({
-      categoryRowId: s.categoryRowId,
-      amount: s.amount,
-      label: s.label,
-      sortOrder: s.sortOrder,
-    })),
+    () =>
+      (splitsQ.data ?? []).map((s) => ({
+        categoryRowId: s.categoryRowId,
+        amount: s.amount,
+        label: s.label,
+        sortOrder: s.sortOrder,
+      })),
     [splitsQ.data],
-  )
-  const effectiveSplits = reconciledSplits ?? serverSplitForms
-  const splitSum = effectiveSplits.reduce((s, p) => s + p.amount, 0)
-  const hasSplits = effectiveSplits.length > 0
-  const splitMismatch = isEdit && type !== 'TRANSFER' && hasSplits && amountNumber > 0 && amountNumber !== splitSum
+  );
+  const effectiveSplits = reconciledSplits ?? serverSplitForms;
+  const splitSum = effectiveSplits.reduce((s, p) => s + p.amount, 0);
+  const hasSplits = effectiveSplits.length > 0;
+  const splitMismatch =
+    isEdit &&
+    type !== "TRANSFER" &&
+    hasSplits &&
+    amountNumber > 0 &&
+    amountNumber !== splitSum;
 
   const canSave = (() => {
-    if (amountNumber <= 0) return false
-    if (type === 'TRANSFER') {
-      return !!fromAssetRowId && !!toAssetRowId && fromAssetRowId !== toAssetRowId
+    if (amountNumber <= 0) return false;
+    if (type === "TRANSFER") {
+      return (
+        !!fromAssetRowId && !!toAssetRowId && fromAssetRowId !== toAssetRowId
+      );
     }
-    if (!categoryRowId) return false
+    if (!categoryRowId) return false;
     // 편집 모드: 분할 내역을 아직 모르면(로딩/에러) 저장 보류. 분할 합 정합 판정이 불가한 상태에서
     // 금액을 바꾼 분할 거래를 저장하면 백엔드 400(EXP_012)로 새고 정합 안내가 우회되므로 게이트.
-    if (isEdit && (splitsQ.isPending || splitsQ.isError)) return false
-    return true
-  })()
+    if (isEdit && (splitsQ.isPending || splitsQ.isError)) return false;
+    return true;
+  })();
 
-  const submitting = createMut.isPending || updateMut.isPending || createTransferMut.isPending
-    || updateTransferMut.isPending
+  const submitting =
+    createMut.isPending ||
+    updateMut.isPending ||
+    createTransferMut.isPending ||
+    updateTransferMut.isPending;
 
   /**
    * 문자 해석 결과를 폼에 채운다.
@@ -407,29 +486,31 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
    * 결제수단은 카드 고정이다(카드 결제 문자다) — 자산 목록도 그에 맞춰 좁혀진다.
    */
   const applySms = (text: string, parsed: SmsParseResult) => {
-    setSmsDraft({ text, parsed })
-    setRememberCard(false)
-    setType('EXPENSE')
-    if (parsed.amount != null) setAmount(String(parsed.amount))
-    if (parsed.merchant) setMerchant(parsed.merchant)
+    setSmsDraft({ text, parsed });
+    setRememberCard(false);
+    setType("EXPENSE");
+    if (parsed.amount != null) setAmount(String(parsed.amount));
+    if (parsed.merchant) setMerchant(parsed.merchant);
     if (parsed.expenseDate) {
-      setExpenseDate(parsed.expenseDate.slice(0, 10))
-      const m = /[T ](\d{2}):(\d{2})/.exec(parsed.expenseDate)
-      if (m) setExpenseTime(`${m[1]}:${m[2]}`)
+      setExpenseDate(parsed.expenseDate.slice(0, 10));
+      const m = /[T ](\d{2}):(\d{2})/.exec(parsed.expenseDate);
+      if (m) setExpenseTime(`${m[1]}:${m[2]}`);
     }
-    if (parsed.categoryRowId != null) setCategoryRowId(parsed.categoryRowId)
-    if (parsed.assetRowId != null) setAssetRowId(parsed.assetRowId)
-    setPaymentMethod('CARD')
-    setInstallmentMonths(parsed.installmentMonths != null ? String(parsed.installmentMonths) : '')
+    if (parsed.categoryRowId != null) setCategoryRowId(parsed.categoryRowId);
+    if (parsed.assetRowId != null) setAssetRowId(parsed.assetRowId);
+    setPaymentMethod("CARD");
+    setInstallmentMonths(
+      parsed.installmentMonths != null ? String(parsed.installmentMonths) : "",
+    );
     if (parsed.originalCurrency && parsed.originalAmount != null) {
-      setOrigCurrency(parsed.originalCurrency)
-      setOrigAmount(String(parsed.originalAmount))
+      setOrigCurrency(parsed.originalCurrency);
+      setOrigAmount(String(parsed.originalAmount));
     }
-  }
+  };
 
   const save = () => {
-    if (!canSave) return
-    if (type === 'TRANSFER') {
+    if (!canSave) return;
+    if (type === "TRANSFER") {
       const payload = {
         fromAssetRowId: fromAssetRowId!,
         toAssetRowId: toAssetRowId!,
@@ -439,21 +520,21 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
         interestAmount: showInterest && interest ? Number(interest) : undefined,
         description: description || undefined,
         transferDate: `${expenseDate}T${expenseTime}`,
-      }
+      };
       if (editTransfer) {
         updateTransferMut.mutate(
           { id: editTransfer.rowId, data: payload },
           { onSuccess: onClose },
-        )
-        return
+        );
+        return;
       }
-      createTransferMut.mutate(payload, { onSuccess: onClose })
-      return
+      createTransferMut.mutate(payload, { onSuccess: onClose });
+      return;
     }
     // 분할이 있는 거래의 금액을 바꿔 합과 어긋나면 → 저장 전에 분할을 먼저 맞춘다.
     if (splitMismatch) {
-      setOpenReconcile(true)
-      return
+      setOpenReconcile(true);
+      return;
     }
     const data: ExpenseFormValues = {
       categoryRowId: categoryRowId!,
@@ -465,18 +546,21 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       merchant: merchant || undefined,
       paymentMethod: paymentMethod || undefined,
       // 할부는 신용카드 지출에만 — 그 밖의 조합에선 값을 흘리지 않는다.
-      installmentMonths: showInstallment && installmentMonths ? Number(installmentMonths) : null,
+      installmentMonths:
+        showInstallment && installmentMonths ? Number(installmentMonths) : null,
       // 환불 모드에서만 원거래를 묶는다 — 이 연결이 통계 상계를 만든다.
-      refundOfExpenseRowId: isRefundMode && type === 'INCOME' ? refundOf.rowId : null,
+      refundOfExpenseRowId:
+        isRefundMode && type === "INCOME" ? refundOf.rowId : null,
       // 셋이 함께여야 의미가 있다 — 서버도 반쪽이면 전부 비운다.
       originalAmount: isForeignTx && origAmount ? Number(origAmount) : null,
       originalCurrency: isForeignTx && origAmount ? origCurrency : null,
-      exchangeRate: isForeignTx && origAmount ? (parseFloat(fxRate) || null) : null,
+      exchangeRate:
+        isForeignTx && origAmount ? parseFloat(fxRate) || null : null,
       // 일치화한 분할이 있으면 금액과 함께 원자적으로 교체(백엔드가 합==금액 검증).
       ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
-    }
+    };
     if (isEdit && expense) {
-      updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose })
+      updateMut.mutate({ id: expense.rowId, data }, { onSuccess: onClose });
     } else if (smsDraft) {
       // 문자에서 온 지출은 전용 경로로 — 서버가 원문을 다시 봐 취소 문자를 막고
       // 체크했다면 카드 연결을 기억한다. 만들어지는 지출 자체는 같다.
@@ -497,39 +581,46 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           rememberCard: assetRowId != null && rememberCard,
         },
         { onSuccess: onClose },
-      )
+      );
     } else {
-      const presetIdAtSubmit = activePresetId
+      const presetIdAtSubmit = activePresetId;
       createMut.mutate(data, {
         onSuccess: () => {
           // 거래 저장 성공 후 적용된 프리셋이 있으면 useCount/lastUsedAt 갱신.
           // 실패해도 거래는 성공했으니 무시(Best-effort).
           if (presetIdAtSubmit != null) {
-            touchPresetMut.mutate(presetIdAtSubmit)
+            touchPresetMut.mutate(presetIdAtSubmit);
           }
-          onClose()
+          onClose();
         },
-      })
+      });
     }
-  }
-
+  };
 
   // 타입별 강조 색
   const amountColor =
-    type === 'EXPENSE' ? 'var(--fg-expense)'
-    : type === 'INCOME' ? 'var(--fg-income)'
-    : 'var(--fg-primary)'
+    type === "EXPENSE"
+      ? "var(--fg-expense)"
+      : type === "INCOME"
+        ? "var(--fg-income)"
+        : "var(--fg-primary)";
 
   // 자동 생성분은 여기서 못 지운다 — 원본 매매·이체를 지우면 함께 사라진다.
   const Footer = (
     <ModalFooter
       onSave={save}
-      saveLabel={splitMismatch ? t('addTx.saveSplitAndSave') : isEdit ? tc('save') : t('addTx.add')}
+      saveLabel={
+        splitMismatch
+          ? t("addTx.saveSplitAndSave")
+          : isEdit
+            ? tc("save")
+            : t("addTx.add")
+      }
       saving={submitting}
       saveDisabled={!canSave}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
     <ModalShell
@@ -537,10 +628,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       // 구분이 안 된다(앱은 '환불 기록' 으로 갈라 둔다).
       title={
         isEdit
-          ? t('addTx.editTitle')
+          ? t("addTx.editTitle")
           : isRefundMode
-            ? t('addTx.refundTitle')
-            : t('addTx.newTitle')
+            ? t("addTx.refundTitle")
+            : t("addTx.newTitle")
       }
       onClose={onClose}
       size="md"
@@ -551,21 +642,23 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       <Tabs
         value={type}
         onValueChange={(v) => {
-          if (!v) return
-          const lockedTo = isEdit ? expense?.expenseType ?? type : null
-          if (lockedTo != null && v !== lockedTo) return
-          setType(v as TxType)
-          clearPresetMark()
+          if (!v) return;
+          const lockedTo = isEdit ? (expense?.expenseType ?? type) : null;
+          if (lockedTo != null && v !== lockedTo) return;
+          setType(v as TxType);
+          clearPresetMark();
         }}
         className="mb-[var(--spacing-md)]"
       >
         <TabsList variant="pill" size="sm" className="w-full">
-          {([
-            { v: 'EXPENSE', l: t('expense') },
-            { v: 'INCOME', l: t('income') },
-            { v: 'TRANSFER', l: t('addTx.transfer') },
-          ] as { v: TxType; l: string }[]).map(o => {
-            const disabled = isEdit && o.v !== (expense?.expenseType ?? type)
+          {(
+            [
+              { v: "EXPENSE", l: t("expense") },
+              { v: "INCOME", l: t("income") },
+              { v: "TRANSFER", l: t("addTx.transfer") },
+            ] as { v: TxType; l: string }[]
+          ).map((o) => {
+            const disabled = isEdit && o.v !== (expense?.expenseType ?? type);
             return (
               <TabsTrigger
                 key={o.v}
@@ -576,47 +669,47 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
               >
                 {o.l}
               </TabsTrigger>
-            )
+            );
           })}
         </TabsList>
       </Tabs>
 
       {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
-      {!isEdit && type !== 'TRANSFER' && (
+      {!isEdit && type !== "TRANSFER" && (
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
               marginBottom: 8,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Bookmark size={13} style={{ color: 'var(--fg-tertiary)' }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Bookmark size={13} style={{ color: "var(--fg-tertiary)" }} />
               <span
                 style={{
-                  fontSize: 'var(--text-badge)',
-                  color: 'var(--fg-tertiary)',
-                  fontWeight: '600',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "600",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
                 }}
               >
-                {t('addTx.presetLoad')}
+                {t("addTx.presetLoad")}
               </span>
               {activePresetId != null && (
                 <span
                   style={{
-                    fontSize: 'var(--text-badge)',
-                    color: 'var(--fg-brand-strong)',
-                    fontWeight: '700',
-                    padding: '2px 6px',
-                    background: 'var(--bg-brand-subtle)',
-                    borderRadius: 'var(--radius-xs)',
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-brand-strong)",
+                    fontWeight: "700",
+                    padding: "2px 6px",
+                    background: "var(--bg-brand-subtle)",
+                    borderRadius: "var(--radius-xs)",
                   }}
                 >
-                  {t('addTx.presetApplied')}
+                  {t("addTx.presetApplied")}
                 </span>
               )}
             </div>
@@ -625,20 +718,24 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
               onClick={() => setSavePresetOpen(true)}
               disabled={amountNumber <= 0 || !categoryRowId}
               style={{
-                background: 'transparent',
+                background: "transparent",
                 border: 0,
                 padding: 0,
-                fontSize: 'var(--text-caption)',
-                color: amountNumber > 0 && categoryRowId ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                fontWeight: '600',
-                cursor: amountNumber > 0 && categoryRowId ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
+                fontSize: "var(--text-caption)",
+                color:
+                  amountNumber > 0 && categoryRowId
+                    ? "var(--fg-brand-strong)"
+                    : "var(--fg-tertiary)",
+                fontWeight: "600",
+                cursor:
+                  amountNumber > 0 && categoryRowId ? "pointer" : "not-allowed",
+                display: "flex",
+                alignItems: "center",
                 gap: 3,
-                fontFamily: 'inherit',
+                fontFamily: "inherit",
               }}
             >
-              <Plus size={12} /> {t('addTx.saveCurrentInput')}
+              <Plus size={12} /> {t("addTx.saveCurrentInput")}
             </button>
           </div>
 
@@ -646,9 +743,9 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
             <div
               className="scrollbar-hide"
               style={{
-                display: 'flex',
+                display: "flex",
                 gap: 6,
-                overflowX: 'auto',
+                overflowX: "auto",
                 paddingBottom: 4,
                 marginLeft: -2,
                 paddingLeft: 2,
@@ -656,34 +753,41 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                 paddingRight: 2,
               }}
             >
-              {topPresets.map(p => {
-                const active = activePresetId === p.rowId
-                const showAmount = p.lockAmount === 'Y' && p.amount != null
-                const cat = p.categoryRowId != null ? categories.find(c => c.rowId === p.categoryRowId) : undefined
+              {topPresets.map((p) => {
+                const active = activePresetId === p.rowId;
+                const showAmount = p.lockAmount === "Y" && p.amount != null;
+                const cat =
+                  p.categoryRowId != null
+                    ? categories.find((c) => c.rowId === p.categoryRowId)
+                    : undefined;
                 // 카테고리 아이콘색 — 다크모드 light variant 자동 swap(앱 resolveChartColor 정합)
-                const catPal = getPaletteByColor(cat?.color)
+                const catPal = getPaletteByColor(cat?.color);
                 return (
                   <button
                     key={p.rowId}
                     type="button"
                     onClick={() => applyPreset(p)}
                     style={{
-                      flex: '0 0 auto',
-                      display: 'flex',
-                      alignItems: 'center',
+                      flex: "0 0 auto",
+                      display: "flex",
+                      alignItems: "center",
                       gap: 7,
-                      padding: '7px 11px',
+                      padding: "7px 11px",
                       // border 사각형 제거 — 아이콘+글씨만 노출. active 만 subtle 채움으로 강조.
-                      background: active ? 'var(--bg-brand-subtle)' : 'transparent',
-                      border: 'none',
-                      borderRadius: 'var(--radius-pill)',
-                      cursor: 'pointer',
-                      fontSize: 'var(--text-label-sm)',
+                      background: active
+                        ? "var(--bg-brand-subtle)"
+                        : "transparent",
+                      border: "none",
+                      borderRadius: "var(--radius-pill)",
+                      cursor: "pointer",
+                      fontSize: "var(--text-label-sm)",
                       fontWeight: active ? 700 : 600,
-                      color: active ? 'var(--fg-brand-strong)' : 'var(--fg-primary)',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.12s',
-                      fontFamily: 'inherit',
+                      color: active
+                        ? "var(--fg-brand-strong)"
+                        : "var(--fg-primary)",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.12s",
+                      fontFamily: "inherit",
                     }}
                   >
                     {cat && (
@@ -691,12 +795,12 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                         style={{
                           width: 18,
                           height: 18,
-                          borderRadius: 'var(--radius-sm)',
+                          borderRadius: "var(--radius-sm)",
                           background: catPal.bg,
                           color: catPal.color,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           flexShrink: 0,
                         }}
                       >
@@ -708,9 +812,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                       <span
                         className="num"
                         style={{
-                          fontSize: 'var(--text-badge)',
-                          color: active ? 'var(--fg-brand-strong)' : 'var(--fg-tertiary)',
-                          fontWeight: '600',
+                          fontSize: "var(--text-badge)",
+                          color: active
+                            ? "var(--fg-brand-strong)"
+                            : "var(--fg-tertiary)",
+                          fontWeight: "600",
                         }}
                       >
                         {(p.amount as number) >= 10000
@@ -719,42 +825,42 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                       </span>
                     )}
                   </button>
-                )
+                );
               })}
               {templates.length > topPresets.length && (
                 <span
                   style={{
-                    flex: '0 0 auto',
-                    display: 'inline-flex',
-                    alignItems: 'center',
+                    flex: "0 0 auto",
+                    display: "inline-flex",
+                    alignItems: "center",
                     gap: 4,
-                    padding: '7px 11px',
-                    background: 'transparent',
-                    border: '1px dashed var(--border-default)',
-                    borderRadius: 'var(--radius-pill)',
-                    fontSize: 'var(--text-caption)',
-                    fontWeight: '600',
-                    color: 'var(--fg-tertiary)',
-                    whiteSpace: 'nowrap',
+                    padding: "7px 11px",
+                    background: "transparent",
+                    border: "1px dashed var(--border-default)",
+                    borderRadius: "var(--radius-pill)",
+                    fontSize: "var(--text-caption)",
+                    fontWeight: "600",
+                    color: "var(--fg-tertiary)",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   <MoreHorizontal size={14} />
-                  {t('addTx.presetManageHint')}
+                  {t("addTx.presetManageHint")}
                 </span>
               )}
             </div>
           ) : (
             <div
               style={{
-                padding: '8px 10px',
-                background: 'var(--bg-sunken)',
-                border: '1px dashed var(--border-default)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-caption)',
-                color: 'var(--fg-tertiary)',
+                padding: "8px 10px",
+                background: "var(--bg-sunken)",
+                border: "1px dashed var(--border-default)",
+                borderRadius: "var(--radius-md)",
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
               }}
             >
-              {t('addTx.noPresets')}
+              {t("addTx.noPresets")}
             </div>
           )}
 
@@ -762,42 +868,42 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
             <div
               style={{
                 marginTop: 8,
-                padding: '8px 10px',
-                background: 'var(--bg-brand-subtle)',
-                border: '1px solid var(--border-brand)',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex',
-                alignItems: 'center',
+                padding: "8px 10px",
+                background: "var(--bg-brand-subtle)",
+                border: "1px solid var(--border-brand)",
+                borderRadius: "var(--radius-md)",
+                display: "flex",
+                alignItems: "center",
                 gap: 8,
               }}
             >
-              <Info size={13} style={{ color: 'var(--fg-brand-strong)' }} />
+              <Info size={13} style={{ color: "var(--fg-brand-strong)" }} />
               <span
                 style={{
-                  fontSize: 'var(--text-caption)',
-                  color: 'var(--fg-brand-strong)',
-                  fontWeight: '600',
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-brand-strong)",
+                  fontWeight: "600",
                   flex: 1,
                 }}
               >
-                {t('addTx.presetFilledHint')}
+                {t("addTx.presetFilledHint")}
               </span>
               <button
                 type="button"
                 onClick={clearPresetMark}
                 style={{
-                  background: 'transparent',
+                  background: "transparent",
                   border: 0,
                   padding: 0,
-                  fontSize: 'var(--text-badge)',
-                  color: 'var(--fg-brand-strong)',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  fontFamily: 'inherit',
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-brand-strong)",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontFamily: "inherit",
                 }}
               >
-                {t('addTx.clear')}
+                {t("addTx.clear")}
               </button>
             </div>
           )}
@@ -805,23 +911,23 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       )}
 
       {/* 결제 문자 붙여넣기 — 새 지출에만. 편집·환불·이체는 이미 값이 정해져 있다. */}
-      {!isEdit && !isRefundMode && type === 'EXPENSE' && (
+      {!isEdit && !isRefundMode && type === "EXPENSE" && (
         <SmsPasteField onParsed={applySms} />
       )}
 
       {/* 금액 — 다른 필드와 동일한 라벨+인풋 (모바일 처럼 깔끔하게) */}
       <Field style={{ marginBottom: 18 }}>
-        <FieldLabel>{t('form.amount')}</FieldLabel>
+        <FieldLabel>{t("form.amount")}</FieldLabel>
         <Input
           className="num"
           value={amount}
-          onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+          onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
           placeholder="0"
           inputMode="numeric"
           disabled={isAutoGenerated}
           style={{
-            fontSize: 'var(--text-title-md)',
-            fontWeight: '700',
+            fontSize: "var(--text-title-md)",
+            fontWeight: "700",
             color: amountColor,
           }}
         />
@@ -829,27 +935,30 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
         {isAutoGenerated && (
           <div className="mt-1.5 text-[11.5px] text-[var(--fg-tertiary)]">
             {t(`addTx.autoSource.${expense?.autoSource}`, {
-              defaultValue: t('addTx.autoSource.default'),
+              defaultValue: t("addTx.autoSource.default"),
             })}
           </div>
         )}
       </Field>
 
       {/* 해외 결제 — 원 통화·환율. 금액(원화)은 둘을 곱해 자동으로 채워진다. */}
-      {type !== 'TRANSFER' && (
+      {type !== "TRANSFER" && (
         <Field style={{ marginBottom: 18 }}>
-          <FieldLabel>{t('addTx.currency')}</FieldLabel>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ width: isForeignTx ? 110 : '100%' }}>
+          <FieldLabel>{t("addTx.currency")}</FieldLabel>
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ width: isForeignTx ? 110 : "100%" }}>
               <Select
                 value={origCurrency}
-                onValueChange={(v) => { setOrigCurrency(v); clearPresetMark() }}
+                onValueChange={(v) => {
+                  setOrigCurrency(v);
+                  clearPresetMark();
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CURRENCIES.map(c => (
+                  {CURRENCIES.map((c) => (
                     <SelectItem key={c.code} value={c.code}>
                       {c.symbol} {c.code}
                     </SelectItem>
@@ -862,16 +971,22 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                 <Input
                   className="num"
                   value={origAmount}
-                  onChange={e => { setOrigAmount(e.target.value.replace(/[^0-9.]/g, '')); clearPresetMark() }}
-                  placeholder={t('addTx.originalAmountPlaceholder')}
+                  onChange={(e) => {
+                    setOrigAmount(e.target.value.replace(/[^0-9.]/g, ""));
+                    clearPresetMark();
+                  }}
+                  placeholder={t("addTx.originalAmountPlaceholder")}
                   inputMode="decimal"
                   style={{ flex: 1 }}
                 />
                 <Input
                   className="num"
                   value={fxRate}
-                  onChange={e => { setFxRate(e.target.value.replace(/[^0-9.]/g, '')); clearPresetMark() }}
-                  placeholder={t('addTx.exchangeRatePlaceholder')}
+                  onChange={(e) => {
+                    setFxRate(e.target.value.replace(/[^0-9.]/g, ""));
+                    clearPresetMark();
+                  }}
+                  placeholder={t("addTx.exchangeRatePlaceholder")}
                   inputMode="decimal"
                   style={{ flex: 1 }}
                 />
@@ -879,9 +994,19 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
             )}
           </div>
           {isForeignTx && Number(origAmount) > 0 && Number(fxRate) > 0 && (
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-              {t('addTx.fxHint', {
-                original: formatOriginalAmount(Number(origAmount), origCurrency, i18n.language),
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 4,
+              }}
+            >
+              {t("addTx.fxHint", {
+                original: formatOriginalAmount(
+                  Number(origAmount),
+                  origCurrency,
+                  i18n.language,
+                ),
                 rate: Number(fxRate).toLocaleString(i18n.language),
                 krw: KRW(Math.round(Number(origAmount) * Number(fxRate))),
               })}
@@ -895,12 +1020,14 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
         <div
           style={{
             marginBottom: 18,
-            padding: '13px 15px',
-            borderRadius: 'var(--radius-lg)',
-            background: 'color-mix(in oklch, var(--status-warning) 12%, var(--bg-surface))',
-            border: '1px solid color-mix(in oklch, var(--status-warning) 35%, transparent)',
-            display: 'flex',
-            alignItems: 'flex-start',
+            padding: "13px 15px",
+            borderRadius: "var(--radius-lg)",
+            background:
+              "color-mix(in oklch, var(--status-warning) 12%, var(--bg-surface))",
+            border:
+              "1px solid color-mix(in oklch, var(--status-warning) 35%, transparent)",
+            display: "flex",
+            alignItems: "flex-start",
             gap: 11,
           }}
         >
@@ -908,55 +1035,76 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
             style={{
               width: 30,
               height: 30,
-              borderRadius: 'var(--radius-md)',
+              borderRadius: "var(--radius-md)",
               flexShrink: 0,
               marginTop: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'color-mix(in oklch, var(--status-warning) 22%, var(--bg-surface))',
-              color: 'var(--status-warning-fg)',
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                "color-mix(in oklch, var(--status-warning) 22%, var(--bg-surface))",
+              color: "var(--status-warning-fg)",
             }}
           >
             <AlertTriangle size={16} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '700', color: 'var(--fg-primary)' }}>
-              {t('addTx.splitMismatchTitle')}
+            <div
+              style={{
+                fontSize: "var(--text-label-sm)",
+                fontWeight: "700",
+                color: "var(--fg-primary)",
+              }}
+            >
+              {t("addTx.splitMismatchTitle")}
             </div>
-            <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-secondary)', marginTop: 3, lineHeight: '1.5' }}>
-              {t('addTx.newTotal')} <b className="num">{money(amountNumber)}</b> · {t('addTx.splitSum')} <b className="num">{money(splitSum)}</b> ·{' '}
-              <b className="num" style={{ color: 'var(--status-warning-fg)' }}>
-                {amountNumber - splitSum > 0 ? '+' : '−'}{money(Math.abs(amountNumber - splitSum))}
-              </b>{' '}
-              {t('addTx.difference')}
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
+                marginTop: 3,
+                lineHeight: "1.5",
+              }}
+            >
+              {t("addTx.newTotal")} <b className="num">{money(amountNumber)}</b>{" "}
+              · {t("addTx.splitSum")} <b className="num">{money(splitSum)}</b> ·{" "}
+              <b className="num" style={{ color: "var(--status-warning-fg)" }}>
+                {amountNumber - splitSum > 0 ? "+" : "−"}
+                {money(Math.abs(amountNumber - splitSum))}
+              </b>{" "}
+              {t("addTx.difference")}
             </div>
-            <Button type="button" size="sm" onClick={() => setOpenReconcile(true)} style={{ marginTop: 10 }}>
-              <Scissors size={13} /> {t('addTx.matchSplits')}
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setOpenReconcile(true)}
+              style={{ marginTop: 10 }}
+            >
+              <Scissors size={13} /> {t("addTx.matchSplits")}
             </Button>
           </div>
         </div>
       )}
 
-      {type !== 'TRANSFER' ? (
+      {type !== "TRANSFER" ? (
         <>
           {/* 카테고리 */}
           {topCategories.length > 0 && (
-            <div style={{ marginBottom: 'var(--spacing-md)' }}>
+            <div style={{ marginBottom: "var(--spacing-md)" }}>
               <div
                 style={{
-                  fontSize: 'var(--text-badge)',
-                  color: 'var(--fg-tertiary)',
-                  fontWeight: '600',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  marginBottom: 'var(--spacing-sm)',
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "600",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  marginBottom: "var(--spacing-sm)",
                 }}
               >
-                {t('category')}
+                {t("category")}
               </div>
               <CategoryGrid>
-                {topCategories.map(c => (
+                {topCategories.map((c) => (
                   <CategoryTile
                     key={c.rowId}
                     name={c.categoryName}
@@ -964,77 +1112,96 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                     icon={c.icon}
                     active={selectedParentId === c.rowId}
                     onClick={() => {
-                      const firstChild = childrenByParent.get(c.rowId)?.[0]
-                      setCategoryRowId(firstChild ? firstChild.rowId : c.rowId)
-                      clearPresetMark()
+                      const firstChild = childrenByParent.get(c.rowId)?.[0];
+                      setCategoryRowId(firstChild ? firstChild.rowId : c.rowId);
+                      clearPresetMark();
                     }}
                   />
                 ))}
               </CategoryGrid>
 
               {/* 하위 카테고리 (선택된 부모에 자식이 있을 때) */}
-              {selectedParentId != null
-                && (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
-                <div style={{ marginTop: 10 }}>
-                  <Select
-                    value={categoryRowId != null ? String(categoryRowId) : ''}
-                    onValueChange={(v) => setCategoryRowId(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('addTx.subCategoryPlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t('addTx.parent')}</SelectLabel>
-                        <SelectItem value={String(selectedParentId)}>
-                          {categories.find(c => c.rowId === selectedParentId)?.categoryName ?? t('addTx.parent')}
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator />
-                      <SelectGroup>
-                        <SelectLabel>{t('addTx.detail')}</SelectLabel>
-                        {(childrenByParent.get(selectedParentId) ?? []).map(child => (
-                          <SelectItem key={child.rowId} value={String(child.rowId)}>
-                            {child.categoryName}
+              {selectedParentId != null &&
+                (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    <Select
+                      value={categoryRowId != null ? String(categoryRowId) : ""}
+                      onValueChange={(v) => setCategoryRowId(Number(v))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t("addTx.subCategoryPlaceholder")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>{t("addTx.parent")}</SelectLabel>
+                          <SelectItem value={String(selectedParentId)}>
+                            {categories.find(
+                              (c) => c.rowId === selectedParentId,
+                            )?.categoryName ?? t("addTx.parent")}
                           </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                        </SelectGroup>
+                        <SelectSeparator />
+                        <SelectGroup>
+                          <SelectLabel>{t("addTx.detail")}</SelectLabel>
+                          {(childrenByParent.get(selectedParentId) ?? []).map(
+                            (child) => (
+                              <SelectItem
+                                key={child.rowId}
+                                value={String(child.rowId)}
+                              >
+                                {child.categoryName}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
             </div>
           )}
 
           {/* 거래처 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{type === 'INCOME' ? t('addTx.incomeSource') : t('form.merchant')}</FieldLabel>
+            <FieldLabel>
+              {type === "INCOME" ? t("addTx.incomeSource") : t("form.merchant")}
+            </FieldLabel>
             <Input
               value={merchant}
-              onChange={e => setMerchant(e.target.value)}
-              placeholder={type === 'INCOME' ? t('addTx.incomeSourcePlaceholder') : t('addTx.merchantPlaceholder')}
+              onChange={(e) => setMerchant(e.target.value)}
+              placeholder={
+                type === "INCOME"
+                  ? t("addTx.incomeSourcePlaceholder")
+                  : t("addTx.merchantPlaceholder")
+              }
             />
           </Field>
 
           {/* 결제 수단 — 먼저 선택, 계좌·카드 목록을 필터링 */}
           <Field style={{ marginBottom: 14 }}>
             <FieldLabel>
-              {type === 'INCOME' ? t('addTx.incomeMethod') : t('paymentMethodLabel')}
+              {type === "INCOME"
+                ? t("addTx.incomeMethod")
+                : t("paymentMethodLabel")}
             </FieldLabel>
             <Select
-              value={paymentMethod || '__none__'}
+              value={paymentMethod || "__none__"}
               onValueChange={(v) => {
-                setPaymentMethod(v === '__none__' ? '' : v)
-                clearPresetMark()
+                setPaymentMethod(v === "__none__" ? "" : v);
+                clearPresetMark();
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('selectNone')} />
+                <SelectValue placeholder={t("selectNone")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">{t('selectNone')}</SelectItem>
-                {PAYMENT_METHODS.map(pm => (
-                  <SelectItem key={pm.v} value={pm.v}>{pm.l}</SelectItem>
+                <SelectItem value="__none__">{t("selectNone")}</SelectItem>
+                {PAYMENT_METHODS.map((pm) => (
+                  <SelectItem key={pm.v} value={pm.v}>
+                    {pm.l}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -1043,36 +1210,56 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           {/* 계좌·카드 — 결제 수단에 맞춰 필터 */}
           <Field style={{ marginBottom: 14 }}>
             <FieldLabel>
-              {type === 'INCOME' ? t('addTx.depositAccount') : t('accountCard')}
+              {type === "INCOME" ? t("addTx.depositAccount") : t("accountCard")}
               {paymentMethod && filteredAssets.length !== assets.length && (
-                <span style={{ color: 'var(--fg-tertiary)', fontWeight: '400', marginLeft: 4 }}>
-                  ({t('addTx.basisOf', { method: PAYMENT_METHODS.find(p => p.v === paymentMethod)?.l ?? '' })})
+                <span
+                  style={{
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "400",
+                    marginLeft: 4,
+                  }}
+                >
+                  (
+                  {t("addTx.basisOf", {
+                    method:
+                      PAYMENT_METHODS.find((p) => p.v === paymentMethod)?.l ??
+                      "",
+                  })}
+                  )
                 </span>
               )}
             </FieldLabel>
             <Select
-              value={assetRowId != null ? String(assetRowId) : '__none__'}
+              value={assetRowId != null ? String(assetRowId) : "__none__"}
               disabled={isAutoGenerated}
               onValueChange={(v) => {
-                setAssetRowId(v === '__none__' ? null : Number(v))
-                clearPresetMark()
+                setAssetRowId(v === "__none__" ? null : Number(v));
+                clearPresetMark();
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('selectNone')} />
+                <SelectValue placeholder={t("selectNone")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">{t('selectNone')}</SelectItem>
-                {filteredAssets.map(a => (
+                <SelectItem value="__none__">{t("selectNone")}</SelectItem>
+                {filteredAssets.map((a) => (
                   <SelectItem key={a.rowId} value={String(a.rowId)}>
-                    {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                    {a.institution
+                      ? `${a.institution} · ${a.assetName}`
+                      : a.assetName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {paymentMethod && filteredAssets.length === 0 && (
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-                {t('addTx.noAssetForMethod')}
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 4,
+                }}
+              >
+                {t("addTx.noAssetForMethod")}
               </div>
             )}
             {/* 문자로 들어온 카드를 아직 안 외운 경우에만 물어본다.
@@ -1080,13 +1267,16 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
             {smsDraft?.parsed.cardHint && !smsDraft.parsed.assetRemembered && (
               <label
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 6,
                   marginTop: 8,
-                  fontSize: 'var(--text-caption)',
-                  color: assetRowId == null ? 'var(--fg-tertiary)' : 'var(--fg-secondary)',
-                  cursor: assetRowId == null ? 'default' : 'pointer',
+                  fontSize: "var(--text-caption)",
+                  color:
+                    assetRowId == null
+                      ? "var(--fg-tertiary)"
+                      : "var(--fg-secondary)",
+                  cursor: assetRowId == null ? "default" : "pointer",
                 }}
               >
                 <Checkbox
@@ -1094,7 +1284,7 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
                   disabled={assetRowId == null}
                   onCheckedChange={(v) => setRememberCard(v === true)}
                 />
-                {t('sms.rememberCard')}
+                {t("sms.rememberCard")}
               </label>
             )}
           </Field>
@@ -1102,31 +1292,39 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           {/* 할부 — 신용카드 지출에만. 청구는 이 개월 수로 나뉘어 잡힌다. */}
           {showInstallment && (
             <Field style={{ marginBottom: 14 }}>
-              <FieldLabel>{t('addTx.installment')}</FieldLabel>
+              <FieldLabel>{t("addTx.installment")}</FieldLabel>
               <Select
-                value={installmentMonths || '__none__'}
+                value={installmentMonths || "__none__"}
                 onValueChange={(v) => {
-                  setInstallmentMonths(v === '__none__' ? '' : v)
-                  clearPresetMark()
+                  setInstallmentMonths(v === "__none__" ? "" : v);
+                  clearPresetMark();
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('addTx.lumpSum')} />
+                  <SelectValue placeholder={t("addTx.lumpSum")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">{t('addTx.lumpSum')}</SelectItem>
-                  {INSTALLMENT_MONTHS.map(m => (
+                  <SelectItem value="__none__">{t("addTx.lumpSum")}</SelectItem>
+                  {INSTALLMENT_MONTHS.map((m) => (
                     <SelectItem key={m} value={String(m)}>
-                      {t('addTx.installmentMonths', { months: m })}
+                      {t("addTx.installmentMonths", { months: m })}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {installmentMonths && amountNumber > 0 && (
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
-                  {t('addTx.installmentHint', {
+                <div
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                    marginTop: 4,
+                  }}
+                >
+                  {t("addTx.installmentHint", {
                     months: installmentMonths,
-                    perMonth: KRW(Math.floor(amountNumber / Number(installmentMonths))),
+                    perMonth: KRW(
+                      Math.floor(amountNumber / Number(installmentMonths)),
+                    ),
                   })}
                 </div>
               )}
@@ -1137,49 +1335,53 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
         <>
           {/* 이체: 출금 → 입금 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('addTx.fromAccount')}</FieldLabel>
+            <FieldLabel>{t("addTx.fromAccount")}</FieldLabel>
             <Select
-              value={fromAssetRowId != null ? String(fromAssetRowId) : ''}
+              value={fromAssetRowId != null ? String(fromAssetRowId) : ""}
               onValueChange={(v) => setFromAssetRowId(v ? Number(v) : null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('addTx.selectPlaceholder')} />
+                <SelectValue placeholder={t("addTx.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {transferAssets.map(a => (
+                {transferAssets.map((a) => (
                   <SelectItem key={a.rowId} value={String(a.rowId)}>
-                    {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                    {a.institution
+                      ? `${a.institution} · ${a.assetName}`
+                      : a.assetName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('addTx.depositAccount')}</FieldLabel>
+            <FieldLabel>{t("addTx.depositAccount")}</FieldLabel>
             <Select
-              value={toAssetRowId != null ? String(toAssetRowId) : ''}
+              value={toAssetRowId != null ? String(toAssetRowId) : ""}
               onValueChange={(v) => setToAssetRowId(v ? Number(v) : null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('addTx.selectPlaceholder')} />
+                <SelectValue placeholder={t("addTx.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {transferAssets
-                  .filter(a => a.rowId !== fromAssetRowId)
-                  .map(a => (
+                  .filter((a) => a.rowId !== fromAssetRowId)
+                  .map((a) => (
                     <SelectItem key={a.rowId} value={String(a.rowId)}>
-                      {a.institution ? `${a.institution} · ${a.assetName}` : a.assetName}
+                      {a.institution
+                        ? `${a.institution} · ${a.assetName}`
+                        : a.assetName}
                     </SelectItem>
                   ))}
               </SelectContent>
             </Select>
           </Field>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('addTx.fee')}</FieldLabel>
+            <FieldLabel>{t("addTx.fee")}</FieldLabel>
             <Input
               className="num"
               value={fee}
-              onChange={e => setFee(e.target.value.replace(/[^0-9]/g, ''))}
+              onChange={(e) => setFee(e.target.value.replace(/[^0-9]/g, ""))}
               placeholder="0"
               inputMode="numeric"
             />
@@ -1188,21 +1390,31 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           {/* 이자 — 대출 상환에만. 상환액 중 이자는 부채를 줄이지 않고 지출로 잡힌다. */}
           {showInterest && (
             <Field style={{ marginBottom: 14 }}>
-              <FieldLabel>{t('addTx.interest')}</FieldLabel>
+              <FieldLabel>{t("addTx.interest")}</FieldLabel>
               <Input
                 className="num"
                 value={interest}
-                onChange={e => setInterest(e.target.value.replace(/[^0-9]/g, ''))}
+                onChange={(e) =>
+                  setInterest(e.target.value.replace(/[^0-9]/g, ""))
+                }
                 placeholder="0"
                 inputMode="numeric"
               />
-              <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 4 }}>
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 4,
+                }}
+              >
                 {interest && amountNumber > 0
-                  ? t('addTx.interestSplit', {
-                      principal: KRW(Math.max(0, amountNumber - Number(interest))),
+                  ? t("addTx.interestSplit", {
+                      principal: KRW(
+                        Math.max(0, amountNumber - Number(interest)),
+                      ),
                       interest: KRW(Number(interest)),
                     })
-                  : t('addTx.interestHint')}
+                  : t("addTx.interestHint")}
               </div>
             </Field>
           )}
@@ -1212,8 +1424,10 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
       {/* 날짜·시간 — 이체도 동일(백엔드 transferDate 가 DATETIME).
           시각이 있어야 같은 날 잔액수정보다 뒤에 일어난 이체가 앵커에 지워지지 않는다. */}
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t('dateTime')}</FieldLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 116px', gap: 8 }}>
+        <FieldLabel>{t("dateTime")}</FieldLabel>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 116px", gap: 8 }}
+        >
           <InputDatePicker
             value={expenseDate}
             onValueChange={setExpenseDate}
@@ -1230,11 +1444,11 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
 
       {/* 메모 */}
       <Field style={{ marginBottom: 4 }}>
-        <FieldLabel>{t('memo')}</FieldLabel>
+        <FieldLabel>{t("memo")}</FieldLabel>
         <Textarea
           value={description}
-          onChange={e => setDescription(e.target.value)}
-          placeholder={t('addTx.optional')}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={t("addTx.optional")}
           style={{ minHeight: 64 }}
         />
       </Field>
@@ -1244,12 +1458,13 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           mobile={mobile}
           onClose={() => setSavePresetOpen(false)}
           seed={{
-            expenseType: type === 'TRANSFER' ? 'EXPENSE' : type,
+            expenseType: type === "TRANSFER" ? "EXPENSE" : type,
             amount: amountNumber,
             categoryRowId,
             categoryName: selectedCategory?.categoryName ?? null,
             assetRowId,
-            assetName: assets.find(a => a.rowId === assetRowId)?.assetName ?? null,
+            assetName:
+              assets.find((a) => a.rowId === assetRowId)?.assetName ?? null,
             merchant,
             paymentMethod,
             description,
@@ -1263,53 +1478,55 @@ export function AddTxSheet({ onClose, mobile, expense, defaultDate, refundOf, ed
           mobile={mobile}
           overrideTotal={amountNumber}
           recordedTotal={Math.abs(expense.amount)}
-          initialSplits={effectiveSplits.length > 0 ? effectiveSplits : undefined}
+          initialSplits={
+            effectiveSplits.length > 0 ? effectiveSplits : undefined
+          }
           onReconciled={(splits) => {
-            setReconciledSplits(splits)
-            setOpenReconcile(false)
+            setReconciledSplits(splits);
+            setOpenReconcile(false);
           }}
           onClose={() => setOpenReconcile(false)}
         />
       )}
     </ModalShell>
-  )
+  );
 }
 
 // =========================================================================
 // SavePresetDialog — 현재 입력값을 프리셋으로 저장
 // =========================================================================
 type SavePresetSeed = {
-  expenseType: 'EXPENSE' | 'INCOME'
-  amount: number
-  categoryRowId: number | null
-  categoryName: string | null
-  assetRowId: number | null
-  assetName: string | null
-  merchant: string
-  paymentMethod: string
-  description: string
-}
+  expenseType: "EXPENSE" | "INCOME";
+  amount: number;
+  categoryRowId: number | null;
+  categoryName: string | null;
+  assetRowId: number | null;
+  assetName: string | null;
+  merchant: string;
+  paymentMethod: string;
+  description: string;
+};
 
 function SavePresetDialog({
   onClose,
   mobile,
   seed,
 }: {
-  onClose: () => void
-  mobile: boolean
-  seed: SavePresetSeed
+  onClose: () => void;
+  mobile: boolean;
+  seed: SavePresetSeed;
 }) {
-  const { t } = useTranslation('expense')
-  const { t: tc } = useTranslation('common')
-  const [name, setName] = useState(seed.merchant || '')
-  const [lockAmount, setLockAmount] = useState(false)
+  const { t } = useTranslation("expense");
+  const { t: tc } = useTranslation("common");
+  const [name, setName] = useState(seed.merchant || "");
+  const [lockAmount, setLockAmount] = useState(false);
 
-  const createMut = useCreateExpenseTemplate()
+  const createMut = useCreateExpenseTemplate();
 
-  const canSave = name.trim().length > 0 && seed.categoryRowId != null
+  const canSave = name.trim().length > 0 && seed.categoryRowId != null;
 
   const submit = () => {
-    if (!canSave) return
+    if (!canSave) return;
     createMut.mutate(
       {
         templateName: name.trim(),
@@ -1320,86 +1537,101 @@ function SavePresetDialog({
         description: seed.description || undefined,
         merchant: seed.merchant || undefined,
         paymentMethod: seed.paymentMethod || undefined,
-        lockAmount: lockAmount ? 'Y' : 'N',
+        lockAmount: lockAmount ? "Y" : "N",
       },
       { onSuccess: onClose },
-    )
-  }
+    );
+  };
 
   const Footer = (
     <ModalFooter
       onSave={submit}
-      saveLabel={tc('save')}
+      saveLabel={tc("save")}
       saving={createMut.isPending}
       saveDisabled={!canSave}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
-    <ModalShell title={t('savePreset.title')} onClose={onClose} mobile={mobile} size="md" footer={Footer}>
+    <ModalShell
+      title={t("savePreset.title")}
+      onClose={onClose}
+      mobile={mobile}
+      size="md"
+      footer={Footer}
+    >
       {/* 시드 미리보기 */}
       <div
         style={{
           padding: 14,
-          background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-tile)',
+          background: "var(--bg-sunken)",
+          borderRadius: "var(--radius-tile)",
           marginBottom: 18,
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 12,
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 'var(--text-body-sm)',
-              fontWeight: '700',
-              color: 'var(--fg-primary)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontSize: "var(--text-body-sm)",
+              fontWeight: "700",
+              color: "var(--fg-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            {seed.merchant || t('savePreset.noMerchant')}
+            {seed.merchant || t("savePreset.noMerchant")}
           </div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {seed.categoryName ?? t('savePreset.noCategory')}
-            {seed.assetName ? ` · ${seed.assetName}` : ''}
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 2,
+            }}
+          >
+            {seed.categoryName ?? t("savePreset.noCategory")}
+            {seed.assetName ? ` · ${seed.assetName}` : ""}
           </div>
         </div>
         <div
           className="num"
           style={{
-            fontSize: 'var(--text-body-lg)',
-            fontWeight: '800',
-            color: seed.expenseType === 'EXPENSE' ? 'var(--fg-expense)' : 'var(--fg-income)',
+            fontSize: "var(--text-body-lg)",
+            fontWeight: "800",
+            color:
+              seed.expenseType === "EXPENSE"
+                ? "var(--fg-expense)"
+                : "var(--fg-income)",
           }}
         >
-          {seed.expenseType === 'EXPENSE' ? '−' : '+'}
+          {seed.expenseType === "EXPENSE" ? "−" : "+"}
           {KRW(seed.amount)}
         </div>
       </div>
 
       <Field style={{ marginBottom: 16 }}>
-        <FieldLabel>{t('savePreset.name')}</FieldLabel>
+        <FieldLabel>{t("savePreset.name")}</FieldLabel>
         <Input
           value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder={t('savePreset.namePlaceholder')}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("savePreset.namePlaceholder")}
           autoFocus
         />
       </Field>
 
       <label
         style={{
-          display: 'flex',
-          alignItems: 'flex-start',
+          display: "flex",
+          alignItems: "flex-start",
           gap: 10,
           padding: 12,
-          background: 'var(--bg-sunken)',
-          borderRadius: 'var(--radius-tile)',
-          cursor: 'pointer',
+          background: "var(--bg-sunken)",
+          borderRadius: "var(--radius-tile)",
+          cursor: "pointer",
         }}
       >
         <Checkbox
@@ -1409,20 +1641,41 @@ function SavePresetDialog({
           style={{ marginTop: 2 }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 'var(--text-label-sm)', fontWeight: '600', color: 'var(--fg-primary)' }}>{t('savePreset.lockAmount')}</div>
-          <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2, lineHeight: '1.3' }}>
+          <div
+            style={{
+              fontSize: "var(--text-label-sm)",
+              fontWeight: "600",
+              color: "var(--fg-primary)",
+            }}
+          >
+            {t("savePreset.lockAmount")}
+          </div>
+          <div
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 2,
+              lineHeight: "1.3",
+            }}
+          >
             {lockAmount
-              ? t('savePreset.lockOn', { amount: KRW(seed.amount) })
-              : t('savePreset.lockOff')}
+              ? t("savePreset.lockOn", { amount: KRW(seed.amount) })
+              : t("savePreset.lockOff")}
           </div>
         </div>
       </label>
 
       {seed.categoryRowId == null && (
-        <div style={{ marginTop: 10, fontSize: 'var(--text-caption)', color: 'var(--fg-expense)' }}>
-          {t('savePreset.needCategory')}
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-expense)",
+          }}
+        >
+          {t("savePreset.needCategory")}
         </div>
       )}
     </ModalShell>
-  )
+  );
 }

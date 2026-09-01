@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from 'clsx'
-import { extendTailwindMerge } from 'tailwind-merge'
+import { type ClassValue, clsx } from "clsx";
+import { extendTailwindMerge } from "tailwind-merge";
 
 /**
  * 프로젝트 커스텀 font-size 유틸(`text-caption` 등 — porest-tokens.css `--text-*`)을
@@ -12,31 +12,31 @@ import { extendTailwindMerge } from 'tailwind-merge'
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      'font-size': [
+      "font-size": [
         {
           text: [
-            'display-xl',
-            'display-lg',
-            'display-md',
-            'display-sm',
-            'title-lg',
-            'title-md',
-            'title-sm',
-            'body-lg',
-            'body-md',
-            'body-sm',
-            'label-md',
-            'label-sm',
-            'caption',
-            'badge',
-            'overline',
+            "display-xl",
+            "display-lg",
+            "display-md",
+            "display-sm",
+            "title-lg",
+            "title-md",
+            "title-sm",
+            "body-lg",
+            "body-md",
+            "body-sm",
+            "label-md",
+            "label-sm",
+            "caption",
+            "badge",
+            "overline",
           ],
         },
       ],
     },
   },
-})
+});
 
 export const cn = (...inputs: ClassValue[]) => {
-  return twMerge(clsx(inputs))
-}
+  return twMerge(clsx(inputs));
+};

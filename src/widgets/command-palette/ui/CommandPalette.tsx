@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   StickyNote,
@@ -11,7 +11,7 @@ import {
   Moon,
   Plus,
   Search,
-} from 'lucide-react'
+} from "lucide-react";
 import {
   CommandDialog,
   CommandInput,
@@ -21,109 +21,107 @@ import {
   CommandItem,
   CommandSeparator,
   CommandShortcut,
-} from '@/shared/ui/command'
-import { useTheme } from '@/shared/ui/theme-provider'
-import { useCreateTodo } from '@/features/todo'
-import { useMemos } from '@/features/memo'
-import { toast } from 'sonner'
+} from "@/shared/ui/command";
+import { useTheme } from "@/shared/ui/theme-provider";
+import { useCreateTodo } from "@/features/todo";
+import { useMemos } from "@/features/memo";
+import { toast } from "sonner";
 
 export const CommandPalette = () => {
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [mode, setMode] = useState<'default' | 'todo'>('default')
-  const navigate = useNavigate()
-  const { t } = useTranslation('layout')
-  const { t: tc } = useTranslation('common')
-  const { t: tm } = useTranslation('memo')
-  const { t: tt } = useTranslation('todo')
-  const { theme, setTheme } = useTheme()
-  const createTodo = useCreateTodo()
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [mode, setMode] = useState<"default" | "todo">("default");
+  const navigate = useNavigate();
+  const { t } = useTranslation("layout");
+  const { t: tc } = useTranslation("common");
+  const { t: tm } = useTranslation("memo");
+  const { t: tt } = useTranslation("todo");
+  const { theme, setTheme } = useTheme();
+  const createTodo = useCreateTodo();
 
-  const { data: memos } = useMemos(
-    search.length >= 2 ? { search } : undefined
-  )
+  const { data: memos } = useMemos(search.length >= 2 ? { search } : undefined);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpen((prev) => !prev)
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((prev) => !prev);
       }
-    }
-    document.addEventListener('keydown', down)
-    return () => document.removeEventListener('keydown', down)
-  }, [])
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   useEffect(() => {
     if (!open) {
-      setSearch('')
-      setMode('default')
+      setSearch("");
+      setMode("default");
     }
-  }, [open])
+  }, [open]);
 
   const runAction = useCallback((action: () => void) => {
-    setOpen(false)
-    action()
-  }, [])
+    setOpen(false);
+    action();
+  }, []);
 
   const handleCreateTodo = useCallback(() => {
-    if (!search.trim()) return
+    if (!search.trim()) return;
     createTodo.mutate(
-      { title: search.trim(), priority: 'MEDIUM' },
+      { title: search.trim(), priority: "MEDIUM" },
       {
         onSuccess: () => {
-          toast.success(tt('createTodo'), { id: 'todo-quick-create-success' })
-          setOpen(false)
+          toast.success(tt("createTodo"), { id: "todo-quick-create-success" });
+          setOpen(false);
         },
         // onError: 전역 axios 인터셉터(base.ts)가 server message를 toast.error로 노출 — 중복 방지로 로컬 onError 제거
-      }
-    )
-  }, [search, createTodo, tt])
+      },
+    );
+  }, [search, createTodo, tt]);
 
   const pages = [
-    { label: t('dashboard'), url: '/desk', icon: LayoutDashboard },
-    { label: t('memo'), url: '/desk/memo', icon: StickyNote },
-    { label: t('todo'), url: '/desk/todo', icon: SquareCheckBig },
-    { label: t('calendar'), url: '/desk/calendar', icon: CalendarDays },
-    { label: t('expense'), url: '/desk/expense', icon: Wallet },
-  ]
+    { label: t("dashboard"), url: "/desk", icon: LayoutDashboard },
+    { label: t("memo"), url: "/desk/memo", icon: StickyNote },
+    { label: t("todo"), url: "/desk/todo", icon: SquareCheckBig },
+    { label: t("calendar"), url: "/desk/calendar", icon: CalendarDays },
+    { label: t("expense"), url: "/desk/expense", icon: Wallet },
+  ];
 
-  if (mode === 'todo') {
+  if (mode === "todo") {
     return (
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder={tt('quickAdd.placeholder')}
+          placeholder={tt("quickAdd.placeholder")}
           value={search}
           onValueChange={setSearch}
         />
         <CommandList>
-          <CommandEmpty>{tt('empty')}</CommandEmpty>
+          <CommandEmpty>{tt("empty")}</CommandEmpty>
           {search.trim() && (
             <CommandGroup>
               <CommandItem onSelect={handleCreateTodo}>
                 <Plus className="mr-2 h-4 w-4" />
-                {tt('addTodo')}: {search}
+                {tt("addTodo")}: {search}
                 <CommandShortcut>Enter</CommandShortcut>
               </CommandItem>
             </CommandGroup>
           )}
         </CommandList>
       </CommandDialog>
-    )
+    );
   }
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder={`${tc('search')}... (${t('menu')}, ${tm('title')}, ...)`}
+        placeholder={`${tc("search")}... (${t("menu")}, ${tm("title")}, ...)`}
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
-        <CommandEmpty>{tc('noData')}</CommandEmpty>
+        <CommandEmpty>{tc("noData")}</CommandEmpty>
 
         {/* Navigation */}
-        <CommandGroup heading={t('menu')}>
+        <CommandGroup heading={t("menu")}>
           {pages.map((page) => (
             <CommandItem
               key={page.url}
@@ -138,26 +136,28 @@ export const CommandPalette = () => {
         <CommandSeparator />
 
         {/* Quick actions */}
-        <CommandGroup heading={tc('create')}>
-          <CommandItem onSelect={() => setMode('todo')}>
+        <CommandGroup heading={tc("create")}>
+          <CommandItem onSelect={() => setMode("todo")}>
             <Plus className="mr-2 h-4 w-4" />
-            {tt('addTodo')}
+            {tt("addTodo")}
           </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
         {/* Theme */}
-        <CommandGroup heading={t('settings')}>
+        <CommandGroup heading={t("settings")}>
           <CommandItem
-            onSelect={() => runAction(() => setTheme(theme === 'dark' ? 'light' : 'dark'))}
+            onSelect={() =>
+              runAction(() => setTheme(theme === "dark" ? "light" : "dark"))
+            }
           >
-            {theme === 'dark' ? (
+            {theme === "dark" ? (
               <Sun className="mr-2 h-4 w-4" />
             ) : (
               <Moon className="mr-2 h-4 w-4" />
             )}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </CommandItem>
         </CommandGroup>
 
@@ -165,14 +165,14 @@ export const CommandPalette = () => {
         {search.length >= 2 && memos && memos.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={`${tm('search')} (${memos.length})`}>
+            <CommandGroup heading={`${tm("search")} (${memos.length})`}>
               {memos.slice(0, 5).map((memo) => (
                 <CommandItem
                   key={memo.rowId}
-                  onSelect={() => runAction(() => navigate('/desk/memo'))}
+                  onSelect={() => runAction(() => navigate("/desk/memo"))}
                 >
                   <Search className="mr-2 h-4 w-4" />
-                  {memo.title || tm('untitled')}
+                  {memo.title || tm("untitled")}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -180,5 +180,5 @@ export const CommandPalette = () => {
         )}
       </CommandList>
     </CommandDialog>
-  )
-}
+  );
+};

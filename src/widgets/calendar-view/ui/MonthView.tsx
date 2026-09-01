@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo } from "react";
 import {
   startOfMonth,
   endOfMonth,
@@ -6,16 +6,16 @@ import {
   endOfWeek,
   addDays,
   format,
-} from 'date-fns'
-import { getLocale } from '@/shared/lib/date'
-import type { CalendarEvent } from '@/entities/calendar'
-import { DayCell } from './DayCell'
+} from "date-fns";
+import { getLocale } from "@/shared/lib/date";
+import type { CalendarEvent } from "@/entities/calendar";
+import { DayCell } from "./DayCell";
 
 interface MonthViewProps {
-  currentDate: Date
-  selectedDate: Date
-  events: CalendarEvent[]
-  onSelectDate: (date: Date) => void
+  currentDate: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (date: Date) => void;
 }
 
 export const MonthView = ({
@@ -24,42 +24,44 @@ export const MonthView = ({
   events,
   onSelectDate,
 }: MonthViewProps) => {
-  const locale = getLocale()
+  const locale = getLocale();
 
   const weeks = useMemo(() => {
-    const monthStart = startOfMonth(currentDate)
-    const monthEnd = endOfMonth(currentDate)
-    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 })
-    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
-    const rows: Date[][] = []
-    let day = calendarStart
+    const rows: Date[][] = [];
+    let day = calendarStart;
     while (day <= calendarEnd) {
-      const week: Date[] = []
+      const week: Date[] = [];
       for (let i = 0; i < 7; i++) {
-        week.push(day)
-        day = addDays(day, 1)
+        week.push(day);
+        day = addDays(day, 1);
       }
-      rows.push(week)
+      rows.push(week);
     }
-    return rows
-  }, [currentDate])
+    return rows;
+  }, [currentDate]);
 
   const dayHeaders = useMemo(() => {
-    const start = startOfWeek(new Date(), { weekStartsOn: 0 })
+    const start = startOfWeek(new Date(), { weekStartsOn: 0 });
     return Array.from({ length: 7 }, (_, i) =>
-      format(addDays(start, i), 'EEE', { locale })
-    )
-  }, [locale])
+      format(addDays(start, i), "EEE", { locale }),
+    );
+  }, [locale]);
 
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => {
-      const eventStart = new Date(event.startDate)
-      const eventEnd = new Date(event.endDate)
-      return date >= new Date(eventStart.toDateString()) &&
+      const eventStart = new Date(event.startDate);
+      const eventEnd = new Date(event.endDate);
+      return (
+        date >= new Date(eventStart.toDateString()) &&
         date <= new Date(eventEnd.toDateString())
-    })
-  }
+      );
+    });
+  };
 
   return (
     <div>
@@ -84,9 +86,9 @@ export const MonthView = ({
               events={getEventsForDate(date)}
               onClick={onSelectDate}
             />
-          ))
+          )),
         )}
       </div>
     </div>
-  )
-}
+  );
+};

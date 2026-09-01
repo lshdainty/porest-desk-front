@@ -1,9 +1,9 @@
-import { useTranslation } from 'react-i18next'
-import { Unplug } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { Skeleton } from '@/shared/ui/skeleton'
-import { BrokerConnectCard } from '@/features/subscription/ui/BrokerConnectCard'
-import { useBrokerConnections } from '@/features/subscription/model/useSubscription'
+import { useTranslation } from "react-i18next";
+import { Unplug } from "lucide-react";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { BrokerConnectCard } from "@/features/subscription/ui/BrokerConnectCard";
+import { useBrokerConnections } from "@/features/subscription/model/useSubscription";
 
 /**
  * 증권사 연동 다이얼로그.
@@ -13,47 +13,72 @@ import { useBrokerConnections } from '@/features/subscription/model/useSubscript
  *
  * **목록은 서버가 준다.** 미연결 증권사까지 내려오므로 증권사가 늘어도 프론트 배포 없이 나타난다.
  */
-export function SecuritiesLinkDialog({ onClose, mobile }: { onClose: () => void; mobile: boolean }) {
-  const { t } = useTranslation('subscription')
-  const { data: connections, isLoading, isError } = useBrokerConnections()
+export function SecuritiesLinkDialog({
+  onClose,
+  mobile,
+}: {
+  onClose: () => void;
+  mobile: boolean;
+}) {
+  const { t } = useTranslation("subscription");
+  const { data: connections, isLoading, isError } = useBrokerConnections();
 
   // 연결이 하나뿐이면 기본 소스를 고를 게 없다 — 버튼을 감춘다.
-  const connectedCount = connections?.filter(c => c.connected).length ?? 0
+  const connectedCount = connections?.filter((c) => c.connected).length ?? 0;
 
   return (
-    <ModalShell title={t('broker.title')} onClose={onClose} size="md" mobile={mobile}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.6 }}>
-          {t('broker.pageDesc')}
+    <ModalShell
+      title={t("broker.title")}
+      onClose={onClose}
+      size="md"
+      mobile={mobile}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: "var(--fg-secondary)",
+            lineHeight: 1.6,
+          }}
+        >
+          {t("broker.pageDesc")}
         </div>
 
         {isLoading && (
           <>
-            <Skeleton style={{ height: 180, borderRadius: 'var(--radius-lg)' }} />
-            <Skeleton style={{ height: 180, borderRadius: 'var(--radius-lg)' }} />
+            <Skeleton
+              style={{ height: 180, borderRadius: "var(--radius-lg)" }}
+            />
+            <Skeleton
+              style={{ height: 180, borderRadius: "var(--radius-lg)" }}
+            />
           </>
         )}
 
         {isError && (
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 10,
-              padding: '16px 14px',
-              color: 'var(--fg-secondary)',
+              padding: "16px 14px",
+              color: "var(--fg-secondary)",
               fontSize: 13,
             }}
           >
             <Unplug size={18} />
-            {t('broker.loadFailed')}
+            {t("broker.loadFailed")}
           </div>
         )}
 
-        {connections?.map(c => (
-          <BrokerConnectCard key={c.broker} connection={c} showPrimaryAction={connectedCount > 1} />
+        {connections?.map((c) => (
+          <BrokerConnectCard
+            key={c.broker}
+            connection={c}
+            showPrimaryAction={connectedCount > 1}
+          />
         ))}
       </div>
     </ModalShell>
-  )
+  );
 }

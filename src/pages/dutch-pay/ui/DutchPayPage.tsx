@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { formatMonthDay, formatMonthDayDow } from '@/shared/lib/date'
+import { useMemo, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { formatMonthDay, formatMonthDayDow } from "@/shared/lib/date";
 import {
   Plus,
   Check,
@@ -13,53 +13,61 @@ import {
   CheckCheck,
   Trash2,
   ChevronLeft,
-} from 'lucide-react'
+} from "lucide-react";
 import {
   useDutchPays,
   useCreateDutchPay,
   useMarkParticipantPaid,
   useSettleAll,
   useDeleteDutchPay,
-} from '@/features/dutch-pay'
-import type { DutchPay, DutchPayParticipant, DutchPayFormValues } from '@/entities/dutch-pay'
-import { Button } from '@/shared/ui/button'
-import { Fab } from '@/shared/ui/porest/fab'
-import { Card } from '@/shared/ui/card'
-import { Input } from '@/shared/ui/input'
-import { Field, FieldLabel } from '@/shared/ui/field'
-import { ConfirmDialog, ModalShell } from '@/shared/ui/porest/dialogs'
-import { MobileBackHeader } from '@/shared/ui/porest/mobile-back-header'
-import { Skeleton as SkeletonBase } from '@/shared/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { KRW, isEn } from '@/shared/lib/porest/format'
-import { MaskAmount, HideUnit, WonUnit } from '@/shared/lib/porest/hide-amounts'
-import { wonPre } from '@/shared/lib/porest/hide-amounts-core'
+} from "@/features/dutch-pay";
+import type {
+  DutchPay,
+  DutchPayParticipant,
+  DutchPayFormValues,
+} from "@/entities/dutch-pay";
+import { Button } from "@/shared/ui/button";
+import { Fab } from "@/shared/ui/porest/fab";
+import { Card } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { KRW, isEn } from "@/shared/lib/porest/format";
+import {
+  MaskAmount,
+  HideUnit,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
+import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
 
-type OutletCtx = { onAddTx: () => void; mobile: boolean }
+type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // ── 아바타 팔레트 ────────────────────────────────────────────────────────────
 // 이름 기반 chart 10색 순환(앱 _participantPaletteOklch 정합). alias var = 다크 자동 swap.
 const AVATAR_VARS = [
-  '--color-cat-blue',
-  '--color-cat-green',
-  '--color-cat-orange',
-  '--color-cat-violet',
-  '--color-cat-pink',
-  '--color-cat-indigo',
-  '--color-cat-red',
-  '--color-cat-brown',
-  '--color-cat-yellow',
-  '--color-cat-gray',
-] as const
+  "--color-cat-blue",
+  "--color-cat-green",
+  "--color-cat-orange",
+  "--color-cat-violet",
+  "--color-cat-pink",
+  "--color-cat-indigo",
+  "--color-cat-red",
+  "--color-cat-brown",
+  "--color-cat-yellow",
+  "--color-cat-gray",
+] as const;
 
 /** 이름 → 안정적 팔레트 인덱스(문자 코드 합 mod 10). */
 function avatarColor(name: string): string {
-  let sum = 0
-  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i)
-  return `var(${AVATAR_VARS[sum % AVATAR_VARS.length]})`
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+  return `var(${AVATAR_VARS[sum % AVATAR_VARS.length]})`;
 }
 
-const initial = (name: string) => (name && name.length > 0 ? name[0]! : '?')
+const initial = (name: string) => (name && name.length > 0 ? name[0]! : "?");
 
 // ── 모델 헬퍼 ────────────────────────────────────────────────────────────────
 /**
@@ -73,49 +81,51 @@ const initial = (name: string) => (name && name.length > 0 ? name[0]! : '?')
  * 기존 데이터를 채운 규칙과 같아서 화면이 갑자기 달라지지 않는다.
  */
 function payerOf(d: DutchPay): DutchPayParticipant | undefined {
-  return d.participants.find(p => p.isPayer) ?? d.participants[0]
+  return d.participants.find((p) => p.isPayer) ?? d.participants[0];
 }
 function isPayer(d: DutchPay, p: DutchPayParticipant): boolean {
-  return payerOf(d)?.rowId === p.rowId
+  return payerOf(d)?.rowId === p.rowId;
 }
 function paidCountOf(d: DutchPay): number {
-  return d.participants.filter(p => p.isPaid).length
+  return d.participants.filter((p) => p.isPaid).length;
 }
 function perPersonOf(d: DutchPay): number {
-  return d.participants.length > 0 ? Math.floor(d.totalAmount / d.participants.length) : 0
+  return d.participants.length > 0
+    ? Math.floor(d.totalAmount / d.participants.length)
+    : 0;
 }
 
 // ── 날짜 유틸 ────────────────────────────────────────────────────────────────
 function todayISO(): string {
-  const d = new Date()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${m}-${day}`
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 /** 'YYYY-MM-DD'(또는 datetime) → 'M월 D일'. */
 function kDateMd(s: string): string {
-  const [y, m, d] = s.slice(0, 10).split('-').map(Number)
-  if (!y || !m || !d) return s
-  return formatMonthDay(s)
+  const [y, m, d] = s.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return s;
+  return formatMonthDay(s);
 }
 /** 'YYYY-MM-DD' → 'M월 D일 (요일)'. */
 function kDateFull(s: string): string {
-  const [y, m, d] = s.slice(0, 10).split('-').map(Number)
-  if (!y || !m || !d) return s
-  return formatMonthDayDow(s)
+  const [y, m, d] = s.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return s;
+  return formatMonthDayDow(s);
 }
 
 // '진행/완료' = isSettled.
 function isActiveSession(d: DutchPay): boolean {
-  return !d.isSettled
+  return !d.isSettled;
 }
 
-type TabKey = 'active' | 'past' | 'friends'
+type TabKey = "active" | "past" | "friends";
 
 /** DutchPayPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useDutchPayPageData() {
-  const q = useDutchPays()
-  return { isLoading: q.isLoading }
+  const q = useDutchPays();
+  return { isLoading: q.isLoading };
 }
 
 /**
@@ -129,163 +139,188 @@ function DutchPayTabs({
   activeCount,
   pastCount,
 }: {
-  value: TabKey
-  onValueChange: (v: TabKey) => void
-  activeCount?: number
-  pastCount?: number
+  value: TabKey;
+  onValueChange: (v: TabKey) => void;
+  activeCount?: number;
+  pastCount?: number;
 }) {
-  const { t } = useTranslation('dutchPay')
+  const { t } = useTranslation("dutchPay");
   return (
-    <Tabs value={value} onValueChange={v => onValueChange(v as TabKey)} className="w-fit">
+    <Tabs
+      value={value}
+      onValueChange={(v) => onValueChange(v as TabKey)}
+      className="w-fit"
+    >
       {/* pills — 트랙 없는 평면 배치 + active brand 채움(관리·프리셋 토글과 통일, 사용자 결정) */}
       <TabsList variant="pills" size="sm">
         {(
           [
             {
-              id: 'active',
+              id: "active",
               label:
-                activeCount != null ? `${t('filter.active')} · ${activeCount}` : t('filter.active'),
+                activeCount != null
+                  ? `${t("filter.active")} · ${activeCount}`
+                  : t("filter.active"),
             },
-            { id: 'past', label: pastCount != null ? `${t('done')} · ${pastCount}` : t('done') },
-            { id: 'friends', label: t('friends') },
+            {
+              id: "past",
+              label:
+                pastCount != null ? `${t("done")} · ${pastCount}` : t("done"),
+            },
+            { id: "friends", label: t("friends") },
           ] as const
-        ).map(x => (
+        ).map((x) => (
           <TabsTrigger key={x.id} value={x.id}>
             {x.label}
           </TabsTrigger>
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }
 
 export const DutchPayPage = () => {
-  const { mobile } = useOutletContext<OutletCtx>()
-  const { isLoading } = useDutchPayPageData()
-  if (isLoading) return <DutchPayPageSkeleton mobile={mobile} />
-  return <DutchPayPageInner mobile={mobile} />
-}
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { isLoading } = useDutchPayPageData();
+  if (isLoading) return <DutchPayPageSkeleton mobile={mobile} />;
+  return <DutchPayPageInner mobile={mobile} />;
+};
 
 const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
-  const { t } = useTranslation('dutchPay')
-  const { t: tc } = useTranslation('common')
-  const dutchPaysQ = useDutchPays()
-  const createDutchPay = useCreateDutchPay()
-  const markPaid = useMarkParticipantPaid()
-  const settleAll = useSettleAll()
-  const deleteDutchPay = useDeleteDutchPay()
+  const { t } = useTranslation("dutchPay");
+  const { t: tc } = useTranslation("common");
+  const dutchPaysQ = useDutchPays();
+  const createDutchPay = useCreateDutchPay();
+  const markPaid = useMarkParticipantPaid();
+  const settleAll = useSettleAll();
+  const deleteDutchPay = useDeleteDutchPay();
 
-  const list: DutchPay[] = useMemo(() => dutchPaysQ.data ?? [], [dutchPaysQ.data])
-  const today = useMemo(() => todayISO(), [])
+  const list: DutchPay[] = useMemo(
+    () => dutchPaysQ.data ?? [],
+    [dutchPaysQ.data],
+  );
+  const today = useMemo(() => todayISO(), []);
 
-  const [tab, setTab] = useState<TabKey>('active')
-  const [creating, setCreating] = useState(false)
-  const [detailId, setDetailId] = useState<number | null>(null)
+  const [tab, setTab] = useState<TabKey>("active");
+  const [creating, setCreating] = useState(false);
+  const [detailId, setDetailId] = useState<number | null>(null);
 
-  const active = useMemo(() => list.filter(isActiveSession), [list])
-  const past = useMemo(() => list.filter(d => d.isSettled), [list])
+  const active = useMemo(() => list.filter(isActiveSession), [list]);
+  const past = useMemo(() => list.filter((d) => d.isSettled), [list]);
   const detail = useMemo(
-    () => (detailId != null ? list.find(d => d.rowId === detailId) ?? null : null),
+    () =>
+      detailId != null
+        ? (list.find((d) => d.rowId === detailId) ?? null)
+        : null,
     [list, detailId],
-  )
+  );
 
   // 받을 돈 = 미정산 세션들의 미지불 참여자(결제자 제외) amount 합 + 미지불 인원 수.
   const receivable = useMemo(() => {
-    let amount = 0
-    let people = 0
+    let amount = 0;
+    let people = 0;
     for (const d of active) {
       for (const p of d.participants) {
-        if (isPayer(d, p) || p.isPaid) continue
-        amount += p.amount
-        people += 1
+        if (isPayer(d, p) || p.isPaid) continue;
+        amount += p.amount;
+        people += 1;
       }
     }
-    return { amount, people }
-  }, [active])
+    return { amount, people };
+  }, [active]);
 
   // 보낼 돈 = 현행 모델에 '내가 보낼' 데이터 없음 → 0 처리 (구조만 유지, 추후 API 확장).
-  const payable = { amount: 0, people: 0 }
+  const payable = { amount: 0, people: 0 };
 
   // 친구 집계: participantName 기반(결제자/나 제외) — N회 함께 정산 + net(미지불 amount 합).
   const friends = useMemo(() => {
-    const map = new Map<string, { name: string; sessions: number; net: number }>()
+    const map = new Map<
+      string,
+      { name: string; sessions: number; net: number }
+    >();
     for (const d of list) {
-      const payer = payerOf(d)
+      const payer = payerOf(d);
       for (const p of d.participants) {
-        if (payer && p.rowId === payer.rowId) continue
-        const key = p.participantName
-        const cur = map.get(key) ?? { name: key, sessions: 0, net: 0 }
-        cur.sessions += 1
-        if (isActiveSession(d) && !p.isPaid) cur.net += p.amount
-        map.set(key, cur)
+        if (payer && p.rowId === payer.rowId) continue;
+        const key = p.participantName;
+        const cur = map.get(key) ?? { name: key, sessions: 0, net: 0 };
+        cur.sessions += 1;
+        if (isActiveSession(d) && !p.isPaid) cur.net += p.amount;
+        map.set(key, cur);
       }
     }
-    return [...map.values()].sort((a, b) => b.sessions - a.sessions || b.net - a.net)
-  }, [list])
+    return [...map.values()].sort(
+      (a, b) => b.sessions - a.sessions || b.net - a.net,
+    );
+  }, [list]);
 
   // 데스크톱 우측: 자주 정산 친구 Top5 + 이번 달 정산 통계.
-  const topFriends = useMemo(() => friends.slice(0, 5), [friends])
+  const topFriends = useMemo(() => friends.slice(0, 5), [friends]);
   const monthStats = useMemo(() => {
-    const ym = today.slice(0, 7)
-    const inMonth = list.filter(d => d.dutchPayDate.slice(0, 7) === ym)
-    const totalAmount = inMonth.reduce((s, d) => s + d.totalAmount, 0)
-    const totalPeople = inMonth.reduce((s, d) => s + d.participants.length, 0)
-    const avg = inMonth.length > 0 ? totalPeople / inMonth.length : 0
-    return { count: inMonth.length, totalAmount, avg }
-  }, [list, today])
+    const ym = today.slice(0, 7);
+    const inMonth = list.filter((d) => d.dutchPayDate.slice(0, 7) === ym);
+    const totalAmount = inMonth.reduce((s, d) => s + d.totalAmount, 0);
+    const totalPeople = inMonth.reduce((s, d) => s + d.participants.length, 0);
+    const avg = inMonth.length > 0 ? totalPeople / inMonth.length : 0;
+    return { count: inMonth.length, totalAmount, avg };
+  }, [list, today]);
 
   // ── mutations ──────────────────────────────────────────────────────────────
   const onCreate = (values: DutchPayFormValues) => {
-    createDutchPay.mutate(values, { onSuccess: () => setCreating(false) })
-  }
+    createDutchPay.mutate(values, { onSuccess: () => setCreating(false) });
+  };
   // 정산과 참여자 기록이 통째로 사라진다 — 앱은 이미 한 번 더 묻는다.
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
-  const onDelete = (id: number) => setConfirmDelete(id)
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const onDelete = (id: number) => setConfirmDelete(id);
   const onMarkPaid = (dutchPayId: number, participantId: number) => {
-    markPaid.mutate({ dutchPayId, participantId })
-  }
+    markPaid.mutate({ dutchPayId, participantId });
+  };
   const onSettleAll = (id: number) => {
-    settleAll.mutate(id)
-  }
+    settleAll.mutate(id);
+  };
   // 요청/일괄 요청 = UI-only.
   const onRequest = (name: string) => {
-    toast.success(t('toast.requestSent', { name }), {
-      description: t('toast.requestSentDesc'),
-    })
-  }
+    toast.success(t("toast.requestSent", { name }), {
+      description: t("toast.requestSentDesc"),
+    });
+  };
   const onRequestAll = (d: DutchPay) => {
-    const pending = d.participants.filter(p => !isPayer(d, p) && !p.isPaid)
-    if (pending.length === 0) return
-    toast.success(t('toast.requestSentBulk', { count: pending.length }), {
-      description: t('toast.requestSentDesc'),
-    })
-  }
+    const pending = d.participants.filter((p) => !isPayer(d, p) && !p.isPaid);
+    if (pending.length === 0) return;
+    toast.success(t("toast.requestSentBulk", { count: pending.length }), {
+      description: t("toast.requestSentDesc"),
+    });
+  };
 
   // ── 요약 2카드 ─────────────────────────────────────────────────────────────
   const Summary = (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
         gap: mobile ? 8 : 12,
       }}
     >
       <SummaryCard
         mobile={mobile}
         tone="receive"
-        label={t('receivable')}
+        label={t("receivable")}
         amount={receivable.amount}
-        sub={receivable.people > 0 ? t('receivableFrom', { count: receivable.people }) : t('receivableNone')}
+        sub={
+          receivable.people > 0
+            ? t("receivableFrom", { count: receivable.people })
+            : t("receivableNone")
+        }
       />
       <SummaryCard
         mobile={mobile}
         tone="send"
-        label={t('payable')}
+        label={t("payable")}
         amount={payable.amount}
-        sub={t('payableTo', { count: payable.people })}
+        sub={t("payableTo", { count: payable.people })}
       />
     </div>
-  )
+  );
 
   // ── seg 탭 3종 ─────────────────────────────────────────────────────────────
   // 정적 프레임이라 로딩 스켈레톤과 공용(DutchPayTabs, SoT 단일화). 카운트만 데이터.
@@ -296,54 +331,75 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       activeCount={active.length}
       pastCount={past.length}
     />
-  )
+  );
 
   // ── 콘텐츠 (탭별) ──────────────────────────────────────────────────────────
-  let Content: React.ReactNode
-  if (tab === 'active') {
+  let Content: React.ReactNode;
+  if (tab === "active") {
     Content =
       active.length === 0 ? (
         <EmptyState
           icon={<Users size={24} />}
-          title={t('emptyActive.title')}
-          desc={t('emptyActive.desc')}
+          title={t("emptyActive.title")}
+          desc={t("emptyActive.desc")}
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
-          {active.map(d => (
-            <SessionCard key={d.rowId} d={d} mobile={mobile} onClick={() => setDetailId(d.rowId)} />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: mobile ? 10 : 12,
+          }}
+        >
+          {active.map((d) => (
+            <SessionCard
+              key={d.rowId}
+              d={d}
+              mobile={mobile}
+              onClick={() => setDetailId(d.rowId)}
+            />
           ))}
         </div>
-      )
-  } else if (tab === 'past') {
+      );
+  } else if (tab === "past") {
     Content =
       past.length === 0 ? (
         <EmptyState
           icon={<CheckCheck size={24} />}
-          title={t('emptyPast.title')}
-          desc={t('emptyPast.desc')}
+          title={t("emptyPast.title")}
+          desc={t("emptyPast.desc")}
         />
       ) : mobile ? (
         // 모바일 카드 다이어트 — 리스트 카드 벗김.
         <div>
           {past.map((d, i) => (
-            <PastRow key={d.rowId} d={d} first={i === 0} onClick={() => setDetailId(d.rowId)} />
+            <PastRow
+              key={d.rowId}
+              d={d}
+              first={i === 0}
+              onClick={() => setDetailId(d.rowId)}
+            />
           ))}
         </div>
       ) : (
-        <Card style={{ padding: '8px 18px' }}>
+        <Card style={{ padding: "8px 18px" }}>
           {past.map((d, i) => (
-            <PastRow key={d.rowId} d={d} first={i === 0} onClick={() => setDetailId(d.rowId)} />
+            <PastRow
+              key={d.rowId}
+              d={d}
+              first={i === 0}
+              onClick={() => setDetailId(d.rowId)}
+            />
           ))}
         </Card>
-      )
+      );
   } else {
     Content =
       friends.length === 0 ? (
         <EmptyState
           icon={<Users size={24} />}
-          title={t('emptyFriends.title')}
-          desc={t('emptyFriends.desc')}
+          title={t("emptyFriends.title")}
+          desc={t("emptyFriends.desc")}
         />
       ) : mobile ? (
         // 모바일 카드 다이어트 — 리스트 카드 벗김.
@@ -353,59 +409,100 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
           ))}
         </div>
       ) : (
-        <Card style={{ padding: '8px 18px' }}>
+        <Card style={{ padding: "8px 18px" }}>
           {friends.map((f, i) => (
             <FriendRow key={f.name} f={f} first={i === 0} />
           ))}
         </Card>
-      )
+      );
   }
 
   // ── 데스크톱 우측 사이드 ────────────────────────────────────────────────────
   const TopFriendsCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 14 }}>{t('topFriends.title')}</h2>
+      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 14 }}>
+        {t("topFriends.title")}
+      </h2>
       {topFriends.length === 0 ? (
-        <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>{t('topFriends.empty')}</div>
+        <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
+          {t("topFriends.empty")}
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {topFriends.map(f => (
-            <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {topFriends.map((f) => (
+            <div
+              key={f.name}
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+            >
               <Avatar name={f.name} size={32} />
-              <span style={{ fontSize: 13.5, fontWeight: '600', flex: 1, minWidth: 0 }}>{f.name}</span>
-              <span className="num" style={{ fontSize: 12, color: 'var(--fg-tertiary)', fontWeight: '600' }}>
-                {t('sessionsCount', { count: f.sessions })}
+              <span
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: "600",
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {f.name}
+              </span>
+              <span
+                className="num"
+                style={{
+                  fontSize: 12,
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "600",
+                }}
+              >
+                {t("sessionsCount", { count: f.sessions })}
               </span>
             </div>
           ))}
         </div>
       )}
     </Card>
-  )
+  );
 
   const MonthStatsCard = (
     <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: '700', marginBottom: 12 }}>{t('monthStats.title')}</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <StatRow label={t('monthStats.created')} value={<><span className="num">{monthStats.count}</span>{t('count')}</>} />
+      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 12 }}>
+        {t("monthStats.title")}
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <StatRow
-          label={t('monthStats.totalAmount')}
+          label={t("monthStats.created")}
+          value={
+            <>
+              <span className="num">{monthStats.count}</span>
+              {t("count")}
+            </>
+          }
+        />
+        <StatRow
+          label={t("monthStats.totalAmount")}
           value={
             <>
               <MaskAmount card="dutchpay.sessions" mask="••••">
-                <span className="num">{wonPre()}{KRW(monthStats.totalAmount)}</span>
+                <span className="num">
+                  {wonPre()}
+                  {KRW(monthStats.totalAmount)}
+                </span>
               </MaskAmount>
               <WonUnit card="dutchpay.sessions" />
             </>
           }
         />
         <StatRow
-          label={t('monthStats.avgPeople')}
-          value={<><span className="num">{monthStats.avg.toFixed(1)}</span>{t('participants')}</>}
+          label={t("monthStats.avgPeople")}
+          value={
+            <>
+              <span className="num">{monthStats.avg.toFixed(1)}</span>
+              {t("participants")}
+            </>
+          }
         />
       </div>
     </Card>
-  )
+  );
 
   // ── 만들기 마법사 + 상세 모달 ───────────────────────────────────────────────
   const dialogs = (
@@ -414,7 +511,7 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
         <DutchCreateWizard
           mobile={mobile}
           today={today}
-          friendNames={friends.map(f => f.name)}
+          friendNames={friends.map((f) => f.name)}
           onClose={() => setCreating(false)}
           onCreate={onCreate}
           submitting={createDutchPay.isPending}
@@ -437,72 +534,80 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       )}
       {confirmDelete != null && (
         <ConfirmDialog
-          title={t('deleteConfirm.title')}
-          message={t('deleteConfirm.message', { name: list.find((d) => d.rowId === confirmDelete)?.title ?? '' })}
-          confirmLabel={tc('delete')}
+          title={t("deleteConfirm.title")}
+          message={t("deleteConfirm.message", {
+            name: list.find((d) => d.rowId === confirmDelete)?.title ?? "",
+          })}
+          confirmLabel={tc("delete")}
           danger
           loading={deleteDutchPay.isPending}
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() =>
             deleteDutchPay.mutate(confirmDelete, {
               onSuccess: () => {
-                setConfirmDelete(null)
-                setDetailId(null)
+                setConfirmDelete(null);
+                setDetailId(null);
               },
             })
           }
         />
       )}
     </>
-  )
+  );
 
   // ── 모바일 ────────────────────────────────────────────────────────────────
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 24px 96px', position: 'relative' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {Summary}
-          {TabsSeg}
-          {Content}
-        </div>
-        <Fab aria-label={t('fromTx.createSettlement')} onClick={() => setCreating(true)} />
-        {dialogs}
+        <MobileBackHeader title={t("title")} />
+        <div style={{ padding: "16px 24px 96px", position: "relative" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {Summary}
+            {TabsSeg}
+            {Content}
+          </div>
+          <Fab
+            aria-label={t("fromTx.createSettlement")}
+            onClick={() => setCreating(true)}
+          />
+          {dialogs}
         </div>
       </>
-    )
+    );
   }
 
   // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+      <div
+        className="page__head"
+        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+      >
         <div>
-          <h1>{t('title')}</h1>
-          <div className="sub">{t('subtitle')}</div>
+          <h1>{t("title")}</h1>
+          <div className="sub">{t("subtitle")}</div>
         </div>
         <div className="right">
           <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={14} /> {t('fromTx.createSettlement')}
+            <Plus size={14} /> {t("fromTx.createSettlement")}
           </Button>
         </div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1.4fr 1fr',
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
             gap: 20,
-            alignItems: 'flex-start',
+            alignItems: "flex-start",
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {Summary}
             {TabsSeg}
             {Content}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {TopFriendsCard}
             {MonthStatsCard}
           </div>
@@ -510,8 +615,8 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
       </div>
       {dialogs}
     </div>
-  )
-}
+  );
+};
 
 // ───────────────────────────── 하위 컴포넌트 ─────────────────────────────
 
@@ -522,10 +627,10 @@ function Avatar({
   dim,
   ring,
 }: {
-  name: string
-  size?: number
-  dim?: boolean
-  ring?: boolean
+  name: string;
+  size?: number;
+  dim?: boolean;
+  ring?: boolean;
 }) {
   return (
     <span
@@ -534,21 +639,21 @@ function Avatar({
         height: size,
         borderRadius: 999,
         background: avatarColor(name),
-        color: '#fff',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: '700',
+        color: "#fff",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "700",
         fontSize: size <= 28 ? 12 : size <= 36 ? 14 : 16,
         flexShrink: 0,
         opacity: dim ? 0.5 : 1,
-        border: ring ? '2px solid var(--bg-surface)' : 'none',
-        boxSizing: 'border-box',
+        border: ring ? "2px solid var(--bg-surface)" : "none",
+        boxSizing: "border-box",
       }}
     >
       {initial(name)}
     </span>
-  )
+  );
 }
 
 /** 요약 카드 (받을 돈 / 보낼 돈). */
@@ -559,81 +664,114 @@ function SummaryCard({
   amount,
   sub,
 }: {
-  mobile: boolean
-  tone: 'receive' | 'send'
-  label: string
-  amount: number
-  sub: string
+  mobile: boolean;
+  tone: "receive" | "send";
+  label: string;
+  amount: number;
+  sub: string;
 }) {
-  const receive = tone === 'receive'
-  const chipVar = receive ? '--color-chart-green' : '--color-chart-orange'
-  const fg = receive ? 'var(--status-success-fg)' : 'var(--status-warning-fg)'
+  const receive = tone === "receive";
+  const chipVar = receive ? "--color-chart-green" : "--color-chart-orange";
+  const fg = receive ? "var(--status-success-fg)" : "var(--status-warning-fg)";
   return (
     // 모바일 = keep 카드(raised) — 카드 다이어트에서 유지되는 정산 요약 (design Dutch Hero keep).
-    <Card variant={mobile ? 'raised' : undefined} style={{ padding: mobile ? 18 : 22 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mobile ? 10 : 12 }}>
+    <Card
+      variant={mobile ? "raised" : undefined}
+      style={{ padding: mobile ? 18 : 22 }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: mobile ? 10 : 12,
+        }}
+      >
         <span
           style={{
             width: 28,
             height: 28,
-            borderRadius: 'var(--radius-sm)',
+            borderRadius: "var(--radius-sm)",
             background: `color-mix(in oklab, var(${chipVar}) 18%, var(--bg-surface))`,
             color: fg,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
           }}
         >
           {receive ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
         </span>
-        <span style={{ fontSize: 12, fontWeight: '600', color: 'var(--fg-tertiary)' }}>{label}</span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {label}
+        </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
         <MaskAmount card="dutchpay.summary" mask="••••">
           <span
             className="num"
             style={{
               fontSize: mobile ? 20 : 24,
-              fontWeight: '800',
-              letterSpacing: '-0.025em',
+              fontWeight: "800",
+              letterSpacing: "-0.025em",
               color: fg,
             }}
           >
-            {wonPre()}{KRW(amount)}
+            {wonPre()}
+            {KRW(amount)}
           </span>
         </MaskAmount>
         {!isEn() && (
           <HideUnit>
-            <span style={{ fontSize: 13, fontWeight: '600', color: fg }}>원</span>
+            <span style={{ fontSize: 13, fontWeight: "600", color: fg }}>
+              원
+            </span>
           </HideUnit>
         )}
       </div>
-      <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 4 }}>{sub}</div>
+      <div
+        style={{ fontSize: 11.5, color: "var(--fg-tertiary)", marginTop: 4 }}
+      >
+        {sub}
+      </div>
     </Card>
-  )
+  );
 }
 
 /** 진행 중 세션 카드. */
 // 모바일 카드 다이어트 — 정산 항목 셸: 모바일은 플랫(hover 면), 데스크톱은 Card.
-function SessionShell({ mobile, onClick, children }: { mobile: boolean; onClick?: () => void; children: React.ReactNode }) {
+function SessionShell({
+  mobile,
+  onClick,
+  children,
+}: {
+  mobile: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
   if (mobile) {
     return (
       // 좌우 여백 없음 — 행이 더 얹으면 위 요약 카드 모서리(24)와 어긋난다. 상하만 준다.
       <div
         onClick={onClick}
         className="hover:bg-[var(--bg-muted)] transition-colors"
-        style={{ padding: '14px 0', cursor: 'pointer', borderRadius: 10 }}
+        style={{ padding: "14px 0", cursor: "pointer", borderRadius: 10 }}
       >
         {children}
       </div>
-    )
+    );
   }
   return (
-    <Card onClick={onClick} style={{ padding: 22, cursor: 'pointer' }}>
+    <Card onClick={onClick} style={{ padding: 22, cursor: "pointer" }}>
       {children}
     </Card>
-  )
+  );
 }
 
 function SessionCard({
@@ -641,81 +779,133 @@ function SessionCard({
   mobile,
   onClick,
 }: {
-  d: DutchPay
-  mobile: boolean
-  onClick: () => void
+  d: DutchPay;
+  mobile: boolean;
+  onClick: () => void;
 }) {
-  const { t } = useTranslation('dutchPay')
-  const total = d.participants.length
-  const paid = paidCountOf(d)
-  const per = perPersonOf(d)
-  const pct = total > 0 ? (paid / total) * 100 : 0
-  const place = d.description?.trim()
-  const meta = place ? `${place} · ${kDateMd(d.dutchPayDate)}` : kDateMd(d.dutchPayDate)
+  const { t } = useTranslation("dutchPay");
+  const total = d.participants.length;
+  const paid = paidCountOf(d);
+  const per = perPersonOf(d);
+  const pct = total > 0 ? (paid / total) * 100 : 0;
+  const place = d.description?.trim();
+  const meta = place
+    ? `${place} · ${kDateMd(d.dutchPayDate)}`
+    : kDateMd(d.dutchPayDate);
   return (
     // 모바일 카드 다이어트 — 항목 카드 벗김(gap 이 구분), 클릭 영역·hover 유지.
     <SessionShell mobile={mobile} onClick={onClick}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontSize: 16,
-              fontWeight: '700',
-              letterSpacing: '-0.015em',
-              color: 'var(--fg-primary)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontWeight: "700",
+              letterSpacing: "-0.015em",
+              color: "var(--fg-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {d.title}
           </div>
-          <div style={{ fontSize: 12.5, color: 'var(--fg-tertiary)', marginTop: 3 }}>{meta}</div>
+          <div
+            style={{
+              fontSize: 12.5,
+              color: "var(--fg-tertiary)",
+              marginTop: 3,
+            }}
+          >
+            {meta}
+          </div>
         </div>
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, justifyContent: 'flex-end' }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 2,
+              justifyContent: "flex-end",
+            }}
+          >
             <MaskAmount card="dutchpay.sessions" mask="••••">
-              <span className="num" style={{ fontSize: 17, fontWeight: '800', letterSpacing: '-0.02em' }}>
-                {wonPre()}{KRW(d.totalAmount)}
+              <span
+                className="num"
+                style={{
+                  fontSize: 17,
+                  fontWeight: "800",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {wonPre()}
+                {KRW(d.totalAmount)}
               </span>
             </MaskAmount>
             {!isEn() && (
               <HideUnit>
-                <span style={{ fontSize: 12, fontWeight: '600' }}>원</span>
+                <span style={{ fontSize: 12, fontWeight: "600" }}>원</span>
               </HideUnit>
             )}
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-            {t('perOne')} <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+          <div
+            style={{
+              fontSize: 11.5,
+              color: "var(--fg-tertiary)",
+              marginTop: 2,
+            }}
+          >
+            {t("perOne")}{" "}
+            <MaskAmount card="dutchpay.sessions" mask="••••">
+              {wonPre()}
+              {KRW(per)}
+            </MaskAmount>
             <WonUnit card="dutchpay.sessions" />
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
         {/* 아바타 최대 4개 고정폭(88) — 인원수 무관 진행바 길이 일정. 5+면 3개 + +N */}
-        <div style={{ position: 'relative', width: 88, height: 28, flexShrink: 0 }}>
-          {(d.participants.length > 4 ? d.participants.slice(0, 3) : d.participants.slice(0, 4)).map((p, i) => (
-            <span key={p.rowId} style={{ position: 'absolute', left: i * 20 }}>
-              <Avatar name={p.participantName} size={28} dim={!p.isPaid && !isPayer(d, p)} ring />
+        <div
+          style={{ position: "relative", width: 88, height: 28, flexShrink: 0 }}
+        >
+          {(d.participants.length > 4
+            ? d.participants.slice(0, 3)
+            : d.participants.slice(0, 4)
+          ).map((p, i) => (
+            <span key={p.rowId} style={{ position: "absolute", left: i * 20 }}>
+              <Avatar
+                name={p.participantName}
+                size={28}
+                dim={!p.isPaid && !isPayer(d, p)}
+                ring
+              />
             </span>
           ))}
           {d.participants.length > 4 && (
             <span
               style={{
-                position: 'absolute',
+                position: "absolute",
                 left: 60,
                 width: 28,
                 height: 28,
                 borderRadius: 999,
-                background: 'var(--bg-sunken)',
-                border: '2px solid var(--bg-surface)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                background: "var(--bg-sunken)",
+                border: "2px solid var(--bg-surface)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 fontSize: 11,
-                fontWeight: '700',
-                color: 'var(--fg-secondary)',
+                fontWeight: "700",
+                color: "var(--fg-secondary)",
               }}
             >
               +{d.participants.length - 3}
@@ -730,58 +920,72 @@ function SessionCard({
             // 정합 위해 진한 다크. desk-front --bg-sunken 은 surface-input(연함)으로 잘못
             // alias, 그리고 --bg-page alias 는 없음(=무효 transparent 였음) → 유효 alias
             // --bg-canvas(=--color-bg-page 다크 #1a1f2e)로 더치 track 만 처리.
-            background: 'var(--bg-canvas)',
+            background: "var(--bg-canvas)",
             borderRadius: 999,
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           <div
             style={{
               width: `${pct}%`,
-              height: '100%',
+              height: "100%",
               // fg-brand = 다크모드 primary-light swap (앱 fgBrand 정합)
-              background: 'var(--fg-brand)',
+              background: "var(--fg-brand)",
               borderRadius: 999,
-              transition: 'width var(--motion-duration-slow) var(--ease-decel)',
+              transition: "width var(--motion-duration-slow) var(--ease-decel)",
             }}
           />
         </div>
         <span
           className="num"
-          style={{ fontSize: 12, fontWeight: '700', color: 'var(--fg-secondary)', flexShrink: 0 }}
+          style={{
+            fontSize: 12,
+            fontWeight: "700",
+            color: "var(--fg-secondary)",
+            flexShrink: 0,
+          }}
         >
           {paid}/{total}
         </span>
       </div>
     </SessionShell>
-  )
+  );
 }
 
 /** 완료 탭 행. */
-function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: () => void }) {
-  const { t } = useTranslation('dutchPay')
+function PastRow({
+  d,
+  first,
+  onClick,
+}: {
+  d: DutchPay;
+  first: boolean;
+  onClick: () => void;
+}) {
+  const { t } = useTranslation("dutchPay");
   return (
     <div
       onClick={onClick}
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 12,
-        padding: '12px 0',
-        cursor: 'pointer',
-        borderTop: first ? 'none' : '1px solid var(--border-subtle)',
+        padding: "12px 0",
+        cursor: "pointer",
+        borderTop: first ? "none" : "1px solid var(--border-subtle)",
       }}
     >
       <span
         style={{
           width: 36,
           height: 36,
-          borderRadius: 'var(--radius-md)',
-          background: 'color-mix(in oklab, var(--color-chart-green) 14%, var(--bg-surface))',
-          color: 'var(--status-success-fg)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "var(--radius-md)",
+          background:
+            "color-mix(in oklab, var(--color-chart-green) 14%, var(--bg-surface))",
+          color: "var(--status-success-fg)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           flexShrink: 0,
         }}
       >
@@ -791,33 +995,52 @@ function PastRow({ d, first, onClick }: { d: DutchPay; first: boolean; onClick: 
         <div
           style={{
             fontSize: 14,
-            fontWeight: '600',
-            color: 'var(--fg-primary)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            fontWeight: "600",
+            color: "var(--fg-primary)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           {d.title}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {kDateMd(d.dutchPayDate)} · {d.participants.length}{t('participants')}
+        <div
+          style={{ fontSize: 12, color: "var(--fg-tertiary)", marginTop: 2 }}
+        >
+          {kDateMd(d.dutchPayDate)} · {d.participants.length}
+          {t("participants")}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 1,
+          flexShrink: 0,
+        }}
+      >
         <MaskAmount card="dutchpay.sessions" mask="••••">
-          <span className="num" style={{ fontSize: 14, fontWeight: '700' }}>
-            {wonPre()}{KRW(d.totalAmount)}
+          <span className="num" style={{ fontSize: 14, fontWeight: "700" }}>
+            {wonPre()}
+            {KRW(d.totalAmount)}
           </span>
         </MaskAmount>
         {!isEn() && (
           <HideUnit>
-            <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--fg-tertiary)' }}>원</span>
+            <span
+              style={{
+                fontSize: 11.5,
+                fontWeight: "600",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              원
+            </span>
           </HideUnit>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 /** 친구 탭 행. */
@@ -825,64 +1048,103 @@ function FriendRow({
   f,
   first,
 }: {
-  f: { name: string; sessions: number; net: number }
-  first: boolean
+  f: { name: string; sessions: number; net: number };
+  first: boolean;
 }) {
-  const { t } = useTranslation('dutchPay')
+  const { t } = useTranslation("dutchPay");
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 12,
-        padding: '12px 0',
-        borderTop: first ? 'none' : '1px solid var(--border-subtle)',
+        padding: "12px 0",
+        borderTop: first ? "none" : "1px solid var(--border-subtle)",
       }}
     >
       <Avatar name={f.name} size={40} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: '600', color: 'var(--fg-primary)' }}>{f.name}</div>
-        <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
-          {t('settledTogether', { count: f.sessions })}
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: "600",
+            color: "var(--fg-primary)",
+          }}
+        >
+          {f.name}
+        </div>
+        <div
+          style={{ fontSize: 12, color: "var(--fg-tertiary)", marginTop: 2 }}
+        >
+          {t("settledTogether", { count: f.sessions })}
         </div>
       </div>
       {f.net > 0 ? (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 1,
+            flexShrink: 0,
+          }}
+        >
           <MaskAmount card="dutchpay.sessions" mask="••••">
-            <span className="num" style={{ fontSize: 14, fontWeight: '700', color: 'var(--status-success-fg)' }}>
-              +{wonPre()}{KRW(f.net)}
+            <span
+              className="num"
+              style={{
+                fontSize: 14,
+                fontWeight: "700",
+                color: "var(--status-success-fg)",
+              }}
+            >
+              +{wonPre()}
+              {KRW(f.net)}
             </span>
           </MaskAmount>
           {!isEn() && (
             <HideUnit>
-              <span style={{ fontSize: 11.5, fontWeight: '600', color: 'var(--status-success-fg)' }}>원</span>
+              <span
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: "600",
+                  color: "var(--status-success-fg)",
+                }}
+              >
+                원
+              </span>
             </HideUnit>
           )}
         </div>
       ) : (
-        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', flexShrink: 0 }}>{t('settled')}</span>
+        <span
+          style={{ fontSize: 12, color: "var(--fg-tertiary)", flexShrink: 0 }}
+        >
+          {t("settled")}
+        </span>
       )}
     </div>
-  )
+  );
 }
 
 /** 데스크톱 우측 통계 row. */
 function StatRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <span style={{ fontSize: 13, color: 'var(--fg-secondary)' }}>{label}</span>
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <span style={{ fontSize: 13, color: "var(--fg-secondary)" }}>
+        {label}
+      </span>
       <span
         style={{
-          marginLeft: 'auto',
+          marginLeft: "auto",
           fontSize: 14,
-          fontWeight: '700',
-          color: 'var(--fg-primary)',
+          fontWeight: "700",
+          color: "var(--fg-primary)",
         }}
       >
         {value}
       </span>
     </div>
-  )
+  );
 }
 
 /** 빈 상태 (메모/할일 패턴 정합). */
@@ -891,38 +1153,45 @@ function EmptyState({
   title,
   desc,
 }: {
-  icon: React.ReactNode
-  title: string
-  desc: string
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
 }) {
   return (
-    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
       <div
         style={{
           width: 56,
           height: 56,
           borderRadius: 999,
-          background: 'var(--bg-sunken)',
-          color: 'var(--fg-tertiary)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          background: "var(--bg-sunken)",
+          color: "var(--fg-tertiary)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           marginBottom: 14,
         }}
       >
         {icon}
       </div>
-      <div style={{ fontSize: 15, fontWeight: '700', color: 'var(--fg-primary)', marginBottom: 4 }}>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: "700",
+          color: "var(--fg-primary)",
+          marginBottom: 4,
+        }}
+      >
         {title}
       </div>
-      <div style={{ fontSize: 13, color: 'var(--fg-tertiary)' }}>{desc}</div>
+      <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>{desc}</div>
     </div>
-  )
+  );
 }
 
 // ───────────────────────── 만들기 2단계 마법사 ─────────────────────────
 
-const MY_NAME = '나'
+const MY_NAME = "나";
 
 function DutchCreateWizard({
   mobile,
@@ -932,125 +1201,137 @@ function DutchCreateWizard({
   onCreate,
   submitting,
 }: {
-  mobile: boolean
-  today: string
-  friendNames: string[]
-  onClose: () => void
-  onCreate: (values: DutchPayFormValues) => void
-  submitting?: boolean
+  mobile: boolean;
+  today: string;
+  friendNames: string[];
+  onClose: () => void;
+  onCreate: (values: DutchPayFormValues) => void;
+  submitting?: boolean;
 }) {
-  const { t } = useTranslation('dutchPay')
-  const { t: tc } = useTranslation('common')
-  const [step, setStep] = useState<1 | 2>(1)
-  const [title, setTitle] = useState('')
-  const [place, setPlace] = useState('')
-  const [totalStr, setTotalStr] = useState('')
-  const [date, setDate] = useState(today)
-  const [titleError, setTitleError] = useState(false)
+  const { t } = useTranslation("dutchPay");
+  const { t: tc } = useTranslation("common");
+  const [step, setStep] = useState<1 | 2>(1);
+  const [title, setTitle] = useState("");
+  const [place, setPlace] = useState("");
+  const [totalStr, setTotalStr] = useState("");
+  const [date, setDate] = useState(today);
+  const [titleError, setTitleError] = useState(false);
 
   // 추천 목록 = 기존 정산 이름 빈도 기반(중복 제거). 직접 추가 이름은 extras 에.
-  const [extras, setExtras] = useState<string[]>([])
-  const [newName, setNewName] = useState('')
+  const [extras, setExtras] = useState<string[]>([]);
+  const [newName, setNewName] = useState("");
   // 선택 상태: '나'는 항상 참가. picked 에 이름 set.
-  const [picked, setPicked] = useState<Set<string>>(() => new Set([MY_NAME]))
+  const [picked, setPicked] = useState<Set<string>>(() => new Set([MY_NAME]));
   // 결제한 사람. 기본은 나지만 바꿀 수 있다 — 친구가 계산하고 내가 갚는 경우가 있다.
-  const [payerName, setPayerName] = useState<string>(MY_NAME)
+  const [payerName, setPayerName] = useState<string>(MY_NAME);
 
-  const totalNum = useMemo(() => Number(totalStr.replace(/[^0-9]/g, '')) || 0, [totalStr])
+  const totalNum = useMemo(
+    () => Number(totalStr.replace(/[^0-9]/g, "")) || 0,
+    [totalStr],
+  );
 
   const candidates = useMemo(() => {
-    const seen = new Set<string>([MY_NAME])
-    const out: string[] = []
+    const seen = new Set<string>([MY_NAME]);
+    const out: string[] = [];
     for (const n of [...friendNames, ...extras]) {
-      if (!n.trim() || seen.has(n)) continue
-      seen.add(n)
-      out.push(n)
+      if (!n.trim() || seen.has(n)) continue;
+      seen.add(n);
+      out.push(n);
     }
-    return out
-  }, [friendNames, extras])
+    return out;
+  }, [friendNames, extras]);
 
-  const perPerson = picked.size > 0 ? Math.floor(totalNum / picked.size) : 0
+  const perPerson = picked.size > 0 ? Math.floor(totalNum / picked.size) : 0;
 
   const toggle = (name: string) => {
-    if (name === MY_NAME) return // '나'는 항상 참가
-    setPicked(prev => {
-      const next = new Set(prev)
+    if (name === MY_NAME) return; // '나'는 항상 참가
+    setPicked((prev) => {
+      const next = new Set(prev);
       if (next.has(name)) {
-        next.delete(name)
+        next.delete(name);
         // 빠진 사람이 결제자였으면 결제자를 잃는다 — 나에게 되돌린다.
-        if (name === payerName) setPayerName(MY_NAME)
-      } else next.add(name)
-      return next
-    })
-  }
+        if (name === payerName) setPayerName(MY_NAME);
+      } else next.add(name);
+      return next;
+    });
+  };
 
   const addName = () => {
-    const v = newName.trim()
+    const v = newName.trim();
     if (!v || v === MY_NAME || candidates.includes(v)) {
-      setNewName('')
-      return
+      setNewName("");
+      return;
     }
-    setExtras(prev => [...prev, v])
-    setPicked(prev => new Set(prev).add(v))
-    setNewName('')
-  }
+    setExtras((prev) => [...prev, v]);
+    setPicked((prev) => new Set(prev).add(v));
+    setNewName("");
+  };
 
   const goNext = () => {
     if (!title.trim() || totalNum <= 0) {
-      if (!title.trim()) setTitleError(true)
-      return
+      if (!title.trim()) setTitleError(true);
+      return;
     }
-    setStep(2)
-  }
+    setStep(2);
+  };
 
   const submit = () => {
-    if (picked.size < 2) return
+    if (picked.size < 2) return;
     // EQUAL 분배: floor, 나머지 첫 참여자(나).
-    const names = [MY_NAME, ...candidates.filter(n => picked.has(n))]
-    const base = Math.floor(totalNum / names.length)
-    const remainder = totalNum - base * names.length
+    const names = [MY_NAME, ...candidates.filter((n) => picked.has(n))];
+    const base = Math.floor(totalNum / names.length);
+    const remainder = totalNum - base * names.length;
     const participants = names.map((name, i) => ({
       userRowId: null,
       participantName: name,
       amount: base + (i === 0 ? remainder : 0),
       // 결제자는 순서와 무관하다 — 서버가 이 값을 저장하고, 화면은 더 이상 추측하지 않는다.
       isPayer: name === payerName,
-    }))
+    }));
     onCreate({
       title: title.trim(),
       description: place.trim() || undefined,
       totalAmount: totalNum,
-      splitMethod: 'EQUAL',
+      splitMethod: "EQUAL",
       dutchPayDate: date,
       participants,
-    })
-  }
+    });
+  };
 
   const Footer =
     step === 1 ? (
       <>
         <Button variant="outline" onClick={onClose}>
-          {tc('cancel')}
+          {tc("cancel")}
         </Button>
         <Button onClick={goNext} disabled={!title.trim() || totalNum <= 0}>
-          {tc('next')}
+          {tc("next")}
         </Button>
       </>
     ) : (
       <>
-        <Button variant="outline" onClick={() => setStep(1)} disabled={submitting}>
-          <ChevronLeft size={14} /> {tc('prev')}
+        <Button
+          variant="outline"
+          onClick={() => setStep(1)}
+          disabled={submitting}
+        >
+          <ChevronLeft size={14} /> {tc("prev")}
         </Button>
-        <Button onClick={submit} disabled={picked.size < 2} loading={submitting}>
-          <Check size={14} /> {t('fromTx.createSettlement')}
+        <Button
+          onClick={submit}
+          disabled={picked.size < 2}
+          loading={submitting}
+        >
+          <Check size={14} /> {t("fromTx.createSettlement")}
         </Button>
       </>
-    )
+    );
 
   return (
     <ModalShell
-      title={t('stepTitle', {
-        title: step === 1 ? t('fromTx.createSettlement') : t('pickParticipants'),
+      title={t("stepTitle", {
+        title:
+          step === 1 ? t("fromTx.createSettlement") : t("pickParticipants"),
         step,
         total: 2,
       })}
@@ -1062,14 +1343,14 @@ function DutchCreateWizard({
       {step === 1 ? (
         <>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('nameLabel')}</FieldLabel>
+            <FieldLabel>{t("nameLabel")}</FieldLabel>
             <Input
               value={title}
-              onChange={e => {
-                setTitle(e.target.value)
-                if (titleError) setTitleError(false)
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (titleError) setTitleError(false);
               }}
-              placeholder={t('namePlaceholder')}
+              placeholder={t("namePlaceholder")}
               aria-invalid={titleError}
               autoFocus
             />
@@ -1077,47 +1358,51 @@ function DutchCreateWizard({
               <div
                 style={{
                   marginTop: 8,
-                  padding: '8px 12px',
-                  background: 'var(--status-danger-subtle)',
-                  color: 'var(--status-danger-fg)',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: "8px 12px",
+                  background: "var(--status-danger-subtle)",
+                  color: "var(--status-danger-fg)",
+                  borderRadius: "var(--radius-sm)",
                   fontSize: 13,
                 }}
               >
-                {t('nameRequired')}
+                {t("nameRequired")}
               </div>
             )}
           </Field>
 
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t('placeLabel')}</FieldLabel>
+            <FieldLabel>{t("placeLabel")}</FieldLabel>
             <Input
               value={place}
-              onChange={e => setPlace(e.target.value)}
-              placeholder={t('placePlaceholder')}
+              onChange={(e) => setPlace(e.target.value)}
+              placeholder={t("placePlaceholder")}
             />
           </Field>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}
+          >
             <Field>
-              <FieldLabel>{t('form.totalAmount')}</FieldLabel>
-              <div style={{ position: 'relative' }}>
+              <FieldLabel>{t("form.totalAmount")}</FieldLabel>
+              <div style={{ position: "relative" }}>
                 <Input
-                  value={totalNum > 0 ? totalNum.toLocaleString('ko-KR') : totalStr}
-                  onChange={e => setTotalStr(e.target.value)}
+                  value={
+                    totalNum > 0 ? totalNum.toLocaleString("ko-KR") : totalStr
+                  }
+                  onChange={(e) => setTotalStr(e.target.value)}
                   inputMode="numeric"
                   placeholder="0"
-                  style={{ paddingRight: 28, textAlign: 'right' }}
+                  style={{ paddingRight: 28, textAlign: "right" }}
                 />
                 <span
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     right: 12,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     fontSize: 13,
-                    color: 'var(--fg-tertiary)',
-                    pointerEvents: 'none',
+                    color: "var(--fg-tertiary)",
+                    pointerEvents: "none",
                   }}
                 >
                   원
@@ -1125,8 +1410,12 @@ function DutchCreateWizard({
               </div>
             </Field>
             <Field>
-              <FieldLabel>{t('form.date')}</FieldLabel>
-              <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <FieldLabel>{t("form.date")}</FieldLabel>
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </Field>
           </div>
         </>
@@ -1135,39 +1424,50 @@ function DutchCreateWizard({
           <div
             style={{
               fontSize: 13,
-              color: 'var(--fg-secondary)',
+              color: "var(--fg-secondary)",
               marginBottom: 12,
-              fontWeight: '600',
+              fontWeight: "600",
             }}
           >
-            {t('selectedCount', { count: picked.size })} · {t('fromTx.perPerson')}{' '}
+            {t("selectedCount", { count: picked.size })} ·{" "}
+            {t("fromTx.perPerson")}{" "}
             <MaskAmount card="dutchpay.sessions" mask="••••">
-              <span className="num">{wonPre()}{KRW(perPerson)}</span>
+              <span className="num">
+                {wonPre()}
+                {KRW(perPerson)}
+              </span>
             </MaskAmount>
             <WonUnit card="dutchpay.sessions" />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              marginBottom: 12,
+            }}
+          >
             <ParticipantPick
               name={MY_NAME}
-              note={payerName === MY_NAME ? t('payer') : t('setPayer')}
+              note={payerName === MY_NAME ? t("payer") : t("setPayer")}
               checked
               locked
               onToggle={() => {}}
               isPayer={payerName === MY_NAME}
               onSetPayer={() => setPayerName(MY_NAME)}
             />
-            {candidates.map(name => (
+            {candidates.map((name) => (
               <ParticipantPick
                 key={name}
                 name={name}
                 note={
                   payerName === name
-                    ? t('payer')
+                    ? t("payer")
                     : picked.has(name)
-                      ? t('setPayer')
+                      ? t("setPayer")
                       : friendNames.includes(name)
-                        ? t('recommended')
+                        ? t("recommended")
                         : undefined
                 }
                 checked={picked.has(name)}
@@ -1178,26 +1478,30 @@ function DutchCreateWizard({
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             <Input
               value={newName}
-              onChange={e => setNewName(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addName()
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addName();
                 }
               }}
-              placeholder={t('fromTx.addNamePlaceholder')}
+              placeholder={t("fromTx.addNamePlaceholder")}
             />
-            <Button variant="outline" onClick={addName} style={{ flexShrink: 0 }}>
-              <Plus size={14} /> {tc('add')}
+            <Button
+              variant="outline"
+              onClick={addName}
+              style={{ flexShrink: 0 }}
+            >
+              <Plus size={14} /> {tc("add")}
             </Button>
           </div>
         </>
       )}
     </ModalShell>
-  )
+  );
 }
 
 /** 참여자 선택 행 (체크). */
@@ -1210,42 +1514,43 @@ function ParticipantPick({
   isPayer,
   onSetPayer,
 }: {
-  name: string
-  note?: string
-  checked: boolean
-  locked?: boolean
-  onToggle: () => void
+  name: string;
+  note?: string;
+  checked: boolean;
+  locked?: boolean;
+  onToggle: () => void;
   /** 이 사람이 결제했는가. 표시만 하고, 바꾸는 건 onSetPayer. */
-  isPayer?: boolean
+  isPayer?: boolean;
   /** 결제자로 지정. 선택된 사람에게만 준다 — 안 낀 사람이 결제자일 수는 없다. */
-  onSetPayer?: () => void
+  onSetPayer?: () => void;
 }) {
   return (
     <div
       onClick={locked ? undefined : onToggle}
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 12,
-        padding: '8px 10px',
-        borderRadius: 'var(--radius-md)',
+        padding: "8px 10px",
+        borderRadius: "var(--radius-md)",
         background: checked
-          ? 'color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))'
-          : 'transparent',
-        cursor: locked ? 'default' : 'pointer',
-        transition: 'background var(--motion-duration-fast) var(--motion-ease-out)',
+          ? "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))"
+          : "transparent",
+        cursor: locked ? "default" : "pointer",
+        transition:
+          "background var(--motion-duration-fast) var(--motion-ease-out)",
       }}
     >
       <span
         style={{
           width: 18,
           height: 18,
-          borderRadius: 'var(--radius-sm)',
-          border: checked ? '0' : '2px solid var(--border-strong)',
-          background: checked ? 'var(--color-primary)' : 'transparent',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "var(--radius-sm)",
+          border: checked ? "0" : "2px solid var(--border-strong)",
+          background: checked ? "var(--color-primary)" : "transparent",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           flexShrink: 0,
         }}
       >
@@ -1253,28 +1558,42 @@ function ParticipantPick({
       </span>
       <Avatar name={name} size={32} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 13.5, fontWeight: '600', color: 'var(--fg-primary)' }}>{name}</span>
+        <span
+          style={{
+            fontSize: 13.5,
+            fontWeight: "600",
+            color: "var(--fg-primary)",
+          }}
+        >
+          {name}
+        </span>
       </div>
-      {isPayer && <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>{note}</span>}
+      {isPayer && (
+        <span style={{ fontSize: 11.5, color: "var(--fg-tertiary)" }}>
+          {note}
+        </span>
+      )}
       {/* 결제자가 아닌 선택된 사람 — 눌러서 결제자를 옮긴다. 행 클릭(선택 해제)과
           겹치지 않게 전파를 막는다. */}
       {!isPayer && onSetPayer && checked && (
         <Button
           variant="ghost"
           size="sm"
-          onClick={e => {
-            e.stopPropagation()
-            onSetPayer()
+          onClick={(e) => {
+            e.stopPropagation();
+            onSetPayer();
           }}
         >
           {note}
         </Button>
       )}
       {!isPayer && !onSetPayer && note && (
-        <span style={{ fontSize: 11.5, color: 'var(--fg-tertiary)' }}>{note}</span>
+        <span style={{ fontSize: 11.5, color: "var(--fg-tertiary)" }}>
+          {note}
+        </span>
       )}
     </div>
-  )
+  );
 }
 
 // ───────────────────────── 상세 모달 ─────────────────────────
@@ -1292,24 +1611,26 @@ function DutchDetailDialog({
   settleAllPending,
   deleting,
 }: {
-  d: DutchPay
-  mobile: boolean
-  onClose: () => void
-  onMarkPaid: (dutchPayId: number, participantId: number) => void
-  onRequest: (name: string) => void
-  onRequestAll: (d: DutchPay) => void
-  onSettleAll: (id: number) => void
-  onDelete: (id: number) => void
-  markPaidPending?: boolean
-  settleAllPending?: boolean
-  deleting?: boolean
+  d: DutchPay;
+  mobile: boolean;
+  onClose: () => void;
+  onMarkPaid: (dutchPayId: number, participantId: number) => void;
+  onRequest: (name: string) => void;
+  onRequestAll: (d: DutchPay) => void;
+  onSettleAll: (id: number) => void;
+  onDelete: (id: number) => void;
+  markPaidPending?: boolean;
+  settleAllPending?: boolean;
+  deleting?: boolean;
 }) {
-  const { t } = useTranslation('dutchPay')
-  const { t: tc } = useTranslation('common')
-  const active = isActiveSession(d)
-  const per = perPersonOf(d)
-  const place = d.description?.trim()
-  const meta = place ? `${place} · ${kDateFull(d.dutchPayDate)}` : kDateFull(d.dutchPayDate)
+  const { t } = useTranslation("dutchPay");
+  const { t: tc } = useTranslation("common");
+  const active = isActiveSession(d);
+  const per = perPersonOf(d);
+  const place = d.description?.trim();
+  const meta = place
+    ? `${place} · ${kDateFull(d.dutchPayDate)}`
+    : kDateFull(d.dutchPayDate);
 
   const Footer = active ? (
     <>
@@ -1317,16 +1638,16 @@ function DutchDetailDialog({
         variant="ghost"
         flush="left"
         onClick={() => onDelete(d.rowId)}
-        style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
+        style={{ color: "var(--status-danger-fg)", marginRight: "auto" }}
         loading={deleting}
       >
-        <Trash2 size={14} /> {tc('delete')}
+        <Trash2 size={14} /> {tc("delete")}
       </Button>
       <Button variant="outline" onClick={onClose}>
-        {tc('close')}
+        {tc("close")}
       </Button>
       <Button onClick={() => onRequestAll(d)}>
-        <Send size={14} /> {t('requestAll')}
+        <Send size={14} /> {t("requestAll")}
       </Button>
     </>
   ) : (
@@ -1335,65 +1656,108 @@ function DutchDetailDialog({
         variant="ghost"
         flush="left"
         onClick={() => onDelete(d.rowId)}
-        style={{ color: 'var(--status-danger-fg)', marginRight: 'auto' }}
+        style={{ color: "var(--status-danger-fg)", marginRight: "auto" }}
         loading={deleting}
       >
-        <Trash2 size={14} /> {tc('delete')}
+        <Trash2 size={14} /> {tc("delete")}
       </Button>
       <Button variant="outline" onClick={onClose}>
-        {tc('close')}
+        {tc("close")}
       </Button>
     </>
-  )
+  );
 
   return (
-    <ModalShell title={t('detailTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("detailTitle")}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       {/* hero */}
       <div
         style={{
-          background: 'color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))',
-          borderRadius: 'var(--radius-md)',
-          padding: '18px 20px',
+          background:
+            "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))",
+          borderRadius: "var(--radius-md)",
+          padding: "18px 20px",
           marginBottom: 16,
         }}
       >
-        <div style={{ fontSize: 12, fontWeight: '600', color: 'var(--fg-tertiary)' }}>{meta}</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginTop: 6 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color: "var(--fg-tertiary)",
+          }}
+        >
+          {meta}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 3,
+            marginTop: 6,
+          }}
+        >
           <MaskAmount card="dutchpay.sessions" mask="••••">
             <span
               className="num"
               style={{
                 fontSize: 28,
-                fontWeight: '800',
-                letterSpacing: '-0.03em',
-                color: 'var(--color-primary)',
+                fontWeight: "800",
+                letterSpacing: "-0.03em",
+                color: "var(--color-primary)",
               }}
             >
-              {wonPre()}{KRW(d.totalAmount)}
+              {wonPre()}
+              {KRW(d.totalAmount)}
             </span>
           </MaskAmount>
           {!isEn() && (
             <HideUnit>
-              <span style={{ fontSize: 15, fontWeight: '700', color: 'var(--color-primary)' }}>원</span>
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: "700",
+                  color: "var(--color-primary)",
+                }}
+              >
+                원
+              </span>
             </HideUnit>
           )}
         </div>
-        <div style={{ fontSize: 12.5, color: 'var(--fg-secondary)', marginTop: 4 }}>
-          {t('fromTx.perPerson')} <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(per)}</MaskAmount>
+        <div
+          style={{ fontSize: 12.5, color: "var(--fg-secondary)", marginTop: 4 }}
+        >
+          {t("fromTx.perPerson")}{" "}
+          <MaskAmount card="dutchpay.sessions" mask="••••">
+            {wonPre()}
+            {KRW(per)}
+          </MaskAmount>
           <WonUnit card="dutchpay.sessions" />
         </div>
       </div>
 
       {/* 진행 중 = 전체 정산 액션 */}
       {active && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 8,
+          }}
+        >
           <Button
             variant="outline"
             size="sm"
             loading={settleAllPending}
             onClick={() => onSettleAll(d.rowId)}
           >
-            {t('settleAllDone')}
+            {t("settleAllDone")}
           </Button>
         </div>
       )}
@@ -1401,51 +1765,79 @@ function DutchDetailDialog({
       <div
         style={{
           fontSize: 11,
-          fontWeight: '700',
-          color: 'var(--fg-tertiary)',
-          letterSpacing: '0.04em',
+          fontWeight: "700",
+          color: "var(--fg-tertiary)",
+          letterSpacing: "0.04em",
           marginBottom: 8,
         }}
       >
-        {t('fromTx.participants')} · {d.participants.length}{t('participants')}
+        {t("fromTx.participants")} · {d.participants.length}
+        {t("participants")}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {d.participants.map(p => {
-          const payer = isPayer(d, p)
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {d.participants.map((p) => {
+          const payer = isPayer(d, p);
           const statusText = payer
-            ? t('payer')
+            ? t("payer")
             : p.isPaid
-              ? t('settled')
-              : null
+              ? t("settled")
+              : null;
           return (
-            <div key={p.rowId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0' }}>
-              <Avatar name={p.participantName} size={36} dim={!p.isPaid && !payer} />
+            <div
+              key={p.rowId}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "6px 0",
+              }}
+            >
+              <Avatar
+                name={p.participantName}
+                size={36}
+                dim={!p.isPaid && !payer}
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: '600', color: 'var(--fg-primary)' }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "600",
+                      color: "var(--fg-primary)",
+                    }}
+                  >
                     {p.participantName}
                   </span>
                   {payer && (
                     <span
                       style={{
                         fontSize: 10.5,
-                        fontWeight: '700',
-                        padding: '2px 7px',
-                        borderRadius: 'var(--radius-pill)',
-                        background: 'var(--bg-brand-subtle)',
-                        color: 'var(--fg-brand-strong)',
+                        fontWeight: "700",
+                        padding: "2px 7px",
+                        borderRadius: "var(--radius-pill)",
+                        background: "var(--bg-brand-subtle)",
+                        color: "var(--fg-brand-strong)",
                       }}
                     >
-                      {t('payer')}
+                      {t("payer")}
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--fg-tertiary)",
+                    marginTop: 2,
+                  }}
+                >
                   {statusText ?? (
                     <>
-                      <MaskAmount card="dutchpay.sessions" mask="••••">{wonPre()}{KRW(p.amount)}</MaskAmount>
-                      <WonUnit card="dutchpay.sessions" /> {t('transferNeeded')}
+                      <MaskAmount card="dutchpay.sessions" mask="••••">
+                        {wonPre()}
+                        {KRW(p.amount)}
+                      </MaskAmount>
+                      <WonUnit card="dutchpay.sessions" /> {t("transferNeeded")}
                     </>
                   )}
                 </div>
@@ -1454,15 +1846,15 @@ function DutchDetailDialog({
               {payer ? null : p.isPaid ? (
                 <span
                   style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
+                    display: "inline-flex",
+                    alignItems: "center",
                     gap: 5,
                     fontSize: 11.5,
-                    fontWeight: '700',
-                    padding: '3px 9px',
-                    borderRadius: 'var(--radius-pill)',
-                    background: 'var(--status-success-subtle)',
-                    color: 'var(--status-success-fg)',
+                    fontWeight: "700",
+                    padding: "3px 9px",
+                    borderRadius: "var(--radius-pill)",
+                    background: "var(--status-success-subtle)",
+                    color: "var(--status-success-fg)",
                     flexShrink: 0,
                   }}
                 >
@@ -1471,20 +1863,24 @@ function DutchDetailDialog({
                       width: 6,
                       height: 6,
                       borderRadius: 999,
-                      background: 'currentColor',
+                      background: "currentColor",
                     }}
                   />
-                  {t('done')}
+                  {t("done")}
                 </span>
               ) : (
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <Button variant="outline" size="sm" onClick={() => onRequest(p.participantName)}>
-                    {t('request')}
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRequest(p.participantName)}
+                  >
+                    {t("request")}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={t('markPaidLabel')}
+                    aria-label={t("markPaidLabel")}
                     loading={markPaidPending}
                     onClick={() => onMarkPaid(d.rowId, p.rowId)}
                   >
@@ -1493,11 +1889,11 @@ function DutchDetailDialog({
                 </div>
               )}
             </div>
-          )
+          );
         })}
       </div>
     </ModalShell>
-  )
+  );
 }
 
 // ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
@@ -1505,73 +1901,102 @@ function DutchDetailDialog({
 function SummaryCardSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mobile ? 10 : 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: mobile ? 10 : 12,
+        }}
+      >
         <SkeletonBase className="h-7 w-7 rounded-sm shrink-0" />
         <SkeletonBase className="h-3 w-12" />
       </div>
-      <SkeletonBase className={mobile ? 'h-6 w-28' : 'h-7 w-32'} />
+      <SkeletonBase className={mobile ? "h-6 w-28" : "h-7 w-32"} />
       <SkeletonBase className="h-3 w-16 mt-2" />
     </Card>
-  )
+  );
 }
 
 function SessionCardSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <Card style={{ padding: mobile ? 18 : 22 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <SkeletonBase className="h-5 w-2/5 mb-2" />
           <SkeletonBase className="h-3.5 w-1/3" />
         </div>
-        <div style={{ flexShrink: 0, textAlign: 'right' }}>
+        <div style={{ flexShrink: 0, textAlign: "right" }}>
           <SkeletonBase className="h-5 w-20 mb-1.5" />
           <SkeletonBase className="h-3 w-14 ml-auto" />
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
         <SkeletonBase className="h-7 w-20 rounded-full shrink-0" />
         <SkeletonBase className="h-1.5 flex-1 rounded-full" />
         <SkeletonBase className="h-3 w-8 shrink-0" />
       </div>
     </Card>
-  )
+  );
 }
 
 /** DutchPay 페이지 구조 일치 skeleton — 요약 2카드 + 탭 + 세션 카드. */
 function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation('dutchPay')
+  const { t } = useTranslation("dutchPay");
   const Summary = (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: mobile ? 8 : 12 }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: mobile ? 8 : 12,
+      }}
+    >
       <SummaryCardSkeleton mobile={mobile} />
       <SummaryCardSkeleton mobile={mobile} />
     </div>
-  )
+  );
   // 정적 탭바 — 데이터 무관 UI 틀이라 로딩 중에도 실제 렌더(카운트는 로드 후 표시). 전환은 no-op.
-  const TabsBar = <DutchPayTabs value="active" onValueChange={() => {}} />
+  const TabsBar = <DutchPayTabs value="active" onValueChange={() => {}} />;
   const Cards = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: mobile ? 10 : 12,
+      }}
+    >
       <SessionCardSkeleton mobile={mobile} />
       <SessionCardSkeleton mobile={mobile} />
     </div>
-  )
+  );
 
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t('title')} />
-        <div style={{ padding: '16px 24px 96px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <MobileBackHeader title={t("title")} />
+        <div style={{ padding: "16px 24px 96px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {Summary}
             {TabsBar}
             {Cards}
           </div>
         </div>
       </>
-    )
+    );
   }
   return (
     <div style={{ padding: 0 }}>
-      <div className="page__head" style={{ padding: '24px 28px 12px', margin: 0, maxWidth: 1320 }}>
+      <div
+        className="page__head"
+        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+      >
         <div>
           <SkeletonBase className="h-8 w-24 mb-2" />
           <SkeletonBase className="h-4 w-40" />
@@ -1580,26 +2005,26 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
           <SkeletonBase className="h-8 w-28 rounded-md" />
         </div>
       </div>
-      <div style={{ padding: '0 28px 24px', maxWidth: 1320 }}>
+      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1.4fr 1fr',
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
             gap: 20,
-            alignItems: 'flex-start',
+            alignItems: "flex-start",
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {Summary}
             {TabsBar}
             {Cards}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <SkeletonBase className="h-48 w-full rounded-[var(--radius-lg)]" />
             <SkeletonBase className="h-40 w-full rounded-[var(--radius-lg)]" />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import * as React from "react"
+import * as React from "react";
 
-import { renderIcon, tileRadius } from "@/shared/lib"
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette"
+import { renderIcon, tileRadius } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 
 /**
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`
@@ -12,13 +12,13 @@ import { getPaletteByColor } from "@/shared/lib/porest/chart-palette"
  * - 색은 카테고리 정의 색을 oklch alpha 로 soft-bg 처리.
  */
 export interface CategoryTileProps {
-  name: string
+  name: string;
   /** 카테고리 정의 색 (`oklch(...)` 또는 hex). 없으면 brand. */
-  color?: string
+  color?: string;
   /** lucide icon 이름 또는 fallback 한 글자. */
-  icon?: string | null
-  active: boolean
-  onClick: () => void
+  icon?: string | null;
+  active: boolean;
+  onClick: () => void;
 }
 
 export function CategoryTile({
@@ -28,7 +28,7 @@ export function CategoryTile({
   active,
   onClick,
 }: CategoryTileProps) {
-  const palette = getPaletteByColor(color)
+  const palette = getPaletteByColor(color);
   return (
     <button
       type="button"
@@ -66,7 +66,7 @@ export function CategoryTile({
       </span>
       <span
         style={{
-          fontSize: 'var(--text-badge)',
+          fontSize: "var(--text-badge)",
           fontWeight: active ? 700 : 500,
           color: active ? "var(--fg-brand-strong)" : "var(--fg-secondary)",
           overflow: "hidden",
@@ -78,7 +78,7 @@ export function CategoryTile({
         {name}
       </span>
     </button>
-  )
+  );
 }
 
 /** 5×N 카테고리 그리드 컨테이너 — 자식으로 `<CategoryTile>` 넘김. */
@@ -87,9 +87,9 @@ export function CategoryGrid({
   columns = 5,
   gap = 6,
 }: {
-  children: React.ReactNode
-  columns?: number
-  gap?: number
+  children: React.ReactNode;
+  columns?: number;
+  gap?: number;
 }) {
   return (
     <div
@@ -101,5 +101,5 @@ export function CategoryGrid({
     >
       {children}
     </div>
-  )
+  );
 }

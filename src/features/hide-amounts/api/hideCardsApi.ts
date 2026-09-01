@@ -1,5 +1,5 @@
-import { apiClient } from '@/shared/api'
-import type { ApiResponse } from '@/shared/types'
+import { apiClient } from "@/shared/api";
+import type { ApiResponse } from "@/shared/types";
 
 /**
  * 금액 가리기 목록 — 기기가 아니라 **계정**에 붙는다.
@@ -13,13 +13,15 @@ export const hideCardsApi = {
    */
   get: async (): Promise<string[] | null> => {
     const resp: ApiResponse<{ hideCards: string[] | null }> =
-      await apiClient.get('/v1/users/me/hide-cards')
-    return resp.data?.hideCards ?? null
+      await apiClient.get("/v1/users/me/hide-cards");
+    return resp.data?.hideCards ?? null;
   },
 
   /** 통째로 교체. 부분 갱신이 아니다. */
   put: async (hideCards: string[]): Promise<void> => {
-    const resp: ApiResponse = await apiClient.put('/v1/users/me/hide-cards', { hideCards })
-    if (!resp.success) throw new Error(resp.message)
+    const resp: ApiResponse = await apiClient.put("/v1/users/me/hide-cards", {
+      hideCards,
+    });
+    if (!resp.success) throw new Error(resp.message);
   },
-}
+};

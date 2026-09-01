@@ -1,4 +1,4 @@
-import { cva } from "class-variance-authority"
+import { cva } from "class-variance-authority";
 
 /*
  * Toggle cva — toggle.tsx 에서 분리(Fast Refresh: 컴포넌트 파일은 컴포넌트만 export).
@@ -49,17 +49,33 @@ export const toggleVariants = cva(
     },
     compoundVariants: [
       // segmented는 size.default의 h-10을 무력화 — padding으로 높이 결정
-      { variant: "segmented", size: "default", class: "h-7 min-h-0 min-w-0 px-3" },
+      {
+        variant: "segmented",
+        size: "default",
+        class: "h-7 min-h-0 min-w-0 px-3",
+      },
       { variant: "segmented", size: "sm", class: "h-7 min-h-0 min-w-0 px-3" },
       { variant: "segmented", size: "lg", class: "h-8 min-h-0 min-w-0 px-3" },
       // segmented-subtle 도 동일 — variant 시각 변경, 사이즈 메트릭은 segmented 와 1:1
-      { variant: "segmented-subtle", size: "default", class: "h-7 min-h-0 min-w-0 px-3" },
-      { variant: "segmented-subtle", size: "sm", class: "h-7 min-h-0 min-w-0 px-3" },
-      { variant: "segmented-subtle", size: "lg", class: "h-8 min-h-0 min-w-0 px-3" },
+      {
+        variant: "segmented-subtle",
+        size: "default",
+        class: "h-7 min-h-0 min-w-0 px-3",
+      },
+      {
+        variant: "segmented-subtle",
+        size: "sm",
+        class: "h-7 min-h-0 min-w-0 px-3",
+      },
+      {
+        variant: "segmented-subtle",
+        size: "lg",
+        class: "h-8 min-h-0 min-w-0 px-3",
+      },
     ],
     defaultVariants: {
       variant: "default",
       size: "default",
     },
   },
-)
+);

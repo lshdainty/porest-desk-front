@@ -1,7 +1,13 @@
-import { Activity, createContext, useContext, type ReactNode } from 'react'
-import { isEn } from '@/shared/lib/porest/format'
-import { HIDE_AMOUNTS_MASK, useHideAmounts } from '@/shared/lib/porest/hide-amounts-core'
-import type { HideCardKey, HideKind } from '@/shared/lib/porest/hide-amounts-cards'
+import { Activity, createContext, useContext, type ReactNode } from "react";
+import { isEn } from "@/shared/lib/porest/format";
+import {
+  HIDE_AMOUNTS_MASK,
+  useHideAmounts,
+} from "@/shared/lib/porest/hide-amounts-core";
+import type {
+  HideCardKey,
+  HideKind,
+} from "@/shared/lib/porest/hide-amounts-cards";
 
 /**
  * 이 아래 금액들이 어느 카드에 속하는지.
@@ -10,18 +16,26 @@ import type { HideCardKey, HideKind } from '@/shared/lib/porest/hide-amounts-car
  * 빠뜨리기 쉽다. 카드 최상단에서 한 번 감싸면 안쪽 `<MaskAmount>` 가 전부 그 카드로
  * 잡힌다. 개별로 다르게 하고 싶을 때만 `card=` 로 덮어쓴다.
  */
-const HideCardContext = createContext<HideCardKey | undefined>(undefined)
+const HideCardContext = createContext<HideCardKey | undefined>(undefined);
 
-export function HideCard({ card, children }: { card: HideCardKey; children: ReactNode }) {
-  return <HideCardContext.Provider value={card}>{children}</HideCardContext.Provider>
+export function HideCard({
+  card,
+  children,
+}: {
+  card: HideCardKey;
+  children: ReactNode;
+}) {
+  return (
+    <HideCardContext.Provider value={card}>{children}</HideCardContext.Provider>
+  );
 }
 
 /** 감싸는 카드가 있으면 그것, 없으면 넘긴 값. 둘 다 없으면 undefined. */
 export function useHideCard(
   card?: HideCardKey | HideCardKey[],
 ): HideCardKey | HideCardKey[] | undefined {
-  const ctx = useContext(HideCardContext)
-  return card ?? ctx
+  const ctx = useContext(HideCardContext);
+  return card ?? ctx;
 }
 
 /**
@@ -34,9 +48,9 @@ export function WonUnit({
 }: { card?: HideCardKey | HideCardKey[]; kind?: HideKind } = {}) {
   return (
     <HideUnit card={card} kind={kind}>
-      {isEn() ? '' : '원'}
+      {isEn() ? "" : "원"}
     </HideUnit>
-  )
+  );
 }
 
 export function MaskAmount({
@@ -45,19 +59,19 @@ export function MaskAmount({
   card,
   kind,
 }: {
-  children: ReactNode
-  mask?: ReactNode
-  card?: HideCardKey | HideCardKey[]
+  children: ReactNode;
+  mask?: ReactNode;
+  card?: HideCardKey | HideCardKey[];
   /** 이 금액이 어떤 거래의 것인가 — 화면 카드와 합집합으로 판정한다. */
-  kind?: HideKind
+  kind?: HideKind;
 }) {
-  const hidden = useHideAmounts(useHideCard(card), kind)
+  const hidden = useHideAmounts(useHideCard(card), kind);
   return (
     <>
-      <Activity mode={hidden ? 'hidden' : 'visible'}>{children}</Activity>
-      <Activity mode={hidden ? 'visible' : 'hidden'}>{mask}</Activity>
+      <Activity mode={hidden ? "hidden" : "visible"}>{children}</Activity>
+      <Activity mode={hidden ? "visible" : "hidden"}>{mask}</Activity>
     </>
-  )
+  );
 }
 
 export function HideUnit({
@@ -65,10 +79,10 @@ export function HideUnit({
   card,
   kind,
 }: {
-  children: ReactNode
-  card?: HideCardKey | HideCardKey[]
-  kind?: HideKind
+  children: ReactNode;
+  card?: HideCardKey | HideCardKey[];
+  kind?: HideKind;
 }) {
-  const hidden = useHideAmounts(useHideCard(card), kind)
-  return <Activity mode={hidden ? 'hidden' : 'visible'}>{children}</Activity>
+  const hidden = useHideAmounts(useHideCard(card), kind);
+  return <Activity mode={hidden ? "hidden" : "visible"}>{children}</Activity>;
 }

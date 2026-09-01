@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { HidePageKey } from '@/shared/lib/porest/hide-amounts-cards'
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import type { HidePageKey } from "@/shared/lib/porest/hide-amounts-cards";
 
 /**
  * 화면의 눈(👁) 버튼 → 금액 숨기기 설정으로 보낸다.
@@ -12,9 +12,9 @@ import type { HidePageKey } from '@/shared/lib/porest/hide-amounts-cards'
  * 자기가 보던 카드를 다시 찾게 만들지 않는다.
  */
 export function useOpenHideAmountsSettings(_page?: HidePageKey) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // 금액 가리기는 계정 > 보안 아래 자기 화면이다(앱 정합) — 그 화면으로 바로 보낸다.
   return useCallback(() => {
-    navigate('/desk/settings?section=hide-amounts')
-  }, [navigate])
+    navigate("/desk/settings?section=hide-amounts");
+  }, [navigate]);
 }

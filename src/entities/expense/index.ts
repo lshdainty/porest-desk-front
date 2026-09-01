@@ -21,8 +21,12 @@ export type {
   StatsPeriod,
   BudgetVsActualItem,
   HeatmapCell,
-} from './model/types'
+} from "./model/types";
 
-export { buildCategoryTree, getSelectableCategories, aggregateByParent } from './lib/categoryUtils'
-export { separateBreakdownByType, withPercentages } from './lib/breakdownUtils'
-export type { SeparatedBreakdown } from './lib/breakdownUtils'
+export {
+  buildCategoryTree,
+  getSelectableCategories,
+  aggregateByParent,
+} from "./lib/categoryUtils";
+export { separateBreakdownByType, withPercentages } from "./lib/breakdownUtils";
+export type { SeparatedBreakdown } from "./lib/breakdownUtils";

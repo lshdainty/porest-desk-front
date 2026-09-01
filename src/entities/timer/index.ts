@@ -1,4 +1,1 @@
-export type {
-  TimerType,
-  Lap,
-} from './model/types'
+export type { TimerType, Lap } from "./model/types";

@@ -1,73 +1,135 @@
-import { useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, LocateFixed, TrendingDown, TrendingUp, X } from 'lucide-react'
-import { useDeviceSize } from '@/shared/lib/porest/responsive'
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerBody, DrawerFooter } from '@/shared/ui/drawer'
-import { CATEGORIES, type CategoryKey, type Tx, type Account } from '@/shared/lib/porest/data'
-import { KRW, money, isEn } from '@/shared/lib/porest/format'
-import { formatYearMonth, formatYear, formatMonthShort } from '@/shared/lib/date'
-import { HideUnit, MaskAmount } from '@/shared/lib/porest/hide-amounts'
-import * as LucideIcons from 'lucide-react'
-import { LedgerRow, LedgerRowAmt, LedgerRowMain, LedgerRowSep, LedgerRowSub, LedgerRowTitle } from './ledger'
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LocateFixed,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { useDeviceSize } from "@/shared/lib/porest/responsive";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerBody,
+  DrawerFooter,
+} from "@/shared/ui/drawer";
+import {
+  CATEGORIES,
+  type CategoryKey,
+  type Tx,
+  type Account,
+} from "@/shared/lib/porest/data";
+import { KRW, money, isEn } from "@/shared/lib/porest/format";
+import {
+  formatYearMonth,
+  formatYear,
+  formatMonthShort,
+} from "@/shared/lib/date";
+import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import * as LucideIcons from "lucide-react";
+import {
+  LedgerRow,
+  LedgerRowAmt,
+  LedgerRowMain,
+  LedgerRowSep,
+  LedgerRowSub,
+  LedgerRowTitle,
+} from "./ledger";
 
-type LucideIconName = keyof typeof LucideIcons
+type LucideIconName = keyof typeof LucideIcons;
 
 const iconNameToPascal = (name: string): string =>
-  name.split('-').map(s => (s[0] ?? '').toUpperCase() + s.slice(1)).join('')
+  name
+    .split("-")
+    .map((s) => (s[0] ?? "").toUpperCase() + s.slice(1))
+    .join("");
 
 export function Icon({
   name,
   size = 16,
   strokeWidth = 2,
-  className = '',
+  className = "",
   style = {},
 }: {
-  name: string
-  size?: number
-  strokeWidth?: number
-  className?: string
-  style?: React.CSSProperties
+  name: string;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  style?: React.CSSProperties;
 }) {
-  const pascal = iconNameToPascal(name) as LucideIconName
-  const Comp = LucideIcons[pascal] as React.ComponentType<{
-    size?: number
-    strokeWidth?: number
-    className?: string
-    style?: React.CSSProperties
-  }> | undefined
+  const pascal = iconNameToPascal(name) as LucideIconName;
+  const Comp = LucideIcons[pascal] as
+    | React.ComponentType<{
+        size?: number;
+        strokeWidth?: number;
+        className?: string;
+        style?: React.CSSProperties;
+      }>
+    | undefined;
   if (!Comp) {
-    return <span className={className} style={{ width: size, height: size, display: 'inline-block', ...style }} />
+    return (
+      <span
+        className={className}
+        style={{ width: size, height: size, display: "inline-block", ...style }}
+      />
+    );
   }
-  return <Comp size={size} strokeWidth={strokeWidth} className={className} style={{ flexShrink: 0, ...style }} />
+  return (
+    <Comp
+      size={size}
+      strokeWidth={strokeWidth}
+      className={className}
+      style={{ flexShrink: 0, ...style }}
+    />
+  );
 }
 
 // CatIcon: data-cat 매트릭스를 컴포넌트 안 룩업으로 이전.
 // 기존 .cat-ico[data-cat="..."] CSS 색상 spec 그대로 보존.
 const CAT_ICO_PALETTE: Record<string, { bg: string; color: string }> = {
-  food:      { bg: 'oklch(0.96 0.03 70)',   color: 'oklch(0.48 0.12 55)' },
-  transport: { bg: 'oklch(0.96 0.02 230)',  color: 'oklch(0.48 0.1 230)' },
-  shopping:  { bg: 'oklch(0.96 0.035 340)', color: 'oklch(0.48 0.12 340)' },
-  cafe:      { bg: 'oklch(0.96 0.03 60)',   color: 'oklch(0.44 0.08 50)' },
-  income:    { bg: 'var(--bg-brand-subtle)',      color: 'var(--fg-brand-strong)' },
-  living:    { bg: 'oklch(0.96 0.025 135)', color: 'oklch(0.48 0.1 140)' },
-  medical:   { bg: 'oklch(0.96 0.03 25)',   color: 'oklch(0.52 0.13 25)' },
-  leisure:   { bg: 'oklch(0.96 0.035 290)', color: 'oklch(0.48 0.12 290)' },
-  bill:      { bg: 'color-mix(in srgb, var(--color-chart-gray) 18%, transparent)',       color: 'var(--color-chart-gray)' },
-  edu:       { bg: 'oklch(0.96 0.03 210)',  color: 'oklch(0.5 0.1 215)' },
-  saving:    { bg: 'var(--bg-warm-tint)',       color: 'var(--color-chart-brown)' },
-}
+  food: { bg: "oklch(0.96 0.03 70)", color: "oklch(0.48 0.12 55)" },
+  transport: { bg: "oklch(0.96 0.02 230)", color: "oklch(0.48 0.1 230)" },
+  shopping: { bg: "oklch(0.96 0.035 340)", color: "oklch(0.48 0.12 340)" },
+  cafe: { bg: "oklch(0.96 0.03 60)", color: "oklch(0.44 0.08 50)" },
+  income: { bg: "var(--bg-brand-subtle)", color: "var(--fg-brand-strong)" },
+  living: { bg: "oklch(0.96 0.025 135)", color: "oklch(0.48 0.1 140)" },
+  medical: { bg: "oklch(0.96 0.03 25)", color: "oklch(0.52 0.13 25)" },
+  leisure: { bg: "oklch(0.96 0.035 290)", color: "oklch(0.48 0.12 290)" },
+  bill: {
+    bg: "color-mix(in srgb, var(--color-chart-gray) 18%, transparent)",
+    color: "var(--color-chart-gray)",
+  },
+  edu: { bg: "oklch(0.96 0.03 210)", color: "oklch(0.5 0.1 215)" },
+  saving: { bg: "var(--bg-warm-tint)", color: "var(--color-chart-brown)" },
+};
 
 const CAT_ICO_DIMS = {
   sm: { w: 32, r: 10, icon: 16 },
   md: { w: 40, r: 12, icon: 18 },
   lg: { w: 48, r: 14, icon: 22 },
-} as const
+} as const;
 
-export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 'md' | 'lg' }) {
-  const def = CATEGORIES[cat]
-  if (!def) return null
-  const dim = CAT_ICO_DIMS[size]
-  const palette = CAT_ICO_PALETTE[cat] ?? { bg: 'var(--bg-surface)', color: 'var(--fg-secondary)' }
+export function CatIcon({
+  cat,
+  size = "md",
+}: {
+  cat: CategoryKey;
+  size?: "sm" | "md" | "lg";
+}) {
+  const def = CATEGORIES[cat];
+  if (!def) return null;
+  const dim = CAT_ICO_DIMS[size];
+  const palette = CAT_ICO_PALETTE[cat] ?? {
+    bg: "var(--bg-surface)",
+    color: "var(--fg-secondary)",
+  };
   return (
     <span
       data-cat={cat}
@@ -75,9 +137,9 @@ export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 
         width: dim.w,
         height: dim.w,
         borderRadius: dim.r,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
         flexShrink: 0,
         background: palette.bg,
         color: palette.color,
@@ -85,17 +147,17 @@ export function CatIcon({ cat, size = 'md' }: { cat: CategoryKey; size?: 'sm' | 
     >
       <Icon name={def.icon} size={dim.icon} strokeWidth={1.9} />
     </span>
-  )
+  );
 }
 
 // tx-row spec — shared/ui/porest/ledger.tsx 의 LedgerRow 계열 공용화.
 export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
-  const c = CATEGORIES[tx.cat]
-  const isIncome = tx.amt > 0
+  const c = CATEGORIES[tx.cat];
+  const isIncome = tx.amt > 0;
   return (
     <LedgerRow onClick={onClick ? () => onClick(tx) : undefined}>
       <CatIcon cat={tx.cat} />
-      <LedgerRowMain as={onClick ? 'button' : 'div'}>
+      <LedgerRowMain as={onClick ? "button" : "div"}>
         <LedgerRowTitle>{tx.title}</LedgerRowTitle>
         <LedgerRowSub>
           <span>{c?.label}</span>
@@ -111,45 +173,70 @@ export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
       </LedgerRowMain>
       <div>
         <LedgerRowAmt>
-          <MaskAmount card="ledger.txList" kind={isIncome ? 'income' : 'expense'}>{isIncome ? '+' : '-'}{isEn() ? '₩' : ''}{KRW(tx.amt, { abs: true })}</MaskAmount>
-          <HideUnit>{isEn() ? '' : '원'}</HideUnit>
+          <MaskAmount
+            card="ledger.txList"
+            kind={isIncome ? "income" : "expense"}
+          >
+            {isIncome ? "+" : "-"}
+            {isEn() ? "₩" : ""}
+            {KRW(tx.amt, { abs: true })}
+          </MaskAmount>
+          <HideUnit>{isEn() ? "" : "원"}</HideUnit>
         </LedgerRowAmt>
       </div>
     </LedgerRow>
-  )
+  );
 }
 
-export function Delta({ pct, amt, small }: { pct: number; amt?: number; small?: boolean }) {
-  const up = pct > 0
-  const color = up ? 'var(--fg-income)' : 'var(--fg-expense)'
+export function Delta({
+  pct,
+  amt,
+  small,
+}: {
+  pct: number;
+  amt?: number;
+  small?: boolean;
+}) {
+  const up = pct > 0;
+  const color = up ? "var(--fg-income)" : "var(--fg-expense)";
   return (
     <span
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
+        display: "inline-flex",
+        alignItems: "center",
         gap: 2,
         color,
-        fontWeight: '600',
-        fontVariantNumeric: 'tabular-nums',
+        fontWeight: "600",
+        fontVariantNumeric: "tabular-nums",
         fontSize: small ? 11.5 : 12.5,
-        letterSpacing: '-0.012em',
+        letterSpacing: "-0.012em",
       }}
     >
-      {up ? <TrendingUp size={small ? 12 : 14} strokeWidth={2.2} /> : <TrendingDown size={small ? 12 : 14} strokeWidth={2.2} />}
-      {up ? '+' : ''}
+      {up ? (
+        <TrendingUp size={small ? 12 : 14} strokeWidth={2.2} />
+      ) : (
+        <TrendingDown size={small ? 12 : 14} strokeWidth={2.2} />
+      )}
+      {up ? "+" : ""}
       {pct.toFixed(1)}%
       {amt != null && (
-        <span style={{ color: 'var(--fg-tertiary)', marginLeft: 4, fontWeight: '500' }}>
-          ({up ? '+' : '−'}
+        <span
+          style={{
+            color: "var(--fg-tertiary)",
+            marginLeft: 4,
+            fontWeight: "500",
+          }}
+        >
+          ({up ? "+" : "−"}
           {money(amt, { abs: true })})
         </span>
       )}
     </span>
-  )
+  );
 }
 
 export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
-  const letter = acc.bank[0]
+  const letter = acc.bank[0];
   return (
     <span
       style={{
@@ -157,236 +244,309 @@ export function BankLogo({ acc, size = 40 }: { acc: Account; size?: number }) {
         width: size,
         height: size,
         fontSize: size * 0.35,
-        borderRadius: 'var(--radius-tile)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: '800',
-        letterSpacing: '-0.022em',
-        color: 'var(--fg-on-brand)',
+        borderRadius: "var(--radius-tile)",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "800",
+        letterSpacing: "-0.022em",
+        color: "var(--fg-on-brand)",
         flexShrink: 0,
       }}
     >
       {letter}
     </span>
-  )
+  );
 }
 
 export function MonthPicker({
   value,
   onChange,
-  align = 'right',
-  variant = 'outline',
+  align = "right",
+  variant = "outline",
 }: {
-  value: string
-  onChange: (v: string) => void
-  align?: 'right' | 'left'
+  value: string;
+  onChange: (v: string) => void;
+  align?: "right" | "left";
   /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만. */
-  variant?: 'outline' | 'borderless'
+  variant?: "outline" | "borderless";
 }) {
-  const { t } = useTranslation('common')
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const size = useDeviceSize()
-  const isMobile = size === 'mobile'
+  const { t } = useTranslation("common");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const size = useDeviceSize();
+  const isMobile = size === "mobile";
 
   // viewport 가장자리 자동 감지 — trigger 위치 기준 dropdown 260px 가 화면 밖 잘리면 align 자동 flip.
-  const computeAlign = (): 'right' | 'left' => {
-    if (!triggerRef.current || typeof window === 'undefined') return align
-    const rect = triggerRef.current.getBoundingClientRect()
-    const DROPDOWN_W = 260
-    const MARGIN = 8
-    const overflowRight = rect.left + DROPDOWN_W > window.innerWidth - MARGIN
-    const overflowLeft = rect.right - DROPDOWN_W < MARGIN
-    if (align === 'right' && overflowLeft) return 'left'
-    if (align === 'left' && overflowRight) return 'right'
-    return align
-  }
-  const [computedAlign, setComputedAlign] = useState<'right' | 'left'>(align)
+  const computeAlign = (): "right" | "left" => {
+    if (!triggerRef.current || typeof window === "undefined") return align;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const DROPDOWN_W = 260;
+    const MARGIN = 8;
+    const overflowRight = rect.left + DROPDOWN_W > window.innerWidth - MARGIN;
+    const overflowLeft = rect.right - DROPDOWN_W < MARGIN;
+    if (align === "right" && overflowLeft) return "left";
+    if (align === "left" && overflowRight) return "right";
+    return align;
+  };
+  const [computedAlign, setComputedAlign] = useState<"right" | "left">(align);
 
   useEffect(() => {
-    if (!open || isMobile) return
+    if (!open || isMobile) return;
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
-  }, [open, isMobile])
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open, isMobile]);
 
-  const parts = value.split('-').map(Number)
-  const y = parts[0] ?? new Date().getFullYear()
-  const m = parts[1] ?? 1
-  const [viewY, setViewY] = useState<number>(y)
+  const parts = value.split("-").map(Number);
+  const y = parts[0] ?? new Date().getFullYear();
+  const m = parts[1] ?? 1;
+  const [viewY, setViewY] = useState<number>(y);
 
-  const now = new Date()
-  const curY = now.getFullYear()
-  const curM = now.getMonth() + 1
+  const now = new Date();
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
 
-  const label = formatYearMonth(new Date(y, m - 1))
+  const label = formatYearMonth(new Date(y, m - 1));
 
   const pick = (nm: number) => {
-    onChange(`${viewY}-${String(nm).padStart(2, '0')}`)
-    setOpen(false)
-  }
+    onChange(`${viewY}-${String(nm).padStart(2, "0")}`);
+    setOpen(false);
+  };
 
   const trigger = (
     <button
       ref={triggerRef}
       onClick={() => {
-        if (!open && !isMobile) setComputedAlign(computeAlign())
-        setOpen(v => !v)
+        if (!open && !isMobile) setComputedAlign(computeAlign());
+        setOpen((v) => !v);
       }}
       className="month-picker__trigger"
       style={{
-        background: 'transparent',
-        border: variant === 'borderless' ? 0 : '1px solid var(--border-subtle)',
-        borderRadius: variant === 'borderless' ? 0 : 'var(--radius-tile)',
-        padding: variant === 'borderless' ? '4px 4px' : '6px 12px',
-        fontSize: variant === 'borderless' ? 'var(--text-body-sm)' : 'var(--text-label-sm)',
-        fontWeight: variant === 'borderless' ? '700' : '600',
-        color: variant === 'borderless' ? 'var(--fg-primary)' : 'var(--fg-secondary)',
-        display: 'inline-flex',
-        alignItems: 'center',
+        background: "transparent",
+        border: variant === "borderless" ? 0 : "1px solid var(--border-subtle)",
+        borderRadius: variant === "borderless" ? 0 : "var(--radius-tile)",
+        padding: variant === "borderless" ? "4px 4px" : "6px 12px",
+        fontSize:
+          variant === "borderless"
+            ? "var(--text-body-sm)"
+            : "var(--text-label-sm)",
+        fontWeight: variant === "borderless" ? "700" : "600",
+        color:
+          variant === "borderless"
+            ? "var(--fg-primary)"
+            : "var(--fg-secondary)",
+        display: "inline-flex",
+        alignItems: "center",
         gap: 4,
-        cursor: 'pointer',
-        fontFamily: 'inherit',
+        cursor: "pointer",
+        fontFamily: "inherit",
       }}
     >
-      {variant !== 'borderless' && <Calendar size={13} />}
+      {variant !== "borderless" && <Calendar size={13} />}
       {label}
-      <ChevronDown size={12} style={{ color: 'var(--fg-tertiary)' }} />
+      <ChevronDown size={12} style={{ color: "var(--fg-tertiary)" }} />
     </button>
-  )
+  );
 
   const yearNav = (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
       <button
         onClick={() => setViewY(viewY - 1)}
-        style={{ background: 'transparent', border: 0, color: 'var(--fg-secondary)', padding: 4, cursor: 'pointer', display: 'inline-flex' }}
+        style={{
+          background: "transparent",
+          border: 0,
+          color: "var(--fg-secondary)",
+          padding: 4,
+          cursor: "pointer",
+          display: "inline-flex",
+        }}
       >
         <ChevronLeft size={16} />
       </button>
-      <div style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-body-sm)', fontWeight: '700', letterSpacing: '-0.012em' }}>
+      <div
+        style={{
+          flex: 1,
+          textAlign: "center",
+          fontSize: "var(--text-body-sm)",
+          fontWeight: "700",
+          letterSpacing: "-0.012em",
+        }}
+      >
         {formatYear(viewY)}
       </div>
       <button
         onClick={() => setViewY(viewY + 1)}
         disabled={viewY >= curY}
-        style={{ background: 'transparent', border: 0, color: viewY >= curY ? 'var(--fg-tertiary)' : 'var(--fg-secondary)', padding: 4, cursor: viewY >= curY ? 'not-allowed' : 'pointer', display: 'inline-flex', opacity: viewY >= curY ? 0.4 : 1 }}
+        style={{
+          background: "transparent",
+          border: 0,
+          color: viewY >= curY ? "var(--fg-tertiary)" : "var(--fg-secondary)",
+          padding: 4,
+          cursor: viewY >= curY ? "not-allowed" : "pointer",
+          display: "inline-flex",
+          opacity: viewY >= curY ? 0.4 : 1,
+        }}
       >
         <ChevronRight size={16} />
       </button>
     </div>
-  )
+  );
 
   const monthGrid = (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-      {Array.from({ length: 12 }, (_, i) => i + 1).map(mm => {
-        const isSel = viewY === y && mm === m
-        const isFuture = viewY > curY || (viewY === curY && mm > curM)
+    <div
+      style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}
+    >
+      {Array.from({ length: 12 }, (_, i) => i + 1).map((mm) => {
+        const isSel = viewY === y && mm === m;
+        const isFuture = viewY > curY || (viewY === curY && mm > curM);
         return (
           <button
             key={mm}
             disabled={isFuture}
             onClick={() => pick(mm)}
             style={{
-              padding: '10px 0',
-              borderRadius: 'var(--radius-md)',
+              padding: "10px 0",
+              borderRadius: "var(--radius-md)",
               // 선택 월 = 채움(흰 글씨) 버튼 → primary 고정(--bg-brand, 다크에서도). 캘린더 월picker(bg-primary) 정합. bg-brand-subtle 틴트가 아닌 solid.
-              border: '1px solid transparent',
-              background: isSel ? 'var(--bg-brand)' : 'transparent',
-              color: isFuture ? 'var(--fg-tertiary)' : isSel ? 'var(--fg-on-brand)' : 'var(--fg-primary)',
-              fontSize: 'var(--text-label-sm)',
+              border: "1px solid transparent",
+              background: isSel ? "var(--bg-brand)" : "transparent",
+              color: isFuture
+                ? "var(--fg-tertiary)"
+                : isSel
+                  ? "var(--fg-on-brand)"
+                  : "var(--fg-primary)",
+              fontSize: "var(--text-label-sm)",
               fontWeight: isSel ? 700 : 500,
-              cursor: isFuture ? 'not-allowed' : 'pointer',
+              cursor: isFuture ? "not-allowed" : "pointer",
               opacity: isFuture ? 0.4 : 1,
-              fontFamily: 'inherit',
+              fontFamily: "inherit",
             }}
           >
             {formatMonthShort(mm)}
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 
   // 모바일(Drawer) 은 풀폭 반반 — spec drawer.md "flex:1 평등 분배".
   // 데스크탑 팝오버는 260px 짜리 좁은 카드라 spacer 로 양끝에 붙인 현행을 유지한다.
   const footerButtons = (equal: boolean) => (
     <>
       <button
-        onClick={() => { onChange(`${curY}-${String(curM).padStart(2, '0')}`); setOpen(false) }}
-        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-brand-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, ...(equal ? { flex: 1 } : null) }}
+        onClick={() => {
+          onChange(`${curY}-${String(curM).padStart(2, "0")}`);
+          setOpen(false);
+        }}
+        style={{
+          padding: "6px 10px",
+          borderRadius: "var(--radius-md)",
+          border: 0,
+          background: "transparent",
+          fontSize: "var(--text-caption)",
+          fontWeight: "600",
+          cursor: "pointer",
+          fontFamily: "inherit",
+          color: "var(--fg-brand-strong)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+          ...(equal ? { flex: 1 } : null),
+        }}
       >
-        <LocateFixed size={12} /> {t('goToday')}
+        <LocateFixed size={12} /> {t("goToday")}
       </button>
       {!equal && <div style={{ flex: 1 }} />}
       <button
         onClick={() => setOpen(false)}
-        style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: 0, background: 'transparent', fontSize: 'var(--text-caption)', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--fg-secondary)', ...(equal ? { flex: 1 } : null) }}
+        style={{
+          padding: "6px 10px",
+          borderRadius: "var(--radius-md)",
+          border: 0,
+          background: "transparent",
+          fontSize: "var(--text-caption)",
+          fontWeight: "600",
+          cursor: "pointer",
+          fontFamily: "inherit",
+          color: "var(--fg-secondary)",
+          ...(equal ? { flex: 1 } : null),
+        }}
       >
-        {t('close')}
+        {t("close")}
       </button>
     </>
-  )
+  );
 
   if (isMobile) {
     return (
-      <div style={{ display: 'inline-block' }}>
+      <div style={{ display: "inline-block" }}>
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle className="flex-1">{t('selectMonth')}</DrawerTitle>
+              <DrawerTitle className="flex-1">{t("selectMonth")}</DrawerTitle>
               <DrawerClose asChild>
                 <button
                   type="button"
-                  aria-label={t('close')}
+                  aria-label={t("close")}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                 >
                   <X size={18} />
                 </button>
               </DrawerClose>
             </DrawerHeader>
-            <DrawerBody style={{ padding: '0 20px 8px' }}>
+            <DrawerBody style={{ padding: "0 20px 8px" }}>
               {yearNav}
               {monthGrid}
             </DrawerBody>
-            <DrawerFooter>
-              {footerButtons(true)}
-            </DrawerFooter>
+            <DrawerFooter>{footerButtons(true)}</DrawerFooter>
           </DrawerContent>
         </Drawer>
       </div>
-    )
+    );
   }
 
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
       {trigger}
       {open && (
         <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            [computedAlign]: 0,
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-card)',
-            boxShadow: 'var(--shadow-lg)',
-            padding: 14,
-            zIndex: 'var(--z-sticky)',
-            width: 260,
-          } as React.CSSProperties}
+          style={
+            {
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              [computedAlign]: 0,
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-card)",
+              boxShadow: "var(--shadow-lg)",
+              padding: 14,
+              zIndex: "var(--z-sticky)",
+              width: 260,
+            } as React.CSSProperties
+          }
         >
           {yearNav}
           {monthGrid}
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: "1px solid var(--border-subtle)",
+            }}
+          >
             {footerButtons(false)}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

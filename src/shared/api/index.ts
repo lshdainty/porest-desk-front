@@ -1,1 +1,10 @@
-export { apiClient, setToken, getToken, removeToken, hasToken, setAuthenticated, clearAuthenticated, isAuthenticated } from './base'
+export {
+  apiClient,
+  setToken,
+  getToken,
+  removeToken,
+  hasToken,
+  setAuthenticated,
+  clearAuthenticated,
+  isAuthenticated,
+} from "./base";

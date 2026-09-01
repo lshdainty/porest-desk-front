@@ -1,44 +1,63 @@
-import { isSameDay, parseISO } from 'date-fns'
-import { X } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { isSameDay, parseISO } from "date-fns";
+import { X } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useCalendar } from '@/features/calendar/model/calendar-context'
-import { useCreateEvent, useDeleteEvent, useUpdateEvent } from '@/features/calendar/model/useCalendarEvents'
-import { useEventLabels } from '@/features/event-label'
-import { useIsMobile } from '@/shared/hooks'
-
-import { DndProviderWrapper } from '@/features/calendar/ui/dnd/dnd-provider'
-import { DayEventsDialog } from '@/features/calendar/ui/DayEventsDialog'
-import { EventDetailPopover } from '@/features/calendar/ui/EventDetailPopover'
-
-import { CalendarAgendaView } from '@/features/calendar/ui/agenda-view/calendar-agenda-view'
-import { CalendarAgendaViewSkeleton } from '@/features/calendar/ui/agenda-view/calendar-agenda-view-skeleton'
-import { CalendarHeader } from '@/features/calendar/ui/header/calendar-header'
-import { CalendarMonthView } from '@/features/calendar/ui/month-view/calendar-month-view'
-import { CalendarMonthViewSkeleton } from '@/features/calendar/ui/month-view/calendar-month-view-skeleton'
-import { CalendarDayView } from '@/features/calendar/ui/week-and-day-view/calendar-day-view'
-import { CalendarDayViewSkeleton } from '@/features/calendar/ui/week-and-day-view/calendar-day-view-skeleton'
-import { CalendarWeekView } from '@/features/calendar/ui/week-and-day-view/calendar-week-view'
-import { CalendarWeekViewSkeleton } from '@/features/calendar/ui/week-and-day-view/calendar-week-view-skeleton'
-import { CalendarYearView } from '@/features/calendar/ui/year-view/calendar-year-view'
-import { CalendarYearViewSkeleton } from '@/features/calendar/ui/year-view/calendar-year-view-skeleton'
-
-import { EventForm } from '@/widgets/calendar-view/ui/EventForm'
-import { Drawer, DrawerBody, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/shared/ui/drawer'
-import { Popover, PopoverAnchor, PopoverContent } from '@/shared/ui/popover'
+import { useCalendar } from "@/features/calendar/model/calendar-context";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle,
-} from '@/shared/ui/alert-dialog'
+  useCreateEvent,
+  useDeleteEvent,
+  useUpdateEvent,
+} from "@/features/calendar/model/useCalendarEvents";
+import { useEventLabels } from "@/features/event-label";
+import { useIsMobile } from "@/shared/hooks";
 
-import type { CalendarEvent, CalendarEventFormValues } from '@/entities/calendar'
-import type { IEvent } from '@/features/calendar/model/interfaces'
+import { DndProviderWrapper } from "@/features/calendar/ui/dnd/dnd-provider";
+import { DayEventsDialog } from "@/features/calendar/ui/DayEventsDialog";
+import { EventDetailPopover } from "@/features/calendar/ui/EventDetailPopover";
+
+import { CalendarAgendaView } from "@/features/calendar/ui/agenda-view/calendar-agenda-view";
+import { CalendarAgendaViewSkeleton } from "@/features/calendar/ui/agenda-view/calendar-agenda-view-skeleton";
+import { CalendarHeader } from "@/features/calendar/ui/header/calendar-header";
+import { CalendarMonthView } from "@/features/calendar/ui/month-view/calendar-month-view";
+import { CalendarMonthViewSkeleton } from "@/features/calendar/ui/month-view/calendar-month-view-skeleton";
+import { CalendarDayView } from "@/features/calendar/ui/week-and-day-view/calendar-day-view";
+import { CalendarDayViewSkeleton } from "@/features/calendar/ui/week-and-day-view/calendar-day-view-skeleton";
+import { CalendarWeekView } from "@/features/calendar/ui/week-and-day-view/calendar-week-view";
+import { CalendarWeekViewSkeleton } from "@/features/calendar/ui/week-and-day-view/calendar-week-view-skeleton";
+import { CalendarYearView } from "@/features/calendar/ui/year-view/calendar-year-view";
+import { CalendarYearViewSkeleton } from "@/features/calendar/ui/year-view/calendar-year-view-skeleton";
+
+import { EventForm } from "@/widgets/calendar-view/ui/EventForm";
+import {
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/shared/ui/drawer";
+import { Popover, PopoverAnchor, PopoverContent } from "@/shared/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
+
+import type {
+  CalendarEvent,
+  CalendarEventFormValues,
+} from "@/entities/calendar";
+import type { IEvent } from "@/features/calendar/model/interfaces";
 
 interface IProps {
-  events: IEvent[]
-  isLoading?: boolean
+  events: IEvent[];
+  isLoading?: boolean;
 }
 
 function iEventToCalendarEvent(event: IEvent): CalendarEvent {
@@ -46,7 +65,7 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
     rowId: event.id,
     title: event.title,
     description: event.description || null,
-    eventType: 'PERSONAL',
+    eventType: "PERSONAL",
     color: event.color,
     startDate: event.startDate,
     endDate: event.endDate,
@@ -64,158 +83,229 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
     calendarColor: event.calendarColor,
     groupRowId: event.groupRowId ?? null,
     groupName: event.groupName ?? null,
-    createAt: '',
-    modifyAt: '',
-  }
+    createAt: "",
+    modifyAt: "",
+  };
 }
 
 const CalendarContainer = ({ events, isLoading = false }: IProps) => {
-  const { t } = useTranslation('calendar')
-  const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } = useCalendar()
-  const isMobile = useIsMobile()
+  const { t } = useTranslation("calendar");
+  const { selectedDate, view, isBuiltinSourceEnabled, isCalendarVisible } =
+    useCalendar();
+  const isMobile = useIsMobile();
   // Event detail popover state
-  const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null)
-  const anchorRef = useRef<HTMLDivElement>(null)
+  const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   // Edit/Delete state
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
-  const [deletingEventId, setDeletingEventId] = useState<number | null>(null)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
   // 모바일 월간뷰 일별 이벤트 시트 (앱 _DayEventsSheetBody 정합) + 시트의 [+] 생성 폼
-  const [dayDate, setDayDate] = useState<Date | null>(null)
-  const [creatingDate, setCreatingDate] = useState<Date | null>(null)
+  const [dayDate, setDayDate] = useState<Date | null>(null);
+  const [creatingDate, setCreatingDate] = useState<Date | null>(null);
 
-  const createEvent = useCreateEvent()
-  const updateEvent = useUpdateEvent()
-  const deleteEvent = useDeleteEvent()
-  const { data: labels = [] } = useEventLabels()
+  const createEvent = useCreateEvent();
+  const updateEvent = useUpdateEvent();
+  const deleteEvent = useDeleteEvent();
+  const { data: labels = [] } = useEventLabels();
 
   const handleEventClick = useCallback((event: IEvent, el: HTMLElement) => {
-    const rect = el.getBoundingClientRect()
+    const rect = el.getBoundingClientRect();
     if (anchorRef.current) {
-      anchorRef.current.style.top = `${rect.top}px`
-      anchorRef.current.style.left = `${rect.left}px`
-      anchorRef.current.style.width = `${rect.width}px`
-      anchorRef.current.style.height = `${rect.height}px`
+      anchorRef.current.style.top = `${rect.top}px`;
+      anchorRef.current.style.left = `${rect.left}px`;
+      anchorRef.current.style.width = `${rect.width}px`;
+      anchorRef.current.style.height = `${rect.height}px`;
     }
-    setSelectedEvent(event)
-  }, [])
+    setSelectedEvent(event);
+  }, []);
 
   const handleClosePopover = useCallback(() => {
-    setSelectedEvent(null)
-  }, [])
+    setSelectedEvent(null);
+  }, []);
 
   const handleEditEvent = useCallback(() => {
-    if (!selectedEvent) return
-    setEditingEvent(iEventToCalendarEvent(selectedEvent))
-    setSelectedEvent(null)
-  }, [selectedEvent])
+    if (!selectedEvent) return;
+    setEditingEvent(iEventToCalendarEvent(selectedEvent));
+    setSelectedEvent(null);
+  }, [selectedEvent]);
 
   const handleDeleteEvent = useCallback(() => {
-    if (!selectedEvent) return
-    setDeletingEventId(selectedEvent.id)
-    setSelectedEvent(null)
-  }, [selectedEvent])
+    if (!selectedEvent) return;
+    setDeletingEventId(selectedEvent.id);
+    setSelectedEvent(null);
+  }, [selectedEvent]);
 
-  const handleSubmitEdit = useCallback((data: CalendarEventFormValues) => {
-    if (!editingEvent) return
-    updateEvent.mutate({ id: editingEvent.rowId, data }, {
-      onSuccess: () => setEditingEvent(null),
-    })
-  }, [editingEvent, updateEvent])
+  const handleSubmitEdit = useCallback(
+    (data: CalendarEventFormValues) => {
+      if (!editingEvent) return;
+      updateEvent.mutate(
+        { id: editingEvent.rowId, data },
+        {
+          onSuccess: () => setEditingEvent(null),
+        },
+      );
+    },
+    [editingEvent, updateEvent],
+  );
 
   const handleConfirmDelete = useCallback(() => {
-    if (deletingEventId === null) return
+    if (deletingEventId === null) return;
     deleteEvent.mutate(deletingEventId, {
       onSuccess: () => setDeletingEventId(null),
-    })
-  }, [deletingEventId, deleteEvent])
+    });
+  }, [deletingEventId, deleteEvent]);
 
-  const handleSubmitCreate = useCallback((data: CalendarEventFormValues) => {
-    createEvent.mutate(data, {
-      onSuccess: () => setCreatingDate(null),
-    })
-  }, [createEvent])
+  const handleSubmitCreate = useCallback(
+    (data: CalendarEventFormValues) => {
+      createEvent.mutate(data, {
+        onSuccess: () => setCreatingDate(null),
+      });
+    },
+    [createEvent],
+  );
 
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
-      const eventStartDate = parseISO(event.startDate)
-      const eventEndDate = parseISO(event.endDate)
+    return events.filter((event) => {
+      const eventStartDate = parseISO(event.startDate);
+      const eventEndDate = parseISO(event.endDate);
 
       // Source filtering
-      if (event.sourceType === 'holiday' && !isBuiltinSourceEnabled('holiday')) return false
-      if (event.sourceType === 'expense' && !isBuiltinSourceEnabled('expense')) return false
-      if (event.sourceType === 'todo' && !isBuiltinSourceEnabled('todo')) return false
-      if (event.sourceType === 'calendar' && event.calendarRowId && !isCalendarVisible(event.calendarRowId)) return false
+      if (event.sourceType === "holiday" && !isBuiltinSourceEnabled("holiday"))
+        return false;
+      if (event.sourceType === "expense" && !isBuiltinSourceEnabled("expense"))
+        return false;
+      if (event.sourceType === "todo" && !isBuiltinSourceEnabled("todo"))
+        return false;
+      if (
+        event.sourceType === "calendar" &&
+        event.calendarRowId &&
+        !isCalendarVisible(event.calendarRowId)
+      )
+        return false;
 
-      if (view === 'year') {
-        const yearStart = new Date(selectedDate.getFullYear(), 0, 1)
-        const yearEnd = new Date(selectedDate.getFullYear(), 11, 31, 23, 59, 59, 999)
-        const isInSelectedYear = eventStartDate <= yearEnd && eventEndDate >= yearStart
-        return isInSelectedYear
+      if (view === "year") {
+        const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
+        const yearEnd = new Date(
+          selectedDate.getFullYear(),
+          11,
+          31,
+          23,
+          59,
+          59,
+          999,
+        );
+        const isInSelectedYear =
+          eventStartDate <= yearEnd && eventEndDate >= yearStart;
+        return isInSelectedYear;
       }
 
-      if (view === 'month' || view === 'agenda') {
-        const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-        const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999)
-        const isInSelectedMonth = eventStartDate <= monthEnd && eventEndDate >= monthStart
-        return isInSelectedMonth
+      if (view === "month" || view === "agenda") {
+        const monthStart = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          1,
+        );
+        const monthEnd = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
+        const isInSelectedMonth =
+          eventStartDate <= monthEnd && eventEndDate >= monthStart;
+        return isInSelectedMonth;
       }
 
-      if (view === 'week') {
-        const dayOfWeek = selectedDate.getDay()
+      if (view === "week") {
+        const dayOfWeek = selectedDate.getDay();
 
-        const weekStart = new Date(selectedDate)
-        weekStart.setDate(selectedDate.getDate() - dayOfWeek)
-        weekStart.setHours(0, 0, 0, 0)
+        const weekStart = new Date(selectedDate);
+        weekStart.setDate(selectedDate.getDate() - dayOfWeek);
+        weekStart.setHours(0, 0, 0, 0);
 
-        const weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekStart.getDate() + 6)
-        weekEnd.setHours(23, 59, 59, 999)
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
-        const isInSelectedWeek = eventStartDate <= weekEnd && eventEndDate >= weekStart
-        return isInSelectedWeek
+        const isInSelectedWeek =
+          eventStartDate <= weekEnd && eventEndDate >= weekStart;
+        return isInSelectedWeek;
       }
 
-      if (view === 'day') {
-        const dayStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)
-        const dayEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59)
-        const isInSelectedDay = eventStartDate <= dayEnd && eventEndDate >= dayStart
-        return isInSelectedDay
+      if (view === "day") {
+        const dayStart = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          0,
+          0,
+          0,
+        );
+        const dayEnd = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          23,
+          59,
+          59,
+        );
+        const isInSelectedDay =
+          eventStartDate <= dayEnd && eventEndDate >= dayStart;
+        return isInSelectedDay;
       }
 
-      return true
-    })
-  }, [selectedDate, events, view, isBuiltinSourceEnabled, isCalendarVisible])
+      return true;
+    });
+  }, [selectedDate, events, view, isBuiltinSourceEnabled, isCalendarVisible]);
 
   // 모바일 일별 시트 이벤트 — 앱 _eventsOnDay 정합 (해당 일과 겹침 + 시작시각 정렬).
   // 캘린더 이벤트 + 공휴일만 (지출/할일 pseudo-event 제외). 공휴일은 읽기 전용 행.
   const dayEvents = useMemo(() => {
-    if (!dayDate) return []
-    const ds = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate())
-    const de = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), 23, 59, 59, 999)
+    if (!dayDate) return [];
+    const ds = new Date(
+      dayDate.getFullYear(),
+      dayDate.getMonth(),
+      dayDate.getDate(),
+    );
+    const de = new Date(
+      dayDate.getFullYear(),
+      dayDate.getMonth(),
+      dayDate.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
     return filteredEvents
-      .filter(e => e.sourceType === 'calendar' || e.sourceType === 'holiday')
-      .filter(e => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
-      .sort((a, b) => a.startDate.localeCompare(b.startDate))
-  }, [dayDate, filteredEvents])
+      .filter((e) => e.sourceType === "calendar" || e.sourceType === "holiday")
+      .filter((e) => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  }, [dayDate, filteredEvents]);
 
-  const singleDayEvents = filteredEvents.filter(event => {
-    if (event.isAllDay) return false
-    const startDate = parseISO(event.startDate)
-    const endDate = parseISO(event.endDate)
-    return isSameDay(startDate, endDate)
-  })
+  const singleDayEvents = filteredEvents.filter((event) => {
+    if (event.isAllDay) return false;
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    return isSameDay(startDate, endDate);
+  });
 
-  const multiDayEvents = filteredEvents.filter(event => {
-    if (event.isAllDay) return true
-    const startDate = parseISO(event.startDate)
-    const endDate = parseISO(event.endDate)
-    return !isSameDay(startDate, endDate)
-  })
+  const multiDayEvents = filteredEvents.filter((event) => {
+    if (event.isAllDay) return true;
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    return !isSameDay(startDate, endDate);
+  });
 
   const eventStartDates = useMemo(() => {
-    return filteredEvents.map(event => ({ ...event, endDate: event.startDate }))
-  }, [filteredEvents])
+    return filteredEvents.map((event) => ({
+      ...event,
+      endDate: event.startDate,
+    }));
+  }, [filteredEvents]);
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
@@ -224,36 +314,67 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
       <div className="flex-1 overflow-hidden">
         <DndProviderWrapper>
           {isMobile ? (
-            isLoading
-              ? <CalendarMonthViewSkeleton />
-              : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
+            isLoading ? (
+              <CalendarMonthViewSkeleton />
+            ) : (
+              <CalendarMonthView
+                singleDayEvents={singleDayEvents}
+                multiDayEvents={multiDayEvents}
+                onEventClick={handleEventClick}
+                onDayClick={isMobile ? setDayDate : undefined}
+                mobileHeaderBorder={false}
+              />
+            )
           ) : (
             <>
-              {view === 'day' && (
-                isLoading
-                  ? <CalendarDayViewSkeleton />
-                  : <CalendarDayView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-              )}
-              {view === 'month' && (
-                isLoading
-                  ? <CalendarMonthViewSkeleton />
-                  : <CalendarMonthView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} onDayClick={isMobile ? setDayDate : undefined} mobileHeaderBorder={false} />
-              )}
-              {view === 'week' && (
-                isLoading
-                  ? <CalendarWeekViewSkeleton />
-                  : <CalendarWeekView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-              )}
-              {view === 'year' && (
-                isLoading
-                  ? <CalendarYearViewSkeleton />
-                  : <CalendarYearView allEvents={eventStartDates} />
-              )}
-              {view === 'agenda' && (
-                isLoading
-                  ? <CalendarAgendaViewSkeleton />
-                  : <CalendarAgendaView singleDayEvents={singleDayEvents} multiDayEvents={multiDayEvents} onEventClick={handleEventClick} />
-              )}
+              {view === "day" &&
+                (isLoading ? (
+                  <CalendarDayViewSkeleton />
+                ) : (
+                  <CalendarDayView
+                    singleDayEvents={singleDayEvents}
+                    multiDayEvents={multiDayEvents}
+                    onEventClick={handleEventClick}
+                  />
+                ))}
+              {view === "month" &&
+                (isLoading ? (
+                  <CalendarMonthViewSkeleton />
+                ) : (
+                  <CalendarMonthView
+                    singleDayEvents={singleDayEvents}
+                    multiDayEvents={multiDayEvents}
+                    onEventClick={handleEventClick}
+                    onDayClick={isMobile ? setDayDate : undefined}
+                    mobileHeaderBorder={false}
+                  />
+                ))}
+              {view === "week" &&
+                (isLoading ? (
+                  <CalendarWeekViewSkeleton />
+                ) : (
+                  <CalendarWeekView
+                    singleDayEvents={singleDayEvents}
+                    multiDayEvents={multiDayEvents}
+                    onEventClick={handleEventClick}
+                  />
+                ))}
+              {view === "year" &&
+                (isLoading ? (
+                  <CalendarYearViewSkeleton />
+                ) : (
+                  <CalendarYearView allEvents={eventStartDates} />
+                ))}
+              {view === "agenda" &&
+                (isLoading ? (
+                  <CalendarAgendaViewSkeleton />
+                ) : (
+                  <CalendarAgendaView
+                    singleDayEvents={singleDayEvents}
+                    multiDayEvents={multiDayEvents}
+                    onEventClick={handleEventClick}
+                  />
+                ))}
             </>
           )}
         </DndProviderWrapper>
@@ -261,14 +382,19 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
 
       {/* Event Detail — 모바일은 표준 모바일 drawer 패턴(DrawerHeader+제목+X), 데스크톱·태블릿은 Popover */}
       {isMobile ? (
-        <Drawer open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+        <Drawer
+          open={!!selectedEvent}
+          onOpenChange={(open) => {
+            if (!open) handleClosePopover();
+          }}
+        >
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle className="flex-1">{t('eventDetail')}</DrawerTitle>
+              <DrawerTitle className="flex-1">{t("eventDetail")}</DrawerTitle>
               <DrawerClose asChild>
                 <button
                   type="button"
-                  aria-label={t('close')}
+                  aria-label={t("close")}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
                 >
                   <X size={18} />
@@ -287,12 +413,31 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           </DrawerContent>
         </Drawer>
       ) : (
-        <Popover open={!!selectedEvent} onOpenChange={(open) => { if (!open) handleClosePopover() }}>
+        <Popover
+          open={!!selectedEvent}
+          onOpenChange={(open) => {
+            if (!open) handleClosePopover();
+          }}
+        >
           <PopoverAnchor asChild>
-            <div ref={anchorRef} className="pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0 }} />
+            <div
+              ref={anchorRef}
+              className="pointer-events-none"
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: 0,
+                height: 0,
+              }}
+            />
           </PopoverAnchor>
           {/* 새 상세(시간블록·D-day) 레이아웃 폭 확보 — 디자인 dialog(md) 근사 */}
-          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto" sideOffset={8} collisionPadding={16}>
+          <PopoverContent
+            className="w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto"
+            sideOffset={8}
+            collisionPadding={16}
+          >
             {selectedEvent && (
               <EventDetailPopover
                 event={selectedEvent}
@@ -311,8 +456,14 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           events={dayEvents}
           mobile
           onClose={() => setDayDate(null)}
-          onAdd={() => { setCreatingDate(dayDate); setDayDate(null) }}
-          onTapEvent={(e) => { setDayDate(null); setSelectedEvent(e) }}
+          onAdd={() => {
+            setCreatingDate(dayDate);
+            setDayDate(null);
+          }}
+          onTapEvent={(e) => {
+            setDayDate(null);
+            setSelectedEvent(e);
+          }}
         />
       )}
 
@@ -335,27 +486,43 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           onSubmit={handleSubmitEdit}
           onClose={() => setEditingEvent(null)}
           isLoading={updateEvent.isPending}
-          onDelete={() => { setDeletingEventId(editingEvent.rowId); setEditingEvent(null) }}
+          onDelete={() => {
+            setDeletingEventId(editingEvent.rowId);
+            setEditingEvent(null);
+          }}
         />
       )}
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deletingEventId !== null} onOpenChange={(open) => { if (!open) setDeletingEventId(null) }}>
+      <AlertDialog
+        open={deletingEventId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingEventId(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('deleteConfirm.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('deleteConfirm.message', { name: events.find((e) => e.id === deletingEventId)?.title ?? '' })}</AlertDialogDescription>
+            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirm.message", {
+                name: events.find((e) => e.id === deletingEventId)?.title ?? "",
+              })}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('deleteConfirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} loading={deleteEvent.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t('deleteConfirm.confirm')}
+            <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              loading={deleteEvent.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("deleteConfirm.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-}
+  );
+};
 
-export { CalendarContainer }
+export { CalendarContainer };

@@ -1,1 +1,1 @@
-export type { EventLabel, EventLabelFormValues } from './model/types'
+export type { EventLabel, EventLabelFormValues } from "./model/types";

@@ -1,20 +1,27 @@
-import axios from 'axios'
-import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
-import { toast } from 'sonner'
+import axios from "axios";
+import type {
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+} from "axios";
+import { toast } from "sonner";
 
-const AUTH_FLAG_KEY = 'authenticated'
+const AUTH_FLAG_KEY = "authenticated";
 
-export const setAuthenticated = () => localStorage.setItem(AUTH_FLAG_KEY, 'true')
-export const clearAuthenticated = () => localStorage.removeItem(AUTH_FLAG_KEY)
-export const isAuthenticated = (): boolean => localStorage.getItem(AUTH_FLAG_KEY) === 'true'
+export const setAuthenticated = () =>
+  localStorage.setItem(AUTH_FLAG_KEY, "true");
+export const clearAuthenticated = () => localStorage.removeItem(AUTH_FLAG_KEY);
+export const isAuthenticated = (): boolean =>
+  localStorage.getItem(AUTH_FLAG_KEY) === "true";
 
 // 하위 호환
-export const setToken = (_token: string) => setAuthenticated()
-export const getToken = (): string | null => isAuthenticated() ? 'cookie' : null
-export const removeToken = () => clearAuthenticated()
-export const hasToken = (): boolean => isAuthenticated()
+export const setToken = (_token: string) => setAuthenticated();
+export const getToken = (): string | null =>
+  isAuthenticated() ? "cookie" : null;
+export const removeToken = () => clearAuthenticated();
+export const hasToken = (): boolean => isAuthenticated();
 
-const apiBaseUrl = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}`
+const apiBaseUrl = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}`;
 
 // Content-Type 기본값을 고정하지 않는다 — axios 가 바디 타입으로 자동 결정한다
 // (객체 → application/json, FormData → multipart/form-data+boundary).
@@ -24,31 +31,31 @@ const apiBaseUrl = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_U
 export const apiClient: AxiosInstance = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
-})
+});
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const lang = localStorage.getItem('i18nextLng') || 'ko'
-    config.headers['Accept-Language'] = lang
+    const lang = localStorage.getItem("i18nextLng") || "ko";
+    config.headers["Accept-Language"] = lang;
     // 증권 시세·계좌 조회 GET 은 업스트림 간헐 오류가 있어도 몇 초 뒤 다음 폴링이 스스로
     // 회복하고 화면엔 '—' 폴백이 있다 — 실패마다 전역 토스트를 띄우면 "증권사 API 호출에
     // 실패했습니다"가 10초마다 뜨는 노이즈만 남는다.
     // **접두사를 늘릴 때 여기도 늘려야 한다.** /v1/securities/ 를 새로 열고 자산 화면을
     // 거기로 옮겼을 때 이 목록을 안 따라 고쳐 토스트가 되살아난 적이 있다.
     // 명시적으로 silent 를 지정한 요청은 그 값을 존중한다.
-    const cfg = config as InternalAxiosRequestConfig & { silent?: boolean }
-    const quietPrefixes = ['/v1/toss/', '/v1/namu/', '/v1/securities/']
+    const cfg = config as InternalAxiosRequestConfig & { silent?: boolean };
+    const quietPrefixes = ["/v1/toss/", "/v1/namu/", "/v1/securities/"];
     if (
-      cfg.method === 'get' &&
+      cfg.method === "get" &&
       cfg.silent === undefined &&
-      quietPrefixes.some(p => cfg.url?.startsWith(p))
+      quietPrefixes.some((p) => cfg.url?.startsWith(p))
     ) {
-      cfg.silent = true
+      cfg.silent = true;
     }
-    return config
+    return config;
   },
   (error) => Promise.reject(error),
-)
+);
 
 /**
  * 전역 API 에러 핸들러 (이중 방어 — sonner id 중복방지 + 시간 throttle):
@@ -62,44 +69,47 @@ apiClient.interceptors.request.use(
  */
 
 // 401 동시 발생 시 redirect 1회만 — 병렬 query 가 401 로 떨어질 때 토스트/리다이렉트 중복 방지
-let isRedirectingToLogin = false
+let isRedirectingToLogin = false;
 
 // 동일 메시지 throttle — sonner id 외 시간 기반 가드 (3초 내 같은 메시지 무시)
-const TOAST_THROTTLE_MS = 3000
-const recentToastAt: Map<string, number> = new Map()
+const TOAST_THROTTLE_MS = 3000;
+const recentToastAt: Map<string, number> = new Map();
 
 const showApiErrorToast = (message: string) => {
-  const now = Date.now()
-  const last = recentToastAt.get(message) ?? 0
-  if (now - last < TOAST_THROTTLE_MS) return
-  recentToastAt.set(message, now)
-  toast.error(message, { id: `api-error-${message}` })
-}
+  const now = Date.now();
+  const last = recentToastAt.get(message) ?? 0;
+  if (now - last < TOAST_THROTTLE_MS) return;
+  recentToastAt.set(message, now);
+  toast.error(message, { id: `api-error-${message}` });
+};
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => {
     if (error.response?.status === 401) {
       if (!isRedirectingToLogin) {
-        isRedirectingToLogin = true
-        clearAuthenticated()
+        isRedirectingToLogin = true;
+        clearAuthenticated();
         // expired=1 — 로그인 페이지가 버튼 대기 없이 곧장 SSO 로 넘어가게 하는 신호.
         // SSO 에 Refresh 쿠키(7일)가 살아 있으면 무음 재인증으로 비밀번호 없이 돌아온다.
-        window.location.href = '/login?expired=1'
+        window.location.href = "/login?expired=1";
       }
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
     // silent flag 가 있으면 호출처에서 직접 처리 — 전역 toast skip
     if (error.config?.silent === true) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
     // 구독 게이트(SUBS_001) 403 은 토스트 제외 — 미구독 기능은 UI 가 이미 숨기므로
     // 사용자에겐 노이즈일 뿐. 쿼리 실패는 그대로 전파돼 호출부가 폴백 처리한다.
-    if (error.response?.status === 403 && error.response?.data?.code === 'SUBS_001') {
-      return Promise.reject(error)
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.code === "SUBS_001"
+    ) {
+      return Promise.reject(error);
     }
-    const message = error.response?.data?.message || 'An error occurred'
-    showApiErrorToast(message)
-    return Promise.reject(error)
+    const message = error.response?.data?.message || "An error occurred";
+    showApiErrorToast(message);
+    return Promise.reject(error);
   },
-)
+);

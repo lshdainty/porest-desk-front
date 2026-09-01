@@ -1,28 +1,24 @@
-import * as React from "react"
-import { Clock } from "lucide-react"
-import { useTranslation } from "react-i18next"
+import * as React from "react";
+import { Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { cn } from "@/shared/lib"
-import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover"
+import { cn } from "@/shared/lib";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
-const pad = (n: number) => String(n).padStart(2, "0")
+const pad = (n: number) => String(n).padStart(2, "0");
 
-const isValidTime = (v: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v)
+const isValidTime = (v: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
 
 interface InputTimePickerProps {
-  value?: string
-  onValueChange?: (value: string) => void
+  value?: string;
+  onValueChange?: (value: string) => void;
   /** 분 step (기본 5분) */
-  minuteStep?: number
-  placeholder?: string
-  disabled?: boolean
-  id?: string
+  minuteStep?: number;
+  placeholder?: string;
+  disabled?: boolean;
+  id?: string;
 }
 
 export function InputTimePicker({
@@ -33,48 +29,48 @@ export function InputTimePicker({
   disabled = false,
   id,
 }: InputTimePickerProps) {
-  const { t } = useTranslation("common")
-  const [open, setOpen] = React.useState(false)
-  const hourListRef = React.useRef<HTMLDivElement>(null)
-  const minuteListRef = React.useRef<HTMLDivElement>(null)
+  const { t } = useTranslation("common");
+  const [open, setOpen] = React.useState(false);
+  const hourListRef = React.useRef<HTMLDivElement>(null);
+  const minuteListRef = React.useRef<HTMLDivElement>(null);
 
-  const [hh = "", mm = ""] = (value || ":").split(":")
-  const currentHour = isValidTime(value || "") ? hh : ""
-  const currentMin = isValidTime(value || "") ? mm : ""
+  const [hh = "", mm = ""] = (value || ":").split(":");
+  const currentHour = isValidTime(value || "") ? hh : "";
+  const currentMin = isValidTime(value || "") ? mm : "";
 
   const hours = React.useMemo(
     () => Array.from({ length: 24 }, (_, i) => pad(i)),
-    []
-  )
+    [],
+  );
   const minutes = React.useMemo(
     () =>
       Array.from({ length: Math.ceil(60 / minuteStep) }, (_, i) =>
-        pad(i * minuteStep)
+        pad(i * minuteStep),
       ),
-    [minuteStep]
-  )
+    [minuteStep],
+  );
 
   const setHour = (h: string) => {
-    const next = `${h}:${currentMin || "00"}`
-    onValueChange?.(next)
-  }
+    const next = `${h}:${currentMin || "00"}`;
+    onValueChange?.(next);
+  };
   const setMinute = (m: string) => {
-    const next = `${currentHour || "00"}:${m}`
-    onValueChange?.(next)
-    setOpen(false)
-  }
+    const next = `${currentHour || "00"}:${m}`;
+    onValueChange?.(next);
+    setOpen(false);
+  };
 
   React.useEffect(() => {
-    if (!open) return
+    if (!open) return;
     requestAnimationFrame(() => {
       hourListRef.current
         ?.querySelector<HTMLButtonElement>('[data-active="true"]')
-        ?.scrollIntoView({ block: "center" })
+        ?.scrollIntoView({ block: "center" });
       minuteListRef.current
         ?.querySelector<HTMLButtonElement>('[data-active="true"]')
-        ?.scrollIntoView({ block: "center" })
-    })
-  }, [open])
+        ?.scrollIntoView({ block: "center" });
+    });
+  }, [open]);
 
   return (
     <div className="relative flex gap-2">
@@ -87,8 +83,8 @@ export function InputTimePicker({
         onChange={(e) => onValueChange?.(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
-            e.preventDefault()
-            setOpen(true)
+            e.preventDefault();
+            setOpen(true);
           }
         }}
       />
@@ -131,14 +127,14 @@ export function InputTimePicker({
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }
 
 interface TimeColumnProps {
-  label: string
-  items: string[]
-  active: string
-  onSelect: (v: string) => void
+  label: string;
+  items: string[];
+  active: string;
+  onSelect: (v: string) => void;
 }
 
 const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
@@ -152,7 +148,7 @@ const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
         className="h-52 overflow-y-auto rounded-md border bg-surface-default p-1"
       >
         {items.map((it) => {
-          const isActive = it === active
+          const isActive = it === active;
           return (
             <button
               key={it}
@@ -163,15 +159,15 @@ const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
                 "block w-full rounded px-2 py-1 text-sm tabular-nums transition-colors",
                 isActive
                   ? "bg-primary text-text-on-accent"
-                  : "text-text-primary hover:bg-surface-input hover:text-text-primary"
+                  : "text-text-primary hover:bg-surface-input hover:text-text-primary",
               )}
             >
               {it}
             </button>
-          )
+          );
         })}
       </div>
     </div>
-  )
-)
-TimeColumn.displayName = "TimeColumn"
+  ),
+);
+TimeColumn.displayName = "TimeColumn";

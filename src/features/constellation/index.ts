@@ -2,13 +2,13 @@ export {
   useConstellationToday,
   useConstellationSky,
   useConstellationCollection,
-} from './model/useConstellation'
+} from "./model/useConstellation";
 export {
   parseStarMap,
   constellationColorVar,
   constellationName,
   constellationDesc,
-} from './api/constellationApi'
+} from "./api/constellationApi";
 export type {
   StarMap,
   ConstellationInfo,
@@ -17,4 +17,4 @@ export type {
   SkyDayStatus,
   CollectionEntry,
   ConstellationCollection,
-} from './api/constellationApi'
+} from "./api/constellationApi";

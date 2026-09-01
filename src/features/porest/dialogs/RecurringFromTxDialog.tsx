@@ -1,78 +1,99 @@
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Bell, Zap, Calendar } from 'lucide-react'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { DetailSection, DetailSourceTx } from '@/shared/ui/porest/detail'
-import { CategoryChip } from '@/shared/ui/porest/expense-row'
-import { Input } from '@/shared/ui/input'
-import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
-import { Switch } from '@/shared/ui/switch'
-import { money } from '@/shared/lib/porest/format'
-import { parseLocalDate, todayLocalKey } from '@/shared/lib/date'
-import { useCreateRecurringTransaction } from '@/features/recurring-transaction'
-import { useExpenseCategories } from '@/features/expense'
-import type { Expense } from '@/entities/expense'
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Bell, Zap, Calendar } from "lucide-react";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { DetailSection, DetailSourceTx } from "@/shared/ui/porest/detail";
+import { CategoryChip } from "@/shared/ui/porest/expense-row";
+import { Input } from "@/shared/ui/input";
+import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Switch } from "@/shared/ui/switch";
+import { money } from "@/shared/lib/porest/format";
+import { parseLocalDate, todayLocalKey } from "@/shared/lib/date";
+import { useCreateRecurringTransaction } from "@/features/recurring-transaction";
+import { useExpenseCategories } from "@/features/expense";
+import type { Expense } from "@/entities/expense";
 import type {
   RecurringFrequency,
   RecurringTransactionFormValues,
-} from '@/entities/recurring-transaction'
-import { previewNextDates, addYears, formatKoreanMonthDay } from './recurring-date'
+} from "@/entities/recurring-transaction";
+import {
+  previewNextDates,
+  addYears,
+  formatKoreanMonthDay,
+} from "./recurring-date";
 
 const FREQS: { v: RecurringFrequency; lKey: string }[] = [
-  { v: 'DAILY', lKey: 'freq.DAILY' },
-  { v: 'WEEKLY', lKey: 'freq.WEEKLY' },
-  { v: 'MONTHLY', lKey: 'freq.MONTHLY' },
-  { v: 'YEARLY', lKey: 'freq.YEARLY' },
-]
+  { v: "DAILY", lKey: "freq.DAILY" },
+  { v: "WEEKLY", lKey: "freq.WEEKLY" },
+  { v: "MONTHLY", lKey: "freq.MONTHLY" },
+  { v: "YEARLY", lKey: "freq.YEARLY" },
+];
 
-const DOW_LABEL = ['dow.sun', 'dow.mon', 'dow.tue', 'dow.wed', 'dow.thu', 'dow.fri', 'dow.sat']
+const DOW_LABEL = [
+  "dow.sun",
+  "dow.mon",
+  "dow.tue",
+  "dow.wed",
+  "dow.thu",
+  "dow.fri",
+  "dow.sat",
+];
 
-type EndMode = 'NONE' | 'COUNT' | 'DATE'
+type EndMode = "NONE" | "COUNT" | "DATE";
 
 type Props = {
-  expense: Expense
-  onClose: () => void
-  onCreated?: (recurringRowId: number) => void
-  mobile: boolean
-}
+  expense: Expense;
+  onClose: () => void;
+  onCreated?: (recurringRowId: number) => void;
+  mobile: boolean;
+};
 
-export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: Props) {
-  const { t } = useTranslation('recurring')
-  const createMut = useCreateRecurringTransaction()
-  const categoriesQ = useExpenseCategories()
-  const category = (categoriesQ.data ?? []).find(c => c.rowId === expense.categoryRowId)
+export function RecurringFromTxDialog({
+  expense,
+  onClose,
+  onCreated,
+  mobile,
+}: Props) {
+  const { t } = useTranslation("recurring");
+  const createMut = useCreateRecurringTransaction();
+  const categoriesQ = useExpenseCategories();
+  const category = (categoriesQ.data ?? []).find(
+    (c) => c.rowId === expense.categoryRowId,
+  );
 
-  const expenseDay = (expense.expenseDate ?? '').slice(0, 10) || todayLocalKey()
-  const baseDate = parseLocalDate(expenseDay)
-  const baseDow = baseDate ? baseDate.getDay() : 1 // 0=일~6=토 (UI 인덱스)
-  const baseDom = baseDate ? baseDate.getDate() : 1
+  const expenseDay =
+    (expense.expenseDate ?? "").slice(0, 10) || todayLocalKey();
+  const baseDate = parseLocalDate(expenseDay);
+  const baseDow = baseDate ? baseDate.getDay() : 1; // 0=일~6=토 (UI 인덱스)
+  const baseDom = baseDate ? baseDate.getDate() : 1;
 
-  const [frequency, setFrequency] = useState<RecurringFrequency>('MONTHLY')
-  const [dayOfWeek, setDayOfWeek] = useState<number>(baseDow) // 0~6 (UI 인덱스, 백엔드는 1~7 ISO)
-  const [dayOfMonth, setDayOfMonth] = useState<number>(Math.min(31, baseDom))
+  const [frequency, setFrequency] = useState<RecurringFrequency>("MONTHLY");
+  const [dayOfWeek, setDayOfWeek] = useState<number>(baseDow); // 0~6 (UI 인덱스, 백엔드는 1~7 ISO)
+  const [dayOfMonth, setDayOfMonth] = useState<number>(Math.min(31, baseDom));
 
-  const [endMode, setEndMode] = useState<EndMode>('DATE')
-  const [endCount, setEndCount] = useState<string>('12')
-  const [endDate, setEndDate] = useState<string>(addYears(expenseDay, 1))
+  const [endMode, setEndMode] = useState<EndMode>("DATE");
+  const [endCount, setEndCount] = useState<string>("12");
+  const [endDate, setEndDate] = useState<string>(addYears(expenseDay, 1));
 
-  const [autoLog, setAutoLog] = useState(true)
-  const [notifyDayBefore, setNotifyDayBefore] = useState(true)
+  const [autoLog, setAutoLog] = useState(true);
+  const [notifyDayBefore, setNotifyDayBefore] = useState(true);
 
   const nextDates = useMemo(
     () => previewNextDates(expenseDay, frequency, dayOfWeek, dayOfMonth, 3),
     [expenseDay, frequency, dayOfWeek, dayOfMonth],
-  )
+  );
 
-  const submitting = createMut.isPending
-  const ready = !!expenseDay
-    && (endMode !== 'COUNT' || Number(endCount) > 0)
-    && (endMode !== 'DATE' || !!endDate)
+  const submitting = createMut.isPending;
+  const ready =
+    !!expenseDay &&
+    (endMode !== "COUNT" || Number(endCount) > 0) &&
+    (endMode !== "DATE" || !!endDate);
 
   const handleSave = () => {
-    if (!ready) return
+    if (!ready) return;
     const data: RecurringTransactionFormValues = {
       categoryRowId: expense.categoryRowId ?? undefined,
       assetRowId: expense.assetRowId ?? undefined,
@@ -85,55 +106,71 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       frequency,
       intervalValue: 1,
       // 백엔드는 ISO 1=월~7=일. UI 0=일~6=토 → 변환.
-      dayOfWeek: frequency === 'WEEKLY' ? (dayOfWeek === 0 ? 7 : dayOfWeek) : undefined,
-      dayOfMonth: frequency === 'MONTHLY' || frequency === 'YEARLY' ? dayOfMonth : undefined,
+      dayOfWeek:
+        frequency === "WEEKLY" ? (dayOfWeek === 0 ? 7 : dayOfWeek) : undefined,
+      dayOfMonth:
+        frequency === "MONTHLY" || frequency === "YEARLY"
+          ? dayOfMonth
+          : undefined,
       startDate: expenseDay,
-      endDate: endMode === 'DATE' ? endDate : undefined,
-      maxOccurrences: endMode === 'COUNT' ? Number(endCount) : undefined,
+      endDate: endMode === "DATE" ? endDate : undefined,
+      maxOccurrences: endMode === "COUNT" ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
-    }
+    };
     createMut.mutate(data, {
-      onSuccess: created => {
-        onCreated?.(created.rowId)
-        onClose()
+      onSuccess: (created) => {
+        onCreated?.(created.rowId);
+        onClose();
       },
-    })
-  }
+    });
+  };
 
   const Footer = (
     <ModalFooter
       onSave={handleSave}
-      saveLabel={t('saveLabel')}
+      saveLabel={t("saveLabel")}
       saving={submitting}
       saveDisabled={!ready}
       onCancel={onClose}
     />
-  )
+  );
 
   return (
-    <ModalShell title={t('settingsTitle')} onClose={onClose} size="md" footer={Footer} mobile={mobile}>
+    <ModalShell
+      title={t("settingsTitle")}
+      onClose={onClose}
+      size="md"
+      footer={Footer}
+      mobile={mobile}
+    >
       {/* 기준 거래 — 플랫 행 */}
       <DetailSourceTx
-        icon={<CategoryChip color={category?.color} icon={category?.icon} size="sm" />}
-        title={expense.merchant || expense.description || t('transaction')}
-        sub={`${t('startsOn', { date: expenseDay })} · ${t('sourceSub')}`}
+        icon={
+          <CategoryChip
+            color={category?.color}
+            icon={category?.icon}
+            size="sm"
+          />
+        }
+        title={expense.merchant || expense.description || t("transaction")}
+        sub={`${t("startsOn", { date: expenseDay })} · ${t("sourceSub")}`}
         amount={
           <>
-            {expense.expenseType === 'INCOME' ? '+' : '−'}
+            {expense.expenseType === "INCOME" ? "+" : "−"}
             {money(Math.abs(expense.amount))}
           </>
         }
       />
 
       {/* 반복 주기 */}
-      <Section title={t('frequencyTitle')}>
+      <Section title={t("frequencyTitle")}>
         <Tabs
           value={frequency}
           onValueChange={(v) => v && setFrequency(v as RecurringFrequency)}
         >
           <TabsList variant="pill" size="sm" className="w-full">
-            {FREQS.map(o => (
+            {FREQS.map((o) => (
               <TabsTrigger key={o.v} value={o.v} className="flex-1">
                 {t(o.lKey)}
               </TabsTrigger>
@@ -143,8 +180,8 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       </Section>
 
       {/* 요일 (매주) */}
-      {frequency === 'WEEKLY' && (
-        <Section title={t('dowTitle')}>
+      {frequency === "WEEKLY" && (
+        <Section title={t("dowTitle")}>
           <ToggleGroup
             type="single"
             size="sm"
@@ -153,7 +190,11 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
             className="grid w-full grid-cols-7 gap-1.5"
           >
             {DOW_LABEL.map((label, i) => (
-              <ToggleGroupItem key={i} value={String(i)} className="rounded-full">
+              <ToggleGroupItem
+                key={i}
+                value={String(i)}
+                className="rounded-full"
+              >
                 {t(label)}
               </ToggleGroupItem>
             ))}
@@ -162,69 +203,102 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       )}
 
       {/* 반복 일자 (매월) */}
-      {frequency === 'MONTHLY' && (
-        <Section title={t('dayOfMonthTitle')}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDayPrefix')}</span>
+      {frequency === "MONTHLY" && (
+        <Section title={t("dayOfMonthTitle")}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                fontSize: "var(--text-label-sm)",
+                color: "var(--fg-secondary)",
+              }}
+            >
+              {t("monthDayPrefix")}
+            </span>
             <Input
               className="num"
               value={dayOfMonth}
-              onChange={e => {
-                const n = Math.min(31, Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '')) || 1))
-                setDayOfMonth(n)
+              onChange={(e) => {
+                const n = Math.min(
+                  31,
+                  Math.max(
+                    1,
+                    Number(e.target.value.replace(/[^0-9]/g, "")) || 1,
+                  ),
+                );
+                setDayOfMonth(n);
               }}
               inputMode="numeric"
-              style={{ width: 64, textAlign: 'center' }}
+              style={{ width: 64, textAlign: "center" }}
             />
-            <span style={{ fontSize: 'var(--text-label-sm)', color: 'var(--fg-secondary)' }}>{t('monthDaySuffix')}</span>
-            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginLeft: 8 }}>
-              {t('monthDayHint')}
+            <span
+              style={{
+                fontSize: "var(--text-label-sm)",
+                color: "var(--fg-secondary)",
+              }}
+            >
+              {t("monthDaySuffix")}
+            </span>
+            <span
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginLeft: 8,
+              }}
+            >
+              {t("monthDayHint")}
             </span>
           </div>
         </Section>
       )}
 
       {/* 종료 */}
-      <Section title={t('endTitle')}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <Section title={t("endTitle")}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <RadioCard
-            selected={endMode === 'NONE'}
-            onSelect={() => setEndMode('NONE')}
-            title={t('endNone')}
-            sub={t('endNoneSub')}
+            selected={endMode === "NONE"}
+            onSelect={() => setEndMode("NONE")}
+            title={t("endNone")}
+            sub={t("endNoneSub")}
           />
           <RadioCard
-            selected={endMode === 'COUNT'}
-            onSelect={() => setEndMode('COUNT')}
-            title={t('endCountTitle')}
+            selected={endMode === "COUNT"}
+            onSelect={() => setEndMode("COUNT")}
+            title={t("endCountTitle")}
             sub={
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                {t('totalPrefix')}
+              <span
+                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+              >
+                {t("totalPrefix")}
                 <Input
                   className="num"
                   value={endCount}
-                  onChange={e => setEndCount(e.target.value.replace(/[^0-9]/g, ''))}
-                  onClick={e => { e.stopPropagation(); setEndMode('COUNT') }}
+                  onChange={(e) =>
+                    setEndCount(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEndMode("COUNT");
+                  }}
                   inputMode="numeric"
-                  style={{ width: 64, textAlign: 'center', padding: '4px 8px' }}
+                  style={{ width: 64, textAlign: "center", padding: "4px 8px" }}
                 />
-                {t('timesSuffix')}
+                {t("timesSuffix")}
               </span>
             }
           />
           <RadioCard
-            selected={endMode === 'DATE'}
-            onSelect={() => setEndMode('DATE')}
-            title={t('endDateTitle')}
+            selected={endMode === "DATE"}
+            onSelect={() => setEndMode("DATE")}
+            title={t("endDateTitle")}
             sub={
               <div
-                onClick={e => { e.stopPropagation(); setEndMode('DATE') }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEndMode("DATE");
+                }}
                 style={{ marginTop: 6 }}
               >
-                <InputDatePicker
-                  value={endDate}
-                  onValueChange={setEndDate}
-                />
+                <InputDatePicker value={endDate} onValueChange={setEndDate} />
               </div>
             }
           />
@@ -232,19 +306,19 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       </Section>
 
       {/* 옵션 */}
-      <Section title={t('optionsTitle')}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <Section title={t("optionsTitle")}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ToggleRow
             Icon={Zap}
-            title={t('autoLog')}
-            sub={t('autoLogSub')}
+            title={t("autoLog")}
+            sub={t("autoLogSub")}
             value={autoLog}
             onChange={setAutoLog}
           />
           <ToggleRow
             Icon={Bell}
-            title={t('notifyDayBefore')}
-            sub={t('notifyDayBeforeSub')}
+            title={t("notifyDayBefore")}
+            sub={t("notifyDayBeforeSub")}
             value={notifyDayBefore}
             onChange={setNotifyDayBefore}
           />
@@ -255,24 +329,26 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
       {nextDates.length > 0 && (
         <DetailSection
           title={
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+            >
               <Calendar size={13} />
-              {t('nextDatesTitle')}
+              {t("nextDatesTitle")}
             </span>
           }
         >
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {nextDates.map((d, i) => (
               <span
                 key={i}
                 className="num"
                 style={{
-                  padding: '6px 12px',
-                  background: 'var(--bg-sunken)',
-                  borderRadius: 'var(--radius-pill)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: '600',
-                  color: 'var(--fg-primary)',
+                  padding: "6px 12px",
+                  background: "var(--bg-sunken)",
+                  borderRadius: "var(--radius-pill)",
+                  fontSize: "var(--text-caption)",
+                  fontWeight: "600",
+                  color: "var(--fg-primary)",
                 }}
               >
                 {formatKoreanMonthDay(d)}
@@ -282,18 +358,31 @@ export function RecurringFromTxDialog({ expense, onClose, onCreated, mobile }: P
         </DetailSection>
       )}
     </ModalShell>
-  )
+  );
 }
 
-export function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 'var(--text-caption)', fontWeight: '700', color: 'var(--fg-secondary)', marginBottom: 8 }}>
+      <div
+        style={{
+          fontSize: "var(--text-caption)",
+          fontWeight: "700",
+          color: "var(--fg-secondary)",
+          marginBottom: 8,
+        }}
+      >
         {title}
       </div>
       {children}
     </div>
-  )
+  );
 }
 
 /** 플랫 라디오 행 — design RadioRow (카드 박스 없음, 선택 시 제목만 강조). */
@@ -303,10 +392,10 @@ export function RadioCard({
   title,
   sub,
 }: {
-  selected: boolean
-  onSelect: () => void
-  title: string
-  sub?: React.ReactNode
+  selected: boolean;
+  onSelect: () => void;
+  title: string;
+  sub?: React.ReactNode;
 }) {
   return (
     <div
@@ -314,13 +403,18 @@ export function RadioCard({
       role="radio"
       aria-checked={selected}
       tabIndex={0}
-      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() } }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       style={{
-        display: 'flex',
+        display: "flex",
         gap: 11,
-        alignItems: 'flex-start',
-        padding: '11px 2px',
-        cursor: 'pointer',
+        alignItems: "flex-start",
+        padding: "11px 2px",
+        cursor: "pointer",
       }}
     >
       <span
@@ -329,20 +423,20 @@ export function RadioCard({
           marginTop: 2,
           width: 17,
           height: 17,
-          borderRadius: 'var(--radius-pill)',
-          border: `2px solid ${selected ? 'var(--border-brand)' : 'var(--border-default)'}`,
-          background: selected ? 'var(--bg-brand)' : 'transparent',
-          boxShadow: selected ? 'inset 0 0 0 3px var(--bg-surface)' : 'none',
+          borderRadius: "var(--radius-pill)",
+          border: `2px solid ${selected ? "var(--border-brand)" : "var(--border-default)"}`,
+          background: selected ? "var(--bg-brand)" : "transparent",
+          boxShadow: selected ? "inset 0 0 0 3px var(--bg-surface)" : "none",
           flexShrink: 0,
-          transition: 'background 0.15s, border-color 0.15s',
+          transition: "background 0.15s, border-color 0.15s",
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 'var(--text-body-sm)',
-            fontWeight: '600',
-            color: selected ? 'var(--fg-primary)' : 'var(--fg-secondary)',
+            fontSize: "var(--text-body-sm)",
+            fontWeight: "600",
+            color: selected ? "var(--fg-primary)" : "var(--fg-secondary)",
           }}
         >
           {title}
@@ -350,12 +444,12 @@ export function RadioCard({
         {sub && (
           <div
             style={{
-              fontSize: 'var(--text-caption)',
-              color: 'var(--fg-tertiary)',
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
               marginTop: 2,
-              display: 'flex',
-              alignItems: 'center',
-              flexWrap: 'wrap',
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
             }}
           >
             {sub}
@@ -363,7 +457,7 @@ export function RadioCard({
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export function ToggleRow({
@@ -373,46 +467,58 @@ export function ToggleRow({
   value,
   onChange,
 }: {
-  Icon: React.ComponentType<{ size?: number; color?: string }>
-  title: string
-  sub: string
-  value: boolean
-  onChange: (next: boolean) => void
+  Icon: React.ComponentType<{ size?: number; color?: string }>;
+  title: string;
+  sub: string;
+  value: boolean;
+  onChange: (next: boolean) => void;
 }) {
   return (
     <div
       onClick={() => onChange(!value)}
       style={{
-        display: 'flex',
+        display: "flex",
         gap: 12,
-        alignItems: 'center',
-        padding: '11px 2px',
-        cursor: 'pointer',
+        alignItems: "center",
+        padding: "11px 2px",
+        cursor: "pointer",
       }}
     >
       <span
         style={{
           width: 36,
           height: 36,
-          borderRadius: 'var(--radius-pill)',
-          background: 'var(--bg-sunken)',
-          color: 'var(--fg-secondary)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "var(--radius-pill)",
+          background: "var(--bg-sunken)",
+          color: "var(--fg-secondary)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           flexShrink: 0,
         }}
       >
         <Icon size={15} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--text-body-sm)', fontWeight: '600' }}>{title}</div>
-        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--fg-tertiary)', marginTop: 2 }}>{sub}</div>
+        <div style={{ fontSize: "var(--text-body-sm)", fontWeight: "600" }}>
+          {title}
+        </div>
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            marginTop: 2,
+          }}
+        >
+          {sub}
+        </div>
       </div>
-      <span onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', flexShrink: 0 }}>
+      <span
+        onClick={(e) => e.stopPropagation()}
+        style={{ display: "inline-flex", flexShrink: 0 }}
+      >
         <Switch checked={value} onCheckedChange={onChange} />
       </span>
     </div>
-  )
+  );
 }
-

@@ -1,48 +1,63 @@
-import { useTranslation } from 'react-i18next'
-import type { CardPerformance } from '@/entities/card'
-import { cn } from '@/shared/lib'
-import { money } from '@/shared/lib/porest/format'
+import { useTranslation } from "react-i18next";
+import type { CardPerformance } from "@/entities/card";
+import { cn } from "@/shared/lib";
+import { money } from "@/shared/lib/porest/format";
 
 interface Props {
-  performance: CardPerformance
-  className?: string
+  performance: CardPerformance;
+  className?: string;
 }
 
 export function CardPerformanceBar({ performance, className }: Props) {
-  const { t } = useTranslation('card')
+  const { t } = useTranslation("card");
   if (!performance.isRequired) {
     return (
-      <div className={cn('text-sm text-muted-foreground', className)}>
-        {t('noSpendingRequirement')}
+      <div className={cn("text-sm text-muted-foreground", className)}>
+        {t("noSpendingRequirement")}
       </div>
-    )
+    );
   }
 
-  const pct = Math.round(performance.achievementRate * 100)
-  const barColor = performance.isAchieved ? 'bg-green-500' : pct >= 70 ? 'bg-amber-500' : 'bg-rose-500'
+  const pct = Math.round(performance.achievementRate * 100);
+  const barColor = performance.isAchieved
+    ? "bg-green-500"
+    : pct >= 70
+      ? "bg-amber-500"
+      : "bg-rose-500";
 
   return (
-    <div className={cn('space-y-1.5', className)}>
+    <div className={cn("space-y-1.5", className)}>
       <div className="flex items-baseline justify-between text-sm">
         <span className="font-medium">
           {money(performance.currentAmount)}
-          <span className="text-muted-foreground"> / {money(performance.requiredAmount)}</span>
+          <span className="text-muted-foreground">
+            {" "}
+            / {money(performance.requiredAmount)}
+          </span>
         </span>
-        <span className={performance.isAchieved ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
-          {pct}% {performance.isAchieved ? t('achieved') : ''}
+        <span
+          className={
+            performance.isAchieved
+              ? "text-green-600 font-medium"
+              : "text-muted-foreground"
+          }
+        >
+          {pct}% {performance.isAchieved ? t("achieved") : ""}
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-muted">
         <div
-          className={cn('h-full transition-all', barColor)}
+          className={cn("h-full transition-all", barColor)}
           style={{ width: `${Math.min(100, pct)}%` }}
         />
       </div>
       {!performance.isAchieved && performance.remainingAmount != null && (
         <div className="text-xs text-muted-foreground">
-          {t('spendMoreForBenefit', { amount: money(performance.remainingAmount) })}
+          {t("spendMoreForBenefit", {
+            amount: money(performance.remainingAmount),
+          })}
         </div>
       )}
     </div>
-  )
+  );
 }

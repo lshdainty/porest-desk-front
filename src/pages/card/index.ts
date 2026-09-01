@@ -1,1 +1,1 @@
-export { CardDetailPage } from './ui/CardDetailPage'
+export { CardDetailPage } from "./ui/CardDetailPage";

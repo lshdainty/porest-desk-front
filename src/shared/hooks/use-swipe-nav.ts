@@ -1,5 +1,8 @@
-import * as React from 'react'
-import { resolveAxis, type SwipeAxis } from '@/shared/ui/swipe-actions-geometry'
+import * as React from "react";
+import {
+  resolveAxis,
+  type SwipeAxis,
+} from "@/shared/ui/swipe-actions-geometry";
 
 /*
  * 좌우로 밀어서 이전/다음으로 넘기는 제스처 — 탭 전환용.
@@ -13,25 +16,26 @@ import { resolveAxis, type SwipeAxis } from '@/shared/ui/swipe-actions-geometry'
  */
 
 /** 넘김을 확정하는 가로 이동 — 컨테이너 폭 대비 비율. */
-export const SWIPE_NAV_COMMIT_RATIO = 0.2
+export const SWIPE_NAV_COMMIT_RATIO = 0.2;
 
 /**
  * 비율만 쓰면 좁은 화면에서 너무 쉽게 넘어간다(390px 의 20% = 78px 이지만
  * 더 좁은 기기·분할 화면에선 40px 대까지 내려간다). 최소 이동을 함께 건다.
  */
-export const SWIPE_NAV_MIN_DISTANCE = 56
+export const SWIPE_NAV_MIN_DISTANCE = 56;
 
 /** 손을 뗐을 때 넘길 것인가. */
 export const shouldCommitSwipeNav = (dx: number, width: number) =>
-  Math.abs(dx) >= Math.max(SWIPE_NAV_MIN_DISTANCE, width * SWIPE_NAV_COMMIT_RATIO)
+  Math.abs(dx) >=
+  Math.max(SWIPE_NAV_MIN_DISTANCE, width * SWIPE_NAV_COMMIT_RATIO);
 
 interface Options {
   /** 오른쪽으로 밀었을 때(= 이전으로). 없으면 그 방향은 무시. */
-  onPrev?: () => void
+  onPrev?: () => void;
   /** 왼쪽으로 밀었을 때(= 다음으로). 없으면 그 방향은 무시. */
-  onNext?: () => void
+  onNext?: () => void;
   /** false 면 핸들러가 아무것도 하지 않는다(데스크톱 등). */
-  enabled?: boolean
+  enabled?: boolean;
 }
 
 /**
@@ -52,39 +56,39 @@ interface Options {
  * 요소가 없고, 막으면 포인터 캡처가 걸린 자식(차트 툴팁 등)의 이벤트까지 죽는다.
  */
 export function useSwipeNav({ onPrev, onNext, enabled = true }: Options) {
-  const start = React.useRef<{ x: number; y: number; w: number } | null>(null)
-  const axis = React.useRef<SwipeAxis>('none')
+  const start = React.useRef<{ x: number; y: number; w: number } | null>(null);
+  const axis = React.useRef<SwipeAxis>("none");
 
   const onPointerDown = (e: React.PointerEvent<HTMLElement>) => {
-    if (!enabled || e.pointerType === 'mouse') return
+    if (!enabled || e.pointerType === "mouse") return;
     start.current = {
       x: e.clientX,
       y: e.clientY,
       w: e.currentTarget.clientWidth,
-    }
-    axis.current = 'none'
-  }
+    };
+    axis.current = "none";
+  };
 
   const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    const s = start.current
-    if (!s || axis.current !== 'none') return
-    axis.current = resolveAxis(e.clientX - s.x, e.clientY - s.y)
-  }
+    const s = start.current;
+    if (!s || axis.current !== "none") return;
+    axis.current = resolveAxis(e.clientX - s.x, e.clientY - s.y);
+  };
 
   const finish = (e: React.PointerEvent<HTMLElement>) => {
-    const s = start.current
-    start.current = null
-    if (!s || axis.current !== 'x') return
-    const dx = e.clientX - s.x
-    if (!shouldCommitSwipeNav(dx, s.w)) return
-    if (dx < 0) onNext?.()
-    else onPrev?.()
-  }
+    const s = start.current;
+    start.current = null;
+    if (!s || axis.current !== "x") return;
+    const dx = e.clientX - s.x;
+    if (!shouldCommitSwipeNav(dx, s.w)) return;
+    if (dx < 0) onNext?.();
+    else onPrev?.();
+  };
 
   const cancel = () => {
-    start.current = null
-    axis.current = 'none'
-  }
+    start.current = null;
+    axis.current = "none";
+  };
 
   return {
     handlers: {
@@ -94,6 +98,6 @@ export function useSwipeNav({ onPrev, onNext, enabled = true }: Options) {
       onPointerCancel: cancel,
     },
     // 세로 스크롤은 브라우저, 가로는 우리 — 이게 없으면 pointercancel 로 끊긴다.
-    style: { touchAction: 'pan-y' } as const,
-  }
+    style: { touchAction: "pan-y" } as const,
+  };
 }

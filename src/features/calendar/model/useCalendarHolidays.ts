@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { holidayKeys } from '@/shared/config'
-import { holidayApi } from '../api/holidayApi'
+import { useQuery } from "@tanstack/react-query";
+import { holidayKeys } from "@/shared/config";
+import { holidayApi } from "../api/holidayApi";
 
 /**
  * 캘린더 뷰에서 공휴일 데이터를 조회하는 훅
@@ -17,5 +17,5 @@ export const useCalendarHolidays = (
     queryKey: holidayKeys.list({ startDate, endDate }),
     queryFn: () => holidayApi.getHolidays(startDate, endDate),
     enabled: enabled && !!startDate && !!endDate,
-  })
-}
+  });
+};

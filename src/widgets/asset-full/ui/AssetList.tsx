@@ -1,87 +1,104 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { CreditCard, Pencil, Trash2 } from 'lucide-react'
-import { AssetLogo, type Asset } from '@/entities/asset'
-import { cn, formatCurrency } from '@/shared/lib'
-import { Button } from '@/shared/ui/button'
-import { assetBalanceInKrw, isForeignCurrency, formatOriginalAmount } from '@/shared/lib/porest/currency'
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { CreditCard, Pencil, Trash2 } from "lucide-react";
+import { AssetLogo, type Asset } from "@/entities/asset";
+import { cn, formatCurrency } from "@/shared/lib";
+import { Button } from "@/shared/ui/button";
+import {
+  assetBalanceInKrw,
+  isForeignCurrency,
+  formatOriginalAmount,
+} from "@/shared/lib/porest/currency";
 
 interface AssetListProps {
-  assets: Asset[]
-  onEdit: (asset: Asset) => void
-  onDelete: (id: number) => void
-  onRowClick?: (asset: Asset) => void
+  assets: Asset[];
+  onEdit: (asset: Asset) => void;
+  onDelete: (id: number) => void;
+  onRowClick?: (asset: Asset) => void;
 }
 
 const getAssetTypeLabel = (assetType: string): string => {
-  return `assetType.${assetType.toLowerCase().replace(/_/g, '')}`
-}
+  return `assetType.${assetType.toLowerCase().replace(/_/g, "")}`;
+};
 
-export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListProps) => {
-  const { t, i18n } = useTranslation('asset')
-  const navigate = useNavigate()
+export const AssetList = ({
+  assets,
+  onEdit,
+  onDelete,
+  onRowClick,
+}: AssetListProps) => {
+  const { t, i18n } = useTranslation("asset");
+  const navigate = useNavigate();
 
   // Total of positive balances included in net worth — used for the weight bar.
   const positiveTotal = useMemo(() => {
     return assets
-      .filter((a) => a.isIncludedInTotal === 'Y' && assetBalanceInKrw(a) > 0)
-      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0)
-  }, [assets])
+      .filter((a) => a.isIncludedInTotal === "Y" && assetBalanceInKrw(a) > 0)
+      .reduce((sum, a) => sum + assetBalanceInKrw(a), 0);
+  }, [assets]);
 
   if (assets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <p className="text-sm">{t('noAssets')}</p>
-        <p className="text-xs">{t('createFirst')}</p>
+        <p className="text-sm">{t("noAssets")}</p>
+        <p className="text-xs">{t("createFirst")}</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-2">
       {assets.map((asset) => {
         const weight =
-          positiveTotal > 0 && asset.isIncludedInTotal === 'Y' && assetBalanceInKrw(asset) > 0
+          positiveTotal > 0 &&
+          asset.isIncludedInTotal === "Y" &&
+          assetBalanceInKrw(asset) > 0
             ? (assetBalanceInKrw(asset) / positiveTotal) * 100
-            : 0
+            : 0;
 
         return (
           <div
             key={asset.rowId}
-            role={onRowClick ? 'button' : undefined}
+            role={onRowClick ? "button" : undefined}
             tabIndex={onRowClick ? 0 : undefined}
             onClick={() => onRowClick?.(asset)}
             onKeyDown={(e) => {
-              if (!onRowClick) return
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                onRowClick(asset)
+              if (!onRowClick) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onRowClick(asset);
               }
             }}
             className={cn(
-              'group rounded-xl border p-3 hover:bg-muted/30 transition-colors',
-              onRowClick && 'cursor-pointer',
+              "group rounded-xl border p-3 hover:bg-muted/30 transition-colors",
+              onRowClick && "cursor-pointer",
             )}
           >
             <div className="flex items-center gap-3">
               <AssetLogo asset={asset} size={40} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{asset.assetName}</span>
+                  <span className="text-sm font-medium truncate">
+                    {asset.assetName}
+                  </span>
                   <span className="text-[10px] rounded bg-muted px-1.5 py-0.5 text-muted-foreground">
                     {t(getAssetTypeLabel(asset.assetType))}
                   </span>
                 </div>
                 {asset.institution && (
-                  <p className="text-xs text-muted-foreground truncate">{asset.institution}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {asset.institution}
+                  </p>
                 )}
               </div>
               <div className="text-right shrink-0">
                 <span
                   className={cn(
-                    'text-sm font-semibold tabular-nums',
-                    asset.balance >= 0 ? 'text-foreground' : 'text-red-600 dark:text-red-400',
+                    "text-sm font-semibold tabular-nums",
+                    asset.balance >= 0
+                      ? "text-foreground"
+                      : "text-red-600 dark:text-red-400",
                   )}
                 >
                   {formatCurrency(assetBalanceInKrw(asset))}
@@ -89,7 +106,11 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                 {/* 외화는 환산액이 주 표기 — 원 통화 잔고를 밑에 함께 보여 준다 */}
                 {isForeignCurrency(asset.currency) && (
                   <p className="text-[10px] text-muted-foreground tabular-nums">
-                    {formatOriginalAmount(asset.balance, asset.currency, i18n.language)}
+                    {formatOriginalAmount(
+                      asset.balance,
+                      asset.currency,
+                      i18n.language,
+                    )}
                   </p>
                 )}
                 {weight > 0 && (
@@ -104,8 +125,11 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                    title={t('assetDetail.titleCard')}
-                    onClick={(e) => { e.stopPropagation(); navigate(`/desk/card/${asset.rowId}`) }}
+                    title={t("assetDetail.titleCard")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/desk/card/${asset.rowId}`);
+                    }}
                   >
                     <CreditCard size={14} />
                   </Button>
@@ -114,7 +138,10 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                  onClick={(e) => { e.stopPropagation(); onEdit(asset) }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(asset);
+                  }}
                 >
                   <Pencil size={14} />
                 </Button>
@@ -122,7 +149,10 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  onClick={(e) => { e.stopPropagation(); onDelete(asset.rowId) }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(asset.rowId);
+                  }}
                 >
                   <Trash2 size={14} />
                 </Button>
@@ -137,8 +167,8 @@ export const AssetList = ({ assets, onEdit, onDelete, onRowClick }: AssetListPro
               </div>
             )}
           </div>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};

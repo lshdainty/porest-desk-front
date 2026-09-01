@@ -6,36 +6,36 @@
  * (브랜드 고유명과 같은 취급 — taxonomy 예외)
  */
 export interface CurrencyOption {
-  code: string
-  symbol: string
+  code: string;
+  symbol: string;
 }
 
-export const DEFAULT_CURRENCY = 'KRW'
+export const DEFAULT_CURRENCY = "KRW";
 
 export const CURRENCIES: CurrencyOption[] = [
-  { code: 'KRW', symbol: '₩' },
-  { code: 'USD', symbol: '$' },
-  { code: 'JPY', symbol: '¥' },
-  { code: 'EUR', symbol: '€' },
-  { code: 'CNY', symbol: '¥' },
-  { code: 'GBP', symbol: '£' },
-  { code: 'AUD', symbol: 'A$' },
-  { code: 'CAD', symbol: 'C$' },
-  { code: 'HKD', symbol: 'HK$' },
-  { code: 'SGD', symbol: 'S$' },
-  { code: 'THB', symbol: '฿' },
-  { code: 'VND', symbol: '₫' },
-  { code: 'TWD', symbol: 'NT$' },
-  { code: 'CHF', symbol: 'CHF' },
-]
+  { code: "KRW", symbol: "₩" },
+  { code: "USD", symbol: "$" },
+  { code: "JPY", symbol: "¥" },
+  { code: "EUR", symbol: "€" },
+  { code: "CNY", symbol: "¥" },
+  { code: "GBP", symbol: "£" },
+  { code: "AUD", symbol: "A$" },
+  { code: "CAD", symbol: "C$" },
+  { code: "HKD", symbol: "HK$" },
+  { code: "SGD", symbol: "S$" },
+  { code: "THB", symbol: "฿" },
+  { code: "VND", symbol: "₫" },
+  { code: "TWD", symbol: "NT$" },
+  { code: "CHF", symbol: "CHF" },
+];
 
-const BY_CODE = new Map(CURRENCIES.map(c => [c.code, c]))
+const BY_CODE = new Map(CURRENCIES.map((c) => [c.code, c]));
 
 export const currencySymbol = (code: string | null | undefined): string =>
-  BY_CODE.get(code ?? '')?.symbol ?? code ?? ''
+  BY_CODE.get(code ?? "")?.symbol ?? code ?? "";
 
 export const isForeignCurrency = (code: string | null | undefined): boolean =>
-  !!code && code !== DEFAULT_CURRENCY
+  !!code && code !== DEFAULT_CURRENCY;
 
 /**
  * 원 통화 금액 표기 — `$5.50` / `¥1,280`.
@@ -48,12 +48,12 @@ export const formatOriginalAmount = (
   code: string,
   locale: string,
 ): string => {
-  const digits = code === 'JPY' || code === 'KRW' || code === 'VND' ? 0 : 2
+  const digits = code === "JPY" || code === "KRW" || code === "VND" ? 0 : 2;
   return `${currencySymbol(code)}${amount.toLocaleString(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: digits,
-  })}`
-}
+  })}`;
+};
 
 /**
  * 자산 잔액의 원화 환산 — 클라이언트 합산은 이 함수를 거친다.
@@ -62,10 +62,13 @@ export const formatOriginalAmount = (
  * (총자산 카드, 비중 막대)이 raw balance 를 쓰면 USD 1,000 이 1,000원으로 더해져
  * 서버 값과 어긋난다.
  */
-export const assetBalanceInKrw = (
-  asset: { balance: number; currency?: string | null; exchangeRate?: number | null },
-): number => {
-  const rate = asset.exchangeRate
-  if (!isForeignCurrency(asset.currency) || rate == null || rate <= 0) return asset.balance
-  return Math.round(asset.balance * rate)
-}
+export const assetBalanceInKrw = (asset: {
+  balance: number;
+  currency?: string | null;
+  exchangeRate?: number | null;
+}): number => {
+  const rate = asset.exchangeRate;
+  if (!isForeignCurrency(asset.currency) || rate == null || rate <= 0)
+    return asset.balance;
+  return Math.round(asset.balance * rate);
+};

@@ -1,44 +1,59 @@
-import { useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { Asset, AssetTransferFormValues } from '@/entities/asset'
-import { Input } from '@/shared/ui/input'
-import { InputDatePicker } from '@/shared/ui/input-date-picker'
-import { Label } from '@/shared/ui/label'
-import { todayLocalKey } from '@/shared/lib/date'
+import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import type { Asset, AssetTransferFormValues } from "@/entities/asset";
+import { Input } from "@/shared/ui/input";
+import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { Label } from "@/shared/ui/label";
+import { todayLocalKey } from "@/shared/lib/date";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select'
-import { ModalShell } from '@/shared/ui/porest/dialogs'
-import { ModalFooter } from '@/shared/ui/porest/modal-footer'
-import { useIsMobile } from '@/shared/hooks'
+} from "@/shared/ui/select";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { useIsMobile } from "@/shared/hooks";
 
 interface AssetTransferFormProps {
-  assets: Asset[]
-  onSubmit: (data: AssetTransferFormValues) => void
-  onClose: () => void
-  isLoading: boolean
+  assets: Asset[];
+  onSubmit: (data: AssetTransferFormValues) => void;
+  onClose: () => void;
+  isLoading: boolean;
 }
 
-export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: AssetTransferFormProps) => {
-  const { t } = useTranslation('asset')
-  const { t: tc } = useTranslation('common')
-  const isMobile = useIsMobile()
+export const AssetTransferForm = ({
+  assets,
+  onSubmit,
+  onClose,
+  isLoading,
+}: AssetTransferFormProps) => {
+  const { t } = useTranslation("asset");
+  const { t: tc } = useTranslation("common");
+  const isMobile = useIsMobile();
 
-  const [fromAssetRowId, setFromAssetRowId] = useState<number>(assets[0]?.rowId ?? 0)
-  const [toAssetRowId, setToAssetRowId] = useState<number>(assets[1]?.rowId ?? 0)
-  const [amount, setAmount] = useState('')
-  const [fee, setFee] = useState('')
-  const [description, setDescription] = useState('')
+  const [fromAssetRowId, setFromAssetRowId] = useState<number>(
+    assets[0]?.rowId ?? 0,
+  );
+  const [toAssetRowId, setToAssetRowId] = useState<number>(
+    assets[1]?.rowId ?? 0,
+  );
+  const [amount, setAmount] = useState("");
+  const [fee, setFee] = useState("");
+  const [description, setDescription] = useState("");
   // transferDate 는 사용자가 고르는 벽시계라 UTC 로 잡으면 안 된다 — `toISOString()` 은
   // UTC 날짜여서 KST 00:00~09:00 에 열면 하루 이른 거래일이 그대로 저장된다.
-  const [transferDate, setTransferDate] = useState(todayLocalKey)
+  const [transferDate, setTransferDate] = useState(todayLocalKey);
 
   const handleSubmit = useCallback(() => {
-    if (!fromAssetRowId || !toAssetRowId || !amount || fromAssetRowId === toAssetRowId) return
+    if (
+      !fromAssetRowId ||
+      !toAssetRowId ||
+      !amount ||
+      fromAssetRowId === toAssetRowId
+    )
+      return;
 
     onSubmit({
       fromAssetRowId,
@@ -47,23 +62,31 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
       fee: fee ? parseInt(fee) : undefined,
       description: description || undefined,
       transferDate,
-    })
-  }, [fromAssetRowId, toAssetRowId, amount, fee, description, transferDate, onSubmit])
+    });
+  }, [
+    fromAssetRowId,
+    toAssetRowId,
+    amount,
+    fee,
+    description,
+    transferDate,
+    onSubmit,
+  ]);
 
   const Footer = (
     <ModalFooter
       onCancel={onClose}
-      cancelLabel={tc('cancel')}
+      cancelLabel={tc("cancel")}
       onSave={handleSubmit}
-      saveLabel={tc('save')}
+      saveLabel={tc("save")}
       saving={isLoading}
       saveDisabled={!amount || fromAssetRowId === toAssetRowId}
     />
-  )
+  );
 
   return (
     <ModalShell
-      title={t('addTransfer')}
+      title={t("addTransfer")}
       onClose={onClose}
       mobile={isMobile}
       size="sm"
@@ -71,45 +94,55 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
     >
       <div className="space-y-3">
         <div>
-          <Label>{t('form.fromAsset')}</Label>
-          <Select value={String(fromAssetRowId)} onValueChange={(value) => setFromAssetRowId(Number(value))}>
+          <Label>{t("form.fromAsset")}</Label>
+          <Select
+            value={String(fromAssetRowId)}
+            onValueChange={(value) => setFromAssetRowId(Number(value))}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {assets.map((asset) => (
-                <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+                <SelectItem key={asset.rowId} value={String(asset.rowId)}>
+                  {asset.assetName}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label>{t('form.toAsset')}</Label>
-          <Select value={String(toAssetRowId)} onValueChange={(value) => setToAssetRowId(Number(value))}>
+          <Label>{t("form.toAsset")}</Label>
+          <Select
+            value={String(toAssetRowId)}
+            onValueChange={(value) => setToAssetRowId(Number(value))}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {assets.map((asset) => (
-                <SelectItem key={asset.rowId} value={String(asset.rowId)}>{asset.assetName}</SelectItem>
+                <SelectItem key={asset.rowId} value={String(asset.rowId)}>
+                  {asset.assetName}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label>{t('form.amount')}</Label>
+          <Label>{t("form.amount")}</Label>
           <Input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder={t('form.amountPlaceholder')}
+            placeholder={t("form.amountPlaceholder")}
           />
         </div>
 
         <div>
-          <Label>{t('form.fee')}</Label>
+          <Label>{t("form.fee")}</Label>
           <Input
             type="number"
             value={fee}
@@ -119,7 +152,7 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
         </div>
 
         <div>
-          <Label>{t('form.date')}</Label>
+          <Label>{t("form.date")}</Label>
           <InputDatePicker
             value={transferDate}
             onValueChange={(v) => setTransferDate(v)}
@@ -127,15 +160,15 @@ export const AssetTransferForm = ({ assets, onSubmit, onClose, isLoading }: Asse
         </div>
 
         <div>
-          <Label>{t('form.description')}</Label>
+          <Label>{t("form.description")}</Label>
           <Input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('form.descriptionPlaceholder')}
+            placeholder={t("form.descriptionPlaceholder")}
           />
         </div>
       </div>
     </ModalShell>
-  )
-}
+  );
+};

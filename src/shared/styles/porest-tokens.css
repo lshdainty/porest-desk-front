@@ -130,13 +130,24 @@
 
   /* Shadow (from prose-token table — DESIGN*.md '## Elevation & Depth') */
   --shadow-sm: 0 1px 2px 0 rgba(15, 18, 28, 0.05);
-  --shadow-md: 0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
-  --shadow-lg: 0 8px 24px -4px rgba(15, 18, 28, 0.10), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
-  --shadow-xl: 0 24px 48px -8px rgba(15, 18, 28, 0.16), 0 8px 16px -4px rgba(15, 18, 28, 0.08);
-  --shadow-sm-dark: 0 1px 2px 0 rgba(0, 0, 0, 0.30), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  --shadow-md-dark: 0 2px 8px -1px rgba(0, 0, 0, 0.40), 0 1px 3px -1px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-  --shadow-lg-dark: 0 8px 24px -4px rgba(0, 0, 0, 0.50), 0 2px 6px -2px rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  --shadow-xl-dark: 0 24px 48px -8px rgba(0, 0, 0, 0.60), 0 8px 16px -4px rgba(0, 0, 0, 0.30), inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+  --shadow-md:
+    0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
+  --shadow-lg:
+    0 8px 24px -4px rgba(15, 18, 28, 0.1), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
+  --shadow-xl:
+    0 24px 48px -8px rgba(15, 18, 28, 0.16),
+    0 8px 16px -4px rgba(15, 18, 28, 0.08);
+  --shadow-sm-dark:
+    0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --shadow-md-dark:
+    0 2px 8px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  --shadow-lg-dark:
+    0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  --shadow-xl-dark:
+    0 24px 48px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 
   /* Motion (from prose-token table — DESIGN*.md '## Motion') */
   --motion-duration-fast: 150ms;
@@ -148,7 +159,7 @@
   --motion-ease-linear: linear;
 
   /* Overlay dim (from prose-token table — alpha 채널 rgba) */
-  --overlay-dim-light: rgba(0, 0, 0, 0.50);
+  --overlay-dim-light: rgba(0, 0, 0, 0.5);
   --overlay-dim-dark: rgba(0, 0, 0, 0.65);
 
   /* Breakpoints (from prose-token table — Apple Store reference) */
@@ -175,17 +186,146 @@
 }
 
 /* Keyframes (from v74 Animation library — DESIGN.md '## Motion → Animation library') */
-@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
-@keyframes fade-out { from { opacity: 1 } to { opacity: 0 } }
-@keyframes slide-in-up { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-@keyframes slide-in-down { from { transform: translateY(-8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-@keyframes slide-in-left { from { transform: translateX(-8px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
-@keyframes slide-in-right { from { transform: translateX(8px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
-@keyframes scale-in { from { transform: scale(0.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-@keyframes scale-out { from { transform: scale(1); opacity: 1 } to { transform: scale(0.96); opacity: 0 } }
-@keyframes bounce-in { 0% { transform: scale(0.3); opacity: 0 } 50% { transform: scale(1.05) } 70% { transform: scale(0.9) } 100% { transform: scale(1); opacity: 1 } }
-@keyframes shake { 10%, 90% { transform: translateX(-1px) } 20%, 80% { transform: translateX(2px) } 30%, 50%, 70% { transform: translateX(-4px) } 40%, 60% { transform: translateX(4px) } }
-@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
-@keyframes shimmer { from { transform: translateX(-100%) } to { transform: translateX(100%) } }
-@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0 } }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes slide-in-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-down {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-right {
+  from {
+    transform: translateX(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes scale-in {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

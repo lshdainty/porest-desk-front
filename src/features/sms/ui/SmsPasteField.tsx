@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ClipboardPaste } from 'lucide-react'
-import { Alert, AlertBody, AlertDescription } from '@/shared/ui/alert'
-import { Button } from '@/shared/ui/button'
-import { Textarea } from '@/shared/ui/textarea'
-import { parseSms, type SmsParseResult } from '@/features/sms/api/smsApi'
-import { looksLikePaymentSms } from '@/features/sms/model/smsPrefilter'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ClipboardPaste } from "lucide-react";
+import { Alert, AlertBody, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { Textarea } from "@/shared/ui/textarea";
+import { parseSms, type SmsParseResult } from "@/features/sms/api/smsApi";
+import { looksLikePaymentSms } from "@/features/sms/model/smsPrefilter";
 
 type Props = {
   /** 해석에 성공했을 때 — 원문과 결과를 함께 넘긴다(저장 때 원문이 다시 필요하다). */
-  onParsed: (text: string, parsed: SmsParseResult) => void
-}
+  onParsed: (text: string, parsed: SmsParseResult) => void;
+};
 
 /**
  * 결제 문자를 붙여넣어 폼을 채우는 입력.
@@ -22,47 +22,47 @@ type Props = {
  * 목적이다. 사용자가 실수로 붙여넣은 아무 텍스트가 서버로 올라가면 안 된다.
  */
 export function SmsPasteField({ onParsed }: Props) {
-  const { t } = useTranslation('expense')
-  const { t: tc } = useTranslation('common')
-  const [open, setOpen] = useState(false)
-  const [text, setText] = useState('')
-  const [notice, setNotice] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { t } = useTranslation("expense");
+  const { t: tc } = useTranslation("common");
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const run = async () => {
-    const value = text.trim()
-    if (!value || loading) return
+    const value = text.trim();
+    if (!value || loading) return;
 
     if (!looksLikePaymentSms(value)) {
-      setNotice(t('sms.notRecognized'))
-      return
+      setNotice(t("sms.notRecognized"));
+      return;
     }
-    setLoading(true)
-    setNotice(null)
+    setLoading(true);
+    setNotice(null);
     try {
-      const parsed = await parseSms(value)
+      const parsed = await parseSms(value);
       if (!parsed.matched) {
-        setNotice(t('sms.notRecognized'))
-        return
+        setNotice(t("sms.notRecognized"));
+        return;
       }
       // 취소 문자는 원 거래를 특정할 수 없어 자동 기록하지 않는다 —
       // 그냥 지출로 넣으면 결제와 취소가 둘 다 지출로 쌓여 두 배가 된다.
       if (parsed.cancel) {
-        setNotice(t('sms.cancelNotice'))
-        return
+        setNotice(t("sms.cancelNotice"));
+        return;
       }
-      if (parsed.confidence === 'LOW') {
-        setNotice(t('sms.lowConfidence'))
+      if (parsed.confidence === "LOW") {
+        setNotice(t("sms.lowConfidence"));
       }
-      onParsed(value, parsed)
-      setOpen(false)
-      setText('')
+      onParsed(value, parsed);
+      setOpen(false);
+      setText("");
     } catch (e) {
-      setNotice(e instanceof Error ? e.message : t('sms.parseFailed'))
+      setNotice(e instanceof Error ? e.message : t("sms.parseFailed"));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (!open) {
     return (
@@ -71,20 +71,27 @@ export function SmsPasteField({ onParsed }: Props) {
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        style={{ marginBottom: 18, width: '100%' }}
+        style={{ marginBottom: 18, width: "100%" }}
       >
         <ClipboardPaste size={14} />
-        {t('sms.pasteOpen')}
+        {t("sms.pasteOpen")}
       </Button>
-    )
+    );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        marginBottom: 18,
+      }}
+    >
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={t('sms.pastePlaceholder')}
+        placeholder={t("sms.pastePlaceholder")}
         rows={5}
         autoFocus
       />
@@ -95,22 +102,27 @@ export function SmsPasteField({ onParsed }: Props) {
           </AlertBody>
         </Alert>
       )}
-      <div style={{ display: 'flex', gap: 8 }}>
-        <Button type="button" size="sm" onClick={run} disabled={loading || !text.trim()}>
-          {loading ? t('sms.parsing') : t('sms.pasteAction')}
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button
+          type="button"
+          size="sm"
+          onClick={run}
+          disabled={loading || !text.trim()}
+        >
+          {loading ? t("sms.parsing") : t("sms.pasteAction")}
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => {
-            setOpen(false)
-            setNotice(null)
+            setOpen(false);
+            setNotice(null);
           }}
         >
-          {tc('cancel')}
+          {tc("cancel")}
         </Button>
       </div>
     </div>
-  )
+  );
 }

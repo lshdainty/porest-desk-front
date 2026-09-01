@@ -4,4 +4,4 @@ export type {
   DutchPay,
   DutchPayFormValues,
   ParticipantFormValues,
-} from './model/types'
+} from "./model/types";
