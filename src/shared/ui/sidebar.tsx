@@ -668,10 +668,16 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean;
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
+  // 줄마다 폭이 조금씩 달라야 목록처럼 보인다. 다만 `Math.random()` 은 렌더 중
+  // 순수하지 않아 값이 렌더 사이 흔들리고, React Compiler 가 이 컴포넌트 최적화를
+  // 포기하게 만든다. useId 는 인스턴스마다 다르고 렌더 사이에는 그대로라,
+  // "줄마다 다르되 흔들리지는 않는" 폭을 여기서 뽑는다.
+  const id = React.useId();
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return `${(h % 40) + 50}%`;
+  }, [id]);
 
   return (
     <div
