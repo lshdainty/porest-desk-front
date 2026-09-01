@@ -686,6 +686,125 @@ function CardDetailBody({
         </div>
       )}
 
+      {/* 이번 회차 구성 — 할부가 있을 때만. 예정액이 이용 내역 합과 다른 이유(과거 할부의
+          이번 회차분)를 이 자리에서 설명한다. 다가오는 회차에서만 그린다 — 청구 이력엔
+          합계만 남아 과거 회차의 구성은 서버가 모른다. */}
+      {st?.scheduled && (billing?.upcomingInstallments?.length ?? 0) > 0 && (
+        <div
+          style={{
+            borderTop: "1px solid var(--border-subtle)",
+            padding: "14px 2px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          {billing!.upcomingInstallments!.map(due => (
+            <div
+              key={due.expenseRowId}
+              style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: "var(--text-body-sm)",
+                    fontWeight: "600",
+                    color: "var(--fg-primary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {due.merchant ??
+                    due.description ??
+                    t("assetDetail.installmentFallback")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    marginTop: 2,
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                  }}
+                >
+                  {t("assetDetail.installmentSeq", {
+                    seq: due.sequence,
+                    total: due.installmentMonths,
+                  })}
+                  {" · "}
+                  <MaskAmount card="asset.detail" mask="•••">
+                    {t("assetDetail.installmentPrincipal", {
+                      amount: money(due.principalAmount),
+                    })}
+                  </MaskAmount>
+                </div>
+              </div>
+              <span
+                className="num"
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  fontWeight: "700",
+                  color: "var(--fg-primary)",
+                  flexShrink: 0,
+                }}
+              >
+                <MaskAmount card="asset.detail">
+                  {money(due.amount)}
+                </MaskAmount>
+              </span>
+            </div>
+          ))}
+          {(billing!.upcomingLumpSumAmount ?? 0) !== 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                }}
+              >
+                {t("assetDetail.lumpSumLabel")}
+              </span>
+              <span
+                className="num"
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  color: "var(--fg-secondary)",
+                }}
+              >
+                <MaskAmount card="asset.detail">
+                  {money(billing!.upcomingLumpSumAmount!)}
+                </MaskAmount>
+              </span>
+            </div>
+          )}
+          {(billing!.upcomingAlreadyPaidAmount ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                }}
+              >
+                {t("assetDetail.alreadyPaidLabel")}
+              </span>
+              <span
+                className="num"
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  color: "var(--fg-secondary)",
+                }}
+              >
+                <MaskAmount card="asset.detail">
+                  -{money(billing!.upcomingAlreadyPaidAmount!)}
+                </MaskAmount>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 빠른 액션 — 되돌릴 결제가 있으면 3열 */}
       <div
         style={{
