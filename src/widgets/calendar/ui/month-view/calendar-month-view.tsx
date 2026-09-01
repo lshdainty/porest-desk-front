@@ -5,6 +5,8 @@ import {
   format,
   isSameDay,
   parseISO,
+  differenceInCalendarDays,
+  getDay,
 } from "date-fns";
 import { enUS, ko } from "date-fns/locale";
 import { useMemo, useCallback, useRef, useState, useEffect } from "react";
@@ -394,11 +396,28 @@ const MonthEventBadge = ({
     position = "middle";
   }
 
-  const renderBadgeText = ["first", "none"].includes(position);
   const isMultiDay = !isSameDay(
     parseISO(event.startDate),
     parseISO(event.endDate),
   );
+  // 단일 이벤트만 기존처럼 좌측 제목. 멀티데이는 아래 가운데 라벨이 맡는다 —
+  // 시작 조각에만 제목을 두면 바의 나머지가 빈 띠로 남고, 주가 넘어가면 다음 주
+  // 바에는 제목이 아예 없었다(사용자 결정: 연속 바는 제목을 가운데에).
+  const renderBadgeText = position === "none";
+  // 이 셀이 "이 주(행)에서 이 이벤트가 시작되는 칸" 인가 — 이벤트 첫날이거나,
+  // 이어지는 이벤트의 주 첫 칸(일요일). 라벨은 행마다 한 번씩 이 칸에서 그린다.
+  const rowSegStart =
+    isMultiDay && (position === "first" || getDay(cellDate) === 0);
+  // 이 행에서 바가 차지하는 칸 수 — 남은 이벤트 일수와 남은 주 일수 중 짧은 쪽.
+  const rowSegDays = rowSegStart
+    ? Math.min(
+        differenceInCalendarDays(
+          startOfDay(parseISO(event.endDate)),
+          cellDate,
+        ) + 1,
+        7 - getDay(cellDate),
+      )
+    : 0;
   const badgeColor = eventBadgeColor(event);
 
   const positionClasses = {
@@ -417,7 +436,9 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        "mx-0.5 lg:mx-1 flex size-auto select-none items-center justify-between gap-1 overflow-hidden whitespace-nowrap rounded-sm lg:rounded-md border text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "mx-0.5 lg:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm lg:rounded-md border text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        // 가운데 라벨이 다음 칸까지 뻗어야 해서 라벨 호스트 조각만 overflow 를 연다.
+        rowSegStart ? "overflow-visible z-20" : "overflow-hidden",
         // 모바일(<768px): 앱 _EventBar 정합 타이트 칩(16px·좌우 4px·leading-none).
         // 데스크톱/태블릿(≥768px): 원래 높이/패딩(22px → lg 26px, 좌우 4 → lg 8px).
         isMobile ? "h-4 leading-none px-1" : "h-5.5 lg:h-6.5 px-1 lg:px-2",
@@ -448,6 +469,18 @@ const MonthEventBadge = ({
             {format(new Date(event.startDate), timeFormat, { locale })}
           </span>
         </div>
+      )}
+
+      {rowSegStart && (
+        // 행 조각 전체 폭에 걸쳐 가운데 정렬 — 칸 폭이 균등하고 조각 사이 여백이 0 이라
+        // (첫·끝 조각의 바깥 여백만 있음) 칸 수 × 100% 로 스팬을 근사한다. 클릭은
+        // 아래 조각들이 받도록 통과시킨다.
+        <span
+          className="pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center overflow-hidden whitespace-nowrap px-1 font-semibold"
+          style={{ width: `${rowSegDays * 100}%` }}
+        >
+          {event.title}
+        </span>
       )}
 
       {position !== "last" && position !== "middle" && (
