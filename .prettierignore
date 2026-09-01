@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+coverage
+
+# i18n 생성물 — scripts/generate-i18n.mjs 가 CSV(i18n/translations.csv, SoT)에서
+# 만들어 낸다. 손대 봐야 다음 generate 에 날아가고, .gitignore 대상이라 커밋도 안 된다.
+src/locales
+
+# 마크다운은 제외한다. CLAUDE.md·README 는 손으로 줄을 맞춰 쓴 한국어 산문이고,
+# prettier 가 문단을 다시 흘리면 의도한 줄바꿈(표·주석 정렬)이 깨진다.
+# 코드 서식을 통일하려는 것이지 문서를 다시 쓰려는 게 아니다.
+*.md
+
+package-lock.json
