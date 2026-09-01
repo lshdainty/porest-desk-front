@@ -270,11 +270,16 @@ function AssetCompositionCard({
   const { t } = useTranslation("asset");
   const [active, setActive] = useState<AssetGroupKey | null>(null);
 
+  // 구성 도넛도 총액과 같은 집합만 본다 — "전체 자산 합계에 포함" 을 끈 자산은
+  // 순자산·총자산에서 빠지는데 도넛에만 남아 있었다(대출을 빼도 83% 조각이 그대로).
+  // 가운데 순자산 숫자와 조각이 서로 다른 집합을 말하면 도넛이 거짓말이 된다.
+  const included = (arr: Asset[]) =>
+    arr.filter((a) => a.isIncludedInTotal === "Y");
   const groupAssets: Record<AssetGroupKey, Asset[]> = {
-    cash: accounts,
-    invest: investments,
-    card: cards,
-    loan: loans,
+    cash: included(accounts),
+    invest: included(investments),
+    card: included(cards),
+    loan: included(loans),
   };
 
   type Row = {
