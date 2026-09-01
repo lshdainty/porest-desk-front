@@ -8,3 +8,5 @@ export {
   clearAuthenticated,
   isAuthenticated,
 } from "./base";
+
+export { hideCardsApi } from "./hideCardsApi";

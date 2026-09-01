@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { hideCardsApi } from "@/features/hide-amounts/api/hideCardsApi";
+import { hideCardsApi } from "@/shared/api";
 import { isEn } from "@/shared/lib/porest/format";
 import {
   ALL_HIDE_CARDS,
