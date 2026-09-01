@@ -29,7 +29,8 @@ import {
   DetailSection,
   DetailStatSplit,
 } from "@/shared/ui/porest/detail";
-import { CategoryChip, ExpenseRow } from "@/shared/ui/porest/expense-row";
+import { CategoryChip } from "@/shared/ui/porest/category-chip";
+import { ExpenseRow } from "@/entities/expense";
 import {
   useDeleteExpense,
   useExpenseCategories,

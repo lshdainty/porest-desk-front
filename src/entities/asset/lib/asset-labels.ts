@@ -1,5 +1,5 @@
 import { i18n } from "@/shared/i18n/config";
-import type { AssetType } from "@/entities/asset";
+import type { AssetType } from "../model/types";
 
 /** assetType → asset ns i18n 키. 계좌유형 enum 라벨은 번역 대상(#17 은 은행/브랜드명만 한글 유지). */
 const ASSET_TYPE_KEY: Record<AssetType, string> = {

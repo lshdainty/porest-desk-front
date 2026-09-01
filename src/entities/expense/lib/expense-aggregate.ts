@@ -1,4 +1,5 @@
-import type { Expense } from "@/entities/expense";
+import { isScheduledDate } from "@/shared/lib/porest/ledger-format";
+import type { Expense } from "../model/types";
 
 /*
  * 거래 집계의 단 하나의 규칙 — 백엔드 `ExpenseAggregates` 미러.
@@ -13,11 +14,13 @@ import type { Expense } from "@/entities/expense";
  * 거래를 합산하는 코드는 여기를 거칠 것.
  */
 
-/** 아직 오지 않은 거래인가 — 서버도 이 기준으로 오늘까지만 센다. */
-export function isScheduledTx(date: string | null | undefined): boolean {
-  if (!date) return false;
-  return new Date(date.length === 10 ? `${date}T23:59:59` : date) > new Date();
-}
+/**
+ * 아직 오지 않은 거래인가 — 서버도 이 기준으로 오늘까지만 센다.
+ *
+ * 판정은 `isScheduledDate` 하나다. 예전엔 이 파일과 거래 행이 같은 식을 따로
+ * 갖고 있었다 — 합계와 행의 흐린 표시가 어긋날 수 있는 구조였다.
+ */
+export const isScheduledTx = isScheduledDate;
 
 /** 환불 = 수입으로 기록하되 원거래에 묶인 것. 수입이 아니라 지출을 깎는다. */
 export function isRefundTx(e: Expense): boolean {

@@ -58,7 +58,8 @@ import {
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
-import { ExpenseRow, TransferRow } from "@/shared/ui/porest/expense-row";
+import { ExpenseRow } from "@/entities/expense";
+import { TransferRow } from "@/entities/asset";
 import { TransferDetailDialog } from "@/widgets/expense-detail/ui/TransferDetailDialog";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
@@ -101,7 +102,7 @@ import {
   expenseSum,
   incomeSum,
   isRefundTx,
-} from "@/shared/lib/porest/expense-aggregate";
+} from "@/entities/expense";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { TxDetailDialog } from "@/widgets/expense-detail/ui/TxDetailDialog";

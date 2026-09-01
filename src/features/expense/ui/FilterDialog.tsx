@@ -10,7 +10,7 @@ import { Field, FieldLabel } from "@/shared/ui/field";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Toggle } from "@/shared/ui/toggle";
-import { TxTypeToggle, type TxTypeOption } from "@/shared/ui/tx-type-toggle";
+import { TxTypeToggle, type TxTypeOption } from "@/entities/expense";
 
 export type FilterPeriod = "week" | "month" | "3m" | "custom";
 

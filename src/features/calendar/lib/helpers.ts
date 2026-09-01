@@ -30,7 +30,7 @@ import {
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { money } from "@/shared/lib/porest/format";
 import type { CalendarEvent, Holiday } from "@/entities/calendar";
-import { isRefundTx } from "@/shared/lib/porest/expense-aggregate";
+import { isRefundTx } from "@/entities/expense";
 import type { Expense } from "@/entities/expense";
 import type {
   IEvent,

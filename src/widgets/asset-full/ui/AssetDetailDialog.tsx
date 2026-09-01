@@ -28,7 +28,7 @@ import {
   type AssetHolding,
 } from "@/entities/asset";
 import type { Expense } from "@/entities/expense";
-import { isScheduledTx } from "@/shared/lib/porest/expense-aggregate";
+import { isScheduledTx } from "@/entities/expense";
 import {
   useAssetBalanceTrend,
   useAssets,
@@ -53,7 +53,8 @@ import { Label } from "@/shared/ui/label";
 import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { ExpenseRow, TransferRow } from "@/shared/ui/porest/expense-row";
+import { ExpenseRow } from "@/entities/expense";
+import { TransferRow } from "@/entities/asset";
 import {
   ChartContainer,
   ChartTooltip,
@@ -69,7 +70,7 @@ import {
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
 import { niceAxis } from "@/shared/lib/porest/chartAxis";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
-import { assetTypeLabel } from "@/shared/lib/porest/asset-labels";
+import { assetTypeLabel } from "@/entities/asset";
 import {
   HideUnit,
   MaskAmount,

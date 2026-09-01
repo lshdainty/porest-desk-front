@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-import type { ExpenseType } from "@/entities/expense";
+import type { ExpenseType } from "../model/types";
 
 /**
  * 거래 종류 토글 chip — `FilterDialog`/`AddTxSheet`/`PresetEditDialog` 공용.

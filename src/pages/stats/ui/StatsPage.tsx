@@ -33,7 +33,7 @@ import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
 import {
   isRefundTx,
   isScheduledTx,
-} from "@/shared/lib/porest/expense-aggregate";
+} from "@/entities/expense";
 import {
   HideCard,
   MaskAmount,
