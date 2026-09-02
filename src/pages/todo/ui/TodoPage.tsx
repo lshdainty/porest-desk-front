@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Spinner } from "@/shared/ui/spinner";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -452,6 +453,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       >
         <button
           type="button"
+          disabled={toggleStatus.pendingIds.has(todo.rowId)}
+          aria-busy={toggleStatus.pendingIds.has(todo.rowId) || undefined}
           onClick={(e) => {
             e.stopPropagation();
             onToggleTodo(todo);
@@ -476,7 +479,11 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               "all var(--motion-duration-fast) var(--motion-ease-out)",
           }}
         >
-          {done && <Check size={13} color="#fff" strokeWidth={3} />}
+          {toggleStatus.pendingIds.has(todo.rowId) ? (
+            <Spinner size="sm" />
+          ) : (
+            done && <Check size={13} color="#fff" strokeWidth={3} />
+          )}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
@@ -777,6 +784,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             doneToday={doneToday}
             pinTop={46}
             onToggle={onToggleTodo}
+            pendingIds={toggleStatus.pendingIds}
             onRowClick={setViewing}
             // 스와이프 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
             onEdit={setEditing}

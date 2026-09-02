@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
+import { Spinner } from "@/shared/ui/spinner";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -441,6 +442,8 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
             <button
               type="button"
               aria-label={t("unpin")}
+              disabled={togglePin.pendingIds.has(m.rowId)}
+              aria-busy={togglePin.pendingIds.has(m.rowId) || undefined}
               onClick={(ev) => {
                 ev.stopPropagation();
                 togglePin.mutate(m.rowId);
@@ -456,7 +459,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
                 flexShrink: 0,
               }}
             >
-              <Pin size={13} strokeWidth={2.5} style={{ color: tone.swatch }} />
+              {togglePin.pendingIds.has(m.rowId) ? (
+                <Spinner size="sm" />
+              ) : (
+                <Pin
+                  size={13}
+                  strokeWidth={2.5}
+                  style={{ color: tone.swatch }}
+                />
+              )}
             </button>
           )}
         </div>

@@ -115,6 +115,7 @@ export const CalendarProvider = ({
       userCalendars,
       isCalendarVisible,
       toggleCalendarVisibility: handleToggleCalendarVisibility,
+      pendingCalendarIds: toggleVisibilityMutation.pendingIds,
     }),
     [
       selectedDate,
@@ -130,6 +131,7 @@ export const CalendarProvider = ({
       userCalendars,
       isCalendarVisible,
       handleToggleCalendarVisibility,
+      toggleVisibilityMutation.pendingIds,
     ],
   );
 

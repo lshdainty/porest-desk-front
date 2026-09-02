@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
 import { userCalendarKeys } from "@/shared/config/queryKeys";
 import { userCalendarApi } from "../api/userCalendarApi";
 import type {
@@ -39,13 +40,18 @@ export const useUpdateUserCalendar = () => {
 
 export const useToggleCalendarVisibility = () => {
   const queryClient = useQueryClient();
+  const { pendingIds, begin, end } = usePendingIds();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => userCalendarApi.toggleVisibility(id),
+    onMutate: (id: number) => begin(id),
+    onSettled: (_data, _error, id) => end(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userCalendarKeys.all });
     },
   });
+  /** 진행 중인 항목 id — 그 항목만 스피너·잠금. */
+  return { ...mutation, pendingIds };
 };
 
 export const useDeleteUserCalendar = () => {
