@@ -599,8 +599,8 @@ type ViewMode = "calendar" | "list";
 /** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
  *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
  *  CalendarMonthView 의 onDayClick prop 으로 셀 클릭 시 그날 거래 내역
- *  DayDetailDialog (mobile drawer / desktop dialog) 표시. drag-select 의
- *  quickAdd dialog 는 onDayClick 있으면 자동 양보. */
+ *  DayDetailDialog (mobile drawer / desktop dialog) 표시. onDayClick 이 있으면
+ *  drag-select 가 양보하므로 캘린더 화면의 일정 추가 폼은 여기서 안 뜬다. */
 function ExpenseCalendar({
   month,
   expenses,

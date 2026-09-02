@@ -1,33 +1,22 @@
 import { useCallback, useState } from "react";
-import { isBefore, startOfDay, isAfter, isSameDay, format } from "date-fns";
-import { useTranslation } from "react-i18next";
-import { CalendarDays, Wallet } from "lucide-react";
+import { isBefore, startOfDay, isAfter, isSameDay } from "date-fns";
 
 import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
-import { AddTxSheet } from "@/widgets/add-tx";
 import { EventForm } from "../ui/EventForm";
-import { useIsMobile } from "@/shared/hooks";
 import type { CalendarEventFormValues } from "@/entities/calendar";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { DragSelectContext } from "./drag-select-context";
-
-type SelectionMode = "choose" | "event" | "expense";
 
 export const DragSelectProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const { t } = useTranslation("calendar");
-  const isMobile = useIsMobile();
   const [isDragSelecting, setIsDragSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<Date | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<Date | null>(null);
 
-  const [selectionMode, setSelectionMode] = useState<SelectionMode | null>(
-    null,
-  );
+  // 값이 있으면 일정 추가 폼이 열려 있다는 뜻이다.
   const [dialogDateRange, setDialogDateRange] = useState<{
     start: Date;
     end: Date;
@@ -68,9 +57,13 @@ export const DragSelectProvider = ({
           ? selectionEnd
           : selectionStart;
 
-      // Open selection menu instead of directly opening EventForm
+      // 빈 날짜를 고르면 곧바로 일정 추가로 간다.
+      //
+      // 예전엔 여기서 "일정 / 거래" 를 고르는 팝업을 한 번 더 띄웠다. 가계부가 자체
+      // 캘린더를 갖기 전에는 거래도 여기서 넣어야 했기 때문이다. 이제 거래는 가계부
+      // 캘린더에서 넣으므로, 이 화면은 캘린더 본연의 일만 한다 — 고르는 단계가 사라져
+      // 클릭 한 번이 줄었다.
       setDialogDateRange({ start, end });
-      setSelectionMode("choose");
 
       // Reset selection visual state
       setSelectionStart(null);
@@ -109,27 +102,13 @@ export const DragSelectProvider = ({
   const handleCreateEvent = useCallback(
     (data: CalendarEventFormValues) => {
       createEvent.mutate(data, {
-        onSuccess: () => {
-          setSelectionMode(null);
-          setDialogDateRange(null);
-        },
+        onSuccess: () => setDialogDateRange(null),
       });
     },
     [createEvent],
   );
 
-  const handleClose = useCallback(() => {
-    setSelectionMode(null);
-    setDialogDateRange(null);
-  }, []);
-
-  const handleChooseEvent = useCallback(() => {
-    setSelectionMode("event");
-  }, []);
-
-  const handleChooseExpense = useCallback(() => {
-    setSelectionMode("expense");
-  }, []);
+  const handleClose = useCallback(() => setDialogDateRange(null), []);
 
   return (
     <DragSelectContext.Provider
@@ -145,53 +124,7 @@ export const DragSelectProvider = ({
     >
       {children}
 
-      {/* Quick Add Selection Menu */}
-      {selectionMode === "choose" && dialogDateRange && (
-        <ModalShell
-          title={t("quickAdd.title")}
-          onClose={handleClose}
-          mobile={isMobile}
-          size="sm"
-        >
-          <div className="grid gap-2">
-            <button
-              onClick={handleChooseEvent}
-              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                <CalendarDays size={20} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-medium">
-                  {t("quickAdd.addSchedule")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("quickAdd.scheduleDesc")}
-                </div>
-              </div>
-            </button>
-            <button
-              onClick={handleChooseExpense}
-              className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                <Wallet size={20} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-medium">
-                  {t("quickAdd.addTransaction")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("quickAdd.transactionDesc")}
-                </div>
-              </div>
-            </button>
-          </div>
-        </ModalShell>
-      )}
-
-      {/* Event Form Dialog */}
-      {selectionMode === "event" && dialogDateRange && (
+      {dialogDateRange && (
         <EventForm
           selectedDate={dialogDateRange.start}
           selectedEndDate={dialogDateRange.end}
@@ -199,15 +132,6 @@ export const DragSelectProvider = ({
           onSubmit={handleCreateEvent}
           onClose={handleClose}
           isLoading={createEvent.isPending}
-        />
-      )}
-
-      {/* Expense Form Dialog */}
-      {selectionMode === "expense" && dialogDateRange && (
-        <AddTxSheet
-          mobile={isMobile}
-          defaultDate={format(dialogDateRange.start, "yyyy-MM-dd")}
-          onClose={handleClose}
         />
       )}
     </DragSelectContext.Provider>

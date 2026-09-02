@@ -1061,11 +1061,6 @@ calendar,monthView.more,+{{count}}개 더보기,+{{count}} more
 calendar,dayView.happeningNow,진행 중,Happening Now
 calendar,dayView.noAppointments,진행 중인 일정이 없습니다,No appointments right now
 calendar,agenda.noEvents,일정이 없습니다,No events
-calendar,quickAdd.title,추가하기,Quick add
-calendar,quickAdd.addSchedule,일정 추가,Add Schedule
-calendar,quickAdd.scheduleDesc,새로운 일정을 등록합니다,Register a new schedule
-calendar,quickAdd.addTransaction,거래 추가,Add Transaction
-calendar,quickAdd.transactionDesc,새로운 거래를 등록합니다,Register a new transaction
 calendar,close,닫기,Close
 calendar,eventDetail,일정 상세,Event details
 calendar,goToToday,오늘로,Today
