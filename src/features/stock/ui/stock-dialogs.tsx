@@ -155,6 +155,8 @@ export function WatchGroupDialog({
   const canSave = name.trim().length > 0 && !busy;
 
   const save = () => {
+    // Enter 연타·따닥 클릭 — 요청이 나가 있으면 다시 안 보낸다.
+    if (busy) return;
     const groupName = name.trim();
     if (!groupName) return;
     if (group) {
@@ -193,6 +195,7 @@ export function WatchGroupDialog({
           <Button
             size="sm"
             disabled={!canSave}
+            loading={createMut.isPending || renameMut.isPending}
             onClick={save}
             style={{ flex: 1 }}
           >
