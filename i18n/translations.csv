@@ -1814,6 +1814,9 @@ settings,sections.account.label,계정,Account
 settings,sections.account.desc,프로필·보안·로그아웃,Profile · security · logout
 settings,sections.privacy.label,개인정보 처리방침,Privacy policy
 settings,sections.privacy.desc,수집 항목·보유기간·권리 안내,Data collected · retention · your rights
+settings,sections.guide.label,설명서,User guide
+settings,sections.guide.desc,화면별 사용법과 자주 묻는 질문,How to use each screen · FAQ
+settings,groups.help,도움말,Help
 settings,groups.dataManage,데이터 관리,Data Management
 settings,groups.tagsLabels,태그 · 라벨,Tags · Labels
 settings,groups.share,공유,Sharing
