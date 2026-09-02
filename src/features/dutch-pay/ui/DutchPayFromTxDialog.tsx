@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { Check, Divide, ListOrdered, Percent, UserPlus, X } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
@@ -528,7 +529,7 @@ export function DutchPayFromTxDialog({
                     value={p.customAmount}
                     onChange={(e) =>
                       updateOther(p.uid, {
-                        customAmount: e.target.value.replace(/[^0-9]/g, ""),
+                        customAmount: sanitizeAmountInput(e.target.value),
                       })
                     }
                     inputMode="numeric"

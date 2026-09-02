@@ -245,6 +245,7 @@ calendar,form.color,색상,Color
 calendar,form.allDay,종일,All Day
 calendar,form.startDate,시작일,Start Date
 calendar,form.endDate,종료일,End Date
+calendar,form.endBeforeStart,종료일이 시작일보다 빠를 수 없어요,End date cannot be before the start date
 calendar,deleteConfirm.title,일정 삭제,Delete event
 calendar,deleteConfirm.message,"""{{name}}"" 일정을 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" event? This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
@@ -1543,6 +1544,7 @@ expense,transferEmpty,이체 내역이 없어요,No transfers yet
 expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
+expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
 expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction

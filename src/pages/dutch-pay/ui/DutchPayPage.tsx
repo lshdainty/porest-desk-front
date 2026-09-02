@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { parseAmount } from "@/shared/lib/porest/amount";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -1225,10 +1226,7 @@ function DutchCreateWizard({
   // 결제한 사람. 기본은 나지만 바꿀 수 있다 — 친구가 계산하고 내가 갚는 경우가 있다.
   const [payerName, setPayerName] = useState<string>(MY_NAME);
 
-  const totalNum = useMemo(
-    () => Number(totalStr.replace(/[^0-9]/g, "")) || 0,
-    [totalStr],
-  );
+  const totalNum = useMemo(() => parseAmount(totalStr), [totalStr]);
 
   const candidates = useMemo(() => {
     const seen = new Set<string>([MY_NAME]);

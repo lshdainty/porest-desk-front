@@ -167,6 +167,8 @@ export const EventForm = ({
   // (`react-hooks/incompatible-library`). 핸들러 안 1 회 읽기는 `getValues` 다.
   const startDate = useWatch({ control, name: "startDate" });
   const endDate = useWatch({ control, name: "endDate" });
+  // 서버(CAL_002)가 거절할 범위는 누르기 전에 막는다 — 둘 다 같은 형식(날짜 또는 날짜T시각)이라 문자열 비교로 충분하다.
+  const dateRangeInvalid = !!startDate && !!endDate && endDate < startDate;
   const selectedColor = useWatch({ control, name: "color" });
   const isAllDay = useWatch({ control, name: "isAllDay" });
   const selectedLabelRowId = useWatch({ control, name: "labelRowId" });
@@ -250,6 +252,7 @@ export const EventForm = ({
       onSave={handleSubmit(onFormSubmit)}
       saveLabel={tc("save")}
       saving={isLoading}
+      saveDisabled={dateRangeInvalid}
       onDelete={event && onDelete ? onDelete : undefined}
       deleteLabel={tc("delete")}
     />
@@ -591,6 +594,17 @@ export const EventForm = ({
               ))}
             </ToggleGroup>
           </div>
+          {dateRangeInvalid && (
+            <p
+              style={{
+                margin: 0,
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-danger, var(--fg-secondary))",
+              }}
+            >
+              {t("form.endBeforeStart")}
+            </p>
+          )}
         </form>
       </Form>
     </ModalShell>

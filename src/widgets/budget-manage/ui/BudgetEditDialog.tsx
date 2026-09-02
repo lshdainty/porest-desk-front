@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { Icon } from "@/shared/ui/porest/primitives";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -189,7 +190,7 @@ export function BudgetEditDialog({
           className="num"
           value={limit}
           onChange={(e) => {
-            setLimit(e.target.value.replace(/[^0-9]/g, ""));
+            setLimit(sanitizeAmountInput(e.target.value));
             setTouched(true);
           }}
           inputMode="numeric"
@@ -254,7 +255,7 @@ export function MonthlyBudgetDialog({
           className="num"
           style={{ fontSize: "var(--text-title-lg)", fontWeight: "700" }}
           value={v}
-          onChange={(e) => setV(e.target.value.replace(/[^0-9]/g, ""))}
+          onChange={(e) => setV(sanitizeAmountInput(e.target.value))}
           inputMode="numeric"
           autoFocus
         />

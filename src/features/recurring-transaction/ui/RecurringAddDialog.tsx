@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
+import { parseAmount, sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { Bell, Zap, Calendar } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
@@ -199,7 +200,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
     [startDate, frequency, dayOfWeek, dayOfMonth],
   );
 
-  const amountNumber = amount ? Number(amount.replace(/[^0-9]/g, "")) : 0;
+  const amountNumber = parseAmount(amount);
   const ready =
     amountNumber > 0 &&
     !!startDate &&
@@ -296,7 +297,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
         <Input
           className="num"
           value={amount}
-          onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+          onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
           placeholder="0"
           inputMode="numeric"
           style={{
