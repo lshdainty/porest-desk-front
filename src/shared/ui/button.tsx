@@ -27,6 +27,9 @@ import { Spinner } from "@/shared/ui/spinner";
  *     asChild와 함께 쓰지 말 것 (Slot 단일 child 제약).
  */
 
+/** 같은 버튼의 재클릭을 버리는 창(ms). OS 더블클릭 판정(≈500ms)보다 조금 길게. */
+export const DOUBLE_CLICK_GUARD_MS = 600;
+
 export interface ButtonProps
   extends
     React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -44,18 +47,41 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size,
       flush,
       asChild = false,
-      loading = false,
+      loading,
       disabled,
       children,
+      onClick,
       ...props
     },
     ref,
   ) => {
+    // 더블클릭 방어 — `loading` 을 넘긴 버튼은 비동기 작업을 거는 버튼이다. isPending 이
+    // true 로 바뀌어 disabled 가 되는 건 다음 렌더 뒤라, 따닥 누르면 두 번째 클릭이 그
+    // 사이를 뚫고 같은 요청을 한 번 더 보냈다(거래 2건 저장, QA 2026-09-02). 렌더와
+    // 무관하게 동기적으로 짧은 창(더블클릭 간격) 안의 재클릭을 버린다. 창이 지나면
+    // 부모의 loading/disabled 가 이어받는다.
+    const lastClickAt = React.useRef(0);
+    const isAsyncAction = loading !== undefined;
+    const guardedClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (isAsyncAction) {
+          const now = Date.now();
+          if (now - lastClickAt.current < DOUBLE_CLICK_GUARD_MS) {
+            e.preventDefault();
+            return;
+          }
+          lastClickAt.current = now;
+        }
+        onClick?.(e);
+      },
+      [isAsyncAction, onClick],
+    );
     if (asChild) {
       return (
         <Slot
           className={cn(buttonVariants({ variant, size, flush, className }))}
           ref={ref}
+          onClick={onClick}
           {...props}
         >
           {children}
@@ -66,8 +92,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(buttonVariants({ variant, size, flush, className }))}
         ref={ref}
-        disabled={disabled || loading}
+        disabled={disabled || !!loading}
         aria-busy={loading || undefined}
+        onClick={guardedClick}
         {...props}
       >
         {loading && (

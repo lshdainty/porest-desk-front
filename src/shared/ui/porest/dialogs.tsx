@@ -181,7 +181,8 @@ export function ConfirmDialog({
             variant={danger ? "destructive" : "default"}
             size={isMobile ? "lg" : undefined}
             onClick={onConfirm}
-            loading={loading}
+            // loading 을 안 넘긴 호출처도 확인은 비동기 작업이다 — false 라도 넘겨 Button 의 더블클릭 방어를 켠다.
+            loading={loading ?? false}
           >
             {confirmLabel ?? t("confirm")}
           </Button>
