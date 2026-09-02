@@ -1439,6 +1439,13 @@ export function AssetEditDialog({
               {t("editDialog.cardBalanceHelp")}
             </p>
           )}
+          {/* 잔액 수동 수정 = 새 앵커. 그 시각 이전 내역은 이 잔액에 이미 들어 있는 것으로 보고
+              이후 내역만 더해진다 — 모르고 고치면 방금 한 이체가 잔액에서 사라진 것처럼 보인다. */}
+          {item && editingGroup !== "card" && (
+            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+              {t("editDialog.balanceEditHelp")}
+            </p>
+          )}
         </div>
       )}
 

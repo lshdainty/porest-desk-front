@@ -295,6 +295,8 @@ type CardStatement = {
   periodStart: string | null;
   periodEnd: string | null;
   paymentDate: string;
+  /** 예정 회차에 빠지는 할부 구성 — 과거 회차는 서버가 내려주지 않는다. */
+  installments?: InstallmentDue[];
 };
 
 /**
@@ -319,12 +321,28 @@ function CardDetailBody({
   const [confirmPay, setConfirmPay] = useState(false);
   // 부분 선결제 — 기본값은 남은 청구액 전액. 고치면 그만큼만 내고 나머지는 결제일에 빠진다.
   const [payAmount, setPayAmount] = useState("");
-  const [stIdx, setStIdx] = useState(0);
+  // null = 아직 고르지 않음 → 다가오는 회차(결제가 임박한 쪽)를 기본으로 잡는다.
+  // 다음 회차가 맨 위에 오므로 0 을 기본으로 두면 아직 쌓이는 중인 회차가 먼저 열린다.
+  const [stIdx, setStIdx] = useState<number | null>(null);
   const [pickOpen, setPickOpen] = useState(false);
   const [sort, setSort] = useState<"recent" | "amount" | "category">("recent");
 
   const statements: CardStatement[] = useMemo(() => {
     const out: CardStatement[] = [];
+    // 다음 회차(지금 쌓이는 이용분)가 맨 위 — 최신순. 결제일이 지나기 전에도 이번 달 내역이 보인다.
+    if (billing?.nextCycle) {
+      const n = billing.nextCycle;
+      out.push({
+        key: `next-${n.paymentDate}`,
+        label: formatDay(n.paymentDate).md,
+        scheduled: true,
+        amount: n.amount,
+        periodStart: n.periodStart,
+        periodEnd: n.periodEnd,
+        paymentDate: n.paymentDate,
+        installments: n.installments ?? [],
+      });
+    }
     if (billing?.nextPaymentDate) {
       out.push({
         key: `up-${billing.nextPaymentDate}`,
@@ -334,6 +352,7 @@ function CardDetailBody({
         periodStart: billing.upcomingPeriodStart,
         periodEnd: billing.upcomingPeriodEnd,
         paymentDate: billing.nextPaymentDate,
+        installments: billing.upcomingInstallments ?? [],
       });
     }
     // 과거 회차 — 결제월별 합산: 같은 달에 여러 번(선결제 등) 결제해도 월 1행(사용자 결정).
@@ -375,8 +394,14 @@ function CardDetailBody({
     }
     return out;
   }, [billing]);
+  const activeIdx =
+    stIdx ??
+    Math.max(
+      0,
+      statements.findIndex((s) => s.key.startsWith("up-")),
+    );
   const st =
-    statements[Math.min(stIdx, Math.max(0, statements.length - 1))] ?? null;
+    statements[Math.min(activeIdx, Math.max(0, statements.length - 1))] ?? null;
 
   // 기간 선택 시트 — 연도별 그룹(최신순 유지)
   const byYear = useMemo(() => {
@@ -469,18 +494,34 @@ function CardDetailBody({
   }, [usageTx]);
 
   const openPay = () => {
-    setPayAmount(String(billing?.upcomingAmount ?? 0));
+    setPayAmount(
+      String(st?.scheduled ? st.amount : (billing?.upcomingAmount ?? 0)),
+    );
     setConfirmPay(true);
   };
 
   const payAmountNum = Number(payAmount.replace(/[^0-9]/g, "")) || 0;
-  const upcoming = billing?.upcomingAmount ?? 0;
+  // 고른 회차가 예정 회차면 그 회차의 예정액이 상한 — 다음 회차를 미리 낼 수도 있다.
+  const upcoming = st?.scheduled ? st.amount : (billing?.upcomingAmount ?? 0);
   const payAmountValid = payAmountNum > 0 && payAmountNum <= upcoming;
+  // 돈은 잔액에 잡힌 빚까지만 움직인다(서버 payoff 캡). 청구액이 그보다 크면 차액은
+  // 청구 기록만 남고 계좌에서 안 빠진다 — 완료만 보고 빠진 줄 아는 일이 없게 미리 알린다.
+  const cardDebt = Math.max(0, -asset.balance);
+  const payMoveNote =
+    billing?.paymentAssetRowId == null
+      ? t("assetDetail.payNoAccountNote")
+      : cardDebt < payAmountNum
+        ? t("assetDetail.payMoveNote", { amount: money(cardDebt) })
+        : null;
 
   const handlePay = () => {
     if (!payAmountValid) return;
     payCard.mutate(
-      { id: asset.rowId, amount: payAmountNum },
+      {
+        id: asset.rowId,
+        amount: payAmountNum,
+        paymentDate: st?.scheduled ? st.paymentDate : undefined,
+      },
       {
         onSuccess: () => {
           setConfirmPay(false);
@@ -699,7 +740,7 @@ function CardDetailBody({
       {/* 이번 회차 구성 — 할부가 있을 때만. 예정액이 이용 내역 합과 다른 이유(과거 할부의
           이번 회차분)를 이 자리에서 설명한다. 다가오는 회차에서만 그린다 — 청구 이력엔
           합계만 남아 과거 회차의 구성은 서버가 모른다. */}
-      {st?.scheduled && (billing?.upcomingInstallments?.length ?? 0) > 0 && (
+      {st?.scheduled && (st.installments?.length ?? 0) > 0 && (
         <div
           style={{
             borderTop: "1px solid var(--border-subtle)",
@@ -709,7 +750,7 @@ function CardDetailBody({
             gap: 12,
           }}
         >
-          {billing!.upcomingInstallments!.map((due) => (
+          {st.installments!.map((due) => (
             <div
               key={due.expenseRowId}
               style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
@@ -1254,7 +1295,7 @@ function CardDetailBody({
                     <span
                       style={{
                         fontSize: "var(--text-body-md)",
-                        fontWeight: i === stIdx ? "700" : "500",
+                        fontWeight: i === activeIdx ? "700" : "500",
                         color: "var(--fg-primary)",
                       }}
                     >
@@ -1275,7 +1316,7 @@ function CardDetailBody({
                       </MaskAmount>
                       <WonUnit card="asset.detail" />
                     </span>
-                    {i === stIdx && (
+                    {i === activeIdx && (
                       <Check
                         size={16}
                         color="var(--fg-brand)"
@@ -1361,10 +1402,22 @@ function CardDetailBody({
                 values={{ amount: money(upcoming) }}
                 components={{ strong: <strong /> }}
               />
-              {billing?.nextPaymentDate
-                ? ` ${t("assetDetail.paymentDateNote", { date: billing.nextPaymentDate })}`
+              {(st?.paymentDate ?? billing?.nextPaymentDate)
+                ? ` ${t("assetDetail.paymentDateNote", { date: st?.paymentDate ?? billing?.nextPaymentDate })}`
                 : ""}
             </p>
+            {payMoveNote && (
+              <p
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  color: "var(--fg-warning, var(--fg-secondary))",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                {payMoveNote}
+              </p>
+            )}
 
             {/* 부분 선결제 — 일부만 내면 나머지는 결제일에 정상적으로 빠진다. */}
             <div className="flex flex-col gap-2">

@@ -593,7 +593,7 @@ asset,accountSub.savings,적금,Savings
 asset,accountSub.deposit,예금,Deposit
 asset,accountSub.cash,현금,Cash
 asset,accountSub.loan,대출,Loan
-asset,editDialog.cardBalanceHelp,청구될 금액을 입력하세요. 총 부채에 반영됩니다.,Enter the amount to be billed. It counts toward total debt.
+asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요. 0으로 두면 이 카드에 입력하는 모든 내역(지난 날짜 포함)이 미결제 사용액으로 잡혀요.,Enter the amount not yet paid. If left at 0 every expense entered on this card (including past dates) counts as unpaid usage.
 asset,editDialog.memoOptional,메모 (선택),Memo (optional)
 asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
@@ -699,6 +699,9 @@ asset,assetDetail.paymentDateNote,결제일은 {{date}} 입니다.,The payment d
 asset,assetDetail.payAction,결제하기,Pay
 asset,assetDetail.payAmount,결제 금액,Payment amount
 asset,assetDetail.payRemainder,남은 {{amount}}은 결제일에 빠져요,{{amount}} remaining will be paid on the payment date
+asset,editDialog.balanceEditHelp,잔액을 바꾸면 지금 이전의 내역은 이 잔액에 이미 들어 있는 것으로 보고 이후 내역만 더해져요.,Changing the balance treats everything before now as already included. Only later transactions are added.
+asset,assetDetail.payMoveNote,계좌에서는 사용액으로 잡힌 {{amount}}만 빠져요. 나머지는 청구 기록으로만 남아요.,Only {{amount}} counted as card usage will leave the account. The rest is recorded as billed only.
+asset,assetDetail.payNoAccountNote,연결된 결제 계좌가 없어 이체 없이 사용액만 정리돼요.,No payment account is linked so the usage is settled without a transfer.
 asset,assetDetail.tossLinked,토스 연동 중,Linked with Toss
 asset,assetDetail.sharesUnit,{{n}}주,{{n}} shares
 asset,assetDetail.holdingsQty,보유 수량,Quantity held
