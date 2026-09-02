@@ -424,7 +424,6 @@ function CardDetailBody({
   const limitWarn = limitPct >= 80;
 
   const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null;
-  const canPay = (billing?.upcomingAmount ?? 0) > 0 && !payCard.isPending;
   const cancelPayment = useCancelCardPayment(asset.rowId);
   const installmentPayoff = useInstallmentPayoff(asset.rowId);
   // 정리/되돌리기 확인 대상 — null 이면 닫힘. undo 는 이미 상환된 회차의 되돌리기.
@@ -504,6 +503,8 @@ function CardDetailBody({
   // 고른 회차가 예정 회차면 그 회차의 예정액이 상한 — 다음 회차를 미리 낼 수도 있다.
   const upcoming = st?.scheduled ? st.amount : (billing?.upcomingAmount ?? 0);
   const payAmountValid = payAmountNum > 0 && payAmountNum <= upcoming;
+  // 고른 회차 기준 — 다가오는 회차를 다 낸 뒤 다음 회차를 골라도 낼 수 있어야 한다.
+  const canPay = upcoming > 0 && !payCard.isPending;
   // 돈은 잔액에 잡힌 빚까지만 움직인다(서버 payoff 캡). 청구액이 그보다 크면 차액은
   // 청구 기록만 남고 계좌에서 안 빠진다 — 완료만 보고 빠진 줄 아는 일이 없게 미리 알린다.
   const cardDebt = Math.max(0, -asset.balance);
