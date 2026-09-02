@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { parseAmount } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { AlertCircle } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -40,7 +41,7 @@ function fmtNum(n: number): string {
 }
 
 function parseNum(v: string): number {
-  const n = parseInt(v.replace(/[^0-9]/g, ""), 10);
+  const n = parseAmount(v);
   return isNaN(n) ? 0 : n;
 }
 

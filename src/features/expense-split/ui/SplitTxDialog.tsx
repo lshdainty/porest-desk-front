@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -752,7 +753,7 @@ export function SplitTxDialog({
                     value={r.amount}
                     onChange={(e) =>
                       updateRow(r.uid, {
-                        amount: e.target.value.replace(/[^0-9]/g, ""),
+                        amount: sanitizeAmountInput(e.target.value),
                       })
                     }
                     inputMode="numeric"

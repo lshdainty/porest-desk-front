@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import type { Asset } from "@/entities/asset";
 import type { ExpenseCategory, ExpenseType } from "@/entities/expense";
@@ -287,7 +288,7 @@ export function FilterDialog({
           <Input
             className="num"
             value={min}
-            onChange={(e) => setMin(e.target.value.replace(/[^0-9]/g, ""))}
+            onChange={(e) => setMin(sanitizeAmountInput(e.target.value))}
             placeholder={t("filter.minAmount")}
             inputMode="numeric"
           />
@@ -295,7 +296,7 @@ export function FilterDialog({
           <Input
             className="num"
             value={max}
-            onChange={(e) => setMax(e.target.value.replace(/[^0-9]/g, ""))}
+            onChange={(e) => setMax(sanitizeAmountInput(e.target.value))}
             placeholder={t("filter.maxAmount")}
             inputMode="numeric"
           />

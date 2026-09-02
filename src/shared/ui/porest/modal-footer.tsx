@@ -133,7 +133,7 @@ export function ModalFooter({
         variant={saveVariant === "destructive" ? "destructive" : "default"}
         size={size}
         onClick={onSave}
-        disabled={saveDisabled || deleting}
+        disabled={saveDisabled || busy}
         loading={saving}
         style={fullWidth ? { flex: 1 } : undefined}
       >

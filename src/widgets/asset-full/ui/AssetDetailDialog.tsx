@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { parseAmount, sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { AssetTradeDialog } from "./AssetTradeDialog";
 import { useAssetTrades, useDeleteTrade } from "@/features/asset";
 import type { TradeType } from "@/entities/asset";
@@ -499,7 +500,7 @@ function CardDetailBody({
     setConfirmPay(true);
   };
 
-  const payAmountNum = Number(payAmount.replace(/[^0-9]/g, "")) || 0;
+  const payAmountNum = parseAmount(payAmount);
   // 고른 회차가 예정 회차면 그 회차의 예정액이 상한 — 다음 회차를 미리 낼 수도 있다.
   const upcoming = st?.scheduled ? st.amount : (billing?.upcomingAmount ?? 0);
   const payAmountValid = payAmountNum > 0 && payAmountNum <= upcoming;
@@ -1427,7 +1428,7 @@ function CardDetailBody({
                 className="num"
                 value={payAmount}
                 onChange={(e) =>
-                  setPayAmount(e.target.value.replace(/[^0-9]/g, ""))
+                  setPayAmount(sanitizeAmountInput(e.target.value))
                 }
                 inputMode="numeric"
               />

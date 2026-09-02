@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -369,9 +370,7 @@ export function PresetEditDialog({
               <Input
                 className="num"
                 value={amount}
-                onChange={(e) =>
-                  setAmount(e.target.value.replace(/[^0-9]/g, ""))
-                }
+                onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
                 placeholder="0"
                 style={{
                   paddingRight: 36,
