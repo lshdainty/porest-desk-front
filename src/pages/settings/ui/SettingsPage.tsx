@@ -22,6 +22,7 @@ import {
   PiggyBank,
   Repeat,
   ShieldCheck,
+  BookOpen,
   Tag,
   Tags,
   Trash2,
@@ -116,6 +117,7 @@ type SectionId =
   | "data"
   | "account"
   | "privacy"
+  | "guide"
   | "hide-amounts"
   | "devices";
 
@@ -224,6 +226,14 @@ const SECTIONS: SectionDef[] = [
     icon: User,
     descKey: "sections.account.desc",
   },
+  // 설명서(porest-desk-guide)는 desk 와 같은 호스트의 /guide/ 에 떠 있다 — 상대 경로라 dev·prod 모두 맞다.
+  {
+    id: "guide",
+    labelKey: "sections.guide.label",
+    icon: BookOpen,
+    descKey: "sections.guide.desc",
+    externalUrl: "/guide/",
+  },
   {
     id: "privacy",
     labelKey: "sections.privacy.label",
@@ -312,6 +322,10 @@ const MENU_GROUPS: GroupDef[] = [
   {
     labelKey: "groups.account",
     sectionIds: ["account", "privacy"],
+  },
+  {
+    labelKey: "groups.help",
+    sectionIds: ["guide"],
   },
 ];
 
