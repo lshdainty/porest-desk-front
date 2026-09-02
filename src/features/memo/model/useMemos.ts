@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
 import { memoKeys } from "@/shared/config";
 import { memoApi } from "../api/memoApi";
 import type { MemoListParams } from "../api/memoApi";
@@ -44,13 +45,18 @@ export const useUpdateMemo = () => {
 
 export const useToggleMemoPin = () => {
   const queryClient = useQueryClient();
+  const { pendingIds, begin, end } = usePendingIds();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => memoApi.togglePin(id),
+    onMutate: (id: number) => begin(id),
+    onSettled: (_data, _error, id) => end(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: memoKeys.all });
     },
   });
+  /** 진행 중인 항목 id — 그 항목만 스피너·잠금. */
+  return { ...mutation, pendingIds };
 };
 
 export const useDeleteMemo = () => {

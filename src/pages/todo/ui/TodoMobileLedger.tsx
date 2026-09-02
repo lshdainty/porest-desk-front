@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
+import { Spinner } from "@/shared/ui/spinner";
 import { useTranslation } from "react-i18next";
 import {
   AlignLeft,
@@ -105,6 +106,7 @@ export function TodoMobileLedger({
   doneToday,
   pinTop,
   onToggle,
+  pendingIds,
   onRowClick,
   onEdit,
   onDelete,
@@ -120,6 +122,8 @@ export function TodoMobileLedger({
   /** 상단 백 헤더 높이(px) — sticky pin·스크롤 보정 offset. */
   pinTop: number;
   onToggle: (todo: Todo) => void;
+  /** 완료 토글 요청이 진행 중인 항목 — 체크 자리에 스피너, 탭 잠금. */
+  pendingIds?: ReadonlySet<number>;
   onRowClick: (todo: Todo) => void;
   /** 스와이프 '수정' — 상세 footer 의 수정과 같은 목적지. */
   onEdit: (todo: Todo) => void;
@@ -545,6 +549,8 @@ export function TodoMobileLedger({
                           <button
                             type="button"
                             className="tdm-check"
+                            disabled={pendingIds?.has(td.rowId)}
+                            aria-busy={pendingIds?.has(td.rowId) || undefined}
                             onClick={(e) => {
                               e.stopPropagation();
                               onToggle(td);
@@ -562,8 +568,12 @@ export function TodoMobileLedger({
                                 : "transparent",
                             }}
                           >
-                            {done && (
-                              <Check size={13} color="#fff" strokeWidth={3} />
+                            {pendingIds?.has(td.rowId) ? (
+                              <Spinner size="sm" />
+                            ) : (
+                              done && (
+                                <Check size={13} color="#fff" strokeWidth={3} />
+                              )
                             )}
                           </button>
                           <LedgerRowMain as="button">

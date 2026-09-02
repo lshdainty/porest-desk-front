@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
 import { constellationKeys, todoKeys } from "@/shared/config";
 import { todoApi } from "../api/todoApi";
 import type { TodoListParams } from "../api/todoApi";
@@ -44,10 +45,12 @@ export const useUpdateTodo = () => {
 
 export const useToggleTodoStatus = () => {
   const queryClient = useQueryClient();
+  const { pendingIds, begin, end } = usePendingIds();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => todoApi.toggleTodoStatus(id),
     onMutate: async (id: number) => {
+      begin(id);
       // 진행 중인 refetch 취소하여 optimistic update 덮어쓰기 방지
       await queryClient.cancelQueries({ queryKey: todoKeys.all });
 
@@ -84,12 +87,15 @@ export const useToggleTodoStatus = () => {
         }
       }
     },
-    onSettled: () => {
+    onSettled: (_data, _error, id) => {
+      end(id);
       queryClient.invalidateQueries({ queryKey: todoKeys.all });
       // 별자리 게이미피케이션 — 완료 토글은 별빛 적립/회수의 부수효과를 가지므로 함께 갱신
       queryClient.invalidateQueries({ queryKey: constellationKeys.all });
     },
   });
+  /** 진행 중인 항목 id — 그 항목만 스피너·잠금(낙관 갱신과 별개로 "아직 서버 확인 전"을 보인다). */
+  return { ...mutation, pendingIds };
 };
 
 export const useReorderTodos = () => {

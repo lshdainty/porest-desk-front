@@ -35,6 +35,8 @@ export interface CalendarContextValue {
   userCalendars: UserCalendar[];
   isCalendarVisible: (calendarRowId: number) => boolean;
   toggleCalendarVisibility: (calendarRowId: number) => void;
+  /** 표시 토글 요청이 진행 중인 캘린더 id — 그 항목만 스피너·잠금. */
+  pendingCalendarIds: ReadonlySet<number>;
 }
 
 export const CalendarContext = createContext<CalendarContextValue | null>(null);

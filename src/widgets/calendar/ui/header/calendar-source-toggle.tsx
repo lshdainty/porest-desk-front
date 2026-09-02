@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Spinner } from "@/shared/ui/spinner";
 import { useTranslation } from "react-i18next";
 import {
   Receipt,
@@ -75,11 +76,14 @@ const CheckboxIndicator = ({
 );
 
 const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
-  const { toggleCalendarVisibility } = useCalendar();
+  const { toggleCalendarVisibility, pendingCalendarIds } = useCalendar();
+  const pending = pendingCalendarIds.has(calendar.rowId);
 
   return (
     <button
       type="button"
+      disabled={pending}
+      aria-busy={pending || undefined}
       onClick={() => toggleCalendarVisibility(calendar.rowId)}
       className={cn(
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
@@ -87,10 +91,14 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
         !calendar.isVisible && "opacity-50",
       )}
     >
-      <CheckboxIndicator
-        checked={calendar.isVisible}
-        color={getPaletteByColor(calendar.color).color}
-      />
+      {pending ? (
+        <Spinner size="sm" />
+      ) : (
+        <CheckboxIndicator
+          checked={calendar.isVisible}
+          color={getPaletteByColor(calendar.color).color}
+        />
+      )}
       <span
         className="size-2.5 shrink-0 rounded-full"
         style={{ backgroundColor: getPaletteByColor(calendar.color).color }}

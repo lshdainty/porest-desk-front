@@ -95,6 +95,7 @@ export function NotificationsPage() {
           <NotificationRow
             key={n.rowId}
             notification={n}
+            pending={markRead.pendingIds.has(n.rowId)}
             now={now}
             onClick={() => handleClick(n)}
             trailing={

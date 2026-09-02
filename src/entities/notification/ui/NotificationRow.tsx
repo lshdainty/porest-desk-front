@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Spinner } from "@/shared/ui/spinner";
 import { notificationVisual } from "../lib/notificationVisual";
 import { relativeTime } from "../lib/relativeTime";
 import type { Notification } from "../model/types";
@@ -15,6 +16,7 @@ export function NotificationRow({
   now,
   onClick,
   trailing,
+  pending,
 }: {
   notification: Notification;
   /**
@@ -28,12 +30,15 @@ export function NotificationRow({
   onClick?: () => void;
   /** 행 우측 끝 추가 액션(Page 삭제 버튼). 미지정 시 SoT(Popover) 3슬롯 그대로. */
   trailing?: ReactNode;
+  /** 읽음 처리 요청 진행 중 — 안 읽음 점 자리에 스피너, 클릭 잠금. */
+  pending?: boolean;
 }) {
   const { Icon, bg, fg } = notificationVisual(notification.notificationType);
   return (
     <div
       className={`notif-row ${notification.isRead ? "" : "unread"}`}
-      onClick={onClick}
+      aria-busy={pending || undefined}
+      onClick={pending ? undefined : onClick}
     >
       <span className="notif-row__icon" style={{ background: bg, color: fg }}>
         <Icon size={16} strokeWidth={1.9} />
@@ -41,7 +46,11 @@ export function NotificationRow({
       <div className="notif-row__text">
         <div className="notif-row__title">
           {notification.title}
-          {!notification.isRead && <span className="notif-row__dot" />}
+          {pending ? (
+            <Spinner size="sm" />
+          ) : (
+            !notification.isRead && <span className="notif-row__dot" />
+          )}
         </div>
         <div className="notif-row__desc">{notification.message}</div>
       </div>

@@ -150,6 +150,7 @@ export function NotificationsPopover({
             <NotificationRow
               key={n.rowId}
               notification={n}
+              pending={markRead.pendingIds.has(n.rowId)}
               now={now}
               onClick={() => {
                 if (!n.isRead) markRead.mutate(n.rowId);
