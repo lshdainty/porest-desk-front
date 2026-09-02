@@ -247,6 +247,22 @@ export interface CardBilling {
   paymentDay: number | null;
   paymentAssetRowId: number | null;
   history: BillingItem[];
+  /**
+   * 다가오는 회차의 다음 회차 — 지금 쌓이고 있는 이용분(당월 1일~말일, 다음 달 결제일).
+   * 결제일 미설정이거나 옛 서버면 없다.
+   */
+  nextCycle?: UpcomingCycle | null;
+}
+
+/** 회차 하나 — 청구 응답의 nextCycle. */
+export interface UpcomingCycle {
+  paymentDate: string;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  lumpSumAmount: number | null;
+  alreadyPaidAmount: number | null;
+  installments: InstallmentDue[];
 }
 
 export interface AssetSummary {

@@ -91,12 +91,20 @@ export const assetApi = {
     return resp.data;
   },
 
-  /** amount 미전달 = 남은 청구액 전액, 전달 = 그만큼만(부분 선결제) */
-  payCard: async (id: number, amount?: number): Promise<BillingItem> => {
+  /** amount 미전달 = 남은 청구액 전액, 전달 = 그만큼만(부분 선결제).
+   *  paymentDate = 결제할 회차의 결제일(다음 회차 선결제). 미전달 = 다가오는 회차 */
+  payCard: async (
+    id: number,
+    amount?: number,
+    paymentDate?: string,
+  ): Promise<BillingItem> => {
+    const params: Record<string, string | number> = {};
+    if (amount != null) params.amount = amount;
+    if (paymentDate) params.paymentDate = paymentDate;
     const resp: ApiResponse<BillingItem> = await apiClient.post(
       `/v1/asset/${id}/pay`,
       undefined,
-      amount != null ? { params: { amount } } : undefined,
+      Object.keys(params).length > 0 ? { params } : undefined,
     );
     return resp.data;
   },

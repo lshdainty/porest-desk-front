@@ -98,8 +98,16 @@ export const usePayCard = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, amount }: { id: number; amount?: number }) =>
-      assetApi.payCard(id, amount),
+    mutationFn: ({
+      id,
+      amount,
+      paymentDate,
+    }: {
+      id: number;
+      amount?: number;
+      /** 결제할 회차의 결제일 — 다음 회차를 미리 낼 때 넘긴다. 없으면 다가오는 회차. */
+      paymentDate?: string;
+    }) => assetApi.payCard(id, amount, paymentDate),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: assetKeys.all });
       queryClient.invalidateQueries({ queryKey: assetKeys.billing(id) });
