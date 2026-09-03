@@ -28,7 +28,7 @@ import {
 } from "date-fns";
 
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
-import { money } from "@/shared/lib/porest/format";
+import { MINUS, money } from "@/shared/lib/porest/format";
 import type { CalendarEvent, Holiday } from "@/entities/calendar";
 import { isRefundTx } from "@/entities/expense";
 import type { Expense } from "@/entities/expense";
@@ -382,15 +382,19 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
   const isRefund = isRefundTx(expense);
   const isIncome = expense.expenseType === "INCOME" && !isRefund;
   const color = isIncome ? "#0147ad" : "#c73838";
-  const sign = isRefund ? "+" : isIncome ? "+" : "-";
+  // 지출만 음수. 부호 문자열을 되비교하지 않고 불린을 기준으로 둔다 — 기호를 바꿔도
+  // (하이픈 → U+2212, QA #22) 아래 금액 계산이 따라 깨지지 않게.
+  const negative = !isIncome && !isRefund;
+  const sign = negative ? MINUS : "+";
   const amount = money(expense.amount, { abs: true });
   const categoryName = expense.categoryName || "";
   const title = categoryName
     ? `${categoryName} ${sign}${amount}`
     : `${sign}${amount}`;
   // 지출 음수 / 수입·환불 양수 — title 의 sign·color 와 같은 규칙.
-  const expenseAmount =
-    sign === "-" ? -Math.abs(expense.amount) : Math.abs(expense.amount);
+  const expenseAmount = negative
+    ? -Math.abs(expense.amount)
+    : Math.abs(expense.amount);
 
   return {
     id: expense.rowId,

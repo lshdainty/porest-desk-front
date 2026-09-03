@@ -1378,7 +1378,8 @@ export const StatsPage = () => {
               <div className="lbl">{donutCenterLbl}</div>
               {/* 도넛 구멍이 좁다(모바일 176 − 스트로크 28×2 = 120). 전체 자릿수를 쓰면
                   구멍을 넘어 링 위에 얹힌다 — 1억만 넘어도 "102,176,580원" 이다.
-                  차트 축과 같은 축약을 쓴다(1.0억). 정확한 금액은 바로 아래 범례가 갖고 있다. */}
+                  차트 축과 같은 축약을 쓴다(1.0억). 정확한 금액은 바로 아래 범례가 갖고 있다.
+                  1만~10만은 소수 한 자리다 — 11,881 을 "1만" 으로 내면 범례 합계와 16% 어긋난다(QA #38). */}
               <div
                 className="val num"
                 style={{ fontSize: "var(--text-title-lg)" }}
@@ -2195,8 +2196,9 @@ export const StatsPage = () => {
     savings: { label: t("trend.savings"), color: "var(--bg-brand)" },
   };
 
-  // app stats _fmtTick 정합 — 만 단위 round(formatChartAmount). 공용 formatChartAxis(100만
-  // 단위 round)는 소액 스케일(40만 등)이 전부 '0만'으로 뭉개져 stats 엔 부적합.
+  // app stats _fmtTick 정합 — 만 단위 round(formatChartAmount).
+  // 공용 formatChartAxis 와는 1만~10만 구간에서 갈린다(축은 `1.2만`, 여긴 `1만`) —
+  // 추이 축은 눈금이 촘촘해 소수 한 자리가 폭만 먹는다(QA #38 은 도넛 중앙이 대상).
   // 카테고리 추이 값라벨(catTrendData)과 동일 헬퍼 공용 → 축약 통일.
   const fmtTick = formatChartAmount;
 
