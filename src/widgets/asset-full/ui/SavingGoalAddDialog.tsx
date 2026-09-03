@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { parseAmount } from "@/shared/lib/porest/amount";
+import {
+  MAX_AMOUNT,
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
+import { nameIssue } from "@/shared/lib/porest/name-policy";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
 import { useTranslation } from "react-i18next";
 import { AlertCircle } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -13,6 +20,7 @@ import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import {
   useContributeSavingGoal,
   useCreateSavingGoal,
+  useSavingGoals,
   useUpdateSavingGoal,
 } from "@/features/savingGoal";
 import type { SavingGoal } from "@/entities/savingGoal";
@@ -34,6 +42,9 @@ function formatDeadlineLabel(iso: string): string {
     month: "long",
   }).format(d);
 }
+
+/** 목표 이름 상한 — 카테고리·라벨·태그와 같은 12자. 카드 한 줄에 들어가는 길이다. */
+const GOAL_NAME_MAX = 12;
 
 function fmtNum(n: number): string {
   if (!n) return "";
@@ -88,19 +99,46 @@ export function SavingGoalAddDialog({
   const createMut = useCreateSavingGoal();
   const updateMut = useUpdateSavingGoal();
   const contributeMut = useContributeSavingGoal();
+  // 목록 화면에서만 열리므로 캐시 재사용 — 추가 요청이 나가지 않는다.
+  const goalsQ = useSavingGoals();
 
   const target = parseNum(targetStr);
   const current = parseNum(currentStr);
   const pct = target > 0 ? (current / target) * 100 : 0;
 
+  // 같은 이름 목표가 소리 없이 두 개 생기던 자리(QA #52). 서버에 중복 에러 코드가 없다.
+  const takenTitles = (goalsQ.data?.goals ?? [])
+    .filter((g) => g.rowId !== goal?.rowId)
+    .map((g) => g.title);
+  const titleIssue = nameIssue(title, GOAL_NAME_MAX, takenTitles);
+  // 카운터 자리에는 길이·중복만 — 금액 오류는 아래 err 박스가 이미 쓰고 있다.
+  const titleErr =
+    titleIssue === "tooLong"
+      ? t("savingGoal.errNameTooLong")
+      : titleIssue === "duplicate"
+        ? t("savingGoal.errNameDuplicate")
+        : null;
+
   const handleSubmit = () => {
     const trimmed = title.trim();
-    if (!trimmed) {
+    if (titleIssue === "required") {
       setErr(t("savingGoal.errName"));
+      return;
+    }
+    if (titleIssue === "tooLong") {
+      setErr(t("savingGoal.errNameTooLong"));
+      return;
+    }
+    if (titleIssue === "duplicate") {
+      setErr(t("savingGoal.errNameDuplicate"));
       return;
     }
     if (target <= 0) {
       setErr(t("savingGoal.errAmount"));
+      return;
+    }
+    if (target > MAX_AMOUNT) {
+      setErr(t("savingGoal.errAmountTooLarge"));
       return;
     }
     if (current > target) {
@@ -279,13 +317,20 @@ export function SavingGoalAddDialog({
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>{t("savingGoal.name")}</FieldLabel>
         <Input
+          aria-invalid={!!titleErr}
           value={title}
           onChange={(e) => {
-            setTitle(e.target.value);
+            setTitle(e.target.value.slice(0, GOAL_NAME_MAX));
             setErr("");
           }}
           placeholder={t("savingGoal.namePlaceholder")}
+          maxLength={GOAL_NAME_MAX}
           autoFocus
+        />
+        <NameCounter
+          len={title.trim().length}
+          max={GOAL_NAME_MAX}
+          err={titleErr}
         />
       </Field>
 
@@ -304,9 +349,10 @@ export function SavingGoalAddDialog({
               className="num"
               value={fmtNum(parseNum(targetStr))}
               onChange={(e) => {
-                setTargetStr(e.target.value);
+                setTargetStr(sanitizeAmountInput(e.target.value));
                 setErr("");
               }}
+              onKeyDown={blockNonDigitKey}
               placeholder="0"
               inputMode="numeric"
               style={{ paddingRight: 28, textAlign: "right" }}
@@ -333,9 +379,10 @@ export function SavingGoalAddDialog({
               className="num"
               value={fmtNum(parseNum(currentStr))}
               onChange={(e) => {
-                setCurrentStr(e.target.value);
+                setCurrentStr(sanitizeAmountInput(e.target.value));
                 setErr("");
               }}
+              onKeyDown={blockNonDigitKey}
               placeholder="0"
               inputMode="numeric"
               style={{ paddingRight: 28, textAlign: "right" }}

@@ -68,6 +68,17 @@ import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
 import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
+/**
+ * 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
+ *
+ * 종전엔 제한이 없어 500자 제목이 그대로 나갔고 서버가 컬럼 초과를 500 으로 냈다(QA #24).
+ * 서버는 이제 400 으로 거절하지만, 다이얼로그가 열린 채 아무 말도 안 하는 건 그대로라
+ * 애초에 못 넘게 막는다. `maxLength` 는 타이핑·붙여넣기를 브라우저가 자르고,
+ * `slice` 는 프로그램 입력(자동완성·확장)까지 자른다.
+ */
+const TITLE_MAX = 200;
+const CONTENT_MAX = 10_000;
+
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // 태그 select 옵션 7종 (양 플랫폼 공통 확정). category 필드에 저장. 기본값 '개인'.
@@ -1144,11 +1155,12 @@ function TodoEditDialog({
         <Input
           value={title}
           onChange={(e) => {
-            setTitle(e.target.value);
+            setTitle(e.target.value.slice(0, TITLE_MAX));
             if (error) setError(false);
           }}
           placeholder={t("editTitlePlaceholder")}
           aria-invalid={error}
+          maxLength={TITLE_MAX}
           autoFocus
         />
         {error && (
@@ -1243,8 +1255,9 @@ function TodoEditDialog({
         <FieldLabel>{t("form.memo")}</FieldLabel>
         <Textarea
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e) => setNote(e.target.value.slice(0, CONTENT_MAX))}
           placeholder={t("form.memoPlaceholder")}
+          maxLength={CONTENT_MAX}
           rows={3}
         />
       </Field>

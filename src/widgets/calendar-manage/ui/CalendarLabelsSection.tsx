@@ -10,6 +10,8 @@ import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
+import { nameIssue } from "@/shared/lib/porest/name-policy";
 import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
@@ -324,6 +326,7 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
       {editing && (
         <LabelEditDialog
           label={editing && "rowId" in editing ? editing : null}
+          existing={list}
           onClose={() => setEditing(null)}
           onSave={onSave}
           mobile={mobile}
@@ -380,12 +383,14 @@ function LabelListSkeleton({ mobile }: { mobile?: boolean }) {
 
 function LabelEditDialog({
   label,
+  existing,
   onClose,
   onSave,
   mobile,
   submitting,
 }: {
   label: EventLabel | null;
+  existing: EventLabel[];
   onClose: () => void;
   onSave: (values: { labelName: string; color: string }) => void;
   mobile: boolean;
@@ -404,12 +409,21 @@ function LabelEditDialog({
 
   const palette = CAT_PALETTE[paletteIdx]!;
   const nameTrim = name.trim();
-  const valid = nameTrim.length > 0 && nameTrim.length <= 12;
+  // 중복은 서버가 409 로 막지만 다이얼로그엔 아무 표시도 없어 '버튼이 안 먹는' 것처럼
+  // 보였다(QA #55). 카테고리와 같이 보내기 전에 이 자리에서 알려 준다.
+  const issue = nameIssue(
+    name,
+    12,
+    existing.filter((l) => l.rowId !== label?.rowId).map((l) => l.labelName),
+  );
+  const valid = issue == null;
   const err =
-    touched && !valid
-      ? nameTrim.length === 0
+    touched && issue
+      ? issue === "required"
         ? t("labelsSection.nameRequired")
-        : t("labelsSection.nameTooLong")
+        : issue === "tooLong"
+          ? t("labelsSection.nameTooLong")
+          : t("labelsSection.nameDuplicate")
       : null;
 
   const save = () => {
@@ -500,20 +514,7 @@ function LabelEditDialog({
           maxLength={14}
           autoFocus
         />
-        <div
-          style={{
-            fontSize: "var(--text-badge)",
-            color: "var(--fg-tertiary)",
-            marginTop: 4,
-            textAlign: "right",
-          }}
-        >
-          {err ? (
-            <span style={{ color: "var(--fg-expense)" }}>{err}</span>
-          ) : (
-            <span>{nameTrim.length}/12</span>
-          )}
-        </div>
+        <NameCounter len={nameTrim.length} max={12} err={err} />
       </Field>
 
       <Field>

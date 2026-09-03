@@ -10,6 +10,8 @@ import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
+import { nameIssue } from "@/shared/lib/porest/name-policy";
 import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
@@ -319,6 +321,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
       {editing && (
         <TagEditDialog
           tag={editing && "rowId" in editing ? editing : null}
+          existing={list}
           onClose={() => setEditing(null)}
           onSave={onSave}
           mobile={mobile}
@@ -376,12 +379,14 @@ function TagListSkeleton({ mobile }: { mobile?: boolean }) {
 
 function TagEditDialog({
   tag,
+  existing,
   onClose,
   onSave,
   mobile,
   submitting,
 }: {
   tag: TodoTag | null;
+  existing: TodoTag[];
   onClose: () => void;
   onSave: (values: { tagName: string; color: string }) => void;
   mobile: boolean;
@@ -400,12 +405,20 @@ function TagEditDialog({
 
   const palette = CAT_PALETTE[paletteIdx]!;
   const nameTrim = name.trim();
-  const valid = nameTrim.length > 0 && nameTrim.length <= 12;
+  // 라벨과 같은 이유 — 서버 409 는 나는데 다이얼로그가 조용했다(QA #55).
+  const issue = nameIssue(
+    name,
+    12,
+    existing.filter((x) => x.rowId !== tag?.rowId).map((x) => x.tagName),
+  );
+  const valid = issue == null;
   const err =
-    touched && !valid
-      ? nameTrim.length === 0
+    touched && issue
+      ? issue === "required"
         ? t("tags.nameRequired")
-        : t("tags.nameTooLong")
+        : issue === "tooLong"
+          ? t("tags.nameTooLong")
+          : t("tags.nameDuplicate")
       : null;
 
   const save = () => {
@@ -496,20 +509,7 @@ function TagEditDialog({
           maxLength={14}
           autoFocus
         />
-        <div
-          style={{
-            fontSize: "var(--text-badge)",
-            color: "var(--fg-tertiary)",
-            marginTop: 4,
-            textAlign: "right",
-          }}
-        >
-          {err ? (
-            <span style={{ color: "var(--fg-expense)" }}>{err}</span>
-          ) : (
-            <span>{nameTrim.length}/12</span>
-          )}
-        </div>
+        <NameCounter len={nameTrim.length} max={12} err={err} />
       </Field>
 
       <Field>

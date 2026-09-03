@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { parseAmount, sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import {
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
 import { AssetTradeDialog } from "./AssetTradeDialog";
 import { useAssetTrades, useDeleteTrade } from "@/features/asset";
 import type { TradeType } from "@/entities/asset";
@@ -1430,6 +1434,7 @@ function CardDetailBody({
                 onChange={(e) =>
                   setPayAmount(sanitizeAmountInput(e.target.value))
                 }
+                onKeyDown={blockNonDigitKey}
                 inputMode="numeric"
               />
               {payAmountNum > 0 && payAmountNum < upcoming && (
@@ -2127,7 +2132,7 @@ export function AssetDetailDialog({
                 {/* 투자 — design: "투자 · 보유 N종목 · 메모" */}
                 {isInv
                   ? [
-                      assetTypeLabel(asset.assetType),
+                      assetTypeLabel(asset.assetType, asset.balance),
                       t("holdings.countLabel", { n: holdingsOf(asset).length }),
                       asset.memo,
                     ]
@@ -2135,7 +2140,7 @@ export function AssetDetailDialog({
                       .join(" · ")
                   : [
                       asset.institution,
-                      assetTypeLabel(asset.assetType),
+                      assetTypeLabel(asset.assetType, asset.balance),
                       asset.memo,
                     ]
                       .filter(Boolean)
