@@ -23,6 +23,18 @@ export interface BudgetDraft {
   budgetAmount: number;
 }
 
+/**
+ * 카테고리 예산 프리셋 칩.
+ *
+ * 칩 라벨은 축약이 아니라 **우리가 고른 값의 이름**이다 — 전부 만으로 나누어
+ * 떨어지므로(`p % 10_000 === 0`) `10만원`·`100만원` 은 반올림 없이 값 그대로다.
+ * 공용 `formatChartAxis` 를 태워도 숫자는 한 글자도 안 바뀌고(`10만`·`100만`)
+ * 문장이 아닌 칩이라 단위 `원` 을 붙여 두는 편이 읽힌다. 그래서 손계산을 남긴다.
+ *
+ * **값을 추가할 때는 만으로 나누어떨어지는지 먼저 본다.** 15,000 같은 값을 끼우면
+ * `(p / 10_000).toFixed(0)` 이 `2만원` 으로 33% 를 깎아 버린다 — 그때는 이 자리도
+ * `formatChartAxis` 로 옮겨야 한다(임의 값을 줄이는 자리는 공용 함수 하나만 쓴다).
+ */
 const PRESETS = [100_000, 200_000, 300_000, 500_000, 800_000, 1_000_000];
 
 export function BudgetEditDialog({
@@ -252,6 +264,7 @@ export function MonthlyBudgetDialog({
   const { t } = useTranslation("budget");
   const { t: tCommon } = useTranslation("common");
   const [v, setV] = useState(String(value));
+  // 위 PRESETS 주석과 같은 이유로 손계산을 남긴다 — 전부 만 단위로 떨어진다.
   const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000];
   const vNum = parseAmount(v);
   const tooLarge = vNum > MAX_AMOUNT;

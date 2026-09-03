@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { i18n } from "@/shared/i18n/config";
 import * as format from "./format";
-import { KRW, MINUS, formatChartAxis, minusOf } from "./format";
+import { KRW, MINUS, formatChartAxis, minusOf, plusOf } from "./format";
 import { niceAxis, niceCeil } from "./chartAxis";
 
 describe("MINUS / minusOf", () => {
@@ -26,6 +26,37 @@ describe("MINUS / minusOf", () => {
 
   it("KRW(0) 은 '0' — -0 이 흘러들지 않는 한 부호가 안 붙는다", () => {
     expect(KRW(0)).toBe("0");
+  });
+});
+
+/**
+ * `minusOf` 의 거울. 반복 거래 관리가 수입 요약을 `+{KRW(v)}` 로 찍고 있어서
+ * 반복 수입이 하나도 없으면 `+0` 이 남았다 — 지출 쪽 `−0`(QA #1)과 같은 결함이다.
+ * 앱 `core/format/krw.dart` 와 **같은 글자를 내야 한다**(같은 화면을 둘이 그린다).
+ */
+describe("plusOf", () => {
+  it("0 이면 부호가 없다 — 반복 수입이 없는 계정의 '+0'(QA #1)", () => {
+    expect(plusOf(0)).toBe("");
+    expect(`${plusOf(0)}${KRW(Math.abs(0))}`).toBe("0");
+  });
+
+  it("양수면 +", () => {
+    expect(plusOf(3_200_000)).toBe("+");
+    expect(`${plusOf(3_200_000)}${KRW(Math.abs(3_200_000))}`).toBe(
+      "+3,200,000",
+    );
+  });
+
+  it("음수면 − — 하이픈이 아니라 U+2212 이고 `+-` 로 겹치지 않는다", () => {
+    expect(plusOf(-1_000)).toBe(MINUS);
+    expect(`${plusOf(-1_000)}${KRW(Math.abs(-1_000))}`).toBe(`${MINUS}1,000`);
+  });
+
+  it("minusOf 와 정확히 반대다 — 0 만 둘 다 빈 문자열", () => {
+    for (const v of [-1_000, 0, 1_000]) {
+      if (v === 0) expect(plusOf(v)).toBe(minusOf(v));
+      else expect(plusOf(v)).not.toBe(minusOf(v));
+    }
   });
 });
 

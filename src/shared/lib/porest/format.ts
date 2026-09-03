@@ -26,6 +26,21 @@ export const MINUS = "−";
 export const minusOf = (n: number): string =>
   n > 0 ? MINUS : n < 0 ? "+" : "";
 
+/**
+ * [minusOf] 의 거울 — **크기만** 들고 있는 값 중 **버는 쪽**(수입) 앞에 붙일 부호.
+ * `+{KRW(v)}` 처럼 플러스를 문자로 박아 두던 자리를 이걸로 바꾼다.
+ *
+ * - `0` → 부호 없음. 반복 수입이 하나도 없는 계정에서 `+0` 으로 보이던 걸 `0` 으로.
+ *   QA #1 이 지적한 `−0` 과 **같은 결함**이다 — 지출 쪽만 고치면 같은 카드 안에서
+ *   한쪽은 `0`, 옆칸은 `+0` 이 된다.
+ * - 음수 → `−`. 부호를 문자로 박아 두면 `+-1,000` 처럼 겹쳐 찍힌다.
+ *
+ * 값은 반드시 `KRW(Math.abs(v))` 와 같이 절대값으로 넘겨라.
+ * 앱 `porest-desk-app/lib/core/format/krw.dart` 와 **같은 글자를 내야 한다** —
+ * 반복 거래 관리는 같은 화면을 두 플랫폼이 그린다.
+ */
+export const plusOf = (n: number): string => (n > 0 ? "+" : n < 0 ? MINUS : "");
+
 export const KRW = (
   n: number,
   { sign = false, abs = false }: { sign?: boolean; abs?: boolean } = {},
