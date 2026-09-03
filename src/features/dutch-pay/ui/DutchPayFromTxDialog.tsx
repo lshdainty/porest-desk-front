@@ -20,6 +20,7 @@ import type {
   ParticipantFormValues,
   SplitMethod,
 } from "@/entities/dutch-pay";
+import { PARTICIPANT_NAME_MAX } from "@/entities/dutch-pay";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 // 더치페이 참가자별 시각 구분 — porest chart palette 10색
@@ -637,7 +638,11 @@ export function DutchPayFromTxDialog({
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <Input
           value={manualName}
-          onChange={(e) => setManualName(e.target.value)}
+          // 이름 상한은 두 정산 화면이 같다 — 여기만 100자가 들어가면 문구가 넘친다(QA #40).
+          onChange={(e) =>
+            setManualName(e.target.value.slice(0, PARTICIPANT_NAME_MAX))
+          }
+          maxLength={PARTICIPANT_NAME_MAX}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();

@@ -49,13 +49,27 @@ export interface ImportAnalyzeResult {
   columns: ImportColumn[];
   suggestedMapping: ImportMapping;
   preview: ImportPreviewRow[];
+  /**
+   * 이대로 실행하면 새로 만들어질 카테고리 경로("대분류 > 소분류", 최상위는 이름만).
+   * 서버가 상한(50)까지만 담는다 — 전체 개수는 `newCategoryCount`.
+   */
+  newCategories: string[];
+  /** 새로 만들어질 카테고리 전체 개수. `newCategories.length` 보다 클 수 있다. */
+  newCategoryCount: number;
 }
 
 export interface ImportExecuteResult {
   imported: number;
   skipped: number;
   failed: number;
+  /** 실패한 행. `reason` 은 화면 문구가 아니라 **사유 코드**다(FAIL_REASONS 참고). */
   failures: { lineNo: number; reason: string }[];
+  /** `failures` 가 서버 상한(50)에서 잘렸는지. 참이면 화면이 그 사실을 말해야 한다. */
+  failuresTruncated: boolean;
+  /** 이번 실행에서 실제로 만들어진 카테고리 경로(생성 순서) — 상한까지만. */
+  createdCategories: string[];
+  /** 실제로 만들어진 카테고리 전체 개수. `createdCategories.length` 보다 클 수 있다. */
+  createdCategoryCount: number;
 }
 
 // ─── API ───────────────────────────────────────────────────────
