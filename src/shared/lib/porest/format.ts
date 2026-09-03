@@ -55,8 +55,13 @@ export const money = (
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
 /**
- * 차트 Y축 라벨 — ko 조/억/만 축약 / en `Intl.NumberFormat(compact)`(120M·52K).
+ * 금액 축약 — ko 조/억/만 / en `Intl.NumberFormat(compact)`(120M·52K).
  * 음수도 부호 prepend. App `core/format/krw.dart` formatChartAxis 와 정합.
+ *
+ * **축약하는 자리는 전부 이 함수 하나를 쓴다** — 차트 Y축, 도넛 중앙, 통계 추이 틱.
+ * 통계 추이 축만 쓰던 `formatChartAmount` 가 따로 있었는데(만은 정수, 억은 고정
+ * `.0` — `5.0억`·`10000.0억`) 같은 화면 안에서 도넛 중앙(`5억`·`1.2조`)과 글자가
+ * 갈렸다. 축약 규칙이 자리마다 다르면 같은 값이 두 글자로 보인다. 하나만 남긴다.
  *
  * **전 구간이 같은 규칙이다**(QA #73) — 소수 첫째 자리까지 반올림하고 `.0` 은 뗀다.
  * 예전엔 구간마다 정밀도가 달랐다("10억 위는 정수 억", "1만~10만만 소수 한 자리").
@@ -89,27 +94,6 @@ export const formatChartAxis = (v: number): string => {
     maximumFractionDigits: 1,
   });
   return `${sign}${digits}${unit}`;
-};
-
-/**
- * 차트 값/틱 라벨 — 만 단위 축약. ko `457,400 → "46만"`·`120,000,000 → "1.2억"`,
- * en 은 `formatChartAxis`(Intl compact, 457.4K). 음수 부호 prepend.
- * App stats_screen `_fmtTick` 로직 미러.
- *
- * **`formatChartAxis` 와 같은 함수가 아니다.** 여기는 만·억 두 단위뿐이고 만은 정수,
- * 억은 `.0` 을 남기는 고정 한 자리다 — `5억` 이 아니라 `5.0억`, `1조` 가 아니라
- * `10000.0억`. 통계 추이 축은 눈금이 촘촘해 소수가 폭만 먹어서 만을 정수로 두고,
- * QA #73 은 `formatChartAxis` 한 쌍(웹·앱)만 손대기로 한 결정이라 여기는 그대로다.
- * 둘을 합치려면 앱 `stats_screen.dart _fmtTick` 도 같이 맞춰야 한다.
- */
-export const formatChartAmount = (v: number): string => {
-  if (isEn()) return formatChartAxis(v);
-  const sign = v < 0 ? MINUS : "";
-  const n = Math.abs(v);
-  if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`;
-  if (n >= 10_000)
-    return `${sign}${Math.round(n / 10_000).toLocaleString("ko-KR")}만`;
-  return `${sign}${n.toLocaleString("ko-KR")}`;
 };
 
 export const formatDay = (dStr: string) => {

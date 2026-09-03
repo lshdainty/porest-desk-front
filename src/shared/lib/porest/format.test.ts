@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { i18n } from "@/shared/i18n/config";
+import * as format from "./format";
 import { KRW, MINUS, formatChartAxis, minusOf } from "./format";
+import { niceAxis, niceCeil } from "./chartAxis";
 
 describe("MINUS / minusOf", () => {
   it("부호는 U+2212 — 하이픈이 아니다", () => {
@@ -34,6 +36,9 @@ describe("MINUS / minusOf", () => {
  *
  * 규칙은 전 구간 하나다 — 소수 첫째 자리까지 반올림하고 `.0` 은 뗀다.
  * 1만 미만은 단위 없이 천단위 콤마만(앱 #70 이 이걸 안 하고 있었다).
+ *
+ * 이 표는 이제 **축약하는 모든 자리**를 규정한다 — 차트 Y축·도넛 중앙·통계 추이 틱.
+ * 추이 축만 따로 쓰던 `formatChartAmount` 를 지우고 여기로 모았다.
  */
 const KO_TABLE: [number, string][] = [
   [0, "0"],
@@ -118,6 +123,95 @@ describe("formatChartAxis (ko)", () => {
       for (const l of labels) expect(l.length).toBeLessThanOrEqual(8);
     },
   );
+});
+
+/**
+ * 축약 자리 통일 — 통계 추이 축이 쓰던 `formatChartAmount`(만은 정수, 억은 고정 `.0`)를
+ * 지우고 `formatChartAxis` 하나로 모았다. `StatsPage` 의 `fmtTick` 이 이 함수다.
+ *
+ * 눈금은 `chartAxis` 의 nice 값(1·2·2.5·5×10ⁿ 배수)만 들어오므로, 여기서 만드는 라벨이
+ * 실제로 축에 찍히는 문자열 전부다. 축 폭은 `<YAxis width={52} />` 고정(11px 글자).
+ */
+describe("통계 추이 축 눈금 (fmtTick = formatChartAxis)", () => {
+  const orig = i18n.language;
+  beforeEach(async () => {
+    await i18n.changeLanguage("ko");
+  });
+  afterEach(async () => {
+    await i18n.changeLanguage(orig);
+  });
+
+  it("축약 함수는 하나뿐 — formatChartAmount 는 더 없다", () => {
+    // 되살아나면 한 화면에서 도넛 중앙 `5억` 옆에 추이 축 `5.0억` 이 다시 선다.
+    expect(Object.keys(format)).not.toContain("formatChartAmount");
+  });
+
+  it("같은 라벨을 두 번 찍지 않는다 — 만 단위를 정수로 반올림하던 게 눈금을 뭉갰다", () => {
+    // 최대 12,000원짜리 축 → 눈금 [0, 5천, 1만, 1.5만, 2만].
+    // 옛 규칙은 15,000 과 20,000 을 둘 다 `2만` 으로 찍어 눈금이 겹쳤다.
+    expect(niceCeil(12_000).ticks.map(formatChartAxis)).toEqual([
+      "0",
+      "5,000",
+      "1만",
+      "1.5만",
+      "2만",
+    ]);
+  });
+
+  it("`.0` 을 남기지 않는다 — 억대 축이 `2.0억 4.0억` 이었다", () => {
+    expect(niceCeil(500_000_000).ticks.map(formatChartAxis)).toEqual([
+      "0",
+      "2억",
+      "4억",
+      "6억",
+      "8억",
+    ]);
+  });
+
+  it("조 단위로 올린다 — 옛 규칙은 억에 눌러 담아 `10000.0억` 을 냈다", () => {
+    expect(formatChartAxis(1_000_000_000_000)).toBe("1조");
+    expect(formatChartAxis(2_500_000_000_000)).toBe("2.5조");
+  });
+
+  it("순저축 축(음수 포함)도 소수를 그대로 — 옛 규칙은 25,000 을 `3만` 이라 했다", () => {
+    // 눈금 간격 25,000 인 축. 옛 규칙: [−3만, 0, 3만, 5만, 8만] — 눈금값과 다른 숫자다.
+    expect(niceAxis(-25_000, 60_000).ticks.map(formatChartAxis)).toEqual([
+      `${MINUS}2.5만`,
+      "0",
+      "2.5만",
+      "5만",
+      "7.5만",
+    ]);
+  });
+
+  /**
+   * 폭 가드 — 축이 만들 수 있는 눈금을 전 구간 훑어 라벨을 검사한다.
+   * `1,230.5만`(콤마 + 소수)만 52px 를 넘는데, nice 눈금은 그 자리에서 항상
+   * 1만의 배수라 나올 수 없다. 그 사실을 여기서 못 박는다.
+   */
+  it("어떤 축을 그려도 라벨이 7자 이하 — 콤마와 소수가 같이 나오지 않는다", () => {
+    const labels = new Set<string>();
+    for (let exp = 3; exp <= 13; exp++) {
+      for (let k = 100; k < 1000; k += 7) {
+        const max = Math.round((k / 100) * 10 ** exp);
+        for (const ticks of [
+          niceCeil(max).ticks,
+          niceAxis(0, max).ticks,
+          niceAxis(-max, max).ticks,
+        ]) {
+          const drawn = ticks.map(formatChartAxis);
+          // 한 축 안에서 같은 글자가 두 번 서면 눈금을 읽을 수 없다.
+          expect(new Set(drawn).size).toBe(drawn.length);
+          for (const l of drawn) labels.add(l);
+        }
+      }
+    }
+    expect(labels.size).toBeGreaterThan(100);
+    for (const l of labels) {
+      expect(l.length).toBeLessThanOrEqual(7);
+      expect(l).not.toMatch(/,.*\./);
+    }
+  });
 });
 
 describe("formatChartAxis (en)", () => {
