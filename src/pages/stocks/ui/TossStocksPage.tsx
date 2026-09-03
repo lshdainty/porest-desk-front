@@ -12,7 +12,13 @@ import { Card } from "@/shared/ui/card";
 import { Sparkline } from "@/shared/ui/porest/charts";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { fmtByCurrency, num, trendColor } from "@/features/stock/lib/format";
+import {
+  fmtByCurrency,
+  fmtCapKRW,
+  fmtShares,
+  num,
+  trendColor,
+} from "@/features/stock/lib/format";
 import {
   ListWrap,
   PanelEmpty,
@@ -866,19 +872,6 @@ function DiscoverPanel({
 }
 
 // ---- 종목 기본정보 (토스 stocks + price-limits) ----------------------------
-
-const TRILLION = 1e12;
-const HUNDRED_M = 1e8;
-
-function fmtCapKRW(v: number): string {
-  if (v >= TRILLION) return `${(v / TRILLION).toFixed(1)}조원`;
-  return `${Math.round(v / HUNDRED_M).toLocaleString()}억원`;
-}
-function fmtShares(n: number): string {
-  if (n >= HUNDRED_M)
-    return `${(n / HUNDRED_M).toFixed(n >= 1e9 ? 0 : 1)}억 주`;
-  return `${Math.round(n / 1e4).toLocaleString()}만 주`;
-}
 
 function StockInfoCard({
   symbol,
