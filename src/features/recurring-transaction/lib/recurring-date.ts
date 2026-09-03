@@ -6,7 +6,7 @@ import {
 } from "@/shared/lib/date";
 
 // 반복 거래 다이얼로그 공용 date helpers — RecurringFromTxDialog / RecurringAddDialog /
-// RecurringEditDialog 공유.
+// RecurringAddDialog(추가·수정) 공유.
 // (컴포넌트 파일이 함수도 export하면 react-refresh 룰 위반이라 별도 .ts 로 분리)
 //
 // '오늘' 은 여기서 만들지 않는다 — 공용 `todayLocalKey()` 를 호출부가 넘긴다.

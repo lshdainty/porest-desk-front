@@ -35,7 +35,6 @@ import {
 } from "@/features/recurring-transaction/lib/recurring-format";
 import { RecurringAddDialog } from "@/features/recurring-transaction/ui/RecurringAddDialog";
 import { RecurringDetailDialog } from "@/features/recurring-transaction/ui/RecurringDetailDialog";
-import { RecurringEditDialog } from "@/features/recurring-transaction/ui/RecurringEditDialog";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -889,7 +888,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
         />
       )}
       {editing && (
-        <RecurringEditDialog
+        <RecurringAddDialog
           recurring={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
