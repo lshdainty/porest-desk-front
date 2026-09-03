@@ -51,17 +51,21 @@ export const money = (
   return m ? `${m[1]}₩${m[2]}` : `₩${s}`;
 };
 
+/** 소수 첫째 자리까지 반올림. 단위를 올릴지 판단할 때도 이 값으로 본다. */
+const round1 = (n: number): number => Math.round(n * 10) / 10;
+
 /**
  * 차트 Y축 라벨 — ko 조/억/만 축약 / en `Intl.NumberFormat(compact)`(120M·52K).
  * 음수도 부호 prepend. App `core/format/krw.dart` formatChartAxis 와 정합.
  *
- * 구간마다 정밀도를 달리한다. 한 자리로 뭉개면 축 눈금이 겹치고(84만짜리 차트에서
- * 25·50·75·100만이 "0만, 0만, 100만, 100만" 으로 나왔다), 반대로 늘 만 단위로 쓰면
- * 조 단위에서 "10000.0억" 같은 라벨이 나와 축 폭을 넘는다.
+ * **전 구간이 같은 규칙이다**(QA #73) — 소수 첫째 자리까지 반올림하고 `.0` 은 뗀다.
+ * 예전엔 구간마다 정밀도가 달랐다("10억 위는 정수 억", "1만~10만만 소수 한 자리").
+ * 한 축 위에서 눈금마다 규칙이 바뀌면 `5.0만` 옆에 `25만` 이 서고, 읽는 사람은
+ * 어느 쪽이 반올림된 값인지 알 수 없다. 자릿수는 단위가 이미 줄여 주므로
+ * 정밀도까지 구간별로 깎을 이유가 없다.
  *
- *   1조~     1.2조        10억~    12억, 9,999억
- *   1억~     5.2억        10만~    25만, 9,999만
- *   1만~     1.2만, 9.9만  ~1만     5000
+ *   ~1만   5,000 · 9,999          1만~   1만 · 1.2만 · 1,230.5만
+ *   1억~   1억 · 1.2억 · 9,999억   1조~   1조 · 1.2조
  */
 export const formatChartAxis = (v: number): string => {
   const n = Math.abs(v);
@@ -70,25 +74,21 @@ export const formatChartAxis = (v: number): string => {
     return `${v < 0 ? "-" : ""}${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n)}`;
   }
   const sign = v < 0 ? MINUS : "";
-  if (n >= 1_000_000_000_000)
-    return `${sign}${(n / 1_000_000_000_000).toFixed(1)}조`;
-  // 10억이 넘으면 소수 한 자리가 읽는 데 보태는 게 없다.
-  if (n >= 1_000_000_000)
-    return `${sign}${Math.round(n / 100_000_000).toLocaleString("ko-KR")}억`;
-  if (n >= 100_000_000) return `${sign}${(n / 100_000_000).toFixed(1)}억`;
-  if (n >= 10_000) {
-    // 1만~10만을 만 단위로 뭉개면 정보가 너무 많이 날아간다 — 11,881 이 "1만"(−16%)이
-    // 됐다(QA #38). 이 구간만 소수 한 자리. 10만 위는 소수가 축 폭만 먹고 읽는 데
-    // 보태는 게 없어 그대로 정수 만.
-    // 반올림해서 10.0 이 되는 값(99,999)은 "10.0만" 대신 정수 "10만" 으로 넘긴다 —
-    // 100,000 이 "10만" 이라 바로 옆 두 눈금이 다른 모양으로 찍히지 않게.
-    const man = n / 10_000;
-    const rounded = Math.round(man * 10) / 10;
-    return rounded < 10
-      ? `${sign}${rounded.toFixed(1)}만`
-      : `${sign}${Math.round(man).toLocaleString("ko-KR")}만`;
+  if (n < 10_000) return `${sign}${n.toLocaleString("ko-KR")}`;
+  // 반올림한 값이 다음 단위에 닿으면 그 단위로 올린다 — 99,999,999 는 `10,000만` 이
+  // 아니라 `1억`, 999,999,999,999 는 `10,000억` 이 아니라 `1조` 다.
+  let scaled = n / 10_000;
+  let unit = "만";
+  for (const bigger of ["억", "조"]) {
+    if (round1(scaled) < 10_000) break;
+    scaled /= 10_000;
+    unit = bigger;
   }
-  return `${sign}${n.toLocaleString("ko-KR")}`;
+  // `.0` 은 떼고 정수부엔 천단위 콤마 — 1,230.5만 · 1,230만.
+  const digits = round1(scaled).toLocaleString("ko-KR", {
+    maximumFractionDigits: 1,
+  });
+  return `${sign}${digits}${unit}`;
 };
 
 /**
@@ -96,11 +96,11 @@ export const formatChartAxis = (v: number): string => {
  * en 은 `formatChartAxis`(Intl compact, 457.4K). 음수 부호 prepend.
  * App stats_screen `_fmtTick` 로직 미러.
  *
- * 예전엔 `formatChartAxis` 가 100만 단위로 뭉개서 소액이 "0만" 이 되는 바람에 이 함수가
- * 따로 필요했다. 그 반올림을 걷어낸 뒤로는 ko 결과가 같았는데, QA #38 로
- * `formatChartAxis` 만 1만~10만에서 소수 한 자리를 쓰게 되면서 **다시 갈렸다** —
- * 여기(통계 추이 차트 축)는 그대로 정수 만이다. 두 함수를 같게 만들려면 위 구간
- * 분기를 그대로 옮겨야 하고, 앱 `stats_screen.dart _fmtTick` 도 함께 맞춰야 한다.
+ * **`formatChartAxis` 와 같은 함수가 아니다.** 여기는 만·억 두 단위뿐이고 만은 정수,
+ * 억은 `.0` 을 남기는 고정 한 자리다 — `5억` 이 아니라 `5.0억`, `1조` 가 아니라
+ * `10000.0억`. 통계 추이 축은 눈금이 촘촘해 소수가 폭만 먹어서 만을 정수로 두고,
+ * QA #73 은 `formatChartAxis` 한 쌍(웹·앱)만 손대기로 한 결정이라 여기는 그대로다.
+ * 둘을 합치려면 앱 `stats_screen.dart _fmtTick` 도 같이 맞춰야 한다.
  */
 export const formatChartAmount = (v: number): string => {
   if (isEn()) return formatChartAxis(v);

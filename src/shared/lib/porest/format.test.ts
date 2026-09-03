@@ -27,6 +27,46 @@ describe("MINUS / minusOf", () => {
   });
 });
 
+/**
+ * QA #73 확정 표 — **앱과 한 글자도 갈리면 안 된다.**
+ * 미러는 앱 `porest-desk-app/lib/core/format/krw.dart` 의 `formatChartAxis` 이고
+ * 같은 표가 그 테스트에 들어 있다. 한 줄을 고치면 반드시 양쪽을 같이 고쳐라.
+ *
+ * 규칙은 전 구간 하나다 — 소수 첫째 자리까지 반올림하고 `.0` 은 뗀다.
+ * 1만 미만은 단위 없이 천단위 콤마만(앱 #70 이 이걸 안 하고 있었다).
+ */
+const KO_TABLE: [number, string][] = [
+  [0, "0"],
+  [5_000, "5,000"],
+  [9_999, "9,999"],
+  [10_000, "1만"],
+  [11_881, "1.2만"],
+  [13_879, "1.4만"],
+  [50_000, "5만"],
+  [99_999, "10만"],
+  [100_000, "10만"],
+  [250_000, "25만"],
+  [999_999, "100만"],
+  [1_000_000, "100만"],
+  [1_500_000, "150만"],
+  [5_040_000, "504만"],
+  [12_300_000, "1,230만"],
+  [12_305_000, "1,230.5만"],
+  [51_750_000, "5,175만"],
+  [99_999_999, "1억"],
+  [100_000_000, "1억"],
+  [120_000_000, "1.2억"],
+  [500_000_000, "5억"],
+  [1_200_000_000, "12억"],
+  [1_250_000_000, "12.5억"],
+  [999_900_000_000, "9,999억"],
+  [999_999_999_999, "1조"],
+  [1_000_000_000_000, "1조"],
+  [1_200_000_000_000, "1.2조"],
+  [-51_750_000, `${MINUS}5,175만`],
+  [-11_881, `${MINUS}1.2만`],
+];
+
 describe("formatChartAxis (ko)", () => {
   const orig = i18n.language;
   beforeEach(async () => {
@@ -36,37 +76,41 @@ describe("formatChartAxis (ko)", () => {
     await i18n.changeLanguage(orig);
   });
 
-  it("1만~10만은 소수 한 자리 — 11,881 이 '1만'(−16%) 이었다(QA #38)", () => {
-    expect(formatChartAxis(11881)).toBe("1.2만");
-    expect(formatChartAxis(10000)).toBe("1.0만");
-    expect(formatChartAxis(12500)).toBe("1.3만");
-    expect(formatChartAxis(99000)).toBe("9.9만");
+  it.each(KO_TABLE)("%d → %s", (input, expected) => {
+    expect(formatChartAxis(input)).toBe(expected);
   });
 
-  it("반올림해 10.0 이 되는 값은 정수 만 — 100,000 과 모양을 맞춘다", () => {
-    expect(formatChartAxis(99999)).toBe("10만");
-    expect(formatChartAxis(100000)).toBe("10만");
+  it("`.0` 을 남기지 않는다 — 합계 50,000 인 달의 도넛 중앙이 `5.0만` 이었다(QA #73)", () => {
+    for (const [, out] of KO_TABLE) expect(out).not.toMatch(/\.0(만|억|조)$/);
+    expect(formatChartAxis(50_000)).toBe("5만");
   });
 
-  it("10만 위 구간은 그대로 정수 만/억/조 (회귀 고정)", () => {
-    expect(formatChartAxis(250000)).toBe("25만");
-    expect(formatChartAxis(457400)).toBe("46만");
-    expect(formatChartAxis(517500000)).toBe("5.2억");
-    expect(formatChartAxis(1200000000)).toBe("12억");
-    expect(formatChartAxis(1.2e12)).toBe("1.2조");
-    expect(formatChartAxis(5000)).toBe("5,000");
-    expect(formatChartAxis(0)).toBe("0");
+  it("자리올림 — 반올림이 단위를 채우면 위 칸으로 올린다", () => {
+    // 9,999.9999만 → 10,000.0만 이 아니라 1억.
+    expect(formatChartAxis(99_999_999)).toBe("1억");
+    // 9,999.99999억 → 10,000.0억 이 아니라 1조.
+    expect(formatChartAxis(999_999_999_999)).toBe("1조");
+    // 만 아래는 반올림이 없다 — 9,999 는 그대로 9,999.
+    expect(formatChartAxis(9_999)).toBe("9,999");
+  });
+
+  it("구간별 예외가 없다 — 10억 위도, 1만~10만도 같은 규칙", () => {
+    // 예전엔 10억 위가 정수 억이라 12.5억이 `13억` 으로 반올림됐다.
+    expect(formatChartAxis(1_250_000_000)).toBe("12.5억");
+    // 예전엔 1만~10만만 소수 한 자리라 10만 위가 정수 만이었다.
+    expect(formatChartAxis(12_305_000)).toBe("1,230.5만");
   });
 
   it("음수 부호는 U+2212 — 앱 krw.dart 와 같은 문자열", () => {
-    expect(formatChartAxis(-51750000)).toBe(`${MINUS}5,175만`);
+    expect(formatChartAxis(-51_750_000)).toBe(`${MINUS}5,175만`);
+    expect(formatChartAxis(-51_750_000).startsWith("-")).toBe(false);
   });
 
   /**
    * 축 눈금 겹침 가드 — 앱 `test/core/format/formatters_locale_test.dart` 이식.
    * 소수 한 자리를 넣어도 같은 라벨이 두 번 찍히거나 축 폭을 넘지 않아야 한다.
    */
-  it.each([5e4, 1e6, 3e6, 5e7, 3e8, 3e9])(
+  it.each([5e4, 1e6, 3e6, 5e7, 3e8, 3e9, 3e12])(
     "top=%d 축의 5눈금 라벨이 전부 다르고 8자 이하",
     (top) => {
       const labels = [0, 1, 2, 3, 4].map((i) => formatChartAxis((top * i) / 4));
