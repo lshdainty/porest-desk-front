@@ -38,9 +38,17 @@ import {
   ForestStrip,
   NightSkyPanel,
 } from "@/widgets/constellation";
+import {
+  dayDiff,
+  dueKey,
+  inSevenDays,
+  isDone,
+  visibleTodos,
+  type FilterKey,
+} from "@/pages/todo/lib/visible-todos";
 import { TodoMobileLedger } from "./TodoMobileLedger";
 import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
-import { Button } from "@/shared/ui/button";
+import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
 import { Fab } from "@/shared/ui/porest/fab";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
@@ -104,27 +112,9 @@ const PRIO: Record<
 };
 const PRIO_ORDER: TodoPriority[] = ["HIGH", "MEDIUM", "LOW"];
 
-type FilterKey = "today" | "week" | "all" | "done";
-
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
-/** dueDate(날짜 또는 datetime) → 'YYYY-MM-DD'. nullable. */
-function dueKey(due: string | null | undefined): string | null {
-  if (!due) return null;
-  return due.slice(0, 10);
-}
-
-/** 두 'YYYY-MM-DD' 사이 일수 차이 (b - a). */
-function dayDiff(a: string, b: string): number {
-  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
-}
-
-/** 오늘부터 7일 안에 마감인가. `today` 를 받아 모듈 스코프에 둔다 — 컴포넌트 안에
- *  두면 매 렌더 새 함수라 이걸 쓰는 useMemo 가 의존성을 정직하게 못 적는다. */
-function inSevenDays(today: string, key: string | null): boolean {
-  if (!key) return false;
-  const diff = dayDiff(today, key);
-  return diff >= 0 && diff <= 7;
-}
+// FilterKey·dueKey·dayDiff·inSevenDays·isDone 은 `lib/visible-todos.ts` 로 옮겼다 —
+// 목록 필터에 테스트를 붙이려면 렌더링 없이 부를 수 있어야 했다(QA #29).
 
 /** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
 function kDate(s: string): { md: string; full: string } {
@@ -144,9 +134,6 @@ function relativeDate(due: string, today: string): string {
 
 const NO_DUE_KEY = "￿"; // 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel
 
-function isDone(t: Todo): boolean {
-  return t.status === "COMPLETED";
-}
 /** Todo.category → 태그 라벨 (없으면 '개인'). */
 function todoTag(t: Todo): string {
   return t.category || DEFAULT_TAG;
@@ -215,9 +202,18 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [quickAdd, setQuickAdd] = useState("");
 
+  // 같은 행을 따닥 눌러도 토글은 한 번만 나간다. `pendingIds` 잠금은 요청이 끝나면
+  // 풀리는데(통신이 빠르면 100ms 남짓) 두 번째 탭이 그 뒤에 올 수 있고, 완료 원은
+  // 공용 Button 이 아니라 원시 <button> 이라 거기 든 더블클릭 방어도 안 걸린다.
+  const lastToggleAt = useRef(new Map<number, number>());
+
   // 완료 토글 + 별빛 토스트 — 서버가 돌려준 실제 적립량(earnedStarlight)으로만 띄운다.
   // 낙관적으로 계산하면 평생 1회 정책에 걸려 적립이 0 이어도 "+N" 이 떠서 거짓말이 된다.
   const onToggleTodo = (td: Todo) => {
+    const now = Date.now();
+    if (now - (lastToggleAt.current.get(td.rowId) ?? 0) < DOUBLE_CLICK_GUARD_MS)
+      return;
+    lastToggleAt.current.set(td.rowId, now);
     toggleStatus.mutate(td.rowId, {
       onSuccess: (updated) => {
         const gain = updated.earnedStarlight ?? 0;
@@ -269,16 +265,10 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   }, [todos, today]);
 
   // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
+  // holdIds — 방금 완료를 누른 행은 잠깐 자리를 지킨다(QA #29). 안 지키면 그 행이
+  // 즉시 빠지고 아래 행이 올라와, 따닥 누른 두 번째 탭이 다른 할 일을 완료시킨다.
   const groups = useMemo(() => {
-    let visible: Todo[];
-    if (filter === "today")
-      visible = todos.filter((t) => !isDone(t) && dueKey(t.dueDate) === today);
-    else if (filter === "week")
-      visible = todos.filter(
-        (t) => !isDone(t) && inSevenDays(today, dueKey(t.dueDate)),
-      );
-    else if (filter === "all") visible = todos.filter((t) => !isDone(t));
-    else visible = todos.filter(isDone);
+    const visible = visibleTodos(todos, filter, today, toggleStatus.holdIds);
 
     const sorted = [...visible].sort((a, b) => {
       const pa = PRIO[a.priority].order;
@@ -297,7 +287,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       else map.set(k, [t]);
     }
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [todos, filter, today]);
+  }, [todos, filter, today, toggleStatus.holdIds]);
 
   const onSave = (values: TodoFormValues, id?: number) => {
     if (id != null)
@@ -785,6 +775,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             pinTop={46}
             onToggle={onToggleTodo}
             pendingIds={toggleStatus.pendingIds}
+            holdIds={toggleStatus.holdIds}
             onRowClick={setViewing}
             // 스와이프 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
             onEdit={setEditing}

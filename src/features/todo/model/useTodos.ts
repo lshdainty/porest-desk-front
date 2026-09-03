@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
+import { useHoldIds } from "@/shared/lib/porest/use-hold-ids";
 import { constellationKeys, todoKeys } from "@/shared/config";
 import { todoApi } from "../api/todoApi";
 import type { TodoListParams } from "../api/todoApi";
@@ -46,11 +47,15 @@ export const useUpdateTodo = () => {
 export const useToggleTodoStatus = () => {
   const queryClient = useQueryClient();
   const { pendingIds, begin, end } = usePendingIds();
+  // 낙관 갱신이 행을 목록에서 빼도 잠깐은 자리를 지킨다 — 자리 유지를 시작하는 자리는
+  // 낙관 갱신을 하는 여기여야 화면마다 배선이 복제되지 않는다(QA #29).
+  const { holdIds, hold } = useHoldIds();
 
   const mutation = useMutation({
     mutationFn: (id: number) => todoApi.toggleTodoStatus(id),
     onMutate: async (id: number) => {
       begin(id);
+      hold(id);
       // 진행 중인 refetch 취소하여 optimistic update 덮어쓰기 방지
       await queryClient.cancelQueries({ queryKey: todoKeys.all });
 
@@ -94,8 +99,10 @@ export const useToggleTodoStatus = () => {
       queryClient.invalidateQueries({ queryKey: constellationKeys.all });
     },
   });
-  /** 진행 중인 항목 id — 그 항목만 스피너·잠금(낙관 갱신과 별개로 "아직 서버 확인 전"을 보인다). */
-  return { ...mutation, pendingIds };
+  /** pendingIds — 진행 중인 항목 id. 그 항목만 스피너·잠금(낙관 갱신과 별개로 "아직 서버 확인 전"을 보인다).
+   *  holdIds — 방금 토글해 목록에서 빠질 항목 id. 잠깐 자리를 지켜, 아래 행이 올라와
+   *  두 번째 탭을 대신 받는 걸 막는다. 잠금은 *같은* 행을, 자리 유지는 *다른* 행을 지킨다. */
+  return { ...mutation, pendingIds, holdIds };
 };
 
 export const useReorderTodos = () => {

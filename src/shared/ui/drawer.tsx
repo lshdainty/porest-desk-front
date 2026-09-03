@@ -4,6 +4,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/shared/lib";
+import { registerOverlay } from "@/shared/lib/porest/pointer-block";
 
 /*
  * Porest Drawer — porest-design specs/components/drawer.md SoT 기반.
@@ -38,16 +39,22 @@ const DrawerClose = DrawerPrimitive.Close;
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  // 시트가 사라진 직후 바로 아래 붙어 있는 탭바가 두 번째 탭을 받는 걸 막는다 — QA #37.
+  // overlay 에 거는 이유는 dialog.tsx 의 같은 주석을 본다 — vaul 의 Portal 도 Radix
+  // Dialog Portal 이라 `open` 일 때만 자식을 마운트하고, 바깥 래퍼는 계속 살아 있다.
+  React.useEffect(registerOverlay, []);
+  return (
+    <DrawerPrimitive.Overlay
+      ref={ref}
+      className={cn(
+        "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 DrawerOverlay.displayName = "DrawerOverlay";
 
 const DrawerContent = React.forwardRef<

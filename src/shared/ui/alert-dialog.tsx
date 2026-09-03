@@ -3,6 +3,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/index";
+import { registerOverlay } from "@/shared/lib/porest/pointer-block";
 import { buttonVariants } from "@/shared/ui/button-variants";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -27,18 +28,24 @@ const AlertDialogPortal = AlertDialogPrimitive.Portal;
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-[300] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out",
-      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  // 확인창이 닫힌 직후 그 자리로 올라온 다른 행이 두 번째 탭을 받는 걸 막는다 — QA #57.
+  // overlay 에 거는 이유는 dialog.tsx 의 같은 주석을 본다 — 확인창은 대부분
+  // `open={deletingId !== null}` 로 쓰여 바깥 래퍼가 닫힌 뒤에도 살아 있다.
+  React.useEffect(registerOverlay, []);
+  return (
+    <AlertDialogPrimitive.Overlay
+      ref={ref}
+      className={cn(
+        "fixed inset-0 z-[300] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const alertDialogContentVariants = cva(
