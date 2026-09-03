@@ -17,13 +17,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  KRW,
-  money,
-  isEn,
-  formatChartAxis,
-  formatChartAmount,
-} from "@/shared/lib/porest/format";
+import { KRW, money, isEn, formatChartAxis } from "@/shared/lib/porest/format";
 import {
   formatYearMonth,
   formatYear,
@@ -2197,12 +2191,9 @@ export const StatsPage = () => {
     savings: { label: t("trend.savings"), color: "var(--bg-brand)" },
   };
 
-  // app stats _fmtTick 정합 — 만 단위 round(formatChartAmount).
-  // 공용 formatChartAxis 와는 1만 위 전 구간에서 갈린다 — 축은 `1.2만`·`5억`·`1조`,
-  // 여긴 `1만`·`5.0억`·`10000.0억`. 추이 축은 눈금이 촘촘해 소수가 폭만 먹는다.
-  // QA #73 은 formatChartAxis 한 쌍(웹·앱)만 손대기로 한 결정이라 여기는 그대로다.
-  // 카테고리 추이 값라벨(catTrendData)과 동일 헬퍼 공용 → 축약 통일.
-  const fmtTick = formatChartAmount;
+  // 추이 축 틱도 도넛 중앙과 같은 축약을 쓴다 — 예전엔 여기만 `formatChartAmount`
+  // (만은 정수, 억은 고정 `.0`)라 한 화면에서 `5.0억`(추이 축) 옆에 `5억`(도넛)이 섰다.
+  const fmtTick = formatChartAxis;
 
   // Y축 nice 눈금 (앱 stats_screen 정합). dual-axis 는 좌·우 각각 0기준 고정 5틱(niceCeil)
   // 으로 가로 그리드 정렬, 순저축 bar 는 음수 포함 niceAxis.
