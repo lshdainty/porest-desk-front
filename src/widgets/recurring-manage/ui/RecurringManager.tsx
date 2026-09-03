@@ -18,7 +18,7 @@ import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { renderIcon, tileRadius } from "@/shared/lib";
 import { parseLocalDate } from "@/shared/lib/date";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW, minusOf } from "@/shared/lib/porest/format";
 import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
 import {
   useDeleteRecurringTransaction,
@@ -244,7 +244,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   label={t("statMonthlyExpense")}
                   value={
                     <MaskAmount card="etc.recurring">
-                      -{KRW(stats.monthlyExpense)}
+                      {minusOf(stats.monthlyExpense)}
+                      {KRW(Math.abs(stats.monthlyExpense))}
                     </MaskAmount>
                   }
                   Icon={TrendingDown}
@@ -279,7 +280,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                 label={t("statMonthlyExpense")}
                 value={
                   <MaskAmount card="etc.recurring">
-                    -{KRW(stats.monthlyExpense)}
+                    {minusOf(stats.monthlyExpense)}
+                    {KRW(Math.abs(stats.monthlyExpense))}
                   </MaskAmount>
                 }
                 Icon={TrendingDown}

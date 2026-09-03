@@ -261,7 +261,8 @@ const GROUP_META: Record<AssetGroupKey, { labelKey: string; color: string }> = {
   loan: { labelKey: "assetType.loan", color: "var(--color-chart-brown)" },
 };
 
-function AssetCompositionCard({
+// 도넛 중앙 라벨을 렌더로 고정하려고 내보낸다(AssetPage.test.tsx) — 페이지 밖에서 쓰지 않는다.
+export function AssetCompositionCard({
   accounts,
   investments,
   cards,
@@ -348,11 +349,10 @@ function AssetCompositionCard({
   const centerLbl = active ? t(GROUP_META[active].labelKey) : t("netWorth");
   const centerVal = active ? activeTotal : netWorth;
 
-  const totalLabel = isEn()
-    ? formatChartAxis(centerVal)
-    : Math.abs(centerVal) >= 10_000_000
-      ? `${(centerVal / 10_000_000).toFixed(2)}천만`
-      : `${(centerVal / 10_000).toFixed(0)}만`;
+  // 축약은 손으로 만들지 않는다 — 여기서 직접 계산하던 `천만` 은 QA #73 이 쓰지 않기로
+  // 한 단위였고, `${(v / 10_000).toFixed(0)}만` 은 1만 미만을 통째로 버렸다
+  // (11,881 → `1만`(QA #38, −16%) · 4,900 → `0만` · −11,881 은 하이픈까지 ASCII(QA #22)).
+  const totalLabel = formatChartAxis(centerVal);
 
   const today = new Date();
   const dateLabel = t("date:asOf", { date: formatMonthDay(today) });
@@ -716,7 +716,8 @@ function formatDeadline(deadline: string | null): string | null {
   return formatYearMonth(d);
 }
 
-function SavingGoalItem({ goal }: { goal: SavingGoal }) {
+// 목표액 라벨을 렌더로 고정하려고 내보낸다(AssetPage.test.tsx) — 페이지 밖에서 쓰지 않는다.
+export function SavingGoalItem({ goal }: { goal: SavingGoal }) {
   const { t } = useTranslation("asset");
   const pct =
     goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
@@ -807,10 +808,7 @@ function SavingGoalItem({ goal }: { goal: SavingGoal }) {
           >
             {/* 저축목표만 마스킹에서 빠져 있었다 — 금액을 가려도 여기엔 그대로 나왔다. */}
             <MaskAmount card="asset.savingGoals" mask="••• / •••">
-              {KRW(goal.currentAmount)} /{" "}
-              {isEn()
-                ? formatChartAxis(goal.targetAmount)
-                : `${(goal.targetAmount / 10_000).toFixed(0)}만`}
+              {KRW(goal.currentAmount)} / {formatChartAxis(goal.targetAmount)}
             </MaskAmount>
           </div>
         </div>
