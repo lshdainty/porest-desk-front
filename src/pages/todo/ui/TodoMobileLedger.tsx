@@ -107,6 +107,7 @@ export function TodoMobileLedger({
   pinTop,
   onToggle,
   pendingIds,
+  holdIds,
   onRowClick,
   onEdit,
   onDelete,
@@ -124,6 +125,8 @@ export function TodoMobileLedger({
   onToggle: (todo: Todo) => void;
   /** 완료 토글 요청이 진행 중인 항목 — 체크 자리에 스피너, 탭 잠금. */
   pendingIds?: ReadonlySet<number>;
+  /** 방금 완료를 누른 항목 — '완료 숨기기' 를 켰어도 잠깐은 자리를 지킨다(QA #29). */
+  holdIds?: ReadonlySet<number>;
   onRowClick: (todo: Todo) => void;
   /** 스와이프 '수정' — 상세 footer 의 수정과 같은 목적지. */
   onEdit: (todo: Todo) => void;
@@ -168,12 +171,14 @@ export function TodoMobileLedger({
     const pass = (td: Todo) =>
       (fTags.length === 0 || fTags.includes(tagOf(td))) &&
       (fPrios.length === 0 || fPrios.includes(td.priority)) &&
-      (!hideDone || !isDone(td));
+      // 방금 누른 행은 '완료 숨기기' 를 켰어도 잠깐 남는다 — 빠지면 아래 행이 그
+      // 자리로 올라와 두 번째 탭이 다른 할 일을 완료시킨다(QA #29).
+      (!hideDone || !isDone(td) || (holdIds?.has(td.rowId) ?? false));
     return todos.filter((td) => {
       const due = dueOf(td);
       return (due ? due.startsWith(ym) : true) && pass(td);
     });
-  }, [todos, ym, fTags, fPrios, hideDone]);
+  }, [todos, ym, fTags, fPrios, hideDone, holdIds]);
 
   const byDay = useMemo(() => {
     const map = new Map<string, Todo[]>();
