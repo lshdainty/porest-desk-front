@@ -12,6 +12,7 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Switch } from "@/shared/ui/switch";
 import {
@@ -77,6 +78,32 @@ const MAP_FIELDS: { f: ImportField; labelKey: string; required?: boolean }[] = [
 
 const NONE = "none";
 type Step = "upload" | "mapping" | "done";
+
+/**
+ * 서버가 실패 행에 붙이는 **사유 코드**. 화면 문구가 아니다 —
+ * `date`(날짜를 못 읽음) · `amount`(금액을 못 읽음) · `type`(수입/지출 판별 불가) ·
+ * `parentHasTx`(대분류에 거래가 직접 달려 하위를 못 만듦) · `resolve`(카테고리·자산
+ * 해석 실패) · `save`(저장 실패). 서버가 내는 값은 지금 이 여섯이 전부다.
+ */
+const FAIL_REASONS = [
+  "date",
+  "amount",
+  "type",
+  "parentHasTx",
+  "resolve",
+  "save",
+] as const;
+
+/**
+ * 사유 코드 → i18n 키. **모르는 코드는 코드 그대로 흘리지 않는다** — 서버가 나중에
+ * 사유를 늘려도 화면에 영문 코드(`fxRate` 따위)가 튀어나오면 안 된다. 그런 값은
+ * 기본 문구로 떨어뜨린다.
+ */
+function failReasonKey(reason: string): string {
+  return (FAIL_REASONS as readonly string[]).includes(reason)
+    ? `import.failReason.${reason}`
+    : "import.failReason.unknown";
+}
 
 // ─── 메인 ──────────────────────────────────────────────────────
 
@@ -597,6 +624,56 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
               </div>
               <Switch checked={autoCat} onCheckedChange={setAutoCat} />
             </label>
+            {/* 오타가 그대로 새 카테고리가 되던 자리(QA #59) — 실행 전에 이름을 보여 주고,
+                마음에 안 들면 바로 위 스위치를 끄면 미분류로 들어간다. */}
+            {autoCat && analysis.newCategoryCount > 0 && (
+              <div style={{ padding: "2px 0 12px" }}>
+                <div
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    fontWeight: 700,
+                    color: "var(--fg-secondary)",
+                    marginBottom: 6,
+                  }}
+                >
+                  {t("import.newCatTitle", {
+                    count: analysis.newCategoryCount,
+                  })}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {(analysis.newCategories ?? []).map((n) => (
+                    <Badge key={n} variant="secondary">
+                      {n}
+                    </Badge>
+                  ))}
+                  {analysis.newCategoryCount >
+                    (analysis.newCategories ?? []).length && (
+                    <span
+                      style={{
+                        fontSize: "var(--text-badge)",
+                        color: "var(--fg-tertiary)",
+                        alignSelf: "center",
+                      }}
+                    >
+                      {t("import.newCatMore", {
+                        count:
+                          analysis.newCategoryCount -
+                          (analysis.newCategories ?? []).length,
+                      })}
+                    </span>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    marginTop: 6,
+                  }}
+                >
+                  {t("import.newCatHint")}
+                </div>
+              </div>
+            )}
           </SectionCard>
 
           {/* 모바일 — 앱처럼 풀폭 반반(spec drawer.md "flex:1 평등 분배").
@@ -677,6 +754,94 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 })}
               </div>
             </div>
+            {/* 만들어진 카테고리 — 미리보기(매핑 단계)에서 본 것과 실제가 같은지 확인시킨다. */}
+            {(result.createdCategories ?? []).length > 0 && (
+              <div style={{ width: "100%", textAlign: "left" }}>
+                <div style={listTitleStyle}>
+                  {t("import.createdCatTitle", {
+                    count: result.createdCategoryCount,
+                  })}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {(result.createdCategories ?? []).map((n) => (
+                    <Badge key={n} variant="secondary">
+                      {n}
+                    </Badge>
+                  ))}
+                  {result.createdCategoryCount >
+                    (result.createdCategories ?? []).length && (
+                    <span
+                      style={{
+                        fontSize: "var(--text-badge)",
+                        color: "var(--fg-tertiary)",
+                        alignSelf: "center",
+                      }}
+                    >
+                      {t("import.newCatMore", {
+                        count:
+                          result.createdCategoryCount -
+                          (result.createdCategories ?? []).length,
+                      })}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 종전엔 "실패 2" 숫자뿐이라 CSV 를 고칠 수가 없었다(QA #61). */}
+            {result.failures.length > 0 && (
+              <div style={{ width: "100%", textAlign: "left" }}>
+                <div style={listTitleStyle}>
+                  {t("import.failuresTitle", { count: result.failed })}
+                </div>
+                <div
+                  style={{
+                    maxHeight: 200,
+                    overflowY: "auto",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "var(--radius-md)",
+                  }}
+                >
+                  {result.failures.map((f) => (
+                    <div key={f.lineNo} style={failRowStyle}>
+                      <span
+                        className="num"
+                        style={{
+                          color: "var(--fg-secondary)",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {t("import.failureLine", { line: f.lineNo })}
+                      </span>
+                      <span
+                        style={{
+                          color: "var(--fg-primary)",
+                          textAlign: "right",
+                        }}
+                      >
+                        {t(failReasonKey(f.reason))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {(result.failuresTruncated ||
+                  result.failed > result.failures.length) && (
+                  <div
+                    style={{
+                      fontSize: "var(--text-badge)",
+                      color: "var(--fg-tertiary)",
+                      marginTop: 6,
+                    }}
+                  >
+                    {t("import.failuresCapped", {
+                      shown: result.failures.length,
+                      total: result.failed,
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             <Button variant="outline" size="sm" onClick={reset}>
               <Plus size={13} /> {t("import.another")}
             </Button>
@@ -835,6 +1000,22 @@ const fileIconStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   flexShrink: 0,
+};
+
+const listTitleStyle: React.CSSProperties = {
+  fontSize: "var(--text-caption)",
+  fontWeight: 700,
+  color: "var(--fg-secondary)",
+  marginBottom: 6,
+};
+
+const failRowStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 12,
+  padding: "7px 10px",
+  borderBottom: "1px solid var(--border-subtle)",
+  fontSize: "var(--text-caption)",
 };
 
 const optionRow: React.CSSProperties = {
