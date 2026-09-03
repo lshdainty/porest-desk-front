@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import {
+  blockNonDigitKey,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -756,6 +759,7 @@ export function SplitTxDialog({
                         amount: sanitizeAmountInput(e.target.value),
                       })
                     }
+                    onKeyDown={blockNonDigitKey}
                     inputMode="numeric"
                     placeholder="0"
                     disabled={submitting}

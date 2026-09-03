@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { KRW, isEn } from "@/shared/lib/porest/format";
+import { KRW, MINUS, isEn } from "@/shared/lib/porest/format";
 import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
 import {
   isScheduledDate,
@@ -105,7 +105,7 @@ export function TransferRow({
       <div>
         <LedgerRowAmt>
           <MaskAmount card="ledger.txList" kind="transfer">
-            {signed == null ? "" : signed < 0 ? "-" : "+"}
+            {signed == null ? "" : signed < 0 ? MINUS : "+"}
             {isEn() ? "₩" : ""}
             {KRW(signed ?? transfer.amount, { abs: true })}
           </MaskAmount>

@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import {
+  MAX_AMOUNT,
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { Icon } from "@/shared/ui/porest/primitives";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -71,12 +76,18 @@ export function BudgetEditDialog({
 
   const dupCat =
     isNew && categoryRowId != null && usedCatIds.has(categoryRowId);
-  const valid = categoryRowId != null && !dupCat && parseInt(limit) > 0;
+  // parseInt 가 아니라 parseAmount — 콤마·소수점·상한을 금액 칸 전체와 같은 규칙으로 읽는다.
+  // (parseInt("1,000") 은 1 이었다)
+  const limitNum = parseAmount(limit);
+  // 이미 999억으로 저장된 예산을 열면 여기서 걸린다(QA #48). 초기값을 몰래 100억으로
+  // 고쳐 넣지 않는다 — 저장된 값을 그대로 보여 주고 왜 못 저장하는지 알려 준다.
+  const tooLarge = limitNum > MAX_AMOUNT;
+  const valid = categoryRowId != null && !dupCat && limitNum > 0 && !tooLarge;
 
   const save = () => {
     setTouched(true);
     if (!valid || categoryRowId == null) return;
-    onSave({ categoryRowId, budgetAmount: parseInt(limit) || 0 });
+    onSave({ categoryRowId, budgetAmount: limitNum });
   };
 
   const availableCats = isNew
@@ -147,7 +158,7 @@ export function BudgetEditDialog({
               marginTop: 2,
             }}
           >
-            {t("edit.monthlyLimitPreview")} {money(parseInt(limit) || 0)}
+            {t("edit.monthlyLimitPreview")} {money(limitNum)}
           </div>
         </div>
       </div>
@@ -193,13 +204,25 @@ export function BudgetEditDialog({
             setLimit(sanitizeAmountInput(e.target.value));
             setTouched(true);
           }}
+          onKeyDown={blockNonDigitKey}
           inputMode="numeric"
         />
+        {tooLarge && (
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-danger, var(--fg-secondary))",
+            }}
+          >
+            {tCommon("amountTooLarge")}
+          </p>
+        )}
       </Field>
       <ToggleGroup
         type="single"
         size="sm"
-        value={PRESETS.includes(parseInt(limit)) ? limit : ""}
+        value={PRESETS.includes(limitNum) ? limit : ""}
         onValueChange={(v) => v && setLimit(v)}
         className="mb-2.5 flex-wrap justify-start"
       >
@@ -230,13 +253,15 @@ export function MonthlyBudgetDialog({
   const { t: tCommon } = useTranslation("common");
   const [v, setV] = useState(String(value));
   const presets = [1_500_000, 2_000_000, 2_500_000, 3_000_000];
+  const vNum = parseAmount(v);
+  const tooLarge = vNum > MAX_AMOUNT;
 
   const Footer = (
     <ModalFooter
-      onSave={() => onSave(parseInt(v) || 0)}
+      onSave={() => onSave(vNum)}
       saveLabel={tCommon("save")}
       saving={submitting}
-      saveDisabled={(parseInt(v) || 0) <= 0}
+      saveDisabled={vNum <= 0 || tooLarge}
       onCancel={onClose}
     />
   );
@@ -256,14 +281,26 @@ export function MonthlyBudgetDialog({
           style={{ fontSize: "var(--text-title-lg)", fontWeight: "700" }}
           value={v}
           onChange={(e) => setV(sanitizeAmountInput(e.target.value))}
+          onKeyDown={blockNonDigitKey}
           inputMode="numeric"
           autoFocus
         />
+        {tooLarge && (
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-danger, var(--fg-secondary))",
+            }}
+          >
+            {tCommon("amountTooLarge")}
+          </p>
+        )}
       </Field>
       <ToggleGroup
         type="single"
         size="sm"
-        value={presets.includes(parseInt(v)) ? v : ""}
+        value={presets.includes(vNum) ? v : ""}
         onValueChange={(val) => val && setV(val)}
         className="flex-wrap justify-start"
       >

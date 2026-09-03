@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { KRW, isEn } from "@/shared/lib/porest/format";
+import { KRW, MINUS, isEn } from "@/shared/lib/porest/format";
 import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
 import { kindOfExpense } from "@/shared/lib/porest/hide-amounts-cards";
 import {
@@ -115,7 +115,7 @@ export function ExpenseRow({
               card="ledger.txList"
               kind={kindOfExpense(expense.expenseType)}
             >
-              {isIncome ? "+" : "-"}
+              {isIncome ? "+" : MINUS}
               {isEn() ? "₩" : ""}
               {KRW(expense.amount, { abs: true })}
             </MaskAmount>

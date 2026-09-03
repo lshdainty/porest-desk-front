@@ -39,7 +39,8 @@ describe("convertExpenseToIEvent.expenseAmount", () => {
 
   it("지출은 음수 — en 로케일 ₩ 가 부호를 가리지 않는다", () => {
     const ev = convertExpenseToIEvent(tx({}));
-    expect(ev.title).toContain("-₩50,000");
+    // 부호는 U+2212(−) — 하이픈과 섞이면 tabular-nums 정렬이 어긋난다(QA #22).
+    expect(ev.title).toContain("−₩50,000");
     expect(ev.expenseAmount).toBe(-50000);
   });
 

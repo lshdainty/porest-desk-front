@@ -1,5 +1,10 @@
 import { useMemo, useState, useCallback } from "react";
-import { parseAmount, sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import {
+  MAX_AMOUNT,
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
 import { useTranslation } from "react-i18next";
 import { Bell, Zap, Calendar } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
@@ -253,8 +258,11 @@ export function RecurringAddDialog({
   );
 
   const amountNumber = parseAmount(amount);
+  // 거래 시트와 같은 상한(100억). 여긴 게이트 자체가 없어 999억이 그대로 나갔다(QA #54).
+  const amountTooLarge = amountNumber > MAX_AMOUNT;
   const ready =
     amountNumber > 0 &&
+    !amountTooLarge &&
     !!startDate &&
     (endMode !== "COUNT" || Number(endCount) > 0) &&
     (endMode !== "DATE" || !!endDate);
@@ -365,6 +373,7 @@ export function RecurringAddDialog({
           className="num"
           value={amount}
           onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
+          onKeyDown={blockNonDigitKey}
           placeholder="0"
           inputMode="numeric"
           style={{
@@ -373,6 +382,17 @@ export function RecurringAddDialog({
             color: amountColor,
           }}
         />
+        {amountTooLarge && (
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-danger, var(--fg-secondary))",
+            }}
+          >
+            {tCommon("amountTooLarge")}
+          </p>
+        )}
       </Field>
 
       {/* 카테고리 */}

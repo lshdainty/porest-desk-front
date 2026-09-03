@@ -6,6 +6,10 @@ import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
+  blockNonDigitKey,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -231,7 +235,8 @@ export function AssetTradeDialog({
         <FieldLabel>{t("trade.amount")}</FieldLabel>
         <Input
           value={amount}
-          onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ""))}
+          onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
+          onKeyDown={blockNonDigitKey}
           inputMode="numeric"
           placeholder="0"
         />
@@ -244,7 +249,8 @@ export function AssetTradeDialog({
         <FieldLabel>{t("trade.fee")}</FieldLabel>
         <Input
           value={fee}
-          onChange={(e) => setFee(e.target.value.replace(/[^\d]/g, ""))}
+          onChange={(e) => setFee(sanitizeAmountInput(e.target.value))}
+          onKeyDown={blockNonDigitKey}
           inputMode="numeric"
           placeholder="0"
         />

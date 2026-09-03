@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import {
+  MAX_AMOUNT,
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
+import { nameIssue } from "@/shared/lib/porest/name-policy";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
 import { useTranslation } from "react-i18next";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -21,6 +28,7 @@ import {
 import {
   useCreateExpenseTemplate,
   useExpenseCategories,
+  useExpenseTemplates,
   useUpdateExpenseTemplate,
 } from "@/features/expense";
 import { useAssets } from "@/features/asset";
@@ -30,6 +38,11 @@ import type {
   ExpenseTemplateFormValues,
 } from "@/entities/expense-template";
 import type { ExpenseType } from "@/entities/expense";
+
+/** 프리셋 이름 상한 — 카테고리·라벨·태그와 같은 12자. 목록 행에 한 줄로 들어간다. */
+const PRESET_NAME_MAX = 12;
+/** 기본 내역(거래처) 상한 — 거래 시트(AddTxSheet)·서버 컬럼과 같은 100자. */
+const MERCHANT_MAX = 100;
 
 const PAYMENT_METHODS: { v: string; lKey: string }[] = [
   { v: "CASH", lKey: "form.paymentMethod.CASH" },
@@ -52,6 +65,8 @@ export function PresetEditDialog({
   const isNew = !preset;
   const categoriesQ = useExpenseCategories();
   const assetsQ = useAssets();
+  // 목록 화면에서만 열리는 다이얼로그라 캐시가 이미 차 있다(추가 요청 없음).
+  const templatesQ = useExpenseTemplates();
   const createMut = useCreateExpenseTemplate();
   const updateMut = useUpdateExpenseTemplate();
 
@@ -114,12 +129,29 @@ export function PresetEditDialog({
     ? (selectedCategory.parentRowId ?? selectedCategory.rowId)
     : null;
 
+  // 같은 이름 프리셋이 소리 없이 두 개 생기던 자리(QA #54). 서버에 중복 에러 코드가
+  // 없어 클라이언트가 볼 수밖에 없다.
+  const takenNames = (templatesQ.data ?? [])
+    .filter((p) => p.rowId !== preset?.rowId)
+    .map((p) => p.templateName);
+  const issue = nameIssue(name, PRESET_NAME_MAX, takenNames);
+  const nameErr =
+    issue === "tooLong"
+      ? t("preset.nameTooLong")
+      : issue === "duplicate"
+        ? t("preset.nameDuplicate")
+        : null;
+
+  const amountNumber = parseAmount(amount);
+  const amountTooLarge = lockAmount && amountNumber > MAX_AMOUNT;
+
   // 금액은 선택이다 — 프리셋은 금액을 모르는 채로 양식만 저장하려고 만든 것이다.
   // 고정 금액을 켰을 때만 값이 있어야 한다(불러오는 거래가 그 값을 그대로 받는다).
   const canSave =
-    name.trim().length > 0 &&
+    issue == null &&
     categoryRowId != null &&
-    (!lockAmount || (Number(amount.replace(/[^\d]/g, "")) || 0) > 0);
+    !amountTooLarge &&
+    (!lockAmount || amountNumber > 0);
   const submitting = createMut.isPending || updateMut.isPending;
 
   const submit = () => {
@@ -129,7 +161,7 @@ export function PresetEditDialog({
       categoryRowId,
       assetRowId: assetRowId ?? undefined,
       expenseType: type,
-      amount: lockAmount ? Number(amount || 0) : undefined,
+      amount: lockAmount ? amountNumber : undefined,
       merchant: merchant.trim() || undefined,
       paymentMethod: paymentMethod || undefined,
       lockAmount: lockAmount ? "Y" : "N",
@@ -181,10 +213,17 @@ export function PresetEditDialog({
       <Field style={{ marginBottom: 14 }}>
         <FieldLabel>{t("savePreset.name")}</FieldLabel>
         <Input
+          aria-invalid={!!nameErr}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value.slice(0, PRESET_NAME_MAX))}
           placeholder={t("preset.namePlaceholder")}
+          maxLength={PRESET_NAME_MAX}
           autoFocus
+        />
+        <NameCounter
+          len={name.trim().length}
+          max={PRESET_NAME_MAX}
+          err={nameErr}
         />
       </Field>
 
@@ -259,8 +298,9 @@ export function PresetEditDialog({
         <FieldLabel>{t("preset.defaultMerchant")}</FieldLabel>
         <Input
           value={merchant}
-          onChange={(e) => setMerchant(e.target.value)}
+          onChange={(e) => setMerchant(e.target.value.slice(0, MERCHANT_MAX))}
           placeholder={t("preset.merchantPlaceholder")}
+          maxLength={MERCHANT_MAX}
         />
       </Field>
 
@@ -371,6 +411,7 @@ export function PresetEditDialog({
                 className="num"
                 value={amount}
                 onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
+                onKeyDown={blockNonDigitKey}
                 placeholder="0"
                 style={{
                   paddingRight: 36,
@@ -395,6 +436,17 @@ export function PresetEditDialog({
                 원
               </span>
             </div>
+            {amountTooLarge && (
+              <p
+                style={{
+                  margin: "6px 0 0",
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-danger, var(--fg-secondary))",
+                }}
+              >
+                {tCommon("amountTooLarge")}
+              </p>
+            )}
           </div>
         )}
       </div>

@@ -20,7 +20,14 @@ import {
   YAxis,
 } from "recharts";
 import { tileRadius } from "@/shared/lib";
-import { KRW, money, formatChartAxis, isEn } from "@/shared/lib/porest/format";
+import {
+  KRW,
+  MINUS,
+  money,
+  formatChartAxis,
+  isEn,
+  minusOf,
+} from "@/shared/lib/porest/format";
 import {
   formatMonthDay,
   formatYearMonth,
@@ -1015,6 +1022,9 @@ function HomeDesktop() {
   const changeAmount = assetSummary?.changeAmount ?? 0;
   const changePercent = assetSummary?.changePercent ?? 0;
   const isUp = changeAmount >= 0;
+  // 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 서버는 그 경우 0.0 을 돌려주는데(0 나누기
+  // 회피), 화면은 그걸 '+0.0%' 로 찍어 99조가 늘어도 0% 로 보였다(QA #20).
+  const hasLastMonth = (assetSummary?.lastMonthNetWorth ?? 0) !== 0;
   const monthly = monthlyQ.data;
   const income =
     monthly?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0;
@@ -1191,21 +1201,28 @@ function HomeDesktop() {
             )}
           </div>
           <div className="balance-hero__sub">
-            {t("vsLastMonth")}
-            <span className={`chg ${isUp ? "up" : "down"}`}>
-              {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}{" "}
-              {isUp ? "+" : ""}
-              {changePercent.toFixed(1)}%
-              {changeAmount !== 0 && (
-                <HideUnit>
-                  <>
-                    {" "}
-                    ({isUp ? "+" : "−"}
-                    {money(Math.abs(changeAmount))})
-                  </>
-                </HideUnit>
-              )}
-            </span>
+            {hasLastMonth ? (
+              <>
+                {t("vsLastMonth")}
+                <span className={`chg ${isUp ? "up" : "down"}`}>
+                  {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}{" "}
+                  {isUp ? "+" : ""}
+                  {changePercent.toFixed(1)}%
+                  {changeAmount !== 0 && (
+                    <HideUnit>
+                      <>
+                        {" "}
+                        ({isUp ? "+" : MINUS}
+                        {money(Math.abs(changeAmount))})
+                      </>
+                    </HideUnit>
+                  )}
+                </span>
+              </>
+            ) : (
+              // 지난달 기록이 없으면 변화액도 '변화' 가 아니라 그냥 현재 순자산이라 같이 숨긴다.
+              t("noLastMonth")
+            )}
           </div>
           <div className="balance-hero__split">
             <div>
@@ -1222,8 +1239,9 @@ function HomeDesktop() {
               <div className="l">{t("asset.totalDebt")}</div>
               <div className="v num">
                 <MaskAmount card="home.netWorth">
-                  −{wonPre()}
-                  {KRW(totalDebt)}
+                  {minusOf(totalDebt)}
+                  {wonPre()}
+                  {KRW(Math.abs(totalDebt))}
                 </MaskAmount>
                 <WonUnit card="home.netWorth" />
               </div>
@@ -1305,8 +1323,9 @@ function HomeDesktop() {
                   ) : (
                     <>
                       <MaskAmount card="home.monthExpense" kind="expense">
-                        −{wonPre()}
-                        {KRW(expense)}
+                        {minusOf(expense)}
+                        {wonPre()}
+                        {KRW(Math.abs(expense))}
                       </MaskAmount>
                       <WonUnit card="home.monthExpense" kind="expense" />
                     </>
@@ -1338,7 +1357,7 @@ function HomeDesktop() {
                   ) : (
                     <>
                       <MaskAmount card="home.monthExpense" kind="net">
-                        {balance >= 0 ? "+" : "-"}
+                        {balance >= 0 ? "+" : MINUS}
                         {wonPre()}
                         {KRW(Math.abs(balance))}
                       </MaskAmount>
@@ -2053,6 +2072,8 @@ function HomeMobile() {
   const changeAmount = assetSummary?.changeAmount ?? 0;
   const changePercent = assetSummary?.changePercent ?? 0;
   const isUp = changeAmount >= 0;
+  // 데스크톱과 같은 규칙 — 지난달 기록이 없으면 증감률 자리를 안내로 바꾼다(QA #20).
+  const hasLastMonth = (assetSummary?.lastMonthNetWorth ?? 0) !== 0;
   const income =
     monthlyQ.data?.totalIncome ?? summary?.expenseSummary.monthlyIncome ?? 0;
   const expense =
@@ -2181,12 +2202,18 @@ function HomeMobile() {
           )}
         </div>
         <div className="balance-hero__sub">
-          {t("vsLastMonth")}
-          <span className={`chg ${isUp ? "up" : "down"}`}>
-            {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}{" "}
-            {isUp ? "+" : ""}
-            {changePercent.toFixed(1)}%
-          </span>
+          {hasLastMonth ? (
+            <>
+              {t("vsLastMonth")}
+              <span className={`chg ${isUp ? "up" : "down"}`}>
+                {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}{" "}
+                {isUp ? "+" : ""}
+                {changePercent.toFixed(1)}%
+              </span>
+            </>
+          ) : (
+            t("noLastMonth")
+          )}
         </div>
         <div className="balance-hero__split">
           <div>
@@ -2201,7 +2228,8 @@ function HomeMobile() {
             <div className="l">{t("asset.debtTab")}</div>
             <div className="v num">
               <MaskAmount card="home.netWorth" mask="••••">
-                −{KRW(totalDebt)}
+                {minusOf(totalDebt)}
+                {KRW(Math.abs(totalDebt))}
               </MaskAmount>
             </div>
           </div>
@@ -2270,7 +2298,8 @@ function HomeMobile() {
               }}
             >
               <MaskAmount card="home.monthExpense" kind="expense">
-                −{KRW(expense)}
+                {minusOf(expense)}
+                {KRW(Math.abs(expense))}
               </MaskAmount>
             </div>
           </div>

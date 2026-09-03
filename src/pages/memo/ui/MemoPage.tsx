@@ -52,6 +52,11 @@ import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { CAT_PALETTE } from "@/shared/lib/porest/chart-palette";
 
+/** 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
+ *  제한이 없어 500자 제목이 서버 500 으로 터지던 자리다(QA #30 · #33). */
+const TITLE_MAX = 200;
+const CONTENT_MAX = 10_000;
+
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // 태그 select 옵션 7종 (양 플랫폼 공통 확정). 기본값 '개인'.
@@ -1035,11 +1040,12 @@ function MemoEditDialog({
         <Input
           value={title}
           onChange={(e) => {
-            setTitle(e.target.value);
+            setTitle(e.target.value.slice(0, TITLE_MAX));
             if (error) setError(false);
           }}
           placeholder={t("titlePlaceholder")}
           aria-invalid={error}
+          maxLength={TITLE_MAX}
           autoFocus
         />
         {error && (
@@ -1061,8 +1067,9 @@ function MemoEditDialog({
       <Field style={{ marginBottom: 14 }}>
         <Textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX))}
           placeholder={t("contentPlaceholder")}
+          maxLength={CONTENT_MAX}
           rows={8}
         />
       </Field>

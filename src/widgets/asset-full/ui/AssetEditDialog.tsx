@@ -22,6 +22,21 @@ import {
 import { useAssets } from "@/features/asset";
 import { KRW } from "@/shared/lib/porest/format";
 import {
+  MAX_BALANCE,
+  blockNonDigitKey,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
+import { nameIssue } from "@/shared/lib/porest/name-policy";
+import {
+  ACCOUNT_SUBS,
+  ACCOUNT_SUB_KEY,
+  assetTypeToSub,
+  signedBalanceOf,
+  subToAssetType,
+  type AccountSub,
+} from "../lib/account-sub";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
+import {
   getBrandColor,
   BANK_ENTRIES,
   BANK_ENTRIES_BY_CATEGORY,
@@ -116,53 +131,14 @@ function LinkedHoldingName({ holding }: { holding: EditHolding }) {
   return <>{holding.displayName ?? masterName ?? holding.tossSymbol ?? ""}</>;
 }
 
-type AccountSub = "입출금" | "적금" | "예금" | "현금" | "대출";
-const ACCOUNT_SUBS: AccountSub[] = ["입출금", "적금", "예금", "현금", "대출"];
-
-// AccountSub(타입 판별자, 한글 리터럴)의 표시 라벨 i18n 키 매핑
-const ACCOUNT_SUB_KEY: Record<AccountSub, string> = {
-  입출금: "checking",
-  적금: "savings",
-  예금: "deposit",
-  현금: "cash",
-  대출: "loan",
-};
+/** 계좌 별칭 상한 — 목록 행·홈 카드 한 줄에 들어가는 길이(QA #16, 서버 컬럼은 100). */
+const ASSET_NAME_MAX = 30;
 
 const GROUP_NOUN_KEY: Record<AssetGroup, string> = {
   account: "group.account",
   card: "group.card",
   invest: "group.invest",
 };
-
-function subToAssetType(sub: AccountSub): AssetType {
-  switch (sub) {
-    case "입출금":
-      return "BANK_ACCOUNT";
-    case "적금":
-      return "SAVINGS";
-    case "예금":
-      return "SAVINGS";
-    case "현금":
-      return "CASH";
-    case "대출":
-      return "LOAN";
-  }
-}
-
-function assetTypeToSub(t: AssetType): AccountSub {
-  switch (t) {
-    case "BANK_ACCOUNT":
-      return "입출금";
-    case "SAVINGS":
-      return "적금";
-    case "CASH":
-      return "현금";
-    case "LOAN":
-      return "대출";
-    default:
-      return "입출금";
-  }
-}
 
 const groupOfType = (t: AssetType): AssetGroup => {
   if (t === "CREDIT_CARD" || t === "CHECK_CARD") return "card";
@@ -241,14 +217,15 @@ export function AssetEditDialog({
   const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
     item?.isIncludedInTotal ?? "Y",
   );
+  // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
   const [balanceStr, setBalanceStr] = useState<string>(
-    item ? KRW(item.balance ?? 0) : "0",
+    item ? KRW(Math.abs(item.balance ?? 0)) : "0",
   );
 
   // 계좌 sub
   const [accountSub, setAccountSub] = useState<AccountSub>(
     item && editingGroup === "account"
-      ? assetTypeToSub(item.assetType)
+      ? assetTypeToSub(item.assetType, item.balance ?? 0)
       : "입출금",
   );
 
@@ -478,8 +455,29 @@ export function AssetEditDialog({
     return t("editDialog.previewSub", { brand });
   })();
 
+  // 별칭 — 길이·중복. 서버에 자산 이름 중복 코드가 없어 여기서 볼 수밖에 없다(QA #16).
+  // 카드는 별칭이 선택 입력이라(비우면 카드명으로 폴백) 빈 이름은 계속 허용한다.
+  const nameTrim = name.trim();
+  const nameIssueKind =
+    nameTrim.length === 0
+      ? null
+      : nameIssue(
+          name,
+          ASSET_NAME_MAX,
+          (assetsData?.assets ?? [])
+            .filter((a) => a.rowId !== item?.rowId)
+            .map((a) => a.assetName),
+        );
+  const nameErr =
+    nameIssueKind === "tooLong"
+      ? t("editDialog.nameTooLong")
+      : nameIssueKind === "duplicate"
+        ? t("editDialog.nameDuplicate")
+        : null;
+
   // 유효성
   const canSubmit = (() => {
+    if (nameErr) return false;
     if (editingGroup === "card") {
       // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을
       // 세울 수 없다. asset-full 추가 폼(#323)과 같은 규칙인데 이 다이얼로그만
@@ -488,7 +486,7 @@ export function AssetEditDialog({
       // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 함
       return isNew ? !!selectedCard : true;
     }
-    return (name.trim().length > 0 || !isNew) && brand.trim().length > 0;
+    return (nameTrim.length > 0 || !isNew) && brand.trim().length > 0;
   })();
 
   const title = (() => {
@@ -511,12 +509,17 @@ export function AssetEditDialog({
         ? (selectedCard?.cardName ?? t("editDialog.namePlaceholderCard"))
         : t("editDialog.namePlaceholderAccount");
 
+  const isOverdraft =
+    editingGroup === "account" && accountSub === "마이너스통장";
   const balanceLabel =
     editingGroup === "card"
       ? t("editDialog.balanceLabelCard")
       : editingGroup === "invest"
         ? t("editDialog.balanceLabelInvest")
-        : t("editDialog.balanceLabelAccount");
+        : isOverdraft
+          ? // 마이너스통장은 '잔액' 이 아니라 '쓴 돈' 을 묻는다 — 그래야 양수로 받는다.
+            t("editDialog.balanceLabelOverdraft")
+          : t("editDialog.balanceLabelAccount");
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -525,7 +528,8 @@ export function AssetEditDialog({
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    const parsedBalance = Number(balanceStr.replace(/[^\d-]/g, "")) || 0;
+    // 칸에는 절대값만 들어온다(부호 키를 막았다) — 부호는 아래에서 종류가 붙인다.
+    const parsedBalance = Number(sanitizeAmountInput(balanceStr, MAX_BALANCE));
 
     if (editingGroup === "card") {
       const type: AssetType =
@@ -635,29 +639,26 @@ export function AssetEditDialog({
     // account
     const assetType = subToAssetType(accountSub);
     const resolvedName = name.trim() || `${brand} ${accountSub}`;
-    if (isNew) {
-      onCreate({
-        assetName: resolvedName,
-        assetType,
-        balance: parsedBalance,
-        currency: "KRW",
-        institution: brand,
-        color: brandColor?.bg,
-        memo: memo.trim() || undefined,
-        isIncludedInTotal,
-      });
-    } else {
-      onUpdate({
-        assetName: resolvedName,
-        assetType,
-        balance: parsedBalance,
-        currency: "KRW",
-        institution: brand,
-        color: brandColor?.bg,
-        memo: memo.trim() || undefined,
-        isIncludedInTotal,
-      });
-    }
+    // 부호는 종류가 정한다 — 대출·마이너스통장은 빚이라 음수로 저장한다(QA #19).
+    // 사용자가 절대값으로 넣은 값을 여기서 뒤집으므로 서버가 옛 버전이어도 값이 맞는다.
+    const accountBalance = signedBalanceOf(accountSub, parsedBalance);
+    // 약정 한도는 선택 입력. 신용카드 한도와 같은 컬럼을 쓴다(둘 다 '빌릴 수 있는 최대').
+    const overdraftLimit = isOverdraft
+      ? Number(sanitizeAmountInput(creditLimit, MAX_BALANCE)) || null
+      : null;
+    const common = {
+      assetName: resolvedName,
+      assetType,
+      balance: accountBalance,
+      currency: "KRW",
+      institution: brand,
+      color: brandColor?.bg,
+      memo: memo.trim() || undefined,
+      isIncludedInTotal,
+      creditLimit: overdraftLimit,
+    };
+    if (isNew) onCreate(common);
+    else onUpdate(common);
   };
 
   const bodyContent = (
@@ -988,18 +989,23 @@ export function AssetEditDialog({
           <Label className="text-[13px] font-medium mb-2 block">
             {t("editDialog.accountTypeLabel")}
           </Label>
-          <Tabs
-            value={accountSub}
-            onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
-          >
-            <TabsList variant="pill" size="sm" className="w-full">
-              {ACCOUNT_SUBS.map((s) => (
-                <TabsTrigger key={s} value={s} className="flex-1">
-                  {t(`accountSub.${ACCOUNT_SUB_KEY[s]}`)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          {/* 종류가 여섯이 되면서 모바일 폭(390)·영어 라벨에서 한 줄에 안 들어간다.
+              트랙은 그대로 두고 가로 스크롤만 허용한다 — 넘치면 잘리는 대신 밀린다.
+              `w-max min-w-full` 이라 자리가 남으면 예전처럼 꽉 채워 늘어난다. */}
+          <div className="overflow-x-auto">
+            <Tabs
+              value={accountSub}
+              onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
+            >
+              <TabsList variant="pill" size="sm" className="w-max min-w-full">
+                {ACCOUNT_SUBS.map((s) => (
+                  <TabsTrigger key={s} value={s} className="flex-1">
+                    {t(`accountSub.${ACCOUNT_SUB_KEY[s]}`)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       )}
 
@@ -1012,11 +1018,13 @@ export function AssetEditDialog({
         </Label>
         <Input
           id="asset-edit-name"
+          aria-invalid={!!nameErr}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value.slice(0, ASSET_NAME_MAX))}
           placeholder={namePlaceholder}
-          maxLength={60}
+          maxLength={ASSET_NAME_MAX}
         />
+        <NameCounter len={nameTrim.length} max={ASSET_NAME_MAX} err={nameErr} />
       </div>
 
       {/* 투자 — 보유 종목 편집 (design invest 분기: 검색→연동 추가 / 직접 추가, qty·평가액 인라인 편집) */}
@@ -1240,6 +1248,7 @@ export function AssetEditDialog({
                               </span>
                               <Input
                                 inputMode="numeric"
+                                onKeyDown={blockNonDigitKey}
                                 value={
                                   h.totalCost != null ? String(h.totalCost) : ""
                                 }
@@ -1306,6 +1315,7 @@ export function AssetEditDialog({
                           ) : (
                             <Input
                               inputMode="numeric"
+                              onKeyDown={blockNonDigitKey}
                               value={
                                 h.holdingValue != null
                                   ? String(h.holdingValue)
@@ -1368,8 +1378,9 @@ export function AssetEditDialog({
               inputMode="numeric"
               value={creditLimit}
               onChange={(e) =>
-                setCreditLimit(e.target.value.replace(/[^\d]/g, ""))
+                setCreditLimit(sanitizeAmountInput(e.target.value, MAX_BALANCE))
               }
+              onKeyDown={blockNonDigitKey}
               placeholder={t("editDialog.creditLimitPlaceholder")}
             />
           </div>
@@ -1396,6 +1407,29 @@ export function AssetEditDialog({
             </Select>
           </div>
         </>
+      )}
+
+      {/* 마이너스통장 약정 한도 — 선택 입력. 신용카드 한도와 같은 credit_limit 컬럼을 쓴다
+          (둘 다 '빌릴 수 있는 최대'). 한도 게이지는 신용카드에서만 그리므로 겸용해도 부딪히지 않는다. */}
+      {isOverdraft && (
+        <div>
+          <Label
+            htmlFor="overdraft-limit"
+            className="text-[13px] font-medium mb-2 block"
+          >
+            {t("editDialog.overdraftLimitLabel")}
+          </Label>
+          <Input
+            id="overdraft-limit"
+            inputMode="numeric"
+            value={creditLimit}
+            onChange={(e) =>
+              setCreditLimit(sanitizeAmountInput(e.target.value, MAX_BALANCE))
+            }
+            onKeyDown={blockNonDigitKey}
+            placeholder="0"
+          />
+        </div>
       )}
 
       {/* 체크카드는 잔액 개념이 없다 — 긁는 즉시 연결 계좌에서 빠지므로 카드가 들고 있을 금액이 없다.
@@ -1426,17 +1460,31 @@ export function AssetEditDialog({
             inputMode="numeric"
             value={balanceStr}
             onChange={(e) =>
-              setBalanceStr(e.target.value.replace(/[^\d-]/g, ""))
+              setBalanceStr(sanitizeAmountInput(e.target.value, MAX_BALANCE))
             }
+            // `-` 도 여기서 막힌다 — 부호는 종류가 정한다(QA #19).
+            onKeyDown={blockNonDigitKey}
             onBlur={() => {
               const n = Number(balanceStr) || 0;
               setBalanceStr(n ? KRW(n) : "0");
             }}
-            onFocus={() => setBalanceStr((prev) => prev.replace(/,/g, ""))}
+            onFocus={() =>
+              setBalanceStr((prev) => {
+                const bare = prev.replace(/,/g, "");
+                // 기본값 `0` 은 지우고 시작한다 — 안 지우면 500 을 쳐서 0500 이 된다(QA #18).
+                // 아무것도 안 치고 나가면 위 onBlur 가 다시 `0` 으로 되돌린다.
+                return bare === "0" ? "" : bare;
+              })
+            }
           />
           {editingGroup === "card" && (
             <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
               {t("editDialog.cardBalanceHelp")}
+            </p>
+          )}
+          {isOverdraft && (
+            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+              {t("editDialog.overdraftHelp")}
             </p>
           )}
           {/* 잔액 수동 수정 = 새 앵커. 그 시각 이전 내역은 이 잔액에 이미 들어 있는 것으로 보고

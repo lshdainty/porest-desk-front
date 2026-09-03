@@ -41,6 +41,7 @@ common,themeSystem,시스템,System
 common,goToday,오늘로,Today
 common,none,없음,None
 common,noSearchResults,검색 결과가 없습니다,No results found
+common,amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
 layout,calendar,캘린더,Calendar
@@ -448,6 +449,7 @@ asset,assetType.loan,대출,Loan
 asset,assetType.investment,투자,Investment
 asset,assetType.checking,입출금,Checking
 asset,assetType.deposit,예금,Deposit
+asset,assetType.overdraft,마이너스통장,Overdraft Account
 asset,assetForm.noResults,검색 결과가 없어요,No results
 asset,assetForm.preview,미리보기,Preview
 asset,assetForm.entryCount,총 {{count}}개,{{count}} total
@@ -536,6 +538,9 @@ asset,editDialog.namePlaceholderAccount,예: 신한 주거래,e.g. Shinhan Main 
 asset,editDialog.balanceLabelCard,현재 사용액 (원),Current Usage (KRW)
 asset,editDialog.balanceLabelInvest,평가액 (원),Valuation (KRW)
 asset,editDialog.balanceLabelAccount,잔액 (원),Balance (KRW)
+asset,editDialog.balanceLabelOverdraft,사용 중인 금액 (원),Amount Used (KRW)
+asset,editDialog.overdraftHelp,쓴 만큼을 양수로 넣어 주세요 — 빚으로 계산돼요,Enter the amount used as a positive number; it counts as debt
+asset,editDialog.overdraftLimitLabel,약정 한도 (원· 선택),Credit Line (KRW, optional)
 asset,editDialog.cardTypeLabel,카드 종류,Card Type
 asset,editDialog.cardProduct,카드 상품,Card Product
 asset,editDialog.cardSearchPlaceholder,카드명 또는 발급사 검색,Search by card name or issuer
@@ -563,6 +568,8 @@ asset,editDialog.annualFeeFree,연회비 무료,No annual fee
 asset,editDialog.billingCycle,청구 사이클 (선택),Billing Cycle (optional)
 asset,editDialog.creditLimit,신용한도 (원),Credit Limit (KRW)
 asset,editDialog.creditLimitPlaceholder,예: 3000000,e.g. 3000000
+asset,editDialog.nameTooLong,별칭은 30자 이내로 입력해 주세요.,Keep the alias to 30 characters or fewer.
+asset,editDialog.nameDuplicate,같은 이름의 계좌·카드가 이미 있어요.,An account or card with that name already exists.
 asset,editDialog.paymentDay,결제일,Payment Day
 asset,editDialog.paymentDayPlaceholder,결제일 선택,Select payment day
 asset,editDialog.dayUnit,{{day}}일,{{day}}
@@ -590,6 +597,7 @@ asset,editDialog.bankSearchPlaceholder,은행명 검색,Search bank name
 asset,editDialog.noSearchResults,검색 결과가 없어요,No search results
 asset,editDialog.accountTypeLabel,계좌 종류,Account Type
 asset,accountSub.checking,입출금,Checking
+asset,accountSub.overdraft,마이너스통장,Overdraft
 asset,accountSub.savings,적금,Savings
 asset,accountSub.deposit,예금,Deposit
 asset,accountSub.cash,현금,Cash
@@ -635,6 +643,9 @@ asset,savingGoal.achievedAt,달성일,Achieved on
 asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
 asset,savingGoal.errAmount,목표 금액을 입력해주세요,Enter a goal amount
 asset,savingGoal.errCurrentExceeds,현재 금액이 목표보다 클 수 없어요,Current amount can't exceed the target
+asset,savingGoal.errNameTooLong,목표 이름은 12자 이내로 입력해 주세요.,Keep the goal name to 12 characters or fewer.
+asset,savingGoal.errNameDuplicate,같은 이름의 목표가 이미 있어요.,A goal with that name already exists.
+asset,savingGoal.errAmountTooLarge,목표 금액은 100억원까지 입력할 수 있어요.,Target amount can be up to 10 billion won.
 asset,subtitle,모든 계좌·카드·투자를 한 곳에서,"All accounts, cards, and investments in one place"
 asset,paymentDayLabel,{{day}}일 결제,Billed on day {{day}}
 asset,checkCardMonthLabel,이번 달 사용,Used this month
@@ -642,12 +653,14 @@ asset,totalNetWorth,총 순자산,Total net worth
 asset,showAmount,금액 보기,Show amounts
 asset,hideAmount,금액 가리기,Hide amounts
 asset,vsLastMonth,지난달 대비,vs last month
+asset,noLastMonth,지난달 기록 없음,No record for last month
 asset,cardBalance,카드값,Card balance
 asset,show,보이기,Show
 asset,hide,가리기,Hide
 asset,refresh,새로고침,Refresh
 asset,emptyTitle,아직 등록된 자산이 없어요,No assets yet
-asset,emptyDesc,설정 → 카드·계좌 관리에서 추가할 수 있어요,Add them in Settings → Card & Account management
+asset,emptyDesc,설정 → 계좌·카드 관리에서 추가할 수 있어요,Add them in Settings → Manage accounts & cards
+asset,emptyCta,계좌·카드 관리로 가기,Go to manage accounts & cards
 asset,accountDepositTitle,계좌 · 예금,Accounts & Deposits
 asset,assetDetail.statusCompleted,완료,Completed
 asset,assetDetail.statusPending,대기,Pending
@@ -1128,6 +1141,7 @@ calendar,labelsSection.deleteMessage,"""{{name}}"" 라벨을 삭제할까요? �
 calendar,labelsSection.namePlaceholder,"예: 중요, 마감일, 회의","e.g. Important, Deadline, Meeting"
 calendar,labelsSection.nameRequired,라벨 이름을 입력해주세요.,Please enter a label name.
 calendar,labelsSection.nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
+calendar,labelsSection.nameDuplicate,같은 이름의 라벨이 이미 있어요.,A label with that name already exists.
 calendar,labelsSection.colorN,색상 {{n}},Color {{n}}
 dashboard,allDay,종일,All Day
 dashboard,total,합계,Total
@@ -1649,6 +1663,8 @@ expense,preset.typeLabel,유형,Type
 expense,preset.deleteConfirmMessage,"""{{name}}"" 프리셋을 삭제할까요? 이미 저장된 거래 내역에는 영향이 없습니다.","Delete the ""{{name}}"" preset? Already-saved transactions are unaffected."
 expense,preset.edit,프리셋 수정,Edit preset
 expense,preset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
+expense,preset.nameTooLong,프리셋 이름은 12자 이내로 입력해 주세요.,Keep the preset name to 12 characters or fewer.
+expense,preset.nameDuplicate,같은 이름의 프리셋이 이미 있어요.,A preset with that name already exists.
 expense,preset.defaultMerchant,기본 내역,Default details
 expense,preset.merchantPlaceholder,예: 한솥 도시락,e.g. Corner deli
 expense,preset.lockAmountTitle,고정 금액 사용,Use fixed amount
@@ -2129,6 +2145,7 @@ dashboard,balance,잔액,Balance
 dashboard,showAmount,금액 표시,Show amount
 dashboard,hideAmount,금액 가리기,Hide amount
 dashboard,vsLastMonth,지난달 대비,vs. last month
+dashboard,noLastMonth,지난달 기록 없음,No record for last month
 dashboard,categoryTitle,카테고리,Category
 dashboard,categoryEmpty,카테고리 데이터가 없습니다,No category data
 dashboard,categoryEmptyMobile,카테고리 데이터가 없어요,No category data
@@ -2456,6 +2473,7 @@ todo,tags.colorN,색 {{n}},Color {{n}}
 todo,tags.editTitle,태그 수정,Edit tag
 todo,tags.nameRequired,이름을 입력해 주세요.,Please enter a name.
 todo,tags.nameTooLong,이름은 12자 이내로 입력해 주세요.,Keep the name under 12 characters.
+todo,tags.nameDuplicate,같은 이름의 태그가 이미 있어요.,A tag with that name already exists.
 todo,tags.preview,미리보기,Preview
 constellation,strip.title,오늘의 밤하늘 · {{name}},Tonight's sky · {{name}}
 constellation,strip.done,{{name}} 수집 완료!,{{name}} collected!

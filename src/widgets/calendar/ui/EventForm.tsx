@@ -35,6 +35,11 @@ import type { EventLabel } from "@/entities/event-label";
 import { useUserCalendars } from "@/features/user-calendar";
 import { format } from "date-fns";
 
+/** 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
+ *  제한이 없어 500자 제목이 서버 500 으로 터지던 자리다(QA #30 · #33). */
+const TITLE_MAX = 200;
+const CONTENT_MAX = 10_000;
+
 const NO_LABEL_VALUE = "__none__";
 
 interface EventFormProps {
@@ -271,9 +276,13 @@ export const EventForm = ({
           <div className="flex flex-col gap-2">
             <Label>{t("form.title")}</Label>
             <Input
-              {...register("title", { required: t("form.titleRequired") })}
+              {...register("title", {
+                required: t("form.titleRequired"),
+                maxLength: TITLE_MAX,
+              })}
               className={cn(errors.title && "border-destructive")}
               placeholder={t("form.titlePlaceholder")}
+              maxLength={TITLE_MAX}
             />
             {errors.title && (
               <p className="text-xs text-destructive">{errors.title.message}</p>
@@ -283,10 +292,11 @@ export const EventForm = ({
           <div className="flex flex-col gap-2">
             <Label>{t("form.description")}</Label>
             <Textarea
-              {...register("description")}
+              {...register("description", { maxLength: CONTENT_MAX })}
               rows={2}
               className="resize-none"
               placeholder={t("form.descriptionPlaceholder")}
+              maxLength={CONTENT_MAX}
             />
           </div>
 

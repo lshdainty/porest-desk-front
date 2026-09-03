@@ -14,7 +14,14 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import type { IconName } from "lucide-react/dynamic";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { tileRadius } from "@/shared/lib";
-import { KRW, money, formatChartAxis, isEn } from "@/shared/lib/porest/format";
+import {
+  KRW,
+  MINUS,
+  money,
+  formatChartAxis,
+  isEn,
+  minusOf,
+} from "@/shared/lib/porest/format";
 import {
   formatYearMonth,
   formatMonthShort,
@@ -1425,7 +1432,7 @@ function AssetCard({
                 </>
               ) : (
                 <>
-                  {neg ? "−" : ""}
+                  {neg ? MINUS : ""}
                   {wonPre()}
                   {KRW(Math.abs(asset.balance))}
                 </>
@@ -1537,9 +1544,11 @@ function TypeGroup({
         total={
           <>
             <MaskAmount>
+              {/* 음수를 KRW 에 그대로 넣으면 toLocaleString 이 하이픈을 붙여 바로 아래
+                  행(U+2212)과 부호가 섞인다 — 부호는 앞으로 빼고 값은 절대값으로 준다. */}
               {negativeTotal && total !== 0
-                ? `−${wonPre()}${KRW(total)}`
-                : `${wonPre()}${KRW(total)}`}
+                ? `${MINUS}${wonPre()}${KRW(Math.abs(total))}`
+                : `${total < 0 ? MINUS : ""}${wonPre()}${KRW(Math.abs(total))}`}
             </MaskAmount>
             <WonUnit />
           </>
@@ -1578,6 +1587,7 @@ function SummaryCard({
   netWorth,
   changeAmount,
   changePercent,
+  hasLastMonth,
   accountsTotal,
   investmentsTotal,
   cardsTotal,
@@ -1587,6 +1597,8 @@ function SummaryCard({
   netWorth: number;
   changeAmount: number;
   changePercent: number;
+  /** 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 0 나누기를 0.0% 로 찍던 자리(QA #20). */
+  hasLastMonth: boolean;
   accountsTotal: number;
   investmentsTotal: number;
   cardsTotal: number;
@@ -1680,37 +1692,45 @@ function SummaryCard({
             marginBottom: mobile ? 14 : 18,
           }}
         >
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 2,
-              color: isUp ? "var(--fg-income)" : "var(--fg-expense)",
-              fontWeight: "600",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {isUp ? "+" : ""}
-            {changePercent.toFixed(1)}%
-            {changeAmount !== 0 && (
-              <HideUnit>
-                <span
-                  style={{
-                    color: "var(--fg-tertiary)",
-                    marginLeft: 4,
-                    fontWeight: "500",
-                  }}
-                >
-                  ({isUp ? "+" : "−"}
-                  {money(Math.abs(changeAmount))})
-                </span>
-              </HideUnit>
-            )}
-          </span>
-          <span style={{ color: "var(--fg-tertiary)" }}>
-            {t("vsLastMonth")}
-          </span>
+          {hasLastMonth ? (
+            <>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 2,
+                  color: isUp ? "var(--fg-income)" : "var(--fg-expense)",
+                  fontWeight: "600",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                {isUp ? "+" : ""}
+                {changePercent.toFixed(1)}%
+                {changeAmount !== 0 && (
+                  <HideUnit>
+                    <span
+                      style={{
+                        color: "var(--fg-tertiary)",
+                        marginLeft: 4,
+                        fontWeight: "500",
+                      }}
+                    >
+                      ({isUp ? "+" : MINUS}
+                      {money(Math.abs(changeAmount))})
+                    </span>
+                  </HideUnit>
+                )}
+              </span>
+              <span style={{ color: "var(--fg-tertiary)" }}>
+                {t("vsLastMonth")}
+              </span>
+            </>
+          ) : (
+            <span style={{ color: "var(--fg-tertiary)" }}>
+              {t("noLastMonth")}
+            </span>
+          )}
         </div>
 
         <NetWorthChart height={mobile ? 140 : 180} />
@@ -1784,7 +1804,10 @@ function SummaryCard({
                 color: "var(--fg-expense)",
               }}
             >
-              <MaskAmount card="asset.netWorth">−{KRW(cardsTotal)}</MaskAmount>
+              <MaskAmount card="asset.netWorth">
+                {minusOf(cardsTotal)}
+                {KRW(Math.abs(cardsTotal))}
+              </MaskAmount>
             </div>
           </div>
         </div>
@@ -1875,6 +1898,7 @@ function useAssetGroups() {
     netWorth,
     changeAmount,
     changePercent,
+    hasLastMonth: lastMonth !== 0,
     isLoading: assetsQ.isLoading || summaryQ.isLoading,
     isFetching: assetsQ.isFetching || summaryQ.isFetching,
     refetch: () => {
@@ -1943,6 +1967,16 @@ function AssetDesktop() {
             >
               {t("emptyDesc")}
             </div>
+            {/* 안내가 텍스트뿐이라 설정 메뉴를 손으로 다시 찾아가야 했다(QA #15). */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              style={{ marginTop: 10, color: "var(--fg-brand-strong)" }}
+              onClick={() => navigate("/desk/settings?section=accounts")}
+            >
+              {t("emptyCta")}
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -1960,6 +1994,7 @@ function AssetDesktop() {
               netWorth={g.netWorth}
               changeAmount={g.changeAmount}
               changePercent={g.changePercent}
+              hasLastMonth={g.hasLastMonth}
               accountsTotal={g.accountsTotal}
               investmentsTotal={g.investmentsTotal}
               cardsTotal={g.cardsTotal}
@@ -2070,6 +2105,16 @@ function AssetMobile() {
           >
             {t("emptyDesc")}
           </div>
+          {/* 안내가 텍스트뿐이라 설정 메뉴를 손으로 다시 찾아가야 했다(QA #15). */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            style={{ marginTop: 10, color: "var(--fg-brand-strong)" }}
+            onClick={() => navigate("/desk/settings?section=accounts")}
+          >
+            {t("emptyCta")}
+          </Button>
         </div>
       </div>
     );
@@ -2090,6 +2135,7 @@ function AssetMobile() {
         netWorth={g.netWorth}
         changeAmount={g.changeAmount}
         changePercent={g.changePercent}
+        hasLastMonth={g.hasLastMonth}
         accountsTotal={g.accountsTotal}
         investmentsTotal={g.investmentsTotal}
         cardsTotal={g.cardsTotal}
