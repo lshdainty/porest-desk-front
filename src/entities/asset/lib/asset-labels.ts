@@ -12,6 +12,16 @@ const ASSET_TYPE_KEY: Record<AssetType, string> = {
   LOAN: "assetType.loan",
 };
 
-/** assetType → 로케일 라벨 (프리뷰 메타 표시용). ko 는 기존과 동일(입출금/적금/현금/…). */
-export const assetTypeLabel = (type: AssetType): string =>
-  ASSET_TYPE_KEY[type] ? i18n.t(`asset:${ASSET_TYPE_KEY[type]}`) : String(type);
+/**
+ * assetType → 로케일 라벨 (프리뷰 메타 표시용). ko 는 기존과 동일(입출금/적금/현금/…).
+ *
+ * 잔액을 함께 받는다 — 마이너스통장은 별도 `AssetType` 이 아니라 **잔액이 음수인
+ * `BANK_ACCOUNT`** 라(QA #17) 타입만으로는 입출금과 구별되지 않는다.
+ */
+export const assetTypeLabel = (type: AssetType, balance = 0): string => {
+  if (type === "BANK_ACCOUNT" && balance < 0)
+    return i18n.t("asset:assetType.overdraft");
+  return ASSET_TYPE_KEY[type]
+    ? i18n.t(`asset:${ASSET_TYPE_KEY[type]}`)
+    : String(type);
+};
