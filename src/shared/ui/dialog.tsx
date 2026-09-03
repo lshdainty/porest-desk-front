@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/lib/index";
+import { registerOverlay } from "@/shared/lib/porest/pointer-block";
 
 /*
  * Porest Dialog — porest-design specs/components/dialog.md SoT 기반.
@@ -30,19 +31,27 @@ const DialogClose = DialogPrimitive.Close;
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out",
-      "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
-      "duration-200",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  // 닫힌 직후 그 자리 밑의 요소가 두 번째 클릭을 받는 걸 막는다 — QA #14 #36 #57.
+  // 등록을 여기 두는 이유: overlay 는 `DialogPortal` 의 자식이라 Radix `Presence` 가
+  // `open` 일 때만 마운트한다. 바깥의 `DialogContent` 래퍼는 `open={false}` 여도 계속
+  // 살아 있어(HideAmountsUnlockDialog·CalendarContainer 처럼 controlled 로 쓰는 곳),
+  // 거기에 걸면 "열린 오버레이 수" 가 영원히 0 으로 안 떨어져 차단이 아예 안 걸린다.
+  React.useEffect(registerOverlay, []);
+  return (
+    <DialogPrimitive.Overlay
+      ref={ref}
+      className={cn(
+        "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
+        "duration-200",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const dialogContentVariants = cva(
