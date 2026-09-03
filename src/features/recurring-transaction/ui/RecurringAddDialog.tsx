@@ -25,11 +25,15 @@ import {
 import { parseLocalDate, todayLocalKey } from "@/shared/lib/date";
 import { useExpenseCategories } from "@/features/expense";
 import { useAssets } from "@/features/asset";
-import { useCreateRecurringTransaction } from "@/features/recurring-transaction";
+import {
+  useCreateRecurringTransaction,
+  useUpdateRecurringTransaction,
+} from "@/features/recurring-transaction";
 import type { ExpenseCategory } from "@/entities/expense";
 import type { Asset, AssetType } from "@/entities/asset";
 import type {
   RecurringFrequency,
+  RecurringTransaction,
   RecurringTransactionFormValues,
 } from "@/entities/recurring-transaction";
 import {
@@ -81,20 +85,36 @@ type TxType = "EXPENSE" | "INCOME";
 type Props = {
   onClose: () => void;
   onCreated?: (recurringRowId: number) => void;
+  /**
+   * 주면 **수정 모드** — 이 값으로 폼을 채우고 저장 시 update 를 보낸다.
+   * 종전 RecurringEditDialog 는 금액·일정만 고칠 수 있어 계좌·거래처를 바꿀 길이
+   * 없었다. 생성과 수정은 같은 입력을 받는다(사용자 결정 2026-09-03). 바뀐 값은
+   * 다음 실행분부터 적용되고 이미 만들어진 거래는 그대로다.
+   */
+  recurring?: RecurringTransaction;
+  onSaved?: () => void;
   mobile: boolean;
 };
 
 /**
- * 처음부터 반복 거래를 추가하는 다이얼로그.
+ * 반복 거래를 처음부터 추가하거나(기본) 기존 것을 수정하는(`recurring` 전달) 다이얼로그.
  * 거래 입력(AddTxSheet 패턴) + 반복 주기(RecurringFromTxDialog 헬퍼 재사용)를 조합.
  * desk-app `recurring_settings_drawer`(신규 추가 모드)의 web 미러.
  * ModalShell로 모바일=Drawer / 태블릿·데스크톱=Dialog 자동 분기.
  */
-export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
+export function RecurringAddDialog({
+  onClose,
+  onCreated,
+  recurring,
+  onSaved,
+  mobile,
+}: Props) {
   const { t } = useTranslation("recurring");
   const { t: tExpense } = useTranslation("expense");
   const { t: tCommon } = useTranslation("common");
   const createMut = useCreateRecurringTransaction();
+  const updateMut = useUpdateRecurringTransaction();
+  const isEdit = recurring != null;
   const categoriesQ = useExpenseCategories();
   const assetsQ = useAssets();
   const categories: ExpenseCategory[] = useMemo(
@@ -107,34 +127,66 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   );
 
   // 거래 입력 (이체 제외 — 반복은 지출/수입만)
-  const [type, setType] = useState<TxType>("EXPENSE");
-  const [amount, setAmount] = useState("");
-  const [merchant, setMerchant] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [categoryRowId, setCategoryRowId] = useState<number | null>(null);
-  const [assetRowId, setAssetRowId] = useState<number | null>(null);
-  const [description, setDescription] = useState("");
+  const [type, setType] = useState<TxType>(
+    recurring?.expenseType === "INCOME" ? "INCOME" : "EXPENSE",
+  );
+  const [amount, setAmount] = useState(
+    recurring ? String(Math.abs(recurring.amount)) : "",
+  );
+  const [merchant, setMerchant] = useState(recurring?.merchant ?? "");
+  const [paymentMethod, setPaymentMethod] = useState(
+    recurring?.paymentMethod ?? "",
+  );
+  const [categoryRowId, setCategoryRowId] = useState<number | null>(
+    recurring?.categoryRowId ?? null,
+  );
+  const [assetRowId, setAssetRowId] = useState<number | null>(
+    recurring?.assetRowId ?? null,
+  );
+  const [description, setDescription] = useState(recurring?.description ?? "");
   // 날짜 = 반복 시작일 (공통)
   // 시작일은 다음 실행일 계산의 기준이라 로컬 '오늘' 이어야 한다 — UTC 날짜면 KST 새벽에
   // 앱과 웹의 첫 실행일이 하루 갈린다.
-  const [startDate, setStartDate] = useState<string>(todayLocalKey);
-
-  // 반복 설정
-  const [frequency, setFrequency] = useState<RecurringFrequency>("MONTHLY");
-  const startBase = parseLocalDate(startDate);
-  const [dayOfWeek, setDayOfWeek] = useState<number>(
-    startBase ? startBase.getDay() : 1,
-  ); // 0=일~6=토 (UI)
-  const [dayOfMonth, setDayOfMonth] = useState<number>(
-    startBase ? Math.min(31, startBase.getDate()) : 1,
+  const [startDate, setStartDate] = useState<string>(() =>
+    recurring?.startDate ? recurring.startDate.slice(0, 10) : todayLocalKey(),
   );
-  const [endMode, setEndMode] = useState<EndMode>("NONE");
-  const [endCount, setEndCount] = useState("12");
-  const [endDate, setEndDate] = useState(() => addYears(todayLocalKey(), 1));
+
+  // 반복 설정 — 수정이면 저장값에서 복원
+  const [frequency, setFrequency] = useState<RecurringFrequency>(
+    recurring?.frequency ?? "MONTHLY",
+  );
+  const startBase = parseLocalDate(startDate);
+  const [dayOfWeek, setDayOfWeek] = useState<number>(() => {
+    // 백엔드는 ISO 1=월~7=일, UI 는 0=일~6=토
+    if (recurring?.dayOfWeek != null) return recurring.dayOfWeek % 7;
+    return startBase ? startBase.getDay() : 1;
+  });
+  const [dayOfMonth, setDayOfMonth] = useState<number>(
+    recurring?.dayOfMonth ??
+      (startBase ? Math.min(31, startBase.getDate()) : 1),
+  );
+  const [endMode, setEndMode] = useState<EndMode>(() => {
+    if (!recurring) return "NONE";
+    if (recurring.maxOccurrences) return "COUNT";
+    if (recurring.endDate) return "DATE";
+    return "NONE";
+  });
+  const [endCount, setEndCount] = useState(
+    recurring?.maxOccurrences ? String(recurring.maxOccurrences) : "12",
+  );
+  const [endDate, setEndDate] = useState(() =>
+    recurring?.endDate
+      ? recurring.endDate.slice(0, 10)
+      : addYears(todayLocalKey(), 1),
+  );
   // 실행 시각 — 이 시각으로 실행분이 만들어진다. 서버 컬럼 기본값도 09:00 이라 안 고르면 종전과 같다.
-  const [executionTime, setExecutionTime] = useState("09:00");
-  const [autoLog, setAutoLog] = useState(true);
-  const [notifyDayBefore, setNotifyDayBefore] = useState(true);
+  const [executionTime, setExecutionTime] = useState(
+    (recurring?.executionTime ?? "09:00:00").slice(0, 5),
+  );
+  const [autoLog, setAutoLog] = useState(recurring?.autoLog ?? true);
+  const [notifyDayBefore, setNotifyDayBefore] = useState(
+    recurring?.notifyDayBefore ?? true,
+  );
 
   // 같은 expenseType의 최상위 카테고리 그리드 (자식은 Select로)
   const topCategories = useMemo(
@@ -206,10 +258,10 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
     !!startDate &&
     (endMode !== "COUNT" || Number(endCount) > 0) &&
     (endMode !== "DATE" || !!endDate);
-  const submitting = createMut.isPending;
+  const submitting = createMut.isPending || updateMut.isPending;
 
   const handleSave = () => {
-    if (!ready) return;
+    if (!ready || submitting) return;
     const data: RecurringTransactionFormValues = {
       categoryRowId: categoryRowId ?? undefined,
       assetRowId: assetRowId ?? undefined,
@@ -235,6 +287,19 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
       autoLog,
       notifyDayBefore,
     };
+    if (recurring) {
+      // 다음 실행분부터 이 값으로 만들어진다 — 이미 만들어진 거래는 그대로.
+      updateMut.mutate(
+        { id: recurring.rowId, data },
+        {
+          onSuccess: () => {
+            onSaved?.();
+            onClose();
+          },
+        },
+      );
+      return;
+    }
     createMut.mutate(data, {
       onSuccess: (created) => {
         onCreated?.(created.rowId);
@@ -251,7 +316,7 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
   const Footer = (
     <ModalFooter
       onSave={handleSave}
-      saveLabel={tCommon("add")}
+      saveLabel={isEdit ? t("saveLabel") : tCommon("add")}
       saving={submitting}
       saveDisabled={!ready}
       onCancel={onClose}
@@ -260,22 +325,24 @@ export function RecurringAddDialog({ onClose, onCreated, mobile }: Props) {
 
   return (
     <ModalShell
-      title={t("addTitle")}
+      title={isEdit ? t("editTitle") : t("addTitle")}
       onClose={onClose}
       size="md"
       footer={Footer}
       mobile={mobile}
     >
-      <p
-        style={{
-          fontSize: "var(--text-label-sm)",
-          color: "var(--fg-secondary)",
-          margin: "0 0 14px",
-          lineHeight: "1.5",
-        }}
-      >
-        {t("intro")}
-      </p>
+      {!isEdit && (
+        <p
+          style={{
+            fontSize: "var(--text-label-sm)",
+            color: "var(--fg-secondary)",
+            margin: "0 0 14px",
+            lineHeight: "1.5",
+          }}
+        >
+          {t("intro")}
+        </p>
+      )}
 
       {/* 유형 */}
       <Section title={t("typeTitle")}>

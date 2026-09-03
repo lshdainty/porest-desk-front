@@ -2187,6 +2187,7 @@ recurring,categoryLabel,카테고리,Category
 recurring,assetLabel,계좌·카드,Account/Card
 recurring,intro,이 거래를 정해진 주기로 자동 반복합니다. 구독료·월세·정기 후원 등에 사용해보세요.,"Automatically repeats this transaction on a set schedule. Use it for subscriptions, rent, regular donations, etc."
 recurring,addTitle,반복 거래 추가,Add recurring transaction
+recurring,editTitle,반복 거래 수정,Edit recurring transaction
 recurring,typeTitle,유형,Type
 recurring,startDateLabel,반복 시작일,Start date
 recurring,merchantPlaceholderExpense,예: 넷플릭스,e.g. Netflix
