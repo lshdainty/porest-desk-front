@@ -16,6 +16,10 @@ import {
   X,
 } from "lucide-react";
 import { KRW, formatDay, isEn } from "@/shared/lib/porest/format";
+import {
+  INSIGHT_SAME_MAX,
+  insightDiffAmount,
+} from "@/pages/expense/lib/insight";
 import { formatMonthDayWeekday, formatYearMonth } from "@/shared/lib/date";
 import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
 import {
@@ -1747,14 +1751,11 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     const prevOut = prevQ.data?.totalExpense ?? 0;
     if (prevOut > 0) {
       const diff = prevOut - monthOut;
-      const man = Math.abs(Math.round(diff / 10000));
-      if (man < 1) return <>{t("txm.insightSame")}</>;
+      if (Math.abs(diff) < INSIGHT_SAME_MAX) return <>{t("txm.insightSame")}</>;
       // 문장은 남기고 금액만 가린다 — 방향(덜/더)은 크기가 아니라서 그대로 둔다.
       const amount = insightHidden
         ? HIDE_AMOUNTS_MASK
-        : isEn()
-          ? `\u20a9${KRW(Math.abs(diff))}`
-          : `${KRW(man)}만원`;
+        : insightDiffAmount(diff);
       return (
         <Trans
           t={t}

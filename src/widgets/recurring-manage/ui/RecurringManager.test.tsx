@@ -1,10 +1,13 @@
-// 월 지출 요약이 `-{KRW(v)}` 로 부호를 손으로 박고 있었다.
+// 월 요약이 부호를 손으로 박고 있었다 — 지출은 `-{KRW(v)}`, 수입은 `+{KRW(v)}`.
 //
 // 두 가지가 같이 틀린다 — 하이픈이 ASCII 라 같은 카드 안의 `−` 와 폭이 갈리고(QA #22),
 // 반복 지출이 하나도 없으면 `-0` 이 남는다(QA #1). 둘 다 공용 `minusOf` 가 이미
 // 해결한 문제이고, 앱 `RecurringScreen` 은 #317 에서 그렇게 갔다
 // (`krwSigned(monthlyExpense.abs(), masked, sign: minusOf(monthlyExpense))`).
 // 같은 화면을 두 플랫폼이 그리므로 **글자가 갈리면 안 된다.**
+//
+// 수입 쪽 `+0` 은 그대로 남아 있었다 — 반복 수입이 하나도 없으면 지출 칸은 `0`,
+// 바로 옆 수입 칸은 `+0` 이었다. 같은 결함이라 같은 헬퍼(`plusOf`)로 닫는다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -55,7 +58,10 @@ afterEach(() => {
   container.remove();
 });
 
-const expenseOf = (amount: number): RecurringTransaction => ({
+const txOf = (
+  amount: number,
+  expenseType: "EXPENSE" | "INCOME" = "EXPENSE",
+): RecurringTransaction => ({
   rowId: 1,
   userRowId: 1,
   categoryRowId: null,
@@ -63,7 +69,7 @@ const expenseOf = (amount: number): RecurringTransaction => ({
   assetRowId: null,
   assetName: null,
   sourceExpenseRowId: null,
-  expenseType: "EXPENSE",
+  expenseType,
   amount,
   description: "구독",
   merchant: null,
@@ -104,9 +110,32 @@ describe.each([
   });
 
   it("부호는 U+2212 — ASCII 하이픈이 아니다(QA #22)", () => {
-    state.items = [expenseOf(7_560)];
+    state.items = [txOf(7_560)];
     const out = render(mobile);
     expect(out).toContain(`${MINUS}7,560`);
     expect(out).not.toContain("-7,560");
+  });
+});
+
+describe.each([
+  ["모바일", true],
+  ["데스크톱", false],
+])("반복 거래 월 수입 요약 (%s)", (_label, mobile) => {
+  it("반복 수입이 없으면 `+0` 이 아니라 `0` 이다 — 지출 `−0` 과 같은 결함(QA #1)", () => {
+    state.items = [];
+    const out = render(mobile);
+    expect(out).not.toContain("+0");
+  });
+
+  it("지출만 있어도 수입 칸에 `+0` 이 남지 않는다", () => {
+    state.items = [txOf(7_560)];
+    const out = render(mobile);
+    expect(out).not.toContain("+0");
+  });
+
+  it("수입이 있으면 `+` 를 붙인다", () => {
+    state.items = [txOf(3_200_000, "INCOME")];
+    const out = render(mobile);
+    expect(out).toContain("+3,200,000");
   });
 });

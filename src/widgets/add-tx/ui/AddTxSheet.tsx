@@ -25,7 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { renderIcon } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
-import { KRW, money } from "@/shared/lib/porest/format";
+import { KRW, money, formatChartAxis } from "@/shared/lib/porest/format";
 import {
   Select,
   SelectContent,
@@ -278,6 +278,11 @@ export function AddTxSheet({
   const [savePresetOpen, setSavePresetOpen] = useState(false);
 
   // 사용 빈도 높은 순으로 8개. 편집 모드에선 프리셋 row 자체가 안 보이므로 무관.
+  //
+  // 칩에 찍는 금액은 **사용자가 저장한 임의의 값**이라 축약은 공용 `formatChartAxis`
+  // 하나만 통과한다. 예전엔 `${Math.floor(v / 1000)}k` 로 직접 줄여 12,900 이
+  // `12k`(−7%), 1,290,000 이 `1290k` 가 됐다 — `k` 는 한국어 화면에서 쓰기로 한
+  // 단위(만·억·조)에도 없다.
   const topPresets = useMemo(
     () => [...templates].sort((a, b) => b.useCount - a.useCount).slice(0, 8),
     [templates],
@@ -825,9 +830,7 @@ export function AddTxSheet({
                           fontWeight: "600",
                         }}
                       >
-                        {(p.amount as number) >= 10000
-                          ? `${Math.floor((p.amount as number) / 1000)}k`
-                          : KRW(p.amount as number)}
+                        {formatChartAxis(p.amount as number)}
                       </span>
                     )}
                   </button>

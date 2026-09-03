@@ -18,6 +18,7 @@ import {
   YAxis,
 } from "recharts";
 import { KRW, money, isEn, formatChartAxis } from "@/shared/lib/porest/format";
+import { heatCellLabel } from "@/pages/stats/lib/heat-label";
 import {
   formatYearMonth,
   formatYear,
@@ -1653,20 +1654,6 @@ export const StatsPage = () => {
     return 5;
   };
 
-  /**
-   * 히트맵 셀 라벨 — 좁은 칸에 들어갈 만큼 짧게.
-   *
-   * 1만 위로는 차트 축과 같은 `formatChartAxis`(만·억·조)에 맡긴다. 예전엔 여기서
-   * 만 단위만 직접 계산해서 1억을 넘으면 `"10001.3만"` 이 나왔다 — 칸 안에서 읽을
-   * 수 있는 숫자가 아니다. 1만 아래만 '천' 으로 더 줄인다(축 라벨엔 없는 단위지만
-   * 칸이 좁다).
-   */
-  const shortAmount = (v: number): string => {
-    if (v <= 0) return "—";
-    if (!isEn() && v < 10_000) return `${Math.round(v / 1000)}천`;
-    return formatChartAxis(v);
-  };
-
   const HeatmapCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
     <Section mobile={mobile} title={t("heatmap.title")}>
@@ -1797,7 +1784,7 @@ export const StatsPage = () => {
                   const bucket = heatBucket(value);
                   const pal = HEAT_PALETTE[bucket]!;
                   const isPeak = value > 0 && value === heatmapMax;
-                  const cellText = shortAmount(value);
+                  const cellText = heatCellLabel(value);
                   // 한 줄 유지 — 글자 수에 따라 폰트 축소(가계부 캘린더형 px 조정 로직 정합) + nowrap
                   const cellFs = mobile
                     ? cellText.length <= 4
