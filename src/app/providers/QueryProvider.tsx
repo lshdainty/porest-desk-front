@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { ReactNode } from "react";
+import { retryOnlyServerErrors } from "@/shared/api/retry";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,7 +19,8 @@ const queryClient = new QueryClient({
       // 포커스로 갱신하면 안 되는 것들은 개별로 꺼져 있다(주식 시세는 자체 폴링,
       // 사용자 환경설정은 바뀔 일이 드물다).
       refetchOnWindowFocus: true,
-      retry: 1,
+      // 4xx 는 재시도하지 않는다 — 없는 자산 조회가 두 번 나가던 자리(QA #4).
+      retry: retryOnlyServerErrors,
     },
   },
 });

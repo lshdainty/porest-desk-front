@@ -94,6 +94,14 @@ export const CardDetailPage = () => {
         </div>
       )}
 
+      {/* 없는 카드(404)·비활성 쿼리 — 종전엔 이 자리가 비어 뒤로 버튼만 남았다(QA #4).
+          사용자에게는 '삭제됐다'와 '주소가 틀렸다'가 같은 결과라 한 문구로 받는다. */}
+      {!isLoading && !asset && (
+        <div className="rounded-md border bg-muted/50 p-4 text-sm">
+          {t("cardDetail.notFound")}
+        </div>
+      )}
+
       {!isLoading && asset && !asset.cardCatalog && (
         <div className="rounded-md border bg-muted/50 p-4 text-sm">
           {t("cardDetail.noCardCatalog")}

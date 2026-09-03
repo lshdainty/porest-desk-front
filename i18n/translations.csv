@@ -1348,6 +1348,7 @@ card,benefit.loadFail,카드 정보를 불러오지 못했어요,Couldn't load c
 card,cardDetail.invalidAssetId,잘못된 자산 ID,Invalid asset ID
 card,cardDetail.back,뒤로,Back
 card,cardDetail.noCardCatalog,이 자산에는 연결된 카드 카탈로그가 없습니다. 자산 편집에서 카드를 선택해주세요.,This asset has no linked card catalog. Please select a card in asset edit.
+card,cardDetail.notFound,찾는 카드가 없어요. 삭제됐거나 주소가 잘못됐을 수 있어요,This card doesn't exist. It may have been deleted or the link is wrong
 card,benefitType.all,혜택 전체,All
 card,benefitType.discount,할인,Discount
 card,benefitType.point,적립,Points
@@ -2302,6 +2303,9 @@ subscription,broker.toastDisconnected,{{broker}} 연결을 해제했어요,Disco
 subscription,broker.toastDisconnectFailed,해제에 실패했어요,Disconnect failed
 subscription,broker.toastPrimaryChanged,이제 {{broker}} 시세로 자산을 평가해요,Assets are now valued with {{broker}}
 subscription,broker.toastPrimaryFailed,기본 증권사를 바꾸지 못했어요,Couldn't change the primary provider
+subscription,gate.title,증권 구독이 필요해요,Securities needs a subscription
+subscription,gate.desc,"실시간 시세·종목 검색·관심종목은 Pro 구독에 들어 있어요. 구독하면 이 화면이 바로 열려요.","Real-time quotes, search and watchlists are part of Pro. Subscribe and this screen opens right away."
+subscription,gate.action,구독 보기,See plans
 date,justNow,방금,Just now
 date,minutesAgo,{{count}}분 전,{{count}} min ago
 date,hoursAgo,{{count}}시간 전,{{count}} hr ago

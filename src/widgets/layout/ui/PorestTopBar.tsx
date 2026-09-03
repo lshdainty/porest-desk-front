@@ -22,9 +22,23 @@ export function PorestTopBar({ onOpenAdd }: { onOpenAdd: () => void }) {
   return (
     <header className="top">
       <SidebarTrigger className="h-8 w-8" />
-      <div className="top__search">
+      {/* 통합 검색은 아직 없다 — 종전엔 쳐도 아무 일이 안 일어나 고장으로 보였다(QA #49).
+          readOnly + 누르면 준비 중 화면으로, 모바일 헤더의 검색 버튼과 같은 자리로 보낸다. */}
+      <div
+        className="top__search"
+        onClick={() => navigate("/desk/search")}
+        style={{ cursor: "pointer" }}
+      >
         <Search size={15} />
-        <input placeholder={t("searchPlaceholder")} />
+        <input
+          readOnly
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchPlaceholder")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") navigate("/desk/search");
+          }}
+          style={{ cursor: "pointer" }}
+        />
       </div>
       <div className="top__actions">
         <Button
