@@ -5,3 +5,4 @@ export type {
   DutchPayFormValues,
   ParticipantFormValues,
 } from "./model/types";
+export { PARTICIPANT_NAME_MAX } from "./lib/policy";

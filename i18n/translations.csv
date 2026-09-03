@@ -1488,6 +1488,8 @@ dutchPay,markPaidLabel,송금 완료 처리,Mark as paid
 dutchPay,toast.requestSent,{{name}}님에게 송금 요청을 보냈어요,Payment request sent to {{name}}
 dutchPay,toast.requestSentBulk,{{count}}명에게 송금 요청을 보냈어요,Payment request sent to {{count}} people
 dutchPay,toast.requestSentDesc,추후 카카오톡·문자 연동 예정,KakaoTalk / SMS integration coming soon
+dutchPay,alreadyAdded,"{{name}} 님은 이미 참여자예요","{{name}} is already a participant"
+dutchPay,addMeAlready,나는 항상 참여자예요,You're always a participant
 expense,accountCard,계좌·카드,Account · Card
 expense,paymentMethodLabel,결제 수단,Payment method
 expense,paymentTransferFull,계좌이체,Bank transfer

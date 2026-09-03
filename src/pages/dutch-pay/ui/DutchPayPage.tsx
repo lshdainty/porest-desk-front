@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { parseAmount } from "@/shared/lib/porest/amount";
+import {
+  blockNonDigitKey,
+  parseAmount,
+  sanitizeAmountInput,
+} from "@/shared/lib/porest/amount";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -27,10 +31,14 @@ import type {
   DutchPayParticipant,
   DutchPayFormValues,
 } from "@/entities/dutch-pay";
+import { PARTICIPANT_NAME_MAX } from "@/entities/dutch-pay";
+import { resolveAddParticipant, splitEqually } from "../lib/participants";
 import { Button } from "@/shared/ui/button";
 import { Fab } from "@/shared/ui/porest/fab";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
+import { Chip } from "@/shared/ui/chip";
+import { NameCounter } from "@/shared/ui/porest/name-counter";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
@@ -1221,6 +1229,8 @@ function DutchCreateWizard({
   // 추천 목록 = 기존 정산 이름 빈도 기반(중복 제거). 직접 추가 이름은 extras 에.
   const [extras, setExtras] = useState<string[]>([]);
   const [newName, setNewName] = useState("");
+  // 이름 칸 아래 한 줄 — 평소엔 글자수, 문제가 있으면 그 자리에 안내(NameCounter 규칙).
+  const [addHint, setAddHint] = useState<string | null>(null);
   // 선택 상태: '나'는 항상 참가. picked 에 이름 set.
   const [picked, setPicked] = useState<Set<string>>(() => new Set([MY_NAME]));
   // 결제한 사람. 기본은 나지만 바꿀 수 있다 — 친구가 계산하고 내가 갚는 경우가 있다.
@@ -1241,6 +1251,12 @@ function DutchCreateWizard({
 
   const perPerson = picked.size > 0 ? Math.floor(totalNum / picked.size) : 0;
 
+  // 아직 참여자로 안 고른 친구 — 칩 한 줄로 깐다. candidates 에서 거르면 중복 이름이
+  // 저절로 정리된다(친구 목록은 기존 정산 집계라 같은 이름이 여러 번 올 수 있다).
+  const unpickedFriends = candidates.filter(
+    (n) => friendNames.includes(n) && !picked.has(n),
+  );
+
   const toggle = (name: string) => {
     if (name === MY_NAME) return; // '나'는 항상 참가
     setPicked((prev) => {
@@ -1254,15 +1270,26 @@ function DutchCreateWizard({
     });
   };
 
+  /**
+   * 이름 추가. 종전엔 이미 아는 이름이면 입력만 지우고 끝이라, 친구 이름을 넣으면
+   * 아무 일도 안 일어난 채 인원수가 모자란 정산이 저장됐다(QA #42·#39).
+   * 실패해도 입력값을 지우지 않는다 — 뭘 쳤는지까지 잃으면 고칠 수도 없다.
+   */
   const addName = () => {
-    const v = newName.trim();
-    if (!v || v === MY_NAME || candidates.includes(v)) {
-      setNewName("");
+    const r = resolveAddParticipant(newName, candidates, picked, MY_NAME);
+    if (r.kind === "empty") return;
+    if (r.kind === "isMe") {
+      setAddHint(t("addMeAlready"));
       return;
     }
-    setExtras((prev) => [...prev, v]);
-    setPicked((prev) => new Set(prev).add(v));
+    if (r.kind === "already") {
+      setAddHint(t("alreadyAdded", { name: r.name }));
+      return;
+    }
+    if (r.kind === "added") setExtras((prev) => [...prev, r.name]);
+    setPicked((prev) => new Set(prev).add(r.name));
     setNewName("");
+    setAddHint(null);
   };
 
   const goNext = () => {
@@ -1277,12 +1304,11 @@ function DutchCreateWizard({
     if (picked.size < 2) return;
     // EQUAL 분배: floor, 나머지 첫 참여자(나).
     const names = [MY_NAME, ...candidates.filter((n) => picked.has(n))];
-    const base = Math.floor(totalNum / names.length);
-    const remainder = totalNum - base * names.length;
+    const amounts = splitEqually(totalNum, names.length);
     const participants = names.map((name, i) => ({
       userRowId: null,
       participantName: name,
-      amount: base + (i === 0 ? remainder : 0),
+      amount: amounts[i] ?? 0,
       // 결제자는 순서와 무관하다 — 서버가 이 값을 저장하고, 화면은 더 이상 추측하지 않는다.
       isPayer: name === payerName,
     }));
@@ -1387,7 +1413,10 @@ function DutchCreateWizard({
                   value={
                     totalNum > 0 ? totalNum.toLocaleString("ko-KR") : totalStr
                   }
-                  onChange={(e) => setTotalStr(e.target.value)}
+                  onChange={(e) =>
+                    setTotalStr(sanitizeAmountInput(e.target.value))
+                  }
+                  onKeyDown={blockNonDigitKey}
                   inputMode="numeric"
                   placeholder="0"
                   style={{ paddingRight: 28, textAlign: "right" }}
@@ -1476,10 +1505,45 @@ function DutchCreateWizard({
             ))}
           </div>
 
+          {/* 아직 안 고른 친구 — 이름을 쳐서 넣게 하지 말고 눌러서 넣게 한다.
+              아래 목록에도 회색 행으로 있지만 눈에 안 띄어 사용자가 못 알아봤다(QA #42). */}
+          {unpickedFriends.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  fontWeight: 700,
+                  color: "var(--fg-secondary)",
+                  marginBottom: 6,
+                }}
+              >
+                {t("friends")}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {unpickedFriends.map((n) => (
+                  <Chip
+                    key={n}
+                    size="sm"
+                    onClick={() => {
+                      setPicked((prev) => new Set(prev).add(n));
+                      setAddHint(null);
+                    }}
+                  >
+                    <Plus size={12} /> {n}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 8 }}>
             <Input
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(e) => {
+                setNewName(e.target.value.slice(0, PARTICIPANT_NAME_MAX));
+                if (addHint) setAddHint(null);
+              }}
+              maxLength={PARTICIPANT_NAME_MAX}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -1487,6 +1551,7 @@ function DutchCreateWizard({
                 }
               }}
               placeholder={t("fromTx.addNamePlaceholder")}
+              aria-invalid={addHint != null}
             />
             <Button
               variant="outline"
@@ -1496,6 +1561,11 @@ function DutchCreateWizard({
               <Plus size={14} /> {tc("add")}
             </Button>
           </div>
+          <NameCounter
+            len={newName.trim().length}
+            max={PARTICIPANT_NAME_MAX}
+            err={addHint}
+          />
         </>
       )}
     </ModalShell>
