@@ -20,6 +20,11 @@ import {
   INSIGHT_SAME_MAX,
   insightDiffAmount,
 } from "@/pages/expense/lib/insight";
+import {
+  readViewMode,
+  saveViewMode,
+  type ViewMode,
+} from "@/pages/expense/lib/view-mode";
 import { formatMonthDayWeekday, formatYearMonth } from "@/shared/lib/date";
 import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
 import {
@@ -597,8 +602,6 @@ function Summary({
     </Card>
   );
 }
-
-type ViewMode = "calendar" | "list";
 
 /** 가계부 캘린더 view — 홈 > 캘린더의 CalendarMonthView 를 그대로 활용.
  *  expense → IEvent 변환 후 CalendarProvider 안에서 month view 표시.
@@ -1486,7 +1489,13 @@ function ExpenseDesktop() {
   const focusTxId = Number(searchParams.get("txId")) || null;
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState<string>(initialMonth);
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  // 보기 모드는 기기에 기억해 둔다 — 종전엔 새로고침·화면 이동마다 달력으로
+  // 되돌아갔다(QA #97).
+  const [viewMode, setViewMode] = useState<ViewMode>(readViewMode);
+  const changeViewMode = (v: ViewMode) => {
+    setViewMode(v);
+    saveViewMode(v);
+  };
   const { assetId, asset, clear } = useAssetFilter();
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterValue, setFilterValue] = useState<FilterValue | null>(null);
@@ -1559,7 +1568,9 @@ function ExpenseDesktop() {
         monthIn={monthIn}
         monthOut={monthOut}
         isLoading={isLoadingSummary}
-        headerRight={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
+        headerRight={
+          <ViewModeToggle value={viewMode} onChange={changeViewMode} />
+        }
       />
       {isCalendarMode ? (
         <div className="flex-1 min-h-0 flex flex-col">

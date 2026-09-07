@@ -8,9 +8,8 @@ import {
 import { nameIssue } from "@/shared/lib/porest/name-policy";
 import { NameCounter } from "@/shared/ui/porest/name-counter";
 import { useTranslation } from "react-i18next";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Target } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import type { IconName } from "lucide-react/dynamic";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Input } from "@/shared/ui/input";
@@ -24,7 +23,7 @@ import {
   useUpdateSavingGoal,
 } from "@/features/savingGoal";
 import type { SavingGoal } from "@/entities/savingGoal";
-import { tileRadius } from "@/shared/lib";
+import { isIconName, tileRadius } from "@/shared/lib";
 import { parseLocalDate } from "@/shared/lib/date";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import {
@@ -86,9 +85,9 @@ export function SavingGoalAddDialog({
   const [deadlineDate, setDeadlineDate] = useState<string>(
     goal?.deadlineDate ?? "",
   );
-  const [icon, setIcon] = useState<IconName>(
-    ((goal?.icon as IconName) || "piggy-bank") as IconName,
-  );
+  // 저장된 아이콘이 lucide 이름이라는 보장이 없다 — API 로 이모지도 들어온다(QA #95).
+  // IconName 으로 단언하면 미리보기가 검사 없이 DynamicIcon 으로 흘러간다.
+  const [icon, setIcon] = useState<string>(goal?.icon || "piggy-bank");
   const [color, setColor] = useState<string>(
     goal?.color ?? CAT_PALETTE[0]!.baseHex,
   );
@@ -253,7 +252,11 @@ export function SavingGoalAddDialog({
               flexShrink: 0,
             }}
           >
-            <DynamicIcon name={icon} size={17} />
+            {isIconName(icon) ? (
+              <DynamicIcon name={icon} size={17} />
+            ) : (
+              <Target size={17} />
+            )}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
@@ -421,10 +424,7 @@ export function SavingGoalAddDialog({
         <FieldLabel>{t("form.icon")}</FieldLabel>
         {/* 카테고리 추가와 동일한 shared IconPicker (필드 트리거 + 검색 팝오버).
             '없음' 선택은 저축 목표 기본 아이콘(piggy-bank)으로 대체. */}
-        <IconPicker
-          value={icon}
-          onChange={(v) => setIcon((v || "piggy-bank") as IconName)}
-        />
+        <IconPicker value={icon} onChange={(v) => setIcon(v || "piggy-bank")} />
       </Field>
 
       <Field>

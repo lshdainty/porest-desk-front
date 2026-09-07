@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { SwipeActions } from "@/shared/ui/swipe-actions";
 import { DynamicIcon } from "lucide-react/dynamic";
-import type { IconName } from "lucide-react/dynamic";
-import { tileRadius } from "@/shared/lib";
+import { isIconName, tileRadius } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { KRW, isEn } from "@/shared/lib/porest/format";
 import { useDeleteSavingGoal, useSavingGoals } from "@/features/savingGoal";
@@ -86,9 +85,10 @@ function GoalCard({
   // raw goal.color 를 그대로 쓰면 다크 모드에서 앱(resolveChartColor)과 색이 어긋난다.
   const palette = getPaletteByColor(goal.color);
   const color = palette.color;
-  const iconName = (
-    goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank"
-  ) as IconName;
+  // 저장된 이름이 lucide 카탈로그에 없을 수 있다(API 로 이모지도 들어온다) —
+  // 검사 없이 넘기면 렌더마다 console.error 가 쌓인다(QA #95).
+  const iconName =
+    goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank";
   const tile = mobile ? 40 : 36;
 
   return (
@@ -145,11 +145,11 @@ function GoalCard({
                 flexShrink: 0,
               }}
             >
-              <DynamicIcon
-                name={iconName}
-                size={mobile ? 19 : 17}
-                fallback={() => <Target size={mobile ? 19 : 17} />}
-              />
+              {isIconName(iconName) ? (
+                <DynamicIcon name={iconName} size={mobile ? 19 : 17} />
+              ) : (
+                <Target size={mobile ? 19 : 17} />
+              )}
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div

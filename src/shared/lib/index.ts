@@ -6,7 +6,7 @@ export {
   formatDuration,
   formatTimer,
 } from "./format";
-export { renderIcon, iconNames } from "./icon-map";
+export { renderIcon, isIconName, iconNames } from "./icon-map";
 export type { IconName } from "./icon-map";
 export { decodeHtml } from "./html";
 export { PASSWORD_RULES, isPasswordValid } from "./password";

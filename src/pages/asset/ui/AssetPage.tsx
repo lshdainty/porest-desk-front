@@ -11,9 +11,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import type { IconName } from "lucide-react/dynamic";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { tileRadius } from "@/shared/lib";
+import { isIconName, tileRadius } from "@/shared/lib";
 import {
   KRW,
   MINUS,
@@ -724,9 +723,10 @@ export function SavingGoalItem({ goal }: { goal: SavingGoal }) {
   // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다(앱 resolveChartColor 정합).
   const palette = getPaletteByColor(goal.color);
   const color = palette.color;
-  const iconName = (
-    goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank"
-  ) as IconName;
+  // 저장된 아이콘 이름이 lucide 카탈로그에 없을 수 있다 — API 로 이모지도 들어온다.
+  // 검사 없이 DynamicIcon 에 넘기면 렌더마다 console.error 가 쌓였다(QA #95).
+  const iconName =
+    goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank";
 
   return (
     // 조회 전용 — 추가·수정·삭제는 설정 > 저축 목표(관리)에서 (design AssetsScreen GoalsCard).
@@ -752,11 +752,11 @@ export function SavingGoalItem({ goal }: { goal: SavingGoal }) {
             flexShrink: 0,
           }}
         >
-          <DynamicIcon
-            name={iconName}
-            size={15}
-            fallback={() => <Target size={15} />}
-          />
+          {isIconName(iconName) ? (
+            <DynamicIcon name={iconName} size={15} />
+          ) : (
+            <Target size={15} />
+          )}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
