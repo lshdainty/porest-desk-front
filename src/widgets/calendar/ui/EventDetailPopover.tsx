@@ -196,17 +196,6 @@ const EventDetailPopover = ({
                 {event.calendarName}
               </span>
             )}
-            {event.groupName && (
-              <span
-                style={{
-                  fontSize: "var(--text-badge)",
-                  color: "var(--fg-tertiary)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {event.groupName}
-              </span>
-            )}
             <span
               className="num"
               style={{

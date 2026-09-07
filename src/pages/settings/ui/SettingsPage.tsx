@@ -14,7 +14,6 @@ import {
   Download,
   Eye,
   EyeOff,
-  Fingerprint,
   Key,
   LogOut,
   Monitor,
@@ -66,7 +65,6 @@ import {
 import { config, oauthKeys } from "@/shared/config";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Switch } from "@/shared/ui/switch";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import {
@@ -1005,22 +1003,6 @@ function AccountSection({
             <ChevronRight size={16} style={{ color: "var(--fg-tertiary)" }} />
           }
           onClick={() => setPwDialogOpen(true)}
-        />
-        <AccountRow
-          mobile={mobile}
-          icon={<Monitor size={20} style={{ color: "var(--fg-secondary)" }} />}
-          label={t("account.twoFactor.label")}
-          desc={t("account.twoFactor.desc")}
-          right={<Switch checked={false} onCheckedChange={() => {}} />}
-        />
-        <AccountRow
-          mobile={mobile}
-          icon={
-            <Fingerprint size={20} style={{ color: "var(--fg-secondary)" }} />
-          }
-          label={t("account.biometric.label")}
-          desc={t("account.biometric.desc")}
-          dimmed
         />
         {/* 금액 가리기 — 들어가 보지 않아도 몇 장을 가렸는지 행에서 보인다. */}
         <AccountRow
