@@ -27,8 +27,6 @@ export interface IEvent {
   rrule: string | null;
   recurrenceId: number | null;
   reminders: EventReminderInfo[];
-  groupRowId: number | null;
-  groupName: string | null;
   /**
    * expense 이벤트의 표시 부호 금액 — 지출 음수 / 수입·환불 양수.
    * 일별 합계는 이 값을 쓴다. title 에서 금액을 되파싱하면 en 로케일의

@@ -30,8 +30,6 @@ export interface CalendarEvent {
   calendarRowId: number | null;
   calendarName: string | null;
   calendarColor: string | null;
-  groupRowId: number | null;
-  groupName: string | null;
   createAt: string;
   modifyAt: string;
 }
@@ -49,7 +47,6 @@ export interface CalendarEventFormValues {
   rrule?: string;
   reminderMinutes?: number[];
   calendarRowId?: number;
-  groupRowId?: number;
 }
 
 export interface CalendarAggregateData {

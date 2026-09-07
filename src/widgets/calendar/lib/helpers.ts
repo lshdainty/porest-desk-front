@@ -417,8 +417,6 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
     rrule: null,
     recurrenceId: null,
     reminders: [],
-    groupRowId: null,
-    groupName: null,
   };
 }
 
@@ -459,8 +457,6 @@ export function convertHolidayToIEvent(holiday: Holiday): IEvent {
     rrule: null,
     recurrenceId: null,
     reminders: [],
-    groupRowId: null,
-    groupName: null,
   };
 }
 
@@ -491,7 +487,5 @@ export function convertCalendarEventToIEvent(
     rrule: calendarEvent.rrule ?? null,
     recurrenceId: calendarEvent.recurrenceId ?? null,
     reminders: calendarEvent.reminders ?? [],
-    groupRowId: calendarEvent.groupRowId ?? null,
-    groupName: calendarEvent.groupName ?? null,
   };
 }
