@@ -3,7 +3,6 @@ import type { ApiResponse } from "@/shared/types";
 import type { Memo, MemoFormValues } from "@/entities/memo";
 
 export interface MemoListParams {
-  folderId?: number;
   search?: string;
 }
 

@@ -1013,7 +1013,6 @@ function MemoEditDialog({
         content,
         tag,
         color,
-        folderRowId: null,
       },
       memo?.rowId,
     );

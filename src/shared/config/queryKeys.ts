@@ -62,7 +62,6 @@ export const memoKeys = {
   list: <T = Record<string, unknown>>(filters?: T) =>
     [...memoKeys.all, "list", filters] as const,
   detail: (id: number) => [...memoKeys.all, "detail", id] as const,
-  folders: () => [...memoKeys.all, "folders"] as const,
 };
 
 export const expenseKeys = {
