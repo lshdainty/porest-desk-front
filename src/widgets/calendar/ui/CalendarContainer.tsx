@@ -65,7 +65,10 @@ function iEventToCalendarEvent(event: IEvent): CalendarEvent {
     rowId: event.id,
     title: event.title,
     description: event.description || null,
-    eventType: "PERSONAL",
+    // 종류는 서버가 준 값 그대로다. 종전엔 여기서 "PERSONAL" 을 지어냈고 그 값이
+    // 수정 PUT 에 실려 업무·생일 일정을 개인 일정으로 덮었다(QA #89).
+    // 수정 폼이 열리는 건 일정(sourceType "calendar") 뿐이라 이 자리에 null 은 오지 않는다.
+    eventType: event.eventType ?? "PERSONAL",
     color: event.color,
     startDate: event.startDate,
     endDate: event.endDate,

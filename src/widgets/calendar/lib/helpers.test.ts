@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { convertExpenseToIEvent } from "./helpers";
+import {
+  convertCalendarEventToIEvent,
+  convertExpenseToIEvent,
+} from "./helpers";
+import type { CalendarEvent } from "@/entities/calendar";
 import type { Expense } from "@/entities/expense";
 
 /**
@@ -61,5 +65,42 @@ describe("convertExpenseToIEvent.expenseAmount", () => {
   it("숫자로 시작하는 카테고리명도 금액과 섞이지 않는다", () => {
     const ev = convertExpenseToIEvent(tx({ categoryName: "2차회식" }));
     expect(ev.expenseAmount).toBe(-50000);
+  });
+});
+
+/**
+ * 종류(eventType)는 화면까지 살아서 가야 한다.
+ *
+ * IEvent 에 종류 칸이 아예 없어서, 수정 폼을 만들 때 화면이 "PERSONAL" 을 지어냈고
+ * 그 값이 PUT 에 실려 업무·생일 일정을 개인 일정으로 덮었다(QA #89).
+ */
+function calEvent(over: Partial<CalendarEvent>): CalendarEvent {
+  return {
+    rowId: 1,
+    title: "주간회의",
+    description: null,
+    eventType: "WORK",
+    color: "#2c70bf",
+    startDate: "2026-09-07T09:00:00",
+    endDate: "2026-09-07T10:00:00",
+    isAllDay: false,
+    ...over,
+  } as CalendarEvent;
+}
+
+describe("convertCalendarEventToIEvent.eventType", () => {
+  it("업무 일정은 업무로 남는다 — 종전엔 이 칸이 없어 화면이 PERSONAL 을 지어냈다", () => {
+    expect(convertCalendarEventToIEvent(calEvent({})).eventType).toBe("WORK");
+  });
+
+  it("생일도 마찬가지", () => {
+    const ev = convertCalendarEventToIEvent(
+      calEvent({ eventType: "BIRTHDAY" }),
+    );
+    expect(ev.eventType).toBe("BIRTHDAY");
+  });
+
+  it("일정이 아닌 소스(지출)는 종류가 없다 — 지어내지 않는다", () => {
+    expect(convertExpenseToIEvent(tx({})).eventType).toBeNull();
   });
 });

@@ -88,9 +88,15 @@ export const calendarApi = {
     id: number,
     data: CalendarEventFormValues,
   ): Promise<CalendarEvent> => {
+    // 종류(eventType)는 수정 본문에 싣지 않는다. 수정 폼에 종류를 고르는 칸이 없으니
+    // 여기서 보내는 값은 늘 화면이 지어낸 추측이고, 그 추측이 업무·생일 일정을
+    // 개인 일정으로 덮었다(QA #89). 서버는 값이 없으면 기존 종류를 그대로 둔다
+    // (CalendarEvent.updateEvent 의 `if (eventType != null)`).
+    // 폼에 종류 선택이 생기는 날 여기서 다시 실으면 된다.
+    const { eventType: _dropped, ...payload } = toApiPayload(data);
     const resp: ApiResponse<CalendarEvent> = await apiClient.put(
       `/v1/calendar/event/${id}`,
-      toApiPayload(data),
+      payload,
     );
     return fromApiEvent(resp.data as unknown as Record<string, unknown>);
   },
