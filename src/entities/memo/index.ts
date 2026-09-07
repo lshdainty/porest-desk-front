@@ -1,6 +1,1 @@
-export type {
-  Memo,
-  MemoFolder,
-  MemoFormValues,
-  MemoFolderFormValues,
-} from "./model/types";
+export type { Memo, MemoFormValues } from "./model/types";
