@@ -593,6 +593,10 @@ export function AddTxSheet({
           text: smsDraft.text,
           assetRowId: assetRowId ?? null,
           categoryRowId: categoryRowId!,
+          // 종류를 안 실으면 서버가 지출로 본다 — 결제 문자를 수입으로 고쳐 저장하면
+          // 수입 전용 조합이 지출로 넘어가 400 이 났다(QA #123). 여기까지 오는 `type`
+          // 은 이체를 위에서 걸러 EXPENSE·INCOME 뿐이다.
+          expenseType: type,
           amount: amountNumber,
           merchant: merchant || null,
           description: description || null,

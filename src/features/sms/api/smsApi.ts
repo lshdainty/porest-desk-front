@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/api";
+import type { ExpenseType } from "@/entities/expense";
 import type { ApiResponse } from "@/shared/types";
 
 // ─── 타입 (백엔드 dataimport.sms 미러) ─────────────────────────
@@ -42,6 +43,11 @@ export interface SmsCommitRequest {
   text: string;
   assetRowId: number | null;
   categoryRowId: number | null;
+  /**
+   * 거래 종류. **반드시 싣는다** — 서버는 이 키가 비면 지출로 본다(옛 앱 호환).
+   * 안 실었더니 결제 문자를 수입으로 고쳐 저장할 때 지출로 넘어가 400 이 났다(QA #123).
+   */
+  expenseType: ExpenseType;
   amount: number;
   merchant?: string | null;
   description?: string | null;
