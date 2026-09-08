@@ -109,6 +109,11 @@ vi.mock("@/features/expense-split", () => ({
 vi.mock("@/features/expense-split/ui/SplitTxDialog", () => ({
   SplitTxDialog: () => null,
 }));
+// 설정의 기본 통화 — 실제 훅은 react-query 를 타므로 값만 흘려보낸다(D7).
+const prefs = vi.hoisted(() => ({ defaultCurrency: "KRW" }));
+vi.mock("@/features/user", () => ({
+  useDefaultCurrency: () => prefs.defaultCurrency,
+}));
 
 const category: ExpenseCategory = {
   rowId: 11,
@@ -171,6 +176,7 @@ beforeEach(() => {
   sent.create = null;
   sent.sms = null;
   sent.calls = 0;
+  prefs.defaultCurrency = "KRW";
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -403,5 +409,62 @@ describe("Enter 저장 (QA #132)", () => {
     pressEnter(amount);
 
     expect(sent.calls).toBe(0);
+  });
+});
+
+/**
+ * QA #124 · D7 — 설정의 '기본 통화' 를 **새 거래**의 통화 칸 기본값으로 쓴다.
+ *
+ * 종전엔 그 설정이 브라우저 `localStorage` 에만 있었고 읽는 곳이 하나도 없었다.
+ *
+ * 잠그는 건 두 가지다. **새 거래에만** 쓴다는 것 — 편집에까지 흘리면 원화로 적어 둔
+ * 거래(`originalCurrency`가 `null`)가 해외 결제 입력으로 열린다. 그리고 **늦게 와도
+ * 따라온다는 것** — `/me/preferences` 는 설정 화면을 안 들른 세션에서 이 시트보다
+ * 늦게 도착하므로, `useState` 초기값으로 굳히면 첫 렌더의 원화에 잠긴다.
+ */
+describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
+  /** 원 통화 금액 칸 — 통화가 원화가 아닐 때만 그려진다. */
+  const origAmountInput = () =>
+    document.body.querySelector<HTMLInputElement>(
+      "input[placeholder='addTx.originalAmountPlaceholder']",
+    );
+
+  it("새 거래는 설정의 기본 통화로 열린다 — 해외 결제 칸이 함께 뜬다", () => {
+    prefs.defaultCurrency = "USD";
+    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+
+    expect(origAmountInput()).not.toBeNull();
+  });
+
+  it("기본 통화가 늦게 와도 첫 렌더의 원화에 안 잠긴다", () => {
+    prefs.defaultCurrency = "KRW";
+    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    expect(origAmountInput()).toBeNull();
+
+    prefs.defaultCurrency = "USD";
+    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+
+    expect(origAmountInput()).not.toBeNull();
+  });
+
+  it("편집은 그 거래의 값으로 연다 — 원화 거래가 해외 결제로 열리지 않는다", () => {
+    prefs.defaultCurrency = "USD";
+    render({ expense: baseExpense });
+
+    expect(baseExpense.originalCurrency).toBeNull();
+    expect(origAmountInput()).toBeNull();
+  });
+
+  it("기본 통화가 외화여도 원 통화 금액을 안 적으면 셋 다 null 로 나간다", () => {
+    // 통화만 골라 두고 금액을 안 적은 거래는 해외 결제가 아니다 — 서버도 반쪽이면
+    // 전부 비운다. 기본값이 외화가 됐다고 빈 값이 흘러 나가면 안 된다.
+    prefs.defaultCurrency = "USD";
+    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    clickSave();
+
+    expect(sent.create).not.toBeNull();
+    expect(sent.create!.originalCurrency).toBeNull();
+    expect(sent.create!.originalAmount).toBeNull();
+    expect(sent.create!.exchangeRate).toBeNull();
   });
 });

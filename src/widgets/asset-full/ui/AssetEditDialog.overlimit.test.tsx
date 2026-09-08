@@ -49,6 +49,10 @@ vi.mock("@/features/stock/model/useLivePrices", () => ({
 vi.mock("@/features/subscription/model/useSubscription", () => ({
   useMyFeatures: () => ({ data: undefined }),
 }));
+// 설정의 기본 통화 — 실제 훅은 react-query 를 타므로 값만 흘려보낸다(D7).
+vi.mock("@/features/user", () => ({
+  useDefaultCurrency: () => "KRW",
+}));
 
 const { AssetEditDialog } = await import("./AssetEditDialog");
 

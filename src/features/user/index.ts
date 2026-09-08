@@ -4,6 +4,7 @@ export { useVerifyPasswordMutation } from "./model/useVerifyPasswordMutation";
 export {
   useUserPreferences,
   useUpdateUserPreferences,
+  useDefaultCurrency,
 } from "./model/useUserPreferences";
 export type {
   ChangePasswordReq,

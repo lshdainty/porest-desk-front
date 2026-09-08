@@ -11,6 +11,9 @@
 //   여기서 함께 잠근다(앱 desk-app #330 과 같은 판단).
 // - 환율: 원화로 되돌리면 **명시적 `null`** 이다. 키를 빼면 서버가 옛 환율을 지켜
 //   원화 잔액이 1380 배가 된다.
+// - 기본 통화(D7): 설정 값은 **새 자산에만** 들어간다. 기존 자산은 제 통화로 연다 —
+//   안 그러면 기본 통화를 바꾼 순간 원화 계좌가 전부 외화로 열리고, 그대로 저장만
+//   해도 통화가 바뀐다.
 // - 메모: 계좌·투자엔 칸이 **있다** → 비우면 `null` 을 싣는다(안 그러면 안 지워졌다).
 //   카드엔 칸이 **없다**(입력이 `editingGroup !== "card"` 안에 있다) — 그래도 상태가
 //   서버 값에서 출발하므로 그대로 되돌려 보낸다. 지어낸 값이 아니다.
@@ -51,6 +54,11 @@ vi.mock("@/features/stock/model/useLivePrices", () => ({
 }));
 vi.mock("@/features/subscription/model/useSubscription", () => ({
   useMyFeatures: () => ({ data: undefined }),
+}));
+// 설정의 기본 통화 — 실제 훅은 react-query 를 타므로 값만 흘려보낸다(D7).
+const prefs = vi.hoisted(() => ({ defaultCurrency: "KRW" }));
+vi.mock("@/features/user", () => ({
+  useDefaultCurrency: () => prefs.defaultCurrency,
 }));
 
 const { AssetEditDialog } = await import("./AssetEditDialog");
@@ -147,6 +155,16 @@ function mount() {
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  prefs.defaultCurrency = "KRW";
+  // Radix Select 는 포인터 캡처·스크롤 API 를 쓴다 — jsdom 엔 없어서 채워 준다.
+  const proto = window.HTMLElement.prototype as unknown as Record<
+    string,
+    unknown
+  >;
+  proto.hasPointerCapture = () => false;
+  proto.setPointerCapture = () => {};
+  proto.releasePointerCapture = () => {};
+  proto.scrollIntoView = () => {};
 });
 
 afterEach(unmountAll);
@@ -215,6 +233,29 @@ const currencyTriggerText = () =>
 
 const fxInput = () =>
   document.body.querySelector<HTMLInputElement>("#asset-edit-fx-rate");
+
+/** 통화 select 를 실제로 연다 — 키보드로 연다(포인터는 jsdom 에서 안 뜬다). */
+function pickCurrency(optionText: string) {
+  const trigger = document.body.querySelector<HTMLButtonElement>(
+    "#asset-edit-currency",
+  );
+  if (!trigger) throw new Error("통화 select 를 찾지 못했다");
+  act(() => {
+    trigger.focus();
+    trigger.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    );
+  });
+  const option = [...document.body.querySelectorAll("[role='option']")].find(
+    (el) => el.textContent?.trim() === optionText,
+  );
+  if (!option) throw new Error(`통화 항목을 찾지 못했다: ${optionText}`);
+  act(() =>
+    option.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    ),
+  );
+}
 
 describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 연다 (D1)", () => {
   it("투자 수정: 지금 통화·환율이 그대로 나간다", () => {
@@ -292,6 +333,86 @@ describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 
     const account = submit(null, "account", nameIt);
     expect(account.create).not.toBeNull();
     expect(account.create!.currency).toBe("KRW");
+  });
+});
+
+describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124)", () => {
+  const nameIt = () =>
+    setInput(
+      document.body.querySelector<HTMLInputElement>("#asset-edit-name")!,
+      "새 자산",
+    );
+
+  // 카드 생성은 카탈로그를 고르는 단계가 앞에 있어 이 헬퍼로는 저장까지 못 간다
+  // (위 "생성도 싣는다" 도 같은 이유로 계좌·투자만 본다). 통화 칸은 세 묶음이 한 벌을
+  // 공유하므로 여기서 갈릴 자리가 없다.
+  it("새 자산은 설정의 기본 통화로 열린다", () => {
+    prefs.defaultCurrency = "USD";
+    for (const group of ["account", "invest"] as const) {
+      const { create } = submit(null, group, nameIt);
+      expect(create, group).not.toBeNull();
+      expect(create!.currency, group).toBe("USD");
+    }
+  });
+
+  it("기본 통화가 늦게 와도 첫 렌더의 원화에 안 잠긴다", () => {
+    // `/me/preferences` 는 설정 화면을 안 들른 세션에서 이 폼보다 늦게 온다.
+    // `useState` 초기값으로 굳히면 그 뒤에 값이 와도 KRW 그대로다.
+    prefs.defaultCurrency = "KRW";
+    const root = mount();
+    const render = () =>
+      act(() =>
+        root.render(
+          <AssetEditDialog
+            item={null}
+            group="account"
+            mobile={false}
+            onClose={() => {}}
+            onCreate={() => {}}
+            onUpdate={() => {}}
+          />,
+        ),
+      );
+    render();
+    prefs.defaultCurrency = "USD";
+    render();
+
+    // 환율 칸은 통화가 원화가 아닐 때만 뜬다 — 그게 보이면 값이 따라온 것이다.
+    expect(currencyTriggerText()).toBe("$ USD");
+    expect(fxInput()).not.toBeNull();
+  });
+
+  it("기존 자산은 설정이 뭐든 제 통화로 연다 — 저장해도 안 바뀐다", () => {
+    prefs.defaultCurrency = "USD";
+    const { update } = submit(krwAccount, "account");
+    expect(update!.currency).toBe("KRW");
+    // 원화니까 환율은 명시적 null 로 지운다(키를 빼면 옛 환율이 남는다).
+    expect(update!.exchangeRate).toBeNull();
+  });
+
+  it("고른 값이 설정보다 우선한다 — 설정이 늦게 와도 고른 값을 안 덮는다", () => {
+    prefs.defaultCurrency = "KRW";
+    const root = mount();
+    const render = () =>
+      act(() =>
+        root.render(
+          <AssetEditDialog
+            item={null}
+            group="account"
+            mobile={false}
+            onClose={() => {}}
+            onCreate={() => {}}
+            onUpdate={() => {}}
+          />,
+        ),
+      );
+    render();
+    pickCurrency("¥ JPY");
+    // 여기서 설정 값이 도착한다. 고른 값이 있으면 그게 이긴다.
+    prefs.defaultCurrency = "USD";
+    render();
+
+    expect(currencyTriggerText()).toBe("¥ JPY");
   });
 });
 

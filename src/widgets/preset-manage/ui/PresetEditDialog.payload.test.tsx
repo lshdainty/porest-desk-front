@@ -8,9 +8,10 @@
 // - 거래처·결제수단·계좌: 이 화면이 그리는 칸이다. 비운 채 저장하면 지워져야 하는데
 //   `|| undefined` 로 키를 빼서, 서버가 `Optional` 로 옮긴 뒤(#325) "안 고침" 으로 읽혔다 —
 //   화면만 지워진 척 닫히고 옛 값이 서버에 남았다.
-// - 설명: 칸이 **없고 읽어 온 값도 안 들고 있다**(상태 자체가 없다) → 키를 뺀다.
-//   거래에서 '프리셋으로 저장' 할 때만 붙는 값이라, 무엇을 실어도 지어낸 값이다.
-//   자산 편집의 카드 메모와 갈리는 지점이 여기다 — 그쪽은 읽어 온 값을 들고 있었다.
+// - 메모: **이제 이 화면의 칸이다**(D2 · desk-app #330). 종전엔 칸이 없고 읽어 온 값도
+//   안 들고 있어서(상태 자체가 없었다) 무엇을 실어도 지어낸 값이라 키를 뺐다 —
+//   서버를 `Optional` 로 옮긴 #325 의 계기가 이 칸이었다. 칸이 생겼으니 다른 칸과
+//   같은 규칙으로 돌아온다: 비우면 `null`, 안 건드리면 읽어 온 값 그대로.
 // - 금액: `lockAmount` 와 **한 쌍**이라 계약이 다르다. 고정을 끄면 서버가 실린 금액을
 //   버리므로(`ExpenseTemplateServiceImpl.resolveAmount`) 키를 빼도 옛 금액이 안 남는다.
 //
@@ -149,11 +150,13 @@ function render(preset: ExpenseTemplate | null) {
 }
 
 /** 리액트가 관리하는 입력에 값을 넣는다(setter 를 우회하면 상태가 안 바뀐다). */
-function setValue(el: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value",
-  )?.set;
+function setValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
+  // 프로토타입이 다르면 setter 도 다르다 — input 것을 textarea 에 쓰면 값이 안 들어간다.
+  const proto =
+    el instanceof window.HTMLTextAreaElement
+      ? window.HTMLTextAreaElement.prototype
+      : window.HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
   act(() => {
     setter?.call(el, value);
     el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -164,6 +167,10 @@ const byValue = (v: string) =>
   [...document.body.querySelectorAll<HTMLInputElement>("input")].find(
     (el) => el.value === v,
   );
+
+/** 메모 칸만 textarea 다 — 값이 아니라 태그로 집는다(빈 채로도 찾아야 한다). */
+const memoBox = () =>
+  document.body.querySelector<HTMLTextAreaElement>("textarea");
 
 const byText = <T extends Element>(selector: string, text: string) =>
   [...document.body.querySelectorAll<T>(selector)].find(
@@ -255,15 +262,40 @@ describe("비운 칸은 명시 null 로 나간다 (QA #325 회귀)", () => {
   });
 });
 
-describe("설명은 화면에 없는 칸이다 (QA #325 의 계기)", () => {
-  it("수정 본문에 설명 키를 아예 안 싣는다 — 서버가 지금 값을 지킨다", () => {
+describe("메모는 이제 이 화면의 칸이다 (D2)", () => {
+  it("읽어 온 메모로 폼을 연다", () => {
+    render(basePreset);
+
+    // 안 채우고 열면, 이름만 고쳐 저장해도 메모가 `null` 로 나가 지워진다.
+    // 칸이 생겨서 오히려 위험해진 자리다 — 자산 통화 칸과 같은 순서로 잠근다.
+    expect(memoBox()?.value).toBe("회사 근처 단골");
+  });
+
+  it("안 건드리면 읽어 온 메모가 그대로 나간다", () => {
     render(basePreset);
     setValue(byValue("점심")!, "점심값");
     clickSave();
 
-    // 이 화면엔 설명 칸이 없고 읽어 온 값도 안 들고 있다. `null` 이든 `""` 이든
-    // 실으면 거래에서 붙여 둔 설명이 이름만 고쳐도 사라진다.
-    expect(wire(sent.update)).not.toHaveProperty("description");
+    expect(sent.update!.description).toBe("회사 근처 단골");
+  });
+
+  it("메모를 지우면 null 이 나간다 — 키를 빼면 옛 메모가 서버에 남는다", () => {
+    render(basePreset);
+    setValue(memoBox()!, "");
+    clickSave();
+
+    expect(wire(sent.update)).toHaveProperty("description");
+    expect(sent.update!.description).toBeNull();
+    // 반대편 — 안 건드린 칸은 그대로.
+    expect(sent.update!.merchant).toBe("김밥천국");
+  });
+
+  it("공백만 남긴 메모도 비운 것으로 본다", () => {
+    render(basePreset);
+    setValue(memoBox()!, "   ");
+    clickSave();
+
+    expect(sent.update!.description).toBeNull();
   });
 });
 
@@ -287,7 +319,7 @@ describe("금액은 lockAmount 와 한 쌍이다", () => {
 });
 
 describe("새로 만들 때도 같은 본문이다", () => {
-  it("빈 폼으로 만들면 비운 칸이 null 로, 설명은 키 없이 나간다", () => {
+  it("빈 폼으로 만들면 비운 칸이 전부 null 로 나간다", () => {
     render(null);
     setValue(byValue("")!, "새 프리셋");
     const tile = [...document.body.querySelectorAll("button")].find((b) =>
@@ -302,7 +334,7 @@ describe("새로 만들 때도 같은 본문이다", () => {
     expect(sent.create!.merchant).toBeNull();
     expect(sent.create!.paymentMethod).toBeNull();
     expect(sent.create!.assetRowId).toBeNull();
-    expect(wire(sent.create)).not.toHaveProperty("description");
+    expect(sent.create!.description).toBeNull();
     // 등록 경로는 `Optional` 이 아니라 값을 그대로 받는다 — null 과 키 없음이 같은 뜻이다.
     expect(sent.update).toBeNull();
   });

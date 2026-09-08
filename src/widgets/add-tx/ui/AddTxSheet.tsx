@@ -51,6 +51,7 @@ import {
   useCreateTransfer,
   useUpdateTransfer,
 } from "@/features/asset";
+import { useDefaultCurrency } from "@/features/user";
 import {
   SmsPasteField,
   useCommitSms,
@@ -221,9 +222,22 @@ export function AddTxSheet({
     expense?.installmentMonths ? String(expense.installmentMonths) : "",
   );
   // 해외 결제 — 원 통화 금액·환율을 남긴다. 셋이 함께여야 카드사 청구 환율과 대사할 수 있다.
-  const [origCurrency, setOrigCurrency] = useState<string>(
-    expense?.originalCurrency ?? DEFAULT_CURRENCY,
-  );
+  //
+  // 우선순위는 **고른 값 > 이 거래의 값 > 설정의 기본 통화**다(D7 · QA #124).
+  //
+  // 기본 통화는 **새 거래에만** 쓴다. 편집은 그 거래의 값으로 연다 — 원화 거래는
+  // `originalCurrency` 가 `null` 이라, 여기서 기본 통화로 흘리면 원화로 적어 둔 거래가
+  // 해외 결제 입력으로 열린다. 자산 편집의 통화 칸과 같은 판단이다.
+  //
+  // `useState` 초기값으로 굳히지도 않는다 — `/me/preferences` 는 설정 화면을 안 들른
+  // 세션에서 이 시트보다 늦게 도착해서, 초기값으로 받으면 첫 렌더의 `KRW` 에 잠긴다.
+  const defaultCurrency = useDefaultCurrency();
+  const [origCurrencyPick, setOrigCurrency] = useState<string | null>(null);
+  const origCurrency =
+    origCurrencyPick ??
+    (expense
+      ? (expense.originalCurrency ?? DEFAULT_CURRENCY)
+      : defaultCurrency);
   const [origAmount, setOrigAmount] = useState<string>(
     expense?.originalAmount != null ? String(expense.originalAmount) : "",
   );
@@ -506,6 +520,10 @@ export function AddTxSheet({
     if (parsed.originalCurrency && parsed.originalAmount != null) {
       setOrigCurrency(parsed.originalCurrency);
       setOrigAmount(String(parsed.originalAmount));
+    } else {
+      // 문자에 외화가 없으면 원화 결제다 — 설정의 기본 통화가 외화여도 여기선 문자가
+      // 맞다. 안 되돌리면 원화 결제 문자가 해외 결제 입력으로 열린다.
+      setOrigCurrency(DEFAULT_CURRENCY);
     }
   };
 

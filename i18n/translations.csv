@@ -1590,6 +1590,9 @@ expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,A
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
 expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction
+expense,txDetail.refundOfLinked,원거래에 묶인 환불이에요,This is a refund linked to the original transaction
+expense,txDetail.refundUnlink,환불 취소,Unlink refund
+expense,txDetail.refundUnlinkConfirm,"원거래와의 연결을 끊을까요? 거래는 그대로 남고 일반 수입이 돼요. 원거래의 지출도 깎이지 않고 전액으로 잡혀요.","Unlink from the original transaction? The transaction stays and becomes ordinary income, and the original expense counts in full again."
 expense,savePreset.title,프리셋으로 저장,Save as preset
 expense,savePreset.noMerchant,내역 없음,No details
 expense,savePreset.noCategory,카테고리 미선택,No category
@@ -1828,6 +1831,7 @@ settings,currency.KRW,대한민국 원,Korean Won
 settings,currency.USD,미국 달러,US Dollar
 settings,currency.EUR,유로,Euro
 settings,currency.JPY,일본 엔,Japanese Yen
+settings,currency.desc,새 자산·거래를 만들 때 이 통화가 먼저 골라져요,New assets and transactions start with this currency
 settings,page.title,설정,Settings
 settings,page.subtitle,카테고리·계좌·알림 등,Categories · accounts · alerts
 settings,sections.categories.label,카테고리 관리,Manage categories

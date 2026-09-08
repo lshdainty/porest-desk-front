@@ -40,6 +40,27 @@ export const useUpdateExpense = () => {
   });
 };
 
+/**
+ * 환불 연결 끊기 (D3) — 거래는 남고 연결만 사라진다.
+ *
+ * 무효화 범위가 이 훅의 핵심이다. **원거래가 다른 달일 수 있다** — 이 거래의 달만
+ * 무효화하면 원거래가 있는 달 목록이 옛 환불 배지·환불액을 들고 남는다. 그래서
+ * `expenseKeys.all` 로 통째로 턴다(수정·삭제와 같은 범위).
+ *
+ * 자산 잔액은 안 건드린다 — 금액도 자산도 그대로고 종류(수입)도 안 바뀐다. 바뀌는 건
+ * 통계에서 이 수입이 지출을 상계하느냐뿐이고, 그 집계는 전부 `expenseKeys` 아래다.
+ */
+export const useUnlinkRefund = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => expenseApi.unlinkRefund(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
+    },
+  });
+};
+
 export const useDeleteExpense = () => {
   const queryClient = useQueryClient();
 

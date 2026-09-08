@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { RadioList, RadioListItem } from "@/shared/ui/radio-list";
@@ -13,11 +12,16 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { regionOptionsWith } from "@/shared/lib";
+import { DEFAULT_CURRENCY } from "@/shared/lib/porest/currency";
 import { useUserPreferences, useUpdateUserPreferences } from "@/features/user";
 
+/**
+ * 고를 수 있는 통화는 **서버 `SupportedCurrency` 와 같은 넷**이다(desk-back #328).
+ * 자산·거래 폼의 `CURRENCIES`(14종)와 일부러 다르다 — 그쪽은 "적어 둘 수 있는 통화"
+ * 전부고, 여기는 "새로 만들 때 먼저 골라 둘 통화" 라 서버가 값을 검사한다.
+ * 목록이 어긋나면 화면에는 뜨는데 저장은 400 이 된다.
+ */
 type CurrencyKey = "KRW" | "USD" | "EUR" | "JPY";
-
-const CURRENCY_STORAGE_KEY = "pd-currency";
 
 const THEME_OPTIONS: {
   k: "light" | "dark" | "system";
@@ -48,21 +52,10 @@ const CURRENCY_OPTIONS: { k: CurrencyKey; labelKey: string; symbol: string }[] =
     { k: "JPY", labelKey: "currency.JPY", symbol: "¥" },
   ];
 
-function readCurrency(): CurrencyKey {
-  try {
-    const v = localStorage.getItem(CURRENCY_STORAGE_KEY);
-    if (v === "KRW" || v === "USD" || v === "EUR" || v === "JPY") return v;
-  } catch {
-    /* ignore */
-  }
-  return "KRW";
-}
-
 // 모바일 카드 다이어트 — 설정 행 셸: 모바일은 플랫 행, 데스크톱은 Card (.m-subpage 정합).
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
   const { t, i18n } = useTranslation("settings");
   const { theme, setTheme } = useTheme();
-  const [currency, setCurrencyState] = useState<CurrencyKey>(readCurrency);
 
   const { data: prefs } = useUserPreferences();
   const updatePrefs = useUpdateUserPreferences();
@@ -75,13 +68,12 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
     updatePrefs.mutate({ timezone: tz });
   };
 
-  const setCurrency = (c: CurrencyKey) => {
-    setCurrencyState(c);
-    try {
-      localStorage.setItem(CURRENCY_STORAGE_KEY, c);
-    } catch {
-      /* ignore */
-    }
+  // 종전엔 `localStorage` 에만 넣었다(QA #124). 폰과 브라우저가 각자 다른 값을 들고
+  // 있었고, 정작 이 값을 **읽는 곳이 하나도 없어** 고르면 저장된 것처럼만 보였다.
+  // 지역 설정과 같은 자리(`/me/preferences`)로 옮긴다 — 계정에 딸린 값이다.
+  const handleCurrencyChange = (c: CurrencyKey) => {
+    if (c === prefs?.defaultCurrency) return;
+    updatePrefs.mutate({ defaultCurrency: c });
   };
 
   return (
@@ -206,9 +198,11 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
         }}
       >
         <SectionLabel>{t("currency.label")}</SectionLabel>
+        {/* 서버 값이 오기 전에는 원화로 그린다 — 라디오를 값 없이 두면 넷 다 꺼져
+            고장으로 보인다. */}
         <RadioList
-          value={currency}
-          onValueChange={(v) => setCurrency(v as CurrencyKey)}
+          value={prefs?.defaultCurrency ?? DEFAULT_CURRENCY}
+          onValueChange={(v) => handleCurrencyChange(v as CurrencyKey)}
         >
           {CURRENCY_OPTIONS.map((c) => (
             <RadioListItem
@@ -220,6 +214,15 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
             />
           ))}
         </RadioList>
+        <div
+          style={{
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            marginTop: "var(--spacing-sm)",
+          }}
+        >
+          {t("currency.desc")}
+        </div>
       </section>
     </div>
   );
