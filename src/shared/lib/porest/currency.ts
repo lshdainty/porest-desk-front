@@ -1,3 +1,5 @@
+import { isEn } from "@/shared/lib/porest/format";
+
 /**
  * 지원 통화 — 외화통장·해외 결제에서 쓴다.
  *
@@ -36,6 +38,31 @@ export const currencySymbol = (code: string | null | undefined): string =>
 
 export const isForeignCurrency = (code: string | null | undefined): boolean =>
   !!code && code !== DEFAULT_CURRENCY;
+
+/**
+ * 라벨 괄호 안에 붙는 통화 단위 — `잔액 (원)` · `잔액 ($)` 의 그 자리.
+ *
+ * 잔액·한도 라벨이 `(원)` 으로 박혀 있어 USD 를 골라도 원화처럼 보였다(QA 12차).
+ * 단위는 **고른 통화**를 따라야 한다.
+ *
+ * 기호는 새로 세지 않고 위 `CURRENCIES` 한 벌을 그대로 쓴다 — 두 벌이 되면 통화를
+ * 하나 늘릴 때 한쪽만 늘어나고, 그 어긋남은 화면에서만 보인다.
+ *
+ * **원화만 로케일을 탄다.** 한국어 화면은 `₩` 를 안 쓰고 `원` 을 접미로 붙이고
+ * (`money()` · `<WonUnit/>` 가 이미 그 규칙이다), 영어 화면은 `₩10,000` 처럼 앞에
+ * 붙인다. 그래서 여기서도 ko `원` / en `₩` 로 갈린다 — `잔액 (₩)` 도 `Balance (원)`
+ * 도 그 화면에서는 남의 글자다. 나머지 통화는 로케일과 무관한 국제 표기라 기호 그대로다.
+ *
+ * 통화를 모르면(`null`) 원화로 본다 — 안 적힌 자산은 원화라는 게 `DEFAULT_CURRENCY` 다.
+ *
+ * **앱도 같은 규칙을 쓴다.** 라벨이 갈리면 같은 자산을 웹과 앱에서 다른 단위로 읽는다.
+ */
+export const currencyUnit = (code: string | null | undefined): string =>
+  !code || code === DEFAULT_CURRENCY
+    ? isEn()
+      ? "₩"
+      : "원"
+    : currencySymbol(code);
 
 /**
  * 원 통화 금액 표기 — `$5.50` / `¥1,280`.

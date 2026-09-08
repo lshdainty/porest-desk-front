@@ -30,6 +30,8 @@ import {
 } from "@/shared/lib/porest/amount";
 import {
   CURRENCIES,
+  DEFAULT_CURRENCY,
+  currencyUnit,
   formatOriginalAmount,
   isForeignCurrency,
 } from "@/shared/lib/porest/currency";
@@ -556,15 +558,23 @@ export function AssetEditDialog({
 
   const isOverdraft =
     editingGroup === "account" && accountSub === "마이너스통장";
+  /**
+   * 금액 칸의 단위는 **고른 통화**를 따른다. 라벨에 `(원)` 이 박혀 있어 USD 를 골라도
+   * 원화처럼 보였다(QA 12차) — 잔액도 한도도 이 폼의 통화로 적는 값이다
+   * (초과 안내가 이미 `formatOriginalAmount(…, currency)` 로 나간다).
+   *
+   * 표기 규칙은 `currencyUnit` 한 곳에 있다 — 앱도 같은 규칙을 쓴다.
+   */
+  const unit = currencyUnit(currency);
   const balanceLabel =
     editingGroup === "card"
-      ? t("editDialog.balanceLabelCard")
+      ? t("editDialog.balanceLabelCard", { unit })
       : editingGroup === "invest"
-        ? t("editDialog.balanceLabelInvest")
+        ? t("editDialog.balanceLabelInvest", { unit })
         : isOverdraft
           ? // 마이너스통장은 '잔액' 이 아니라 '쓴 돈' 을 묻는다 — 그래야 양수로 받는다.
-            t("editDialog.balanceLabelOverdraft")
-          : t("editDialog.balanceLabelAccount");
+            t("editDialog.balanceLabelOverdraft", { unit })
+          : t("editDialog.balanceLabelAccount", { unit });
 
   /**
    * 한도 초과 — **저장은 막지 않는다**(사용자 결정, QA #125). 넘겼다는 사실만 보인다.
@@ -1469,7 +1479,7 @@ export function AssetEditDialog({
               htmlFor="card-credit-limit"
               className="text-[13px] font-medium mb-2 block"
             >
-              {t("editDialog.creditLimit")}
+              {t("editDialog.creditLimit", { unit })}
             </Label>
             <Input
               id="card-credit-limit"
@@ -1515,7 +1525,7 @@ export function AssetEditDialog({
             htmlFor="overdraft-limit"
             className="text-[13px] font-medium mb-2 block"
           >
-            {t("editDialog.overdraftLimitLabel")}
+            {t("editDialog.overdraftLimitLabel", { unit })}
           </Label>
           <Input
             id="overdraft-limit"
@@ -1535,8 +1545,12 @@ export function AssetEditDialog({
       {editingGroup === "card" && cardType === "CHECK" ? null : editingGroup ===
           "invest" && holdings.length > 0 ? (
         <div>
+          {/* 연동 합계만은 통화를 안 따른다 — 시세를 원화로 환산해 더한 값이라
+              (`live.unitKrw`) 고른 통화를 붙이면 라벨이 값을 속인다. */}
           <Label className="text-[13px] font-medium mb-2 block">
-            {balanceLabel}
+            {t("editDialog.balanceLabelInvest", {
+              unit: currencyUnit(DEFAULT_CURRENCY),
+            })}
           </Label>
           <div className="num rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)] px-3 py-2.5 text-[14px] font-bold text-[var(--fg-primary)]">
             {KRW(holdingsTotal)}원
