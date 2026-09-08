@@ -155,12 +155,26 @@ export interface AssetFormValues {
   assetType: AssetType;
   /** 미전달 = 서버 산정. 투자+holdings 는 서버가 평가액을 BigDecimal 로 잡으므로 보내지 않는다 */
   balance?: number;
+  /**
+   * 통화. **고르는 칸이 있는 화면만 싣는다** — 안 실으면 생성은 서버가 `"KRW"` 로
+   * 채우고(`AssetServiceImpl.createAsset`) 수정은 지금 통화를 지킨다(`currency().orKeep`).
+   *
+   * 칸도 없이 `"KRW"` 를 실어 외화 자산이 편집 한 번에 원화가 됐고, 서버가 환산율까지
+   * 1 로 정규화해 총자산이 환산 없이 합쳐졌다(QA #106). 앱도 같다(desk-app #326).
+   */
   currency?: string;
   /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
   exchangeRate?: number | null;
   color?: string;
   institution?: string;
-  memo?: string;
+  /**
+   * 메모. `null` 을 실으면 지운다 — PUT 은 "키 없음=유지 · null=지움" 이라(`Patch`)
+   * 비운 칸을 키째 빼면 옛 메모가 그대로 남는다(QA #110).
+   *
+   * 메모 칸이 **없는** 화면(카드 편집)은 읽어 온 값을 그대로 되돌려 보낸다 — 지어낸
+   * 값이 아니라 그 자산의 지금 값이라, 이 칸을 무조건 대입하던 옛 서버에서도 안 지워진다.
+   */
+  memo?: string | null;
   sortOrder?: number;
   isIncludedInTotal?: YNType;
   cardCatalogRowId?: number | null;
@@ -176,12 +190,26 @@ export interface AssetUpdateFormValues {
   assetType: AssetType;
   /** 미전달 = 기존 잔액 유지(투자+holdings 는 서버 산정) */
   balance?: number;
+  /**
+   * 통화. **고르는 칸이 있는 화면만 싣는다** — 안 실으면 생성은 서버가 `"KRW"` 로
+   * 채우고(`AssetServiceImpl.createAsset`) 수정은 지금 통화를 지킨다(`currency().orKeep`).
+   *
+   * 칸도 없이 `"KRW"` 를 실어 외화 자산이 편집 한 번에 원화가 됐고, 서버가 환산율까지
+   * 1 로 정규화해 총자산이 환산 없이 합쳐졌다(QA #106). 앱도 같다(desk-app #326).
+   */
   currency?: string;
   /** 원화 환산율 (외화 자산 전용). 미전달·KRW 면 1 */
   exchangeRate?: number | null;
   color?: string;
   institution?: string;
-  memo?: string;
+  /**
+   * 메모. `null` 을 실으면 지운다 — PUT 은 "키 없음=유지 · null=지움" 이라(`Patch`)
+   * 비운 칸을 키째 빼면 옛 메모가 그대로 남는다(QA #110).
+   *
+   * 메모 칸이 **없는** 화면(카드 편집)은 읽어 온 값을 그대로 되돌려 보낸다 — 지어낸
+   * 값이 아니라 그 자산의 지금 값이라, 이 칸을 무조건 대입하던 옛 서버에서도 안 지워진다.
+   */
+  memo?: string | null;
   isIncludedInTotal?: YNType;
   cardCatalogRowId?: number | null;
   creditLimit?: number | null;

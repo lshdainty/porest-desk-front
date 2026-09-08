@@ -42,7 +42,11 @@ export interface TodoFormValues {
    * 메모의 `MemoFormValues.tag` 와 같은 계약이다.
    */
   category?: string | null;
-  dueDate?: string;
+  /**
+   * 마감일 "YYYY-MM-DD". `null` 을 실으면 마감일을 뗀다 — `category` 와 같은 계약이다
+   * (키 없음=유지 · null=지움). 비운 칸을 키째 빼면 옛 마감일이 그대로 남는다(QA #111).
+   */
+  dueDate?: string | null;
   parentRowId?: number;
   tagIds?: number[];
   type?: TodoType;

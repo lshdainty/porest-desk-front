@@ -526,6 +526,24 @@ export function AssetEditDialog({
     onClose();
   };
 
+  /**
+   * 저장 본문을 만든다.
+   *
+   * <b>규칙 하나로 간다 — 이 화면이 가진 칸만 싣는다.</b> PUT 은 세 갈래다
+   * (`Patch`: 키 없음=유지 · `null`=지움 · 값=교체, QA #96).
+   * - 칸이 **있으면** 그 칸의 지금 상태를 그대로 싣는다. 비어 있으면 `null` 이다 —
+   *   사용자가 지운 것이므로 지워져야 한다(메모).
+   * - 칸이 **없으면** 지어낸 값을 싣지 않는다. 고를 자리가 없는데 값을 만들어 보내면
+   *   다른 화면이 정한 값을 덮는다(통화). 다만 **읽어 온 값을 들고 있는** 칸은
+   *   그대로 되돌려 보낸다 — 지어낸 값이 아니라 그 자산의 지금 값이다(카드의 메모).
+   *
+   * 통화가 그 사고였다(QA #106). 이 화면엔 통화를 고르는 칸이 없는데 `"KRW"` 를 실어
+   * 보내, 외화로 만든 자산을 한 번 편집하면 원화가 되고 서버가 환산율까지 1 로
+   * 정규화해(`Asset.normalizeRate`) 총자산이 환산 없이 합쳐졌다. 되돌릴 입력칸도 없다.
+   * 안 실으면 수정은 지금 통화를 지키고(`AssetServiceImpl` 의 `currency().orKeep`)
+   * 생성은 서버가 `"KRW"` 로 채운다 — 기본값을 정하는 자리를 서버 하나로 남긴다.
+   * 앱도 같은 판단이다(desk-app #326).
+   */
   const handleSubmit = () => {
     if (!canSubmit) return;
     // 칸에는 절대값만 들어온다(부호 키를 막았다) — 부호는 아래에서 종류가 붙인다.
@@ -568,7 +586,6 @@ export function AssetEditDialog({
           assetName: resolvedName,
           assetType: type,
           balance: cardBalance,
-          currency: "KRW",
           institution,
           color,
           isIncludedInTotal,
@@ -580,10 +597,13 @@ export function AssetEditDialog({
           assetName: resolvedName,
           assetType: type,
           balance: cardBalance,
-          currency: "KRW",
           institution,
           color,
-          memo: memo.trim() || undefined,
+          // 카드 묶음은 메모 칸을 안 그린다(입력은 `editingGroup !== "card"` 안에 있다).
+          // 그래도 키를 싣는 건 `memo` 상태가 이 자산의 서버 값에서 출발하기 때문이다 —
+          // 그대로 되돌려 보내면 카드에선 아무것도 안 바뀌고, 운영에 아직 남아 있는
+          // 옛 서버(이 칸을 무조건 대입한다)에서도 남이 적어 둔 메모가 안 지워진다.
+          memo: memo.trim() || null,
           isIncludedInTotal,
           cardCatalogRowId: catalogId,
           ...billingFields,
@@ -624,10 +644,9 @@ export function AssetEditDialog({
         assetName: resolvedName,
         assetType: "INVESTMENT" as AssetType,
         balance: investBalance,
-        currency: "KRW",
         institution: brand,
         color: brandColor?.bg,
-        memo: memo.trim() || undefined,
+        memo: memo.trim() || null,
         isIncludedInTotal,
         holdings: holdingsPayload,
       };
@@ -650,10 +669,9 @@ export function AssetEditDialog({
       assetName: resolvedName,
       assetType,
       balance: accountBalance,
-      currency: "KRW",
       institution: brand,
       color: brandColor?.bg,
-      memo: memo.trim() || undefined,
+      memo: memo.trim() || null,
       isIncludedInTotal,
       creditLimit: overdraftLimit,
     };

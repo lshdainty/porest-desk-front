@@ -67,19 +67,36 @@ export interface Expense {
   modifyAt: string;
 }
 
+/**
+ * 거래 생성·수정 본문.
+ *
+ * PUT 은 세 갈래다 — **키 없음=유지 · `null`=지움 · 값=교체**(`Patch`, QA #96).
+ * 그래서 화면이 그리는 칸은 비었을 때 `null` 을 실어야 지워지고(`undefined` 는 키를
+ * 빼는 것이라 옛 값이 남는다), 화면에 없는 칸은 아예 안 실어야 남의 값을 안 덮는다.
+ * `?: T | null` 로 적힌 칸이 "지울 수 있는 칸" 이다.
+ */
 export interface ExpenseFormValues {
   categoryRowId: number;
-  assetRowId?: number;
+  /** 결제 계좌·카드. `null` = 연결 해제('선택 안 함'). */
+  assetRowId?: number | null;
   expenseType: ExpenseType;
   amount: number;
-  description?: string;
+  /** `null` = 설명 지움. */
+  description?: string | null;
   /** ISO-LOCAL-DATETIME (YYYY-MM-DDTHH:mm:ss). 10자 "YYYY-MM-DD" 도 호환됨. */
   expenseDate: string;
-  merchant?: string;
-  paymentMethod?: string;
+  /** `null` = 거래처 지움. */
+  merchant?: string | null;
+  /** `null` = 결제수단 지움('선택 안 함'). */
+  paymentMethod?: string | null;
   /** 할부 개월 (미전달·1 = 일시불). 신용카드 결제에만 의미. */
   installmentMonths?: number | null;
-  /** 환불 원거래 행 아이디. 이 연결이 통계 상계를 만든다(수입으로 부풀지 않는다). */
+  /**
+   * 환불 원거래 행 아이디. 이 연결이 통계 상계를 만든다(수입으로 부풀지 않는다).
+   *
+   * **수정에서는 이 키를 싣지 마라.** 연결을 끊는 칸이 어느 화면에도 없는데 `null` 이
+   * 나가면 메모만 고쳐도 원거래의 환불 수·환불액이 0 이 된다(QA #108).
+   */
   refundOfExpenseRowId?: number | null;
   /** 원 통화 금액 (해외 결제) */
   originalAmount?: number | null;

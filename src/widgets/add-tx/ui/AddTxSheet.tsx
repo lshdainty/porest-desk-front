@@ -543,21 +543,35 @@ export function AddTxSheet({
       return;
     }
     savingRef.current = true;
+    // 본문은 규칙 하나로 만든다 — **이 시트가 가진 칸만 싣는다.** PUT 은 세 갈래다
+    // (`Patch`: 키 없음=유지 · null=지움 · 값=교체, QA #96).
+    // 칸이 있으면 지금 상태를 그대로 싣고(비었으면 `null` — 사용자가 지운 것이다),
+    // 칸이 없으면 키를 뺀다(서버가 지금 값을 지킨다).
     const data: ExpenseFormValues = {
       categoryRowId: categoryRowId!,
-      assetRowId: assetRowId ?? undefined,
+      // 아래 넷은 이 시트가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다(QA #107).
+      // `undefined` 로 키를 빼면 화면은 지워진 척 닫히고 옛 값이 서버에 남았다.
+      assetRowId: assetRowId ?? null,
       expenseType: type,
       amount: amountNumber,
-      description: description || undefined,
+      description: description || null,
       expenseDate: `${expenseDate}T${expenseTime}`,
-      merchant: merchant || undefined,
-      paymentMethod: paymentMethod || undefined,
+      merchant: merchant || null,
+      paymentMethod: paymentMethod || null,
       // 할부는 신용카드 지출에만 — 그 밖의 조합에선 값을 흘리지 않는다.
       installmentMonths:
         showInstallment && installmentMonths ? Number(installmentMonths) : null,
-      // 환불 모드에서만 원거래를 묶는다 — 이 연결이 통계 상계를 만든다.
-      refundOfExpenseRowId:
-        isRefundMode && type === "INCOME" ? refundOf.rowId : null,
+      // 환불 연결은 **새로 만들 때만** 정한다 — 편집엔 연결을 끊는 칸이 없다.
+      // 편집에서도 실으면 `isRefundMode` 가 늘 false 라 명시 null 이 나가, 메모만
+      // 고쳐 저장해도 원거래의 환불 수·환불액이 0 이 되고 통계 상계가 사라졌다(QA #108).
+      // 키를 빼면 서버가 지금 연결을 지킨다. 연결을 끊는 UI 는 별건이다.
+      ...(isEdit
+        ? {}
+        : {
+            // 환불 모드에서만 원거래를 묶는다 — 이 연결이 통계 상계를 만든다.
+            refundOfExpenseRowId:
+              isRefundMode && type === "INCOME" ? refundOf.rowId : null,
+          }),
       // 셋이 함께여야 의미가 있다 — 서버도 반쪽이면 전부 비운다.
       originalAmount: isForeignTx && origAmount ? Number(origAmount) : null,
       originalCurrency: isForeignTx && origAmount ? origCurrency : null,

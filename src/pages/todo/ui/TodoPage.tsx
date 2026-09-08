@@ -1141,7 +1141,9 @@ function TodoEditDialog({
         priority,
         // sentinel 은 서버로 안 나간다 — 태그를 떼는 건 null 이다(키를 빼면 옛 값이 남는다).
         category: tagValueToPayload(tag),
-        dueDate: due || undefined,
+        // 마감일도 같다 — 이 편집기가 그리는 칸이라 비운 채 저장하면 지워져야 한다.
+        // `undefined` 로 키를 빼면 화면은 지워진 척 닫히고 옛 마감일이 남았다(QA #111).
+        dueDate: due || null,
       },
       todo?.rowId,
     );

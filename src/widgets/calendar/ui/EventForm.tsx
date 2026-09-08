@@ -246,8 +246,11 @@ export const EventForm = ({
       location: data.location || undefined,
       labelRowId: data.labelRowId || undefined,
       rrule: data.rrule || undefined,
-      reminderMinutes:
-        selectedReminders.length > 0 ? selectedReminders : undefined,
+      // 고른 알림을 **늘** 그대로 싣는다. 0 개일 때 키를 빼면 서버가 "안 고침" 으로
+      // 읽어 옛 알림이 그대로 울렸다 — 화면은 다 끈 것처럼 닫히고서(QA #109).
+      // 이 칸은 목록을 통째로 바꾸는 자리라 계약이 "null=미변경 · 리스트=교체" 다
+      // (`CalendarEventServiceImpl.syncReminders`) — 빈 배열이 "전부 해제" 다.
+      reminderMinutes: selectedReminders,
       calendarRowId: data.calendarRowId || undefined,
     });
   };
