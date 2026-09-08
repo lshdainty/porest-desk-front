@@ -79,9 +79,14 @@ export const userCalendarApi = {
   },
 
   joinByCode: async (inviteCode: string): Promise<UserCalendar> => {
+    // 실패는 호출부가 "초대 코드를 확인해 주세요" 로 안내한다 — 전역 토스트까지 겹치면
+    // 친절한 문구 옆에 서버 문구가 나란히 뜬다(QA #127 이 그 화면이었다). silent 로 끈다.
     const resp: ApiResponse<UserCalendar> = await apiClient.post(
       "/v1/calendar/calendars/join",
       { inviteCode },
+      { silent: true } as import("axios").AxiosRequestConfig & {
+        silent?: boolean;
+      },
     );
     return fromApiCalendar(resp.data as unknown as Record<string, unknown>);
   },

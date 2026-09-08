@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { authApi } from "../api/authApi";
 import { setAuthenticated, clearAuthenticated } from "@/shared/api";
 import { config } from "@/shared/config";
+import { rememberCurrentPath } from "@/shared/lib/porest/login-redirect";
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +39,8 @@ export const useAuth = () => {
       // 로그아웃 API 실패해도 클라이언트 상태는 정리
     }
     clearAuthenticated();
+    // 로그아웃도 되돌아갈 자리를 남긴다 — 다시 들어온 사람이 보던 화면으로 간다(QA #131).
+    rememberCurrentPath();
     // desk 토큰만 지우면 SSO 의 Refresh 쿠키(7일)가 살아남아, 로그인 페이지의 무음
     // 재인증이 세션을 되살린다 — 로그아웃이 로그아웃이 아니게 된다. SSO 로그아웃
     // 경유지로 최상위 이동해 그 쿠키까지 폐기하고 /login 으로 돌아온다.
