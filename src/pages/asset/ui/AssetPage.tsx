@@ -61,7 +61,6 @@ import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { useSavingGoals } from "@/features/savingGoal";
 import { AssetDetailDialog } from "@/widgets/asset-full/ui/AssetDetailDialog";
-import { editAssetPath } from "@/widgets/asset-full";
 import { AssetLogo, type Asset, type AssetType } from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
 
@@ -2059,8 +2058,8 @@ function AssetDesktop() {
           asset={detailAsset}
           mobile={false}
           onClose={() => setDetailAsset(null)}
-          onEdit={(asset) => {
-            navigate(editAssetPath(asset));
+          onEdit={() => {
+            navigate("/desk/settings?section=accounts");
             setDetailAsset(null);
           }}
         />
@@ -2195,8 +2194,8 @@ function AssetMobile() {
           asset={detailAsset}
           mobile
           onClose={() => setDetailAsset(null)}
-          onEdit={(asset) => {
-            navigate(editAssetPath(asset));
+          onEdit={() => {
+            navigate("/desk/settings?section=accounts");
             setDetailAsset(null);
           }}
         />
