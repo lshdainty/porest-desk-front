@@ -156,16 +156,33 @@ export function PresetEditDialog({
 
   const submit = () => {
     if (!canSave) return;
+    // 본문은 규칙 하나로 만든다 — **이 다이얼로그가 가진 칸만 싣는다.** PUT 은 세 갈래다
+    // (`Patch`: 키 없음=유지 · null=지움 · 값=교체, QA #96 · 프리셋은 #325 가 옮겼다).
+    // 칸이 있으면 지금 상태를 그대로 싣고(비었으면 `null` — 사용자가 지운 것이다),
+    // 칸이 없으면 키를 뺀다(서버가 지금 값을 지킨다). 자산·거래와 같은 판단이다.
     const payload: ExpenseTemplateFormValues = {
       templateName: name.trim(),
+      // 폼이 필수로 강제한다 — 비면 저장 버튼이 안 눌린다(`canSave`). 그래서 여기로
+      // null 이 내려올 일이 없고, 서버도 안 보낸 요청의 카테고리를 지키게 됐다(#325).
       categoryRowId,
-      assetRowId: assetRowId ?? undefined,
+      // 아래 셋은 이 다이얼로그가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다.
+      // `undefined` 로 키를 빼면 새 서버가 "안 고침" 으로 읽어, 화면만 지워진 척 닫히고
+      // 옛 계좌·거래처·결제수단이 서버에 그대로 남았다.
+      assetRowId: assetRowId ?? null,
       expenseType: type,
+      // 금액만 계약이 다르다 — `lockAmount` 와 한 쌍이라 서버가 둘을 함께 본다.
+      // 고정을 끄면 서버가 실린 금액을 버리므로(`resolveAmount`) 키를 빼도 옛 금액이
+      // 남지 않는다. 금액칸 자체가 고정을 켰을 때만 그려지니 규칙과도 어긋나지 않는다.
       amount: lockAmount ? amountNumber : undefined,
-      merchant: merchant.trim() || undefined,
-      paymentMethod: paymentMethod || undefined,
+      merchant: merchant.trim() || null,
+      paymentMethod: paymentMethod || null,
       lockAmount: lockAmount ? "Y" : "N",
     };
+    // `description` 은 **일부러 안 싣는다.** 이 화면에 설명 칸이 없고 읽어 온 값도 안 들고
+    // 있어서(상태 자체가 없다) 무엇을 실어도 지어낸 값이다 — 거래에서 '프리셋으로 저장'
+    // 하며 붙은 설명이 편집 한 번에 사라진다. 키를 빼면 서버가 지금 값을 지킨다(#325).
+    // 자산 편집의 카드 메모와 갈리는 지점이 여기다 — 그쪽은 읽어 온 값을 들고 있어서
+    // 그대로 되돌려 보냈고, 이쪽은 들고 있는 값이 없어서 뺀다.
     if (preset) {
       updateMut.mutate(
         { id: preset.rowId, data: payload },
