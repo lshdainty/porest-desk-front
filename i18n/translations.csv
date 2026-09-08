@@ -203,8 +203,6 @@ todo,editTodoTitle,할 일 수정,Edit todo
 todo,today,오늘,Today
 todo,thisWeek,이번 주,This week
 todo,count,건,
-todo,quickAddPlaceholder,할 일을 입력하고 Enter,Type a to-do and press Enter
-todo,quickAddLabel,할 일 빠른 추가,Quick add to-do
 todo,detail,자세히,Details
 todo,addTodoLabel,할 일 추가,Add to-do
 todo,uncomplete,완료 취소,Mark incomplete
@@ -2502,9 +2500,6 @@ todo,tdm.emptyMonthDesc,오른쪽 아래 + 버튼으로 추가해보세요.,Add 
 todo,tdm.hideDone,완료한 할 일 숨기기,Hide completed
 todo,tdm.reset,초기화,Reset
 todo,tdm.apply,완료,Done
-todo,quickAdd.placeholder,할 일을 입력하고 Enter,Type a todo and press Enter
-todo,quickAdd.add,추가,Add
-todo,quickAdd.detail,자세히,Details
 todo,starToast.collected,별빛 +{{gain}} · 오늘의 별자리 수집!,+{{gain}} starlight · constellation collected!
 todo,starToast.progress,별빛 +{{gain}} · 수집까지 {{left}}별,+{{gain}} starlight · {{left}} to collect
 todo,tags.title,할 일 태그,Todo tags
