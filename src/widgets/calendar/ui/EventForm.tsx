@@ -239,13 +239,35 @@ export const EventForm = ({
     return `${minutes}min`;
   };
 
+  /**
+   * 저장 본문을 만든다.
+   *
+   * <b>규칙 하나로 간다 — 이 화면이 가진 칸은 지금 상태를 싣고, 비었으면 `null`.</b>
+   * 수정(PUT)은 세 갈래다(`Patch`: 키 없음=유지 · `null`=지움 · 값=교체, QA #96) —
+   * 자산·거래·할 일이 먼저 이 규칙으로 넘어갔고(desk-front #363) 일정이 네 번째다.
+   *
+   * 종전엔 널 허용 칸을 전부 `|| undefined` 로 키째 뺐다. 서버가 무조건 덮어쓰던
+   * 시절엔 그래도 **우연히** 지워졌는데, desk-back #325 가 이 다섯 칸을
+   * `Optional` 로 옮기면서 "안 보낸 칸=유지" 가 되어 <b>비우고 저장해도 안 지워졌다</b> —
+   * 화면은 지워진 척 닫히고 옛 설명·장소·라벨·반복이 서버에 남았다(QA #112).
+   *
+   * 손대지 않는 칸도 이유가 있다.
+   * - `color` — 팔레트에서 하나를 고르는 칸이라 **비울 수가 없다.** 널 허용 칸이지만
+   *   (`Optional<String> color`) 지금 값이 늘 그대로 나가면 되므로 위 전개로 충분하다.
+   * - `calendarRowId` — 혼자만 `Optional` 이 **아니다.** 서버가 맨 `Long` 으로 받아
+   *   "null 이면 안 옮긴다" 로 읽으므로(`updateEvent` 의 `if (calendarRowId != null)`)
+   *   키를 빼든 `null` 을 싣든 결과가 같고, 화면에도 '캘린더 없음' 이 없다.
+   */
   const onFormSubmit = (data: CalendarEventFormValues) => {
     onSubmit({
       ...data,
-      description: data.description || undefined,
-      location: data.location || undefined,
-      labelRowId: data.labelRowId || undefined,
-      rrule: data.rrule || undefined,
+      // 넷 다 이 화면이 그리는 칸이다 — 비운 채 저장하면 지워져야 한다(QA #112).
+      description: data.description || null,
+      location: data.location || null,
+      // '라벨 없음' 은 `undefined` 로 들어온다(Select 의 NO_LABEL_VALUE).
+      labelRowId: data.labelRowId ?? null,
+      // '반복 안 함' 은 `undefined` 로 들어온다(recurrenceToRrule.none).
+      rrule: data.rrule || null,
       // 고른 알림을 **늘** 그대로 싣는다. 0 개일 때 키를 빼면 서버가 "안 고침" 으로
       // 읽어 옛 알림이 그대로 울렸다 — 화면은 다 끈 것처럼 닫히고서(QA #109).
       // 이 칸은 목록을 통째로 바꾸는 자리라 계약이 "null=미변경 · 리스트=교체" 다
