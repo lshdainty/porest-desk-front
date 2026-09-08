@@ -169,6 +169,8 @@ todo,form.color,색상,Color
 todo,form.description,설명,Description
 todo,form.descriptionPlaceholder,설명을 입력하세요,Enter description
 todo,tag,태그,Tag
+todo,noTag,태그 없음,No tag
+todo,tagEmptyHint,태그는 설정 › 할 일 태그에서 만들어요.,Create tags in Settings › Todo tags.
 todo,tags,태그 관리,Manage Tags
 todo,addTag,태그 추가,Add Tag
 todo,editTag,태그 수정,Edit Tag

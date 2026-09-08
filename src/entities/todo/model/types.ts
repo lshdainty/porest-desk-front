@@ -34,7 +34,14 @@ export interface TodoFormValues {
   title: string;
   content?: string;
   priority: TodoPriority;
-  category?: string;
+  /**
+   * 태그 이름. `null` 을 실으면 태그를 뗀다 — 서버가 `todo.category` 와 태그 매핑을
+   * 함께 비운다(`TodoServiceImpl.syncCategoryBridge`).
+   *
+   * PUT 은 "키 없음=유지 · null=지움" 이라(`Patch`) 키를 빼면 옛 태그가 그대로 남는다.
+   * 메모의 `MemoFormValues.tag` 와 같은 계약이다.
+   */
+  category?: string | null;
   dueDate?: string;
   parentRowId?: number;
   tagIds?: number[];
