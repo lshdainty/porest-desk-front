@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+import { toast } from "sonner";
 import {
   MAX_AMOUNT,
   MAX_BALANCE,
@@ -6,6 +7,15 @@ import {
   parseAmount,
   sanitizeAmountInput,
 } from "./amount";
+
+// 안내가 실제로 나가는지만 본다 — 문구는 CSV 가 정한다.
+vi.mock("sonner", () => ({
+  toast: { info: vi.fn() },
+}));
+
+beforeEach(() => {
+  vi.mocked(toast.info).mockClear();
+});
 
 /**
  * 금액 칸의 계약을 고정한다.
@@ -52,6 +62,32 @@ describe("sanitizeAmountInput", () => {
   it("빈 문자열·기호만이면 빈 문자열", () => {
     expect(sanitizeAmountInput("")).toBe("");
     expect(sanitizeAmountInput("-.")).toBe("");
+  });
+
+  /**
+   * QA #130 — 15자리를 치면 **아무 말 없이** 100억이 됐다. 깎는 것 자체는 맞지만,
+   * 방금 친 숫자가 손가락 밑에서 바뀌었는데 화면이 조용하면 잘린 줄도 모른다.
+   */
+  it("상한에 걸려 깎이면 알린다", () => {
+    sanitizeAmountInput("999999999999999");
+    expect(toast.info).toHaveBeenCalledTimes(1);
+  });
+
+  it("안 깎이면 아무 말도 안 한다 — 칠 때마다 뜨면 안내가 소음이 된다", () => {
+    sanitizeAmountInput("10000000000");
+    sanitizeAmountInput("1000.5");
+    sanitizeAmountInput("");
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it("연달아 깎여도 안내는 한 자리에 겹쳐 쓴다 — 11자리부터는 키마다 잘린다", () => {
+    sanitizeAmountInput("999999999991");
+    sanitizeAmountInput("9999999999912");
+    // id 가 같아야 떠 있는 토스트가 갱신된다. 없으면 같은 안내가 겹겹이 쌓인다.
+    const ids = vi
+      .mocked(toast.info)
+      .mock.calls.map(([, opts]) => (opts as { id?: string } | undefined)?.id);
+    expect(ids).toEqual(["amount-clamped", "amount-clamped"]);
   });
 });
 
