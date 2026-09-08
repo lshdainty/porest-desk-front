@@ -59,6 +59,28 @@ export const expenseApi = {
     return resp.data;
   },
 
+  /**
+   * 환불 연결만 끊는다 — 거래는 그대로 남는다 (D3).
+   *
+   * 본문은 **키 하나뿐**이다. 서버가 안 온 칸을 그대로 두므로(QA #96 · `Patch.from`)
+   * 금액·카테고리·일시를 다시 실을 이유가 없고, 다시 실으면 상세가 열려 있는 사이
+   * 앱에서 바뀐 값을 옛 값으로 덮는다. 그래서 `ExpenseFormValues` 를 재사용하지 않고
+   * 전용 경로를 뒀다 — 그 타입은 금액·날짜를 required 로 잡는다.
+   *
+   * `updateExpense` 는 반대로 이 키를 **못 싣는다**. 편집 시트엔 환불 연결 칸이 없어서
+   * 메모만 고쳐도 연결이 끊기던 자리다(QA #108). 끊는 자리는 여기 하나다.
+   * 앱도 같은 판단이다(desk-app #331 `ExpenseRepository.unlinkRefund`).
+   */
+  unlinkRefund: async (id: number): Promise<Expense> => {
+    const resp: ApiResponse<Expense> = await apiClient.put(
+      `/v1/expense/${id}`,
+      // 명시적 `null` 이어야 한다 — `undefined` 면 직렬화에서 키째 빠져 서버가 옛
+      // 연결을 지킨다(`ExpenseApiDto.UpdateRequest` 의 `Optional<Long>`).
+      { refundOfExpenseRowId: null },
+    );
+    return resp.data;
+  },
+
   deleteExpense: async (id: number): Promise<void> => {
     const resp: ApiResponse<void> = await apiClient.delete(`/v1/expense/${id}`);
     return resp.data;

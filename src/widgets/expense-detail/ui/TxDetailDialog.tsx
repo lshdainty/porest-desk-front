@@ -30,11 +30,13 @@ import {
   DetailStatSplit,
 } from "@/shared/ui/porest/detail";
 import { CategoryChip } from "@/shared/ui/porest/category-chip";
-import { ExpenseRow } from "@/entities/expense";
+import { ExpenseRow, isRefundTx } from "@/entities/expense";
+import { Button } from "@/shared/ui/button";
 import {
   useDeleteExpense,
   useExpenseCategories,
   useSearchExpenses,
+  useUnlinkRefund,
 } from "@/features/expense";
 import { useExpenseSplits } from "@/features/expense-split";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
@@ -69,7 +71,7 @@ type Props = {
 };
 
 export function TxDetailDialog({
-  expense,
+  expense: expenseProp,
   onClose,
   onEdit,
   onRefund,
@@ -78,6 +80,15 @@ export function TxDetailDialog({
   const { t, i18n } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmUnlink, setConfirmUnlink] = useState(false);
+  const unlinkMut = useUnlinkRefund();
+  // 부모는 목록에서 집은 **스냅샷**을 넘긴다(`ExpensePage` 의 `detail` state) — 무효화가
+  // 끝나도 그 객체는 안 바뀐다. 그래서 환불 연결을 끊으면 서버 응답으로 이 자리를 갈아
+  // 열려 있는 상세가 그대로 다시 그려지게 한다. 안 그러면 배지가 남아 두 번 누르게 된다.
+  // 행이 바뀌면(다이얼로그 재사용) 스냅샷이 새 거래 것이므로 응답은 버린다.
+  const [unlinked, setUnlinked] = useState<Expense | null>(null);
+  const expense =
+    unlinked?.rowId === expenseProp.rowId ? unlinked : expenseProp;
   const [openSub, setOpenSub] = useState<
     "split" | "recurring" | "dutch" | null
   >(null);
@@ -186,6 +197,17 @@ export function TxDetailDialog({
       onSuccess: () => {
         setConfirmDelete(false);
         onClose();
+      },
+    });
+  };
+
+  // 끊고도 상세는 열어 둔다 — 지우는 게 아니라 연결만 푸는 것이라 사용자가 결과를
+  // 그 자리에서 봐야 한다. 응답으로 다시 그리면 배너가 그 자리에서 사라진다.
+  const handleConfirmUnlink = () => {
+    unlinkMut.mutate(expense.rowId, {
+      onSuccess: (updated) => {
+        setUnlinked(updated);
+        setConfirmUnlink(false);
       },
     });
   };
@@ -403,6 +425,44 @@ export function TxDetailDialog({
                       amount: KRW(expense.refundedAmount),
                     })}
                   </span>
+                </div>
+              </DetailSection>
+            )}
+
+            {/* 환불 쪽에서 본 같은 연결 — 이 거래가 환불이면 알리고 끊을 자리를 준다(D3).
+            편집 저장으로는 못 끊는다(그 시트엔 환불 연결 칸이 없다, QA #108). 여기가
+            유일한 자리다. 판정은 `isRefundTx` — **수입 + 원거래 연결**이다. 연결만 보면
+            지출에 남은 연결에도 뜨고, 수입만 보면 모든 수입에 뜬다.
+            모양·문구는 앱과 같다(desk-app #331). */}
+            {isRefundTx(expense) && (
+              <DetailSection>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 12px",
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--bg-sunken)",
+                    fontSize: "var(--text-body-sm)",
+                    color: "var(--fg-secondary)",
+                  }}
+                >
+                  <Undo2
+                    size={15}
+                    style={{ flexShrink: 0, color: "var(--fg-tertiary)" }}
+                  />
+                  <span style={{ flex: 1 }}>
+                    {t("txDetail.refundOfLinked")}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    loading={unlinkMut.isPending}
+                    onClick={() => setConfirmUnlink(true)}
+                  >
+                    {t("txDetail.refundUnlink")}
+                  </Button>
                 </div>
               </DetailSection>
             )}
@@ -691,6 +751,20 @@ export function TxDetailDialog({
           loading={deleteMut.isPending}
           onCancel={() => !deleteMut.isPending && setConfirmDelete(false)}
           onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {/* 되돌리는 칸이 어느 화면에도 없다 — 다시 묶으려면 이 거래를 지우고 원거래에서
+          환불을 새로 기록해야 한다. 그래서 삭제와 같은 무게(danger)로 묻는다. */}
+      {confirmUnlink && (
+        <ConfirmDialog
+          title={t("txDetail.refundUnlink")}
+          message={t("txDetail.refundUnlinkConfirm")}
+          confirmLabel={t("txDetail.refundUnlink")}
+          danger
+          loading={unlinkMut.isPending}
+          onCancel={() => !unlinkMut.isPending && setConfirmUnlink(false)}
+          onConfirm={handleConfirmUnlink}
         />
       )}
 
