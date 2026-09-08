@@ -19,7 +19,6 @@ import {
   Flame,
   CircleDot,
   Leaf,
-  Settings2,
 } from "lucide-react";
 import {
   useTodos,
@@ -215,7 +214,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // 별빛 획득 토스트 — 완료 시 "+N · 수집까지 N별"
   const [starToast, setStarToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [quickAdd, setQuickAdd] = useState("");
 
   // 같은 행을 따닥 눌러도 토글은 한 번만 나간다. `pendingIds` 잠금은 요청이 끝나면
   // 풀리는데(통신이 빠르면 100ms 남짓) 두 번째 탭이 그 뒤에 올 수 있고, 완료 원은
@@ -244,22 +242,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         toastTimer.current = setTimeout(() => setStarToast(null), 2200);
       },
     });
-  };
-
-  const handleQuickAdd = () => {
-    const v = quickAdd.trim();
-    if (!v) return;
-    createTodo.mutate(
-      {
-        title: v,
-        priority: "MEDIUM",
-        // 빠른 추가는 제목만 받는다 — 편집기와 **같은 기본값**(태그 없음)에서 출발해
-        // 목록의 첫 태그를 몰래 붙이지 않는다(QA #103·#105).
-        category: tagValueToPayload(todoTagInitialValue(null)),
-        dueDate: today,
-      },
-      { onSuccess: () => setQuickAdd("") },
-    );
   };
 
   // 필터별 카운트 (칩 뱃지).
@@ -342,61 +324,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />
       )}
     </>
-  );
-
-  // ── 데스크톱 퀵추가 — sunken 인풋 + Enter/추가 + 자세히 ──────────────────
-  const QuickAdd = (
-    <div
-      style={{
-        padding: 6,
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-        background: "var(--bg-sunken)",
-        borderRadius: "var(--radius-md)",
-      }}
-    >
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--fg-tertiary)",
-        }}
-      >
-        <Plus size={18} />
-      </span>
-      <input
-        value={quickAdd}
-        onChange={(e) => setQuickAdd(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleQuickAdd();
-        }}
-        placeholder={t("quickAdd.placeholder")}
-        style={{
-          flex: 1,
-          border: 0,
-          outline: 0,
-          background: "transparent",
-          fontSize: 14,
-          color: "var(--fg-primary)",
-          padding: "8px 0",
-          fontFamily: "inherit",
-        }}
-      />
-      <Button size="sm" onClick={handleQuickAdd} loading={createTodo.isPending}>
-        {t("quickAdd.add")}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setEditing({ _new: true })}
-      >
-        <Settings2 size={13} /> {t("quickAdd.detail")}
-      </Button>
-    </div>
   );
 
   // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
@@ -843,7 +770,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {QuickAdd}
             {FilterChips}
             {ListCard}
           </div>
@@ -1344,7 +1270,7 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
 
 /**
  * Todo 페이지 skeleton — 정적 틀(페이지 헤더)은 실제 렌더,
- * 서버 쿼리(useTodos) 의존 영역(원장 핀/리스트 · 퀵추가/칩/리스트/분포)만 skeleton.
+ * 서버 쿼리(useTodos) 의존 영역(원장 핀/리스트 · 칩/리스트/분포)만 skeleton.
  */
 function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("todo");
@@ -1442,7 +1368,6 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <SkeletonBase className="h-12 w-full rounded-md" />
             {Chips}
             {List}
           </div>
