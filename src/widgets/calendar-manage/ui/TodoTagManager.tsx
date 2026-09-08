@@ -211,8 +211,13 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                     icon: <Trash2 />,
                     kind: "destructive",
                     confirm: {
+                      // count 를 여기서도 넘긴다 — 안 넘기면 i18next 가 자리표시자를
+                      // 그대로 두어 "할 일 {{count}}건" 이 보인다(QA #104).
                       title: t("tags.deleteTitle"),
-                      message: t("tags.deleteMessage", { name: tag.tagName }),
+                      message: t("tags.deleteMessage", {
+                        name: tag.tagName,
+                        count,
+                      }),
                     },
                     onSelect: () => setConfirmDelete(tag),
                   },
