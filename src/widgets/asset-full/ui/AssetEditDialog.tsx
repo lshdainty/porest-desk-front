@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { useAssets } from "@/features/asset";
+import { useDefaultCurrency } from "@/features/user";
 import { KRW } from "@/shared/lib/porest/format";
 import {
   MAX_BALANCE,
@@ -29,7 +30,6 @@ import {
 } from "@/shared/lib/porest/amount";
 import {
   CURRENCIES,
-  DEFAULT_CURRENCY,
   formatOriginalAmount,
   isForeignCurrency,
 } from "@/shared/lib/porest/currency";
@@ -222,6 +222,9 @@ export function AssetEditDialog({
   const isNew = !item;
   const editingGroup: AssetGroup = item ? groupOfType(item.assetType) : group;
 
+  // 설정의 기본 통화 — 새 자산이 먼저 골라 두는 값이다(D7).
+  const defaultCurrency = useDefaultCurrency();
+
   // 공통
   const [brand, setBrand] = useState<string>(
     item?.institution ??
@@ -245,9 +248,17 @@ export function AssetEditDialog({
   // **읽어 온 값으로 연다.** 이게 이 칸의 안전장치다 — 안 채우고 열면 그대로 저장하는
   // 것만으로 외화 자산이 원화가 된다. 칸이 생겨서 오히려 위험해지는 자리라, 앱도
   // 같은 순서로 잠갔다(desk-app #330).
-  const [currency, setCurrency] = useState<string>(
-    item?.currency ?? DEFAULT_CURRENCY,
-  );
+  //
+  // **새로 만들 때만** 설정의 기본 통화가 들어온다(D7 · QA #124). 기존 자산에까지
+  // 쓰면 기본 통화를 USD 로 바꾼 순간 원화 계좌들이 전부 USD 로 열리고, 그대로 저장만
+  // 해도 통화가 바뀐다 — 고치라고 만든 칸이 고장을 내는 쪽이다.
+  const [currencyPick, setCurrency] = useState<string | null>(null);
+  // 우선순위는 **고른 값 > 이 자산의 값 > 설정의 기본 통화**다.
+  //
+  // 기본 통화를 `useState` 초기값으로 굳히면 안 된다(D7) — `/me/preferences` 는 설정
+  // 화면을 안 들른 세션에서 이 폼보다 늦게 도착해서, 초기값으로 받으면 첫 렌더의
+  // `KRW` 에 잠긴 채 열린다. 매 렌더 읽어야 늦게 온 값이 반영된다.
+  const currency = currencyPick ?? item?.currency ?? defaultCurrency;
   const [exchangeRate, setExchangeRate] = useState<string>(
     item?.exchangeRate != null ? trimRate(item.exchangeRate) : "",
   );

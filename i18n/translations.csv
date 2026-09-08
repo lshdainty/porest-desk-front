@@ -1831,6 +1831,7 @@ settings,currency.KRW,대한민국 원,Korean Won
 settings,currency.USD,미국 달러,US Dollar
 settings,currency.EUR,유로,Euro
 settings,currency.JPY,일본 엔,Japanese Yen
+settings,currency.desc,새 자산·거래를 만들 때 이 통화가 먼저 골라져요,New assets and transactions start with this currency
 settings,page.title,설정,Settings
 settings,page.subtitle,카테고리·계좌·알림 등,Categories · accounts · alerts
 settings,sections.categories.label,카테고리 관리,Manage categories

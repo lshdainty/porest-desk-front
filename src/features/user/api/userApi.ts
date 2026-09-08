@@ -45,6 +45,18 @@ export interface UserPreferences {
   emailFrequency: EmailFrequency;
   /** 표시 기준 지역 (IANA 타임존 ID) */
   timezone: string;
+  /**
+   * 새 자산·거래를 만들 때 먼저 골라 두는 통화 (KRW·USD·EUR·JPY).
+   *
+   * 종전엔 브라우저 `localStorage` 에만 있었고 **읽는 곳이 하나도 없었다**(QA #124) —
+   * 고르면 저장된 것처럼 보이는데 폰에서도, 다른 브라우저에서도 아무 일이 없었다.
+   * 계정에 딸린 값이므로 서버가 갖는다(desk-back #328).
+   *
+   * 서버는 컬럼 기본값 `'KRW'` 로 **항상 실어 준다.** 그래도 읽는 자리는
+   * `?? DEFAULT_CURRENCY` 를 거친다 — 쿼리가 아직 안 왔을 때(`data === undefined`)가
+   * 있고, 서버가 이 칸을 얹기 전 배포에서도 화면이 빈 채로 뜨면 안 된다.
+   */
+  defaultCurrency: string;
 }
 
 export const userApi = {
