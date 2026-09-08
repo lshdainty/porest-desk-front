@@ -29,6 +29,7 @@ import {
   CreditCard,
   FilePen,
   Sparkles,
+  NotebookTabs,
 } from "lucide-react";
 import { BudgetManager } from "@/widgets/budget-manage";
 import { CategoryManager } from "@/widgets/category-manage";
@@ -39,6 +40,7 @@ import {
   CalendarShareSection,
   TodoTagManager,
 } from "@/widgets/calendar-manage";
+import { MemoTagManager } from "@/widgets/memo-manage";
 import { NotificationsManager } from "@/widgets/notification-manage";
 import { DataExportSection } from "@/widgets/data-transfer";
 import {
@@ -110,6 +112,7 @@ type SectionId =
   | "calendar-share"
   | "calendar-labels"
   | "todo-tags"
+  | "memo-tags"
   | "appearance"
   | "notifications"
   | "data"
@@ -199,6 +202,12 @@ const SECTIONS: SectionDef[] = [
     labelKey: "sections.todoTags.label",
     icon: Tags,
     descKey: "sections.todoTags.desc",
+  },
+  {
+    id: "memo-tags",
+    labelKey: "sections.memoTags.label",
+    icon: NotebookTabs,
+    descKey: "sections.memoTags.desc",
   },
   {
     id: "appearance",
@@ -303,7 +312,7 @@ const MENU_GROUPS: GroupDef[] = [
   },
   {
     labelKey: "groups.tagsLabels",
-    sectionIds: ["todo-tags", "calendar-labels"],
+    sectionIds: ["todo-tags", "memo-tags", "calendar-labels"],
   },
   {
     labelKey: "groups.share",
@@ -434,6 +443,8 @@ export const SettingsPage = () => {
         return <CalendarLabelsSection mobile={m} />;
       case "todo-tags":
         return <TodoTagManager mobile={m} />;
+      case "memo-tags":
+        return <MemoTagManager mobile={m} />;
       case "appearance":
         return <AppearanceSection mobile={m} />;
       case "notifications":
