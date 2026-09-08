@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
 import { Pencil, Plus, Trash2, Wallet } from "lucide-react";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import type {
@@ -34,7 +33,6 @@ import {
 } from "@/shared/ui/porest/manager-layout";
 import { AssetDetailDialog } from "./AssetDetailDialog";
 import { AssetEditDialog, type AssetGroup } from "./AssetEditDialog";
-import { ASSET_EDIT_PARAM } from "../lib/edit-deep-link";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -85,41 +83,10 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
   const assets: Asset[] = assetsData?.assets ?? EMPTY_ASSETS;
 
-  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<AssetGroup>("account");
   const [editing, setEditing] = useState<EditingState>(null);
   const [detail, setDetail] = useState<Asset | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Asset | null>(null);
-
-  /**
-   * `?edit=<rowId>` 로 들어오면 그 자산의 편집 폼을 바로 연다(QA #126 — 자산 상세의
-   * '수정' 이 목록까지만 데려다줬다).
-   *
-   * 값은 **마운트할 때 한 번** 받아 두고 주소에서는 지운다. 남겨 두면 설정 안에서
-   * 다른 섹션에 다녀오는 것만으로 편집 폼이 혼자 다시 열린다 — 이 화면은 섹션을 옮길
-   * 때마다 새로 마운트되는데 주소는 그대로 따라다니기 때문이다.
-   */
-  const [pendingEdit, setPendingEdit] = useState<string | null>(() =>
-    searchParams.get(ASSET_EDIT_PARAM),
-  );
-  useEffect(() => {
-    if (!searchParams.has(ASSET_EDIT_PARAM)) return;
-    const next = new URLSearchParams(searchParams);
-    next.delete(ASSET_EDIT_PARAM);
-    setSearchParams(next, { replace: true });
-  }, [searchParams, setSearchParams]);
-
-  // 자산 목록이 와야 어느 탭인지 알 수 있어 로딩이 끝나면 연다. effect 로 미루면 한 번
-  // 그려진 뒤에 열려 목록이 번쩍인다 — 렌더 중에 상태를 맞추는 자리다.
-  // 없는 `rowId`(지웠거나 남의 자산)면 목록만 보여 준다. 빈 폼을 여는 것보다 낫다.
-  if (pendingEdit !== null && !isLoading) {
-    setPendingEdit(null);
-    const target = assets.find((a) => String(a.rowId) === pendingEdit);
-    if (target) {
-      setTab(groupOfAsset(target));
-      setEditing({ mode: "edit", asset: target });
-    }
-  }
 
   const counts = useMemo(() => {
     const base: Record<AssetGroup, number> = { account: 0, card: 0, invest: 0 };

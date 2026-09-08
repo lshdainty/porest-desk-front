@@ -120,10 +120,11 @@ export function PresetDetailDialog({
             {preset.merchant}
           </DetailField>
         )}
+        {/* 이 값의 이름은 **메모** 하나다 — 불러오면 거래 시트의 메모 칸으로 들어가고,
+            편집 폼도 앱(desk-app #330)도 그 이름으로 부른다. 여기만 `세부` 라
+            같은 값이 화면마다 다른 이름으로 보였다. */}
         {preset.description && (
-          <DetailField label={t("addTx.detail")}>
-            {preset.description}
-          </DetailField>
+          <DetailField label={t("memo")}>{preset.description}</DetailField>
         )}
       </DetailFieldGroup>
     </ModalShell>
