@@ -45,6 +45,11 @@ export interface CalendarEventFormValues {
   labelRowId?: number;
   location?: string;
   rrule?: string;
+  /**
+   * 알림 사전분 목록. 목록을 통째로 바꾸는 칸이라 계약이 다른 칸과 다르다 —
+   * **미전달=미변경 · `[]`=전부 해제 · 리스트=교체**(`CalendarEventServiceImpl.syncReminders`).
+   * 0 개일 때 키를 빼면 옛 알림이 그대로 남는다(QA #109).
+   */
   reminderMinutes?: number[];
   calendarRowId?: number;
 }
