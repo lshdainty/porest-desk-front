@@ -1164,6 +1164,24 @@ memo,contentPlaceholder,여기에 메모를 작성해주세요,Write your memo h
 memo,tagLabel,태그,Tag
 memo,pinToTop,상단에 고정,Pin to top
 memo,colorLabel,색상,Color
+memo,noTag,태그 없음,No tag
+memo,tags.title,메모 태그,Memo tags
+memo,tags.desc,메모에 붙이는 태그예요. 목록 필터와 태그별 묶음에 사용돼요.,Tags for your memos — used in list filters and tag grouping.
+memo,tags.new,태그 추가,Add tag
+memo,tags.usage,{{count}}건에 사용 중,Used by {{count}} memos
+memo,tags.empty,태그가 없어요,No tags yet
+memo,tags.emptyHint,{{label}} 버튼으로 첫 태그를 만들어보세요.,Create your first tag with {{label}}.
+memo,tags.deleteTitle,태그 삭제,Delete tag
+memo,tags.deleteMessage,"""{{name}}"" 태그를 삭제하면 이 태그를 쓰는 메모 {{count}}건은 태그 없음으로 남아요.","Deleting ""{{name}}"" will leave {{count}} memos untagged."
+memo,tags.name,이름,Name
+memo,tags.namePlaceholder,예: 아이디어,e.g. Ideas
+memo,tags.color,색상,Color
+memo,tags.colorN,색 {{n}},Color {{n}}
+memo,tags.editTitle,태그 수정,Edit tag
+memo,tags.nameRequired,이름을 입력해 주세요.,Please enter a name.
+memo,tags.nameTooLong,이름은 12자 이내로 입력해 주세요.,Keep the name under 12 characters.
+memo,tags.nameDuplicate,같은 이름의 태그가 이미 있어요.,A tag with that name already exists.
+memo,tags.preview,미리보기,Preview
 notification,connectionLost,알림 연결이 끊어졌습니다,Notification connection lost
 notification,connectionRestored,알림 연결이 복구되었습니다,Notification connection restored
 notification,newNotification,새 알림,New notification
@@ -2532,6 +2550,8 @@ constellation,collection.viewLocked,미리보기,Preview
 constellation,collection.lockedDesc,별빛 {{count}}개를 하룻밤에 모으면 만날 수 있어요.,Collect {{count}} starlight in one night to meet it.
 settings,sections.todoTags.label,할 일 태그,Todo tags
 settings,sections.todoTags.desc,할 일 태그 이름·색 관리,Manage todo tag names & colors
+settings,sections.memoTags.label,메모 태그,Memo tags
+settings,sections.memoTags.desc,메모 태그 이름·색 관리,Manage memo tag names & colors
 settings,account.group.securities,증권 데이터 연동,Securities Data
 settings,account.securities.label,증권사 연동,Securities links
 settings,account.securities.desc,토스·나무 등 증권사 API 키를 연결해요,"Connect API keys for Toss, NAMUH, and more"

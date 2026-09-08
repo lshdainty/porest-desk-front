@@ -64,6 +64,11 @@ export const memoKeys = {
   detail: (id: number) => [...memoKeys.all, "detail", id] as const,
 };
 
+export const memoTagKeys = {
+  all: ["memo-tags"] as const,
+  list: () => [...memoTagKeys.all, "list"] as const,
+};
+
 export const expenseKeys = {
   all: ["expenses"] as const,
   list: <T = Record<string, unknown>>(filters?: T) =>

@@ -19,6 +19,13 @@ import {
   useToggleMemoPin,
   useDeleteMemo,
 } from "@/features/memo";
+import { useMemoTags } from "@/features/memo-tag";
+import {
+  NO_TAG_KEY,
+  memoTagKey,
+  memoTagOptions,
+  tagValueToPayload,
+} from "../lib/memo-tags";
 import type { Memo, MemoFormValues } from "@/entities/memo";
 import { parseServerUtc } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/button";
@@ -59,17 +66,8 @@ const CONTENT_MAX = 10_000;
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// 태그 select 옵션 7종 (양 플랫폼 공통 확정). 기본값 '개인'.
-const TAG_OPTIONS = [
-  "가계부",
-  "자산",
-  "업무",
-  "개인",
-  "건강",
-  "결제",
-  "고정비",
-] as const;
-const DEFAULT_TAG = "개인";
+// 태그 목록·'태그 없음' sentinel 규칙은 ../lib/memo-tags 에 있다(순수 함수라 테스트가 붙는다).
+
 // 메모 색은 chart palette base hex 저장. null 이면 blue 취급.
 const DEFAULT_COLOR = "#2c70bf"; // blue
 
@@ -305,6 +303,10 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const deleteMemo = useDeleteMemo();
 
   const memos: Memo[] = useMemo(() => memosQ.data ?? [], [memosQ.data]);
+  const memoTagsQ = useMemoTags();
+
+  // 편집기 선택지 — 서버 태그 ∪ 기존 메모에 남은 이름(둘 다 비면 기본 7종).
+  const tagNames = memoTagOptions(memoTagsQ.data, memos);
 
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState<string>("all");
@@ -317,7 +319,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const tagCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const memo of memos) {
-      const t = memo.tag || DEFAULT_TAG;
+      const t = memoTagKey(memo);
       m.set(t, (m.get(t) ?? 0) + 1);
     }
     return m;
@@ -328,8 +330,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     const q = query.trim().toLowerCase();
     return memos
       .filter((m) => {
-        if (tagFilter !== "all" && (m.tag || DEFAULT_TAG) !== tagFilter)
-          return false;
+        if (tagFilter !== "all" && memoTagKey(m) !== tagFilter) return false;
         if (q) {
           const hay = `${m.title}\n${m.content ?? ""}`.toLowerCase();
           if (!hay.includes(q)) return false;
@@ -386,7 +387,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
           const active = tagFilter === tag;
           return (
             <TabsTrigger key={tag} variant="pills" size="sm" value={tag}>
-              {tag}
+              {tag === NO_TAG_KEY ? t("noTag") : tag}
               <span style={{ opacity: active ? 0.85 : 0.55, marginLeft: 2 }}>
                 {count}
               </span>
@@ -400,7 +401,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 메모 카드 ──
   const MemoCard = (m: Memo) => {
     const tone = resolveTone(m.color);
-    const tag = m.tag || DEFAULT_TAG;
+    const tag = m.tag || t("noTag");
     return (
       <Card
         key={m.rowId}
@@ -534,7 +535,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
    */
   const MemoRow = (m: Memo) => {
     const tone = resolveTone(m.color);
-    const tag = m.tag || DEFAULT_TAG;
+    const tag = m.tag || t("noTag");
     return (
       <LedgerRow
         key={m.rowId}
@@ -740,6 +741,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
       {editing != null && (
         <MemoEditDialog
           memo={"_new" in editing ? null : editing}
+          tags={tagNames}
           mobile={mobile}
           onClose={() => setEditing(null)}
           onSave={onSave}
@@ -849,7 +851,7 @@ function MemoDetailDialog({
   const { t: tc } = useTranslation("common");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const tone = resolveTone(memo.color);
-  const tag = memo.tag || DEFAULT_TAG;
+  const tag = memo.tag || t("noTag");
 
   const Footer = (
     <ModalViewFooter
@@ -981,12 +983,15 @@ function MemoDetailDialog({
 
 function MemoEditDialog({
   memo,
+  tags,
   mobile,
   onClose,
   onSave,
   submitting,
 }: {
   memo: Memo | null;
+  /** 고를 수 있는 태그 이름 — 서버 목록 ∪ 메모에 남은 이름(둘 다 비면 기본 7종). */
+  tags: string[];
   mobile: boolean;
   onClose: () => void;
   onSave: (values: MemoFormValues, id?: number) => void;
@@ -997,7 +1002,16 @@ function MemoEditDialog({
   const isNew = !memo;
   const [title, setTitle] = useState(memo?.title ?? "");
   const [content, setContent] = useState(memo?.content ?? "");
-  const [tag, setTag] = useState(memo?.tag || DEFAULT_TAG);
+  /*
+   * 이미 있는 메모는 지금 태그 그대로(없으면 '태그 없음'), 새 메모는 목록의 첫 태그.
+   *
+   * 태그가 없는 메모를 열었을 때 select 를 아무 태그로 채워 두면 본문만 고치고 저장해도
+   * 그 태그가 붙는다 — 사용자가 시키지 않은 쓰기다. 그래서 '태그 없음' 도 고를 수 있는
+   * 값으로 둔다(저장할 때 `tag: null` 로 나가 서버가 문자열·FK 를 함께 비운다).
+   */
+  const [tag, setTag] = useState<string>(
+    memo ? memoTagKey(memo) : (tags[0] ?? NO_TAG_KEY),
+  );
   const [pinned, setPinned] = useState(memo?.isPinned ?? false);
   const [color, setColor] = useState(memo?.color || DEFAULT_COLOR);
   const [error, setError] = useState(false);
@@ -1011,7 +1025,8 @@ function MemoEditDialog({
       {
         title: title.trim(),
         content,
-        tag,
+        // sentinel 은 서버로 안 나간다 — 태그를 떼는 건 null 이다.
+        tag: tagValueToPayload(tag),
         color,
       },
       memo?.rowId,
@@ -1088,11 +1103,12 @@ function MemoEditDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TAG_OPTIONS.map((opt) => (
+              {tags.map((opt) => (
                 <SelectItem key={opt} value={opt}>
                   {opt}
                 </SelectItem>
               ))}
+              <SelectItem value={NO_TAG_KEY}>{t("noTag")}</SelectItem>
             </SelectContent>
           </Select>
         </Field>
