@@ -26,7 +26,9 @@ declare global {
 
 // 라벨 키를 그대로 흘려보낸다 — 여기서 보는 건 페이로드뿐이다.
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  // `i18n` 까지 흉내 낸다 — 다이얼로그가 금액을 통화 표기로 쓸 때 `i18n.language` 를
+  // 본다. 빼 두면 그 경로가 닿는 순간 테스트가 아니라 목이 터진다.
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/asset", () => ({

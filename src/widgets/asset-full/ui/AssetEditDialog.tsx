@@ -24,11 +24,13 @@ import { KRW } from "@/shared/lib/porest/format";
 import {
   MAX_BALANCE,
   blockNonDigitKey,
+  parseAmount,
   sanitizeAmountInput,
 } from "@/shared/lib/porest/amount";
 import {
   CURRENCIES,
   DEFAULT_CURRENCY,
+  formatOriginalAmount,
   isForeignCurrency,
 } from "@/shared/lib/porest/currency";
 import { nameIssue } from "@/shared/lib/porest/name-policy";
@@ -92,6 +94,7 @@ import {
 } from "@/features/stock/model/useStockMaster";
 import { useLivePrices } from "@/features/stock/model/useLivePrices";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 export type AssetGroup = "account" | "card" | "invest";
@@ -214,7 +217,7 @@ export function AssetEditDialog({
   mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
-  const { t } = useTranslation("asset");
+  const { t, i18n } = useTranslation("asset");
   const { t: tCommon } = useTranslation("common");
   const isNew = !item;
   const editingGroup: AssetGroup = item ? groupOfType(item.assetType) : group;
@@ -551,6 +554,22 @@ export function AssetEditDialog({
           ? // 마이너스통장은 '잔액' 이 아니라 '쓴 돈' 을 묻는다 — 그래야 양수로 받는다.
             t("editDialog.balanceLabelOverdraft")
           : t("editDialog.balanceLabelAccount");
+
+  /**
+   * 한도 초과 — **저장은 막지 않는다**(사용자 결정, QA #125). 넘겼다는 사실만 보인다.
+   *
+   * 서버 검사도 넣지 않는다. 한도는 카드사·은행이 정하는 값이고 우리가 아는 건
+   * 사용자가 적어 둔 숫자다 — 막아 버리면 실제로 한도를 올린 사람이 사용액을 못 고친다.
+   * 반대로 조용히 넘어가면 한도를 잘못 적어 둔 걸 아무도 모르므로, 화면에만 세운다.
+   *
+   * 신용카드 사용액과 마이너스통장 사용액이 같은 `credit_limit` 을 쓰므로 두 자리가
+   * 같은 문구를 쓴다. 한도를 안 적었으면(0) 견줄 값이 없어 아무 말도 안 한다.
+   */
+  const isCreditCardEdit = editingGroup === "card" && cardType === "CREDIT";
+  const limitAmount =
+    isCreditCardEdit || isOverdraft ? parseAmount(creditLimit) : 0;
+  const overLimitBy =
+    limitAmount > 0 ? Math.max(0, parseAmount(balanceStr) - limitAmount) : 0;
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -1432,7 +1451,7 @@ export function AssetEditDialog({
       )}
 
       {/* 신용카드 — design 신판 순서: 신용한도 → 결제일 → 현재 사용액 → 결제 계좌(연동 유지) */}
-      {editingGroup === "card" && cardType === "CREDIT" && (
+      {isCreditCardEdit && (
         <>
           <div>
             <Label
@@ -1517,12 +1536,19 @@ export function AssetEditDialog({
         </div>
       ) : (
         <div>
-          <Label
-            htmlFor="asset-edit-balance"
-            className="text-[13px] font-medium mb-2 block"
-          >
-            {balanceLabel}
-          </Label>
+          {/* 초과 배지는 **넘긴 값 옆**에 붙인다 — 한도 칸이 아니라 사용액 칸이
+              사용자가 방금 고친 자리다. 저장은 그대로 열려 있다(QA #125). */}
+          <div className="mb-2 flex items-center gap-2">
+            <Label
+              htmlFor="asset-edit-balance"
+              className="text-[13px] font-medium"
+            >
+              {balanceLabel}
+            </Label>
+            {overLimitBy > 0 && (
+              <Badge variant="error">{t("editDialog.overLimitBadge")}</Badge>
+            )}
+          </div>
           <Input
             id="asset-edit-balance"
             inputMode="numeric"
@@ -1545,6 +1571,17 @@ export function AssetEditDialog({
               })
             }
           />
+          {overLimitBy > 0 && (
+            <p className="mt-1.5 text-[11.5px] text-[color:var(--status-danger-fg)]">
+              {t("editDialog.overLimitHelp", {
+                amount: formatOriginalAmount(
+                  overLimitBy,
+                  currency,
+                  i18n.language,
+                ),
+              })}
+            </p>
+          )}
           {editingGroup === "card" && (
             <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
               {t("editDialog.cardBalanceHelp")}
