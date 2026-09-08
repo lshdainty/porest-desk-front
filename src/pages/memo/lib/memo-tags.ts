@@ -1,28 +1,6 @@
 import type { MemoTag } from "@/entities/memo-tag";
 
 /**
- * 태그가 하나도 없는 사용자에게만 보이는 선택지 — 서버 목록(`GET /memo-tags`)과 기존 메모에
- * 남은 이름이 **둘 다 비었을 때만** 쓴다.
- *
- * 하드코딩 7종을 통째로 지우지 않는 이유는 화면이 비기 때문이다. 태그를 아직 만들지 않은
- * 사용자에게 빈 select 를 내밀면 메모에 태그를 붙일 방법이 없어 설정 화면부터 다녀와야 한다.
- * 여기서 하나를 고르면 서버가 그 문자열로 마스터를 만들어 잇는다(`MemoServiceImpl.linkByName`
- * → `findOrCreateByName`) — 죽은 목록이 아니라 첫 태그를 만드는 통로다.
- *
- * '개인' 이 맨 앞인 건 종전 `DEFAULT_TAG` 가 그 값이었기 때문이다. 아직 태그가 없는
- * 사용자는 새 메모에서 지금까지와 같은 기본값을 본다(`memoTagOptions(...)[0]`).
- */
-export const FALLBACK_TAG_NAMES = [
-  "개인",
-  "가계부",
-  "자산",
-  "업무",
-  "건강",
-  "결제",
-  "고정비",
-] as const;
-
-/**
  * '태그 없음' 묶음을 가리키는 sentinel — 칩 필터 값과 편집기 select 값으로만 쓰고
  * 서버로는 나가지 않는다(`tagValueToPayload` 가 `null` 로 바꾼다).
  *
@@ -37,11 +15,17 @@ export const FALLBACK_TAG_NAMES = [
 export const NO_TAG_KEY = "￿";
 
 /**
- * 편집기 select 에 놓을 태그 이름 — **서버 마스터 ∪ 메모에 남은 이름**, 둘 다 비면 기본 7종.
+ * 편집기 select 에 놓을 태그 이름 — **서버 마스터 ∪ 메모에 남은 이름**. 둘 다 비면 빈 목록이다.
  *
  * 남은 이름을 섞는 이유: 백필 전이거나 다른 클라이언트가 만든 메모의 태그가 아직 마스터에
  * 없을 수 있는데, 그 메모를 열었을 때 자기 태그가 목록에 없으면 select 가 빈칸으로 뜬다.
  * 순서는 서버가 준 순서(이름 오름차순)를 먼저 두고, 마스터에 없는 이름을 뒤에 붙인다.
+ *
+ * **비었을 때 이름을 지어내지 않는다**(QA #105). 한때 기본 7종('개인'·'가계부'…)을 채워
+ * 넣었는데, 설정 목록엔 없는 이름이 편집기에만 떠서 제목만 쓰고 저장하면 **사용자가 만든 적
+ * 없는 태그가 조용히 생겼다** — 서버가 그 문자열로 마스터를 만들어 잇기 때문이다(QA #79).
+ * 목록이 비어도 select 는 안 빈다: '태그 없음' 항목이 화면에서 늘 따라붙고, 태그가 0개인
+ * 사용자에겐 설정에서 만든다는 안내가 붙는다. 앱도 같은 자리를 같은 방식으로 그린다.
  */
 export function memoTagOptions(
   serverTags: readonly MemoTag[] | undefined,
@@ -51,12 +35,25 @@ export function memoTagOptions(
   for (const memo of memos) {
     if (memo.tag && !names.includes(memo.tag)) names.push(memo.tag);
   }
-  return names.length > 0 ? names : [...FALLBACK_TAG_NAMES];
+  return names;
 }
 
 /** 칩 필터·집계에서 이 메모가 속할 묶음 키. 태그가 없으면 '태그 없음' 묶음이다. */
 export function memoTagKey(memo: { tag: string | null }): string {
   return memo.tag || NO_TAG_KEY;
+}
+
+/**
+ * 편집기가 열릴 때 select 에 놓을 값 — 있는 메모는 지금 태그, **새 메모는 '태그 없음'**.
+ *
+ * 목록의 첫 태그를 채워 두면 제목만 쓰고 저장해도 그 태그가 붙는다 — 사용자가 시키지 않은
+ * 쓰기다. 종전엔 하드코딩 '개인' 이라 **설정에 없던 태그가 저장 때 새로 생기기까지 했다**
+ * (QA #105). 앱도 새 메모를 태그 없음으로 연다.
+ */
+export function memoTagInitialValue(
+  memo: { tag: string | null } | null,
+): string {
+  return memo ? memoTagKey(memo) : NO_TAG_KEY;
 }
 
 /**

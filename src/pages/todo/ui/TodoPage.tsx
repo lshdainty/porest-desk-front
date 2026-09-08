@@ -46,6 +46,13 @@ import {
   visibleTodos,
   type FilterKey,
 } from "@/pages/todo/lib/visible-todos";
+import {
+  NO_TAG_KEY,
+  tagValueToPayload,
+  todoTagInitialValue,
+  todoTagKey,
+  todoTagOptions,
+} from "@/pages/todo/lib/todo-tags";
 import { TodoMobileLedger } from "./TodoMobileLedger";
 import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
 import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
@@ -80,18 +87,6 @@ const TITLE_MAX = 200;
 const CONTENT_MAX = 10_000;
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
-
-// 태그 select 옵션 7종 (양 플랫폼 공통 확정). category 필드에 저장. 기본값 '개인'.
-const TAG_OPTIONS = [
-  "가계부",
-  "자산",
-  "결제",
-  "업무",
-  "개인",
-  "건강",
-  "고정비",
-] as const;
-const DEFAULT_TAG = "개인";
 
 // 우선순위 칩/아이콘 스타일 (양 플랫폼 공통 확정).
 //  high = chart-red + bg 14% 틴트 / med = chart-orange + 14% 틴트 /
@@ -143,11 +138,27 @@ function relativeDate(due: string, today: string): string {
   return kDate(due).md;
 }
 
-const NO_DUE_KEY = "￿"; // 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel
+// 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel. `todo-tags` 의 `NO_TAG_KEY` 와 값이 같은데,
+// 쓰는 키 공간이 다르다(날짜 그룹 · 태그 묶음) — 한쪽에서 다른 쪽을 비교하지 않는다.
+const NO_DUE_KEY = "￿";
 
-/** Todo.category → 태그 라벨 (없으면 '개인'). */
-function todoTag(t: Todo): string {
-  return t.category || DEFAULT_TAG;
+/**
+ * 묶음 키 → 화면 라벨. sentinel 은 번역 문구로 바꿔 그린다 — U+FFFF 를 그대로 그리면
+ * 안 보이는 글자 하나가 태그 이름 자리에 남는다.
+ */
+function tagKeyLabel(key: string): string {
+  return key === NO_TAG_KEY ? i18n.t("todo:noTag") : key;
+}
+
+/**
+ * Todo.category → 태그 라벨. 태그가 없으면 '태그 없음' 이다.
+ *
+ * 종전엔 `t.category || '개인'` 이라 **태그를 지운 할 일이 '개인' 으로 보였다**(QA #103).
+ * 서버는 태그를 지울 때 그 할 일의 `category` 를 실제로 비우므로, 화면이 이름을 지어내면
+ * 삭제 확인창이 약속한 "태그 없음으로 남아요" 와 어긋난다. 메모 화면과 같은 규칙이다.
+ */
+function todoTagLabel(td: Todo): string {
+  return tagKeyLabel(todoTagKey(td));
 }
 
 /** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
@@ -190,15 +201,8 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     [todos, today],
   );
 
-  // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union.
-  const tagNames = useMemo(() => {
-    const names = (todoTagsQ.data ?? []).map((tag) => tag.tagName);
-    for (const td of todos) {
-      const c = td.category;
-      if (c && !names.includes(c)) names.push(c);
-    }
-    return names.length > 0 ? names : [...TAG_OPTIONS];
-  }, [todoTagsQ.data, todos]);
+  // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union. 둘 다 비면 빈 목록.
+  const tagNames = todoTagOptions(todoTagsQ.data, todos);
 
   const [filter, setFilter] = useState<FilterKey>("today");
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
@@ -249,7 +253,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
       {
         title: v,
         priority: "MEDIUM",
-        category: tagNames[0] ?? DEFAULT_TAG,
+        // 빠른 추가는 제목만 받는다 — 편집기와 **같은 기본값**(태그 없음)에서 출발해
+        // 목록의 첫 태그를 몰래 붙이지 않는다(QA #103·#105).
+        category: tagValueToPayload(todoTagInitialValue(null)),
         dueDate: today,
       },
       { onSuccess: () => setQuickAdd("") },
@@ -521,7 +527,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
               {key ? relativeDate(key, today) : t("noDueDate")}
             </span>
             <span style={dot} />
-            <span style={{ color: "var(--fg-tertiary)" }}>{todoTag(todo)}</span>
+            <span style={{ color: "var(--fg-tertiary)" }}>
+              {todoTagLabel(todo)}
+            </span>
             {todo.content && (
               <>
                 <span style={dot} />
@@ -629,8 +637,9 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         {t("tagDistribution")}
       </h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {tagNames.map((tag) => {
-          const tagged = todos.filter((t) => todoTag(t) === tag);
+        {/* '태그 없음' 도 한 줄이다 — 없으면 태그를 뗀 할 일이 분포에서 통째로 사라진다. */}
+        {[...tagNames, NO_TAG_KEY].map((tag) => {
+          const tagged = todos.filter((td) => todoTagKey(td) === tag);
           const total = tagged.length;
           if (total === 0) return null;
           const done = tagged.filter(isDone).length;
@@ -648,7 +657,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                   flexShrink: 0,
                 }}
               >
-                {tag}
+                {tagKeyLabel(tag)}
               </span>
               <div
                 style={{
@@ -976,7 +985,9 @@ function TodoDetailDialog({
           />
           <DetailFieldRow
             label={t("tag")}
-            value={<span style={{ fontWeight: "500" }}>{todoTag(todo)}</span>}
+            value={
+              <span style={{ fontWeight: "500" }}>{todoTagLabel(todo)}</span>
+            }
           />
           <DetailFieldRow
             label={t("form.priority")}
@@ -1110,7 +1121,8 @@ function TodoEditDialog({
   const isNew = !todo;
   const [title, setTitle] = useState(todo?.title ?? "");
   const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today);
-  const [tag, setTag] = useState(todo?.category || tags[0] || DEFAULT_TAG);
+  // 있는 할 일은 지금 태그(없으면 '태그 없음'), 새 할 일도 '태그 없음' — 규칙은 lib 에.
+  const [tag, setTag] = useState(todoTagInitialValue(todo));
   const [priority, setPriority] = useState<TodoPriority>(
     todo?.priority ?? "MEDIUM",
   );
@@ -1127,7 +1139,8 @@ function TodoEditDialog({
         title: title.trim(),
         content: note,
         priority,
-        category: tag,
+        // sentinel 은 서버로 안 나간다 — 태그를 떼는 건 null 이다(키를 빼면 옛 값이 남는다).
+        category: tagValueToPayload(tag),
         dueDate: due || undefined,
       },
       todo?.rowId,
@@ -1202,13 +1215,28 @@ function TodoEditDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(tags.includes(tag) ? tags : [tag, ...tags]).map((opt) => (
+              {(tags.includes(tag) || tag === NO_TAG_KEY
+                ? tags
+                : [tag, ...tags]
+              ).map((opt) => (
                 <SelectItem key={opt} value={opt}>
                   {opt}
                 </SelectItem>
               ))}
+              <SelectItem value={NO_TAG_KEY}>{t("noTag")}</SelectItem>
             </SelectContent>
           </Select>
+          {tags.length === 0 && (
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              {t("tagEmptyHint")}
+            </div>
+          )}
         </Field>
       </div>
 
