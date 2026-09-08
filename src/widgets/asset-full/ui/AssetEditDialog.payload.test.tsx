@@ -1,17 +1,19 @@
-// 자산 편집이 **보내는 것**을 고정한다 (QA #106 · #110).
+// 자산 편집이 **보내는 것**을 고정한다 (QA #106 · #110 · D1).
 //
 // 규칙은 하나다 — 이 다이얼로그가 **가진 칸만** 싣는다.
 // PUT 은 세 갈래이므로(`Patch`: 키 없음=유지 · null=지움 · 값=교체, QA #96)
 // 칸이 있으면 지금 상태를 그대로(비었으면 `null`) 싣고, 칸이 없으면 키를 뺀다.
 //
-// - 통화: 고르는 칸이 **없다**. 그런데 `"KRW"` 를 실어 보내, 외화로 만든 자산을 한 번
-//   편집하면 원화가 되고 서버가 환산율까지 1 로 정규화해 총자산이 환산 없이 합쳐졌다.
-//   되돌릴 입력칸도 없다 → 키를 뺀다(앱 desk-app #326 과 같은 판단).
+// - 통화: 이제 세 묶음 모두 **칸이 있다**(D1) → 싣는다. 종전엔 칸도 없이 `"KRW"` 를
+//   실어 보내 외화 자산이 편집 한 번에 원화가 됐고 서버가 환산율까지 1 로 정규화해
+//   총자산이 환산 없이 합쳐졌다(QA #106) — 그래서 키를 뺐었다. 칸이 생겼으므로 다시
+//   싣되, **읽어 온 값으로 열어야** 그대로 저장했을 때 값이 안 바뀐다. 그 두 가지를
+//   여기서 함께 잠근다(앱 desk-app #330 과 같은 판단).
+// - 환율: 원화로 되돌리면 **명시적 `null`** 이다. 키를 빼면 서버가 옛 환율을 지켜
+//   원화 잔액이 1380 배가 된다.
 // - 메모: 계좌·투자엔 칸이 **있다** → 비우면 `null` 을 싣는다(안 그러면 안 지워졌다).
 //   카드엔 칸이 **없다**(입력이 `editingGroup !== "card"` 안에 있다) — 그래도 상태가
-//   서버 값에서 출발하므로 그대로 되돌려 보낸다. 통화와 달리 지어낸 값이 아니다.
-//
-// 반대편도 같이 잠근다 — 안 그러면 "자산은 아무것도 안 보낸다" 는 잘못된 교훈이 번진다.
+//   서버 값에서 출발하므로 그대로 되돌려 보낸다. 지어낸 값이 아니다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -24,7 +26,9 @@ declare global {
 
 // 라벨 키를 그대로 흘려보낸다 — 여기서 보는 건 페이로드뿐이다.
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  // `i18n` 까지 흉내 낸다 — 다이얼로그가 금액을 통화 표기로 쓸 때 `i18n.language` 를
+  // 본다. 빼 두면 그 경로가 닿는 순간 테스트가 아니라 목이 터진다.
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/asset", () => ({
@@ -87,6 +91,20 @@ const usdAccount: Asset = {
   exchangeRate: 1_380,
   institution: "신한",
   memo: "출장비 계좌",
+};
+
+/** 원화 입출금 계좌 — 환율 칸이 안 뜨는 쪽. */
+const krwAccount: Asset = {
+  ...baseAsset,
+  rowId: 9,
+  assetName: "신한 주거래",
+  assetType: "BANK_ACCOUNT",
+  balance: 1_200_000,
+  currency: "KRW",
+  // 서버는 원화 자산에도 환산율 1 을 준다(`Asset.normalizeRate`).
+  exchangeRate: 1,
+  institution: "신한",
+  memo: null,
 };
 
 /** USD 로 만든 해외 신용카드 — 카드 묶음엔 메모 칸도 없다. */
@@ -190,27 +208,79 @@ function setInput(el: HTMLInputElement, value: string) {
 const memoInput = () =>
   document.body.querySelector<HTMLInputElement>("#asset-edit-memo");
 
-describe("통화 — 고르는 칸이 없으면 안 싣는다 (QA #106)", () => {
-  it("투자 수정에 currency 키가 없다", () => {
+/** 화면에 그려진 통화 select 가 보여 주는 값(`$ USD` 꼴). */
+const currencyTriggerText = () =>
+  document.body.querySelector("#asset-edit-currency")?.textContent?.trim() ??
+  null;
+
+const fxInput = () =>
+  document.body.querySelector<HTMLInputElement>("#asset-edit-fx-rate");
+
+describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 연다 (D1)", () => {
+  it("투자 수정: 지금 통화·환율이 그대로 나간다", () => {
     const { update } = submit(usdInvest, "invest");
     expect(update).not.toBeNull();
-    expect(update!).not.toHaveProperty("currency");
-    // 반대편: 이 화면이 가진 칸은 그대로 나간다.
+    expect(update!.currency).toBe("USD");
+    expect(update!.exchangeRate).toBe(1_380);
+    // 반대편: 이 화면이 가진 다른 칸도 그대로 나간다.
     expect(update!.assetName).toBe("IBKR");
   });
 
-  it("계좌 수정에 currency 키가 없다", () => {
+  it("계좌 수정: 지금 통화·환율이 그대로 나간다", () => {
     const { update } = submit(usdAccount, "account");
-    expect(update!).not.toHaveProperty("currency");
+    expect(update!.currency).toBe("USD");
+    expect(update!.exchangeRate).toBe(1_380);
   });
 
-  it("카드 수정에 currency 키가 없다", () => {
+  it("카드 수정: 지금 통화·환율이 그대로 나간다", () => {
     const { update } = submit(usdCard, "card");
-    expect(update!).not.toHaveProperty("currency");
+    expect(update!.currency).toBe("USD");
+    expect(update!.exchangeRate).toBe(1_380);
   });
 
-  it("생성도 안 싣는다 — 기본값을 정하는 자리는 서버 하나다", () => {
-    // 신규는 이름이 있어야 저장이 열린다.
+  it("세 묶음 다 서버 값으로 열린다 — 안 채우면 저장만으로 원화가 된다", () => {
+    for (const [item, group] of [
+      [usdInvest, "invest"],
+      [usdAccount, "account"],
+      [usdCard, "card"],
+    ] as const) {
+      submit(item, group, () => {
+        expect(currencyTriggerText()).toBe("$ USD");
+        expect(fxInput()?.value).toBe("1380");
+      });
+    }
+  });
+
+  it("원화 자산은 환율 칸이 아예 안 보인다", () => {
+    submit(krwAccount, "account", () => {
+      expect(currencyTriggerText()).toBe("₩ KRW");
+      expect(fxInput()).toBeNull();
+    });
+  });
+
+  it("환율을 고치면 고친 값이 나간다", () => {
+    const { update } = submit(usdAccount, "account", () => {
+      setInput(fxInput()!, "1425.5");
+    });
+    expect(update!.exchangeRate).toBe(1_425.5);
+  });
+
+  it("환율에 쉼표를 찍어도 읽는다 — 금액 칸을 보고 온 손이 그렇게 친다", () => {
+    // `Number("1,425")` 는 NaN 이다. 조용히 null 로 빠지면 서버가 환산율 1 로 잡아
+    // 외화 잔액이 원화로 그대로 더해진다 — 화면엔 아무 표시도 안 난다.
+    const { update } = submit(usdAccount, "account", () => {
+      setInput(fxInput()!, "1,425");
+    });
+    expect(update!.exchangeRate).toBe(1_425);
+  });
+
+  it("원화 자산 수정에도 통화가 실린다 — 서버가 지금 값을 그대로 받는다", () => {
+    const { update } = submit(krwAccount, "account");
+    expect(update!.currency).toBe("KRW");
+    expect(update!.exchangeRate).toBeNull();
+  });
+
+  it("생성도 싣는다 — 고른 칸이 있으니 지어낸 값이 아니다", () => {
     const nameIt = () =>
       setInput(
         document.body.querySelector<HTMLInputElement>("#asset-edit-name")!,
@@ -218,10 +288,10 @@ describe("통화 — 고르는 칸이 없으면 안 싣는다 (QA #106)", () => 
       );
     const invest = submit(null, "invest", nameIt);
     expect(invest.create).not.toBeNull();
-    expect(invest.create!).not.toHaveProperty("currency");
+    expect(invest.create!.currency).toBe("KRW");
     const account = submit(null, "account", nameIt);
     expect(account.create).not.toBeNull();
-    expect(account.create!).not.toHaveProperty("currency");
+    expect(account.create!.currency).toBe("KRW");
   });
 });
 
