@@ -26,6 +26,11 @@ import {
   blockNonDigitKey,
   sanitizeAmountInput,
 } from "@/shared/lib/porest/amount";
+import {
+  CURRENCIES,
+  DEFAULT_CURRENCY,
+  isForeignCurrency,
+} from "@/shared/lib/porest/currency";
 import { nameIssue } from "@/shared/lib/porest/name-policy";
 import {
   ACCOUNT_SUBS,
@@ -134,6 +139,16 @@ function LinkedHoldingName({ holding }: { holding: EditHolding }) {
 /** 계좌 별칭 상한 — 목록 행·홈 카드 한 줄에 들어가는 길이(QA #16, 서버 컬럼은 100). */
 const ASSET_NAME_MAX = 30;
 
+/**
+ * 1400.000000 을 1400 으로 — 서버가 소수 6자리로 주는 환율을 그대로 채워 두면
+ * 편집 폼이 지저분하고, 사용자가 고치려고 통째로 지웠다 다시 적게 된다.
+ * 앱 `trimExchangeRate` 와 같은 규칙이다(desk-app #330).
+ */
+const trimRate = (rate: number): string => {
+  const s = rate.toFixed(6);
+  return s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
+};
+
 const GROUP_NOUN_KEY: Record<AssetGroup, string> = {
   account: "group.account",
   card: "group.card",
@@ -221,6 +236,22 @@ export function AssetEditDialog({
   const [balanceStr, setBalanceStr] = useState<string>(
     item ? KRW(Math.abs(item.balance ?? 0)) : "0",
   );
+
+  // 통화·환율 — 세 묶음(계좌·카드·투자) 모두에 칸이 있다(D1).
+  //
+  // **읽어 온 값으로 연다.** 이게 이 칸의 안전장치다 — 안 채우고 열면 그대로 저장하는
+  // 것만으로 외화 자산이 원화가 된다. 칸이 생겨서 오히려 위험해지는 자리라, 앱도
+  // 같은 순서로 잠갔다(desk-app #330).
+  const [currency, setCurrency] = useState<string>(
+    item?.currency ?? DEFAULT_CURRENCY,
+  );
+  const [exchangeRate, setExchangeRate] = useState<string>(
+    item?.exchangeRate != null ? trimRate(item.exchangeRate) : "",
+  );
+  // 환율은 통화가 원화가 아닐 때만 의미가 있다 — 서버도 KRW 의 환산율은 1 로
+  // 정규화한다(`Asset.normalizeRate`). 칸을 숨길 뿐 값은 들고 있는다:
+  // 통화를 잘못 눌렀다 되돌렸을 때 적어 둔 환율이 사라지면 곤란하다.
+  const isForeign = isForeignCurrency(currency);
 
   // 계좌 sub
   const [accountSub, setAccountSub] = useState<AccountSub>(
@@ -534,20 +565,35 @@ export function AssetEditDialog({
    * - 칸이 **있으면** 그 칸의 지금 상태를 그대로 싣는다. 비어 있으면 `null` 이다 —
    *   사용자가 지운 것이므로 지워져야 한다(메모).
    * - 칸이 **없으면** 지어낸 값을 싣지 않는다. 고를 자리가 없는데 값을 만들어 보내면
-   *   다른 화면이 정한 값을 덮는다(통화). 다만 **읽어 온 값을 들고 있는** 칸은
+   *   다른 화면이 정한 값을 덮는다. 다만 **읽어 온 값을 들고 있는** 칸은
    *   그대로 되돌려 보낸다 — 지어낸 값이 아니라 그 자산의 지금 값이다(카드의 메모).
    *
-   * 통화가 그 사고였다(QA #106). 이 화면엔 통화를 고르는 칸이 없는데 `"KRW"` 를 실어
-   * 보내, 외화로 만든 자산을 한 번 편집하면 원화가 되고 서버가 환산율까지 1 로
-   * 정규화해(`Asset.normalizeRate`) 총자산이 환산 없이 합쳐졌다. 되돌릴 입력칸도 없다.
-   * 안 실으면 수정은 지금 통화를 지키고(`AssetServiceImpl` 의 `currency().orKeep`)
-   * 생성은 서버가 `"KRW"` 로 채운다 — 기본값을 정하는 자리를 서버 하나로 남긴다.
-   * 앱도 같은 판단이다(desk-app #326).
+   * 통화가 그 사고였다(QA #106). 칸도 없이 `"KRW"` 를 실어 보내, 외화로 만든 자산을
+   * 한 번 편집하면 원화가 되고 서버가 환산율까지 1 로 정규화해(`Asset.normalizeRate`)
+   * 총자산이 환산 없이 합쳐졌다. 되돌릴 입력칸도 없었다 — 그래서 키를 뺐다.
+   *
+   * **이제 통화는 이 화면의 칸이다**(D1). 세 묶음 모두 지금 통화를 읽어 와 보여 주므로
+   * 그대로 실어도 값이 안 바뀌고, 바꿨으면 바꾼 대로 나간다. 환율은 원화로 되돌릴 때
+   * **명시적 `null`** 로 지운다 — 키를 빼면 서버가 옛 환율을 지켜 원화 잔액이 1380 배가
+   * 된다. 앱도 같은 자리·같은 규칙이다(desk-app #330).
    */
   const handleSubmit = () => {
     if (!canSubmit) return;
     // 칸에는 절대값만 들어온다(부호 키를 막았다) — 부호는 아래에서 종류가 붙인다.
     const parsedBalance = Number(sanitizeAmountInput(balanceStr, MAX_BALANCE));
+    // 통화·환율은 세 묶음이 똑같이 싣는다. 환율은 외화일 때만 값이 있고,
+    // 원화로 되돌리면 `null` 로 나가 서버에 남은 옛 환율을 지운다.
+    //
+    // 자릿수 쉼표는 떼고 읽는다 — 금액 칸에서 `1,380` 을 보고 온 사람이 환율에도
+    // 쉼표를 찍는다. `Number("1,380")` 은 `NaN` 이라 조용히 `null` 로 빠지고,
+    // 그러면 서버가 환산율 1 로 잡아 외화 잔액이 원화로 그대로 더해진다.
+    // 앱도 같은 자리에서 쉼표를 뗀다(desk-app #330).
+    const currencyFields = {
+      currency,
+      exchangeRate: isForeign
+        ? Number(exchangeRate.replace(/,/g, "")) || null
+        : null,
+    };
 
     if (editingGroup === "card") {
       const type: AssetType =
@@ -588,6 +634,7 @@ export function AssetEditDialog({
           balance: cardBalance,
           institution,
           color,
+          ...currencyFields,
           isIncludedInTotal,
           cardCatalogRowId: catalogId,
           ...billingFields,
@@ -599,6 +646,7 @@ export function AssetEditDialog({
           balance: cardBalance,
           institution,
           color,
+          ...currencyFields,
           // 카드 묶음은 메모 칸을 안 그린다(입력은 `editingGroup !== "card"` 안에 있다).
           // 그래도 키를 싣는 건 `memo` 상태가 이 자산의 서버 값에서 출발하기 때문이다 —
           // 그대로 되돌려 보내면 카드에선 아무것도 안 바뀌고, 운영에 아직 남아 있는
@@ -646,6 +694,7 @@ export function AssetEditDialog({
         balance: investBalance,
         institution: brand,
         color: brandColor?.bg,
+        ...currencyFields,
         memo: memo.trim() || null,
         isIncludedInTotal,
         holdings: holdingsPayload,
@@ -671,6 +720,7 @@ export function AssetEditDialog({
       balance: accountBalance,
       institution: brand,
       color: brandColor?.bg,
+      ...currencyFields,
       memo: memo.trim() || null,
       isIncludedInTotal,
       creditLimit: overdraftLimit,
@@ -1514,6 +1564,58 @@ export function AssetEditDialog({
           )}
         </div>
       )}
+
+      {/* 통화·환율 — 세 묶음이 같은 칸을 쓴다(D1). 잔액 바로 아래인 이유는 이 칸이
+          잔액의 단위를 정하기 때문이다. 카드·대출도 외화가 있다(해외 카드·외화 대출)
+          — 자산 유형으로 가르지 않는다. 앱도 같은 규칙이다(desk-app #330). */}
+      <div>
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Label className="text-[13px] font-medium mb-2 block">
+              {t("form.currency")}
+            </Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger id="asset-edit-currency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.symbol} {c.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {isForeign && (
+            <div className="flex-1">
+              <Label
+                htmlFor="asset-edit-fx-rate"
+                className="text-[13px] font-medium mb-2 block"
+              >
+                {t("form.exchangeRate")}
+              </Label>
+              {/* 소수를 받는 칸이라 `blockNonDigitKey` 를 붙이지 않는다 —
+                  붙이면 `.` 이 안 찍혀 1380.5 를 못 적는다. */}
+              <Input
+                id="asset-edit-fx-rate"
+                inputMode="decimal"
+                value={exchangeRate}
+                onChange={(e) => setExchangeRate(e.target.value)}
+                placeholder={t("form.exchangeRatePlaceholder", {
+                  code: currency,
+                })}
+              />
+            </div>
+          )}
+        </div>
+        {isForeign && (
+          <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+            {t("form.exchangeRateHint")}
+          </p>
+        )}
+      </div>
 
       {/* 신용카드는 결제일에 여기서 한 번에 빠지고, 체크카드는 긁는 즉시 빠진다 — 의미가 달라 라벨을 나눈다. */}
       {editingGroup === "card" && (
