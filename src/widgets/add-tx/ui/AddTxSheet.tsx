@@ -593,6 +593,10 @@ export function AddTxSheet({
           text: smsDraft.text,
           assetRowId: assetRowId ?? null,
           categoryRowId: categoryRowId!,
+          // 종류를 안 실으면 서버가 지출로 본다 — 결제 문자를 수입으로 고쳐 저장하면
+          // 수입 전용 조합이 지출로 넘어가 400 이 났다(QA #123). 여기까지 오는 `type`
+          // 은 이체를 위에서 걸러 EXPENSE·INCOME 뿐이다.
+          expenseType: type,
           amount: amountNumber,
           merchant: merchant || null,
           description: description || null,
@@ -662,6 +666,10 @@ export function AddTxSheet({
       size="md"
       footer={Footer}
       mobile={mobile}
+      // 금액·가맹점 칸에서 Enter 로 저장(QA #132). `save` 는 이미 저장이 나가 있으면
+      // 그냥 돌아오므로 Enter 를 눌러 둔 채 반복 발화해도 거래가 겹쳐 생기지 않는다 —
+      // 그 가드가 없어 할 일 빠른 추가가 여러 건을 만들었다(#122).
+      onEnterSave={save}
     >
       {/* 타입 segment — spec tabs.md variant="pill" (container) */}
       <Tabs

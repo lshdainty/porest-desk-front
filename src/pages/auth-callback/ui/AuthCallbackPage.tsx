@@ -8,6 +8,7 @@ import {
   clearPkce,
 } from "@/features/auth/lib/pkce";
 import { Spinner } from "@/shared/ui/spinner";
+import { takeLoginRedirect } from "@/shared/lib/porest/login-redirect";
 
 export const AuthCallbackPage = () => {
   const { t } = useTranslation("login");
@@ -45,7 +46,11 @@ export const AuthCallbackPage = () => {
         });
         clearPkce();
         window.history.replaceState({}, "", window.location.pathname);
-        navigate(result ? "/desk" : "/login", { replace: true });
+        // 밀려나기 전에 보던 자리로 되돌린다(QA #131). 적어 둔 게 없으면 홈이다.
+        // 꺼내며 지우므로 다음 로그인이 옛 자리를 물려받지 않는다.
+        navigate(result ? (takeLoginRedirect() ?? "/desk") : "/login", {
+          replace: true,
+        });
         return;
       }
 

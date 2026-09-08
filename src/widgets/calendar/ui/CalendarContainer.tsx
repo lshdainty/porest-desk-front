@@ -54,6 +54,7 @@ import type {
   CalendarEventFormValues,
 } from "@/entities/calendar";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
+import { useBackClose } from "@/shared/lib/porest/use-back-close";
 
 interface IProps {
   events: IEvent[];
@@ -124,6 +125,8 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   const handleClosePopover = useCallback(() => {
     setSelectedEvent(null);
   }, []);
+  // 일정 상세는 모바일에서만 drawer 다(데스크톱은 Popover) — 그때만 뒤로가기로 닫는다(QA #129).
+  useBackClose(handleClosePopover, isMobile && !!selectedEvent);
 
   const handleEditEvent = useCallback(() => {
     if (!selectedEvent) return;

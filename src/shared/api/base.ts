@@ -5,6 +5,8 @@ import type {
   AxiosResponse,
 } from "axios";
 import { toast } from "sonner";
+import { rememberCurrentPath } from "@/shared/lib/porest/login-redirect";
+import { userFacingMessage } from "./error-message";
 
 const AUTH_FLAG_KEY = "authenticated";
 
@@ -90,6 +92,9 @@ apiClient.interceptors.response.use(
       if (!isRedirectingToLogin) {
         isRedirectingToLogin = true;
         clearAuthenticated();
+        // 보던 자리를 적어 둔다 — 무음 재인증으로 돌아왔는데 늘 /desk 로 떨어지면
+        // 세션이 끊긴 줄도 모르고 하던 일만 잃는다(QA #131).
+        rememberCurrentPath();
         // expired=1 — 로그인 페이지가 버튼 대기 없이 곧장 SSO 로 넘어가게 하는 신호.
         // SSO 에 Refresh 쿠키(7일)가 살아 있으면 무음 재인증으로 비밀번호 없이 돌아온다.
         window.location.href = "/login?expired=1";
@@ -108,7 +113,10 @@ apiClient.interceptors.response.use(
     ) {
       return Promise.reject(error);
     }
-    const message = error.response?.data?.message || "An error occurred";
+    const message = userFacingMessage(
+      error.response?.data?.message,
+      error.config?.url,
+    );
     showApiErrorToast(message);
     return Promise.reject(error);
   },

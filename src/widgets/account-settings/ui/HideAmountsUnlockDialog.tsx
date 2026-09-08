@@ -15,6 +15,8 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { useVerifyPasswordMutation } from "@/features/user";
+import { useDeviceSize } from "@/shared/lib/porest/responsive";
+import { useBackClose } from "@/shared/lib/porest/use-back-close";
 
 interface Props {
   open: boolean;
@@ -33,6 +35,10 @@ export function HideAmountsUnlockDialog({
   const [error, setError] = useState<string | null>(null);
   const verifyMut = useVerifyPasswordMutation();
   const inputRef = useRef<HTMLInputElement>(null);
+  // 이 확인창은 모바일에서도 Dialog 다(ModalShell 을 안 쓴다) — 뒤로가기 닫기는
+  // 화면 크기로 판단한다(QA #129).
+  const isMobileViewport = useDeviceSize() === "mobile";
+  useBackClose(() => onOpenChange(false), open && isMobileViewport);
 
   // 닫히면 다음에 열 때 지난 입력이 남지 않도록 비운다. 부모가 `onVerified` 로도 닫으므로
   // 닫기 핸들러가 아니라 `open` 이 바뀌는 순간을 본다 — 렌더 중 조정이라 커밋을 한 번

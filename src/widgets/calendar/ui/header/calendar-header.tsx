@@ -38,6 +38,7 @@ import { useIsMobile } from "@/shared/hooks";
 import { cn } from "@/shared/lib";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
+import { useBackClose } from "@/shared/lib/porest/use-back-close";
 
 interface IProps {
   events: IEvent[];
@@ -148,6 +149,8 @@ const CalendarHeader = ({ events }: IProps) => {
   const { selectedDate, setSelectedDate, view, setView } = useCalendar();
   const isMobile = useIsMobile();
   const [pickerOpen, setPickerOpen] = useState(false);
+  // 날짜 선택 시트도 뒤로가기로 닫는다 — 안 걸면 캘린더를 떠난다(QA #129).
+  useBackClose(() => setPickerOpen(false), isMobile && pickerOpen);
 
   const locale = i18n.language.startsWith("ko") ? ko : enUS;
   const dateFormat = i18n.language.startsWith("ko")

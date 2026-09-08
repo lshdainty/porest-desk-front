@@ -6,6 +6,12 @@
  * "그 뒤를 버리는" 게 맞다. 부호는 지출·수입 종류가 정하므로 여기서도 버린다.
  */
 
+import { toast } from "sonner";
+// 초기화까지 끝난 인스턴스를 쓴다 — `i18next` 를 직접 들이면 설정 모듈이 아직
+// 안 실렸을 때 키가 그대로 나온다. `format.ts` 도 같은 자리를 본다.
+import { i18n } from "@/shared/i18n/config";
+import { money } from "./format";
+
 /** 거래 한 건에 허용하는 최대 금액(100억원). 0 을 몇 개 더 찍는 오타를 막는다. */
 export const MAX_AMOUNT = 10_000_000_000;
 
@@ -29,7 +35,28 @@ export function sanitizeAmountInput(
   const head = raw.split(".")[0] ?? "";
   const digits = head.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
   if (!digits) return "";
-  return Number(digits) > max ? String(max) : digits;
+  if (Number(digits) > max) {
+    notifyAmountClamped(max);
+    return String(max);
+  }
+  return digits;
+}
+
+/**
+ * 상한에 걸려 값이 깎였다고 알린다.
+ *
+ * **이 파일에서 유일하게 순수하지 않은 자리다.** 그래도 여기 두는 이유는 상한을 아는
+ * 곳이 여기뿐이기 때문이다 — 자르는 자리와 알리는 자리가 떨어지면 새로 생기는 금액 칸이
+ * 조용히 잘리는 쪽으로 돌아간다(QA #130 이 그 상태였다: 15자리를 치면 아무 말 없이
+ * 100억이 됐다). 화면마다 안내 문구를 다시 그리는 대신 칸 전체가 같은 한 줄을 쓴다.
+ *
+ * 토스트는 **id 를 고정**한다 — 11번째 자리부터는 키를 누를 때마다 잘리므로,
+ * id 가 없으면 같은 안내가 겹겹이 쌓인다. 같은 id 면 떠 있는 토스트가 갱신된다.
+ */
+function notifyAmountClamped(max: number): void {
+  toast.info(i18n.t("common:amountClamped", { max: money(max) }), {
+    id: "amount-clamped",
+  });
 }
 
 /**
