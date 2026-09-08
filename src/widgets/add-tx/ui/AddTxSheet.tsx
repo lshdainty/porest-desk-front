@@ -666,6 +666,10 @@ export function AddTxSheet({
       size="md"
       footer={Footer}
       mobile={mobile}
+      // 금액·가맹점 칸에서 Enter 로 저장(QA #132). `save` 는 이미 저장이 나가 있으면
+      // 그냥 돌아오므로 Enter 를 눌러 둔 채 반복 발화해도 거래가 겹쳐 생기지 않는다 —
+      // 그 가드가 없어 할 일 빠른 추가가 여러 건을 만들었다(#122).
+      onEnterSave={save}
     >
       {/* 타입 segment — spec tabs.md variant="pill" (container) */}
       <Tabs

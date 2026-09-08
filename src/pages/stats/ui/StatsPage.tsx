@@ -83,6 +83,7 @@ import type {
   ExpenseCategory,
 } from "@/entities/expense";
 import { renderIcon, tileRadius } from "@/shared/lib";
+import { useBackClose } from "@/shared/lib/porest/use-back-close";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -4041,6 +4042,8 @@ function RangePickerSheet({
   const [from, setFrom] = useState<Date>(initial.from);
   const [to, setTo] = useState<Date>(initial.to);
   const canApply = from.getTime() <= to.getTime();
+  // 이 시트는 ModalShell 을 안 쓰고 Drawer 를 직접 그린다 — 뒤로가기 닫기를 따로 건다(QA #129).
+  useBackClose(onCancel, mobile);
 
   // segMode 변경 시 — 월/분기/년 의 from/to 자동 계산 (이번 month/quarter/year)
   // custom 은 기존 from/to 유지.

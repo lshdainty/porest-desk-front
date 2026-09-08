@@ -245,6 +245,23 @@ function clickButton(text: string) {
   });
 }
 
+/** 입력칸에서 Enter — `isComposing` 은 한글 조합 중인 Enter 를 흉내 낸다. */
+function pressEnter(
+  el: HTMLElement,
+  opts: { isComposing?: boolean; shiftKey?: boolean } = {},
+) {
+  act(() => {
+    el.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+        ...opts,
+      }),
+    );
+  });
+}
+
 describe("비운 칸은 명시 null 로 나간다 (QA #107)", () => {
   it("거래처·설명을 지우면 null 이 나간다 — 값이 있는 칸은 그대로", () => {
     render({ expense: baseExpense });
@@ -336,5 +353,55 @@ describe("문자에서 온 내역의 거래 종류 (QA #123)", () => {
 
     expect(sent.sms).not.toBeNull();
     expect(sent.sms!.expenseType).toBe("EXPENSE");
+  });
+});
+
+/**
+ * QA #132 — 시트가 `<form>` 이 아니라 Enter 로 저장이 안 됐다. 붙이되 **연타 가드와
+ * 함께** 붙인다: 빠른 추가가 Enter 연타로 같은 할 일을 여러 건 만든 게 #122 다.
+ */
+describe("Enter 저장 (QA #132)", () => {
+  it("입력칸에서 Enter 를 누르면 저장된다", () => {
+    render({ expense: baseExpense });
+    const merchant = byValue("김밥천국")!;
+    pressEnter(merchant);
+
+    expect(sent.update).not.toBeNull();
+    expect(sent.update!.merchant).toBe("김밥천국");
+  });
+
+  it("연타해도 한 번만 나간다 — 이 가드가 없어 #122 가 났다", () => {
+    render({ expense: baseExpense });
+    const merchant = byValue("김밥천국")!;
+    pressEnter(merchant);
+    pressEnter(merchant);
+    pressEnter(merchant);
+
+    expect(sent.calls).toBe(1);
+  });
+
+  it("한글을 확정하는 Enter 는 저장하지 않는다", () => {
+    render({ expense: baseExpense });
+    pressEnter(byValue("김밥천국")!, { isComposing: true });
+
+    expect(sent.calls).toBe(0);
+  });
+
+  it("메모(여러 줄 칸)의 Enter 는 줄바꿈이다", () => {
+    render({ expense: baseExpense });
+    const memo = byValue("점심")!;
+    expect(memo.tagName).toBe("TEXTAREA");
+    pressEnter(memo);
+
+    expect(sent.calls).toBe(0);
+  });
+
+  it("저장할 수 없는 상태에선 Enter 도 아무 일을 안 한다", () => {
+    render({ expense: baseExpense });
+    const amount = byValue("12000")!;
+    setValue(amount, "");
+    pressEnter(amount);
+
+    expect(sent.calls).toBe(0);
   });
 });
