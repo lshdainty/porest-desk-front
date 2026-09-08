@@ -13,6 +13,7 @@ import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Input } from "@/shared/ui/input";
+import { Textarea } from "@/shared/ui/textarea";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import {
@@ -43,6 +44,8 @@ import type { ExpenseType } from "@/entities/expense";
 const PRESET_NAME_MAX = 12;
 /** 기본 내역(거래처) 상한 — 거래 시트(AddTxSheet)·서버 컬럼과 같은 100자. */
 const MERCHANT_MAX = 100;
+/** 기본 메모 상한 — 이 값이 그대로 거래 메모가 된다. 시트·서버 컬럼과 같은 500자. */
+const DESCRIPTION_MAX = 500;
 
 const PAYMENT_METHODS: { v: string; lKey: string }[] = [
   { v: "CASH", lKey: "form.paymentMethod.CASH" },
@@ -81,6 +84,7 @@ export function PresetEditDialog({
     preset?.categoryRowId ?? null,
   );
   const [merchant, setMerchant] = useState(preset?.merchant ?? "");
+  const [description, setDescription] = useState(preset?.description ?? "");
   const [paymentMethod, setPaymentMethod] = useState(
     preset?.paymentMethod ?? "",
   );
@@ -165,9 +169,9 @@ export function PresetEditDialog({
       // 폼이 필수로 강제한다 — 비면 저장 버튼이 안 눌린다(`canSave`). 그래서 여기로
       // null 이 내려올 일이 없고, 서버도 안 보낸 요청의 카테고리를 지키게 됐다(#325).
       categoryRowId,
-      // 아래 셋은 이 다이얼로그가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다.
+      // 아래 넷은 이 다이얼로그가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다.
       // `undefined` 로 키를 빼면 새 서버가 "안 고침" 으로 읽어, 화면만 지워진 척 닫히고
-      // 옛 계좌·거래처·결제수단이 서버에 그대로 남았다.
+      // 옛 계좌·거래처·메모·결제수단이 서버에 그대로 남았다.
       assetRowId: assetRowId ?? null,
       expenseType: type,
       // 금액만 계약이 다르다 — `lockAmount` 와 한 쌍이라 서버가 둘을 함께 본다.
@@ -175,14 +179,14 @@ export function PresetEditDialog({
       // 남지 않는다. 금액칸 자체가 고정을 켰을 때만 그려지니 규칙과도 어긋나지 않는다.
       amount: lockAmount ? amountNumber : undefined,
       merchant: merchant.trim() || null,
+      // 메모도 이제 이 화면의 칸이다(D2). 종전엔 칸이 없고 읽어 온 값도 안 들고 있어서
+      // 무엇을 실어도 지어낸 값이라 **키를 뺐다** — 서버를 `Optional` 로 옮긴(#325)
+      // 계기가 이 칸이다. 칸이 생겼으니 지운 메모는 실제로 지워져야 하고, 그러려면
+      // 키를 빼는 게 아니라 `null` 을 실어야 한다. 앱도 같다(desk-app #330).
+      description: description.trim() || null,
       paymentMethod: paymentMethod || null,
       lockAmount: lockAmount ? "Y" : "N",
     };
-    // `description` 은 **일부러 안 싣는다.** 이 화면에 설명 칸이 없고 읽어 온 값도 안 들고
-    // 있어서(상태 자체가 없다) 무엇을 실어도 지어낸 값이다 — 거래에서 '프리셋으로 저장'
-    // 하며 붙은 설명이 편집 한 번에 사라진다. 키를 빼면 서버가 지금 값을 지킨다(#325).
-    // 자산 편집의 카드 메모와 갈리는 지점이 여기다 — 그쪽은 읽어 온 값을 들고 있어서
-    // 그대로 되돌려 보냈고, 이쪽은 들고 있는 값이 없어서 뺀다.
     if (preset) {
       updateMut.mutate(
         { id: preset.rowId, data: payload },
@@ -318,6 +322,20 @@ export function PresetEditDialog({
           onChange={(e) => setMerchant(e.target.value.slice(0, MERCHANT_MAX))}
           placeholder={t("preset.merchantPlaceholder")}
           maxLength={MERCHANT_MAX}
+        />
+      </Field>
+
+      {/* 메모 — 불러오면 거래의 메모로 들어간다. 자리는 앱과 같다(기본 내역 ↔ 결제 수단
+          사이, desk-app #330). 컨트롤·상한은 그 값이 흘러 들어가는 거래 시트의 메모 칸과
+          맞춘다(Textarea · 500자). */}
+      <Field style={{ marginBottom: 14 }}>
+        <FieldLabel>{t("memo")}</FieldLabel>
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={DESCRIPTION_MAX}
+          placeholder={t("addTx.optional")}
+          style={{ minHeight: 64 }}
         />
       </Field>
 
