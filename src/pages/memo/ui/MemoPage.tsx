@@ -22,6 +22,7 @@ import {
 import { useMemoTags } from "@/features/memo-tag";
 import {
   NO_TAG_KEY,
+  memoTagInitialValue,
   memoTagKey,
   memoTagOptions,
   tagValueToPayload,
@@ -305,7 +306,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const memos: Memo[] = useMemo(() => memosQ.data ?? [], [memosQ.data]);
   const memoTagsQ = useMemoTags();
 
-  // 편집기 선택지 — 서버 태그 ∪ 기존 메모에 남은 이름(둘 다 비면 기본 7종).
+  // 편집기 선택지 — 서버 태그 ∪ 기존 메모에 남은 이름. 둘 다 비면 빈 목록이다.
   const tagNames = memoTagOptions(memoTagsQ.data, memos);
 
   const [query, setQuery] = useState("");
@@ -1003,15 +1004,13 @@ function MemoEditDialog({
   const [title, setTitle] = useState(memo?.title ?? "");
   const [content, setContent] = useState(memo?.content ?? "");
   /*
-   * 이미 있는 메모는 지금 태그 그대로(없으면 '태그 없음'), 새 메모는 목록의 첫 태그.
+   * 있는 메모는 지금 태그(없으면 '태그 없음'), 새 메모도 '태그 없음' — 규칙은 lib 에.
    *
    * 태그가 없는 메모를 열었을 때 select 를 아무 태그로 채워 두면 본문만 고치고 저장해도
    * 그 태그가 붙는다 — 사용자가 시키지 않은 쓰기다. 그래서 '태그 없음' 도 고를 수 있는
    * 값으로 둔다(저장할 때 `tag: null` 로 나가 서버가 문자열·FK 를 함께 비운다).
    */
-  const [tag, setTag] = useState<string>(
-    memo ? memoTagKey(memo) : (tags[0] ?? NO_TAG_KEY),
-  );
+  const [tag, setTag] = useState<string>(memoTagInitialValue(memo));
   const [pinned, setPinned] = useState(memo?.isPinned ?? false);
   const [color, setColor] = useState(memo?.color || DEFAULT_COLOR);
   const [error, setError] = useState(false);
@@ -1111,6 +1110,19 @@ function MemoEditDialog({
               <SelectItem value={NO_TAG_KEY}>{t("noTag")}</SelectItem>
             </SelectContent>
           </Select>
+          {/* 태그가 0개면 고를 게 '태그 없음' 뿐이라 어디서 만드는지 한 줄로 알린다 —
+              선택지에 이름을 지어 넣는 대신(QA #105) 길만 가리킨다. */}
+          {tags.length === 0 && (
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              {t("tagEmptyHint")}
+            </div>
+          )}
         </Field>
         <Field>
           <FieldLabel>{t("pin")}</FieldLabel>
