@@ -45,22 +45,3 @@ export const useCardCatalogDetail = (id: number | null) => {
     enabled: id != null && id > 0,
   });
 };
-
-export const useAvailableBenefits = (
-  cardRowId: number | null,
-  expenseCategoryRowId: number | null,
-) => {
-  return useQuery({
-    queryKey: cardKeys.availableBenefits(
-      cardRowId ?? 0,
-      expenseCategoryRowId ?? 0,
-    ),
-    queryFn: () =>
-      cardCatalogApi.getAvailableBenefits(cardRowId!, expenseCategoryRowId!),
-    enabled:
-      cardRowId != null &&
-      cardRowId > 0 &&
-      expenseCategoryRowId != null &&
-      expenseCategoryRowId > 0,
-  });
-};
