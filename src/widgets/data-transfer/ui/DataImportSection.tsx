@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Check,
@@ -22,6 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import {
+  assetKeys,
+  cardKeys,
+  dashboardKeys,
+  expenseKeys,
+} from "@/shared/config";
 import {
   analyzeImport,
   executeImport,
@@ -109,6 +116,7 @@ function failReasonKey(reason: string): string {
 
 export function DataImportSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("export");
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("upload");
   const [source, setSource] = useState<ImportSource>("POREST");
   const [file, setFile] = useState<File | null>(null);
@@ -161,6 +169,15 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
         dupSkip,
         autoCat,
       });
+      // 가져오기 한 번이 거래를 수백 건 만든다 — 캐시를 비우지 않으면 가계부·통계·예산
+      // (expenses) · 자산 잔액과 추이(assets) · 카드 실적(cards) · 홈 요약(dashboard)이
+      // 전부 옛 값으로 남아 사용자가 손으로 새로고침해야 했다(QA #144).
+      // 어느 화면이 열려 있을지 모르므로 루트 키로 통째로 무효화한다 — 지금 보고 있는
+      // 화면만 다시 받고 나머지는 다음에 열릴 때 받는다.
+      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
+      queryClient.invalidateQueries({ queryKey: assetKeys.all });
+      queryClient.invalidateQueries({ queryKey: cardKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       setResult(res);
       setStep("done");
     } catch {
